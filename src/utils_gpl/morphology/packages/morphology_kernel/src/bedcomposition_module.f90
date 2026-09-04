@@ -1,32 +1,31 @@
-module bedcomposition_module
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+
+module bedcomposition_module
 !!--module description----------------------------------------------------------
 !
 ! This module keeps track of the bed composition at one or more locations. The
@@ -37,12 +36,16 @@ module bedcomposition_module
 !!--module declarations---------------------------------------------------------
 use precision
 use sediment_basics_module, only: SEDTYP_SILT
+implicit none
+
 private
 
 !
 ! public data types
 !
 public bedcomp_data
+public bedcomp_settings
+public erosion_settings
 
 !
 ! public routines
@@ -56,6 +59,7 @@ public  detthcmud
 public  getalluvthick
 public  getporosity
 public  getfrac
+public  getbedprop
 public  setmfrac
 public  getvfrac
 public  setvfrac
@@ -67,6 +71,7 @@ public  clrmorlyr
 public  bedcomp_use_bodsed
 public  initpreload
 public  lyrdiffusion
+public  set_default_fractions
 public  getthicklayer
 !
 public bedcomp_getpointer_integer
@@ -117,13 +122,80 @@ type morlyrnumericstype
     integer  :: max_num_shortage_warnings ! maximum number of shortage warnings remaining
 end type morlyrnumericstype
 
-   
+! iconsolidate
+integer, parameter, public :: CONSOL_NONE       = 0 !  0: no consolidation
+integer, parameter, public :: CONSOL_GIBSON     = 1 !  1: full Gibson model
+integer, parameter, public :: CONSOL_DECON      = 2 !  2: Dynamic Equilibrium CONsolidation (DECON)
+integer, parameter, public :: CONSOL_TERZAGHI   = 3 !  3: simple loading model (Terzaghi)
+integer, parameter, public :: CONSOL_TERZ_PEAT  = 4 !  4: simple loading including peat (Terzaghi)
+integer, parameter, public :: CONSOL_NOCOMP     = 5 !  5: No Compaction
+
+! idiffusion
+integer, parameter, public :: BDIFF_NONE        = 0 !  0: no diffusion
+integer, parameter, public :: BDIFF_ACTIVE      = 1 !  1: diffusion
+
+! ierosion
+integer, parameter, public :: EROS_CONST        = 0 !  0: cohesive sediment erodibility doesn't depend on bed composition
+integer, parameter, public :: EROS_WHITEHOUSE   = 1 !  1: Whitehouse (2001)
+integer, parameter, public :: EROS_LE_HIR       = 2 !  2: Le Hir (2011)
+integer, parameter, public :: EROS_ALONSO       = 3 !  3: Alonso et al (2021)
+integer, parameter, public :: EROS_WINTERWERP   = 4 !  4: Winterwerp (2013)
+integer, parameter, public :: EROS_MUSA         = 5 !  5: MUSA project - Weerdenburg
+
+! ifracdef
+integer, parameter, public :: FRAC_MASS         = 1 !  1: mass fractions (sum of all fractions equals 1)
+integer, parameter, public :: FRAC_VOLUME       = 2 !  2: (solid) volume fractions (sum of all fractions equals 1)
+
+! iporosity
+integer, parameter, public :: POROS_IN_DENSITY  = 0 !  0: porosity included in densities, set porosity to 0
+integer, parameter, public :: POROS_FRINGS      = 1 !  1: Frings (May 2009)
+integer, parameter, public :: POROS_WELTJE      = 2 !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+integer, parameter, public :: POROS_SVFRAC0     = 3 !  3: svfrac0
+integer, parameter, public :: POROS_SVFRAC0SM   = 4 !  4: weight average of svfrac0m and svfrac0s
+integer, parameter, public :: POROS_CDRYB       = 5 !  5: similar to 0, but with porosity shared
+
+! iunderlyr
+integer, parameter, public :: BED_MIXED         = 1 !  1: standard fully mixed concept
+integer, parameter, public :: BED_LAYERED       = 2 !  2: layered bed concept
+
+! updbaselyr
+integer, parameter, public :: BASELYR_UPDATED   = 1 !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+integer, parameter, public :: BASELYR_CONST_FRC = 2 !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+integer, parameter, public :: BASELYR_COPY_FRC  = 3 !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+integer, parameter, public :: BASELYR_CONST     = 4 !  4: base layer composition and thickness constant (no change whatsoever)
+integer, parameter, public :: BASELYR_CONST_THK = 5 !  5: base layer composition is updated, but thickness is kept constant
+
+! updtoplyr
+integer, parameter, public :: TOPLYR_POR_RESET  = 1 !  1: top layer porosity is recomputed based on new mixture
+integer, parameter, public :: TOPLYR_POR_UPDATE = 2 !  2: top layer porosity is updated based on newly added sediment
+
+type erosion_settings
+    real(fp) :: A                                    !< activity of soil, which is used to calculate PI index    
+    real(fp) :: alpha                                !< a constant in determining critical bed shear stress for erosion
+    real(fp) :: alpha_me                             !< tuning parameter in simple Me equation 
+    real(fp) :: alpha_mix                            !< tuning parameter for cohesionless mixture
+    real(fp) :: alpha_lehir                          !< tuning parameter in Le Hir tcrero equation 
+    real(fp) :: alpha_winterwerp                     !< tuning parameter in Winterwerp Me equation 
+    real(fp) :: alpha1                               !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+    real(fp) :: alpha2                               !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+    real(fp) :: beta                                 !< a constant in determining critical bed shear stress for erosion
+    real(fp) :: beta_mix                             !< tuning parameter for cohesionless mixture
+    real(fp) :: C0                                   !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+    real(fp) :: d50sed                               !< d50 grain size of sediment supply [m]
+    real(fp) :: rho_max                              !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+    real(fp) :: rho_min                              !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+    real(fp) :: rho_star                             !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+    real(fp) :: taucr_max                            !< maximum critical shear stress [N/m2]
+    real(fp) :: taucr_min1                           !< critical shear stress at low density [N/m2]
+    real(fp) :: taucr_min2                           !< critical shear stress at high density [N/m2]
+end type erosion_settings
+
 type bedcomp_settings
     !
     ! doubles
     !
-    real(fp) :: thlalyr   !  thickness of Lagrangian underlayer layers
-    real(fp) :: theulyr   !  thickness of Eulerian underlayer layers
+    real(fp) :: thlalyr                              !< thickness of Lagrangian underlayer layers
+    real(fp) :: theulyr                              !< thickness of Eulerian underlayer layers
     real(fp) :: a_max
     real(fp) :: sinkfrac_max
     real(fp) :: asfm
@@ -131,16 +203,73 @@ type bedcomp_settings
     real(fp) :: sigma_sfm
     !
     ! reals
-    !
+    real(fp) :: ag                                   !< gravity
+    real(fp) :: dtdecon                              !< time interval to call consolidation for DECON [s]
+    real(fp) :: dzprofile                            !< m, resolution of equilibrium concentration profile for Dynamic Equilibrium CONsolidation (DECON)
+    real(fp) :: nf                                   !< fractal dimension nf
+    real(fp) :: kbioturb                             !< bioturbation induced diffusion coefficient [m2/s]
+    real(fp) :: kk                                   !< permeability coefficient [m/s]
+    real(fp) :: ksigma                               !< effective stress coefficient [Pa]
+    real(fp) :: ksigma0                              !< effective stress coefficient (usually set as 0) [Pa]
+    real(fp) :: ky                                   !< strength coefficient [Pa]
+    real(fp) :: confac                               !< ratio between consolidation and morphological time scales [-]
+    real(fp) :: svfrac0                              !< user-input initial solids volume fraction for newly deposited sediments (general)
+    real(fp) :: svfrac0m                             !< user-input initial solids volume fraction for newly deposited mud fractions
+    real(fp) :: svfrac0s                             !< user-input initial solids volume fraction for newly deposited sand fractions
+    real(fp) :: svgel                                !< solids volume fraction at gelling point
+    real(fp) :: svmax                                !< if svfrac > svmax, consolidation stops
+    real(fp) :: thconlyr                             !< initial total thickness of consolidatng layers, delta_c in Winterwerp's note.
+                                                     ! thconlyr is a time-varying variable
+    real(fp) :: thtrconcr                            !< the critical thickness of transport layer above which consolidation module is called [m]
+                                                     ! just choose a very small value to avoid numerical issues, e.g., 10E-6.
+    real(fp) :: thtrempty                            !< the critical thickness of transport layer below which it's considered empty [m]
+    real(fp) :: ymodpeat                             !< Young modulus of peat (Terzaghi., 1942)
+    real(fp) :: ccpeat                               !< consolidation rate of peat (Terzaghi., 1942)
+    real(fp) :: peatloi                              !< loss on ignition (LI) or organic content in peat
+    real(fp) :: peatthick                            !< Initial thickness of peat layer
+    real(fp) :: parb                                 !< coefficient in peat equation (Van Asselen, 2009)
+    real(fp) :: parc                                 !< coefficient in peat equation (Van Asselen, 2009)
+    real(fp) :: pard                                 !< coefficient in peat equation (Van Asselen, 2009)
+    real(fp) :: minporm                              !< critical porosity for mud
+    real(fp) :: minpors                              !< critical porosity for sand
+    real(fp) :: crmud                                !< consolidation rate of mud
+    real(fp) :: crsand                               !< consolidation rate of sand
+    real(fp) :: crmsec                               !< secondary mud consolidation
+    real(fp) :: porini                               !< initial porosity 
+    !critical bed shear stress
+    real(fp) :: rhow_const                           !< a constant that defines water density
+    real(fp) :: ptr                                  !< percentage of thickness reduction
     !
     ! integers
     !
-    integer :: idiffusion     !  switch for diffusion between layers
-                              !  0: no diffusion
-                              !  1: diffusion
-    integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
-                              !  0: porosity included in densities, set porosity to 0
-                              !  1: ...
+    integer :: imixtr                                !< flag define whether we consider to mix the transport layer with layers below
+                                                     !       for replenish step, default = 1, mix.
+    integer :: nconlyr                               !< number of consolidating layers used, user defined
+    integer :: iconsolidate                          !< switch for consolidation model
+                                                     !  0: no consolidation
+                                                     !  1: full Gibson model
+                                                     !  2: Dynamic Equilibrium CONsolidation (DECON)
+                                                     !  3: simple loading model (Terzaghi)
+                                                     !  4: simple loading including peat (Terzaghi)
+                                                     !  5: No Compaction
+    integer :: idiffusion                            !< switch for diffusion between layers
+                                                     !  0: no diffusion
+                                                     !  1: diffusion
+    integer :: ierosion                              !< switch for cohesive sediment erodibility
+                                                     !  0: cohesive sediment erodibility doesn't depend on bed composition
+                                                     !  1: Whitehouse (2001)
+                                                     !  2: Le Hir (2011)
+                                                     !  3: Winterwerp (2013)
+    integer :: ifractions                            !< switch for fractions returned by getfrac
+                                                     !  1: mass fractions (sum of all fractions equals 1)
+                                                     !  2: solid volume fractions (sum of all fractions equals 1)
+    integer :: iporosity                             !< switch for porosity (simulate porosity if iporosity > 0)
+                                                     !  0: porosity included in densities, set porosity to 0
+                                                     !  1: Frings (May 2009)
+                                                     !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+                                                     !  3: svfrac0
+                                                     !  4: weight average
+    integer :: iunderlyr                             !< switch for underlayer concept
     integer :: imobility  !  switch for mobility concept. Possible values in "parameters" section above.
     integer :: isedcrs2tr !  switch for entraining mobile sediment from coarse layer to active layer
                           !  0: no
@@ -148,31 +277,36 @@ type bedcomp_settings
     integer :: ihidexptrcrs ! switch for computing hiding and exposure on the basis of the transport and coarse layer
                           !  0: no
                           !  1: yes
-    integer :: iunderlyr      !  switch for underlayer concept
-                              !  1: standard fully mixed concept
-                              !  2: graded sediment concept
-    integer :: keuler         !  index of first Eulerian (i.e. non-moving) layer
-                              !  2   : standard Eulerian, only top layer moves with bed level
-                              !  nlyr: fully Lagrangian (all layers move with bed level)
-    integer :: max_mud_sedtyp ! highest sediment type number that is considered a mud fraction
-    integer :: nfrac          !  number of sediment fractions
-    integer :: neulyr         !  number of Eulerian underlayers
-    integer :: nlalyr         !  number of Lagrangian underlayers
-    integer :: nlyr           !  number of layers (transport + exchange + under layers)
-    integer :: ndiff          !  number of diffusion coefficients in vertical direction
-    integer :: nmlb           !  start index of segments
-    integer :: nmub           !  nm end index
-    integer :: updbaselyr     !  switch for computing composition of base layer
-                              !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-                              !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-                              !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-                              !  4: base layer composition and thickness constant (no change whatsoever)
-                              !  5: base lyaer composition is updated, but thickness is kept constant
-   integer :: active_layer_diffusion !  switch for applying diffusion in the active layer model. Possible values in "parameters" section above.
+                                                     !  1: standard fully mixed concept
+                                                     !  2: graded sediment concept
+    integer :: keuler                                !< index of first Eulerian (i.e. non-moving) layer
+                                                     !  2   : standard Eulerian, only top layer moves with bed level
+                                                     !  nlyr: fully Lagrangian (all layers move with bed level)
+    integer :: nfrac                                 !< number of sediment fractions
+    integer :: neulyr                                !< number of Eulerian underlayers
+    integer :: nlalyr                                !< number of Lagrangian underlayers
+    integer :: nlyr                                  !< number of layers (transport + exchange + under layers)
+    integer :: ndiff                                 !< number of diffusion coefficients in vertical direction
+    integer :: nmlb                                  !< start index of segments
+    integer :: nmub                                  !< nm end index
+    integer :: updtoplyr                             !< switch for top layer porosity updating
+                                                     !  1: top layer porosity is recomputed based on new mixture
+                                                     !  2: top layer porosity is updated based on newly added sediment
+    integer :: updbaselyr                            !< switch for computing composition of base layer
+                                                     !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+                                                     !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+                                                     !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+                                                     !  4: base layer composition and thickness constant (no change whatsoever)
+                                                     !  5: base lyaer composition is updated, but thickness is kept constant
+   integer  :: peatfrac                              !< peat flag (no peat growth, peat thickness is homogeneous)
+   integer  :: max_mud_sedtyp                        !< highest sediment type number that is considered a mud fraction
+   integer  :: active_layer_diffusion                !< switch for applying diffusion in the active layer model
     !
     ! pointers
     !
     type (morlyrnumericstype) , pointer :: morlyrnum ! structure containing numerical settings
+    type (erosion_settings)   , pointer :: erosion   ! structure containing for crtical shear stress for erosion and erosion parameter
+    !
     integer  , dimension(:)   , pointer :: sedtyp    ! sediment type: 0=total/1=noncoh/2=coh
     real(fp) , dimension(:,:) , pointer :: kdiff     ! diffusion coefficients for mixing between layers, units : m2/s
     real(fp) , dimension(:)   , pointer :: phi       ! D50 diameter expressed on phi scale
@@ -182,6 +316,9 @@ type bedcomp_settings
     real(fp) , dimension(:)   , pointer :: thexlyr   ! thickness of exchange layer
     real(fp) , dimension(:)   , pointer :: thtrlyr   ! thickness of transport layer
     real(fp) , dimension(:)   , pointer :: zdiff     ! depth below bed level for which diffusion coefficients are defined, units : m
+    real(fp) , dimension(:)   , pointer :: plyrthk
+    real(fp) , dimension(:)   , pointer :: ymod
+    real(fp) , dimension(:)   , pointer :: cc
     real(fp) , dimension(:)   , pointer :: aldiff    ! diffusion coefficient of the active layer at cell centres, units : m/s2
     ! 
     ! logicals
@@ -192,23 +329,56 @@ type bedcomp_settings
     !
     ! characters
     !
+    character(999)                       :: plyrstr
 end type bedcomp_settings
 !
 type bedcomp_state
+    real(prec) , dimension(:,:)  , pointer :: bodsed       !< Array with total sediment [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: mobile   ! sediment mobility parameter for 0->1 = not mobile->fully mobile
-    real(prec) , dimension(:,:)  , pointer :: bodsed   ! Array with total sediment, units : kg /m2
-    real(fp)   , dimension(:)    , pointer :: dpsed    ! Total depth sediment layer, units : m
-    real(fp)   , dimension(:,:,:), pointer :: msed     ! composition of morphological layers: mass of sediment fractions, units : kg /m2
-    real(fp)   , dimension(:,:)  , pointer :: preload  ! historical largest load, units : kg
-    real(fp)   , dimension(:,:)  , pointer :: sedshort ! sediment shortage in transport layer, units : kg /m2
-    real(fp)   , dimension(:,:)  , pointer :: svfrac   ! 1 - porosity coefficient, units : -
-    real(fp)   , dimension(:,:)  , pointer :: thlyr    ! thickness of morphological layers, units : m
+    real(fp)   , dimension(:)    , pointer :: dpsed        !< Total depth sediment layer [m]
+    real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
+    real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg /m2]
+    real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m3]
+    real(fp)   , dimension(:,:)  , pointer :: td           !< (morphological) time of latest load increment, i.e. that initiates primary compaction [minutes]
+    real(fp)   , dimension(:)    , pointer :: rhow         !< Water density [kg/m3] (currently 2D, but should be 3D in the future)
+    real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg /m2]
+    real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
+    real(fp)   , dimension(:,:)  , pointer :: thlyr        !< thickness of morphological layers [m]
+    real(fp)   , dimension(:)    , pointer :: thmudgibson  !<
+    real(fp)   , dimension(:)    , pointer :: thsandgibson !<
+    real(fp)   , dimension(:,:)  , pointer :: thlyrtprev   !< overburden thickness of previous time step
+    !peat
+    real(fp)   , dimension(:,:)  , pointer :: strain       !<
+    real(hp)                               :: tdecon       !< latest morphological time (morft) of consolidation [days since reference date]
 end type bedcomp_state
 !
 type bedcomp_work
     real(fp), dimension(:,:) , pointer :: msed2
     real(fp), dimension(:)   , pointer :: svfrac2
     real(fp), dimension(:)   , pointer :: thlyr2
+    real(fp), dimension(:)   , pointer :: preload2
+    real(fp), dimension(:)   , pointer :: td2
+    
+    ! working arrays for high-concentration consolidation
+    real(fp), dimension(:)   , pointer :: dthsedlyr      !< thickness of average pure sediment between two neighbouring layers [m]
+
+    real(fp), dimension(:)   , pointer :: sigmaeff       !< effective stress [Pa]
+    real(fp), dimension(:)   , pointer :: thsedlyr       !< thickness of pure sediment in each layer [m]
+    real(fp), dimension(:)   , pointer :: svfracsand     !< new solids fraction after consolidation 
+    real(fp), dimension(:)   , pointer :: svfracmud      !< new solids fraction after consolidation     
+
+    real(fp), dimension(:)   , pointer :: vs0p5          !< particle settling velocity at layer interface [m/s]
+    real(fp), dimension(:)   , pointer :: k0p5           !< permeability at layer interface [m/s]
+    real(fp), dimension(:)   , pointer :: svfrac0p5      !< solids fraction at layer interface
+    real(fp), dimension(:)   , pointer :: svfracsand0p5  !< new solids fraction after consolidation  
+    real(fp), dimension(:)   , pointer :: svfracmud0p5   !< new solids fraction after consolidation
+    
+    real(fp), dimension(:)   , pointer :: svfracnew      !< new solid volume fraction after consolidation
+    real(fp), dimension(:)   , pointer :: thlyrnew       !< new thickness after consolidation
+    
+    ! working arrays for low-concentration consolidation
+    real(fp), dimension(:)   , pointer :: mmudlyr        !< mud mass each layer
+    real(fp), dimension(:)   , pointer :: msandlyr       !< sand mass each layer
 end type bedcomp_work
 !
 type bedcomp_data
@@ -218,48 +388,62 @@ type bedcomp_data
 end type bedcomp_data
 
 contains
-!
-!
-!
-!==============================================================================
+
+!> module version information ... this isn't going to work in Git ...
 subroutine bedcomposition_module_info(messages)
     use message_module
     !
     type(message_stack) :: messages
     !
-    call addmessage(messages,'')
-    call addmessage(messages,'$URL$')
+    call addmessage(messages,'$Id: bedcomposition_module.f90 140649 2022-01-20 14:39:56Z jagers $')
+    call addmessage(messages,'$URL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Technical%20University%20of%20Delft/20190419_consolidation_compaction_v2/src/utils_gpl/morphology/packages/morphology_kernel/src/bedcomposition_module.f90 $')
 end subroutine bedcomposition_module_info
+
+
+subroutine set_default_fractions(this)
+    !
+    ! Call variables
+    !
+    type(bedcomp_data)                                                                           :: this     !< bed composition object
+    !
+    ! Local variables
+    !
 !
+!! executable statements -------------------------------------------------------
 !
-!
-!==============================================================================
-function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Update underlayer bookkeeping system for erosion/sedimentation
-!
-!!--declarations----------------------------------------------------------------
+    if (this%settings%iunderlyr == BED_MIXED) then
+        this%settings%ifractions = FRAC_MASS
+    else
+        this%settings%ifractions = FRAC_VOLUME
+    endif
+end subroutine set_default_fractions
+
+!> Update underlayer bookkeeping system for given erosion/sedimentation flux
+function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) result (istat)
     use precision
-    use message_module
-    implicit none
+    use message_module, only: message_stack, message_len, addmessage
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                                                                           :: this 
-    real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd  !  change in sediment composition, units : kg/m2
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(out) :: dz      !  change in bed level, units : m
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m 
-    real(fp)                                                                       , intent(in)  :: hdt          !  half time step
+    type(bedcomp_data)                                                                           :: this     !< bed composition object
+    real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd   !< change in sediment composition, units : kg/m2
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(out) :: dz       !< change in bed level, units : m
+    type(message_stack)                                                                          :: messages !< message stack
+    real(hp)                                                                       , intent(in)  :: morft    !< morphological time [days since reference date]
+    real(fp)                                                                       , intent(in)  :: dtmor    !< morphological time step [s]
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m        !  half time step
     real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in)  :: sbot    
-    type(message_stack)                                                                          :: messages
-    integer                                                                                      :: istat
+    integer                                                                                      :: istat    !< function status
     !
     ! Local variables
     !
     logical                                 :: track_shortage
     integer                                 :: l
     integer                                 :: nm
+    integer                                 :: k
+    integer                                 :: kk
+    integer                                 :: ktemp
+    !
     real(fp)                                :: dm
     real(fp)                                :: fac
     real(fp)                                :: localcrslyr
@@ -270,162 +454,335 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
     real(fp)                                :: thdiff2
     real(fp)                                :: temp
     real(fp)                                :: thick
+    real(fp)                                :: thickd   !< thickness of newly deposited sediment
     real(fp)                                :: thick2
+    real(fp)                                :: thicke   !< thickness of eroded sediment
+    real(fp)                                :: preload0 !< preload of newly deposited sediment
+    real(fp)                                :: svfracd
     real(fp)                                :: thtrlyrnew
+    real(fp)                                :: phi_mud       !< mud volume fraction
     real(fp)                                :: thclyrnew
     real(fp), dimension(this%settings%nfrac):: dmi
+    real(fp)                                :: sdbodsed !< the sum of dbodsd
+    real(fp)                                :: td0
     real(fp), dimension(this%settings%nfrac):: dmi_out
     real(fp), dimension(this%settings%nfrac):: dmi_crs
     !
     character(message_len)                  :: message
+    !
     type (morlyrnumericstype)     , pointer :: morlyrnum
+    integer                       , pointer :: iconsolidate
+    integer                       , pointer :: nconlyr
     real(prec) , dimension(:,:)   , pointer :: bodsed
     real(fp)   , dimension(:,:)   , pointer :: svfrac
     real(fp)   , dimension(:)     , pointer :: dpsed
     real(fp)   , dimension(:,:)   , pointer :: mobile   
     real(fp)   , dimension(:,:,:) , pointer :: msed
     real(fp)   , dimension(:)     , pointer :: rhofrac
-    real(fp)   , dimension(:,:)   , pointer :: sedshort 
+    real(fp)   , dimension(:,:)   , pointer :: sedshort
     real(fp)   , dimension(:)     , pointer :: thclyr  
     real(fp)   , dimension(:,:)   , pointer :: thlyr
-    real(fp)   , dimension(:)     , pointer :: thtrlyr  
+    real(fp)                      , pointer :: thtrempty
+    real(fp)   , dimension(:)     , pointer :: thtrlyr
     integer                       , pointer :: imobility
+    real(fp)   , dimension(:,:)   , pointer :: preload
+    real(fp)   , dimension(:,:)   , pointer :: td
+    real(fp)                                :: poros
+    
+    real(fp),dimension(this%settings%nfrac) :: permud       ! mud fraction mass percentage
+    real(fp),dimension(this%settings%nfrac) :: persand      ! sand fraction mass percentage
+    real(fp),dimension(this%settings%nfrac) :: mmud         ! mud fraction mass 
+    real(fp),dimension(this%settings%nfrac) :: msand        ! sand fraction mass
+    real(fp),dimension(this%settings%nfrac) :: mfrac
+    real(fp)                                :: totmassd     !< total mass of deposited sediment
+    real(fp)                                :: totsv        !< total sediment volume in top layer
+    real(fp)                                :: totsvd       !< total sediment volume of deposited sediment
+    real(fp)                                :: totsve       !< total sediment volume of eroded sediment
+    logical                                 :: call_consolidate !< flag indicating whether consolidate should be called
 !
 !! executable statements -------------------------------------------------------
 !
-
-    morlyrnum   => this%settings%morlyrnum
-    rhofrac     => this%settings%rhofrac
+    morlyrnum    => this%settings%morlyrnum
+    iconsolidate => this%settings%iconsolidate
+    nconlyr      => this%settings%nconlyr
+    rhofrac      => this%settings%rhofrac
+    thtrempty    => this%settings%thtrempty
     thclyr      => this%settings%thclyr
-    thtrlyr     => this%settings%thtrlyr
+    thtrlyr      => this%settings%thtrlyr
+    !
     svfrac      => this%state%svfrac
     bodsed      => this%state%bodsed
     dpsed       => this%state%dpsed
     mobile      => this%state%mobile
     msed        => this%state%msed
     sedshort    => this%state%sedshort
-    thlyr       => this%state%thlyr  
+    thlyr       => this%state%thlyr
     imobility   => this%settings%imobility
+    preload     => this%state%preload
+    td          => this%state%td
     !
     istat = allocwork(this)
     if (istat /= 0) return
     track_shortage = this%settings%morlyrnum%track_mass_shortage
-    select case(this%settings%iunderlyr)
-    case(2)
-       do nm = this%settings%nmlb,this%settings%nmub
-          call getsedthick_1point(this, nm, seddep0)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
+        if (this%settings%iconsolidate == CONSOL_NONE) then
+            call_consolidate = .false.
+        elseif (this%settings%iconsolidate == CONSOL_DECON) then
+            ! check whether it's time to consolidate the bed again
+            if (morft < this%state%tdecon) then
+                call_consolidate = .false.
+            else
+                ! consolidate now and set the next consolidation time
+                this%state%tdecon = morft + real(this%settings%dtdecon,hp)/86400.0_hp
+                call_consolidate = .true.
+            endif
+        else
+            call_consolidate = .true.
+        endif
+        
+        do nm = this%settings%nmlb,this%settings%nmub
+            call getsedthick_1point(this, nm, seddep0)
           if (.not.this%settings%crslyr) then
-             !
-             ! transport layer only
-             !
-             do l = 1, this%settings%nfrac
+            !
+            ! transport layer only
+            !
+            !
+            totmassd = 0.0_fp ! total deposited mass
+            totsvd   = 0.0_fp ! total deposited volume
+            totsve   = 0.0_fp ! total eroded volume
+            totsv    = 0.0_fp ! total sediment volume
+            do l = 1, this%settings%nfrac
+                if (dbodsd(l,nm) > 0.0_fp) then
+                    ! fraction being deposited
+                    totmassd = totmassd + dbodsd(l,nm)
+                    totsvd   = totsvd   + dbodsd(l,nm) / rhofrac(l)
+                else
+                    ! fraction being eroded
+                    totsve   = totsve   - dbodsd(l,nm) / rhofrac(l)
+                endif
+                !
                 temp  = msed(l, 1, nm) + dbodsd(l, nm)
                 if (temp < 0.0_fp) then
                    if (temp < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings>0) then
                       morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
-                      write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
-                         & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
-                         & ' Mass available   : ' ,msed(l, 1, nm), &
-                         & ' Mass to be eroded: ', dbodsd(l, nm)
-                      call addmessage(messages,message)
+                        write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
+                           & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
+                           & ' Mass available   : ' ,msed(l, 1, nm), &
+                           & ' Mass to be eroded: ', dbodsd(l, nm)
+                        call addmessage(messages,message)
                       if (morlyrnum%max_num_shortage_warnings == 0) then
-                         message = 'Sediment erosion shortage messages suppressed'
-                         call addmessage(messages,message)
-                      endif
-                   endif
-                   if (track_shortage) then
-                      sedshort(l, nm) = sedshort(l, nm) + temp
-                   endif
-                   temp = 0.0_fp
-                elseif ( sedshort(l, nm) < 0.0_fp ) then
-                   temp = temp + sedshort(l, nm)
-                   if ( temp < 0.0_fp ) then
-                      sedshort(l, nm) = temp
-                      temp = 0.0_fp
-                   else
-                      sedshort(l, nm) = 0.0_fp
-                   endif
-                endif
-                msed(l, 1, nm) = temp
-             enddo
-             !
-             ! get new requested transport layer thickness.
-             !
-             thtrlyrnew = thtrlyr(nm)
-             !
-             ! compute actual current thickness of top layer
-             !
-             call updateporosity(this, nm, 1)
-             thick = 0.0_fp
-             do l = 1, this%settings%nfrac
-                 thick = thick + msed(l, 1, nm)/rhofrac(l)
-             enddo
-             thick = thick/svfrac(1, nm)
-             !
-             thdiff = thick-thtrlyrnew
-             !
-             ! get sediment from or put sediment into underlayers
-             ! to get transport layer of requested thickness
-             !
-             if ( thdiff > 0.0_fp ) then
-                !   
-                ! sedimentation to underlayers
-                ! determine surplus of mass per fraction
-                ! 
-                fac = thdiff/thick
-                do l = 1, this%settings%nfrac
-                    dmi(l) = msed(l, 1, nm)*fac
-                    msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                enddo
-                !
-                ! store surplus of mass in underlayers
-                !
-                call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
-                !
-             elseif ( thdiff < 0.0_fp ) then
-                !
-                ! erosion of underlayers
-                ! total erosion thickness: thdiff
-                ! associated mass returned in: dmi
-                !
-                thdiff = -thdiff
-                !  
-                call lyrerosion(this, nm, thdiff, dmi)
-                !
-                ! add to top layer
-                ! 
-                do l = 1, this%settings%nfrac 
-                    msed(l, 1, nm)   = msed(l, 1, nm) + dmi(l)
-                enddo
-                !
-                do l = 1, this%settings%nfrac
-                    if (sedshort(l, nm) < 0.0_fp .and. msed(l, 1, nm) > 0.0_fp) then
-                        sedshort(l, nm) = sedshort(l, nm) + msed(l, 1, nm)
-                        if (sedshort(l, nm) > 0.0_fp) then
-                            msed(l, 1, nm)  = sedshort(l, nm)
-                            sedshort(l, nm) = 0.0_fp
-                        else
-                            msed(l, 1, nm) = 0.0_fp
+                            message = 'Sediment erosion shortage messages suppressed'
+                            call addmessage(messages,message)
                         endif
                     endif
-                enddo
+                    if (track_shortage) then
+                        sedshort(l, nm) = sedshort(l, nm) + temp
+                    endif
+                    temp = 0.0_fp
+                elseif ( sedshort(l, nm) < 0.0_fp ) then
+                    temp = temp + sedshort(l, nm)
+                    if ( temp < 0.0_fp ) then
+                        sedshort(l, nm) = temp
+                        temp = 0.0_fp
+                    else
+                        sedshort(l, nm) = 0.0_fp
+                    endif
+                endif
+                msed(l, 1, nm) = temp
+                totsv = totsv + temp / rhofrac(l)
+            enddo
+            !
+            ! get new requested transport layer thickness.
+            !
+            thtrlyrnew = thtrlyr(nm)
+            !
+            ! compute actual current thickness of top layer
+            !
+            if (this%settings%updtoplyr == TOPLYR_POR_RESET) then
+                ! thickness of top layer based on the porosity
+                ! formula for the complete mixture of sediment
+                ! irrespective age (i.e. freshly deposited or
+                ! remnant of previous top layer composition).
+                if (iconsolidate == CONSOL_NONE) then
+                    call updateporosity(this, nm, 1)
+                endif
+                thick = totsv/svfrac(1, nm)
+            else
+                ! thickness of transport layer based on a combination
+                ! of freshly deposited sediment (using porosity formula)
+                ! and the remainder of the original top layer.
+
+                ! reduce thickness by eroded volume
+                thicke = totsve / svfrac(1,nm)
+                thick = thlyr(1,nm) - thicke
+
+                if (totmassd > 0.0_fp) then
+                    ! some deposition occurred (maybe also some erosion)
+                    ! determine porosity and thickness of added mixture
+                    do l = 1, this%settings%nfrac
+                        if (dbodsd(l,nm) > 0.0_fp) then
+                            mfrac(l) = dbodsd(l,nm) / totmassd
+                        else
+                            mfrac(l) = 0.0_fp
+                        endif
+                    enddo
+                    call getporosity(this, mfrac, poros)
+                    svfracd = 1.0_fp - poros
+                    thickd = totsvd / svfracd
+                    
+                    ! new sediment comes without preload history
+                    preload0 = 0.0_fp
+                    td0 = real(morft,fp)
+                                    
+                    ! some deposition (maybe also some erosion)
+                    preload(1,nm) = (thick * preload(1,nm) + thickd * preload0) / (thick + thickd)
+                    td(1,nm)      = (thick * td(1,nm) + thickd * td0) / (thick + thickd)
+                    svfrac(1,nm)  = (thick * svfrac(1,nm) + thickd * svfracd) / (thick + thickd)
+                    !
+                    ! new transport layer thickness takes into account deposition
+                    !
+                    thick = thick + thickd
+                else
+                    !
+                    ! only erosion � preload and svfrac don�t need updating
+                    !
+                endif
+            endif
+            !
+            if (iconsolidate == CONSOL_DECON) then
                 !
-                call updateporosity(this, nm, 1)
-                thick = 0.0_fp
-                do l = 1, this%settings%nfrac
-                    thick = thick + msed(l, 1, nm)/rhofrac(l)
-                enddo
-                thick = thick/svfrac(1, nm)
+                ! In case of Dynamic Equilibrium CONsolidation (DECON), we erode the top layer until
+                ! it runs out of sediment and then push the administration of the top NCONLYR layers
+                ! up. In case of sedimentation, the sediment is added to the top layer and
+                ! redistributed over the top NCONLYR layers once every DTDECON.
                 !
-                ! if there is not enough sediment in the bed then the actual
-                ! thickness thick of the top layer may not reach the desired
-                ! thickness thtrlyrnew, so we should here use thick as the
-                ! thickness instead of thtrlyrnew
-                !
-                thtrlyrnew = thick
-             endif
-             thlyr(1, nm) = thtrlyrnew  
-          else
+                if (thick < thtrempty) then
+                    !
+                    ! The top layer is eroded almost completely.
+                    ! Check if there is still some sediment left in the consolidation layers
+                    !
+                    do k = 2,nconlyr
+                         thick = thick + thlyr(k,nm)
+                         if (thick > thtrempty) then
+                             ktemp = k
+                             exit
+                         endif
+                    enddo
+                    !
+                    ! If there is sufficient sediment left in the top KTEMP consolidation layers.
+                    !
+                    if (thick > thtrempty) then
+                        !
+                        ! Accumulate the contents of the top KTEMP layers such that the new top layer
+                        ! is sufficiently thick.
+                        !
+                        svfrac(1,nm)   = svfrac(1,nm)*thlyr(1,nm)
+                        do k = 2,ktemp
+                            do l = 1, this%settings%nfrac
+                                msed(l,1,nm) = msed(l,1,nm) + msed(l,k,nm)
+                            enddo
+                            svfrac(1,nm)   = svfrac(1,nm)   + svfrac(k,nm)*thlyr(k,nm)
+                        enddo
+                        svfrac(1,nm)   = svfrac(1,nm)/thick
+                        thlyr(1,nm) = thick
+                        
+                        ! Shift the content of the other consolidation layers up.
+                        do k = ktemp+1,nconlyr
+                            kk = k-ktemp+1
+                            do l = 1, this%settings%nfrac
+                                msed(l,kk,nm) = msed(l,k, nm)
+                            enddo
+                            svfrac(kk,nm) = svfrac(k,nm)
+                            thlyr(kk,nm) = thlyr(k,nm)
+                        enddo
+                        
+                        ! Erase the administration of the bottom-most consolidation layers.
+                        do k = nconlyr-ktemp+2, nconlyr
+                            msed(:,k,nm) = 0.0_fp
+                            svfrac(k,nm) = 0.0_fp
+                            thlyr(k,nm) = 0.0_fp
+                        enddo
+                    endif
+                endif
+                
+                ! Don't replenish the consolidation layers while there is still sediment in the consolidation layers
+                if (thick > thtrempty) then
+                   thtrlyrnew = thick  
+                endif
+            endif
+            thdiff = thick-thtrlyrnew
+            !
+            ! get sediment from or put sediment into underlayers
+            ! to get transport layer of requested thickness
+            !
+            if ( thdiff > 0.0_fp ) then
+               !   
+               ! sedimentation to underlayers
+               ! determine surplus of mass per fraction
+               ! 
+               fac = thdiff/thick
+               sdbodsed = 0.0_fp
+               do l = 1, this%settings%nfrac
+                   dmi(l) = msed(l, 1, nm)*fac
+                   msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                   sdbodsed = sdbodsed + dbodsd(l, nm)
+               enddo
+               !
+               ! store surplus of mass in underlayers
+               !
+               call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, td(1, nm))
+               !
+            elseif ( thdiff < 0.0_fp ) then
+               !
+               ! erosion of underlayers
+               ! total erosion thickness: thdiff
+               ! associated mass returned in: dmi
+               !
+               thdiff = -thdiff
+               !  
+               call lyrerosion(this , nm, thdiff, dmi) ! TODO: get porosity, preload and td
+               !
+               ! add to top layer
+               ! 
+               do l = 1, this%settings%nfrac 
+                   msed(l, 1, nm)   = msed(l, 1, nm) + dmi(l)
+               enddo
+               !
+               do l = 1, this%settings%nfrac
+                   if (sedshort(l, nm) < 0.0_fp .and. msed(l, 1, nm) > 0.0_fp) then
+                       sedshort(l, nm) = sedshort(l, nm) + msed(l, 1, nm)
+                       if (sedshort(l, nm) > 0.0_fp) then
+                           msed(l, 1, nm)  = sedshort(l, nm)
+                           sedshort(l, nm) = 0.0_fp
+                       else
+                           msed(l, 1, nm) = 0.0_fp
+                       endif
+                   endif
+               enddo
+               !
+               if (iconsolidate == CONSOL_NONE) then
+                   call updateporosity(this, nm, 1)
+               endif
+               thick = 0.0_fp
+               do l = 1, this%settings%nfrac
+                   thick = thick + msed(l, 1, nm)/rhofrac(l)
+               enddo
+               thick = thick/svfrac(1, nm)
+               !
+               ! if there is not enough sediment in the bed then the actual
+               ! thickness thick of the top layer may not reach the desired
+               ! thickness thtrlyrnew, so we should here use thick as the
+               ! thickness instead of thtrlyrnew
+               !
+               thtrlyrnew = thick
+            endif
+            thlyr(1, nm) = thtrlyrnew
+            !
+            if (call_consolidate) then
+                call consolidate(this, nm, morft, dtmor)
+            endif
+            else
              !
              ! transport and coarse layer
              !
@@ -468,7 +825,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
              !
              ! retrieve mass to be stored in coarse layer
              !
-             call updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi_crs)
+             call updcrslyr(this, nm, dtmor, sbot, dunelength, thick, dmi_crs)
              !
              do l = 1, this%settings%nfrac
                  msed(l, 1, nm) = msed(l, 1, nm) + dmi_crs(l) 
@@ -557,7 +914,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
+                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), sdbodsed, td(2, nm))
                 !
              elseif ( thdiff2 < 0.0_fp ) then
                 !
@@ -598,36 +955,35 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
              !
              thlyr(2, nm) = thick2 
              !
-          endif
-          call consolidate(this, nm)
-          call getsedthick_1point(this, nm, seddep1)
-          dz(nm) = seddep1-seddep0
-       enddo
+            endif
+            call getsedthick_1point(this, nm, seddep1)
+            dz(nm) = seddep1-seddep0
+        enddo
        this%settings%initcl = .true.
-    case default
-       do nm = this%settings%nmlb,this%settings%nmub
-          seddep0   = dpsed(nm)
-          dpsed(nm) = 0.0_fp
-          dz(nm)    = 0.0_fp
-          do l = 1, this%settings%nfrac
-             bodsed(l, nm) = bodsed(l, nm) + real(dbodsd(l, nm),prec)
-             if (bodsed(l, nm) < 0.0_prec) then
+    case default ! BED_MIXED
+        do nm = this%settings%nmlb,this%settings%nmub
+            seddep0   = dpsed(nm)
+            dpsed(nm) = 0.0_fp
+            dz(nm)    = 0.0_fp
+            do l = 1, this%settings%nfrac
+                bodsed(l, nm) = bodsed(l, nm) + real(dbodsd(l, nm),prec)
+                if (bodsed(l, nm) < 0.0_prec) then
                 if (bodsed(l, nm) < real(-morlyrnum%mass_shortage_thresh,prec) .and. morlyrnum%max_num_shortage_warnings>0) then
                    morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
-                   write(message,'(a,i0,a,i0,a,e20.4,a,e20.4)') &
-                      & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
-                      & ' Mass available   : ' ,bodsed(l, nm), &
-                      & ' Mass to be eroded: ', dbodsd(l, nm)
-                   call addmessage(messages,message)
+                        write(message,'(a,i0,a,i0,a,e20.4,a,e20.4)') &
+                           & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
+                           & ' Mass available   : ' ,bodsed(l, nm), &
+                           & ' Mass to be eroded: ', dbodsd(l, nm)
+                        call addmessage(messages,message)
                    if (morlyrnum%max_num_shortage_warnings == 0) then
-                      message = 'Sediment erosion shortage messages suppressed'
-                      call addmessage(messages,message)
-                   endif
-                endif
+                            message = 'Sediment erosion shortage messages suppressed'
+                            call addmessage(messages,message)
+                        endif
+                    endif
                 if (track_shortage) then
                    sedshort(l, nm) = sedshort(l, nm) + bodsed(l, nm)
                 endif
-                bodsed(l, nm) = 0.0_prec
+                    bodsed(l, nm) = 0.0_prec
              elseif (sedshort(l, nm) < 0.0_fp .and. bodsed(l, nm) > 0.0_prec) then
                 bodsed(l, nm) = bodsed(l, nm) + real(sedshort(l, nm),prec)
                 if (bodsed(l, nm) > 0.0_prec) then
@@ -637,24 +993,22 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
                     bodsed(l, nm) = 0.0_prec
                 endif
              endif
-             dpsed(nm) = dpsed(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
-          enddo    
-          dz(nm) = dpsed(nm) - seddep0
-       enddo
+                dpsed(nm) = dpsed(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
+            enddo    
+            dz(nm) = dpsed(nm) - seddep0
+        enddo
     endselect
 end function updmorlyr
-!
-!
-!
-!==============================================================================
+
+
+!> Retrieve the sediment in the top layer (thickness dz_eros in m) from the
+!! underlayer bookkeeping system and update the administration.
 subroutine getthicklayer(this, nm, k, thick)
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Retrieve the thickness of layer k at point nm
 !
     use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
@@ -694,8 +1048,6 @@ subroutine getthicklayermobile(this, nm, k, thick)
 !
     use precision
     !
-    implicit none
-    !
     ! Function/routine arguments
     !
     type(bedcomp_data)        , intent(in)  :: this
@@ -731,21 +1083,12 @@ end subroutine getthicklayermobile
 !
 !==============================================================================
 function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Retrieve the sediment in the top layer (thickness dz_eros
-!                in m) from the underlayer bookkeeping system and update the
-!                administration.
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use message_module
     !
-    implicit none
-    !
     ! Function/routine arguments
     !
-    type(bedcomp_data)                                                                           :: this
+    type(bedcomp_data)                                                                           :: this     !< bed composition object
     real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(out) :: dbodsd  !  change in sediment composition, units : kg/m2
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dz_eros !  change in sediment thickness, units : m
     type(message_stack)                                                                          :: messages
@@ -759,7 +1102,8 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     real(fp)                                :: fac
     real(fp)                                :: thtrlyrnew
     real(fp)                                :: thick
-    real(fp), dimension(this%settings%nfrac):: dmi 
+    real(fp), dimension(this%settings%nfrac):: dmi
+    real(fp)                                :: sdbodsed !the sum of dbodsd	
     real(fp)                                :: dz_togo
     !
     character(message_len)                  :: message
@@ -771,6 +1115,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     real(fp)   , dimension(:)     , pointer :: rhofrac
     real(fp)   , dimension(:,:)   , pointer :: thlyr
     real(fp)   , dimension(:)     , pointer :: thtrlyr
+    real(fp)   , dimension(:,:)   , pointer :: td
     !
     !! executable statements -------------------------------------------------------
     !
@@ -782,11 +1127,12 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     msed        => this%state%msed
     sedshort    => this%state%sedshort
     thlyr       => this%state%thlyr
+    td          => this%state%td
     !
     istat = allocwork(this)
     if (istat /= 0) return
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = this%settings%nmlb,this%settings%nmub
           if ( dz_eros(nm) < 0.0_fp ) then
              !
@@ -803,10 +1149,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
              do l = 1, this%settings%nfrac
                 dbodsd (l, nm)    = 0.0_fp
              enddo
-          elseif (.not.this%settings%exchlyr) then
-             !
-             ! transport layer only
-             !  
+          else
              if (dz_eros(nm) <= thlyr(1, nm)) then
                 !
                 ! erosion less than transport layer thickness
@@ -853,21 +1196,23 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 ! sedimentation to underlayers
                 ! 
                 fac = dz/thick
+                sdbodsed = 0.0_fp
                 do l = 1, this%settings%nfrac
                     dmi(l) = msed(l, 1, nm)*fac
                     msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                    sdbodsed = sdbodsed + dbodsd(l, nm)
                 enddo   
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm))
+                call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm), sdbodsed, td(1, nm))
                 !
              elseif ( dz < 0.0_fp ) then
                 !
                 ! erosion of underlayers
                 !
                 dz = -dz
-                call lyrerosion(this , nm, dz, dmi)
+                call lyrerosion(this , nm, dz, dmi) ! TODO: might also get porosity, preload, td
                 !
                 ! add to top layer
                 !  
@@ -902,17 +1247,10 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 thtrlyrnew = thick
              endif
              thlyr(1, nm) = thtrlyrnew
-          else
-             !
-             ! transport and exchange layer
-             !
-             message = 'Updating exchange layer not yet implemented'
-             call adderror(messages,message)
-             istat = -1
-             exit
           endif
        enddo
-    case default
+
+    case default ! BED_MIXED
        do nm = this%settings%nmlb,this%settings%nmub
           if (dz_eros(nm)<0.0_fp) then
              !
@@ -954,25 +1292,16 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     endselect
     istat = deallocwork(this)
 end function gettoplyr
-!
-!
-!
-!==============================================================================
-subroutine lyrerosion(this, nm, dzini, dmi)
-!!--description-----------------------------------------------------------------
-!
-!    Function:
-!     - lyrerosion implements the erosion of sediment from the layers below the
-!       transport and exchange layers
-!
-!!--declarations----------------------------------------------------------------
+
+
+!> lyrerosion implements the erosion of sediment from the layers below the
+!! transport and exchange layers
+subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preload and td information as well
     use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
-    type(bedcomp_data)                                    :: this    
+    type(bedcomp_data)                                    :: this    !< bed composition object
     integer                                  , intent(in) :: nm
     real(fp)                                 , intent(in) :: dzini   !  thickness of eroded layer, units : m
     real(fp), dimension(this%settings%nfrac) , intent(out):: dmi     !  density of sediment fractions, units : kg/m3
@@ -995,6 +1324,10 @@ subroutine lyrerosion(this, nm, dzini, dmi)
     real(fp), dimension(:,:)                 , pointer :: svfrac
     real(fp), dimension(:,:,:)               , pointer :: msed
     real(fp), dimension(:,:)                 , pointer :: thlyr
+    integer                                  , pointer :: peatfrac
+    real(fp)                                           :: mpeat
+    real(fp), dimension(:,:)                 , pointer :: preload
+    real(fp), dimension(:,:)                 , pointer :: td
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1002,9 +1335,12 @@ subroutine lyrerosion(this, nm, dzini, dmi)
     nlyr        => this%settings%nlyr
     thlalyr     => this%settings%thlalyr
     updbaselyr  => this%settings%updbaselyr
+    peatfrac    => this%settings%peatfrac
     svfrac      => this%state%svfrac
     msed        => this%state%msed
     thlyr       => this%state%thlyr
+    preload     => this%state%preload
+    td          => this%state%td
     !
     k   = 2
     if (this%settings%exchlyr) k = k + 1
@@ -1026,7 +1362,16 @@ subroutine lyrerosion(this, nm, dzini, dmi)
     kero1 = k-1
     remove = .true.
     do while (dz>0.0_fp .and. k<=nlyr)
-        if ( thlyr(k, nm) < dz ) then
+        if (peatfrac>0) then
+           mpeat = msed(peatfrac, k, nm)
+        else
+           mpeat = 0.0_fp
+        endif
+        if (mpeat>0.0_fp) then
+            ! don't erode into a peat layer with non-zero thickness
+            ! and not any layer below it
+            exit
+        elseif ( thlyr(k, nm) < dz ) then
             !
             ! more sediment is needed than there is available in layer
             ! k, so all sediment should be removed from this layer
@@ -1042,8 +1387,12 @@ subroutine lyrerosion(this, nm, dzini, dmi)
             dz          = dz - thlyr(k, nm)
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*thlyr(k, nm)
+               preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*thlyr(k, nm)
+               td(kero1,nm)      = td(kero1,nm)*thlyr(kero1, nm) + td(k,nm)*thlyr(k, nm)
                thlyr(kero1, nm)  = thlyr(kero1, nm) + thlyr(k, nm)
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
+               preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
+               td(kero1,nm)      = td(kero1,nm)/thlyr(kero1,nm)
             endif
             thlyr(k, nm) = 0.0_fp
             k           = k+1
@@ -1065,8 +1414,12 @@ subroutine lyrerosion(this, nm, dzini, dmi)
             thlyr(k, nm)       = thlyr(k, nm)   - dz
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*dz
+               preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*dz
+               td(kero1,nm)      = td(kero1,nm)*thlyr(kero1, nm) + td(k,nm)*dz
                thlyr(kero1, nm)  = thlyr(kero1, nm) + dz
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
+               preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
+               td(kero1,nm)      = td(kero1,nm)/thlyr(kero1,nm)
             endif
             !
             ! erosion complete (dz=0) now continue to replenish the
@@ -1091,11 +1444,12 @@ subroutine lyrerosion(this, nm, dzini, dmi)
     ! update composition of base layer
     !
     select case (updbaselyr)
-    case(1) ! compute separate composition for base layer
+    case(BASELYR_UPDATED) ! compute separate composition for base layer
        !
        ! no change necessary
        !
-    case(2) ! composition of base layer constant
+    
+    case(BASELYR_CONST_FRC) ! composition of base layer constant
        !
        ! compute new masses based on old composition and new thickness
        ! Problem of current implementation:
@@ -1110,7 +1464,8 @@ subroutine lyrerosion(this, nm, dzini, dmi)
        do l = 1, this%settings%nfrac
           msed(l, nlyr, nm) = mbaselyr(l)*fac
        enddo
-    case(3) ! same as the (first non-empty) layer above it
+    
+    case(BASELYR_COPY_FRC) ! same as the (first non-empty) layer above it
        !
        ! find lowest non-empty layer
        !
@@ -1121,13 +1476,15 @@ subroutine lyrerosion(this, nm, dzini, dmi)
        do l = 1, this%settings%nfrac
           msed(l, nlyr, nm) = msed(l, k, nm)*fac
        enddo
-    case(4) ! composition and thickness of base layer constant
+    
+    case(BASELYR_CONST) ! composition and thickness of base layer constant
        !
        ! reset thickness and masses
        !
        thlyr(nlyr, nm)  = thbaselyr
        msed(:, nlyr, nm) = mbaselyr
-    case(5) ! composition updated, but thickness unchanged
+    
+    case(BASELYR_CONST_THK) ! composition updated, but thickness unchanged
        !
        ! reset thickness and correct mass
        !
@@ -1140,6 +1497,7 @@ subroutine lyrerosion(this, nm, dzini, dmi)
           msed(:, nlyr, nm) = mbaselyr
        endif
        thlyr(nlyr, nm)  = thbaselyr
+    
     case default
        !
        ! ERROR
@@ -1159,8 +1517,6 @@ end subroutine lyrerosion
 ! !
 ! !!--declarations----------------------------------------------------------------
 !     use precision
-!     !
-!     implicit none
 !     !
 !     ! Function/routine arguments
 !     !
@@ -1348,8 +1704,9 @@ end subroutine lyrerosion
 !
 !
 !
+!
 !==============================================================================
-subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
+subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)    
 !!--description-----------------------------------------------------------------
 !
 !    Function:
@@ -1358,16 +1715,15 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
-    type(bedcomp_data)                                    :: this   
+    type(bedcomp_data)                                    :: this     !< bed composition object
     integer                                  , intent(in) :: nm
     real(fp)                                 , intent(in) :: dzini
     real(fp)                                 , intent(in) :: svfracdep
+    real(fp)                                 , intent(in) :: preloaddep
+    real(fp)                                 , intent(in) :: tddep
     real(fp), dimension(this%settings%nfrac)              :: dmi
 !
 ! Local variables
@@ -1388,6 +1744,10 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
     real(fp), dimension(:,:,:), pointer         :: msed
     real(fp), dimension(:,:)  , pointer         :: thlyr
     real(fp), dimension(this%settings%nfrac)    :: dmi2
+    real(fp)                                    :: load
+    real(fp), dimension(:,:)  , pointer         :: preload
+    real(fp), dimension(:,:)  , pointer         :: td
+    real(fp)                                    :: temp
     type(bedcomp_work)        , pointer         :: work
 !
 !! executable statements -------------------------------------------------------
@@ -1399,6 +1759,8 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
     svfrac      => this%state%svfrac
     msed        => this%state%msed
     thlyr       => this%state%thlyr
+    preload     => this%state%preload
+    td          => this%state%td
     work        => this%work
     !
     kmin = 2
@@ -1408,6 +1770,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
     !
     ! copy Lagrangian layer data to temporary array
     !
+    load = 0.0_fp
     do k = kmin,keuler-1
        do l = 1, this%settings%nfrac
           work%msed2(l, k) = msed(l, k, nm)
@@ -1415,6 +1778,8 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
        enddo
        work%svfrac2(k)  = svfrac(k, nm)
        work%thlyr2(k)   = thlyr(k, nm)
+       work%preload2(k) = preload(k, nm)
+       work%td2(k)      = td(k, nm)
        thlyr(k, nm)     = 0.0_fp
     enddo
     !
@@ -1434,9 +1799,11 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
              msed(l, k, nm) = dm
              dmi(l) = dmi(l) - dm
           enddo
-          svfrac(k, nm) = svfracdep
-          thlyr(k, nm)  = thlalyr
-          dz            = dz - thlalyr
+          svfrac(k, nm)  = svfracdep
+          preload(k, nm) = preloaddep
+          td(k,nm)       = tddep
+          thlyr(k, nm)   = thlalyr
+          dz             = dz - thlalyr
        elseif (dz>0.0_fp) then
           !
           ! last bit of newly deposited sediment to partially fill the layer
@@ -1445,9 +1812,11 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
              msed(l, k, nm) = dmi(l)
              dmi(l) = 0.0_fp
           enddo
-          svfrac(k, nm) = svfracdep
-          thlyr(k, nm)  = dz
-          dz            = 0.0_fp
+          svfrac(k, nm)  = svfracdep
+          preload(k, nm) = preloaddep
+          td(k, nm)      = tddep
+          thlyr(k, nm)   = dz
+          dz             = 0.0_fp
        endif
        !
        ! as long as there is still space in this layer, fill it with sediment
@@ -1472,8 +1841,12 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
                    work%msed2(l, k2) = work%msed2(l, k2) - dm
                 enddo
                 svfrac(k, nm)   = svfrac(k, nm)*thlyr(k, nm) + work%svfrac2(k2)*dzc
+                preload(k, nm)  = preload(k, nm)*thlyr(k, nm) + work%preload2(k2)*dzc
+                td(k, nm)       = td(k, nm)*thlyr(k, nm) + work%td2(k2)*dzc
                 thlyr(k, nm)    = thlalyr
                 svfrac(k, nm)   = svfrac(k, nm)/thlyr(k, nm)
+                preload(k, nm)  = preload(k, nm) / thlyr(k, nm)
+                td(k, nm)       = td(k, nm) / thlyr(k, nm)
                 work%thlyr2(k2) = work%thlyr2(k2) - dzc
              else
                 !
@@ -1484,8 +1857,12 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
                    work%msed2(l, k2) = 0.0_fp
                 enddo
                 svfrac(k, nm)   = svfrac(k, nm)*thlyr(k, nm) + work%svfrac2(k2)*work%thlyr2(k2)
+                preload(k, nm)  = preload(k, nm)*thlyr(k, nm) + work%preload2(k2)*work%thlyr2(k2)
+                td(k, nm)       = td(k, nm)*thlyr(k, nm) + work%td2(k2)*work%thlyr2(k2)
                 thlyr(k, nm)    = thlyr(k, nm) + work%thlyr2(k2)
                 svfrac(k, nm)   = svfrac(k, nm)/thlyr(k, nm)
+                preload(k, nm)  = preload(k, nm) / thlyr(k, nm)
+                td(k, nm)       = td(k, nm) / thlyr(k, nm)
                 work%thlyr2(k2) = 0.0_fp
              endif
              dzc = thlalyr - thlyr(k, nm)
@@ -1502,7 +1879,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
           do l = 1, this%settings%nfrac
              dmi2(l) = work%msed2(l, k2)
           enddo
-          call lyrsedimentation_eulerian(this, nm, work%thlyr2(k2), dmi2, work%svfrac2(k2))
+          call lyrsedimentation_eulerian(this, nm, work%thlyr2(k2), dmi2, work%svfrac2(k2), work%preload2(k2), work%td2(k2))
        endif
     enddo
     !
@@ -1510,33 +1887,29 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
     ! came from the active layer(s) then deposit that sediment
     !
     if (dz>0.0_fp) then
-       call lyrsedimentation_eulerian(this, nm, dz, dmi, svfracdep)
+        do l = 1, this%settings%nfrac
+             load = load + dmi(l)                   !Aulia
+        enddo
+        call lyrsedimentation_eulerian(this, nm, dz, dmi, svfracdep, preloaddep, tddep) !Aulia: newly deposited sediment has no preload, so if there is an excess mass, will be used to constitute preload of preload of eulerian
+        load = 0.0_fp                               !Aulia: for each k and nt, load is different.
     endif    
 end subroutine lyrsedimentation
-!
-!
-!
-!==============================================================================
-subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
-!!--description-----------------------------------------------------------------
-!
-!    Function:
-!     - lyrsedimentation_eulerian implements the deposition of sediment in the 
-!       Eulerian layers below the transport, exchange and other Lagrangian
-!       layers
-!
-!!--declarations----------------------------------------------------------------
+
+
+!> lyrsedimentation_eulerian implements the deposition of sediment in the 
+!! Eulerian layers below the transport, exchange and other Lagrangian
+!! layers
+subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
-    type(bedcomp_data)                                    :: this   
+    type(bedcomp_data)                                    :: this     !< bed composition object
     integer                                  , intent(in) :: nm
     real(fp)                                 , intent(in) :: dzini
     real(fp)                                 , intent(in) :: svfracdep
+    real(fp)                                 , intent(in) :: preloaddep
+    real(fp)                                 , intent(in) :: tddep
     real(fp), dimension(this%settings%nfrac)              :: dmi
 !
 ! Local variables
@@ -1557,6 +1930,8 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
     real(fp), dimension(:,:)  , pointer         :: svfrac
     real(fp), dimension(:,:,:), pointer         :: msed
     real(fp), dimension(:,:)  , pointer         :: thlyr
+    real(fp), dimension(:,:)  , pointer         :: preload
+    real(fp), dimension(:,:)  , pointer         :: td
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1567,6 +1942,8 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
     svfrac      => this%state%svfrac
     msed        => this%state%msed
     thlyr       => this%state%thlyr
+    preload     => this%state%preload
+    td          => this%state%td
     !
     dz = dzini
     !
@@ -1599,9 +1976,13 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 msed(l, k, nm) = msed(l, k, nm) + dm
                 dmi(l)         = dmi(l)         - dm
              enddo
-             svfrac(k, nm) = svfrac(k, nm)*thlyr(k, nm) + svfracdep*(theulyr-thlyr(k, nm))
-             thlyr(k, nm)  = theulyr
-             svfrac(k, nm) = svfrac(k, nm)/thlyr(k, nm)
+             svfrac(k, nm)  = svfrac(k, nm)*thlyr(k, nm) + svfracdep*(theulyr-thlyr(k, nm))
+             preload(k, nm) = preload(k, nm)*thlyr(k, nm) + preloaddep*(theulyr-thlyr(k, nm))
+             td(k, nm)      = td(k, nm)*thlyr(k, nm) + tddep*(theulyr-thlyr(k, nm))
+             thlyr(k, nm)   = theulyr
+             svfrac(k, nm)  = svfrac(k, nm) / thlyr(k, nm)
+             preload(k, nm) = preload(k, nm) / thlyr (k, nm)
+             td(k, nm)      = td(k, nm) / thlyr (k, nm)
           else
              !
              ! everything can be added to this layer
@@ -1610,10 +1991,14 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 msed(l, k, nm) = msed(l, k, nm) + dmi(l)
                 dmi(l) = 0.0_fp
              enddo
-             svfrac(k, nm) = svfrac(k, nm)*thlyr(k, nm) + svfracdep*dz
-             thlyr(k, nm)  = thlyr(k, nm) + dz
-             svfrac(k, nm) = svfrac(k, nm)/thlyr(k, nm)
-             dz            = 0.0_fp
+             svfrac(k, nm)  = svfrac(k, nm)*thlyr(k, nm) + svfracdep*dz
+             preload(k, nm) = preload(k, nm)*thlyr(k, nm) + preloaddep*dz                       !Aulia
+             td(k, nm)      = td(k, nm)*thlyr(k, nm) + tddep*dz
+             thlyr(k, nm)   = thlyr(k, nm) + dz
+             svfrac(k, nm)  = svfrac(k, nm) / thlyr(k, nm)
+             preload(k, nm) = preload(k, nm) / thlyr (k, nm)
+             td(k, nm)      = td(k, nm) / thlyr (k, nm)
+             dz             = 0.0_fp
           endif
        endif
        k = k-1
@@ -1632,15 +2017,20 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
           ! the last (i.e. base) layer
           !
           select case (updbaselyr)
-          case(1) ! compute separate composition for the base layer
+          case(BASELYR_UPDATED) ! compute separate composition for the base layer
              do l = 1, this%settings%nfrac           
                 msed(l, nlyr, nm) = msed(l, nlyr, nm) + dmi(l)
              enddo
-             svfrac(nlyr, nm) = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfracdep*dz
-             thlyr(nlyr, nm)  = thlyr(nlyr, nm) + dz
-             svfrac(nlyr, nm) = svfrac(nlyr, nm)/thlyr(nlyr, nm)
-             dz               = 0.0_fp
-          case(2) ! composition of base layer constant
+             svfrac(nlyr, nm)  = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfracdep*dz
+             preload(nlyr, nm) = preload(nlyr, nm)*thlyr(nlyr, nm) + preloaddep*dz              !Aulia
+             td(nlyr, nm)      = td(nlyr, nm)*thlyr(nlyr, nm) + tddep*dz
+             thlyr(nlyr, nm)   = thlyr(nlyr, nm) + dz
+             svfrac(nlyr, nm)  = svfrac(nlyr, nm)/thlyr(nlyr, nm)
+             preload(nlyr, nm) = preload(nlyr, nm)/thlyr(nlyr, nm)
+             td(nlyr, nm)      = td(nlyr, nm)/thlyr(nlyr, nm)
+             dz                = 0.0_fp
+          
+          case(BASELYR_CONST_FRC) ! composition of base layer constant
              !
              ! composition of dz is lost, update thickness
              !
@@ -1649,7 +2039,8 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 msed(l, nlyr, nm) = msed(l, nlyr, nm)*fac
              enddo
              thlyr(nlyr, nm) = thlyr(nlyr, nm) + dz
-          case(3) ! same as the (first non-empty) layer above it
+          
+          case(BASELYR_COPY_FRC) ! same as the (first non-empty) layer above it
              !
              ! composition of dz is lost, update thickness
              ! and set composition to that of layer nlyr-1
@@ -1662,6 +2053,7 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
              do l = 1, this%settings%nfrac
                 msed(l, nlyr, nm) = msed(l, kne, nm)*fac
              enddo
+          
           case default
              !
              ! ERROR
@@ -1678,15 +2070,20 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
              !
              newthlyr = thlyr(nlyr, nm)+thlyr(nlyr-1, nm)
              select case (updbaselyr)
-             case(1) ! compute separate composition for the base layer
+             case(BASELYR_UPDATED) ! compute separate composition for the base layer
                 if ( newthlyr > 0.0_fp ) then
                    do l = 1, this%settings%nfrac
                       msed(l, nlyr, nm) = msed(l, nlyr, nm) + msed(l, nlyr-1, nm) 
                    enddo
-                   svfrac(nlyr, nm) = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfrac(nlyr-1, nm)*thlyr(nlyr-1, nm)
-                   svfrac(nlyr, nm) = svfrac(nlyr, nm)/newthlyr
+                   svfrac(nlyr, nm)  = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfrac(nlyr-1, nm)*thlyr(nlyr-1, nm)
+                   preload(nlyr, nm) = preload(nlyr, nm)*thlyr(nlyr, nm) + preload(nlyr-1, nm)*thlyr(nlyr-1, nm) !Aulia
+                   td(nlyr, nm)      = td(nlyr, nm)*thlyr(nlyr, nm) + td(nlyr-1, nm)*thlyr(nlyr-1, nm)
+                   svfrac(nlyr, nm)  = svfrac(nlyr, nm)/newthlyr
+                   preload(nlyr, nm) = preload(nlyr, nm)/newthlyr
+                   td(nlyr, nm)      = td(nlyr, nm)/newthlyr
                 endif
-             case(2) ! composition of base layer constant
+             
+             case(BASELYR_CONST_FRC) ! composition of base layer constant
                 !
                 ! composition of layer nlyr-1 is lost; just the
                 ! thickness of the base layer is updated
@@ -1695,7 +2092,8 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 do l = 1, this%settings%nfrac
                     msed(l, nlyr, nm) = msed(l, nlyr, nm)*fac
                 enddo
-             case(3) ! same as the (first non-empty) layer above it
+             
+             case(BASELYR_COPY_FRC) ! same as the (first non-empty) layer above it
                 !
                 ! find lowest non-empty layer
                 !
@@ -1706,13 +2104,15 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 do l = 1, this%settings%nfrac
                    msed(l, nlyr, nm) = msed(l, kne, nm)*fac
                 enddo
-             case(4) ! composition and thickness of base layer constant
+             
+             case(BASELYR_CONST) ! composition and thickness of base layer constant
                 !
                 ! composition and sediment of layer nlyr-1 is lost
                 ! make sure that the newthlyr of the base layer is equal
                 ! to the old thickness
                 !
                 newthlyr = thlyr(nlyr, nm)
+             
              case default
                 !
                 ! ERROR
@@ -1726,25 +2126,30 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
                 do l = 1, this%settings%nfrac
                    msed(l, k, nm) = msed(l, k-1, nm)
                 enddo
-                thlyr(k, nm)  = thlyr(k-1, nm)
-                svfrac(k, nm) = svfrac(k-1, nm)
+                thlyr(k, nm)   = thlyr(k-1, nm)
+                svfrac(k, nm)  = svfrac(k-1, nm)
+                preload(k, nm) = preload(k-1, nm)
+                td(k, nm)      = td(k-1, nm)
              enddo
              !
              ! put all the sediment in one layer
+             ! Aulia: After space for deposition is created, excess sediment is deposited at layer keuler (top eulerian)
              !
              k = keuler
              do l = 1, this%settings%nfrac 
                  msed(l, k, nm) = dmi(l)
              enddo
-             thlyr(k, nm)  = dz
-             svfrac(k, nm) = svfracdep
-             dz           = 0.0_fp
+             thlyr(k, nm)   = dz
+             svfrac(k, nm)  = svfracdep
+             preload(k, nm) = preloaddep
+             td(k, nm)      = tddep
+             dz             = 0.0_fp
           enddo
        endif
     endif
 end subroutine lyrsedimentation_eulerian
-!
-!
+
+
 !!==============================================================================
 subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
 !!--description-----------------------------------------------------------------
@@ -1753,9 +2158,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
@@ -1766,9 +2168,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     real(fp), dimension(this%settings%nfrac)                                        , intent(in)  :: rhosol   !  density of sediment
     real(fp)                                                                        , intent(in)  :: rhow     !  density of water
     real(fp), dimension(this%settings%nmlb:this%settings%nmub,this%settings%nfrac)  , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    real(fp), dimension(this%settings%nmlb:this%settings%nmub,lsedtot)              , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    real(fp), dimension(:,:)              , intent(in)  :: hidexp !dimensions (nmlb:nmub, lsedtot)
-!    integer                                , intent(in)  :: lsedtot
 
 !
 ! Local variables
@@ -1789,9 +2188,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     real(fp)                , pointer :: sigma_sfm
     real(fp), dimension(:,:), pointer :: mobile
     integer                 , pointer :: imobility    
-    integer                 , pointer :: isedcrs2tr
-    integer                 , pointer :: ihidexptrcrs    
-    !real(fp), dimension(:,:), pointer :: hidexp !dimensions (nmlb:nmub, lsedtot)
     
 !
 !! executable statements -------------------------------------------------------
@@ -1801,54 +2197,49 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     sigma_sfm   => this%settings%sigma_sfm
     imobility   => this%settings%imobility
     mobile      => this%state%mobile
-    isedcrs2tr  => this%settings%isedcrs2tr
-    ihidexptrcrs => this%settings%ihidexptrcrs
     
-    !hidexp              => gdp%gderosed%hidexp
-    
-    !
-    if (imobility > MOBILITY_DISCRETE) fac = 1.0_fp/(sigma_sfm*sqrt(2.0_fp))
-    rnu = 1.0e-6
+    fac = 1.0_fp / (sigma_sfm * sqrt(2.0_fp))
+    rnu = 1.0e-6_fp
     do nm = this%settings%nmlb,this%settings%nmub
         do l = 1, this%settings%nfrac
-            if (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SHIELDS) then
+            if (imobility == MOBILITY_DISCRETE .or. imobility == MOBILITY_SHIELDS) then
                 !
                 !  Shear stress according to shields curve
                 !
                 del = (rhosol(l) - rhow)/rhow
-                dstar = di50(l)*(del*g/rnu/rnu)**(1./3.)
-                if (dstar<=4.) then
-                   thetcr = 0.240/dstar
-                elseif (dstar<=10.) then
-                   thetcr = 0.140/dstar**0.64
-                elseif (dstar<=20.) then
-                   thetcr = 0.040/dstar**0.10
-                elseif (dstar<=150.) then
-                   thetcr = 0.013*dstar**0.29
+                dstar = di50(l)*(del*g/rnu/rnu)**(1.0_fp/3.0_fp)
+                if (dstar <= 4.0_fp) then
+                   thetcr = 0.240_fp / dstar
+                elseif (dstar <= 10.0_fp) then
+                   thetcr = 0.140_fp / dstar**0.64_fp
+                elseif (dstar <= 20.0_fp) then
+                   thetcr = 0.040_fp / dstar**0.10_fp
+                elseif (dstar <= 150.0_fp) then
+                   thetcr = 0.013_fp * dstar**0.29_fp
                 else
-                   thetcr = 0.055
+                   thetcr = 0.055_fp
                 endif                
-                tau50 = thetcr*((rhosol(l)-rhow)*g*di50(l))
-            elseif (imobility==MOBILITY_WILCOCKMCARDELL) then
+                tau50 = thetcr * ((rhosol(l)-rhow) * g * di50(l))
+            elseif (imobility == MOBILITY_WILCOCKMCARDELL) then
                 !
                 !  Shear stress according to Wilcock and McArdell (1997)
                 !
-                tau50 = asfm*(di50(l)*1000.0_fp)**bsfm
-            elseif(imobility==MOBILITY_SEDTRANS) then
-                thetcr=0.047 !read from sediment transport relation
-                tau50=hidexp(nm,l)*thetcr*((rhosol(l)-rhow)*g*di50(l))
+                tau50 = asfm * (di50(l) * 1000.0_fp)**bsfm
+            elseif(imobility == MOBILITY_SEDTRANS) then
+                thetcr = 0.047_fp !read from sediment transport relation
+                tau50 = hidexp(nm,l) * thetcr * ((rhosol(l)-rhow) * g * di50(l))
             else
                 ! 
                 ! tau50 not used
                 ! 
             endif
             !
-            if (imobility==MOBILITY_OFF) then
+            if (imobility == MOBILITY_OFF) then
                 !
                 !  Mobility concept not used
                 !               
                 ! mobile(l,nm) = 1.0_fp
-            elseif (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SEDTRANS) then
+            elseif (imobility == MOBILITY_DISCRETE .or. imobility == MOBILITY_SEDTRANS) then
                 !
                 !  Discrete formulation of mobility
                 !               
@@ -1861,10 +2252,10 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
                 !
                 !  Continuous formulation of mobility
                 !
-                tau50 = max(tau50,1e-12_fp) !prevent division by 0
-                t1    = max(taub(nm)/tau50, tiny(1.0_fp)) !prevent log of 0
-                t2    = log(t1)*fac
-                mobile(l,nm) = 0.5_fp*(1.0_fp+erf(t2))
+                tau50 = max(tau50, 1e-12_fp) !prevent division by 0
+                t1    = max(taub(nm) / tau50, tiny(1.0_fp)) !prevent log of 0
+                t2    = log(t1) * fac
+                mobile(l,nm) = 0.5_fp * (1.0_fp + erf(t2))
             endif
         enddo
     enddo
@@ -1880,7 +2271,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
 !!--declarations----------------------------------------------------------------
     use precision
     use message_module
-    implicit none
     !
     ! Call variables
     !
@@ -2000,22 +2390,12 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
 end subroutine updcrslyr
 !
 !
-!
-!==============================================================================
 subroutine lyrdiffusion(this, dt)
-!!--description-----------------------------------------------------------------
-!
-!    Function:
-!     - lyrdiffusion implements the mixing between the layers through diffusion
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
-    type(bedcomp_data)                                    :: this    
+    type(bedcomp_data)                                    :: this     !< bed composition object
     real(fp)                                 , intent(in) :: dt 
     !
     ! Local variables
@@ -2042,8 +2422,9 @@ subroutine lyrdiffusion(this, dt)
 !
 !! executable statements -------------------------------------------------------
 !
-    if (this%settings%iunderlyr==1) return
-    if (this%settings%idiffusion<1) return
+    if (this%settings%iunderlyr == BED_MIXED) return
+    if (this%settings%idiffusion == BDIFF_NONE) return
+    
     kdiff       => this%settings%kdiff
     ndiff       => this%settings%ndiff
     nlyr        => this%settings%nlyr
@@ -2142,24 +2523,16 @@ subroutine lyrdiffusion(this, dt)
     enddo
     deallocate(a)
 end subroutine lyrdiffusion
-!
-!
-!
-!==============================================================================
+
+
+!> Determines the total thickness of mud fraction in the bed
+!! DEPRECATED FUNCTIONALITY; use mudfrac (sum of frac over mud fractions) instead
 subroutine detthcmud(this, thcmud)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Determines the total thickness of mud fraction in the bed
-!    DEPRECATED FUNCTIONALITY; use mudfrac (sum of frac over mud fractions) instead
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
 !
 ! Function/routine arguments
 !
-    type(bedcomp_data)                                        , intent(in)  :: this
+    type(bedcomp_data)                                        , intent(in)  :: this     !< bed composition object
     real(fp), dimension(this%settings%nmlb:this%settings%nmub), intent(out) :: thcmud  !  Total thickness of the mud layers
 !
 ! Local variables
@@ -2183,28 +2556,19 @@ subroutine detthcmud(this, thcmud)
         enddo
     enddo
 end subroutine detthcmud
-!
-!
-!
-!==============================================================================
+
+
+!> Determine sediment thickness optionally per sediment fraction
+!! DEPRECATED FUNCTIONALITY; use getsedthick instead.
 subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Determine sediment thickness optionally per sediment fraction
-!    DEPRECATED FUNCTIONALITY; use getsedthick instead.
-!
-!!--declarations----------------------------------------------------------------
     use precision 
-    !
-    implicit none
-    !
 !
 ! Function/routine arguments
 !
+    type(bedcomp_data)                                                , intent(in)  :: this     !< bed composition object
     integer                                                           , intent(in)  :: nmfrom
     integer                                                           , intent(in)  :: nmto
     integer                                                           , intent(in)  :: nval
-    type(bedcomp_data)                                                , intent(in)  :: this
     real(fp), dimension(nmfrom:nmto, nval)                            , intent(out) :: seddep
 !
 ! Local variables
@@ -2225,8 +2589,8 @@ subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
     bodsed              => this%state%bodsed
     thlyr               => this%state%thlyr
     !
-    select case(this%settings%iunderlyr)
-    case(2)   
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = nmfrom,nmto
            if (this%settings%CRSLYR) then
               thkl =thlyr(1, nm)
@@ -2240,7 +2604,8 @@ subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
              seddep(nm, l) = thkl
           enddo !l
        enddo !nm 
-    case default
+       
+    case default ! BED_MIXED
        do nm = nmfrom,nmto
           if (nval==1) then
              seddep(nm, nval) = 0.0
@@ -2255,39 +2620,41 @@ subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
        enddo
     endselect
 end subroutine getalluvthick
-!
-!
-!
-!==============================================================================
-subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, kfrom, kto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Determines the (mass or volume) fractions
-!
-!!--declarations----------------------------------------------------------------
+
+
+!> Determines the (mass or volume) fractions.
+!! The meaning of volume fraction depends on the porosity model.
+!! If the porosity is included in the sediment density, the
+!! volume fractions are based on the total volume including
+!! fraction specific pore volume.
+!! For all other porosity models, the volume fractions are based
+!! on the solid volume. This second definition of the volume
+!! fraction is equal to the mass fraction if the specific densities
+!! of all sediment fractions are the same.
+subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, ifracreq,kfrom, kto)
     use precision 
-    !
-    implicit none
     !
     ! Function/routine arguments
     !
-    integer                                                           , intent(in)  :: nmfrom
-    integer                                                           , intent(in)  :: nmto
-    type(bedcomp_data)                                                , intent(in)  :: this    
-    logical                                                           , intent(in)  :: anymud
-    real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac
-    real(fp), dimension(nmfrom:nmto)                                  , intent(out) :: mudfrac
-    real(fp), dimension(nmfrom:nmto)                                  , intent(in)  :: mudcnt
+    type(bedcomp_data)                                                              :: this     !< bed composition object
+    integer                                                           , intent(in)  :: nmfrom   !< first index requested
+    integer                                                           , intent(in)  :: nmto     !< last index requested
+    logical                                                           , intent(in)  :: anymud   !< flag indicating whether any cohesive sediment class is included in the simulation
+    integer                                                 ,optional , intent(in)  :: ifracreq !< switch to request mass or volume fractions (overrules the default)
+    real(fp), dimension(nmfrom:nmto)                                  , intent(in)  :: mudcnt   !< local (non-simulated) cohesive sediment class
+    real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac     !< mass or volume fraction per sediment class [-]
+    real(fp), dimension(nmfrom:nmto)                                  , intent(out) :: mudfrac  !< total cohesive sediment fraction [-]
     integer, optional                                                 , intent(in)  :: kfrom 
     integer, optional                                                 , intent(in)  :: kto
     !
     ! Local variables
     !
-    integer  :: l
-    integer  :: nm
+    integer  :: ifracreq_     !< type of fraction to be returned (mass or volume)
+    integer  :: l             !< fraction index
+    integer  :: nm            !< spatial index
+    real(fp) :: nonmud        !< fraction of non-cohesive sediment [-]
     integer  :: kfrom2
     integer  :: kto2
-    real(fp) :: nonmud
     !
     !! executable statements -------------------------------------------------------
     !
@@ -2302,12 +2669,21 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, kfrom, kto
         kto2 = kto
     endif 
     !
-    ! Calculate total bottom sediments and fractions
+    ! Determine whether to return mass or volume fractions
     !
-    select case(this%settings%iunderlyr)
-    case(1)
+    if (present(ifracreq)) then
+        ifracreq_ = ifracreq
+    else
+        ifracreq_ = this%settings%ifractions
+    endif
+    
+    !
+    ! Call the appropriate routine
+    !
+    select case (ifracreq_)
+    case (FRAC_MASS)
        call getmfrac(this ,frac, nmfrom, nmto, kfrom2, kto2)
-    case default
+    case default ! FRAC_VOLUME
        call getvfrac(this ,frac, nmfrom, nmto, kfrom2, kto2)
     endselect
     !
@@ -2315,7 +2691,7 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, kfrom, kto
     !
     if (anymud) then
        !
-       ! Add simulated mud fractions.
+       ! Sum the simulated mud fractions.
        !
        mudfrac = 0.0
        do l = 1, this%settings%nfrac
@@ -2339,24 +2715,267 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, kfrom, kto
        enddo
     endif
 end subroutine getfrac
-!
-!
-!
-!==============================================================================
-subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Determines the mass fractions
-!
-!!--declarations----------------------------------------------------------------
+
+
+!> Determines general bed properties such as porosity and critical
+!! shear stress for erosion.
+subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     use precision 
-    implicit none
+    use sediment_basics_module
+    !
+    ! Function/routine arguments
+    !
+    type(bedcomp_data)                                                              :: this     !< bed composition object
+    integer                                                           , intent(in)  :: nmfrom !< first index requested
+    integer                                                           , intent(in)  :: nmto   !< last index requested
+    real(fp), dimension(nmfrom:nmto)                        , optional, intent(out) :: poros  !< bed porosity
+    real(fp), dimension(nmfrom:nmto)                        , optional, intent(out) :: tcrero !< critical shear stress for erosion
+    real(fp), dimension(nmfrom:nmto)                        , optional, intent(out) :: eropar !< erosion parameter
+    !
+    real(fp) , dimension(:)    , pointer :: rhofrac       !<
+    real(fp) , dimension(:)    , pointer :: rhow
+    
+    real(fp)                   , pointer :: ag
+    integer                    , pointer :: ierosion
+    real(fp)                   , pointer :: ksigma        ! effective stress coefficient [Pa]
+    real(fp)                   , pointer :: ky
+    real(fp)                   , pointer :: nf            ! fractal dimension nf [-]
+    real(fp)                   , pointer :: kk            ! permeability coefficient [m/s]
+    !
+    real(fp)                   , pointer :: rhow_const
+    !
+    real(fp) , dimension(:,:,:), pointer :: msed
+    real(fp) , dimension(:,:)  , pointer :: svfrac
+    real(fp) , dimension(:,:)  , pointer :: thlyr
+    !
+    ! Local variables
+    !
+    integer                                 :: l             !< fraction index - loop variable 
+    integer                                 :: nm            !< space index - loop variable
+    real(fp)                                :: cv            !< consolidation coefficient
+    real(fp)                                :: cvfac         !< multiplication factor in computation of the consolidation coefficient
+    real(fp)                                :: cu            !< consolidation coefficient related to ky
+    real(fp), dimension(this%settings%nfrac):: mfrac         !<
+    real(fp)                                :: phi_mud       !< mud volume fraction (phi_mud + phi_sand = 1 - poros)
+    real(fp)                                :: phi_sand      !< sand volume fraction (phi_mud + phi_sand = 1 - poros)
+    real(fp)                                :: phi_term      !< term representing the influence of phi on tcrero and its inverse influence on eropar
+    real(fp)                                :: pi_index      !< plasticity index
+    real(fp)                                :: poros_ref     !< reference porosity [-]
+    real(fp)                                :: rho           !< layer density = total mass divided by layer thickness [kg/m3]
+    real(fp)                                :: rhos          !< sediment specific density [kg/m3]
+    real(fp)                                :: thick         !< layer thickness [m]
+    real(fp)                                :: totmass       !< total mass of sediment in transport layer per unit area [kg/m2]
+    real(fp)                                :: xi            !< weight factor 0-1 [-]
+    !
+    real(fp)                      , pointer :: A                !< activity of soil, which is used to calculate PI index    
+    real(fp)                      , pointer :: alpha            !< a constant in determining critical bed shear stress for erosion
+    real(fp)                      , pointer :: alpha_me         !< tuning parameter in simple Me equation 
+    real(fp)                      , pointer :: alpha_mix        !< tuning parameter for cohesionless mixture
+    real(fp)                      , pointer :: alpha_lehir      !< tuning parameter in Le Hir tcrero equation 
+    real(fp)                      , pointer :: alpha_winterwerp !< tuning parameter in Winterwerp Me equation 
+    real(fp)                      , pointer :: alpha1           !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+    real(fp)                      , pointer :: alpha2           !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+    real(fp)                      , pointer :: beta             !< a constant in determining critical bed shear stress for erosion
+    real(fp)                      , pointer :: beta_mix         !< tuning parameter for cohesionless mixture
+    real(fp)                      , pointer :: C0               !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+    real(fp)                      , pointer :: d50sed           !< d50 grain size of sediment supply [m]
+    real(fp)                      , pointer :: rho_max          !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+    real(fp)                      , pointer :: rho_min          !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+    real(fp)                      , pointer :: rho_star         !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+    real(fp)                      , pointer :: taucr_max        !< maximum critical shear stress
+    real(fp)                      , pointer :: taucr_min1       !< critical shear stress at low density
+    real(fp)                      , pointer :: taucr_min2       !< critical shear stress at high density
+
+    !
+    !! executable statements -------------------------------------------------------
+    !
+    rhow           => this%state%rhow
+    ag             => this%settings%ag
+    ierosion       => this%settings%ierosion
+    ksigma         => this%settings%ksigma
+    ky             => this%settings%ky
+    nf             => this%settings%nf
+    kk             => this%settings%kk
+    rhofrac        => this%settings%rhofrac
+    rhow_const     => this%settings%rhow_const
+    !
+    A                => this%settings%erosion%A
+    alpha            => this%settings%erosion%alpha
+    alpha_me         => this%settings%erosion%alpha_me
+    alpha_mix        => this%settings%erosion%alpha_mix
+    alpha_lehir      => this%settings%erosion%alpha_lehir
+    alpha_winterwerp => this%settings%erosion%alpha_winterwerp
+    alpha1           => this%settings%erosion%alpha1
+    alpha2           => this%settings%erosion%alpha2
+    beta             => this%settings%erosion%beta
+    beta_mix         => this%settings%erosion%beta_mix
+    C0               => this%settings%erosion%C0
+    d50sed           => this%settings%erosion%d50sed
+    rho_max          => this%settings%erosion%rho_max
+    rho_min          => this%settings%erosion%rho_min
+    rho_star         => this%settings%erosion%rho_star
+    taucr_max        => this%settings%erosion%taucr_max
+    taucr_min1       => this%settings%erosion%taucr_min1
+    taucr_min2       => this%settings%erosion%taucr_min2
+    !
+    msed           => this%state%msed
+    svfrac         => this%state%svfrac
+    thlyr          => this%state%thlyr
+    
+    ! tcrero and eropar initialized to 1. Only change if varying.
+
+    select case(this%settings%iunderlyr)
+    case (BED_MIXED)
+        poros(:) = 0.0_fp
+        tcrero(:) = 1.0_fp
+        eropar(:) = 1.0_fp
+        
+    case (BED_LAYERED)
+        !
+        ! Porosity is obtained based on transport layer only
+        !
+        poros(:) = 1.0_fp - svfrac(1, :)
+        !
+        if (ierosion == EROS_CONST) then
+            !
+            ! erodibility of cohesive sediment doesn't depend on bed composition
+            !
+        else
+            rhos = rhofrac(1)
+            cvfac = 2.0_fp/(3.0_fp - nf) * ksigma * kk / ag
+            !
+            if (ierosion == EROS_LE_HIR) then
+                poros_ref = 1 - this%settings%svfrac0
+            endif
+            !
+            do nm = nmfrom, nmto
+                !
+                ! Determine volume fractions -- note that they sum to 1 - porosity !!
+                !
+                phi_mud  = 0.0_fp
+                phi_sand = 0.0_fp
+                totmass = 0.0_fp
+                thick = max(1e-10_fp, thlyr(1,nm))
+                do l = 1, this%settings%nfrac
+                    totmass = totmass + msed(l,1,nm)
+                    if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                        phi_mud   = phi_mud + (msed(l,1,nm)/rhofrac(l)/thick)
+                    else
+                        phi_sand  = phi_sand + (msed(l,1,nm)/rhofrac(l)/thick)
+                    endif
+                enddo
+                rho = totmass / thick
+                !
+                select case(ierosion)
+                case (EROS_WHITEHOUSE)
+                    !
+                    ! Whitehouse (2001)
+                    !
+                    ! TODO: verify formula: rhosol versus phi_sand
+                    ! prevous code in erosilt: tcrero = e1 * (phi_mud*rhosol) ** e2
+                    ! e1 = 0.0012_fp, e2 = 1.2_fp
+                    tcrero(nm) = 0.0012_fp * (phi_mud * phi_sand)**1.2_fp
+                    eropar(nm) = 1.0_fp
+
+                case (EROS_LE_HIR)
+                    !
+                    ! Critical Bed Shear Stress for Erosion & Maximum Erosion Rate of cohesive sediment (tcrero and Me compilation by van Rijn, 2020 and Me from process-based by Winterwerp et al., 2013)
+                    !
+                    phi_term = (phi_mud)**(poros(nm)/poros_ref)
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
+                        !
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
+                    else
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
+                    endif
+
+                case (EROS_ALONSO)
+                    !
+                    ! NEW Critical Bed Shear Stress for Erosion & Maximum Erosion Rate of cohesive sediment (tcrero and Me compilation by van Rijn, 2020 and Me from process-based by Winterwerp et al., 2013)
+                    !
+                    ! Reference porosity based on transport layer
+                    !
+                    if (totmass>0.0_fp) then
+                        do l = 1, this%settings%nfrac
+                            mfrac(l) = msed(l, 1, nm)/totmass
+                        enddo
+                        !
+                        call getporosity(this, mfrac, poros_ref)
+                    else
+                        poros_ref = 1.0_fp
+                    endif
+                    
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
+                        !
+                        tcrero(nm) = 0.0_fp
+                        eropar(nm) = 0.0_fp
+                    else
+                        phi_term = (phi_mud/C0) * (poros_ref/poros(nm))
+                        tcrero(nm) = alpha_lehir * phi_term
+                        eropar(nm) = alpha_me / phi_term
+                    endif
+
+                case (EROS_WINTERWERP)
+                    !
+                    ! Critical bed shear stress and maximum erosion rate of cohesive sediment (Winterwerp et al., 2013)
+                    !
+                    pi_index = A * max(0.0_fp, (phi_mud - C0)) * 100.0_fp
+                    cv = cvfac / rhow(nm) 
+                    if (phi_mud <= C0) then     !transition from cohesionless to cohesive. In cohesionless sediment, the impact of clay is negligible: tcrero is constant
+                        phi_mud = C0
+                        !
+                        tcrero(nm) = alpha_mix * pi_index**beta_mix 
+                        !
+                        phi_sand = 1.0_fp - phi_mud - poros(nm)
+                        cu = ky * (phi_mud/(1.0_fp - phi_sand))**(2.0_fp/(3.0_fp - nf))
+                        eropar(nm) = cv * (phi_mud**2) * rhos / alpha_winterwerp / d50sed / cu
+                        !
+                    else
+                        !
+                        tcrero(nm) = alpha * pi_index**beta
+                        !
+                        cu = ky * (phi_mud/(1.0_fp - phi_sand))**(2.0_fp/(3.0_fp - nf))
+                        eropar(nm) = cv * (phi_mud**2) * rhos / alpha_winterwerp / d50sed / cu
+                        !
+                    endif
+
+                case (EROS_MUSA)
+                    !
+                    ! rho refers here to dry bed densities of the sediment layer
+                    !
+                    if (rho < rho_min) then
+                        tcrero(nm) = taucr_min1
+                    elseif (rho < rho_star) then
+                        xi = ((rho - rho_min)/(rho_star - rho_min))**alpha1
+                        tcrero(nm) = taucr_min1 * (1-xi) + taucr_max * xi
+                    elseif (rho < rho_max) then
+                        xi = ((rho_max - rho)/(rho_max - rho_star))**alpha2
+                        tcrero(nm) = taucr_max * xi + taucr_min2 * (1-xi)
+                    else
+                        tcrero(nm) = taucr_min2
+                    endif
+                    eropar(nm) = 1.0_fp
+
+                endselect
+            enddo
+        endif
+    endselect
+end subroutine getbedprop
+
+
+!> Determines the mass fractions for the top layer
+subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
+    use precision 
     !
     ! Function/routine arguments
     !
     integer                                                           , intent(in)  :: nmfrom
     integer                                                           , intent(in)  :: nmto
-    type(bedcomp_data)                                                , intent(in)  :: this
+    type(bedcomp_data)                                                , intent(in)  :: this     !< bed composition object
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac
     integer                                                           , intent(in)  :: kfrom
     integer                                                           , intent(in)  :: kto
@@ -2378,6 +2997,23 @@ subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
     !
     ! Calculate total bottom sediments and fractions
     !
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
+       do nm = nmfrom, nmto
+          sedtot = 0.0_fp
+          do l = 1, this%settings%nfrac
+             sedtot = sedtot + msed(l, 1, nm)
+          enddo
+          if (comparereal(sedtot,0.0_fp) == 0) then
+             frac(nm, :) = 1.0_fp/this%settings%nfrac
+          else
+            do l = 1, this%settings%nfrac
+                frac(nm, l) = msed(l, 1, nm)/sedtot
+            enddo
+          endif
+       enddo
+       
+    case default ! BED_MIXED
     do nm = nmfrom, nmto
        sedtot = 0.0_fp
        do l = 1, this%settings%nfrac
@@ -2391,25 +3027,19 @@ subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
           enddo
        endif
     enddo
+    endselect
 end subroutine getmfrac
-!
-!
-!
-!==============================================================================
+
+
+!> Update the bed composition of the top layer given the mass fraction data
 subroutine setmfrac(this, frac, nmfrom, nmto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Update the bed composition given the mass fraction data
-!
-!!--declarations----------------------------------------------------------------
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
     integer                                                           , intent(in)  :: nmfrom
     integer                                                           , intent(in)  :: nmto
-    type(bedcomp_data)                                                              :: this
+    type(bedcomp_data)                                                              :: this     !< bed composition object
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(in)  :: frac
     !
     ! Local variables
@@ -2427,8 +3057,8 @@ subroutine setmfrac(this, frac, nmfrom, nmto)
     !
     ! Update the sediment mass per fraction, but keep the total mass identical
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = nmfrom, nmto
           sedtot = 0.0_fp
           do l = 1, this%settings%nfrac
@@ -2438,7 +3068,8 @@ subroutine setmfrac(this, frac, nmfrom, nmto)
              msed(l, 1, nm) = frac(nm, l)*sedtot
           enddo
        enddo
-    case default
+       
+    case default ! BED_MIXED
        do nm = nmfrom, nmto
           sedtot = 0.0_fp
           do l = 1, this%settings%nfrac
@@ -2450,24 +3081,17 @@ subroutine setmfrac(this, frac, nmfrom, nmto)
        enddo
     endselect
 end subroutine setmfrac
-!
-!
-!
-!==============================================================================
+
+
+!> Determines the volume fractions for the top layer
 subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Determines the volume fractions
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
     integer                                                           , intent(in)  :: nmfrom
     integer                                                           , intent(in)  :: nmto
-    type(bedcomp_data)                                                , intent(in)  :: this
+    type(bedcomp_data)                                                , intent(in)  :: this     !< bed composition object
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac
     integer                                                           , intent(in)  :: kfrom
     integer                                                           , intent(in)  :: kto
@@ -2497,8 +3121,8 @@ subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
     !
     ! Calculate total bottom sediments and fractions
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = nmfrom, nmto
           thick = 0.0_fp 
           do k = kfrom, kto 
@@ -2516,7 +3140,8 @@ subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
              enddo
           endif
        enddo
-    case default
+       
+    case default ! BED_MIXED
        do nm = nmfrom, nmto
           if (comparereal(dpsed(nm),0.0_fp) == 0) then
              frac(nm, :) = 1.0_fp/this%settings%nfrac
@@ -2528,24 +3153,17 @@ subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
        enddo
     endselect
 end subroutine getvfrac
-!
-!
-!
-!==============================================================================
+
+
+!> Update the bed composition of the top layer given the volume fraction data
 subroutine setvfrac(this, frac, nmfrom, nmto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Update the bed composition given the volume fraction data
-!
-!!--declarations----------------------------------------------------------------
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
     integer                                                           , intent(in)  :: nmfrom
     integer                                                           , intent(in)  :: nmto
-    type(bedcomp_data)                                                              :: this    
+    type(bedcomp_data)                                                              :: this     !< bed composition object    
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(in)  :: frac
     !
     ! Local variables
@@ -2570,8 +3188,8 @@ subroutine setvfrac(this, frac, nmfrom, nmto)
     !
     ! Calculate total bottom sediments and fractions
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = nmfrom, nmto
           sedtot = 0.0_fp
           do l = 1, this%settings%nfrac
@@ -2585,7 +3203,8 @@ subroutine setvfrac(this, frac, nmfrom, nmto)
              msed(l, 1, nm) = sedtot*(frac(nm, l)*rhofrac(l)/sum)
           enddo
        enddo
-    case default
+       
+    case default ! BED_MIXED
        do nm = nmfrom, nmto
           sedtot = 0.0_fp
           do l = 1, this%settings%nfrac
@@ -2601,22 +3220,15 @@ subroutine setvfrac(this, frac, nmfrom, nmto)
        enddo
     endselect
 end subroutine setvfrac
-!
-!
-!
-!==============================================================================
+
+
+!> Determines total thickness of sediment deposit at all points
 subroutine getsedthick_allpoints(this, seddep)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Determines total thickness of sediment deposit at all points
-!
-!!--declarations----------------------------------------------------------------
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
-    type(bedcomp_data)                                          , intent(in)  :: this 
+    type(bedcomp_data)                                          , intent(in)  :: this     !< bed composition object 
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)  , intent(out) :: seddep
     !
     ! Local variables
@@ -2633,34 +3245,28 @@ subroutine getsedthick_allpoints(this, seddep)
     !
     ! Calculate total bottom sediments and fractions
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
         seddep = 0.0_fp
         do nm = this%settings%nmlb, this%settings%nmub
             do k = 1, this%settings%nlyr
                 seddep(nm) = seddep(nm) + thlyr(k, nm)
             enddo
         enddo
-    case default
+        
+    case default ! BED_MIXED
        seddep = dpsed
     endselect
 end subroutine getsedthick_allpoints
-!
-!
-!
-!==============================================================================
+
+
+!> Determines total thickness of sediment deposit at one point
 subroutine getsedthick_1point(this, nm, seddep)
-!!--description-----------------------------------------------------------------
-!
-!    Function: Determines total thickness of sediment deposit at one point
-!
-!!--declarations----------------------------------------------------------------
     use precision 
-    implicit none
     !
     ! Function/routine arguments
     !
-    type(bedcomp_data)                      , intent(in)  :: this    
+    type(bedcomp_data)                      , intent(in)  :: this     !< bed composition object    
     integer                                 , intent(in)  :: nm
     real(fp)                                , intent(out) :: seddep
     !
@@ -2677,32 +3283,29 @@ subroutine getsedthick_1point(this, nm, seddep)
     !
     ! Calculate total bottom sediments and fractions
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        seddep = 0.0_fp
        do k = 1, this%settings%nlyr
           seddep = seddep + thlyr(k, nm)
        enddo
-    case default
+       
+    case default ! BED_MIXED
        seddep = dpsed(nm)
     endselect
 end subroutine getsedthick_1point
-!
-!
-!
-!==============================================================================
+
+
+!> initialize the morlyr data
 function initmorlyr(this) result (istat)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
+    use morphology_data_module, only: HIDEXP_ACTIVE_LAYER_ONLY
     !
     real(fp), parameter :: rmissval = -999.0_fp
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(inout) :: this    
+    type (bedcomp_data), intent(inout) :: this     !< bed composition object    
     integer                            :: istat
     !
     ! Local variables
@@ -2729,33 +3332,107 @@ function initmorlyr(this) result (istat)
        settings%morlyrnum%max_num_shortage_warnings = 100
     endif
     !
-    settings%keuler         = 2
-    settings%ndiff          = 0
-    settings%nfrac          = 0
-    settings%nlyr           = 0
-    settings%nmlb           = 0
-    settings%nmub           = 0
-    settings%idiffusion     = 0
-    settings%iunderlyr      = 1
-    settings%iporosity      = 0
+    settings%keuler     = 2
+    settings%ndiff      = 0
+    settings%nfrac      = 0
+    settings%nlyr       = 0
+    settings%nmlb       = 0
+    settings%nmub       = 0
+    settings%idiffusion = BDIFF_NONE
+    settings%iunderlyr  = BED_MIXED
+    settings%ifractions = FRAC_VOLUME
+    settings%iporosity  = POROS_IN_DENSITY
     settings%crslyr     = .false.
-    settings%exchlyr        = .false.
+    settings%exchlyr    = .false.
     settings%max_mud_sedtyp = SEDTYP_SILT
     settings%neulyr         = 0
     settings%nlalyr         = 0
     settings%theulyr        = rmissval
     settings%thlalyr        = rmissval
-    settings%updbaselyr     = 1
+    settings%updtoplyr  = TOPLYR_POR_RESET         ! by default, the top layer porosity is reset
+    settings%updbaselyr = BASELYR_UPDATED          ! 
     settings%active_layer_diffusion = ACTIVE_LAYER_DIFFUSION_OFF
     settings%imobility    = MOBILITY_OFF
+    
+    !!  --> default values, based on Merckelbach et al. (2000, 2004a, b)
+    settings%iconsolidate = CONSOL_NONE            ! by default, consolidation is switched off
+    settings%ierosion     = EROS_CONST             ! by default, critical bed shear stress for erosion is determined using empirical relation between mud fraction and bed strength.
+    settings%ag           = 9.81_fp                ! gravitational acceleration [m/s2] (default value on Earth; to be overruled by calling component)
+    settings%dtdecon      = 1209600.0_fp           ! seconds, default 2 week to update consolidation once
+    settings%svgel        = 0.158_fp               ! volume fraction of pure sediment at gelling point
+    settings%svmax        = 0.6_fp                 ! if svfrac > svmax, consolidation stops
     settings%isedcrs2tr   = 0
-    settings%ihidexptrcrs = 0
+    settings%ihidexptrcrs = HIDEXP_ACTIVE_LAYER_ONLY
     settings%a_max        = 20.0_fp
     settings%asfm         = 0.523_fp
     settings%bsfm         = 0.67_fp
     settings%sigma_sfm    = 0.2_fp
     settings%sinkfrac_max = 0.05_fp
     settings%initcl       = .false.
+    settings%nf           = 2.69!2.605_fp               ! fractal dimension [-]
+    settings%ky           = 1.0E3_fp               ! [Pa]
+    settings%ksigma       = 1.99E7_fp!7.1E7_fp               ! effective stress coefficient [Pa]
+    settings%ksigma0      = 0.0_fp                 ! effective stress coefficient (usually set as 0) [Pa]
+    settings%kk           = 1.59E-13_fp!7.6E-13_fp             ! permeability coefficient [m/s]
+    settings%kbioturb     = 0.0_fp                 ! bioturbation coefficient [m2/s]
+    !settings%svfrac0      = 500.0/2650.0           ! example from Townsend&MeVay1990
+    settings%svfrac0      = 1600.0/2650.0          ! Example from Townsend&MeVay1990, svfrac is around 0.18, which is reasonable for unconsolidated sediment
+    settings%svfrac0m     = 0.2_fp                 ! depositional svfrac for mud
+    settings%svfrac0s     = 0.6_fp                 ! depositional svfrac for sand
+    settings%minporm      = 0.05_fp                ! compacted porosity for mud
+    settings%minpors      = 0.25_fp                ! compacted porosity for sand
+    settings%confac       = 1.0_fp                 ! default consider consolidation occurs at morphological time scale
+    settings%thtrconcr    = 1.0E-6_fp              ! default very small value to avoid numerical problems
+    settings%thtrempty    = 0.0001_fp
+    settings%imixtr       = 1                      ! 
+    !settings%minpor       = 0.25_fp               ! overburden porosity of sand fraction at depth ~1.5 km
+    settings%crmud        = 0.001_fp               ! consolidation rate of clay [m]
+    settings%crsand       = 0.01_fp                ! consolidation rate of sand [m]
+    settings%crmsec       = 3.0E-04_fp             ! secondary consolidation of mud
+    settings%porini       = 0.75_fp                ! 
+    !critical bed shear stress
+    settings%rhow_const   = 1000.0_fp              ! water density [kg/m3]
+    settings%ky           = 1.0E3_fp               ! vertical permeability [Pa]
+    
+    ! erosion settings
+    allocate (settings%erosion , stat = istat)
+    if (istat == 0) then
+       settings%erosion%A                = 2.67_fp            !< activity of soil, which is used to calculate PI index    
+       settings%erosion%alpha            = 0.7_fp             !< a constant in determining critical bed shear stress for erosion
+       settings%erosion%alpha_me         = 1.0_fp             !< tuning parameter in simple Me equation 
+       settings%erosion%alpha_mix        = 0.2205_fp          !< tuning parameter for cohesionless mixture
+       settings%erosion%alpha_lehir      = 1.0_fp             !< tuning parameter in Le Hir tcrero equation 
+       settings%erosion%alpha_winterwerp = 10.0_fp            !< tuning parameter in Winterwerp Me equation 
+       settings%erosion%alpha1           = 1.0_fp             !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
+       settings%erosion%alpha2           = 2.0_fp             !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
+       settings%erosion%beta             = 0.2_fp             !< a constant in determining critical bed shear stress for erosion
+       settings%erosion%beta_mix         = 0.9125_fp          !< tuning parameter for cohesionless mixture
+       settings%erosion%C0               = 0.07_fp            !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
+       settings%erosion%d50sed           = 3.0E-5_fp          !< d50 grain size of sediment supply [m]
+       settings%erosion%rho_max          = 1600.0_fp          !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
+       settings%erosion%rho_min          = 200.0_fp           !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
+       settings%erosion%rho_star         = 1200.0_fp          !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
+       settings%erosion%taucr_max        = 1.5_fp             !< maximum critical shear stress [N/m2]
+       settings%erosion%taucr_min1       = 0.2_fp             !< critical shear stress at low density [N/m2]
+       settings%erosion%taucr_min2       = 0.2_fp             !< critical shear stress at high density [N/m2]
+
+    endif
+    
+    !! input parameters for Dynamic Equilibrium CONsolidation (DECON)
+    settings%nconlyr      = 6                      ! 
+    settings%dzprofile    = 0.0001                 ! resolution [m]
+    settings%plyrstr      = '0.05 0.05 0.10 0.15 0.20 0.45'
+    settings%ptr          = 0.0_fp                 ! percentage of thickness reduction
+    !! Peat 
+    settings%ccpeat       = 0.0_fp                 ! 
+    settings%ymodpeat     = 0.0_fp                 ! 
+    settings%peatfrac     = 0                      ! 
+    settings%peatloi      = 0.0_fp                 ! 
+    settings%parb         = 0.009_fp               ! 
+    settings%parc         = 0.08_fp                ! 
+    settings%pard         = 0.05_fp                ! 
+    settings%peatthick    = 4.0_fp                 ! 
+
     !
     nullify(settings%thclyr)
     nullify(settings%kdiff)
@@ -2769,38 +3446,65 @@ function initmorlyr(this) result (istat)
     nullify(settings%thexlyr)
     nullify(settings%thtrlyr)
     nullify(settings%zdiff)
+    nullify(settings%plyrthk)
     !
-    nullify(state%preload)
-    nullify(state%svfrac)
     nullify(state%bodsed)
     nullify(state%dpsed)
+    nullify(state%dzc)
     nullify(state%msed)
     nullify(state%mobile)
-    nullify(state%thlyr)
+    nullify(state%preload)
+    nullify(state%td)
+    nullify(state%rhow)
     nullify(state%sedshort)
+    nullify(state%svfrac)
+    nullify(state%thlyr)
+    nullify(state%thmudgibson)
+    nullify(state%thsandgibson)
+    nullify(state%thlyrtprev)
+    ! Peat
+    nullify(state%strain)
+    ! trigger the first bed consolidation by setting DECON time to a large negative value
+    state%tdecon = -huge(1.0_hp)
     !
     nullify(work%msed2)
     nullify(work%thlyr2)
     nullify(work%svfrac2)
+    nullify(work%preload2)
+    nullify(work%td2)
+
+    ! work arrays for full Gibson model
+    nullify(work%dthsedlyr)
+    nullify(work%thlyrnew)
+
+    nullify(work%sigmaeff)
+    nullify(work%thsedlyr)
+    nullify(work%svfracsand)
+    nullify(work%svfracmud)
+
+    nullify(work%vs0p5)
+    nullify(work%k0p5)
+    nullify(work%svfrac0p5)
+    nullify(work%svfracsand0p5)    
+    nullify(work%svfracmud0p5 )
+    
+    ! work arrays for Dynamic Equilibrium CONsolidation (DECON)
+    nullify(work%mmudlyr)
+    nullify(work%msandlyr)
     !
     this%settings => settings
     this%state    => state
     this%work     => work
 end function initmorlyr
-!
-!
-!
-!==============================================================================
+
+
+!> allocate the morlyr data arrays
 function allocmorlyr(this) result (istat)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data)              :: this    
+    type (bedcomp_data)              :: this     !< bed composition object    
     integer                          :: istat
     !
     ! Local variables
@@ -2822,10 +3526,10 @@ function allocmorlyr(this) result (istat)
     !                   neulyr  eulerian underlayers
     !                   1       persistent base layer
     !
-    if (settings%iunderlyr==1) then
+    if (settings%iunderlyr == BED_MIXED) then
        settings%nlyr   = 1
        settings%keuler = 1
-    elseif (settings%iunderlyr==2) then
+    elseif (settings%iunderlyr == BED_LAYERED) then
        settings%nlyr   = 2 + settings%nlalyr + settings%neulyr
        settings%keuler = 2 + settings%nlalyr
        if (settings%exchlyr) then
@@ -2847,6 +3551,8 @@ function allocmorlyr(this) result (istat)
     if (istat == 0) state%bodsed = 0.0_fp
     if (istat == 0) allocate (state%dpsed(nmlb:nmub), stat = istat)
     if (istat == 0) state%dpsed = 0.0_fp
+    if (istat == 0) allocate (state%rhow(nmlb:nmub), stat = istat)
+    if (istat == 0) state%rhow = 1000.0_fp
     !
     if (istat == 0) allocate (settings%sedtyp(nfrac), stat = istat)
     if (istat == 0) settings%sedtyp = 0
@@ -2856,14 +3562,20 @@ function allocmorlyr(this) result (istat)
     if (istat == 0) settings%phi = 0.0_fp
     if (istat == 0) allocate (settings%sigphi(nfrac), stat = istat)
     if (istat == 0) settings%sigphi = 0.0_fp
+    if (istat == 0) allocate (settings%ymod(nfrac), stat = istat)
+    if (istat == 0) settings%ymod = 0.0_fp
+    if (istat == 0) allocate (settings%cc(nfrac), stat = istat)
+    if (istat == 0) settings%cc = 0.0_fp
     !
-    if (settings%iunderlyr==2) then
+    if (settings%iunderlyr == BED_LAYERED) then
        if (istat == 0) allocate (settings%kdiff(settings%ndiff,nmlb:nmub), stat = istat)
        if (istat == 0) settings%kdiff = 0.0_fp
        if (istat == 0) allocate (settings%zdiff(settings%ndiff), stat = istat)
        if (istat == 0) settings%zdiff = 0.0_fp
        if (istat == 0) allocate (settings%thtrlyr(nmlb:nmub), stat = istat)
        if (istat == 0) settings%thtrlyr = 0.0_fp
+       if (istat == 0) allocate (state%dzc(nmlb:nmub), stat = istat)
+       if (istat == 0) state%dzc = 0.0_fp
        !
        if (settings%crslyr) then
           if (istat == 0) allocate (settings%thclyr(nmlb:nmub), stat = istat)
@@ -2884,6 +3596,18 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) state%svfrac = 1.0_fp
        if (istat == 0) allocate (state%preload(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%preload = 0.0_fp
+       if (istat == 0) allocate (state%td(settings%nlyr,nmlb:nmub), stat = istat)
+       if (istat == 0) state%td = 0.0_fp
+       if (istat == 0) allocate (state%thlyrtprev(settings%nlyr,nmlb:nmub), stat = istat)
+       if (istat == 0) state%thlyrtprev = 0.0_fp
+       
+       if (istat == 0) allocate (state%thmudgibson(nmlb:nmub), stat = istat)
+       if (istat == 0) state%thmudgibson = 0.0_fp
+       if (istat == 0) allocate (state%thsandgibson(nmlb:nmub), stat = istat)
+       if (istat == 0) state%thsandgibson = 0.0_fp
+     
+       if (istat == 0) allocate (state%strain(settings%nlyr,nmlb:nmub), stat = istat)
+       if (istat == 0) state%strain = 0.0_fp
     endif
     if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
     if (istat == 0) state%sedshort = 0.0_fp
@@ -2898,20 +3622,15 @@ function allocmorlyr(this) result (istat)
     ! For some reason it needs to be allocated/deallocated in updmorlyr/gettoplyr
     !
 end function allocmorlyr
-!
-!
-!
-!==============================================================================
+
+
+!> initialize the morlyr work arrays
 function allocwork(this) result (istat)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(in)  :: this    
+    type (bedcomp_data), intent(in)  :: this     !< bed composition object    
     integer                          :: istat
     !
     ! Local variables
@@ -2929,30 +3648,50 @@ function allocwork(this) result (istat)
     istat = 0
     !
     ! Deallocate if it already exists
-    if (associated(this%work%msed2)) deallocate (this%work%msed2  , stat = istat)
-    if (associated(this%work%msed2)) deallocate (this%work%thlyr2 , stat = istat)
-    if (associated(this%work%msed2)) deallocate (this%work%svfrac2, stat = istat)
+    if (associated(this%work%msed2))    deallocate (this%work%msed2  , stat = istat)
+    if (associated(this%work%thlyr2))   deallocate (this%work%thlyr2 , stat = istat)
+    if (associated(this%work%svfrac2))  deallocate (this%work%svfrac2, stat = istat)
+    if (associated(this%work%preload2)) deallocate (this%work%preload2, stat = istat)
+    if (associated(this%work%td2))      deallocate (this%work%td2, stat = istat)
+    !
     if (istat == 0) allocate (this%work%msed2(nfrac, nlyr), stat = istat)
     if (istat == 0) allocate (this%work%thlyr2(nlyr)      , stat = istat)
     if (istat == 0) allocate (this%work%svfrac2(nlyr)     , stat = istat)
+    if (istat == 0) allocate (this%work%preload2(nlyr)    , stat = istat)
+    if (istat == 0) allocate (this%work%td2(nlyr)         , stat = istat)
+    !
     if (istat == 0) this%work%msed2 = dmiss
     if (istat == 0) this%work%thlyr2 = dmiss
     if (istat == 0) this%work%svfrac2 = dmiss
+    if (istat == 0) this%work%preload2 = dmiss
+    if (istat == 0) this%work%td2 = dmiss
+    ! work arrys for full Gibson model
+    if (istat == 0) allocate (this%work%dthsedlyr(nlyr-1), stat = istat)
+    
+    if (istat == 0) allocate (this%work%sigmaeff(nlyr), stat = istat)
+    if (istat == 0) allocate (this%work%thsedlyr(nlyr) , stat = istat)
+    if (istat == 0) allocate (this%work%svfracsand(nlyr), stat = istat)
+    if (istat == 0) allocate (this%work%svfracmud(nlyr), stat = istat)
+    
+    if (istat == 0) allocate (this%work%vs0p5(nlyr+1), stat = istat)
+    if (istat == 0) allocate (this%work%k0p5(nlyr+1) , stat = istat)
+    if (istat == 0) allocate (this%work%svfrac0p5(nlyr+1), stat = istat)
+    if (istat == 0) allocate (this%work%svfracsand0p5(nlyr+1), stat = istat)
+    if (istat == 0) allocate (this%work%svfracmud0p5(nlyr+1), stat = istat)
+    
+    ! work arrays for Dynamic Equilibrium CONsolidation (DECON)
+    if (istat == 0) allocate (this%work%mmudlyr(nlyr), stat = istat)   
+    if (istat == 0) allocate (this%work%msandlyr(nlyr), stat = istat)
 end function allocwork
-!
-!
-!
-!==============================================================================
+
+
+!> deallocate the work arrays
 function deallocwork(this) result (istat)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(in)  :: this    
+    type (bedcomp_data), intent(in)  :: this     !< bed composition object    
     integer                          :: istat
     !
     ! Local variables
@@ -2961,24 +3700,37 @@ function deallocwork(this) result (istat)
     !! executable statements -------------------------------------------------------
     !
     istat = 0
-    if (istat == 0) deallocate (this%work%msed2  , stat = istat)
-    if (istat == 0) deallocate (this%work%thlyr2 , stat = istat)
-    if (istat == 0) deallocate (this%work%svfrac2, stat = istat)
+    if (istat == 0) deallocate (this%work%msed2        , stat = istat)
+    if (istat == 0) deallocate (this%work%thlyr2       , stat = istat)
+    if (istat == 0) deallocate (this%work%svfrac2      , stat = istat)
+    if (istat == 0) deallocate (this%work%preload2     , stat = istat)
+    if (istat == 0) deallocate (this%work%td2          , stat = istat)
+    
+    if (istat == 0) deallocate (this%work%dthsedlyr    , stat = istat)
+
+    if (istat == 0) deallocate (this%work%sigmaeff     , stat = istat)
+    if (istat == 0) deallocate (this%work%thsedlyr     , stat = istat)
+    if (istat == 0) deallocate (this%work%svfracsand   , stat = istat)
+    if (istat == 0) deallocate (this%work%svfracmud    , stat = istat)
+    
+    if (istat == 0) deallocate (this%work%vs0p5        , stat = istat)
+    if (istat == 0) deallocate (this%work%k0p5         , stat = istat)
+    if (istat == 0) deallocate (this%work%svfrac0p5    , stat = istat)
+    if (istat == 0) deallocate (this%work%svfracsand0p5, stat = istat)
+    if (istat == 0) deallocate (this%work%svfracmud0p5 , stat = istat)
+    
+    if (istat == 0) deallocate (this%work%mmudlyr      , stat = istat)
+    if (istat == 0) deallocate (this%work%msandlyr     , stat = istat)
 end function deallocwork
-!
-!
-!
-!==============================================================================
+
+
+!> deallocate the morlyr arrays
 function clrmorlyr(this) result (istat)
-!!--description-----------------------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data)             :: this    
+    type (bedcomp_data)             :: this     !< bed composition object    
     integer                         :: istat
     !
     ! Local variables
@@ -2997,10 +3749,11 @@ function clrmorlyr(this) result (istat)
        if (associated(settings%thtrlyr))   deallocate(settings%thtrlyr  , STAT = istat)
        if (associated(settings%zdiff))     deallocate(settings%zdiff    , STAT = istat)
        !
-       if (associated(settings%sedtyp))    deallocate(settings%sedtyp , STAT = istat)
-       if (associated(settings%phi))       deallocate(settings%phi    , STAT = istat)
-       if (associated(settings%rhofrac))   deallocate(settings%rhofrac, STAT = istat)
-       if (associated(settings%sigphi))    deallocate(settings%sigphi , STAT = istat)
+       if (associated(settings%sedtyp))    deallocate(settings%sedtyp   , STAT = istat)
+       if (associated(settings%phi))       deallocate(settings%phi      , STAT = istat)
+       if (associated(settings%rhofrac))   deallocate(settings%rhofrac  , STAT = istat)
+       if (associated(settings%sigphi))    deallocate(settings%sigphi   , STAT = istat)
+       if (associated(settings%plyrthk))   deallocate(settings%plyrthk  , STAT = istat)
        !
        if (associated(settings%aldiff))   deallocate(settings%aldiff  , STAT = istat)
        !
@@ -3010,13 +3763,18 @@ function clrmorlyr(this) result (istat)
     !
     if (associated(this%state)) then
        state => this%state
-       if (associated(state%svfrac))       deallocate(state%svfrac  , STAT = istat)
-       if (associated(state%bodsed))       deallocate(state%bodsed  , STAT = istat)
-       if (associated(state%dpsed))        deallocate(state%dpsed   , STAT = istat)
+       if (associated(state%svfrac))       deallocate(state%svfrac      , STAT = istat)
+       if (associated(state%bodsed))       deallocate(state%bodsed      , STAT = istat)
+       if (associated(state%dpsed))        deallocate(state%dpsed       , STAT = istat)
+       if (associated(state%rhow))         deallocate(state%rhow        , STAT = istat)
        if (associated(state%mobile))       deallocate(state%mobile  , STAT = istat)
-       if (associated(state%msed))         deallocate(state%msed    , STAT = istat)
-       if (associated(state%thlyr))        deallocate(state%thlyr   , STAT = istat)
-       if (associated(state%sedshort))     deallocate(state%sedshort, STAT = istat)
+       if (associated(state%msed))         deallocate(state%msed        , STAT = istat)
+       if (associated(state%thlyr))        deallocate(state%thlyr       , STAT = istat)
+       if (associated(state%sedshort))     deallocate(state%sedshort    , STAT = istat)
+       if (associated(state%thmudgibson))  deallocate(state%thmudgibson , STAT = istat)
+       if (associated(state%thsandgibson)) deallocate(state%thsandgibson, STAT = istat)
+       if (associated(state%strain))       deallocate(state%strain      , STAT = istat)
+       if (associated(state%thlyrtprev))   deallocate(state%thlyrtprev, STAT = istat)
        !
        deallocate(this%state, STAT = istat)
        nullify(this%state)
@@ -3026,22 +3784,14 @@ function clrmorlyr(this) result (istat)
        deallocate(this%work, STAT = istat)
     endif
 end function clrmorlyr
-!
-!
-!
-!==============================================================================
+
+
+!> Set sediment fraction properties
 subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Set sediment fraction properties
-!
-!!--declarations----------------------------------------------------------------
-    use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                  :: this    
+    type(bedcomp_data)                  :: this     !< bed composition object
     integer , dimension(:), intent(in)  :: sedtyp
     real(fp), dimension(:), intent(in)  :: sedd50
     real(fp), dimension(:), intent(in)  :: logsedsig
@@ -3055,10 +3805,14 @@ subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
     !
     do l = 1, this%settings%nfrac
        this%settings%sedtyp(l) = sedtyp(l)
-       if (sedd50(l)<=0.0_fp) then
+       if (sedd50(l)<=0.0001_fp) then
           this%settings%phi(l) = 13.9_fp ! -log(65um)/log(2)
+          this%settings%ymod(l) = 5000000.0_fp
+          this%settings%cc(l) = this%settings%crmud
        else
           this%settings%phi(l)     = -log(sedd50(l))/log(2.0_fp)
+          this%settings%ymod(l) = 25000000.0_fp
+          this%settings%cc(l) = this%settings%crsand
        endif
        if (logsedsig(l)<=0.0_fp) then
           this%settings%sigphi(l)  = log(1.34) ! use default for "well sorted" sediment (see rdsed.f90)
@@ -3068,22 +3822,15 @@ subroutine setbedfracprop(this, sedtyp, sedd50, logsedsig, rhofrac)
        this%settings%rhofrac(l) = rhofrac(l) ! either rhosol or cdryb
     enddo
 end subroutine setbedfracprop
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a scalar logical
 function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a scalar logical
-!
-!!--declarations----------------------------------------------------------------
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)    , intent(in)  :: this    
+    type(bedcomp_data)    , intent(in)  :: this     !< bed composition object    
     character(*)          , intent(in)  :: variable
     logical, pointer                    :: val
     integer                             :: istat
@@ -3111,22 +3858,15 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_logical_scalar
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a scalar integer
 function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a scalar integer
-!
-!!--declarations----------------------------------------------------------------
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)    , intent(in)  :: this    
+    type(bedcomp_data)    , intent(in)  :: this     !< bed composition object    
     character(*)          , intent(in)  :: variable
     integer, pointer                    :: val
     integer                             :: istat
@@ -3145,6 +3885,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%idiffusion
     case ('bed_layering_type','iunderlyr')
        val => this%settings%iunderlyr
+    case ('definition_of_fraction','ifractions')
+       val => this%settings%ifractions
     case ('mobility_model_type','imobility')
        val => this%settings%imobility
     case ('isedcrs2tr')
@@ -3153,12 +3895,16 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%ihidexptrcrs
     case ('porosity_model_type','iporosity')
        val => this%settings%iporosity
+    case ('consolidation_model_type','iconsolidate')
+       val => this%settings%iconsolidate
     case ('keuler')
        val => this%settings%keuler
     case ('number_of_diffusion_values','ndiff')
        val => this%settings%ndiff
     case ('number_of_layers','nlyr')
        val => this%settings%nlyr
+    case ('number_of_consolidating_layers','nconlyr')
+       val => this%settings%nconlyr       
     case ('max_num_shortage_warnings')
        val => this%settings%morlyrnum%max_num_shortage_warnings
     case ('number_of_eulerian_layers','neulyr')
@@ -3171,8 +3917,12 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%nmlb
     case ('last_column_number','nmub')
        val => this%settings%nmub
+    case ('top_layer_updating_type','updtoplyr')
+       val => this%settings%updtoplyr
     case ('base_layer_updating_type','updbaselyr')
        val => this%settings%updbaselyr
+    case ('erosion_type','ierosion','iero')
+        val => this%settings%ierosion
     case ('active_layer_diffusion')
        val => this%settings%active_layer_diffusion
     case default
@@ -3180,23 +3930,16 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_integer_scalar
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a scalar real(fp)
 function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a scalar real(fp)
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)    , intent(in)  :: this    
+    type(bedcomp_data)    , intent(in)  :: this     !< bed composition object    
     character(*)          , intent(in)  :: variable
     real(fp), pointer                   :: val
     integer                             :: istat
@@ -3211,6 +3954,8 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
     localname = variable
     call str_lower(localname)
     select case (localname)
+    case ('gravity','ag')
+       val => this%settings%ag
     case ('thickness_of_eulerian_layers','theulyr')
        val => this%settings%theulyr
     case ('thickness_of_lagrangian_layers','thlalyr')
@@ -3232,23 +3977,16 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_scalar
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a 1D real(fp) array
 function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a pointer to a 1D real(fp) array
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)             , intent(in)  :: this    
+    type(bedcomp_data)             , intent(in)  :: this     !< bed composition object    
     character(*)                   , intent(in)  :: variable
     real(fp), dimension(:), pointer              :: val
     integer                                      :: istat
@@ -3265,6 +4003,8 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
     select case (localname)
     case ('total_sediment_thickness','dpsed')
        val => this%state%dpsed
+    case ('water_density','rhow')
+       val => this%state%rhow
     case ('thickness_of_coarse_layer','thclyr')
        val => this%settings%thclyr
     case ('sediment_density')
@@ -3273,32 +4013,29 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
        val => this%settings%thexlyr
     case ('thickness_of_transport_layer','thtrlyr')
        val => this%settings%thtrlyr
+    case ('dzc')
+       val => this%state%dzc
     case ('diffusion_levels','zdiff')
        val => this%settings%zdiff
+    case ('percentage_layerthk','plyrthk')
+       val => this%settings%plyrthk
     case ('active_layer_diffusion','aldiff')
        val => this%settings%aldiff
     case default
        val => NULL()
     end select
-    if (.not.associated(val)) istat = -1    
+    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_1darray
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a 2D real(fp) array
 function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a pointer to a 2D real(fp) array
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)               , intent(in)  :: this    
+    type(bedcomp_data)               , intent(in)  :: this     !< bed composition object
     character(*)                     , intent(in)  :: variable
     real(fp), dimension(:,:), pointer              :: val
     integer                                        :: istat
@@ -3319,30 +4056,29 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
        val => this%settings%kdiff
     case ('solid_volume_fraction','svfrac')
        val => this%state%svfrac
+    case ('time of load increment','td')
+        val => this%state%td
+    case ('historical largest load','preload')
+       val => this%state%preload
     case ('layer_thickness','thlyr')
        val => this%state%thlyr
+    case ('overburden_thickness_t-1','thlyrtprev')
+       val => this%state%thlyrtprev
     case default
        val => NULL()
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_2darray
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a 3D real(fp) array
 function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a pointer to a 3D real(fp) array
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                 , intent(in)  :: this    
+    type(bedcomp_data)                 , intent(in)  :: this     !< bed composition object    
     character(*)                       , intent(in)  :: variable
     real(fp), dimension(:,:,:), pointer              :: val
     integer                                          :: istat
@@ -3364,23 +4100,16 @@ function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_3darray
-!
-!
-!
-!==============================================================================
+
+
+!> Get the pointer to a 2D real(prec) array
 function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Get a pointer to a 2D real(prec) array
-!
-!!--declarations----------------------------------------------------------------
     use precision
     use string_module
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                 , intent(in)  :: this    
+    type(bedcomp_data)                 , intent(in)  :: this     !< bed composition object    
     character(*)                       , intent(in)  :: variable
     real(prec), dimension(:,:), pointer              :: val
     integer                                          :: istat
@@ -3402,22 +4131,15 @@ function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
     end select
     if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_prec_2darray
-!
-!
-!
-!==============================================================================
+
+
+!> Use the values of BODSED to compute other quantities
 subroutine bedcomp_use_bodsed(this)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Use the values of BODSED to compute other quantities
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                         :: this
+    type(bedcomp_data)                         :: this     !< bed composition object
     !
     ! Local variables
     !
@@ -3463,8 +4185,9 @@ subroutine bedcomp_use_bodsed(this)
           dpsed(nm) = dpsed(nm) + real(bodsed(ised, nm),fp)/rhofrac(ised)
        enddo
     enddo
+    
     select case(this%settings%iunderlyr)
-    case(2)
+    case(BED_LAYERED)
        !
        ! No file specified for initial bed composition: extract data from
        ! the BODSED data read above.
@@ -3482,11 +4205,11 @@ subroutine bedcomp_use_bodsed(this)
           enddo
           totsed         = max(totsed,1.0e-20_fp) ! avoid division by zero
           do ised = 1, this%settings%nfrac
-             mfrac(ised) = real(bodsed(ised, nm),fp)/totsed
+             mfrac(ised) = (real(bodsed(ised, nm),fp)/totsed)
           enddo
           !
           call getporosity(this, mfrac, poros)
-          svf = 1.0_fp - poros
+          svf = (1.0_fp - poros) !* this%settings%ptr
           !
           thsed = 0.0_fp
           do ised = 1, this%settings%nfrac
@@ -3503,7 +4226,7 @@ subroutine bedcomp_use_bodsed(this)
           do ised = 1, this%settings%nfrac
              msed(ised, 1, nm) = real(bodsed(ised, nm),fp)*fac
           enddo
-          svfrac(1, nm) = svf
+          svfrac(1, nm) = svf 
           sedthick      = sedthick - thlyr(1, nm)
           !
           ! exchange layer
@@ -3551,30 +4274,24 @@ subroutine bedcomp_use_bodsed(this)
           do ised = 1, this%settings%nfrac
              msed(ised, this%settings%nlyr, nm) = real(bodsed(ised, nm),fp)*fac
           enddo
-          svfrac(this%settings%nlyr, nm) = svf
+          svfrac(this%settings%nlyr, nm) = svf 
        enddo
-    case default
+       
+    case default ! BED_MIXED
        !
        ! nothing to do, using bodsed as uniformly mixed sediment
        !
     endselect
 end subroutine bedcomp_use_bodsed
-!
-!
-!
-!==============================================================================
+
+
+!> Copy the bed composition from nmfrom to nmto
 subroutine copybedcomp(this, nmfrom, nmto)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Copy the bed composition from nmfrom to nmto
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                   :: this
+    type(bedcomp_data)                   :: this     !< bed composition object
     integer                , intent(in)  :: nmfrom
     integer                , intent(in)  :: nmto
     !
@@ -3596,7 +4313,7 @@ subroutine copybedcomp(this, nmfrom, nmto)
     thlyr      => this%state%thlyr
     !
     select case(this%settings%iunderlyr)
-    case(2)
+    case(BED_LAYERED)
        do k = 1, this%settings%nlyr
           do l = 1, this%settings%nfrac
              msed(l, k, nmto) = msed(l, k, nmfrom)
@@ -3604,29 +4321,23 @@ subroutine copybedcomp(this, nmfrom, nmto)
           thlyr(k, nmto)  = thlyr(k, nmfrom)
           svfrac(k, nmto) = svfrac(k, nmfrom)
        enddo
-    case default
+       
+    case default ! BED_MIXED
        do l = 1, this%settings%nfrac
           bodsed(l, nmto) = bodsed(l, nmfrom)
        enddo
        dpsed(nmto) = dpsed(nmfrom)
     end select
 end subroutine copybedcomp
-!
-!
-!
-!==============================================================================
+
+
+!> Update the porosity for layer k in column nm
 subroutine updateporosity(this, nm, k)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Update the porosity for layer k in column nm
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                   :: this
+    type(bedcomp_data)                   :: this     !< bed composition object
     integer                , intent(in)  :: nm
     integer                , intent(in)  :: k
     !
@@ -3646,43 +4357,37 @@ subroutine updateporosity(this, nm, k)
     thlyr      => this%state%thlyr
     !
     select case(this%settings%iunderlyr)
-    case(2)
-       totmass       = 0.0_fp
-       do l = 1, this%settings%nfrac
-          totmass    = totmass + msed(l, k, nm)
-       enddo
-       if (totmass>0.0_fp) then
-          do l = 1, this%settings%nfrac
-            mfrac(l)   = msed(l, k, nm)/totmass
-          enddo
-          !
-          call getporosity(this, mfrac, poros)
-       else
-          poros = 0.0_fp
-       endif
-       svfrac(k, nm) = 1.0_fp - poros
-    case default
+    case(BED_LAYERED)
+        totmass = 0.0_fp
+        do l = 1, this%settings%nfrac
+            totmass    = totmass + msed(l, k, nm)
+        enddo
+        if (totmass>0.0_fp) then
+            do l = 1, this%settings%nfrac
+                mfrac(l)   = msed(l, k, nm)/totmass
+            enddo
+            !
+            call getporosity(this, mfrac, poros)
+        else
+            poros = 0.0_fp
+        endif
+        svfrac(k, nm) = 1.0_fp - poros
+        
+    case default ! BED_MIXED
        ! option not available for this bed composition model
     end select
 end subroutine updateporosity
-!
-!
-!
-!==============================================================================
+
+
+!> Compute the porosity
 subroutine getporosity(this, mfrac, poros)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Compute the porosity
-!
-!!--declarations----------------------------------------------------------------
     use precision
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                       , intent(in)  :: this
-    real(fp) , dimension(this%settings%nfrac), intent(in)  :: mfrac
-    real(fp)                                 , intent(out) :: poros
+    type(bedcomp_data)                       , intent(in)  :: this     !< bed composition object
+    real(fp) , dimension(this%settings%nfrac), intent(in)  :: mfrac !< mass fraction
+    real(fp)                                 , intent(out) :: poros !< porosity
     !
     ! Local variables
     !
@@ -3710,111 +4415,1184 @@ subroutine getporosity(this, mfrac, poros)
     sigmix = sqrt(sigmix)
     !
     select case (this%settings%iporosity)
-    case (1)
+    case (POROS_FRINGS)
        !
        ! R. Frings (May 2009)
        !
        a = -0.06_fp
        b = 0.36_fp
        poros = max(0.0_fp,a*sigmix + b)
-    case (2)
+       
+    case (POROS_WELTJE)
        !
-       ! G.J. Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+       ! G.J. Weltje based on data by Beard & Weyl (AAPG Bull., 1973), change the name of author
        !
        x             = 3.7632_fp * sigmix**(-0.7552_fp)
        poros         = 0.45_fp*x/(1+x)
+       
+    case (POROS_SVFRAC0)
+       !temporarily used, should be changed later, using user-specified initial values
+       poros = 1.0_fp - this%settings%svfrac0
+       
+    case (POROS_SVFRAC0SM)
+       poros = 0.0_fp
+       do l = 1, this%settings%nfrac
+           if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+               poros = poros + (1.0_fp - this%settings%svfrac0m) * mfrac(l)
+           else
+               poros = poros + (1.0_fp - this%settings%svfrac0s) * mfrac(l)
+           endif
+       enddo
+
     case default
        poros         = 0.0_fp
     end select
 end subroutine getporosity
-!
-!
-!
-!==============================================================================
-subroutine consolidate(this, nm)
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Consolidate the bed of column nm
-!
-!!--declarations----------------------------------------------------------------
+
+
+!> Consolidate the bed of column nm
+subroutine consolidate(this, nm, morft, dtmor)
     use precision
-    implicit none
     !
-    ! Arguments
+    ! Call variables
     !
-    type(bedcomp_data)                   :: this
-    integer                , intent(in)  :: nm
+    type(bedcomp_data)                                                              :: this     !< bed composition object
+    integer                                                           , intent(in)  :: nm
+    real(hp)                                                          , intent(in)  :: morft ! morphological time [days since reference date]
+    real(fp)                                                          , intent(in)  :: dtmor ! morphological time step [s]
+    
     !
     ! Local variables
     !
-    integer                                   :: k
-    integer                                   :: l
-    real(fp)                                  :: load
-    real(fp)                                  :: thnew
-    real(fp)                                  :: dzc
-    real(fp) , dimension(:,:,:), pointer      :: msed
-    real(fp) , dimension(:,:)  , pointer      :: preload
-    real(fp) , dimension(:,:)  , pointer      :: svfrac
-    real(fp) , dimension(:,:)  , pointer      :: thlyr
-    !
+
     !! executable statements -------------------------------------------------------
-    msed       => this%state%msed
-    preload    => this%state%preload
-    svfrac     => this%state%svfrac
-    thlyr      => this%state%thlyr
-    !
-    select case(this%settings%iunderlyr)
-    case(2)
-       load = 0.0_fp
-       do k = 2, this%settings%nlyr
-          do l = 1, this%settings%nfrac
-             load = load + msed(l, k-1, nm)
-          enddo
-          if (comparereal(thlyr(k, nm),0.0_fp)==0) then
-             !
-             ! layers with zero thickness don't consolidate
-             !
-          elseif (load > preload(k, nm)) then
-             !
-             ! compute consolidation
-             !
-             dzc = 0.0_fp ! function of load-preload(k,nm)
-             !
-             ! reduce layer thickness and porosity, i.e. increase svfrac
-             !
-             thnew = thlyr(k, nm) - dzc
-             svfrac(k, nm) = svfrac(k, nm)*thlyr(k, nm)/thnew
-             thlyr(k, nm) = thnew
-             preload(k, nm) = load
-          else
-             !
-             ! no consolidation in this layer and any layer below
-             !
-             return
-          endif
-       enddo
+    
+    select case (this%settings%iconsolidate)
+    ! this routine is not called for (CONSOL_NONE) ! no consolidation
+        
+    case (CONSOL_GIBSON) ! full Gibson model
+        ! Skip the computation if the transport layer becomes too thin
+        if (this%state%thlyr(1,nm) <= this%settings%thtrconcr) return
+        
+        call consolidate_gibson(this, nm, dtmor)
+    
+    case (CONSOL_DECON) ! Dynamic Equilibrium CONsolidation (DECON)
+        ! The actual consolidation step is only executed once every x time steps
+        if (morft < this%state%tdecon - real(this%settings%dtdecon,hp)/86400.0_hp) return
+
+        call consolidate_decon(this, nm, dtmor)
+
+    case (CONSOL_TERZAGHI) ! simple loading model (primary compaction)
+        call consolidate_terzaghi(this, nm, morft, dtmor)
+        
+    case (CONSOL_TERZ_PEAT) ! simple loading model (primary compaction) and peat compaction
+        call consolidate_terzaghi_peat(this, nm, morft, dtmor)
+
+    case (CONSOL_NOCOMP)
+        call consolidate_no_compaction()
+        
     case default
-       ! option not available for this bed composition model
+       ! consolidation option not yet implemented
     end select
 end subroutine consolidate
-!
-!
-!
-!==============================================================================
-subroutine initpreload(this)
-!!--description-----------------------------------------------------------------
-!
 
-! Initialize the preload array assuming that all sediment is fully consolidated.
-!
 
-!!--declarations----------------------------------------------------------------
+!> This routine implements consolidation following the Gibson equation.
+subroutine consolidate_gibson(this, nm, dtmor)
     use precision
-    implicit none
+    use sediment_basics_module
+    use morphology_data_module
+    
+    !
+    ! Call variables
+    !
+    type(bedcomp_data)                                                              :: this     !< bed composition object
+    integer                                                           , intent(in)  :: nm
+    real(fp)                                                          , intent(in)  :: dtmor ! morphological time step [s]
+    
+    integer                              :: istat
+    
+    !
+    ! Local variables
+    !
+    integer                                   :: j         ! loop index used to deal with 0 layer thickness!, z.z
+    integer                                   :: k
+    integer                                   :: i         ! loop index used for replenish step, property change for transport layer, z.z
+    integer                                   :: l
+    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction, z.z
+    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf), z.z 
+    real(fp)                                  :: load      ! not used in Gibson's formulation, z.z
+    real(fp)                                  :: thnew     ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(this%settings%nfrac) :: dzl
+    real(fp) , dimension(:), pointer          :: dzc
+    real(fp) , dimension(:,:,:), pointer      :: msed 
+    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(:,:)  , pointer      :: svfrac
+    real(fp) , dimension(:,:)  , pointer      :: strain
+    real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
+    real(fp) , dimension(:)    , pointer      :: rhow
+    real(fp) , dimension(:)    , pointer      :: ymod
+    real(fp) , dimension(:)    , pointer      :: cc
+    real(fp)                                  :: frac
+    real(fp) , dimension(:)    , pointer      :: rhofrac
+    real(fp)                                  :: thtrlyr
+    
+    real(fp)                                  :: thconlyr    ! consolidate layer thickness
+    real(fp)                                  :: thconlyreqm ! equilibrium consolidate layer thickness
+    
+    ! used for replenish step average volume fraction between transport layer and layers below
+    real(fp)                                  :: thtemp
+    real(fp)                                  :: temp1
+    real(fp)                                  :: temp2
+
+    ! Dynamic Equilibrium CONsolidation (DECON)
+    real(fp)                                  :: thmudgibson_new    ! total gibson height for mud
+    real(fp)                                  :: thsandgibson_new   ! total gibson height for sand
+    integer ,dimension(this%settings%nconlyr) :: kzlyr        ! number of vertical grid used to discretize equilibrium concentration profile in each layer
+    real(fp),dimension(this%settings%nfrac)   :: permud       ! mud fraction mass percentage
+    real(fp),dimension(this%settings%nfrac)   :: persand      ! sand fraction mass percentage
+    real(fp),dimension(this%settings%nfrac)   :: mmud         ! mud fraction mass 
+    real(fp),dimension(this%settings%nfrac)   :: msand        ! sand fraction mass
+    real(fp)                                  :: mmudtot      ! total mud mass
+    real(fp)                                  :: msandtot     ! total sand mass
+    !real(fp),dimension(this%settings%nconlyr) :: czmudlyr
+    integer                                   :: kztotal
+    integer                                   :: lowerindex
+    integer                                   :: upperindex
+    real(fp), pointer                         :: dzprofile
+    real(fp) , dimension(:) , allocatable     :: zcprofile
+    real(fp) , dimension(:) , allocatable     :: czmud       ! equilibrium mud concentration profile
+    real(fp)                                  :: z_up
+    real(fp)                                  :: z_low
+    
+    !! ---> more variables used
+    integer, pointer  :: nlyr
+    real(fp), pointer :: ag
+    real(fp)          :: dtcon !< consolidation time step [s]
+    
+    integer, pointer  :: nconlyr                           ! number of consolidating layers
+    real(fp), pointer :: ksigma                            ! effective stress coefficient, Pa
+    real(fp), pointer :: kk                                ! permeability., m/s
+    real(fp), pointer :: kbioturb                          ! bioturbation coefficient, m2/s
+        
+    real(fp), parameter :: sigmawbnd=0.0_fp                ! effective stress at upward boundary, Pa
+    real(fp) :: rhos                                       ! sediment specific density, kg/m3
+    !!--->  add more working arrays
+    real(fp), dimension(:)   , pointer :: svfrac2          ! new solids fraction after consolidation, temp 
+    real(fp), dimension(:)   , pointer :: thlyr2           ! new layer thickness after consolidation
+
+    real(fp), dimension(:)   , pointer :: dthsedlyr        ! thickness of average pure sediment between two neighbouring layers, m
+
+    real(fp), dimension(:)   , pointer :: sigmaeff         ! effective stress, Pa
+    real(fp), dimension(:)   , pointer :: thsedlyr         ! thickness of pure sediment in each layer, m
+    real(fp), dimension(:)   , pointer :: svfracsand       ! total sand solids fraction at each layer
+    real(fp), dimension(:)   , pointer :: svfracmud        ! total mud solids fraction at each layer    
+
+    real(fp), dimension(:)   , pointer :: vs0p5            ! particle settling velocity at layer interface, m/s  
+    real(fp), dimension(:)   , pointer :: k0p5             ! permeability at layer interface, m/s
+    real(fp), dimension(:)   , pointer :: svfrac0p5        ! solids fraction at layer interface
+    real(fp), dimension(:)   , pointer :: svfracsand0p5    ! sand solids fraction at layer interface
+    real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
+    
+    !--> low-concentration consoldiation
+    real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
+    real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
+    real(fp), dimension(:)     , pointer :: plyrthk
+    real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
+    real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand  
+    real(fp) , dimension(:)     , pointer     :: thlyrnew
+    real(fp) , dimension(:,:)   , pointer     :: thlyrtprev
+    
+    !Peat 
+    real(fp), pointer  :: ymodpeat
+    real(fp), pointer  :: ccpeat
+    integer , pointer  :: peatfrac
+    real(fp), pointer  :: peatloi
+    real(fp), pointer  :: parb
+    real(fp), pointer  :: parc
+    real(fp), pointer  :: pard
+    real(fp), pointer  :: peatthick
+    real(fp)           :: para
+
+    !critical porosity
+    real(fp)           :: critpor
+    real(fp)           :: thicks
+    real(fp)           :: thickm
+
+    !! executable statements -------------------------------------------------------
+    msed           => this%state%msed
+    preload        => this%state%preload
+    svfrac         => this%state%svfrac
+    thlyr          => this%state%thlyr
+    rhow           => this%state%rhow
+    dzc            => this%state%dzc
+    rhofrac        => this%settings%rhofrac
+    ymod           => this%settings%ymod
+    cc             => this%settings%cc
+    !peat
+    ymodpeat       => this%settings%ymodpeat
+    ccpeat         => this%settings%ccpeat
+    peatloi        => this%settings%peatloi
+    parb           => this%settings%parb
+    parc           => this%settings%parc
+    pard           => this%settings%pard
+    peatfrac       => this%settings%peatfrac
+    peatthick      => this%settings%peatthick
+    strain         => this%state%strain
+    
+    thsandgibson   => this%state%thsandgibson
+    thmudgibson    => this%state%thmudgibson
+    thlyrtprev      => this%state%thlyrtprev
+    thlyrnew        => this%work%thlyrnew
+
+    thlyr2         => this%work%thlyr2
+    svfrac2        => this%work%svfrac2
+
+    dthsedlyr      => this%work%dthsedlyr
+
+    sigmaeff       => this%work%sigmaeff   
+    thsedlyr       => this%work%thsedlyr  
+    svfracsand     => this%work%svfracsand
+    svfracmud      => this%work%svfracmud 
+
+    vs0p5          => this%work%vs0p5   
+    k0p5           => this%work%k0p5   
+    svfrac0p5      => this%work%svfrac0p5 
+    svfracsand0p5  => this%work%svfracsand0p5 
+    svfracmud0p5   => this%work%svfracmud0p5
+
+    msandlyr       => this%work%msandlyr
+    mmudlyr        => this%work%mmudlyr
+
+    nlyr           => this%settings%nlyr 
+    ag             => this%settings%ag
+    nconlyr        => this%settings%nconlyr  
+    ksigma         => this%settings%ksigma
+    kk             => this%settings%kk
+    kbioturb       => this%settings%kbioturb
+    plyrthk        => this%settings%plyrthk
+    dzprofile      => this%settings%dzprofile
+    
+    ! Bert, Zhou, assume the sediment density is using constant for all fractions
+    rhos     = this%settings%rhofrac(1)            ! sediment density
+    nfd      = 2.0_fp/(3.0_fp-this%settings%nf)
+    thtrlyr  = this%settings%thtrlyr(nm)           ! get the transport layer thickness
+    thtemp   = 0.0_fp                              ! temporary thickness used for transition calculation
+    temp1    = 0.0_fp                              ! temporary variable
+    temp2    = 0.0_fp                              ! temporary variable
+    dtcon    = this%settings%confac * dtmor
+    
+    ! Compute svfracsand and svfracmud per layer
+    do k = 1, nlyr
+        if (thlyr(k,nm) > 0.0_fp) then
+            svfracsand(k) = 0.0_fp
+            svfracmud(k) = 0.0_fp
+            do l = 1, this%settings%nfrac
+                svfractemp = this%state%msed(l,k,nm)/this%settings%rhofrac(l)/thlyr(k,nm)
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    svfracmud(k) = svfracmud(k) + svfractemp
+                else
+                    svfracsand(k) = svfracsand(k) + svfractemp
+                endif
+            enddo
+        else
+            svfracsand(k) = 0.0_fp
+            svfracmud(k) = 0.0_fp
+        endif
+    enddo
+    
+    ! calculate the values of the dependent arrays, may be removed later.
+    do k = 1, nlyr
+        thsedlyr(k) = thlyr(k,nm)*svfrac(k,nm)
+    enddo
+    
+    do k = 1, nlyr-1
+        if( thlyr(k,nm) > 0) then
+            ! find the next thlyr which is not zero and make the average with this one.
+            do j = k+1, nlyr
+                if (thlyr(j,nm) > 0.0_fp) then
+                    dthsedlyr(k) = (thsedlyr(k)+thsedlyr(j))/2.0_fp
+                    exit    ! jump out the inner do loop
+                endif
+                ! if all the layers below the transport layer have 0.0 thickness, otherwise,
+                ! the following equation won't be used, since once the above if statement is 
+                ! satisfied, it will exit the do loop.
+                dthsedlyr(k) = (thsedlyr(k)+thsedlyr(nlyr))/2.0_fp
+            enddo
+        else
+            dthsedlyr(k) = 0.0_fp
+        endif
+    enddo  
+    
+    ! Calculate the solids volume fractions at the layer interfaces.
+    ! Set svfrac at water-bed interface equal to the value of transport layer.
+    svfrac0p5(1) = svfrac(1,nm)
+    svfracsand0p5(1) = svfracsand(1)
+    svfracmud0p5(1) = svfracmud(1)
+    ! Set svfrac above each non-empty layers equal to the average of that layer and the first
+    ! non-empty layer above it. The transport layer should never be empty if one of the lower
+    ! layers is non-empty.
+    do k = 2, nlyr
+        if (thlyr(k,nm) > 0.0_fp) then
+            do j= k-1,1,-1
+                if (thlyr(j,nm) > 0.0_fp) then
+                    ! Compute an average weighted by layer thickness.
+                    svfrac0p5(k) = (svfrac(k,nm)*thsedlyr(k)+svfrac(j,nm)*thsedlyr(j))/(thsedlyr(k)+thsedlyr(j))
+                    svfracsand0p5(k) = (svfracsand(k)*thsedlyr(k)+svfracsand(j)*thsedlyr(j))/(thsedlyr(k)+thsedlyr(j))
+                    svfracmud0p5(k) = (svfracmud(k)*thsedlyr(k)+svfracmud(j)*thsedlyr(j))/(thsedlyr(k)+thsedlyr(j))
+                    exit    
+                endif
+            enddo
+        else
+            svfrac0p5(k) = 0.0_fp
+            svfracsand0p5(k) = 0.0_fp
+            svfracmud0p5(k) = 0.0_fp
+        endif
+    enddo
+    ! Set svfrac at rock-bed interface equal to the value of base layer.
+    svfrac0p5(nlyr+1)= svfrac(nlyr,nm)
+    svfracsand0p5(nlyr+1) = svfracsand(nlyr)
+    svfracmud0p5(nlyr+1) = svfracmud(nlyr)
+    
+    ! Compute hydraulic permeability at the layer interfaces.
+    do k = 1, nlyr
+        if(svfrac0p5(k) > 0.0_fp) then
+            k0p5(k) = kk*(svfracmud0p5(k)/(1.0_fp-svfracsand0p5(k)))**(-nfd)
+        else
+            k0p5(k) = 0.0_fp
+        endif
+    enddo
+    ! Set permeability to zero at rock-bed interface.
+    k0p5(nlyr+1) = 0.0_fp
+    
+    ! Compute initial effective stress in each non-empty bed layer.
+    do k = 1, nlyr
+       if (thlyr(k,nm) > 0.0_fp) then
+           if (svfrac(k,nm) < this%settings%svgel) then
+               sigmaeff(k) = 0.0_fp
+           else
+               sigmaeff(k) = ksigma*(svfracmud(k)/(1.0_fp-svfracsand(k)))**(nfd)-this%settings%ksigma0
+           endif
+       else  
+           sigmaeff(k) = 0.0_fp
+       endif
+    enddo
+    
+    ! Compute the particle settling velocity at the layer interfaces.
+    if (thlyr(1,nm) > 0.0_fp) then
+        ! The velocity is calculated for the water-bed interface by assuming effective stress at water-bed interface equates sigmawbnd=0
+        vs0p5(1) = k0p5(1)*svfrac0p5(1)*((rhos-rhow(nm))/rhow(nm)-(1.0_fp/rhow(nm)/ag + kbioturb/nfd/ksigma/kk)*((sigmaeff(1)-sigmawbnd)/thsedlyr(1)))  
+        if (vs0p5(1) < 0.0_fp) then
+            vs0p5(1) = 0.0_fp
+        endif
+    endif
+    do k = 2,nlyr
+        if (thlyr(k,nm) > 0.0_fp) then
+            ! Identify the first non-empty layer above it.
+            do j= k-1,1,-1
+                if (thlyr(j,nm) > 0.0_fp) then
+                    vs0p5(k) = k0p5(k)*svfrac0p5(k)*((rhos-rhow(nm))/rhow(nm)-(1.0_fp/rhow(nm)/ag + kbioturb/nfd/ksigma/kk)*((sigmaeff(k)-sigmaeff(j))/dthsedlyr(j)))
+                    exit
+                endif
+            enddo
+            if (vs0p5(k) < 0.0_fp) vs0p5(k) = 0.0_fp
+        else
+            vs0p5(k) = 0.0_fp
+        endif
+    enddo
+    vs0p5(nlyr+1) = 0.0_fp
+    
+    ! Compute consolidation
+    do k = nlyr, 1, -1
+        if (thlyr(k,nm) > 0.0_fp .and. svfracsand(k)/svfrac(k,nm) < 0.5_fp) then
+            ! Identify the first non-empty layer above it.
+            do j = k,1,-1
+                if (svfrac0p5(j)> 0.0_fp .and. thsedlyr(k) > 1.0e-6_fp) then
+                    svfrac2(k) = svfrac(k,nm) - dtcon*svfrac(k,nm)*svfrac(k,nm)*(vs0p5(k+1)-vs0p5(j))/thsedlyr(k)
+                    exit
+                endif
+                ! if all the layers below the transport layer have 0.0 thickness
+                svfrac2(k) = svfrac(k,nm) - dtcon*svfrac(k,nm)*svfrac(k,nm)*(vs0p5(nlyr+1)-vs0p5(k))/thsedlyr(k)
+            enddo
+            
+            ! Make sure that the solid volume fraction doesn't decrease during consolidation, or increase beyond the maximum.
+            if (svfrac2(k) < svfrac(k,nm)) svfrac2(k) = svfrac(k,nm)
+            if (svfrac2(k) > this%settings%svmax) svfrac2(k) = this%settings%svmax
+            
+            ! Layers below should have larger svfrac, avoid numerical issues such as sedimentation-induced thin layers
+            if (k<nlyr) then
+                if (svfrac2(k) > svfrac2(k+1) .and. svfrac2(k+1) /= 0.0_fp) then
+                    svfrac2(k) = svfrac(k,nm)
+                endif
+            endif
+            
+            ! Update the layer thickness, but the layer thickness shouldn't increase during consolidation.
+            thlyr2(k) = thsedlyr(k)/svfrac2(k)
+            if (thlyr2(k) > thlyr(k,nm)) thlyr2(k) = thlyr(k,nm)
+            
+            ! Update the state arrays based on new values.
+            thlyr(k,nm) = thlyr2(k)
+            svfrac(k,nm) = svfrac2(k)
+        endif
+        
+        ! The property of the transport layer (1st layer) should be averaged with the layers below when replenish step is done.
+        ! This is only considered when thlyr(1,nm) < thtrlyr so that replenish step is required.
+        if (this%settings%imixtr==1 .and. thlyr(1,nm) < thtrlyr) then
+            ! find the layer when enough thick soil can be used to replenish, avoid some 0 layer thickness
+            do j = 2, nlyr
+                thtemp = thtemp + thlyr(j,nm)
+                if (thtemp > thtrlyr-thlyr(1,nm) ) then
+                    do i = 1, j-1
+                        temp1 = temp1 + svfrac(i,nm)*thlyr(i,nm)
+                        temp2 = temp2 + thlyr(i,nm)
+                    enddo
+                    svfrac(1,nm) = (temp1 + svfrac(j,nm)*(thtrlyr-temp2))/thtrlyr
+                    exit
+                endif
+            enddo
+            temp1 = 0.0_fp
+            temp2 = 0.0_fp
+        endif
+    enddo
+end subroutine consolidate_gibson
+
+
+!> This routine implements the Dynamic Equilibrium Consolidation
+subroutine consolidate_decon(this, nm, dtmor)
+    use precision
+    use sediment_basics_module
+    use morphology_data_module
+    
+    !
+    ! Call variables
+    !
+    type(bedcomp_data)                                                              :: this     !< bed composition object
+    integer                                                           , intent(in)  :: nm
+    real(fp)                                                          , intent(in)  :: dtmor ! morphological time step [s]
+    
+    integer                              :: istat
+    
+    !
+    ! Local variables
+    !
+    integer                                   :: j         ! loop index used to deal with 0 layer thickness!, z.z
+    integer                                   :: k
+    integer                                   :: i         ! loop index used for replenish step, property change for transport layer, z.z
+    integer                                   :: l
+    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction, z.z
+    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf), z.z 
+    real(fp)                                  :: load      ! not used in Gibson's formulation, z.z
+    real(fp)                                  :: thnew     ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(this%settings%nfrac) :: dzl
+    real(fp) , dimension(:), pointer          :: dzc
+    real(fp) , dimension(:,:,:), pointer      :: msed 
+    real(fp) , dimension(this%settings%nlyr)  :: csandlyr  ! sand concentration at each layer
+    real(fp) , dimension(this%settings%nlyr)  :: cmudlyr   ! mud concentration at each layer
+    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(:,:)  , pointer      :: svfrac
+    real(fp) , dimension(:,:)  , pointer      :: strain
+    real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
+    real(fp) , dimension(:)    , pointer      :: rhow
+    real(fp) , dimension(:)    , pointer      :: ymod
+    real(fp) , dimension(:)    , pointer      :: cc
+    real(fp)                                  :: frac
+    real(fp) , dimension(:)    , pointer      :: rhofrac
+    real(fp)                                  :: thtrlyr
+    
+    real(fp)                                  :: thconlyr    ! consolidate layer thickness
+    real(fp)                                  :: thconlyreqm ! equilibrium consolidate layer thickness
+    
+    ! used for replenish step average volume fraction between transport layer and layers below
+    real(fp)                                  :: thtemp
+    real(fp)                                  :: temp1
+    real(fp)                                  :: temp2
+
+    ! Dynamic Equilibrium CONsolidation (DECON)
+    real(fp)                                  :: thmudgibson_new    ! total gibson height for mud
+    real(fp)                                  :: thsandgibson_new   ! total gibson height for sand
+    integer ,dimension(this%settings%nconlyr) :: kzlyr        ! number of vertical grid used to discretize equilibrium concentration profile in each layer
+    real(fp),dimension(this%settings%nfrac)   :: permud       ! mud fraction mass percentage
+    real(fp),dimension(this%settings%nfrac)   :: persand      ! sand fraction mass percentage
+    real(fp),dimension(this%settings%nfrac)   :: mmud         ! mud fraction mass 
+    real(fp),dimension(this%settings%nfrac)   :: msand        ! sand fraction mass
+    real(fp)                                  :: mmudtot      ! total mud mass
+    real(fp)                                  :: msandtot     ! total sand mass
+    !real(fp),dimension(this%settings%nconlyr) :: czmudlyr
+    integer                                   :: kztotal
+    integer                                   :: lowerindex
+    integer                                   :: upperindex
+    real(fp), pointer                         :: dzprofile
+    real(fp) , dimension(:) , allocatable     :: zcprofile
+    real(fp) , dimension(:) , allocatable     :: czmud       ! equilibrium mud concentration profile
+    real(fp)                                  :: z_up
+    real(fp)                                  :: z_low
+    
+    !! ---> more variables used
+    integer, pointer  :: nlyr
+    real(fp), pointer :: ag
+    
+    integer, pointer  :: nconlyr                           ! number of consolidating layers
+    real(fp), pointer :: ksigma                            ! effective stress coefficient, Pa
+    real(fp), pointer :: kk                                ! permeability., m/s
+    real(fp), pointer :: kbioturb                          ! bioturbation coefficient, m2/s
+        
+    real(fp), parameter :: sigmawbnd=0.0_fp                ! effective stress at upward boundary, Pa
+    real(fp) :: rhos                                       ! sediment specific density, kg/m3
+    !!--->  add more working arrays
+    real(fp), dimension(:)   , pointer :: svfrac2          ! new solids fraction after consolidation, temp 
+    real(fp), dimension(:)   , pointer :: thlyr2           ! new layer thickness after consolidation
+
+    real(fp), dimension(:)   , pointer :: dthsedlyr        ! thickness of average pure sediment between two neighbouring layers, m
+
+    real(fp), dimension(:)   , pointer :: sigmaeff         ! effective stress, Pa
+    real(fp), dimension(:)   , pointer :: thsedlyr         ! thickness of pure sediment in each layer, m
+    real(fp), dimension(:)   , pointer :: svfracsand       ! total sand solids fraction at each layer
+    real(fp), dimension(:)   , pointer :: svfracmud        ! total mud solids fraction at each layer    
+
+    real(fp), dimension(:)   , pointer :: vs0p5            ! particle settling velocity at layer interface, m/s  
+    real(fp), dimension(:)   , pointer :: k0p5             ! permeability at layer interface, m/s
+    real(fp), dimension(:)   , pointer :: svfrac0p5        ! solids fraction at layer interface
+    real(fp), dimension(:)   , pointer :: svfracsand0p5    ! sand solids fraction at layer interface
+    real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
+    
+    !--> low-concentration consoldiation
+    real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
+    real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
+    real(fp), dimension(:)     , pointer :: plyrthk
+    real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
+    real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand  
+    real(fp), dimension(:)     , pointer :: thlyrnew
+    real(fp), dimension(:,:)   , pointer :: thlyrtprev
+    
+    !Peat 
+    real(fp), pointer  :: ymodpeat
+    real(fp), pointer  :: ccpeat
+    integer , pointer  :: peatfrac
+    real(fp), pointer  :: peatloi
+    real(fp), pointer  :: parb
+    real(fp), pointer  :: parc
+    real(fp), pointer  :: pard
+    real(fp), pointer  :: peatthick
+    real(fp)           :: para
+
+    !critical porosity
+    real(fp)           :: critpor
+    real(fp)           :: thicks
+    real(fp)           :: thickm
+
+    !! executable statements -------------------------------------------------------
+    msed           => this%state%msed
+    preload        => this%state%preload
+    svfrac         => this%state%svfrac
+    thlyr          => this%state%thlyr
+    rhow           => this%state%rhow
+    dzc            => this%state%dzc
+    rhofrac        => this%settings%rhofrac
+    ymod           => this%settings%ymod
+    cc             => this%settings%cc
+    !peat
+    ymodpeat       => this%settings%ymodpeat
+    ccpeat         => this%settings%ccpeat
+    peatloi        => this%settings%peatloi
+    parb           => this%settings%parb
+    parc           => this%settings%parc
+    pard           => this%settings%pard
+    peatfrac       => this%settings%peatfrac
+    peatthick      => this%settings%peatthick
+    strain         => this%state%strain
+    
+    thsandgibson   => this%state%thsandgibson
+    thmudgibson    => this%state%thmudgibson
+    thlyrtprev      => this%state%thlyrtprev
+    thlyrnew        => this%work%thlyrnew
+
+    thlyr2         => this%work%thlyr2
+    svfrac2        => this%work%svfrac2
+
+    dthsedlyr      => this%work%dthsedlyr
+
+    sigmaeff       => this%work%sigmaeff   
+    thsedlyr       => this%work%thsedlyr  
+    svfracsand     => this%work%svfracsand
+    svfracmud      => this%work%svfracmud 
+
+    vs0p5          => this%work%vs0p5   
+    k0p5           => this%work%k0p5   
+    svfrac0p5      => this%work%svfrac0p5 
+    svfracsand0p5  => this%work%svfracsand0p5 
+    svfracmud0p5   => this%work%svfracmud0p5
+
+    msandlyr       => this%work%msandlyr
+    mmudlyr        => this%work%mmudlyr
+
+    nlyr           => this%settings%nlyr 
+    ag             => this%settings%ag
+    nconlyr        => this%settings%nconlyr  
+    ksigma         => this%settings%ksigma
+    kk             => this%settings%kk
+    kbioturb       => this%settings%kbioturb
+    plyrthk        => this%settings%plyrthk
+    dzprofile      => this%settings%dzprofile
+    
+    cmudlyr(:)   = 0.0_fp
+    csandlyr(:)  = 0.0_fp
+    permud(:)    = 0.0_fp
+    persand(:)   = 0.0_fp
+    mmud(:)      = 0.0_fp
+    msand(:)     = 0.0_fp
+    
+    svfracmud(1:nconlyr)  = 0.0_fp
+    svfracsand(1:nconlyr) = 0.0_fp
+    mmudlyr(1:nconlyr)    = 0.0_fp
+    msandlyr(1:nconlyr)   = 0.0_fp
+    
+    ! Bert, Zhou, assume the sediment density is using constant for all fractions
+    rhos     = this%settings%rhofrac(1)            ! sediment density
+    nfd      = 2.0_fp/(3.0_fp-this%settings%nf)
+    thtrlyr  = this%settings%thtrlyr(nm)           ! get the transport layer thickness
+    thtemp   = 0.0_fp                              ! temporary thickness used for transition calculation
+    temp1    = 0.0_fp                              ! temporary variable
+    temp2    = 0.0_fp                              ! temporary variable
+    
+    thmudgibson_new    = 0.0_fp
+    thsandgibson_new   = 0.0_fp
+    thconlyr           = 0.0_fp
+    mmudtot            = 0.0_fp
+    msandtot           = 0.0_fp
+    
+    ! loop over all fractions to compute svfracsand and svfracmud
+    do k = 1,nconlyr
+         ! check if the layer thickness is larger than zero
+         if (thlyr(k,nm)>0.0_fp) then
+             svfracsand(k) = 0.0_fp
+             svfracmud(k)  = 0.0_fp
+             mmudlyr(k)    = 0.0_fp
+             msandlyr(k)   = 0.0_fp
+             do l = 1, this%settings%nfrac
+                 svfractemp = msed(l,k,nm)/this%settings%rhofrac(l)/thlyr(k,nm)
+                 if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                     svfracmud(k) = svfracmud(k) + svfractemp
+                     mmudlyr(k)   = mmudlyr(k) + msed(l,k,nm)
+                 else
+                     svfracsand(k) = svfracsand(k) + svfractemp
+                     msandlyr(k)   = msandlyr(k) + msed(l,k,nm)
+                 endif
+             enddo
+             csandlyr(k) =  msandlyr(k)/thlyr(k,nm)
+             cmudlyr(k) = mmudlyr(k)/thlyr(k,nm)
+         else
+             mmudlyr(k)       = 0.0_fp
+             msandlyr(k)      = 0.0_fp
+             svfracsand(k)    = 0.0_fp
+             svfracmud(k)     = 0.0_fp 
+             csandlyr(k)      = 0.0_fp 
+             cmudlyr(k)       = 0.0_fp 
+         endif
+         thmudgibson_new   = thmudgibson_new + cmudlyr(k)/(rhos-csandlyr(k))*thlyr(k,nm)
+         thsandgibson_new  = thsandgibson_new + csandlyr(k)/rhos*thlyr(k,nm)
+         thconlyr = thconlyr + thlyr(k,nm)
+         mmudtot  = mmudtot  + mmudlyr(k)
+         msandtot = msandtot + msandlyr(k)
+    enddo
+    
+    ! if the Gibson's height, i.e. total mass, has increased
+    if (thmudgibson_new + thsandgibson_new - thmudgibson(nm) - thsandgibson(nm) > 0.0_fp) then
+    
+        ! compute permud(l) and persand(l)
+        do l = 1, this%settings%nfrac
+            mmud(l) = 0.0_fp
+            msand(l)= 0.0_fp
+            do k = 1, nconlyr
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    mmud(l) = mmud(l) + msed(l,k,nm)
+                else
+                    msand(l) = msand(l) + msed(l,k,nm)
+                endif
+            enddo
+            permud(l) = mmud(l)/mmudtot
+            persand(l)= msand(l)/msandtot
+        enddo
+
+        ! calculate equilibrium consolidating layer thickness, Delta_C
+        thconlyreqm = thsandgibson_new + nfd/(nfd - 1.0)*ksigma/ag/(rhos-rhow(nm))*(ag*(rhos-rhow(nm))*thmudgibson_new/ksigma)**((nfd-1.0)/nfd)
+        do k = 1, nconlyr
+            thlyr(k,nm) = thconlyreqm * plyrthk(k)                  !layer thickness computation
+            z_up=sum(plyrthk(k:size(plyrthk)))*(thconlyreqm-thsandgibson_new)          !elevation of the upper border of the layer
+            z_low=sum(plyrthk((k+1):size(plyrthk)))*(thconlyreqm-thsandgibson_new)     !elevation of the lower border of the layer
+            !averaged integral of the concentration profile from z low to z up
+            cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*(max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            svfracmud(k) = cmudlyr(k)/rhos
+            svfrac(k,nm) = svfracmud(k) + svfracsand(k)
+       enddo
+       ! redistribute mass and concentration in each layer
+       do k = 1, nconlyr
+           if (thlyr(k,nm) > 0.0_fp) then
+               do l = 1, this%settings%nfrac
+                   if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                       msed(l,k,nm) = thlyr(k,nm)*cmudlyr(k)*permud(l)
+                   else
+                       msed(l,k,nm) = thlyr(k,nm)*csandlyr(k)*persand(l)
+                   endif
+               enddo
+            else
+               do l = 1, this%settings%nfrac
+                   msed(l,k,nm) = 0.0_fp
+               enddo
+            endif
+       enddo
+       thmudgibson(nm)  = thmudgibson_new
+       thsandgibson(nm) = thsandgibson_new
+    endif
+end subroutine consolidate_decon
+
+
+!> This routine implements compaction following Terzaghi (1943), load model
+subroutine consolidate_terzaghi(this, nm, morft, dtmor)
+    use precision
+    use sediment_basics_module
+    use morphology_data_module
+
+    !
+    ! Call variables
+    !
+    type(bedcomp_data)                                                              :: this  !< bed composition object
+    integer                                                           , intent(in)  :: nm
+    real(hp)                                                          , intent(in)  :: morft !< morphological time [days since reference date]
+    real(fp)                                                          , intent(in)  :: dtmor !< morphological time step [s]
+    
+    !
+    ! Local variables
+    !
+    real(fp) , dimension(:,:,:), pointer      :: msed     !<  
+    real(fp) , dimension(:,:)  , pointer      :: preload  !< previous overburden weight [kg/m2]
+    real(fp) , dimension(:,:)  , pointer      :: td       !> time of latest load increment (days)
+    real(fp) , dimension(:,:)  , pointer      :: svfrac   !< 
+    real(fp) , dimension(:,:)  , pointer      :: thlyr    !< layer thickness, including pore water
+    real(fp) , dimension(:)    , pointer      :: ymod     !< 
+    real(fp) , dimension(:)    , pointer      :: cc       !< 
+    real(fp) , dimension(:)    , pointer      :: rhofrac  !< 
+    real(fp)                   , pointer      :: ag       !< gravitational accelaration [m/s2]
+
+    integer                                   :: k        !< layer index
+    integer                                   :: l        !< sediment index
+    real(fp)                                  :: load     !< overburden weight [kg/m2]
+    real(fp)                                  :: thnew
+    real(fp)                                  :: frac
+
+    real(fp)                                  :: critpor  !< critical porosity
+    real(fp)                                  :: thicks   !> thickness of sand only in an underlayer
+    real(fp)                                  :: thickm   !> thickness of mud only in an underlayer
+    real(fp)                                  :: cceff    !> consolidation rate effective
+
+    !! executable statements -------------------------------------------------------
+    msed           => this%state%msed
+    preload        => this%state%preload
+    td             => this%state%td
+    svfrac         => this%state%svfrac
+    thlyr          => this%state%thlyr
+    rhofrac        => this%settings%rhofrac
+    ymod           => this%settings%ymod
+    cc             => this%settings%cc
+    ag             => this%settings%ag
+    
+    load = 0.0_fp
+    do k = 1, (this%settings%nlyr-1)
+        ! compute overburden weight including half of the current layer as self-weight
+        if (k == 1) then
+            do l = 1, this%settings%nfrac
+                load = load + 0.5*msed(l, k, nm)
+            enddo
+        else
+            do l = 1, this%settings%nfrac
+                load = load + 0.5*(msed(l, k-1, nm) + msed(l, k, nm))
+            enddo
+        endif
+        !
+        if (comparereal(thlyr(k, nm),0.0_fp) == 0) then
+            !
+            ! layers with zero thickness don't consolidate
+            !
+        elseif (load > preload(k, nm)) then ! primary consolidation
+            !
+            ! update time of deposition
+            !
+            td(k,nm) = real(morft,fp)
+            !
+            ! compute critical porosity
+            !
+            critpor = 0.0_fp
+            thicks = 0.0_fp
+            thickm = 0.0_fp
+            do l = 1, this%settings%nfrac
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    thickm = thickm + msed(l,k,nm)/rhofrac(l)/svfrac(k,nm)
+                else
+                    thicks = thicks + msed(l,k,nm)/rhofrac(l)/svfrac(k,nm)
+                endif
+            enddo
+            critpor = (thickm*this%settings%minporm + thicks*this%settings%minpors) / thlyr(k,nm)
+            !
+            ! compute primary compaction
+            !
+            if (svfrac(k,nm) > (1.0_fp - critpor)) then
+                thnew = thlyr(k,nm)                             ! no primary compaction
+            elseif (k == this%settings%nlyr) then               ! base layer does not experience primary compaction
+                thnew = thlyr(k,nm)                             ! no primary compaction
+            else
+                cceff = 0.0_fp
+                do l = 1, this%settings%nfrac
+                    frac = msed(l,k,nm)/rhofrac(l)/thlyr(k,nm)/svfrac(k,nm)
+                    cceff = cceff + 0.5_fp * frac * cc(l) * 1.0_fp/ymod(l)  
+                enddo
+                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * (load - preload(k, nm)) * ag
+            endif
+            !
+            svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew 
+            if (svfrac(k,nm) > (1.0_fp - critpor)) then
+                thnew = thlyr(k,nm) * svfrac(k,nm) / (1 - critpor)
+            else
+                thnew = thnew
+            endif
+            svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
+            thlyr(k,nm) = thnew
+            preload(k,nm) = max(preload(k,nm), load) ! the preload should be updated to the current load
+            !
+        elseif (load <= preload(k,nm) .and. preload(k,nm) > 0.0_fp) then ! secondary consolidationonly starts after primary compaction has been activated
+            !
+            ! compute critical porosity
+            !
+            critpor = 0.0_fp
+            thicks = 0.0_fp
+            thickm = 0.0_fp
+            do l = 1, this%settings%nfrac
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    thickm = thickm + msed(l,k,nm)/rhofrac(l)/svfrac(k,nm)
+                else
+                    thicks = thicks + msed(l,k,nm)/rhofrac(l)/svfrac(k,nm)
+                endif
+            enddo
+            critpor = (thickm*this%settings%minporm + thicks*this%settings%minpors) / thlyr(k,nm)
+            !
+            ! compute secondary consolidation (new)
+            !
+            if (svfrac(k,nm) > (1 - critpor)) then
+                thnew = thlyr(k,nm)                 ! no secondary compaction
+            elseif (k == this%settings%nlyr) then
+                thnew = thlyr(k,nm)                 ! no secondary compaction
+            else
+                cceff = 0.0_fp
+                do l = 1, this%settings%nfrac
+                    if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then 
+                        frac = msed(l,k,nm)/rhofrac(l)/thlyr(k,nm)/svfrac(k,nm)
+                        cceff =  cceff + frac * cc(l)
+                    endif
+                enddo
+                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * this%settings%crmsec * (log(max(1.0_fp, real(morft,fp)) - td(k,nm)) - (log(max(1.0_fp, real(morft,fp)) - td(k,nm) - real(dtmor,hp)/86400.0_hp)))
+            endif
+            svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew 
+            if (svfrac(k,nm) > (1.0_fp - critpor)) then
+                thnew = thlyr(k,nm) * svfrac(k,nm) / (1 - critpor)
+            else
+                thnew = thnew
+            endif
+            svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
+            thlyr(k,nm) = thnew
+            preload(k,nm) = preload(k,nm)
+        endif
+    enddo
+end subroutine consolidate_terzaghi
+
+
+!> This routine implements compaction following Terzaghi, load model
+subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
+    use precision
+    use sediment_basics_module
+    use morphology_data_module
+
+    ! Call variables
+    type(bedcomp_data)                                             :: this     !< bed composition object
+    integer                                          , intent(in)  :: nm
+    real(hp)                                         , intent(in)  :: morft    !< morphological time [days since reference date]
+    real(fp)                                         , intent(in)  :: dtmor    !< morphological time step [s]
+
+    ! State/settings pointers
+    real(fp), dimension(:,:,:), pointer :: msed       !< sediment mass per unit area [kg/m2]
+    real(fp), dimension(:,:)  , pointer :: preload    !< maximum previous overburden mass [kg/m2]
+    real(fp), dimension(:,:)  , pointer :: td         !< time of latest load increment [days]
+    real(fp), dimension(:,:)  , pointer :: svfrac     !< total solid volume fraction [-]
+    real(fp), dimension(:,:)  , pointer :: strain     !< peat strain diagnostic [-]
+    real(fp), dimension(:,:)  , pointer :: thlyr      !< layer thickness including pore water [m]
+    real(fp), dimension(:)    , pointer :: rhofrac    !< solid density per fraction [kg/m3]
+    real(fp), dimension(:)    , pointer :: ymod       !< Young's modulus per fraction
+    real(fp), dimension(:)    , pointer :: cc         !< consolidation coefficient per fraction
+    real(fp)                  , pointer :: ag         !< gravitational acceleration [m/s2]
+
+    ! Peat settings
+    integer , pointer :: peatfrac
+    real(fp), pointer :: peatloi
+    real(fp), pointer :: parb
+    real(fp), pointer :: parc
+    real(fp), pointer :: pard
+    real(fp), pointer :: peatthick
+
+    ! Local variables
+    integer  :: k
+    integer  :: l
+    real(fp) :: load                         !< cumulative sediment mass above current layer [kg/m2]
+    real(fp) :: oldload
+    real(fp) :: load_eff
+    real(fp) :: load_pa
+    real(fp) :: thold
+    real(fp) :: thnew
+    real(fp) :: thtrial
+    real(fp) :: thmin_mass
+    real(fp) :: solidvol
+    real(fp) :: v_mud
+    real(fp) :: v_sand
+    real(fp) :: vfrac_l
+    real(fp) :: svnew
+    real(fp) :: critpor
+    real(fp) :: svmax_allowed
+    real(fp) :: cceff_primary
+    real(fp) :: cceff_secondary
+    real(fp) :: load_increment
+    real(fp) :: age_new
+    real(fp) :: age_old
+    real(fp) :: dlogage
+    real(fp) :: tmor_sec
+    real(fp) :: para
+    real(fp) :: mpeat
+
+    ! Numerical constants
+    real(fp), parameter :: eps_thick = 1.0e-12_fp
+    real(fp), parameter :: eps_mass  = 1.0e-12_fp
+    real(fp), parameter :: eps_sv    = 1.0e-12_fp
+    real(fp), parameter :: ref_stress_peat = 1000.0_fp   !< reference stress [Pa]
+
+    ! Pointer associations
+    msed      => this%state%msed
+    preload   => this%state%preload
+    td        => this%state%td
+    svfrac    => this%state%svfrac
+    strain    => this%state%strain
+    thlyr     => this%state%thlyr
+    rhofrac   => this%settings%rhofrac
+    ymod      => this%settings%ymod
+    cc        => this%settings%cc
+    ag        => this%settings%ag
+
+    peatfrac  => this%settings%peatfrac
+    peatloi   => this%settings%peatloi
+    parb      => this%settings%parb
+    parc      => this%settings%parc
+    pard      => this%settings%pard
+    peatthick => this%settings%peatthick
+
+    ! Peat compression coefficient A = parc*LOI + pard.
+    ! Do not overwrite parb/parc/pard here; they should come from settings/input.
+    para = parc * peatloi + pard
+
+    ! Guarded time used in the peat logarithmic strain relation.
+    tmor_sec = max(real(morft, fp) * 86400.0_fp, 1.0_fp)
+
+    ! Peat load definition: mass above the current layer only.
+    load = 0.0_fp
+
+    ! Do not compact the transport layer. Also leave the last/base layer unchanged.
+    ! If the base layer is intentionally part of the consolidating bed in your model,
+    ! change the upper bound from nlyr-1 to nlyr, but keep the mass-volume limiter.
+    do k = 2, this%settings%nlyr - 1
+
+        ! Load acting on layer k is the cumulative dry sediment mass above it.
+        do l = 1, this%settings%nfrac
+            load = load + msed(l, k-1, nm)
+        enddo
+
+        if (comparereal(thlyr(k, nm), 0.0_fp) == 0) cycle
+
+        thold = thlyr(k, nm)
+        thnew = thold
+
+        ! Compute total solid volume and composition-dependent critical porosity.
+        solidvol = 0.0_fp
+        v_mud    = 0.0_fp
+        v_sand   = 0.0_fp
+        do l = 1, this%settings%nfrac
+            if (rhofrac(l) > 0.0_fp) then
+                vfrac_l = msed(l, k, nm) / rhofrac(l)
+                solidvol = solidvol + vfrac_l
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    v_mud = v_mud + vfrac_l
+                else
+                    v_sand = v_sand + vfrac_l
+                endif
+            endif
+        enddo
+
+        if (solidvol > eps_mass) then
+            critpor = (v_mud*this%settings%minporm + v_sand*this%settings%minpors) &
+                    / max(v_mud + v_sand, eps_mass)
+        else
+            critpor = this%settings%porini
+        endif
+        critpor = max(0.0_fp, min(0.99_fp, critpor))
+
+        ! Maximum allowed solid volume fraction. Use both the model svmax and the
+        ! composition-dependent critical porosity limit. This prevents negative porosity.
+        svmax_allowed = min(this%settings%svmax, 1.0_fp - critpor)
+        svmax_allowed = max(eps_sv, min(0.99_fp, svmax_allowed))
+
+        ! Peat mass in layer k.
+        if (peatfrac > 0 .and. peatfrac <= this%settings%nfrac) then
+            mpeat = msed(peatfrac, k, nm)
+        else
+            mpeat = 0.0_fp
+        endif
+
+        oldload = preload(k, nm)
+
+        if (mpeat > eps_mass) then
+            ! Peat branch.
+            ! Use the larger of current load and preload in the peat strain relation,
+            ! while preserving preload as a maximum historical load.
+            load_eff = max(load, oldload)
+            load_pa  = load_eff * ag
+
+            thtrial = thold
+            if (load_pa > ref_stress_peat) then
+                strain(k, nm) = para * log(load_pa / ref_stress_peat) &
+                              + parb * log(tmor_sec)
+                thtrial = peatthick * exp(-strain(k, nm))
+                ! Prevent artificial expansion from the global reference thickness.
+                thtrial = min(thold, thtrial)
+            endif
+
+            thnew = thtrial
+
+            if (load > oldload) then
+                td(k, nm) = real(morft, fp)
+            endif
+            preload(k, nm) = max(oldload, load)
+
+        else
+            ! Mineral/non-peat branch.
+            ! Primary compaction when the current load exceeds the historical preload.
+            cceff_primary = 0.0_fp
+            load_increment = max(load - oldload, 0.0_fp)
+
+            if (load_increment > 0.0_fp .and. solidvol > eps_mass) then
+                do l = 1, this%settings%nfrac
+                    if (l == peatfrac) cycle
+                    if (msed(l, k, nm) <= eps_mass) cycle
+                    if (rhofrac(l) <= 0.0_fp .or. ymod(l) <= 0.0_fp) cycle
+
+                    vfrac_l = (msed(l, k, nm) / rhofrac(l)) / max(solidvol, eps_mass)
+                    vfrac_l = max(0.0_fp, min(1.0_fp, vfrac_l))
+
+                    ! 0.5 factor follows the Terzaghi primary-compaction formulation.
+                    cceff_primary = cceff_primary + 0.5_fp * vfrac_l * cc(l) / ymod(l)
+                enddo
+
+                thnew = thnew - cceff_primary * thold * load_increment * ag
+                td(k, nm) = real(morft, fp)
+            endif
+
+            ! Secondary mud consolidation. This is an incremental logarithmic-age term
+            ! and is applied only after a layer has experienced loading history.
+            if (this%settings%crmsec > 0.0_fp .and. oldload > 0.0_fp .and. solidvol > eps_mass) then
+                age_new = max((real(morft, fp) - td(k, nm)) * 86400.0_fp, 0.0_fp)
+                age_old = max(age_new - dtmor, 0.0_fp)
+                dlogage = log(1.0_fp + age_new) - log(1.0_fp + age_old)
+
+                if (dlogage > 0.0_fp) then
+                    cceff_secondary = 0.0_fp
+                    do l = 1, this%settings%nfrac
+                        if (l == peatfrac) cycle
+                        if (msed(l, k, nm) <= eps_mass) cycle
+                        if (rhofrac(l) <= 0.0_fp) cycle
+
+                        ! Apply secondary compaction only to mud-like mineral fractions.
+                        if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                            vfrac_l = (msed(l, k, nm) / rhofrac(l)) / max(solidvol, eps_mass)
+                            vfrac_l = max(0.0_fp, min(1.0_fp, vfrac_l))
+                            cceff_secondary = cceff_secondary + vfrac_l * cc(l)
+                        endif
+                    enddo
+
+                    thnew = thnew - cceff_secondary * thold * this%settings%crmsec * dlogage
+                endif
+            endif
+
+            preload(k, nm) = max(oldload, load)
+        endif
+
+        ! Final physical mass-volume limiter.
+        ! This is the key robustness guard for accelerated MorFac runs: after all
+        ! deposition and consolidation effects, the layer must be thick enough to
+        ! contain its solid volume without exceeding svmax_allowed.
+        if (solidvol > eps_mass) then
+            thmin_mass = solidvol / svmax_allowed
+            thnew = max(thnew, thmin_mass)
+        endif
+        thnew = max(thnew, eps_thick)
+
+        ! Recompute solid volume fraction from the final mass and final thickness.
+        if (solidvol > eps_mass) then
+            svnew = solidvol / thnew
+        else
+            svnew = 0.0_fp
+        endif
+        svnew = max(0.0_fp, min(svmax_allowed, svnew))
+
+        thlyr(k, nm)  = thnew
+        svfrac(k, nm) = svnew
+
+    enddo
+end subroutine consolidate_terzaghi_peat
+
+
+subroutine consolidate_no_compaction()
+    ! load = 0.0_fp
+    ! do k = 2, (this%settings%nlyr-1)
+    !     do l = 1, this%settings%nfrac
+    !         load = load + msed(l, k-1, nm) 
+    !     enddo
+    !     if (comparereal(thlyr(k, nm),0.0_fp) == 0) then
+    !         !
+    !         ! layers with zero thickness don't consolidate
+    !         !
+    !     elseif (load > preload(k, nm)) then ! Primary consolidation
+    !         !
+    !         ! compute consolidation
+    !         !
+    !         dzc(nm) = 0.0_fp
+    !         thnew = thlyr(k, nm) - dzc(nm)
+    !         !
+    !         svfrac(k, nm) = svfrac(k, nm) * thlyr(k, nm) / thnew  
+    !         thlyr(k, nm) = thnew
+    !         preload(k,nm) = load
+    !     elseif (load <= preload(k, nm)) then !Secondary consolidation
+    !         !
+    !         ! compute consolidation
+    !         !
+    !         dzc(nm) = 0.0_fp
+    !         thnew = thlyr(k, nm) - dzc(nm)
+    !         !
+    !         svfrac(k, nm) = svfrac(k, nm) * thlyr(k, nm) / thnew  
+    !         thlyr(k, nm) = thnew
+    !         preload(k,nm) = preload(k, nm)
+    !     endif
+    ! enddo
+end subroutine consolidate_no_compaction
+
+
+!> Initialize the preload array assuming that all sediment is fully consolidated.
+subroutine initpreload(this)
+    use precision
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(inout) :: this    
+    type (bedcomp_data), intent(inout) :: this     !< bed composition object    
     !
     ! Local variables
     !
@@ -3823,26 +5601,31 @@ subroutine initpreload(this)
     integer                                   :: nm
     real(fp)                                  :: load
     real(fp) , dimension(:,:,:), pointer      :: msed
+    real(fp) , dimension(:,:)  , pointer      :: td
     real(fp) , dimension(:,:)  , pointer      :: preload
     !
     !! executable statements -------------------------------------------------------
     !
     msed       => this%state%msed
     preload    => this%state%preload
+    td         => this%state%td
     !
-    select case(this%settings%iunderlyr)
-    case(2)
+    select case (this%settings%iunderlyr)
+    case (BED_LAYERED)
        do nm = this%settings%nmlb, this%settings%nmub
+          td(1, nm)      = 0.0_fp
           preload(1, nm) = 0.0_fp
           load = 0.0_fp
           do k = 2, this%settings%nlyr
-             do l = 1, this%settings%nfrac
-                load = load + msed(l, k-1, nm)
-             enddo
-             preload(k, nm) = load
+              do l = 1, this%settings%nfrac
+                  load = load + msed(l, k-1, nm)
+              enddo
+              td(k, nm) = 0.0_fp
+              preload(k, nm) = load
           enddo
        enddo
-    case default
+       
+    case default ! BED_MIXED
        ! option not available for this bed composition model
     end select
 end subroutine initpreload

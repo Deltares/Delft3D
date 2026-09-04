@@ -2,7 +2,7 @@ module m_bott3d
 contains
 subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 & lsal      ,ltem      ,kfs       ,kfu       ,kfv       , &
-                & r1        ,s0        ,kcs       , &
+                & r1        ,s0        ,kcs       ,rhowat    , &
                 & dps       ,gsqs      ,guu       , &
                 & gvv       ,s1        ,thick     ,dpd       , &
                 & umean     ,vmean     ,sbuu      ,sbvv      , &
@@ -68,6 +68,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     use dfparall
     use sediment_basics_module
     use morstatistics, only: morstats
+    use m_fluff_burial, only: fluff_burial
     !
     implicit none
     !
@@ -146,7 +147,11 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(:,:)             , pointer :: mfluff
     real(fp), dimension(:,:)             , pointer :: sinkf
     real(fp), dimension(:,:)             , pointer :: sourf
+    real(fp) , dimension(:,:)            , pointer :: depflxf
     integer                              , pointer :: imobility
+    real(fp) , dimension(:,:)            , pointer :: eroflxf
+    
+    integer                              , pointer :: iconsolidate
 !
 ! Local parameters
 !
@@ -184,6 +189,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: gvv    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: hu     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: hv     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in)  :: rhowat !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: s0     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: umean  !  Description and declaration in esm_alloc_real.f90
@@ -254,6 +260,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: htdif
     real(fp) :: rate
     real(fp) :: r1avg
+    real(fp), dimension(:)   , allocatable  :: rhowat2d
     real(fp) :: sedflx
     real(fp) :: sb1
     real(fp) :: sb2
@@ -339,6 +346,10 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     sinkf               => gdp%gdmorpar%flufflyr%sinkf
     sourf               => gdp%gdmorpar%flufflyr%sourf
+    depflxf             => gdp%gdmorpar%flufflyr%depflxf
+    eroflxf             => gdp%gdmorpar%flufflyr%eroflxf
+    
+    iconsolidate        => gdp%gdmorlyr%settings%iconsolidate
     !
     lstart  = max(lsal, ltem)
     bedload = .false.
@@ -779,6 +790,8 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                       mfluff(l, nm) = mfluff(l, nm) + &
                                     & dt*(  sinkf(l, nm)*r1(nm, k, ll)*thick1   &
                                     &     - sourf(l, nm)              *thick0  )
+                      depflxf(l, nm) = sinkf(l, nm)*r1(nm, k, ll)*thick1
+                      eroflxf(l, nm) = sourf(l, nm)              *thick0
                    endif
                    !
                    ! add suspended transport correction vector
@@ -847,7 +860,12 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           write (lundia,'(12x,2(a,i0))') 'Total number of Bed change messages for timestep ',ntstep,' : ',bedchangemesscount
        endif
        !
-       call fluff_burial(gdp%gdmorpar%flufflyr, dbodsd, lsed, lsedtot, gdp%d%nmlb, gdp%d%nmub, dt, morfac)
+       allocate(rhowat2d(gdp%d%nmlb:gdp%d%nmub))
+       do nm = 1, nmmax
+          rhowat2d(nm) = rhowat(nm,kmax)
+       enddo
+       call fluff_burial(gdp%gdmorpar%flufflyr, dbodsd, lsed, lsedtot, gdp%d%nmlb, gdp%d%nmub, dt, morfac, iconsolidate, rhosol, rhowat2d)
+       deallocate(rhowat2d)
        !
        ! Re-distribute erosion near dry and shallow points to allow erosion
        ! of dry banks
@@ -1077,7 +1095,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
-          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelength_tmp, sbot, dtmor, gdp%messages) /= 0) then
+          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelength_tmp, sbot, dtmor, morft, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
           else

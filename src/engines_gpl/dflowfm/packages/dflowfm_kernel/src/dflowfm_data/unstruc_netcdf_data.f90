@@ -401,6 +401,9 @@ module m_unstruc_netcdf_data
       integer :: id_fixfac(MAX_ID_VAR) = -1
       integer :: id_hidexp(MAX_ID_VAR) = -1
       integer :: id_mfluff(MAX_ID_VAR) = -1
+      integer :: id_depflxf(MAX_ID_VAR) = -1
+      integer :: id_eroflxf(MAX_ID_VAR) = -1
+      integer :: id_burflxf(MAX_ID_VAR) = -1
       integer :: id_sxwav(MAX_ID_VAR) = -1
       integer :: id_sywav(MAX_ID_VAR) = -1
       integer :: id_sbxwav(MAX_ID_VAR) = -1

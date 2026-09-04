@@ -40,6 +40,7 @@ module m_fm_bott3d
    use m_bndmorlyr, only: bndmorlyr
    use m_bermslopenudging, only: bermslopenudging
    use precision
+   use m_fluff_burial, only: fluff_burial
 
    implicit none
 
@@ -72,16 +73,18 @@ contains
       use precision_basics
       use bedcomposition_module
       use sediment_basics_module
+      use m_flow, only: kmx
       use m_flowgeom, only: ndxi, ndx
       use m_flowparameters, only: EPS10, jawave
       use fm_external_forcings_data, only: nopenbndsect
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
+      use m_turbulence, only: rhowat
       use unstruc_files, only: mdia
       use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, &
                              bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, &
                              stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt,&
                              hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, sedd50, taub, rhosol, &
-                             hidexp
+                             hidexp, iconsolidate
       use m_sediment, only: kcsmor
       use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
       use m_fm_morstatistics, only: morstats, morstatt0
@@ -90,6 +93,7 @@ contains
       use m_reconstruct_sed_transports
       use m_waveconst
       use m_physcoef, only: ag, rhomean, dynroughveg
+      use m_get_kbot_ktop, only: getkbotktop
       use m_bedform, only: bfmpar
       implicit none
 
@@ -110,10 +114,12 @@ contains
 
       logical :: error
 
-      integer :: ierror, ll
+      integer :: ierror, nm, ll
+      integer :: kb, kt
 
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
+      real(fp), dimension(:), allocatable :: rhowat2d
       real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
       real(fp), dimension(:), pointer :: dunelength_tmp
 
@@ -207,7 +213,17 @@ contains
 
          call fm_change_in_sediment_thickness(dtmor)
 
-         call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
+         allocate(rhowat2d(ndxi))
+         do nm = 1, ndxi
+            if (kmx>0) then ! 3D case
+               call getkbotktop(nm, kb, kt)
+            else ! 2D case
+               kb = nm
+            endif
+            rhowat2d(nm) = rhowat(kb)
+         enddo
+         call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac, iconsolidate, rhosol, rhowat2d)
+         deallocate(rhowat2d)
 
          call fm_dry_bed_erosion(dtmor)
 
@@ -236,7 +252,7 @@ contains
             !
             ! Diffuse fractions in active layer
             !
-            if (stmpar%morlyr%settings%active_layer_diffusion > ACTIVE_LAYER_DIFFUSION_OFF) then
+            if (stmpar%morlyr%settings%active_layer_diffusion /= ACTIVE_LAYER_DIFFUSION_OFF) then
                call fm_diffusion_active_layer()
             end if
             !
@@ -246,21 +262,21 @@ contains
             ! 
             ! Compute mobile fractions
             ! 
-            if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
+            if (stmpar%morlyr%settings%imobility /= MOBILITY_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
-            endif    
+            endif
             ! 
             if (stmpar%morlyr%settings%crslyr) then 
                !
                ! Compute average bed load transport in cel
                ! 
                sbtot(:, :) = hypot(sbcx(:, :), sbcy(:, :)) !sbtot(:, :) = sqrt(sbcx(:, :) * sbcx(:, :) + sbcy(:, :) * sbcy(:, :))
-            endif 
+            endif
             !
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength_tmp, sbtot, dtmor, morft, mtd%messages) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)
@@ -347,7 +363,7 @@ contains
       use m_get_Lbot_Ltop
 
       implicit none
-      
+
    !!
    !! Local parameters
    !!

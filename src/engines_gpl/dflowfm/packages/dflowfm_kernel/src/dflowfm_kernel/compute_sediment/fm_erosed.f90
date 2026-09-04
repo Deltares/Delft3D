@@ -41,6 +41,11 @@ module m_fm_erosed_sub
    use m_compdiam, only: compdiam
    use m_comphidexp, only: comphidexp
    use m_compsandfrac, only: compsandfrac
+   use m_updmorfac, only: updmorfac
+   use m_soursin_2d, only: soursin_2d
+   use m_soursin_3d, only: soursin_3d
+   use m_eqtran, only: eqtran
+   use m_erosilt, only: erosilt
 
    implicit none
 
@@ -105,6 +110,7 @@ contains
                              cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
                              frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
       use m_fm_erosed, only: difparam, seddif_cal
+      use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate, CONSOL_NONE
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -214,7 +220,6 @@ contains
       real(fp) :: vmean
       real(fp) :: z0rou
       real(fp) :: zvelb
-      real(fp) :: poros
       real(fp) :: wstau ! dummy for erosilt
       real(fp), dimension(:), allocatable :: evel ! erosion velocity [m/s]
       real(fp), dimension(0:kmax2d) :: dcww2d
@@ -246,7 +251,6 @@ contains
 
       integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
       integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
-      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -414,6 +418,7 @@ contains
          call getfrac(stmpar%morlyr, frac, anymud, mudcnt, &
             & mudfrac, 1, ndx)
       end if
+      call getbedprop(stmpar%morlyr, 1, ndx, poros, tcrero_bed, eropar_bed)
 
       ! 3D:
       ! Calculate cell centre velocity components and magnitude
@@ -593,7 +598,7 @@ contains
          !
          ! determine hiding & exposure factors
          !
-         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDEXP_ACTIVE_AND_COARSE_LAYER) then 
             !In this case, the hiding and exposure factors are computed based on the mean grain
             !size of the sediment in both the active layer (which is the top layer in the bed) and
             !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
@@ -917,10 +922,12 @@ contains
          dll_reals(RP_VMEAN) = real(vmean, hp)
          dll_reals(RP_VELMN) = real(velm, hp)
          dll_reals(RP_USTAR) = real(ustarc, hp)
+         dll_reals(RP_POROS) = real(poros(nm), hp)
          dll_reals(RP_BLCHG) = real(dzbdt(nm), hp) ! for dilatancy
          dll_reals(RP_DZDX) = real(dzdx(nm), hp) ! for dilatancy
          dll_reals(RP_DZDY) = real(dzdy(nm), hp) ! for dilatancy
          dll_reals(RP_ZB) = real(bl(nm), hp)
+         dll_reals(RP_TAUCR) = real(tcrero_bed(nm), hp)
          !
          if (max_integers < MAX_IP) then
             write (errmsg, '(a)') 'fm_erosed::Insufficient space to pass integer values to transport routine.'
@@ -1003,7 +1010,7 @@ contains
                           & npar, localpar, max_integers, max_reals, &
                           & max_strings, dll_function(l), dll_handle(l), dll_integers, &
                           & dll_reals, dll_strings, iflufflyr, mfltot, &
-                          & fracf, maxslope, wetslope, &
+                          & fracf, tcrero_bed(nm) ,eropar_bed(nm), maxslope, wetslope, &
                           & error, wstau, sinktot, sourse(nm, l), sourfluff)
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
@@ -1115,11 +1122,9 @@ contains
             dll_reals(RP_DSS) = real(tdss, hp)
             dll_reals(RP_DSTAR) = real(dstar(l), hp)
             dll_reals(RP_SETVL) = real(twsk, hp) ! Settling velocity near bedlevel
-            !
-            ! Calculate bed porosity for dilatancy
-            !
-            poros = 1.0_dp - cdryb(l) / rhosol(l)
-            dll_reals(RP_POROS) = real(poros, hp)
+            if (iconsolidate == CONSOL_NONE) then
+               dll_reals(RP_POROS) = 1.0_hp - real(cdryb(l)/rhosol(l), hp)
+            endif
             !
             localpar(1) = ag
             localpar(2) = rhowat(kbed) ! rhow
@@ -1225,9 +1230,9 @@ contains
                   ! gradient in sed. conc. exists in this area.
                   if (difparam > 0.0_fp) then
                      difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
-                     do kk = kb - 1, kmxsed(nm, l) - 1
-                        seddif(l, kk) = difbot
-                     end do
+                  do kk = kb - 1, kmxsed(nm, l) - 1
+                     seddif(l, kk) = difbot
+                  end do
                   end if
                end if ! suspfrac
             else

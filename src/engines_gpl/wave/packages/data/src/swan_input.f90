@@ -1659,6 +1659,8 @@ contains
          !
          deallocate (tmp_add_out_names)
          !
+      else
+         allocate (sr%add_out_names(n_outpars), stat=istat)
       end if
       !
       !  Interval to keep the hotfile
@@ -2496,6 +2498,11 @@ contains
       if (istat == 0) allocate (sr%nlin(nobst), stat=istat)
       if (istat == 0) allocate (sr%xpob(nobstpnt), stat=istat)
       if (istat == 0) allocate (sr%ypob(nobstpnt), stat=istat)
+      !
+      sr%ncrv = 0
+      if (istat == 0) allocate (sr%nclin(sr%ncrv), stat=istat)
+      if (istat == 0) allocate (sr%xpcu(sr%ncrv), stat=istat)
+      if (istat == 0) allocate (sr%ypcu(sr%ncrv), stat=istat)
       !
       if (istat /= 0) then
          write (*, *) 'SWAN_INPUT: memory alloc error (nobst)'

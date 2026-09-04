@@ -165,7 +165,6 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             call morstats(dbodsd)
          end if
-         !In case of coarse-layer (HANNEKE) model, we do not want to update coarse layer fluxes.
          dtmor = 0 
          sbtot = 0.0_fp
          if (associated(bfmpar%dunelength)) then
@@ -174,7 +173,7 @@ contains
             allocate(dunelength_tmp(1:ndx))
             dunelength_tmp = 1.0e10_fp
          end if
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelength_tmp, sbtot, dtmor, morft, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return

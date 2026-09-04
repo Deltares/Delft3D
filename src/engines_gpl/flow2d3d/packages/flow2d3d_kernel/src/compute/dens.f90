@@ -1,7 +1,7 @@
 subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
               & lsal      ,ltem      ,lsed      ,kcs        ,saleqs    ,temeqs    , &
               & densin    ,zmodel    ,thick     ,r1         ,rho       , &
-              & sumrho    ,rhowat    ,rhosol    ,ifirst_dens,gdp       )
+              & sumrho    ,rhowat    ,ifirst_dens,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -59,6 +59,7 @@ subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
     !
     real(fp)               , pointer :: rhow
     integer                , pointer :: idensform
+    real(fp)     , dimension(:)          , pointer :: rhosol
 !
 ! Global variables
 !
@@ -81,7 +82,6 @@ subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                     :: sumrho !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in) :: r1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                               , intent(in) :: thick  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lsed)                               , intent(in) :: rhosol !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -103,6 +103,7 @@ subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
     !
     rhow      => gdp%gdphysco%rhow
     idensform => gdp%gdphysco%idensform
+    rhosol              => gdp%gdsedpar%rhosol
     nm_pos    =  1
     !
     if (ifirst_dens == 1) then

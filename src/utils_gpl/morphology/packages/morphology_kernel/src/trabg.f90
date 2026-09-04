@@ -1,10 +1,3 @@
-module m_trabg
-   implicit none
-
-contains
-
-   subroutine trabg(utot, di, taub, npar, par, &
-                  & sbot, ssus, dg, dgsd, chezy)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,8 +24,16 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_trabg
+   implicit none
+   private
+   public trabg
+
+contains
+
+   subroutine trabg(utot, di, taub, npar, par, &
+                  & sbot, ssus, dg, dgsd, chezy)
 !!--description-----------------------------------------------------------------
 !
 !  Computes sediment transport according to the Gaeuman et al modified form of the
@@ -44,12 +45,8 @@ contains
 !  Crowe "Surface based transport for mixed size sediment", Journal of Hydraulic
 !  Engineering, Feb 2003
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      !
-      implicit none
 !
 ! Arguments
 !
