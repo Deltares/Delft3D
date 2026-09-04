@@ -130,8 +130,6 @@ contains
       real(fp) :: bakdif
       real(fp) :: betam
       real(fp) :: chezy
-      real(fp) :: cmax
-      real(fp) :: cmaxs
       real(fp) :: d10
       real(fp) :: d90
       real(fp) :: delm
@@ -146,9 +144,6 @@ contains
       real(fp) :: epsmxc
       real(fp) :: fc1
       real(fp) :: fcc
-      real(fp) :: fch1
-      real(fp) :: fclay
-      real(fp) :: fpack
       real(fp) :: fcwc
       real(fp) :: fcwt
       real(fp) :: ff
@@ -295,22 +290,7 @@ contains
          ws0 = 1.1_fp * sqrt(drho * ag * di50)
       end if
       !
-      if (itaucr == 1) then
-          fclay = 1.0_fp
-          fpack = 1.0_fp
-          fch1  = 1.0_fp
-          if (di50 < dsand) then
-             cmaxs = 0.65_fp
-             fch1  = max((dsand/di50)**gamtcr, 1.0_fp)
-             cmax  = min(max((di50/dsand)*cmaxs , 0.05_fp) , cmaxs)
-             fpack = min(cmax/cmaxs , 1.0_fp)
-          else
-             fclay = min((1.0_fp+mudfrac)**betam, 2.0_fp)
-          endif
-          taucr1 = fpack * fch1 * fclay * taucr0
-      else
-          taucr1 = taucrb
-      endif
+      taucr1 = compute_taucr1(itaucr, di50, gamtcr, mudfrac, taucr0, betam, taucrb)
       !
       call bedbc2004(tp, rhowat, &
                    & h1, umod, d10, zumod, di50, &
@@ -538,5 +518,42 @@ contains
          error = .false.
       end if
    end subroutine tram2
+
+   elemental function compute_taucr1(itaucr, di50, gamtcr, mudfrac, betam, taucr0, taucrb) result (taucr1)
+      use precision, only: fp
+      use sediment_basics_module, only: dsand
+
+      integer, intent(in) :: itaucr
+      real(fp), intent(in) :: di50
+      real(fp), intent(in) :: gamtcr
+      real(fp), intent(in) :: mudfrac
+      real(fp), intent(in) :: betam
+      real(fp), intent(in) :: taucr0
+      real(fp), intent(in) :: taucrb
+      real(fp) :: taucr1
+
+      real(fp) :: cmax
+      real(fp) :: cmaxs
+      real(fp) :: fclay
+      real(fp) :: fpack
+      real(fp) :: fch1
+
+      if (itaucr == 1) then
+          fclay = 1.0_fp
+          fpack = 1.0_fp
+          fch1  = 1.0_fp
+          if (di50 < dsand) then
+             cmaxs = 0.65_fp
+             fch1  = max((dsand/di50)**gamtcr, 1.0_fp)
+             cmax  = min(max((di50/dsand)*cmaxs , 0.05_fp) , cmaxs)
+             fpack = min(cmax/cmaxs , 1.0_fp)
+          else
+             fclay = min((1.0_fp+mudfrac)**betam, 2.0_fp)
+          endif
+          taucr1 = fpack * fch1 * fclay * taucr0
+      else
+          taucr1 = taucrb
+      endif
+   end function compute_taucr1
 
 end module m_tram2
