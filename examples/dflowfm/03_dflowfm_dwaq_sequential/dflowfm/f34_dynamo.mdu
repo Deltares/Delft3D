@@ -45,7 +45,6 @@ zLayerGrowthFactor                = 1                                           
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 PillarFile                        =                                                                     # Polyline file *.pliz, containing bridge pillars with rows x, y, drag coefficient and diameter
-IniFieldFile                      = 
 ManholeFile                       =                                                                     # File *.ini containing manholes
 DzTop                             = -999.                                                               # z-layer thickness of layers above level DzTopUniAboveZ
 FloorLevTopLay                    = -999.                                                               # The floor level of the top layer
