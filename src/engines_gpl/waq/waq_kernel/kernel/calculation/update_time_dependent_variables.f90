@@ -43,31 +43,33 @@ contains
     !! to determine drying and flooding and for a number of
     !! numerical schemes.
     subroutine update_volumes_and_time_step(file_unit_list, itime, itimel, harmat, array, &
-            iharm, nrharm, nrftot, num_cells, volume, &
+            iharm, nrharm, nrftot, num_cells_dummy, volume, &
             ipoint, luntxt, ftype, isflag, ivflag, &
             updatv, inwspc, anwspc, inwtyp, iwork, &
             lstrec, lrewin, vollst, dlwqd)
+
+        use m_waq_memory_dimensions
 
 
         integer(kind = int_wp), intent(in) :: file_unit_list(*) !< Array with unit numbers
         integer(kind = int_wp), intent(in) :: itime             !< The model timer
         integer(kind = int_wp), intent(in) :: itimel            !< The model timer last step
-        real(kind = real_wp), intent(inout) :: harmat(*)         !< Matrices harmonic components
-        real(kind = real_wp), intent(inout) :: array (*)         !< Set of double file buffers
-        integer(kind = int_wp), intent(in) :: iharm (*)         !< Harmonic time space
-        integer(kind = int_wp), intent(in) :: nrharm(*)         !< Set of nrs of harmonic records
-        integer(kind = int_wp), intent(in) :: nrftot(*)         !< Set of record lengthes
-        integer(kind = int_wp), intent(in) :: num_cells             !< Nr of computational volumes
-        real(kind = real_wp), intent(out) :: volume(num_cells)     !< Array of volumes per gridcell
-        integer(kind = int_wp), intent(in) :: ipoint(*)         !< Set of pointers to destination
-        character(len = *), intent(in) :: luntxt(*)         !< Text with the unit numbers
+        real(kind = real_wp), intent(inout) :: harmat(harmonics_arr_len)   !< Matrices harmonic components
+        real(kind = real_wp), intent(inout) :: array (nlines)              !< Set of double file buffers
+        integer(kind = int_wp), intent(in) :: iharm (num_harmonics)        !< Harmonic time space
+        integer(kind = int_wp), intent(in) :: nrharm(num_items_time_fn)    !< Set of nrs of harmonic records
+        integer(kind = int_wp), intent(in) :: nrftot(num_items_time_fn)    !< Set of record lengthes
+        integer(kind = int_wp), intent(in) :: num_cells_dummy              !< Nr of computational volumes -- resolve conflict with imported variable
+        real(kind = real_wp), intent(out) :: volume(num_cells)             !< Array of volumes per gridcell
+        integer(kind = int_wp), intent(in) :: ipoint(num_indices)          !< Set of pointers to destination
+        character(len = *), intent(in) :: luntxt(*)             !< Text with the unit numbers
         integer(kind = int_wp), intent(in) :: ftype (*)         !< Type of file to read
         integer(kind = int_wp), intent(in) :: isflag            !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(in) :: ivflag            !< = 1 then computed volumes
         logical, intent(out) :: updatv            !< set to T if volume is updated
-        integer(kind = int_wp), intent(inout) :: inwspc(*)         !< Integer space new time functions
-        real(kind = real_wp), intent(inout) :: anwspc(*)         !< Real space new time functions
-        integer(kind = int_wp), intent(in) :: inwtyp(*)         !< Types of items
+        integer(kind = int_wp), intent(inout) :: inwspc(newisp)  !< Integer space new time functions
+        real(kind = real_wp), intent(inout) :: anwspc(newrsp)    !< Real space new time functions
+        integer(kind = int_wp), intent(in) :: inwtyp(num_boundary_conditions+num_waste_loads)         !< Types of items
         integer(kind = int_wp), intent(inout) :: iwork (*)         !< Integer workspace
         logical, intent(in) :: lstrec            !< Switch last record on rewind wanted
         logical, intent(out) :: lrewin            !< If T then rewindtook place
@@ -100,8 +102,8 @@ contains
 
         !volumes
         if (nrharm(2) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), volume, 1, nrharm(2), &
                     num_cells, nrftot(2), ipa, iph, ipf, &
                     ipi, luntxt, 7, isflag, ifflag, &
                     update, .false., 0, iwork, lstrec, &
@@ -138,48 +140,48 @@ contains
         use m_dlwqta
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)             !< Array with unit numbers
-        integer(kind = int_wp), intent(in) :: itime                         !< Model timer
+        integer(kind = int_wp), intent(in)    :: itime                         !< Model timer
         integer(kind = int_wp), intent(inout) :: itimel                        !< Model timer one step ago
-        real(kind = real_wp), intent(inout) :: harmat(harmonics_arr_len)                !< Matrices harmonic components
-        real(kind = real_wp), intent(inout) :: array (nlines)                !< Set of double file buffers
-        integer(kind = int_wp), intent(in) :: iharm (num_harmonics)                !< Harmonics time space
+        real(kind = real_wp), intent(inout)   :: harmat(harmonics_arr_len)                !< Matrices harmonic components
+        real(kind = real_wp), intent(inout)   :: array (nlines)                !< Set of double file buffers
+        integer(kind = int_wp), intent(in)    :: iharm (num_harmonics)                !< Harmonics time space
         integer(kind = int_wp), intent(inout) :: nrharm(num_items_time_fn)                !< set of nrs of harmonic records
-        integer(kind = int_wp), intent(in) :: nrftot(num_items_time_fn)                !< set of record lengths
-        integer(kind = int_wp), intent(out) :: idt                           !< Integration time step size
-        real(kind = real_wp), intent(out) :: volume(num_cells + num_cells_bottom)         !< Array of segment volumes
-        real(kind = real_wp), intent(out) :: disper(num_dispersion_arrays, num_exchanges + num_exchanges_bottom_dir)    !< Array of dispersions
-        real(kind = real_wp), intent(out) :: area(num_exchanges + num_exchanges_bottom_dir)              !< Array of exchange surfaces
-        real(kind = real_wp), intent(out) :: flow(num_exchanges + num_exchanges_bottom_dir)              !< Array of flows
-        real(kind = real_wp), intent(out) :: velo(num_velocity_arrays, num_exchanges + num_exchanges_bottom_dir)      !< Array of velocities
-        real(kind = real_wp), intent(out) :: aleng(2, num_exchanges + num_exchanges_bottom_dir)          !< Array of from and to lengths
-        real(kind = real_wp), intent(out) :: wastes(num_substances_total + 2, num_waste_loads)      !< Array of wasteloads
-        real(kind = real_wp), intent(out) :: bounds(num_substances_transported, num_boundary_conditions)          !< Array of boundary conditions
-        real(kind = real_wp), intent(out) :: consts(num_constants)                !< Array of constant values
-        real(kind = real_wp), intent(out) :: param (num_spatial_parameters, num_cells + num_cells_bottom)   !< Array of parameter values
-        real(kind = real_wp), intent(out) :: funcs (num_time_functions)                 !< Array of function values
-        real(kind = real_wp), intent(out) :: sfuncs(num_cells + num_cells_bottom, num_spatial_time_fuctions) !< Array of segment functions
-        integer(kind = int_wp), intent(in) :: ipoint(num_indices)                !< Set of pointers to destination
-        character(len = *), intent(in) :: luntxt(*)                     !< text with the unit numbers
-        character(len = 200), intent(in) :: luntx2(*)                     !< text with the binary files
-        integer(kind = int_wp), intent(in) :: ftype (*)                     !< type of files to be opened
-        integer(kind = int_wp), intent(in) :: intsrt                        !< integration option
-        integer(kind = int_wp), intent(in) :: isflag                        !< = 1 then 'ddhhmmss' format
+        integer(kind = int_wp), intent(in)    :: nrftot(num_items_time_fn)                !< set of record lengths
+        integer(kind = int_wp), intent(out)   :: idt                           !< Integration time step size
+        real(kind = real_wp), intent(out)     :: volume(num_cells + num_cells_bottom)         !< Array of segment volumes
+        real(kind = real_wp), intent(out)     :: disper(num_dispersion_arrays, num_exchanges + num_exchanges_bottom_dir)    !< Array of dispersions
+        real(kind = real_wp), intent(out)     :: area(num_exchanges + num_exchanges_bottom_dir)              !< Array of exchange surfaces
+        real(kind = real_wp), intent(out)     :: flow(num_exchanges + num_exchanges_bottom_dir)              !< Array of flows
+        real(kind = real_wp), intent(out)     :: velo(num_velocity_arrays, num_exchanges + num_exchanges_bottom_dir)      !< Array of velocities
+        real(kind = real_wp), intent(out)     :: aleng(2, num_exchanges + num_exchanges_bottom_dir)          !< Array of from and to lengths
+        real(kind = real_wp), intent(out)     :: wastes(num_substances_total + 2, num_waste_loads)      !< Array of wasteloads
+        real(kind = real_wp), intent(out)     :: bounds(num_substances_transported, num_boundary_conditions)          !< Array of boundary conditions
+        real(kind = real_wp), intent(out)     :: consts(num_constants)                !< Array of constant values
+        real(kind = real_wp), intent(out)     :: param (num_spatial_parameters, num_cells + num_cells_bottom)   !< Array of parameter values
+        real(kind = real_wp), intent(out)     :: funcs (num_time_functions)                 !< Array of function values
+        real(kind = real_wp), intent(out)     :: sfuncs(num_cells + num_cells_bottom, num_spatial_time_fuctions) !< Array of segment functions
+        integer(kind = int_wp), intent(in)    :: ipoint(num_indices)                !< Set of pointers to destination
+        character(len = *), intent(in)        :: luntxt(*)                     !< text with the unit numbers
+        character(len = 200), intent(in)      :: luntx2(*)                     !< text with the binary files
+        integer(kind = int_wp), intent(in)    :: ftype (*)                     !< type of files to be opened
+        integer(kind = int_wp), intent(in)    :: intsrt                        !< integration option
+        integer(kind = int_wp), intent(in)    :: isflag                        !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(inout) :: ifflag                        !< = 1 then first invocation
-        integer(kind = int_wp), intent(in) :: ivflag                        !< = 1 then computed volumes
-        integer(kind = int_wp), intent(in) :: ilflag                        !< = 0 then constant lengths
+        integer(kind = int_wp), intent(in)    :: ivflag                        !< = 1 then computed volumes
+        integer(kind = int_wp), intent(in)    :: ilflag                        !< = 0 then constant lengths
         logical, intent(inout) :: update                        !< TRUE if update took place
         integer(kind = int_wp), intent(inout) :: iktim (3)                     !< Timers in file
         integer(kind = int_wp), intent(inout) :: iknmrk(num_cells + num_cells_bottom)         !< Kenmerk array
         integer(kind = int_wp), intent(inout) :: inwspc(newisp)                !< Integer(kind=int_wp) ::space new time funs
-        real(kind = real_wp), intent(inout) :: anwspc(newrsp)                !< Real(kind=real_wp) ::space new time functions
-        integer(kind = int_wp), intent(in) :: inwtyp(num_boundary_conditions + num_waste_loads)         !< Types of items
+        real(kind = real_wp), intent(inout)   :: anwspc(newrsp)                !< Real(kind=real_wp) ::space new time functions
+        integer(kind = int_wp), intent(in)    :: inwtyp(num_boundary_conditions + num_waste_loads)         !< Types of items
         integer(kind = int_wp), intent(inout) :: iwork (*)                     !< Integer(kind=int_wp) ::workspace
         logical, intent(in) :: lstrec                        !< TRUE: last record on rewind wanted
         logical, intent(out) :: lrewin                        !< TRUE: rewind took place
-        real(kind = real_wp), intent(inout) :: vollst(*)                     !< Last volume record before rewind
+        real(kind = real_wp), intent(inout)   :: vollst(num_cells)                     !< Last volume record before rewind
         logical, intent(in) :: rdvolu                        !< TRUE: also read volumes
-        type(GridPointerColl), intent(inout) :: GridPs                        !< collection of all grid definitions
-        type(delwaq_data), intent(inout) :: dlwqd                         !< derived type for persistent storage
+        type(GridPointerColl), intent(inout)  :: GridPs                        !< collection of all grid definitions
+        type(delwaq_data), intent(inout)      :: dlwqd                         !< derived type for persistent storage
 
         ! Local variables
         real(kind = real_wp) :: rdummy(1), adummy(1), adt   (1)
@@ -218,8 +220,8 @@ contains
 
         ! integration step size IDT
         if (nrftot(1) > 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), adt, 1, nrharm(1), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), adt, 1, nrharm(1), &
                     1, nrftot(1), ipa, iph, ipf, &
                     ipi, luntxt, 5, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -244,8 +246,8 @@ contains
             if   (rdvolu) then
                 ! if .not. computed volumes .or. this is the first time
                 if (ivflag     == 0 .or. ifflag == 1) then
-                    call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                            array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
+                    call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                            array(ipa:), ipoint(ipi:), volume, 1, nrharm(2), &
                             num_cells, nrftot(2), ipa, iph, ipf, &
                             ipi, luntxt, 7, isflag, ifflag, &
                             update, othset, 0, iwork, lstrec, &
@@ -270,8 +272,8 @@ contains
 
         !         dispersions
         if (nrharm(3) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), disper, num_dispersion_arrays, nrharm(3), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), disper, num_dispersion_arrays, nrharm(3), &
                     num_exchanges, nrftot(3), ipa, iph, ipf, &
                     ipi, luntxt, 9, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -290,8 +292,8 @@ contains
 
         ! area
         if (nrharm(4) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), area, 1, nrharm(4), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), area, 1, nrharm(4), &
                     num_exchanges, nrftot(4), ipa, iph, ipf, &
                     ipi, luntxt, 10, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -310,8 +312,8 @@ contains
 
         ! flow
         if (nrharm(5) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), flow, 1, nrharm(5), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), flow, 1, nrharm(5), &
                     num_exchanges, nrftot(5), ipa, iph, ipf, &
                     ipi, luntxt, 11, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -330,8 +332,8 @@ contains
 
         ! velocities
         if (nrharm(6) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), velo, num_velocity_arrays, nrharm(6), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), velo, num_velocity_arrays, nrharm(6), &
                     num_exchanges, nrftot(6), ipa, iph, ipf, &
                     ipi, luntxt, 12, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -350,8 +352,8 @@ contains
 
         ! 'from'- and 'to'-length
         if (nrharm(7) >= 0 .and. ilflag == 1) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), aleng, 2, nrharm(7), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), aleng, 2, nrharm(7), &
                     num_exchanges, nrftot(7), ipa, iph, ipf, &
                     ipi, luntxt, 13, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -374,8 +376,8 @@ contains
             nosubs = num_substances_transported
         endif
         if (nrharm(8) >= 0 .and. .not. bndset) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), bounds, nosubs, nrharm(8), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), bounds, nosubs, nrharm(8), &
                     num_boundary_conditions, nrftot(8), ipa, iph, ipf, &
                     ipi, luntxt, 14, isflag, ifflag, &
                     update, bndset, 0, iwork, lstdum, &
@@ -390,8 +392,8 @@ contains
         endif
 
         if (bndset) then
-            call update_condition (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
-                    adummy, inwtyp(it), bounds, nosubs, isnul2, &
+            call update_condition (file_unit_list, itime, itimel, inwspc(ipni:), anwspc(ipna:), &
+                    adummy, inwtyp(it:), bounds, nosubs, isnul2, &
                     num_boundary_conditions, isnul, ipni, ipna, idummy, &
                     ibndmx, luntxt, 14, isflag, ifflag, &
                     update, bndset, 0, iwork, lstdum, &
@@ -407,8 +409,8 @@ contains
 
         ! wastes
         if (nrharm(9) >= 0 .and. .not. wstset) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), wastes, num_substances_total + 1, nrharm(9), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), wastes, num_substances_total + 1, nrharm(9), &
                     num_waste_loads, nrftot(9), ipa, iph, ipf, &
                     ipi, luntxt, 15, isflag, ifflag, &
                     update, wstset, 1, iwork, lstdum, &
@@ -425,8 +427,8 @@ contains
         isnul = 0
         isnul2 = 0
         if (wstset) then
-            call update_condition (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
-                    adummy, inwtyp(it), wastes, num_substances_total + 1, isnul2, &
+            call update_condition (file_unit_list, itime, itimel, inwspc(ipni:), anwspc(ipna:), &
+                    adummy, inwtyp(it:), wastes, num_substances_total + 1, isnul2, &
                     num_waste_loads, isnul, ipni, ipna, idummy, &
                     iwstmx, luntxt, 15, isflag, ifflag, &
                     update, wstset, 1, iwork, lstdum, &
