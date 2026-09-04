@@ -21,6 +21,8 @@ class Variable(Enum):
 
     WATER_LEVEL = "water_level"  # in meters (m)
     FLOW_VELOCITY = "flow_velocity"  # in meters per second (m/s)
+    SALINITY = "salinity"  # in 1e-3 (??)
+    TEMPERATURE = "temperature"  # in degrees Celsius (degC)
 
     @property
     def unit(self) -> str:
@@ -28,6 +30,8 @@ class Variable(Enum):
         return {
             Variable.WATER_LEVEL: "m",
             Variable.FLOW_VELOCITY: "m/s",
+            Variable.SALINITY: "1e-3",
+            Variable.TEMPERATURE: "degC",
         }[self]
 
 
@@ -52,10 +56,18 @@ class Tolerances:
                 return HisWaterLevelTolerances.MAX
             case OutputType.HIS, Variable.FLOW_VELOCITY:
                 return HisFlowVelocityTolerances.MAX
+            case OutputType.HIS, Variable.SALINITY:
+                return HisSalinityTolerances.MAX
+            case OutputType.HIS, Variable.TEMPERATURE:
+                return HisTemperatureTolerances.MAX
             case OutputType.MAP, Variable.WATER_LEVEL:
                 return MapWaterLevelTolerances.MAX
             case OutputType.MAP, Variable.FLOW_VELOCITY:
                 return MapFlowVelocityTolerances.MAX
+            case OutputType.MAP, Variable.SALINITY:
+                return MapSalinityTolerances.MAX
+            case OutputType.MAP, Variable.TEMPERATURE:
+                return MapTemperatureTolerances.MAX
             case _:
                 raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
 
@@ -77,10 +89,18 @@ class Tolerances:
                 return HisWaterLevelTolerances.BIAS
             case OutputType.HIS, Variable.FLOW_VELOCITY:
                 return HisFlowVelocityTolerances.BIAS
+            case OutputType.HIS, Variable.SALINITY:
+                return HisSalinityTolerances.BIAS
+            case OutputType.HIS, Variable.TEMPERATURE:
+                return HisTemperatureTolerances.BIAS
             case OutputType.MAP, Variable.WATER_LEVEL:
                 return MapWaterLevelTolerances.BIAS
             case OutputType.MAP, Variable.FLOW_VELOCITY:
                 return MapFlowVelocityTolerances.BIAS
+            case OutputType.MAP, Variable.SALINITY:
+                return MapSalinityTolerances.BIAS
+            case OutputType.MAP, Variable.TEMPERATURE:
+                return MapTemperatureTolerances.BIAS
             case _:
                 raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
 
@@ -102,10 +122,18 @@ class Tolerances:
                 return HisWaterLevelTolerances.RMS
             case OutputType.HIS, Variable.FLOW_VELOCITY:
                 return HisFlowVelocityTolerances.RMS
+            case OutputType.HIS, Variable.SALINITY:
+                return HisSalinityTolerances.RMS
+            case OutputType.HIS, Variable.TEMPERATURE:
+                return HisTemperatureTolerances.RMS
             case OutputType.MAP, Variable.WATER_LEVEL:
                 return MapWaterLevelTolerances.RMS
             case OutputType.MAP, Variable.FLOW_VELOCITY:
                 return MapFlowVelocityTolerances.RMS
+            case OutputType.MAP, Variable.SALINITY:
+                return MapSalinityTolerances.RMS
+            case OutputType.MAP, Variable.TEMPERATURE:
+                return MapTemperatureTolerances.RMS
             case _:
                 raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
 
@@ -126,6 +154,22 @@ class HisFlowVelocityTolerances:
     BIAS: ClassVar[float] = 0.0005  # m/s
 
 
+class HisSalinityTolerances:
+    """The maximum values of statistics above which a tolerance error is reported."""
+
+    MAX: ClassVar[float] = 0.01  # 1e-3
+    RMS: ClassVar[float] = 0.001  # 1e-3
+    BIAS: ClassVar[float] = 0.0001  #  1e-3
+
+
+class HisTemperatureTolerances:
+    """The maximum values of statistics above which a tolerance error is reported."""
+
+    MAX: ClassVar[float] = 0.05  # degC
+    RMS: ClassVar[float] = 0.005  # degC
+    BIAS: ClassVar[float] = 0.0005  # degC
+
+
 class MapWaterLevelTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
@@ -142,6 +186,22 @@ class MapFlowVelocityTolerances:
     BIAS: ClassVar[float] = 0.0005  # m/s
 
 
+class MapSalinityTolerances:
+    """The maximum values of statistics above which a tolerance error is reported."""
+
+    MAX: ClassVar[float] = 0.05  # 1e-3
+    RMS: ClassVar[float] = 0.001  # 1e-3
+    BIAS: ClassVar[float] = 0.0001  # 1e-3
+
+
+class MapTemperatureTolerances:
+    """The maximum values of statistics above which a tolerance error is reported."""
+
+    MAX: ClassVar[float] = 0.1  # degC
+    RMS: ClassVar[float] = 0.005  # degC
+    BIAS: ClassVar[float] = 0.0005  # degC
+
+
 @dataclass
 class Statistics:
     """Contains statistics of a sample."""
@@ -153,17 +213,19 @@ class Statistics:
 
 
 @dataclass
-class VerschillentoolOutput:
+class VerschillentoolOutput3D:
     """Contains statistics of a model run."""
 
     output_type: OutputType
     flow_velocity: Statistics
     water_level: Statistics
+    salinity: Statistics
+    temperature: Statistics
     row_count: int
 
     @staticmethod
-    def from_verschillentool_workbook(workbook: Workbook, output_type: OutputType) -> "VerschillentoolOutput":
-        """Make a `VerschillentoolOutput` from a verschillentool excel file.
+    def from_verschillentool_workbook(workbook: Workbook, output_type: OutputType) -> "VerschillentoolOutput3D":
+        """Make a `VerschillentoolOutput3D` from a verschillentool excel file.
 
         This factory method produces an `VerschillentoolOuptut` from a `Workbook`,
         which is an excel file opened with `openpyxl`. The excel file is produced
@@ -179,7 +241,94 @@ class VerschillentoolOutput:
 
         Returns
         -------
-        VerschillentoolOutput
+        VerschillentoolOutput3D
+            The information found in the verschillentool excel file.
+        """
+        averages_sheet = workbook["Averages"]
+        statistics_sheet = workbook["Statistics"]
+        maxima_sheet = workbook["Maxima"]
+
+        stats_dict = {
+            str(name_cell.value).split(maxsplit=1)[0]: float(value_cell.value)
+            for name_cell, value_cell in averages_sheet["A2:B13"]
+        }
+
+        first_col = maxima_sheet.min_column - 1
+        last_col = maxima_sheet.max_column - 2
+
+        maxima_dict = {
+            str(maxima_sheet[row][first_col].value).split(maxsplit=1)[0]: float(
+                maxima_sheet[row][last_col].value  # type: ignore
+            )
+            for row in range(2, maxima_sheet.max_row + 1)
+        }
+
+        try:
+            flow_velocity_stats = Statistics(
+                avg_max=stats_dict["sea_water_speed_max"],
+                avg_bias=stats_dict["sea_water_speed_bias"],
+                avg_rms=stats_dict["sea_water_speed_rms"],
+                max=maxima_dict["sea_water_speed"],
+            )
+            water_level_stats = Statistics(
+                avg_max=stats_dict["sea_surface_height_max"],
+                avg_bias=stats_dict["sea_surface_height_bias"],
+                avg_rms=stats_dict["sea_surface_height_rms"],
+                max=maxima_dict["sea_surface_height"],
+            )
+            salinity_stats = Statistics(
+                avg_max=stats_dict["sea_water_salinity_max"],
+                avg_bias=stats_dict["sea_water_salinity_bias"],
+                avg_rms=stats_dict["sea_water_salinity_rms"],
+                max=maxima_dict["sea_water_salinity"],
+            )
+            temperature_stats = Statistics(
+                avg_max=stats_dict["sea_water_temperature_max"],
+                avg_bias=stats_dict["sea_water_temperature_bias"],
+                avg_rms=stats_dict["sea_water_temperature_rms"],
+                max=maxima_dict["sea_water_temperature"],
+            )
+        except KeyError as exc:
+            raise ValueError(f"Failed to parse verschillentool output: Missing key {exc}") from exc
+
+        return VerschillentoolOutput3D(
+            output_type=output_type,
+            flow_velocity=flow_velocity_stats,
+            water_level=water_level_stats,
+            salinity=salinity_stats,
+            temperature=temperature_stats,
+            row_count=statistics_sheet.max_row - 1,  # The number of rows (minus one header row)
+        )
+
+
+@dataclass
+class VerschillentoolOutput2D:
+    """Contains statistics of a model run."""
+
+    output_type: OutputType
+    flow_velocity: Statistics
+    water_level: Statistics
+    row_count: int
+
+    @staticmethod
+    def from_verschillentool_workbook(workbook: Workbook, output_type: OutputType) -> "VerschillentoolOutput2D":
+        """Make a `VerschillentoolOutput2D ` from a verschillentool excel file.
+
+        This factory method produces an `VerschillentoolOuptut` from a `Workbook`,
+        which is an excel file opened with `openpyxl`. The excel file is produced
+        by the "verschillentool" and this class makes assumptions about the structure
+        of the excel file (names of sheets, content of cells, etc...).
+
+        Parameters
+        ----------
+        workbook : Workbook
+            A workbook created from a verschillentool output excel file.
+        output_type : OutputType
+            The type of output file used to generate the excel file (map or his).
+
+        Returns
+        -------
+        VerschillentoolOutput2D
             The information found in the verschillentool excel file.
         """
         averages_sheet = workbook["Averages"]
@@ -217,7 +366,7 @@ class VerschillentoolOutput:
         except KeyError as exc:
             raise ValueError(f"Failed to parse verschillentool output: Missing key {exc}") from exc
 
-        return VerschillentoolOutput(
+        return VerschillentoolOutput2D(
             output_type=output_type,
             flow_velocity=flow_velocity_stats,
             water_level=water_level_stats,

@@ -5,7 +5,7 @@ from pathlib import Path
 import openpyxl
 
 from ci_tools.verschilanalyse.util.slurm_log_data import LogComparison, SlurmLogData
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, VerschillentoolOutput2D, VerschillentoolOutput3D
 
 
 @dataclass
@@ -18,8 +18,8 @@ class VerschilanalyseComparison:
     current_log_data: dict[str, SlurmLogData]
     reference_log_data: dict[str, SlurmLogData]
 
-    his_outputs: dict[str, VerschillentoolOutput]
-    map_outputs: dict[str, VerschillentoolOutput]
+    his_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D]
+    map_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D]
 
     def get_log_comparisons(self) -> dict[str, LogComparison]:
         """Compare the `SlurmLogData` from the current and reference verschilanalyse for each model.
@@ -87,14 +87,19 @@ class VerschilanalyseComparison:
         return result
 
     @staticmethod
-    def _get_verschillentool_output(verschillen_dir: Path, output_type: OutputType) -> dict[str, VerschillentoolOutput]:
-        result: dict[str, VerschillentoolOutput] = {}
+    def _get_verschillentool_output(
+        verschillen_dir: Path, output_type: OutputType
+    ) -> dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D]:
+        result: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D] = {}
         for path in verschillen_dir.rglob(f"{output_type.value}_output.xlsx"):
             key = path.parent.name.removeprefix("verschil_")
             with path.open("rb") as stream:
                 try:
                     workbook = openpyxl.load_workbook(stream)
-                    result[key] = VerschillentoolOutput.from_verschillentool_workbook(workbook, output_type)
+                    if "2d" in path.absolute().as_posix():
+                        result[key] = VerschillentoolOutput2D.from_verschillentool_workbook(workbook, output_type)
+                    else:
+                        result[key] = VerschillentoolOutput3D.from_verschillentool_workbook(workbook, output_type)
                 except Exception as exc:
                     logging.warning("Invalid excel file: %s", path, exc_info=exc)
         if not result:
