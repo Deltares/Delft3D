@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name clash with WAQ module
+module m_vertical_forester_filter_dflowfm ! _dflowfm suffix to avoid name clash with WAQ module
    use precision, only: dp
    use m_flow, only: ndkx
    use m_transportdata, only: constituents, numconst, const_names, itemp, ioxy
@@ -36,28 +36,28 @@ module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name 
 
    private
 
-   public :: apply_vertical_forester_filter_to_all_constituents
+   public :: apply_vertical_forester_filter_to_salinity
+   public :: apply_vertical_forester_filter_to_temperature
 
 contains
 
-   !> Applies the Forester vertical filter to all constituents in the model
-   subroutine apply_vertical_forester_filter_to_all_constituents()
-      use m_flow, only: kbot, ktop, max_iterations_vertical_forester, vol1, kmxn
+   !> Applies the Forester vertical filter to salinity in the model
+   subroutine apply_vertical_forester_filter_to_salinity()
+      use m_flow, only: kbot, ktop, max_iterations_vertical_forester_sal, vol1, kmxn
       use m_flowgeom, only: ndxi
-      use m_physcoef, only: use_salinity_freezing_point
+      use m_transportdata, only: isalt
       use string_module, only: str_tolower
       use timers, only: timon, timstrt, timstop
 
       ! Local variables
       integer :: i_bottom_layer
-      integer :: i_constituent
       integer :: i_flowcell
       integer :: number_of_layers
       integer(4), save :: timer_handle = 0
 
       ! Start timer for Forester filter if timing is enabled
       if (timon) then
-         call timstrt("apply_vertical_forester_filter_to_all_constituents", timer_handle)
+         call timstrt("apply_vertical_forester_filter_to_salinity", timer_handle)
       end if
 
       ! Loop over flow cells and apply the Forester vertical filter for all constituents in each vertical column of flow cells
@@ -66,21 +66,15 @@ contains
          i_bottom_layer = kbot(i_flowcell)
          number_of_layers = ktop(i_flowcell) - i_bottom_layer + 1
 
-         ! Apply the Forester vertical filter for each constituent in this vertical column of flow cells
-         do i_constituent = 1, numconst
-
-            ! Skip the vertical Forester filter for oxygen, since negative values are allowed
-            if (i_constituent == ioxy) then
-               cycle 
-            end if
-
-            ! Skip the vertical Forester filter for temperature if the salinity freezing point is enabled, since negative values are allowed
-            if (i_constituent == itemp .and. use_salinity_freezing_point) then
-               cycle
-            end if
-
-            call apply_vertical_forester_filter_per_column_and_constituent(i_constituent, vol1(i_bottom_layer:), number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester)
-         end do
+         call apply_vertical_forester_filter_to_column_and_constituent( &
+            isalt, &
+            vol1(i_bottom_layer:), &
+            number_of_layers, &
+            kmxn(i_flowcell), &
+            i_bottom_layer, &
+            max_iterations_vertical_forester_sal, &
+            1 &
+         )
       end do
 
       ! Stop timer for Forester filter if timing is enabled
@@ -88,10 +82,53 @@ contains
          call timstop(timer_handle)
       end if
 
-   end subroutine apply_vertical_forester_filter_to_all_constituents
+   end subroutine apply_vertical_forester_filter_to_salinity
+
+   !> Applies the Forester vertical filter to temperature in the model
+   subroutine apply_vertical_forester_filter_to_temperature()
+      use m_flow, only: kbot, ktop, max_iterations_vertical_forester_tem, vol1, kmxn
+      use m_flowgeom, only: ndxi
+      use m_transportdata, only: itemp
+      use string_module, only: str_tolower
+      use timers, only: timon, timstrt, timstop
+
+      ! Local variables
+      integer :: i_bottom_layer
+      integer :: i_flowcell
+      integer :: number_of_layers
+      integer(4), save :: timer_handle = 0
+
+      ! Start timer for Forester filter if timing is enabled
+      if (timon) then
+         call timstrt("apply_vertical_forester_filter_to_temperature", timer_handle)
+      end if
+
+      ! Loop over flow cells and apply the Forester vertical filter for all constituents in each vertical column of flow cells
+      do i_flowcell = 1, ndxi
+         ! Determine the bottom layer index and number of layers in the vertical column of flow cells
+         i_bottom_layer = kbot(i_flowcell)
+         number_of_layers = ktop(i_flowcell) - i_bottom_layer + 1
+
+         call apply_vertical_forester_filter_to_column_and_constituent( &
+            itemp, &
+            vol1(i_bottom_layer:), &
+            number_of_layers, &
+            kmxn(i_flowcell), &
+            i_bottom_layer, &
+            max_iterations_vertical_forester_tem, &
+            -1 &
+         )
+      end do
+
+      ! Stop timer for Forester filter if timing is enabled
+      if (timon) then
+         call timstop(timer_handle)
+      end if
+
+   end subroutine apply_vertical_forester_filter_to_temperature
 
    !> Applies the Forester vertical filter to a single constituent in a vertical column of flow cells
-   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations)
+   subroutine apply_vertical_forester_filter_to_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations, gradient)
       use m_flow, only: EPS6, EPS10
 
       ! Parameters
@@ -101,6 +138,7 @@ contains
       integer, intent(in) :: number_of_active_layers !< Maximum number of active layers in the model
       integer, intent(in) :: i_bottom_layer !< Index of the bottom layer in the constituents array
       integer, intent(in) :: max_iterations !< Maximum number of iterations for Forester filter
+      integer, intent(in) :: gradient !< Gradient to be applied in the Forester filter, either +1 or -1
 
       ! Local variables
       real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
@@ -123,7 +161,7 @@ contains
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
          do k = 1, number_of_layers - 1
             difference = previous_constituent(k + 1) - previous_constituent(k)
-            if (difference > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
+            if (difference * gradient > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
                if (cell_volume(k) > EPS10 .and. cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
                   difference = difference / 6.0_dp * (cell_volume(k + 1) + cell_volume(k))
@@ -151,6 +189,6 @@ contains
          constituents(i_constituent, i_bottom_layer + number_of_layers:i_bottom_layer + number_of_active_layers - 1) = updated_constituent(number_of_layers)
       end if
 
-   end subroutine apply_vertical_forester_filter_per_column_and_constituent
+   end subroutine apply_vertical_forester_filter_to_column_and_constituent
 
 end module m_vertical_forester_filter_dflowfm
