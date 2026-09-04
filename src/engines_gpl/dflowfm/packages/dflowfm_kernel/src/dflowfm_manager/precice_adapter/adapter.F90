@@ -16,7 +16,6 @@ module precice_adapter
    implicit none(type, external)
 
    private
-   real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
    public :: precice_adapter_add_to_fm_administration !> Needs to be public for unittesting
    public :: precice_adapter_deallocate_read_arrays !> Needs to be public for unittesting
@@ -24,6 +23,9 @@ module precice_adapter
 
    !> Maximum length for preCICE standard name strings stored in quantity_t.
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
+
+   !> Fixed number of constituents we communicate.
+   integer, parameter :: NUM_CONSTITUENTS = 10
 
    !> A single quantity that can be exchanged with preCICE.
    type :: quantity_t
@@ -33,11 +35,14 @@ module precice_adapter
 
    !> Container with all quantities used by the adapter.
    type :: quantities_t
+      ! TODO: Add constituents C01..C10
       ! Writing
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
       type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+      ! Constituents (reading and writing)
+      type(quantity_t), dimension(NUM_CONSTITUENTS) :: constituents
       ! Reading
       type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
       type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
@@ -86,6 +91,8 @@ module precice_adapter
       real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge
       real(kind=c_double), dimension(:), allocatable :: sources_momentum_magnitude_weighted
       real(kind=c_double), dimension(:), allocatable :: sources_momentum_direction
+      real(kind=c_double), dimension(:,:), allocatable :: sources_sinks_constituents
+      real(kind=dp) :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -127,6 +134,9 @@ contains
       real(kind=c_double), dimension(:), intent(in), allocatable :: cell_center_mesh_coordinates_3d
       type(precice_adapter_t), pointer :: adapter_instance
 
+      character(len=3) :: constituent_name
+      integer :: constituent_index
+
       allocate (adapter_instance)
       adapter_instance%config_file = config_file
       adapter_instance%name = name
@@ -143,6 +153,11 @@ contains
       adapter_instance%cell_center_mesh_coordinates_2d = cell_center_mesh_coordinates_2d
       adapter_instance%cell_center_mesh_coordinates_3d = cell_center_mesh_coordinates_3d
 
+      ! Set up constituents (fixed to NUM_CONSTITUENTS and named C01..C10 for now)
+      do constituent_index = 1,NUM_CONSTITUENTS
+         write(constituent_name, '(A, I2.2)') 'C', constituent_index
+         adapter_instance%quantities%constituents(constituent_index) = quantity_t(standard_name=constituent_name, is_active=.true.)
+      end do
    end function precice_adapter_constructor
 
 
@@ -190,7 +205,7 @@ contains
       end if
 
       call precicef_initialize()
-      summed_time_progress = 0.0
+      self%summed_time_progress = 0.0
    end subroutine precice_adapter_initialize
 
 
@@ -226,11 +241,11 @@ contains
 
       ! Update summed time progress and check if we need to advance preCICE
       call precicef_get_max_time_step_size(max_timestep)
-      summed_time_progress = summed_time_progress + timestep
-      if (summed_time_progress > max_timestep + 1.0) then
+      self%summed_time_progress = self%summed_time_progress + timestep
+      if (self%summed_time_progress > max_timestep + 1.0) then
          call mess(LEVEL_ERROR, "Summed user time steps are beyond the preCICE coupling window!")
       end if
-      if (summed_time_progress > max_timestep - 1.0e-5) then
+      if (self%summed_time_progress > max_timestep - 1.0e-5) then
          ! Remesh the 3D mesh; that only works if the time window is complete (i.e. preCICE is ready for a new mesh).
          call precicef_is_time_window_complete(is_time_window_complete)
          if (is_time_window_complete == 1) then
@@ -243,9 +258,9 @@ contains
          call precice_adapter_add_to_fm_administration(self)
          call precicef_advance(max_timestep)
          ! Reset summed_time_progress after advancing
-         summed_time_progress = 0.0
+         self%summed_time_progress = 0.0
       else
-         write (*, *) "Not advancing preCICE yet, summed_time_progress = ", summed_time_progress, " max_timestep = ", max_timestep
+         write (*, *) "Not advancing preCICE yet, summed_time_progress = ", self%summed_time_progress, " max_timestep = ", max_timestep
       end if
    end subroutine precice_adapter_update
 
@@ -285,6 +300,7 @@ contains
       if (allocated(self%sources_sinks_discharge)) deallocate(self%sources_sinks_discharge)
       if (allocated(self%sources_momentum_magnitude_weighted)) deallocate(self%sources_momentum_magnitude_weighted)
       if (allocated(self%sources_momentum_direction)) deallocate(self%sources_momentum_direction)
+      if (allocated(self%sources_sinks_constituents)) deallocate(self%sources_sinks_constituents)
    end subroutine precice_adapter_deallocate_read_arrays
 
 
@@ -313,6 +329,7 @@ contains
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_magnitude_weighted, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_direction, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_sinks_constituents, [NUM_CONSTITUENTS, self%mesh_sources_sinks_size], keepExisting=.false.)
    end subroutine precice_adapter_allocate_read_arrays
 
 
@@ -329,10 +346,14 @@ contains
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_flow, only: hs, s1
-      use m_flowgeom, only: bl, ndx2d
+      use m_flowgeom, only: bl, ndx2d,  ndx
       use m_turbulence, only: potential_density
+      use m_transport, only: NUMCONST, constituents
+            
       implicit none(type, external)
       class(precice_adapter_t), intent(in) :: self
+
+      integer :: constituent_index
 
       if (self%quantities%hs%is_active) then
          call precicef_write_data(self%cell_center_mesh_name, self%quantities%hs%standard_name, &
@@ -354,6 +375,13 @@ contains
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
+      ! Constituents
+      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  constituents(constituent_index,ndx+1:), len(self%cell_center_mesh_3d_name), &
+                                  len(trim(self%quantities%constituents(constituent_index)%standard_name)))
+      end do
    end subroutine precice_adapter_write_data
 
 
@@ -373,11 +401,14 @@ contains
                          precicef_read_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
+      use m_transport, only: NUMCONST
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: current_time_in_window
       integer :: mesh_sources_sinks_size
       
+      integer :: constituent_index
+
       call precicef_get_mesh_vertex_size(self%sources_sinks_mesh_name, mesh_sources_sinks_size, len(self%sources_sinks_mesh_name))
       call precice_adapter_allocate_read_arrays(self, mesh_sources_sinks_size)
       call precicef_get_mesh_vertex_ids_and_coordinates(self%sources_sinks_mesh_name, &
@@ -473,6 +504,16 @@ contains
                               current_time_in_window, &
                               self%sources_momentum_direction, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_direction%standard_name)))
+      ! Read constituents
+      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
+         call precicef_read_data(self%sources_sinks_mesh_name, &
+                                 self%quantities%constituents(constituent_index)%standard_name, &
+                                 self%mesh_sources_sinks_size, &
+                                 self%vertex_ids_sources_sinks, &
+                                 current_time_in_window, &
+                                 self%sources_sinks_constituents(constituent_index,:), &
+                                 len(self%sources_sinks_mesh_name), len(trim(self%quantities%constituents(constituent_index)%standard_name)))
+      end do
    end subroutine precice_adapter_read_data
 
 
@@ -489,11 +530,13 @@ contains
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
       use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_transport, only: NUMCONST
 
       class(precice_adapter_t), intent(inout) :: self
       integer :: i
       integer :: sink_cell
       integer :: source_cell
+      integer :: constituent_index
       type(t_netcell_set) :: netcell_cache
 
       netcell_cache = t_netcell_set()
@@ -528,6 +571,9 @@ contains
             ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
+         do constituent_index = 1, NUMCONST
+            source_sinks%constituents(source_sinks%num_total, constituent_index) = self%sources_sinks_constituents(constituent_index, i)
+         end do
       end do
 
    end subroutine precice_adapter_add_to_fm_administration

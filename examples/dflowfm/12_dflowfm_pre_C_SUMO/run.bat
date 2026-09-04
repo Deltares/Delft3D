@@ -21,17 +21,19 @@ del /f /q fm\DFM_interpreted_idomain_2dis_net.nc >del.log 2>&1
 del /f /q fm\FlowFM_*.mdu >del.log 2>&1
 del /f /q fm\*.dia >del.log 2>&1
 del /f /q fm\fort.* >del.log 2>&1
-del /f /q fm\precice-exports\*.* >del.log 2>&1
+del /f /q fm\precice-exports\*.vtu >del.log 2>&1
+del /f /q fm\precice-exports\*.series >del.log 2>&1
 del /f /q fm\precice-profiling\*.txt >del.log 2>&1
 del /f /q cosumo\FF2NF\*.xml >del.log 2>&1
 del /f /q cosumo\csumo_bmi.dia >del.log 2>&1
-del /f /q cosumo\precice-exports\*.* >del.log 2>&1
+del /f /q cosumo\precice-exports\*.vtu >del.log 2>&1
+del /f /q cosumo\precice-exports\*.series >del.log 2>&1
 del /f /q cosumo\precice-profiling\*.txt >del.log 2>&1
 del /f /q cosumo\precice_debug_output.txt >del.log 2>&1
 del /f /q csumo_to_dflowfm.nc >del.log 2>&1
 del /f /q precice_debug_output.txt >del.log 2>&1
 del /f /q precice-profiling\*.* >del.log 2>&1
-rmdir /s /q precice-run >del.log 2>&1
+rmdir /s /q precice-run\preC-SUMO-fm >del.log 2>&1
 del /f /q del.log
 echo ... Cleaning done
 if "%cleanupOnly%"=="1" goto :eof
