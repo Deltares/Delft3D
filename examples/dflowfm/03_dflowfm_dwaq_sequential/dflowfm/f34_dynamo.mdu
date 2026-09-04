@@ -45,7 +45,6 @@ zLayerGrowthFactor                = 1                                           
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 PillarFile                        =                                                                     # Polyline file *.pliz, containing bridge pillars with rows x, y, drag coefficient and diameter
-IniFieldFile                      = initialFields.ini
 ManholeFile                       =                                                                     # File *.ini containing manholes
 DzTop                             = -999.                                                               # z-layer thickness of layers above level DzTopUniAboveZ
 FloorLevTopLay                    = -999.                                                               # The floor level of the top layer
@@ -160,7 +159,6 @@ RestartFile                       =                                             
 RestartDateTime                   =                                                                     # Restart date and time when restarting from *_map.nc [YYYYMMDDHHMMSS]
 
 [external forcing]
-ExtForceFile                      = f34_dynamo.ext                                                      # Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification
 ExtForceFileNew                   = f34_dynamo_bnd.ext                                                  # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [output]
@@ -175,6 +173,7 @@ MbaWriteCsv                       = 1
 XLSInterval                       =                                                                     # Interval between XLS history [Dd HH:MM:SS.ZZZ]
 MapFile                           =                                                                     # Map file output file *_map.nc in NetCDF format
 MapInterval                       = 10800                                                               # Map file output times, given as 'interval' 'start period' 'end period'
+mbaFile                           = f34_dynamo_mba.ini
 RstInterval                       = 0                                                                   # Restart file output times, given as 'interval' 'start period' 'end period'
 S1incinterval                     =                                                                     # Interval (m) in incremental file for water levels s1
 WaqFileBase                       =                                                                     # Basename (without extension) for all Delwaq files to be written.

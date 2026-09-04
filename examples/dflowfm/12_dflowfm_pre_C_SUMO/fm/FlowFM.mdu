@@ -46,7 +46,7 @@ Layertype                         = 1               # Vertical layer type (1: al
 Numtopsig                         = 0               # Number of sigma layers in top of z-layer model
 SigmaGrowthFactor                 = 1               # Layer thickness growth factor from bed up
 UseCaching                        = 0               # Use caching of flow model geometry input (1: yes, 0: no)
-IniFieldFile                      = FlowFM-new.ini
+IniFieldFile                      = 
 
 [numerics]
 CFLMax                            = 0.7             # Maximum Courant number

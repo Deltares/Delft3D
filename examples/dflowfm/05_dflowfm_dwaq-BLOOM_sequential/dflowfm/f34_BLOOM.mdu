@@ -1,4 +1,4 @@
-# Generated on 2025-11-21 15:01:09
+# Generated on 2025-11-21 15:04:42
 # Deltares, Plugin D-FLOW FM Version 4.18.0.9276, D-Flow FM Version Deltares, D-Flow FM1.2.184.057d2f7ceeafda462a1b4e598efa4ce4f0c97cc5
 
 [General]
@@ -45,7 +45,7 @@ zLayerGrowthFactor                = 1.2                                         
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 PillarFile                        =                                                                     # Polyline file *.pliz, containing bridge pillars with rows x, y, drag coefficient and diameter
-IniFieldFile                      = initialFields.ini
+IniFieldFile                      =
 ManholeFile                       =                                                                     # File *.ini containing manholes
 DzTop                             = -999.                                                               # z-layer thickness of layers above level DzTopUniAboveZ
 FloorLevTopLay                    = -999.                                                               # The floor level of the top layer
@@ -160,7 +160,6 @@ RestartFile                       =                                             
 RestartDateTime                   =                                                                     # Restart date and time when restarting from *_map.nc [YYYYMMDDHHMMSS]
 
 [external forcing]
-ExtForceFile                      = f34_BLOOM.ext                                                       # Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification
 ExtForceFileNew                   = f34_BLOOM_bnd.ext                                                   # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [output]
@@ -173,6 +172,7 @@ HisInterval                       = 1800                                        
 XLSInterval                       =                                                                     # Interval between XLS history [Dd HH:MM:SS.ZZZ]
 MapFile                           =                                                                     # Map file output file *_map.nc in NetCDF format
 MapInterval                       = 10800                                                               # Map file output times, given as 'interval' 'start period' 'end period'
+mbaFile                           = f34_BLOOM_mba.ini
 RstInterval                       = 0                                                                   # Restart file output times, given as 'interval' 'start period' 'end period'
 MbaInterval                       = 86400.                                                              # Mass balance area output interval (s)
 S1incinterval                     =                                                                     # Interval (m) in incremental file for water levels s1
@@ -180,7 +180,7 @@ WaqFileBase                       =                                             
 WaqInterval                       = 0                                                                   # Interval (in s) between DELWAQ file outputs
 StatsInterval                     = 86400                                                               # Interval (in s) between simulation statistics output [Dd HH:MM:SS.ZZZ]
 TimingsInterval                   = 86400                                                               # Timings statistics output interval [Dd HH:MM:SS.ZZZ]
-TimeSplitInterval                 = 0 s                                                                  # Time splitting interval, after which a new output file is started. value+unit, e.g. '1 M', valid units: Y,M,D,h,m,s.
+TimeSplitInterval                 = 0 s                                                                 # Time splitting interval, after which a new output file is started. value+unit, e.g. '1 M', valid units: Y,M,D,h,m,s.
 MapFormat                         = 4                                                                   # Map file format (1: NetCDF, 2: Tecplot, 3: NetCFD and Tecplot)
 Wrihis_balance                    = 1                                                                   # Write mass balance totals to his file (1: yes, 0: no)
 Wrihis_structure_gen              = 1                                                                   # Write general structure parameters to his file (1: yes, 0: no)

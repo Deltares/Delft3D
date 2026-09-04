@@ -12,5 +12,5 @@ quantity=windxy
 forcingFile=f34.wnd
 forcingFileType=uniMagDir
 interpolationMethod=linearSpaceTime
-operand=O
+operand=override
 
