@@ -924,6 +924,7 @@ contains
          return
       end if
 
+      ! todo: remove defensive guards and make sure our long culvert objcect is always in a valid state
       if (longculverts(ilongc)%numlinks <= 0) then
          return
       end if
@@ -947,7 +948,7 @@ contains
          return
       end if
 
-      do coordinate_index = 1, min(size(longculverts(ilongc)%xcoords), size(longculverts(ilongc)%ycoords)) - 1
+      do coordinate_index = 1, size(longculverts(ilongc)%xcoords) - 1
          flownode_1_is_coordinate_1 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
                                       equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
          flownode_1_is_coordinate_2 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
