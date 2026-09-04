@@ -34,7 +34,7 @@ module m_spatial_field
    use timespace_parameters, only: OPERAND_OVERRIDE
    use m_ec_interpolationsettings, only: RCEL_DEFAULT
    use m_missing, only: dmiss
-   
+
    implicit none(type, external)
 
    private
@@ -42,8 +42,14 @@ module m_spatial_field
    public :: t_spatial_field_input, t_averaging_input
    public :: read_spatial_field_block, validate_spatial_field_input
    public :: read_averaging_input, averaging_params_to_transformcoef
+   public :: allocate_time_dependent_spatial_quantities, deallocate_time_dependent_spatial_quantities, &
+             register_time_dependent_spatial_quantity
+   public :: is_static_file_type
 
    integer, parameter :: INI_VALUE_LEN = 256
+
+   character(len=INI_VALUE_LEN), dimension(:), allocatable :: time_dependent_spatial_quantities
+   integer :: num_time_dependent_spatial_quantities = 0
 
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
@@ -166,19 +172,25 @@ contains
    end subroutine averaging_params_to_transformcoef
 
    !> Returns .true. when the given forcingFileType string describes a static
-   !! spatial field (no time dimension). Static fields are read once at
-   !! initialisation; the EC relation is never updated during the time loop.
-   pure function is_static_file_type(forcing_file_type, method) result(is_static)
+   !! spatial field (no time dimension). Contains two exceptions for ambiguous file types.
+   function is_static_file_type(forcing_file_type, method, quantity) result(is_static)
       use string_module, only: str_tolower
       use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
 
-      character(len=*), intent(in) :: forcing_file_type
-      integer, intent(in) :: method
+      character(len=*), intent(in) :: forcing_file_type !< Most forcing file types uniquely determine time-dependence.
+      integer, intent(in) :: method !< arcinfo time-dependence is determind by method (currently)
+      character(len=*), intent(in), optional :: quantity !< datavalue time-dependence is determined by quantity, not file type.
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
       case ('sample', 'geotiff', 'polygon', '1dfield')
          is_static = .true.
+      case ('datavalue')
+         if (present(quantity)) then
+            is_static = .not. quantity_has_time_dependent_input(quantity)
+         else
+            is_static = .false.
+         end if
       case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
@@ -252,7 +264,7 @@ contains
             call err_flush()
             return
          end if
-   
+
          if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
             write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
@@ -260,7 +272,7 @@ contains
             call err_flush()
             return
          end if
-   
+
          call resolvePath(input%forcing_file, base_dir)
       end if
 
@@ -311,8 +323,8 @@ contains
          return
       end if
       call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
-      
-      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method)
+
+      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
 
       select case (trim(input%quantity))
       case ('qext')
@@ -355,5 +367,45 @@ contains
       end select
 
    end function file_extension_conflicts_with_type
+
+   !> Helper routine to avoid cyclic dependencies
+   subroutine allocate_time_dependent_spatial_quantities(max_num_quantities)
+      integer, intent(in) :: max_num_quantities !< Maximum number of quantities to register.
+
+      call deallocate_time_dependent_spatial_quantities()
+      allocate (time_dependent_spatial_quantities(max(1, max_num_quantities)))
+      time_dependent_spatial_quantities = ''
+   end subroutine allocate_time_dependent_spatial_quantities
+
+   !> Helper routine to avoid cyclic dependencies
+   subroutine deallocate_time_dependent_spatial_quantities()
+      if (allocated(time_dependent_spatial_quantities)) then
+         deallocate (time_dependent_spatial_quantities)
+      end if
+      num_time_dependent_spatial_quantities = 0
+   end subroutine deallocate_time_dependent_spatial_quantities
+
+   !> Register a quantity that has at least one time-dependent spatial input.
+   subroutine register_time_dependent_spatial_quantity(quantity)
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: quantity !< Canonical spatial quantity name.
+
+      if (any(strcmpi(time_dependent_spatial_quantities, quantity))) return
+      num_time_dependent_spatial_quantities = num_time_dependent_spatial_quantities + 1
+      time_dependent_spatial_quantities(num_time_dependent_spatial_quantities) = quantity
+   end subroutine register_time_dependent_spatial_quantity
+
+   function quantity_has_time_dependent_input(quantity) result(has_time_dependent_input)
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: quantity
+      logical :: has_time_dependent_input
+
+      has_time_dependent_input = .false.
+      if (allocated(time_dependent_spatial_quantities)) then
+         has_time_dependent_input = any(strcmpi(time_dependent_spatial_quantities, quantity))
+      end if
+   end function quantity_has_time_dependent_input
 
 end module m_spatial_field
