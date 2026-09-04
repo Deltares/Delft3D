@@ -204,7 +204,7 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (max_iterations_vertical_forester > 0) then
+      if (max_iterations_vertical_forester > 0 .and. kmx > 0) then
          call apply_vertical_forester_filter_to_all_constituents()
       end if
 
