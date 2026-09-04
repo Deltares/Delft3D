@@ -13,13 +13,18 @@
 
 namespace pre_c_sumo
 {
+    /**
+     * @anchor pre_c_sumo_write_error
+     * @brief Error information returned when FF2NF generation or writing fails.
+     */
     struct WriteError
     {
         std::string message;
     };
 
     /**
-     * @brief Far-field layer at a single horizontal point.
+     * @anchor pre_c_sumo_far_field_layer
+     * @brief Far-field layer state at a single horizontal point.
      */
     struct FarFieldLayer
     {
@@ -31,16 +36,18 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_far_field_point_2d
      * @brief Far-field state at a single horizontal point (diffuser, intake, or ambient).
      */
     struct FarFieldPoint2D
     {
         parsing_utils::Point2D position;   ///< Horizontal position of the point [m].
-        double water_depth{};              ///< Total water depth at this point [m] (written to <waterDepth>).
+        double water_depth{};              ///< Total water depth at this point [m] (written to &lt;waterDepth&gt;).
         std::vector<FarFieldLayer> layers; ///< Per-layer structure (velocity, density, constituents).
     };
 
     /**
+     * @anchor pre_c_sumo_ff2nf_config
      * @brief Configuration for generating an FF2NF XML file.
      */
     struct FF2NFConfig
@@ -64,29 +71,33 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_ff2nf_writer
      * @brief Writer for FF2NF XML files.
      */
     class FF2NFWriter
     {
     public:
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_constructor
+         * @brief Constructs a writer from a configuration object.
+         * @param config FF2NF content and metadata to be serialized.
+         */
         explicit FF2NFWriter(FF2NFConfig config);
 
         /**
+         * @anchor pre_c_sumo_ff2nf_writer_generate
          * @brief Generates the FF2NF XML content as a string.
-         * @return The generated XML content or a WriteError if validation fails.
-         * @note Validation checks that the data is consistent (e.g., constituent counts match,
-         *       unique ID length). If validation fails, the returned WriteError contains a message
-         *       describing the issue.
+         * @return Generated XML text or a WriteError when validation fails.
+         * @note Validation checks that the data is consistent, for example constituent counts and unique ID length.
          */
         [[nodiscard]] std::expected<std::string, WriteError> generate() const;
 
         /**
+         * @anchor pre_c_sumo_ff2nf_writer_to_file
          * @brief Writes the generated FF2NF XML content to a file.
-         * @param file_path The path to the output file.
-         * @return std::expected containing void on success or WriteError on failure.
-         * @note This function first calls generate() to create the XML content. If generation fails, it returns the
-         *       WriteError from generate(). If writing to the file system fails, it returns a WriteError with an
-         *       appropriate message.
+         * @param file_path Destination path for the output file.
+         * @return Empty result on success, or a WriteError on failure.
+         * @note The function first calls generate() and returns any validation error from that step.
          */
         [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path) const;
 
@@ -95,12 +106,47 @@ namespace pre_c_sumo
         constexpr static std::string_view file_version = "0.3";
         FF2NFConfig config_;
 
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_validate
+         * @brief Validates the writer configuration before serialization.
+         * @return Empty result on success, or a WriteError on invalid data.
+         */
         [[nodiscard]] std::expected<void, WriteError> validate() const;
 
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_create_root_element
+         * @brief Creates the root `<COSUMO>` XML element.
+         * @param document XML document used to own the created root element.
+         * @return Root XML node for the generated output.
+         */
         pugi::xml_node createRootElement(pugi::xml_document& document) const;
+
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_create_file_version_section
+         * @brief Adds the file version section to the XML tree.
+         * @param root Root XML node to populate.
+         */
         void createFileVersionSection(pugi::xml_node& root) const;
+
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_create_comm_section
+         * @brief Adds the communication section to the XML tree.
+         * @param root Root XML node to populate.
+         */
         void createCommSection(pugi::xml_node& root) const;
+
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_create_subgrid_model_section
+         * @brief Adds the subgrid model section to the XML tree.
+         * @param root Root XML node to populate.
+         */
         void createSubgridModelSection(pugi::xml_node& root) const;
+
+        /**
+         * @anchor pre_c_sumo_ff2nf_writer_create_settings_section
+         * @brief Adds the settings section to the XML tree.
+         * @param root Root XML node to populate.
+         */
         void createSettingsSection(pugi::xml_node& root) const;
     };
 } // namespace pre_c_sumo

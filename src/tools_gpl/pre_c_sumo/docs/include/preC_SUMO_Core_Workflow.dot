@@ -1,0 +1,70 @@
+// Detailed workflow of preC-SUMO core processes
+// Shows the sequence of tasks and data flow within the preC-SUMO adapter
+
+digraph preCSUMOWorkflow {
+
+  rankdir=TB;
+  splines=true;
+  nodesep=0.6;
+  ranksep=0.8;
+  fontname="Helvetica";
+  fontsize=10;
+
+  node [shape=box, style=rounded, fontname="Helvetica"];
+  edge [fontname="Helvetica", fontsize=9];
+
+  /* -------------------------
+     Input Sources
+  --------------------------*/
+  CSUMOConfig [label="CSUMO Config.xml\n(diffusers + ambient\nlocations)", shape=note, fillcolor="#CCE6FF", style=filled];
+  ProC_Adapter [label="preC-SUMO Adapter\n(preCICE interface)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
+
+  /* -------------------------
+     Core Tasks
+  --------------------------*/
+  subgraph cluster_workflow {
+    label="preC-SUMO Core Workflow";
+    style="rounded,filled";
+    fillcolor="#FFE6E6";
+
+    task1 [label="readCsumoSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readCsumoSettingsFile docs"];
+
+    task2 [label="receiveFFData()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_receive_ff_data", tooltip="Open receiveFFData docs"];
+
+    task3 [label="writeFF2NFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
+
+    task4 [label="C-SUMO near-field", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="FF2NF to NF2FF exchange"];
+
+    task5 [label="readNF2FFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Open readNF2FFFiles docs"];
+
+    task6 [label="convertNFtoConnectedSinkSources()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Open conversion docs"];
+
+    task7 [label="write_to_precice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_to_precice", tooltip="Open write_to_precice docs"];
+
+    task1 -> task2;
+    task2 -> task3;
+    task3 -> task4;
+    task4 -> task5;
+    task5 -> task6;
+    task6 -> task7;
+  }
+
+  /* -------------------------
+     Output
+  --------------------------*/
+  FMAdapter [label="FM Adapter\n(preCICE receiver)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
+
+  /* -------------------------
+     Data Flow
+  --------------------------*/
+  CSUMOConfig -> task1;
+  ProC_Adapter -> task2;
+  task7 -> FMAdapter;
+
+  /* -------------------------
+     External Coupling
+  --------------------------*/
+  ExtCSUMO [label="External C-SUMO\nnear-field solver", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
+  task3 -> ExtCSUMO;
+  ExtCSUMO -> task4;
+}

@@ -1,0 +1,49 @@
+/*! \mainpage preC-SUMO Developer Guide
+
+\tableofcontents
+
+\section intro Introduction
+preC-SUMO is the coupling-side adapter between D-FlowFM and C-SUMO in a preCICE setup.
+
+Current core responsibilities are:
+- read and validate C-SUMO settings,
+- register preCICE meshes and data channels,
+- receive far-field data from preCICE and write FF2NF input files,
+- wait for and read NF2FF output files,
+- convert NF2FF results to connected source/sink writes for D-FlowFM via preCICE.
+
+\section workflow Core Workflow
+The implementation follows the main sequence in \ref pre_c_sumo::run. The flow reads settings,
+receives ambient data, writes FF2NF input, waits for NF2FF results, converts the near-field
+output to connected source/sink entries, and then writes the final coupling data to D-Flow FM via preCICE.
+
+\dotfile preC_SUMO_Swimlanes.dot "preC-SUMO core coupling workflow (current implementation)"
+
+\section architecture Architecture Overview
+The system-level picture shows the surrounding coupled components: D-Flow FM, the preCICE adapter,
+C-SUMO, and the NF2FF/FF2NF exchange files.
+
+\image html FM-C-SUMO_scheme_precice.drawio.svg "Coupled FM/C-SUMO architecture via preCICE" width=1000px
+
+The more detailed data-mapping view shows how the configuration data is transformed into the
+1D arrays used by the preCICE exchange buffers.
+
+\image html "preC-SUMO data mapping diagram-3D Mapping.drawio.svg" "3D data mapping" width=900px
+
+\section code_map Code Entry Points
+Main implementation entry points:
+- \ref pre_c_sumo::run in pre_c_sumo_lib.hpp / pre_c_sumo_lib.cpp
+- \ref pre_c_sumo::readCsumoSettingsFile in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo::receiveFFData in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo::writeFF2NFFiles in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo::waitForNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo::readNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo::convertNFtoConnectedSinkSources in coupling_steps.hpp / coupling_steps.cpp
+- \ref pre_c_sumo_connected_sink_sources_write_to_precice in connected_sinks_sources.hpp / connected_sinks_sources.cpp
+
+\section notes Diagram Source Files
+Diagrams are maintained in docs/include as .dot and .drawio source files.
+Use the dotfile command for .dot diagrams in Doxygen and the image command for embedded SVG assets.
+*/
+
+

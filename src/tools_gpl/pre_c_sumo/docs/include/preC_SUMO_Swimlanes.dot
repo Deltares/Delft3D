@@ -1,0 +1,63 @@
+digraph preCSUMOSwimlanes {
+  rankdir=TB;
+  compound=true;
+  splines=ortho;
+  nodesep=0.32;
+  ranksep=0.55;
+  fontname="Helvetica";
+  fontsize=10;
+
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=9, color="#555555", fillcolor="#FFFFFF"];
+  edge [fontname="Helvetica", fontsize=8, color="#444444"];
+
+  subgraph cluster_precsumo {
+    label="preC-SUMO";
+    color="#F26422";
+    style="rounded";
+
+    s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
+    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open run() setup phase docs"];
+    s2 [label="wait + read\nNF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open initial NF2FF bootstrap docs"];
+    s3 [label="init\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open participant initialization docs"];
+
+    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open receiveFFData docs"];
+    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
+    l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
+    l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
+    l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertNFtoConnectedSinkSources", tooltip="Open convertNFtoConnectedSinkSources docs"];
+    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::sendSourcesSinksToFF", tooltip="Open write_to_precice docs"];
+    l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
+
+    s0 -> s1 -> s2 -> s3 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
+    l6 -> l0 [color="#666666"];
+  }
+
+  subgraph cluster_precice {
+    label="preCICE";
+    color="#A5B51B";
+    style="rounded";
+
+    p0 [label="readData()", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open preCICE readData phase docs"];
+    p1 [label="mesh reset", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::run()", tooltip="Open mesh registration/reset docs"];
+    p2 [label="writeData()", fillcolor="#EEF3C9", URL="\\ref pre_c_sumo::sendSourcesSinksToFF", tooltip="Open write_to_precice docs"];
+  }
+
+  subgraph cluster_csumo {
+    label="C-SUMO";
+    color="#1285F0";
+    style="rounded";
+
+    c0 [label="FF2NF", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Produced by writeFF2NFFiles"];
+    c1 [label="near-field", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::run()", tooltip="External step between FF2NF and NF2FF"];
+    c2 [label="NF2FF", fillcolor="#DDEBFF", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Consumed by readNF2FFFiles"];
+    c0 -> c1 -> c2;
+  }
+
+  l0 -> p0 [lhead=cluster_precice];
+  l5 -> p1 [lhead=cluster_precice];
+  l5 -> p2 [lhead=cluster_precice];
+
+  l1 -> c0 [lhead=cluster_csumo];
+  c2 -> l2 [ltail=cluster_csumo];
+}
+

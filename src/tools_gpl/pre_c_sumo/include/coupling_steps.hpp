@@ -50,6 +50,7 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_read_csumo_settings_file
      * @brief Read and parse the C-SUMO settings file.
      *
      * Attempts to read the C-SUMO settings from the given file.
@@ -63,15 +64,18 @@ namespace pre_c_sumo
         const std::string_view csumoSettingsFileName);
 
     /**
+     * @anchor pre_c_sumo_receive_ff_data
      * @brief Receive farfield (FF) data from external sources via preCICE.
      *
-     * Blocking receive of farfield data via preCICE.
-     * The demo implementation only logs a message.
+     * This is the preCICE read step in the main coupling cycle. The function reads the
+     * ambient and density data for the registered 2D and 3D meshes before the adapter emits
+     * the FF2NF files for the near-field solver.
      */
     void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
                        double coupling_time_step);
 
     /**
+     * @anchor pre_c_sumo_write_ff2nf
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
      *
      * Writes a FF2NF file for each configured diffuser.
@@ -83,6 +87,7 @@ namespace pre_c_sumo
                          double current_time_seconds);
 
     /**
+     * @anchor pre_c_sumo_wait_nf2ff
      * @brief Wait until NF2FF files become available.
      *
      * For each diffuser configured in `csumoSettings` this will wait for
@@ -99,6 +104,7 @@ namespace pre_c_sumo
     bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
+     * @anchor pre_c_sumo_read_nf2ff
      * @brief Read NF2FF files and extract the required data.
      *
      * Reads NF2FF files referenced in `csumoSettings` and extracts the
@@ -112,6 +118,7 @@ namespace pre_c_sumo
                                                   double current_time_seconds);
 
     /**
+     * @anchor pre_c_sumo_convert_nf_to_sources_sinks
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
      *
      * Uses the data referenced in `csumoSettings` to perform the conversion.
@@ -121,7 +128,8 @@ namespace pre_c_sumo
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
     /**
-     * @brief Convert NF data to sources and sinks to be communicated via preCICE.
+     * @anchor pre_c_sumo_convert_nf_to_connected_sink_sources
+     * @brief Convert NF2FF results into connected source/sink entries for the FM adapter.
      *
      * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
      *
@@ -134,6 +142,7 @@ namespace pre_c_sumo
     convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumoSettings,
                                     const std::vector<NF2FFReader>& nf2ff_readers);
     /**
+     * @anchor pre_c_sumo_send_sources_sinks_to_ff
      * @brief Send computed sources/sinks to the farfield model.
      *
      * Sends the converted sources and sinks to the farfield component.
@@ -144,6 +153,7 @@ namespace pre_c_sumo
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 
     /**
+     * @anchor pre_c_sumo_is_diffuser_modelled
      * @brief Query whether the diffuser is modelled explicitly.
      *
      * @return true if the diffuser is modelled, false otherwise.
@@ -151,6 +161,7 @@ namespace pre_c_sumo
     bool isDiffuserModelled(const NF2FFReader& diffuser);
 
     /**
+     * @anchor pre_c_sumo_process_source_locations
      * @brief Process explicit source locations from NF data.
      *
      * Converts NF source information into the format required by the farfield component.
@@ -158,6 +169,7 @@ namespace pre_c_sumo
     void processSourceLocations();
 
     /**
+     * @anchor pre_c_sumo_create_diffuser_model
      * @brief Create an approximate diffuser model from NF source data.
      *
      * When diffusers are not modelled explicitly this function creates
