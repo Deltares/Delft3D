@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+
+# Generated code: schema.py is produced by scripts/generate_schema.py (from mdu.json) during the
+# build. A build is required to use the package anyway (it also stages the native library), so it is
+# not committed. (model.py is hand-maintained and committed.)
+src/dflowfm_io/mdu/schema.py
+
+# Local scratch / spike scripts under tests/ — not part of the committed test suite.
+tests/spike_*.py
+tests/parity_*.py
+tests/compare_*.py
+
+# Wheel build outputs.
+build/
+dist/
+*.egg-info/
+
+# The native dflowfm_io_api library is a build artifact: CMake builds it and stages it into
+# src/dflowfm_io/_lib/, from where the loader and the wheel pick it up. Never commit it.
+*.dll
+*.so
+*.dylib
