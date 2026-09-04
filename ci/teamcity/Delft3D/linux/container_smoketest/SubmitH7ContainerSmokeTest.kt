@@ -36,8 +36,8 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
         param("teamcity_receive_config", "${LinuxReceiveH7ContainerSmokeTest.id}")
 
         // TestBench still takes --username/--password; map them to DVC remote credentials.
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("dvc_testbench_secret"))
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     vcs {
@@ -53,8 +53,8 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
+                    --username "%dvc_testbench_accesskey%"
+                    --password "%dvc_testbench_secret%"
                     --reference
                     --skip-run 
                     --skip-post-processing 
