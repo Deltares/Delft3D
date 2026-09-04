@@ -43,13 +43,14 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_solar_radiation, item_cloudiness, &
                       item_long_wave_radiation, item_sensible_heat_flux, item_latent_heat_flux, &
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
-                      dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
+                      dump_ec_message_stack, level_error, hwav, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
-                      item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
+                      item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
+                      item_dambreak_crestlevel, item_dambreak_breachwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
                       AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
    use m_source_sink, only: source_sinks, source_sink_all_discharges
@@ -66,6 +67,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_waves, only: offline_wave_input_requirements
    use m_alloc, only: realloc
 
    implicit none
@@ -118,14 +120,14 @@ contains
       integer :: i
       integer :: i_const
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
-         real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
+      real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
       call timstrt('External forcings', handle_ext)
 
       success = .true.
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
-         allocate(zcgen_legacy_kx3(ncgensg * 3))
+         allocate (zcgen_legacy_kx3(ncgensg * 3))
          zcgen_legacy_kx3 = dmiss
       end if
 
@@ -148,7 +150,7 @@ contains
       if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       end if
-      
+
       if (ja_computed_airdensity == 1) then
          ! Compute air_density based on air_pressure, air_temperature and dew_point_temperature
          call get_airdensity(air_pressure, air_temperature, dew_point_temperature, air_density, iresult)
@@ -158,7 +160,7 @@ contains
       if (iresult /= DFM_NOERR) then
          return
       end if
-      
+
       ! Update nudging temperature (and salinity)
       if (item_nudge_temperature /= ec_undef_int .and. janudge > 0) then
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_nudge_temperature, irefdate, tzone, tunit, time_in_seconds)
@@ -372,9 +374,8 @@ contains
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
                                   salinity_dependent_evaporation_method, SALINITY_DEPENDENT_EVAPORATION_LINEAR
 
-
       logical, intent(in) :: initialization !< initialization phase
-      
+
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
@@ -382,19 +383,18 @@ contains
       real(kind=dp), dimension(lnx) :: windx_link, windy_link
       type(t_options) :: atm_stability_options
 
-
       if (.not. allocated(windx)) then
-         allocate(windx(ndx))
-         allocate(windy(ndx))
-         allocate(charnock(ndx))
-         allocate(surface_temperature(ndx))
-         allocate(surface_temperature_kelvin(ndx))
-         allocate(air_temperature_kelvin(ndx))
-         allocate(dew_point_temperature_kelvin(ndx))
+         allocate (windx(ndx))
+         allocate (windy(ndx))
+         allocate (charnock(ndx))
+         allocate (surface_temperature(ndx))
+         allocate (surface_temperature_kelvin(ndx))
+         allocate (air_temperature_kelvin(ndx))
+         allocate (dew_point_temperature_kelvin(ndx))
       end if
 
       call compute_wind_relative_to_surface_on_link(wx(1:lnx), wy(1:lnx), relativewind, u1(ltop(1:lnx)), v(ltop(1:lnx)), &
-                               csu(1:lnx), snu(1:lnx), windx_link, windy_link)
+                                                    csu(1:lnx), snu(1:lnx), windx_link, windy_link)
       call link_to_node_vector(windx_link, windy_link, windx, windy, ndx)
       if (.not. allocated(wcharnock%values)) then
          call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
@@ -422,7 +422,7 @@ contains
       atm_stability_options%alpha_m = air_viscous_momentum_coeff
       atm_stability_options%alpha_h = air_viscous_heat_coeff
       atm_stability_options%alpha_q = air_viscous_moisture_coeff
-      
+
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR) then
          if (.not. allocated(salinity_reduction_factor_saturation_humidity%values)) then
             call realloc(salinity_reduction_factor_saturation_humidity%values, ndx, keepexisting=.false., fill=salinity_reduction_factor_saturation_humidity%scalar)
@@ -581,21 +581,9 @@ contains
 
          if (.not. initialization) then
             !
-            if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_RADIATION_STRESS) then
+            if (jawave == WAVE_NC_OFFLINE) then
                !
-               call set_parameters_for_radiation_stress_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
-               !
-               call set_parameters_for_dissipation_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
-               !
-               call set_parameters_for_3d_dissipation_driven_forces()
-               !
-            elseif (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_NO_WAVEFORCES) then
-               !
-               call set_parameters_for_no_wave_forces()
+               call set_offline_wave_parameters()
                !
             else
                !
@@ -631,22 +619,23 @@ contains
             ! Correct for this by setting values to zero
             do k = 1, ndx
                if (ieee_is_nan(hwavcom(k)) .or. &
+                   ieee_is_nan(twavcom(k)) .or. &
                    ieee_is_nan(phiwav(k)) .or. &
                    ieee_is_nan(sxwav(k)) .or. &
                    ieee_is_nan(sywav(k)) .or. &
                    ieee_is_nan(sbxwav(k)) .or. &
                    ieee_is_nan(sbywav(k)) .or. &
+                   ieee_is_nan(distot(k)) .or. &
                    ieee_is_nan(dsurf(k)) .or. &
                    ieee_is_nan(dwcap(k)) .or. &
                    ieee_is_nan(mxwav(k)) .or. &
                    ieee_is_nan(mywav(k)) .or. &
                    hs(k) <= epshu) then
-                  hwavcom(k) = 0.0_dp
-                  twavcom(k) = 0.0_dp
                   sxwav(k) = 0.0_dp
                   sywav(k) = 0.0_dp
                   sbxwav(k) = 0.0_dp
                   sbywav(k) = 0.0_dp
+                  distot(k) = 0.0_dp
                   dsurf(k) = 0.0_dp
                   dwcap(k) = 0.0_dp
                   mxwav(k) = 0.0_dp
@@ -684,7 +673,7 @@ contains
                end if
             end if
 
-            all_wave_variables = .not. (jawave == WAVE_NC_OFFLINE .and. waveforcing /= WAVEFORCING_DISSIPATION_3D)
+            all_wave_variables = jawave /= WAVE_NC_OFFLINE
             call select_wave_variables_subgroup(all_wave_variables)
 
             ! In MPI case, partition ghost cells are filled properly already, open boundaries are not
@@ -779,75 +768,52 @@ contains
 
    end subroutine set_all_wave_parameters
 
-!> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 1 (wave forces via radiation stress)
-   subroutine set_parameters_for_radiation_stress_driven_forces()
+   !> Read only the offline wave quantities required by the active configuration.
+   subroutine set_offline_wave_parameters()
 
+      ! EC owns the raw source fields. Reset only FM-derived fields before
+      ! calculating them from the values EC provides.
+      hwav(:) = 0.0_dp
       twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_radiation_stress_driven_forces
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 2 (wave forces via total dissipation)
-   subroutine set_parameters_for_dissipation_driven_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_distot, ecTime)
+      phiwav(:) = 270.0_dp
       sxwav(:) = 0.0_dp
       sywav(:) = 0.0_dp
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_dissipation_driven_forces
-
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
-   subroutine set_parameters_for_3d_dissipation_driven_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fx, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_fy, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
       sbxwav(:) = 0.0_dp
       sbywav(:) = 0.0_dp
-      mxwav(:) = 0.0_dp
-      mywav(:) = 0.0_dp
-      uorbwav(:) = 0.0_dp
-
-   end subroutine set_parameters_for_3d_dissipation_driven_forces
-
-   !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 0 (no wave forces)
-   subroutine set_parameters_for_no_wave_forces()
-
-      twav(:) = 0.0_dp
-      success = success .and. ecGetValues(ecInstancePtr, item_tp, ecTime)
-      !success = success .and. ecGetValues(ecInstancePtr, item_dir, ecTime)
-      success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
-      phiwav(:) = 0.0_dp ! no directions for you
-      sxwav(:) = 0.0_dp
-      sywav(:) = 0.0_dp
+      distot(:) = 0.0_dp
       dsurf(:) = 0.0_dp
       dwcap(:) = 0.0_dp
-      sbxwav(:) = 0.0_dp
-      sbywav(:) = 0.0_dp
       mxwav(:) = 0.0_dp
       mywav(:) = 0.0_dp
       uorbwav(:) = 0.0_dp
 
-   end subroutine set_parameters_for_no_wave_forces
+      call get_required_offline_wave_value(WAVE_INPUT_SIGNIFICANT_HEIGHT, item_hrms)
+      call get_required_offline_wave_value(WAVE_INPUT_PERIOD, item_tp)
+      call get_required_offline_wave_value(WAVE_INPUT_DIRECTION, item_dir)
+      call get_required_offline_wave_value(WAVE_INPUT_FORCE_X, item_fx)
+      call get_required_offline_wave_value(WAVE_INPUT_FORCE_Y, item_fy)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_TOTAL, item_distot)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_SURFACE, item_dissurf)
+      call get_required_offline_wave_value(WAVE_INPUT_DISSIPATION_WHITE_CAPPING, item_diswcap)
+
+   end subroutine set_offline_wave_parameters
+
+   !> Read one required offline wave item, while never passing an undefined item to EC.
+   subroutine get_required_offline_wave_value(quantity_flag, item)
+      integer, intent(in) :: quantity_flag
+      integer, intent(in) :: item
+
+      if (.not. wave_input_is_required(offline_wave_input_requirements, quantity_flag)) then
+         return
+      end if
+
+      if (item == ec_undef_int) then
+         success = .false.
+         return
+      end if
+
+      success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
+   end subroutine get_required_offline_wave_value
 
 !> convert wave direction [degrees] from nautical to cartesian meteorological convention
    elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
@@ -940,6 +906,20 @@ contains
          call get_timespace_value_by_item(item_general_structure_gateOpeningWidth, time_in_seconds)
       end if
 
+      if (network%sts%numDambreaks > 0) then
+         success_previous = success
+         call get_timespace_value_by_item(item_dambreak_crestlevel, time_in_seconds)
+         call get_timespace_value_by_item(item_dambreak_breachwidth, time_in_seconds)
+         ! NOTE: we intentionally ignore failures from the calls above because:
+         ! - a typical failure can come from the EC module when the dam is not yet breached:
+         !   "Requested time precedes current forcing EC-timelevel" (i.e. no breach width has been defined yet)
+         ! - When the dam is not yet breached, it will keep its initial width of 0, so it is safe to ignore this error
+         ! - since all dambreaks are together under a single multiple_uni item, each with possibly different breach times,
+         !   it is not possible to only call get_timespace_value_by_item for the breached dams, so we have to call it
+         !   for all of them and ignore the error for the unbreached ones.
+         success = success_previous
+      end if
+
    end subroutine update_network_data
 
 !> update_subsidence_and_uplift_data
@@ -966,10 +946,10 @@ contains
 !> prepare_air_pressure_temperature_dew_point_temperature
    module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-       item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
-      
+
       ! air pressure items
       call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
       call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)

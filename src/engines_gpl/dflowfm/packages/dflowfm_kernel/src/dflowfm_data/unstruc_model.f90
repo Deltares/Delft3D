@@ -133,6 +133,7 @@ contains
       md_foufile = ' '
       md_hisfile = ' '
       md_mapfile = ' '
+      md_mbafile = ' '
       md_classmapfile = ' '
       md_comfile = ' '
       md_timingsfile = ' '
@@ -479,7 +480,8 @@ contains
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
       !                         Tsigma, jarhoxu,                                                      &
-      !                         iStrchType, STRCH_UNIFORM, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !                         stretch_type, STRETCH_UNIFORM, STRETCH_USER, STRETCH_EXPONENT, &
+      !                         STRETCH_UNI_OVER_EXP, laycof
 
       use m_globalparameters, only: sl
       use m_flowgeom !,              only : wu1Duni, bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
@@ -521,7 +523,7 @@ contains
       use m_fm_icecover, only: fm_ice_read
       use m_f1dimp, only: f1dimppar
       use m_sediment
-      use m_waves, only: hwavuni, twavuni, phiwavuni
+      use m_waves, only: hwavuni, twavuni, phiwavuni, ftauw, fwfac, fbreak, offline_wave_input_requirements
       use m_sedtrails_data, only: sedtrails_analysis
       use m_gui
       use m_output_config, only: scan_input_tree
@@ -748,8 +750,8 @@ contains
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
 
-      call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
-      if (Layertype /= LAYTP_SIGMA) then
+      call prop_get(md_ptr, 'geometry', 'Layertype', layertype)
+      if (layertype /= LAYTP_SIGMA) then
          mxlayz = kmx
       end if
 
@@ -770,10 +772,22 @@ contains
       call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
       call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
-      call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
-
-      if (Dztop > 0.0_dp) then ! hk claims back original functionality
-         iStrchType = -1
+      call prop_get(md_ptr, 'geometry', 'stretchType', stretch_type, success)
+      
+      if (layertype == LAYTP_Z) then
+         if (.not. success) then
+            stretch_type = STRETCH_UNI_OVER_EXP
+         elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
+            write (msgbuf, '(a,a,i0,a)'), &
+                'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
+                'Input stretchType = ', stretch_type,' is ignored.'
+            call warn_flush()
+            stretch_type = STRETCH_UNI_OVER_EXP
+         end if
+      else
+         if (.not. success .or. stretch_type == STRETCH_UNI_OVER_EXP) then
+            stretch_type = STRETCH_UNIFORM
+         end if
       end if
 
       call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [geometry] block
@@ -789,7 +803,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
 
       if (kmx > 0) then
-         if (iStrchType == STRCH_USER) then
+         if (stretch_type == STRETCH_USER) then
             call realloc(laycof, kmx)
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
             sumlaycof = sum(laycof)
@@ -809,7 +823,7 @@ contains
                   call mess(LEVEL_ERROR, 'The values specified in "StretchCoef" do not add up to 100! We got: ', sumlaycof)
                end if
             end if
-         else if (iStrchType == STRCH_EXPONENT) then
+         else if (stretch_type == STRETCH_EXPONENT) then
             call realloc(laycof, 3)
             laycof(:) = dmiss
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
@@ -1575,6 +1589,9 @@ contains
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
+      call prop_get(md_ptr, 'waves', 'fforc', fforc) ! factor for adjusting wave forces in momentum equation
+      call prop_get(md_ptr, 'waves', 'streamLyrFac', strlyrfac) ! factor for adjusting streaming layer thickness in momentum equation
+
       if (ftauw < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')
          ftauw = 0.0_dp
@@ -1587,13 +1604,23 @@ contains
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0.0, reset to 0.0. Wave breaking contribution to tke switched off.')
          fbreak = 0.0_dp
       end if
+      if (fforc <= 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fforc<=0.0, reset to 0.0. Wave forces switched off.')
+         fforc = 0.0_dp
+         jawaveforces = WAVE_FORCES_OFF
+      end if
+      if (strlyrfac <= 0.0_dp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Only streamLyrFac > 0.0 is allowed.')
+         istat=-1
+         return
+      end if
 
       if (jawave <= WAVE_FETCH_YOUNG) then
          jawaveStokes = NO_STOKES_DRIFT
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! default switch off, but switchable see below
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
       end if
 
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
@@ -1603,14 +1630,18 @@ contains
       end if
 
       call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      if (kmx <= 1) then
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
+      end if
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
       call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
       !
       ! safety
-      if (fwavpendep < 0.0_dp) then
+      if (fwavpendep <= 0.0_dp) then
          fwavpendep = 0.0_dp
+         jawavebreakerturbulence=WAVE_BREAKER_TURB_OFF
          write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
          call warn_flush()
       end if
@@ -1621,8 +1652,16 @@ contains
          jawaveforces = WAVE_FORCES_OFF
          jawavestreaming = WAVE_STREAMING_OFF
          jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
          modind = 0
+      end if
+
+      if (jawave == WAVE_NC_OFFLINE) then
+         offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
+                                                                                jawavestreaming, jawavedelta, &
+                                                                                modind > 0 .and. ftauw > 0.0_dp, &
+                                                                                flow_without_waves, jawavebreakerturbulence)
+      else
+         offline_wave_input_requirements = 0
       end if
 
       call prop_get(md_ptr, 'grw', 'groundwater', jagrw)
@@ -1854,6 +1893,7 @@ contains
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
       call prop_get(md_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file)
+      call prop_get(md_ptr, 'output', 'MbaFile', md_mbafile)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
@@ -2139,7 +2179,6 @@ contains
       call prop_get(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
       call prop_get(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
 
-!    call prop_get(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
       ! Default basename of Delwaq files is model identifier:
       if (len_trim(md_waqfilebase) == 0) then
          md_waqfilebase = md_ident
@@ -2456,7 +2495,13 @@ contains
 
       if (jagui == 0) then
          ! If obsolete entries are used in the mdu-file, return with that error code.
-         call check_file_tree_for_deprecated_keywords(md_ptr, deprecated_mdu_keywords, ierror, prefix='While reading '''//trim(filename)//'''', excluded_chapters=['model'])
+         call check_file_tree_for_deprecated_keywords( &
+            md_ptr, &
+            deprecated_mdu_keywords, &
+            ierror, &
+            prefix='While reading '''//trim(filename)//'''', &
+            excluded_chapters=['model'] &
+         )
          if (ierror /= DFM_NOERR) then
             istat = ierror
          end if
@@ -2557,7 +2602,7 @@ contains
       use m_flow ! ,                !  only : kmx, layertype, mxlayz, z_layer_growth_factor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
-      !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !         Tsigma, jarhoxu, stretch_type, STRETCH_USER, STRETCH_EXPONENT, laycof
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
@@ -2850,10 +2895,10 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Toplayminthick', Toplayminthick, 'Minimum top layer thickness(m), only for Z-layers')
          end if
 
-         call prop_set(prop_ptr, 'geometry', 'StretchType', iStrchType, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
-         if (iStrchType == STRCH_USER) then
+         call prop_set(prop_ptr, 'geometry', 'StretchType', stretch_type, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
+         if (stretch_type == STRETCH_USER) then
             call prop_set(prop_ptr, 'geometry', 'StretchCoef', laycof(1:kmx), 'Layers thickness percentage')
-         else if (iStrchType == STRCH_EXPONENT) then
+         else if (stretch_type == STRETCH_EXPONENT) then
             call prop_set(prop_ptr, 'geometry', 'StretchCoef', laycof(1:3), 'Interface percentage from bed, bottom layers growth fac, top layers growth fac')
          end if
 
@@ -3574,38 +3619,48 @@ contains
 
       ! jre wm67
       if (writeall .or. jawave > NO_WAVES) then
-         call prop_set(prop_ptr, 'waves', 'Wavemodelnr', jawave, 'Wave model nr. (0: none, 1: fetch/depth limited Hurdle-Stive, 2: fetch/depth limited Young-Verhagen, 3: SWAN, 5: uniform, 7: Offline Wave Coupling')
-         call prop_set(prop_ptr, 'waves', 'Rouwav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
-         call prop_set(prop_ptr, 'waves', 'Gammax', gammax, 'Maximum wave height/water depth ratio')
-         call prop_set(prop_ptr, 'waves', 'uorbfac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')
-         call prop_set(prop_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
-         call prop_set(prop_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
-         call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
+         call prop_set(prop_ptr, 'waves', 'waveModelNr', jawave, 'Wave model nr. (0: none, 1: fetch/depth limited Hurdle-Stive, 2: fetch/depth limited Young-Verhagen, 3: SWAN, 5: uniform, 7: Offline Wave Coupling')
          if (flow_without_waves) then
             fww = 1
          else
             fww = 0
          end if
-         call prop_set(prop_ptr, 'waves', 'FlowWithoutWaves', fww, '1: Do not use wave data in the flow computations, it will only be passed through to D-WAQ; 0: use wave information. Default 0.')
+         call prop_set(prop_ptr, 'waves', 'flowWithoutWaves', fww, '1: Do not use wave data in the flow computations, it will only be passed through to D-WAQ; 0: use wave information. Default 0.')
+         !
+         call prop_set(prop_ptr, 'waves', 'jaHisSigWav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
+         call prop_set(prop_ptr, 'waves', 'jaMapSigWav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
+
+         call prop_set(prop_ptr, 'waves', 'jaUOrbFromSwan', jauorbfromswan, '1: use orbital velocities from com file; 0=internal uorb calculation. Default=0.')
+         call prop_set(prop_ptr, 'waves', 'uOrbFac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')
+
+         call prop_set(prop_ptr, 'waves', 'rouWav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
+         call prop_set(prop_ptr, 'waves', 'gammax', gammax, 'Maximum wave height/water depth ratio')
+         call prop_set(prop_ptr, 'waves', 'fwFac', fwfac, 'factor for adjusting wave boundary layer streaming, default 1.0.')
+         call prop_set(prop_ptr, 'waves', 'fTauw', ftauw, 'factor for adjusting wave related bottom shear stress.')
+         call prop_set(prop_ptr, 'waves', 'fBreak', fbreak, 'factor for adjusting wave breaking contribution to tke.')
+         call prop_set(prop_ptr, 'waves', 'fForc', fforc, 'factor for adjusting wave forces in momentum equation.')
+         call prop_set(prop_ptr, 'waves', 'streamLyrFac', strlyrfac, 'factor for adjusting streaming layer thickness in momentum equation.')
+
+         call prop_set(prop_ptr, 'waves', 'hMinLw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
          if (writeall .or. hwavuni /= 0.0_dp) then
-            call prop_set(prop_ptr, 'waves', 'Hwavuni', hwavuni, 'root mean square wave height (m)')
-            call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')
-            call prop_set(prop_ptr, 'waves', 'Phiwavuni', phiwavuni, 'root mean square wave direction, (deg), math convention')
+            call prop_set(prop_ptr, 'waves', 'hWavUni', hwavuni, 'root mean square wave height (m)')
+            call prop_set(prop_ptr, 'waves', 'tWavUni', twavuni, 'root mean square wave period (s)')
+            call prop_set(prop_ptr, 'waves', 'phiWavUni', phiwavuni, 'root mean square wave direction, (deg), math convention')
          end if
          if (writeall .or. jawaveswartdelwaq /= WAVE_WAQ_SHEAR_STRESS_HYD) then
-            call prop_set(prop_ptr, 'waves', 'WaveSwartDelwaq', jaWaveSwartDelwaq, 'if WaveSwartDelwaq == 1 .and. Tiwaq > 0 then increase tauwave to Delwaq with 0.5rho*fw*uorbuorb')
+            call prop_set(prop_ptr, 'waves', 'waveSwartDelwaq', jaWaveSwartDelwaq, 'if WaveSwartDelwaq == 1 .and. Tiwaq > 0 then increase tauwave to Delwaq with 0.5rho*fw*uorbuorb')
          end if
          if (writeall .or. jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
-            call prop_set(prop_ptr, 'waves', 'Tifetchcomp', Tifetch, 'Time interval fetch comp (s) in wavemodel 1,2')
+            call prop_set(prop_ptr, 'waves', 'tiFetchComp', Tifetch, 'Time interval fetch comp (s) in wavemodel 1,2')
          end if
          if (writeall .or. kmx > 0) then
-            call prop_set(prop_ptr, 'waves', '3Dstokesprofile', jawaveStokes, 'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
-            call prop_set(prop_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence, 'Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes')
-            call prop_set(prop_ptr, 'waves', '3Dwavestreaming', jawavestreaming, 'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
-            call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
+            call prop_set(prop_ptr, 'waves', '3dStokesProfile', jawaveStokes, 'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
+            call prop_set(prop_ptr, 'waves', '3dWaveBreakerTurbulence', jawavebreakerturbulence, 'Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes')
+            call prop_set(prop_ptr, 'waves', '3dWaveStreaming', jawavestreaming, 'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
+            call prop_set(prop_ptr, 'waves', '3dWaveBoundaryLayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if
          if (jawave == WAVE_NC_OFFLINE) then
-            call prop_set(prop_ptr, 'waves', 'Waveforcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
+            call prop_set(prop_ptr, 'waves', 'waveForcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 0: none, 1: based on radiation stress gradients, 2: based on total dissipation, 3: based on dissipation at free surface and water column')
          end if
 
       end if
@@ -3751,6 +3806,7 @@ contains
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
       call prop_set(prop_ptr, 'output', 'WriteSurfaceDataToMapFile', write_surface_data_to_map_file, 'Write surface data instead of full vertical profile to map file (1 = yes, 0 = no)')
+      call prop_set(prop_ptr, 'output', 'MbaFile', trim(md_mbafile), 'Space-separated input mass balance area file(s) (*_mba.ini).')
       call prop_set(prop_ptr, 'output', 'MapOutputPolygonFile', trim(md_map_output_polyfile), 'Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)')
 
       ti_his_array(1) = ti_his
@@ -3819,8 +3875,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'output', 'StatsInterval', ti_stat, 'Screen step output interval in seconds simulation time, if negative in seconds wall clock time')
-
-      ! call prop_set(prop_ptr, 'output', 'SnapshotDir', trim(md_snapshotdir), 'Directory where snapshots/screendumps are saved.')
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '

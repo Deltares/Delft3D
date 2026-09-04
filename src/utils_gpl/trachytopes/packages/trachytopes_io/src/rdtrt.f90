@@ -62,6 +62,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     use dfparall
     use system_utils, only: exifil
     use MessageHandling
+    use m_scannr, only: scannr
     !
     implicit none
     !
@@ -1773,6 +1774,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     use properties   ! includes tree_structures
     use tree_structures
     use MessageHandling
+    use m_scannr, only: scannr
 
     implicit none
     !
@@ -2253,6 +2255,8 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 end subroutine dittar
 
 subroutine interpret_record( rec132, nrflds, itype, ifield, rfield, cfield, lenchr, lcomment, lokay )
+   use m_scannr, only: scannr
+
     character(len=*), intent(in)    :: rec132
     integer, intent(out)            :: nrflds
     integer, intent(out)            :: itype(:)

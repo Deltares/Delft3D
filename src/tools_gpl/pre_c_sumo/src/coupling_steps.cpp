@@ -12,6 +12,8 @@
 #include <limits>
 #include <numbers> // for std::numbers::pi
 #include <cmath>   // for atan2,sin,cos
+#include <string>
+#include <fstream>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -130,19 +132,38 @@ namespace pre_c_sumo
         }
     }
 
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
+    bool is_complete_nf2ff_file(std::filesystem::path filename)
     {
+        std::ifstream file(filename);
+        std::string str;
+        while (std::getline(file, str))
+        {
+            if (str.contains("</NF2FF>"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
+    {
+        constexpr int check_delay_in_ms = 50;
+        constexpr int timeout_in_ms = 10000;
+        int total_delay_in_ms = 0;
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
             // Wait for the NF2FF file to be available
             // TODO: Might be necessary to check whether writing the file is finished too
-            while (!std::filesystem::exists(file))
+            while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file) && total_delay_in_ms < timeout_in_ms)
             {
                 // Throttle CPU load.
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
+                total_delay_in_ms += check_delay_in_ms;
             }
         }
+        return total_delay_in_ms < timeout_in_ms;
     }
 
     const std::vector<pre_c_sumo::NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
@@ -218,10 +239,11 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Parsed C-SUMO settings.
      * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return Connected source/sink data ready to write via preCICE.
+     * @return std::expected with a ConnectedSinkSources object with source/sink data ready to be written via preCICE or
+     * a ConnectedSinkSourcesError on failure.
      */
-    ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
-                                                         const std::vector<NF2FFReader>& nf2ff_readers)
+    std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
+        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
         const auto& diffuser_settings = csumoSettings.diffusers();
@@ -260,6 +282,12 @@ namespace pre_c_sumo
             for (std::size_t sink_index = 1; sink_index < sinks.size(); sink_index++)
             {
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
+                if (delta_s < 0.0)
+                {
+                    return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
+                        "Negative entrainment factor for sink " + std::to_string(sink_index) + ": " +
+                        std::to_string(delta_s)});
+                }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
                 double sink_z_top = -sink.z_coordinate + sink.half_plume_height;

@@ -94,8 +94,9 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      * @param current_time_seconds Current time in seconds.
+     * @returns true on successful wait, false on timeout.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -129,8 +130,9 @@ namespace pre_c_sumo
      *
      * @return Connected source/sink pairs to be written to preCICE.
      */
-    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(
-        const pre_c_sumo::CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers);
+    [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
+    convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumoSettings,
+                                    const std::vector<NF2FFReader>& nf2ff_readers);
     /**
      * @brief Send computed sources/sinks to the farfield model.
      *

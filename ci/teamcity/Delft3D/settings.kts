@@ -21,9 +21,6 @@ project {
         param("delft3d-user", DslContext.getParameter("delft3d-user"))
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
-
         param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
         password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
 
@@ -47,7 +44,7 @@ project {
     template(TemplateFailureCondition)
     template(TemplateValidationDocumentation)
     template(TemplateFunctionalityDocumentation)
-    template(TemplateDownloadFromS3)
+    template(TemplateDownloadFromDVC)
     template(TemplateDockerRegistry)
     template(TemplateBuildConcurrency)
 
@@ -151,13 +148,12 @@ project {
         buildType(CopyExamples)
         buildType(SigCi)
         buildType(RunBashBatonUtilities)
-        buildType(DvcDiffComment)
         buildType(LifecycleScanMain)
         buildType(LifecycleScanTestBench)
         buildType(LifecycleScanCiTools)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools
         )
     }
 

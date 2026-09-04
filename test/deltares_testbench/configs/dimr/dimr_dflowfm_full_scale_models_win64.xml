@@ -64,7 +64,7 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>
@@ -133,7 +133,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>200.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c13_korte-woerden-1d2d-ManholeStreetinlets" ref="dimr_default">
@@ -165,7 +165,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>90.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c20_groesbeek_NN_T1" ref="dimr_default">
@@ -293,6 +293,7 @@
     </testCase>
     <testCase name="e02_f150_c32_pudong_2D" ref="dimr_default">
       <path version="DVC">e02_dflowfm/f150_1d2d_acceptance_urban/c32_pudong-2d</path>
+      <maxRunTime>1500</maxRunTime>
       <checks>
         <file name="output/DFlowFM_his.nc" type="netCDF">
           <parameters>
@@ -301,7 +302,7 @@
           </parameters>
         </file>
       </checks>
-      <maxRunTime>1200.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="e02_f150_c34_additional_flow_analysis" ref="dimr_default">

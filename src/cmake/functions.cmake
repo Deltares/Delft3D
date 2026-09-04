@@ -1,30 +1,3 @@
-# strip_boost_header_only_deps
-# Boost's CMake config conservatively declares compile-time header
-# dependencies (e.g. thread -> atomic, chrono, container) as
-# INTERFACE_LINK_LIBRARIES. These are not actual runtime DLL dependencies
-# (verified via dumpbin /dependents), but CMake's TARGET_RUNTIME_DLLS
-# walks INTERFACE_LINK_LIBRARIES and picks them up anyway. This function
-# strips those header-only transitive deps from the given Boost targets
-# so the corresponding DLLs don't get installed.
-#
-# Arguments
-#   TARGETS       : List of Boost targets to clean (e.g. Boost::thread Boost::log)
-#   EXCLUDE_DEPS  : List of Boost targets to remove from INTERFACE_LINK_LIBRARIES
-function(strip_boost_header_only_deps)
-    cmake_parse_arguments("" "" "" "TARGETS;EXCLUDE_DEPS" ${ARGN})
-    foreach(_target IN LISTS _TARGETS)
-        if(TARGET ${_target})
-            get_target_property(_libs ${_target} INTERFACE_LINK_LIBRARIES)
-            if(_libs)
-                foreach(_dep IN LISTS _EXCLUDE_DEPS)
-                    list(REMOVE_ITEM _libs ${_dep})
-                endforeach()
-                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
-            endif()
-        endif()
-    endforeach()
-endfunction()
-
 # create_target
 # Creates a target (library or executable) of a certain module
 #
@@ -366,10 +339,10 @@ function(create_test test_name)
     )
     # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
     if (UNIX)
-        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
+        set(lib_path_modification "LD_LIBRARY_PATH=path_list_prepend:${CMAKE_INSTALL_PREFIX}/lib")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
+        set(lib_path_modification "PATH=path_list_prepend:${CMAKE_INSTALL_PREFIX}/bin")
     endif (WIN32)
 
 
@@ -426,7 +399,8 @@ function(create_test test_name)
         set(data_path "DATA_PATH=${TEST_DATA_PATH}")
 
         set_tests_properties(${test_i} PROPERTIES
-            ENVIRONMENT "${lib_path};${data_path}"
+            ENVIRONMENT "${data_path}"
+            ENVIRONMENT_MODIFICATION "${lib_path_modification}"
             LABELS "${labels}"
         )
     endforeach()

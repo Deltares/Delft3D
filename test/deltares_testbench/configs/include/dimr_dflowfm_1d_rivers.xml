@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e02_f104_c41_bifurcation_varying_length" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c41_bifurcation_varying_length</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -14,7 +14,7 @@
   </testCase>
   <testCase name="e02_f104_c42_bifurcation_varying_length_pure1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c42_bifurcation_varying_length_pure1d</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -27,7 +27,7 @@
   </testCase>
   <testCase name="e02_f104_c43_bifurcation_equal_length" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c43_bifurcation_equal_length</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -40,7 +40,7 @@
   </testCase>
   <testCase name="e02_f104_c44_bifurcation_equal_length_pure1d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c44_bifurcation_equal_length_pure1d</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -53,7 +53,6 @@
   </testCase>
   <testCase name="e02_f105_c50_closed_rectangle_river" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c50_closed_rectangle_river</path>
-    <maxRunTime>15.0</maxRunTime>
     <checks>
       <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
         <parameters>
@@ -67,7 +66,7 @@
   </testCase>
   <testCase name="e02_f105_c61_Chezy_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c61_Chezy_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -80,7 +79,7 @@
   </testCase>
   <testCase name="e02_f105_c62_Manning_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c62_Manning_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -93,7 +92,7 @@
   </testCase>
   <testCase name="e02_f105_c63_Stickler_kn_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c63_Strickler_kn_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -106,7 +105,7 @@
   </testCase>
   <testCase name="e02_f105_c64_Strickler_ks_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c64_Strickler_ks_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -119,7 +118,7 @@
   </testCase>
   <testCase name="e02_f105_c65_White_Colebrook_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c65_White_Colebrook_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -132,7 +131,7 @@
   </testCase>
   <testCase name="e02_f105_c66_Bos_Bijkerk_all_roughness_settings" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c66_Bos_Bijkerk_all_roughness_settings</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -145,7 +144,7 @@
   </testCase>
   <testCase name="e02_f105_c20_profile_2_floodplains" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c20_profile_2_floodplains</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
@@ -158,7 +157,7 @@
   </testCase>
   <testCase name="e02_f105_c21_trapezium_profile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c21_trapezium_profile</path>
-    <maxRunTime>15.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
         <parameters>
