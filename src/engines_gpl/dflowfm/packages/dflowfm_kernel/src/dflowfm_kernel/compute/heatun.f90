@@ -380,11 +380,11 @@ contains
             end if
 
             if (ice_thickness(n) > MIN_ICE_SNOW_THICKNESS) then
-               ! recompute heatsrc0 because of presence of ice
+               ! add under-ice water/ice heat exchange over ice-covered fraction
                if (kmx > 0) then
-                  heatsrc0(k_top) = qh_ice2wat(n) * ice_free_area_fraction
+                  heatsrc0(k_top) = heatsrc0(k_top) + qh_ice2wat(n) * heat_capacity_water_cell_area * ice_area_fraction(n)
                else
-                  heatsrc0(n) = qh_ice2wat(n) * ice_free_area_fraction
+                  heatsrc0(n) = heatsrc0(n) + qh_ice2wat(n) * heat_capacity_water_cell_area * ice_area_fraction(n)
                end if
             end if
          end if
