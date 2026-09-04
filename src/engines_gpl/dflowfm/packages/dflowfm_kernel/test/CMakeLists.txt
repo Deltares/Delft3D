@@ -1,7 +1,6 @@
 function(copy_test_resources NAME SOURCE_FOLDER TARGET_FOLDER)
-
     file(GLOB_RECURSE test_resources RELATIVE "${SOURCE_FOLDER}" "${SOURCE_FOLDER}/*")
-    
+
     foreach(resource_file IN LISTS test_resources)
         add_custom_command(
             TARGET ${NAME} PRE_BUILD
@@ -17,7 +16,7 @@ f90twtest(${test_target}
     CFILES test_dflowfm_kernel.cpp
     F90FILES
         src/dflowfm_test_cleanup.f90
-        src/test_dflowfm_kernel_example.f90 # This must be the first Fortran file, as it is referenced in test_dflowfm_kernel.cpp!!
+        src/test_dflowfm_kernel_example.f90
         src/test_3d_layer_administration.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
@@ -39,6 +38,8 @@ f90twtest(${test_target}
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
     F2HFILES
+        # test_dflowfm_kernel_example.f90 must remain the first entry.
+        # It sets the name of the header file test_dflowfm_kernel_example.f90.h, which is included in test_dflowfm_kernel.cpp.
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
