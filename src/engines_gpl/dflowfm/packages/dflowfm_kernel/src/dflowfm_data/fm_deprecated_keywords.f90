@@ -8,7 +8,7 @@ module fm_deprecated_keywords
 
 contains
 
-   !> subroutine that initialises all deprecated keyword sets
+   !> Subroutine that initialises all deprecated keyword sets
    subroutine default_fm_deprecated_keywords()
 
       if (allocated(deprecated_mdu_keywords%deprecated_keyword_list)) then
