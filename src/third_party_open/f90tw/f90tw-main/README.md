@@ -65,4 +65,8 @@ F90TWTEST(test_name
 )
 ```
 
+An executable can define `F90TW_TEST_TEARDOWN()` in the C++ file of the test
+before including `f90tw_gtest.h` to run a cleanup function after every test.
+This uses GoogleTest's test event listener and also runs after a failed test.
+
 For more details, please check the [Google Test](https://github.com/google/googletest) documentation.
