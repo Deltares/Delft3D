@@ -1290,6 +1290,10 @@ contains
             ' is not below 0 degrees Celsius. This may lead to incorrect results.'
          call mess(LEVEL_WARN, msgbuf)
       end if
+      if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
+         call mess(LEVEL_ERROR, &
+            'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
+      end if
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
