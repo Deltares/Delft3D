@@ -141,8 +141,8 @@ contains
       integer, intent(in) :: gradient !< Gradient to be applied in the Forester filter, either +1 or -1
 
       ! Local variables
-      real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
-      real(kind=dp), dimension(number_of_layers) :: previous_constituent !< Array to hold the constituent values from the previous iteration for comparison
+      real(kind=dp), dimension(number_of_layers) :: constituent_updated!< Array to hold the updated constituent values during filtering
+      real(kind=dp), dimension(number_of_layers) :: constituent_last_iteration !< Array to hold the constituent values from the previous iteration for comparison
       real(kind=dp) :: difference !< Difference in constituent values between adjacent layers
       integer :: k !< Layer index
       integer :: m !< Iteration index
@@ -155,13 +155,13 @@ contains
       do m = 1, max_iterations
 
          ! Copy the current constituent values to the reference array for this iteration
-         previous_constituent(1:number_of_layers) = updated_constituent(1:number_of_layers)
+         constituent_last_iteration(1:number_of_layers) = updated_constituent(1:number_of_layers)
          filtered_this_iteration = .false.
 
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
          do k = 1, number_of_layers - 1
-            difference = previous_constituent(k + 1) - previous_constituent(k)
-            if (difference * gradient > EPS6 .or. previous_constituent(k) < 0.0_dp .or. previous_constituent(k + 1) < 0.0_dp) then
+            difference = constituent_last_iteration(k + 1) - constituent_last_iteration(k)
+            if (difference * gradient > EPS6 .or. constituent_last_iteration(k) < 0.0_dp .or. constituent_last_iteration(k + 1) < 0.0_dp) then
                if (cell_volume(k) > EPS10 .and. cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
                   difference = difference / 6.0_dp * (cell_volume(k + 1) + cell_volume(k))
