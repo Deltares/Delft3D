@@ -1382,7 +1382,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_polygon, only: dzL, npl
+      use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1397,6 +1397,7 @@ contains
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
+      real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
       logical :: is_successful
       logical :: is_read
@@ -1420,7 +1421,7 @@ contains
 
       ! Use generic polyline reader
       call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       if (.not. is_successful) return
 
       ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
@@ -1440,16 +1441,14 @@ contains
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = z_coordinates(npts)
             if (num_columns > 3) then
-               ! 4th column (dzL) needs to be read from the polygon module directly,
-               ! since read_polyline_coordinates only returns the 3rd column (zpl).
-               z_range_source(2) = dzL(npl)
+               z_range_source(2) = fourth_coordinates(npts)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = z_coordinates(1)
             if (num_columns > 3) then
-               z_range_sink(2) = dzL(1)
+               z_range_sink(2) = fourth_coordinates(1)
             end if
          end if
       end if

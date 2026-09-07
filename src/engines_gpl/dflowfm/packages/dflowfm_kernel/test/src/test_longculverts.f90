@@ -449,12 +449,12 @@ contains
       md_ident = TEST_MDU_FILE
       threshold_abort = LEVEL_FATAL
 
+      call resetFullFlowModel()
       call inidat()
       call timini()
       timon = .false.
       jampi = 0
       call SetMessageHandling(write2screen=.false.)
-      call resetFullFlowModel()
       mdu_local = TEST_MDU_FILE
       call loadModel(mdu_local)
       iresult = flow_modelinit()
@@ -515,12 +515,12 @@ contains
       md_ident = TEST_MDU_FILE
       threshold_abort = LEVEL_FATAL
 
+      call resetFullFlowModel()
       call inidat()
       call timini()
       timon = .false.
       jampi = 0
       call SetMessageHandling(write2screen=.false.)
-      call resetFullFlowModel()
       mdu_local = TEST_MDU_FILE
       call loadModel(mdu_local)
       iresult = flow_modelinit()
@@ -995,12 +995,12 @@ contains
 
       md_ident = mdu_file
       threshold_abort = LEVEL_FATAL
+      call resetFullFlowModel()
       call inidat()
       call timini()
       timon = .false.
       jampi = 0
       call SetMessageHandling(write2screen=.false.)
-      call resetFullFlowModel()
       mdu_local = mdu_file
       call loadModel(mdu_local)
       iresult = flow_modelinit()
