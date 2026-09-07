@@ -1612,7 +1612,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="platform_specific">
+  <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
 
     <checks>
