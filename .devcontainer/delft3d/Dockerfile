@@ -55,6 +55,7 @@ export UV_PYTHON_DOWNLOADS=never
 uv tool install fortls
 uv tool install fprettify
 uv tool install 'markitdown[pdf]'
+uv tool install 'hydrolib-core==1.1.0'
 EOF
 
 # Install `teamcity` command line tool.
