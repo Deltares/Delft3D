@@ -68,6 +68,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -123,6 +124,7 @@ contains
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
+            qid = quantity_name_config_file_to_internal_name(qid)
             call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
@@ -1156,6 +1158,7 @@ contains
             else if (jaoldstr > 0 .and. qid == 'generalstructure') then
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
+               call remove_longculvert_flowlinks(numgen, kegen(ncgen + 1:numl))
                success = .true.
                write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
                call msg_flush()
