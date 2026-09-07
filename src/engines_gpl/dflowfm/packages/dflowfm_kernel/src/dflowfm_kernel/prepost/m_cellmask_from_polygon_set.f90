@@ -156,8 +156,6 @@ contains
       i_poly = 0
 
       do while (i_point < polygon_points)
-         i_poly = i_poly + 1
-
          !> obtain start and end indices of polygon with generic subarray extraction routine, then correct them
          call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
          i_start = i_start + i_point - 1
@@ -167,6 +165,8 @@ contains
             exit
          end if
 
+         ! Only increment i_poly if a valid polygon was found, not when the early exit is hit
+         i_poly = i_poly + 1
          geometry%x_min(i_poly) = minval(x_poly(i_start:i_end))
          geometry%x_max(i_poly) = maxval(x_poly(i_start:i_end))
          geometry%y_min(i_poly) = minval(y_poly(i_start:i_end))
