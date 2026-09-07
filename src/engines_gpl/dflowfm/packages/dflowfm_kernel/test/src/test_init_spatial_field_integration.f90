@@ -1812,7 +1812,7 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsalinityprofile, test_initialverticalsalinityprofile,
    !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
    !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
-   !! calls setinitialverticalprofile directly with the polygon profile file..
+   !! calls setinitialverticalprofilez directly with the polygon profile file..
    subroutine test_initialverticalsalinityprofile() bind(C)
       use m_flow, only: sa1, kmx, kmxx, kbot, ktop, zws, layertype, ndkx
       use m_flowgeom, only: ndx2D, ndxi
@@ -1860,7 +1860,7 @@ contains
       call realloc(sa1, ndkx, fill=0.0_dp, keepExisting=.false.)
 
       ! zws(0:ndkx): zws(0)=bed interface, zws(1)=surface interface.
-      ! setinitialverticalprofile computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
+      ! setinitialverticalprofilez computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
       if (allocated(zws)) deallocate (zws)
       allocate (zws(0:ndkx))
       zws(0) = -10.0_dp
@@ -1898,6 +1898,114 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
    !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsedfracprofile, test_initialverticalsedfracprofile,
+   subroutine test_initialverticalsedfracprofile() bind(C)
+      call test_initial_vertical_sediment_profile(.false.)
+   end subroutine test_initialverticalsedfracprofile
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsigmasedfracprofile, test_initialverticalsigmasedfracprofile,
+   subroutine test_initialverticalsigmasedfracprofile() bind(C)
+      call test_initial_vertical_sediment_profile(.true.)
+   end subroutine test_initialverticalsigmasedfracprofile
+   !$f90tw)
+
+   !> Verify that a vertical sediment profile populates its named constituent using z or sigma coordinates.
+   subroutine test_initial_vertical_sediment_profile(use_sigma)
+      use m_flow, only: kmx, kbot, ktop, zws, ndkx, s1
+      use m_flowgeom, only: ndx2D, ndxi, bl
+      use m_sediment, only: stm_included
+      use m_transportdata, only: constituents, const_names, NUMCONST
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      logical, intent(in) :: use_sigma
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=64) :: quantity
+      character(len=*), parameter :: PROFILE_FILE = "test_sedfrac_profile.pol"
+      character(len=*), parameter :: EXT_FILE = "test_sedfrac_profile.ext"
+
+      if (use_sigma) then
+         quantity = "initialverticalsigmasedfracprofileSediment_sand"
+         call create_file(PROFILE_FILE, [ &
+                          "sedfracprofile", &
+                          "2  2", &
+                          "0.0  10.0", &
+                          "1.0  20.0"])
+      else
+         quantity = "initialverticalsedfracprofileSediment_sand"
+         call create_file(PROFILE_FILE, [ &
+                          "sedfracprofile", &
+                          "2  2", &
+                          "-10.0  2.0", &
+                          "  0.0  4.0"])
+      end if
+      call create_file(EXT_FILE, [character(len=128) :: &
+                       "[Spatial]", &
+                       "    quantity        = "//trim(quantity), &
+                       "    forcingFile     = "//PROFILE_FILE, &
+                       "    forcingFileType = Polygon"])
+
+      call setup_minimal_grid()
+      ndxi = ndx
+      ndx2D = 0
+      ndkx = ndx
+      kmx = 1
+      stm_included = .true.
+      NUMCONST = 1
+
+      call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
+      call realloc(bl, ndxi, fill=-10.0_dp, keepExisting=.false.)
+      call realloc(s1, ndxi, fill=0.0_dp, keepExisting=.false.)
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws = [-10.0_dp, 0.0_dp]
+      if (allocated(constituents)) deallocate (constituents)
+      allocate (constituents(NUMCONST, ndkx), source=0.0_dp)
+      if (allocated(const_names)) deallocate (const_names)
+      allocate (const_names(NUMCONST))
+      const_names(1) = "Sediment_sand"
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "vertical sediment profile initialization should succeed")
+      if (use_sigma) then
+         call f90_expect_near(constituents(1, 1), 15.0_dp, 1.0e-10_dp, &
+                              "sigma profile should be evaluated at the layer-center sigma coordinate")
+      else
+         call f90_expect_near(constituents(1, 1), 3.0_dp, 1.0e-10_dp, &
+                              "z profile should be evaluated at the absolute layer-center elevation")
+      end if
+
+      stm_included = .false.
+      NUMCONST = 0
+      kmx = 0
+      ndkx = 0
+      ndxi = 0
+      ndx2D = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(zws)) deallocate (zws)
+      if (allocated(constituents)) deallocate (constituents)
+      if (allocated(const_names)) deallocate (const_names)
+      call teardown_minimal_grid()
+   end subroutine test_initial_vertical_sediment_profile
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_field1d_global_value_applied_to_frictioncoefficient, test_field1d_global_value_applied_to_frictioncoefficient,
    !> Verifies that a frictioncoefficient block with forcingFileType=1dField applies

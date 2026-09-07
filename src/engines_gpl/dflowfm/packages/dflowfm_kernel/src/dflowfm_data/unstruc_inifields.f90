@@ -33,7 +33,7 @@
 !! frictioncoefficient, etc.
 module unstruc_inifields
 
-   use m_setinitialverticalprofile, only: setinitialverticalprofile
+   use m_setinitialverticalprofile, only: setinitialverticalprofilez
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
    use messagehandling, only: msgbuf, warn_flush, err_flush
@@ -846,7 +846,7 @@ contains
       use m_find_name, only: find_name
       use m_add_bndtracer, only: add_bndtracer
       use m_add_tracer, only: add_tracer
-      use fm_location_types, only: UNC_LOC_S
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_3DV
       use processes_input, only: paname, painp, num_spatial_parameters
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
@@ -877,6 +877,21 @@ contains
          first_index = 1
 
       case ('initialsedfrac')
+         if (.not. stm_included) then
+            success = .false.
+            return
+         end if
+         iconst = find_name(const_names, qid_specific)
+         if (iconst <= 0) then
+            call mess(LEVEL_WARN, 'resolve_initial_3d_target: unknown sediment fraction '''//trim(qid_specific)//'''.')
+            success = .false.
+            return
+         end if
+         first_index = iconst
+         target_array_3d => constituents
+
+      case ('initialverticalsedfracprofile', 'initialverticalsigmasedfracprofile')
+         target_location_type = UNC_LOC_3DV
          if (.not. stm_included) then
             success = .false.
             return

@@ -1059,6 +1059,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+               target_data => target_array_3d(first_index, :)
+            end if
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
@@ -1084,7 +1087,7 @@ contains
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
-               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
             else ! normal spatial field
                block
