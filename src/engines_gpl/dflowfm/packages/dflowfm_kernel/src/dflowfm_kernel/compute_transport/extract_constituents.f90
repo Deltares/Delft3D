@@ -208,7 +208,7 @@ contains
          call apply_vertical_forester_filter_to_salinity()
       end if
 
-      if (max_iterations_vertical_forester_tem > 0) then
+      if (max_iterations_vertical_forester_tem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          call apply_vertical_forester_filter_to_temperature()
       end if
 
