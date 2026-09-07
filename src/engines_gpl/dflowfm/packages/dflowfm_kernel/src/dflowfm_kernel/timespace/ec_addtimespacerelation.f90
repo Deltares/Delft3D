@@ -578,7 +578,7 @@ contains
          end if
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
-      case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
+      case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
             'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
          if (present(srcmaskfile)) then
@@ -893,7 +893,7 @@ contains
             goto 1234
          end if
          source_connection_created = .true.
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          if (ec_filetype == provFile_spiderweb) then ! other filetypes are handled generically
             sourceItemName = 'p_drop'
          end if
