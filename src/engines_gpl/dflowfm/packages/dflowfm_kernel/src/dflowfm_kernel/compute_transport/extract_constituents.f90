@@ -204,7 +204,7 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (max_iterations_vertical_forester_sal > 0) then
+      if (max_iterations_vertical_forester_sal > 0 .and. jasal > 0) then
          call apply_vertical_forester_filter_to_salinity()
       end if
 
