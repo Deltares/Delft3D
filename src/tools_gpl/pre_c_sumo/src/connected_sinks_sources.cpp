@@ -56,23 +56,24 @@ namespace pre_c_sumo
      * @param mesh_name Provided mesh name
      * @param precice_ids Vertex ID's registered on the provided mesh.
      */
-    void ConnectedSinkSources::write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                                                const std::vector<int>& precice_ids)
+    std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> ConnectedSinkSources::write_to_precice(
+        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids)
     {
         const std::size_t registered_vertex_count = precice_ids.size();
         const std::size_t entry_count = get_number_of_entries();
 
         if (registered_vertex_count == 0)
         {
-            throw std::runtime_error("Cannot write sources/sinks to an empty preCICE mesh.");
+            return std::unexpected(
+                pre_c_sumo::ConnectedSinkSourcesError{"Cannot write sources/sinks to an empty preCICE mesh."});
         }
 
         if (entry_count != 0 && entry_count != registered_vertex_count)
         {
-            throw std::runtime_error(
+            return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
                 std::format("Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
                             "Remeshing is not implemented.",
-                            registered_vertex_count, entry_count));
+                            registered_vertex_count, entry_count)});
         }
 
         const std::vector<double> zero_values(registered_vertex_count, 0.0);
@@ -103,6 +104,7 @@ namespace pre_c_sumo
 
         // After the write, we can clear the list.
         clear();
+        return {};
     }
 
 } // namespace pre_c_sumo
