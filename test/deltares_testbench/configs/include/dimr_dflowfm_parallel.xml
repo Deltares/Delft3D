@@ -225,6 +225,39 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f014_c100" ref="dimr">
+    <path version="DVC">e02_dflowfm/f014_parallel/c100_guayas_model</path>
+      <maxRunTime>900</maxRunTime>
+    <programs>
+      <program ref="dimr">
+        <arguments>
+          <argument>-c 4 -m dimr.xml</argument>
+        </arguments>
+      </program>
+    </programs>
+    <checks>
+      <file name="dflowfmoutput/guayas_0000_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="dflowfmoutput/guayas_0001_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="dflowfmoutput/guayas_0002_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="dflowfmoutput/guayas_0003_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f014_c101_icg7" ref="dimr">
     <path version="DVC">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
       <maxRunTime>900</maxRunTime>
@@ -507,39 +540,6 @@
     </checks>
   </testCase>
   <!-- FLAKY
-  <testCase name="e02_f014_c100" ref="dimr">
-    <path version="DVC">e02_dflowfm/f014_parallel/c100_guayas_model</path>
-      <maxRunTime>900</maxRunTime>
-    <programs>
-      <program ref="dimr">
-        <arguments>
-          <argument>-c 4 -m dimr.xml</argument>
-        </arguments>
-      </program>
-    </programs>
-    <checks>
-      <file name="dflowfmoutput/guayas_0000_map.nc" type="NETCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-      <file name="dflowfmoutput/guayas_0001_map.nc" type="NETCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-      <file name="dflowfmoutput/guayas_0002_map.nc" type="NETCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-      <file name="dflowfmoutput/guayas_0003_map.nc" type="NETCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-    </checks>
-  </testCase>
   <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
     <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
       <programs>
