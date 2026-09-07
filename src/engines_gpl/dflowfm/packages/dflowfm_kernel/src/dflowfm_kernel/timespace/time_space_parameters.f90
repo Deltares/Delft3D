@@ -27,11 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
-!
 module timespace_parameters
    use string_module, only: str_tolower
 
-   implicit none
+   implicit none(type, external)
 
    ! enumeration for filetypes van de providers
    integer, parameter :: FILE_TYPE_UNKNOWN = -1
@@ -53,6 +52,7 @@ module timespace_parameters
    integer, parameter :: FIELD1D = 18 ! Scalar quantity on a 1D network, used for initial/parameter fields.
    integer, parameter :: GEOTIFF = 19 ! GeoTIFF, used for initial/parameter fields.
    integer, parameter :: NODE_ID = 20 ! for a reference to a node ID
+   integer, parameter :: DATAVALUE = 21 !< Time and space independent value specified directly in ext file.
    integer, parameter :: MAX_FILE_TYPES = 103 !  max nr of supported types for end user in ext file.
    ! Enumeration for file types of sub-providers (not directly in ext file)
    integer, parameter :: FOURIER = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
@@ -90,6 +90,7 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: METHOD_BILINEAR = 7
    integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
@@ -101,10 +102,11 @@ module timespace_parameters
    integer, parameter :: OPERAND_MULTIPLY = 3 !< Multiply existing value by new value.
    integer, parameter :: OPERAND_MINIMUM = 4 !< Take the minimum of existing and new value.
    integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
+
 contains
 
-!> Converts operand string to an operand enum integer. Supports both the new operand strings (e.g. 'override') and the legacy
-!! single-character strings (e.g. 'O') for backward compatibility. Returns OPERAND_UNKNOWN when an invalid operand string is given.
+   !> Converts operand string to an operand enum integer. Supports both the new operand strings (e.g. 'override') and the legacy
+   !! single-character strings (e.g. 'O') for backward compatibility. Returns OPERAND_UNKNOWN when an invalid operand string is given.
    function convert_operand_string_to_integer(string) result(operand)
       character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
@@ -128,7 +130,7 @@ contains
       end select
    end function convert_operand_string_to_integer
 
-!> Converts a legacy operand string (e.g. 'O') to an operand enum integer. Returns OPERAND_UNKNOWN when an invalid operand string is given.
+   !> Converts a legacy operand string (e.g. 'O') to an operand enum integer. Returns OPERAND_UNKNOWN when an invalid operand string is given.
    function convert_legacy_operand_string_to_integer(string) result(operand)
       character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
@@ -154,10 +156,9 @@ contains
       end select
    end function convert_legacy_operand_string_to_integer
 
-!> Converts fileType string to an integer.
-!! Returns -1 when an invalid type string is given.
+   !> Converts fileType string to an integer.
+   !! Returns -1 when an invalid type string is given.
    function convert_file_type_string_to_integer(string) result(file_type)
-      implicit none
       character(len=*), intent(in) :: string !< file type string
       integer :: file_type !< file type integer
 
@@ -190,10 +191,9 @@ contains
 
    end function convert_file_type_string_to_integer
 
-!> Converts interpolationMethod string to an integer.
-!! Returns -1 when an invalid type string is given.
+   !> Converts interpolationMethod string to an integer.
+   !! Returns -1 when an invalid type string is given.
    function convert_method_string_to_integer(string) result(method)
-      implicit none
       character(len=*), intent(in) :: string !< method string
       integer :: method !< method integer
 
@@ -209,16 +209,17 @@ contains
          method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
+      case ('bilinear')
+         method = METHOD_BILINEAR
       case default
          method = METHOD_UNKNOWN
       end select
 
    end function convert_method_string_to_integer
 
-!> Provides default method for specific file type
-!! Returns -1 when an invalid type string is given.
+   !> Provides default method for specific file type
+   !! Returns -1 when an invalid type string is given.
    function get_default_method_for_file_type(string) result(method)
-      implicit none
       character(len=*), intent(in) :: string !< file type string
       integer :: method !< method integer
 
@@ -229,11 +230,15 @@ contains
          method = WEIGHTFACTORS
       case ('sample')
          method = METHOD_TRIANGULATION
+      case ('arcinfo')
+         method = METHOD_BILINEAR
       case ('uniform')
          method = SPACEANDTIME
       case ('polygon')
-         method = INSIDE_POLYGON
+         method = METHOD_CONSTANT
       case ('1dfield')
+         method = JUSTUPDATE
+      case ('datavalue')
          method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
@@ -248,7 +253,6 @@ contains
    !! Mainly used to hide EC-module inconsistencies from the user.
    !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
    subroutine update_method_with_weightfactor_fallback(file_type, method)
-      implicit none
       character(len=*), intent(in) :: file_type !< File type string.
       integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
 
@@ -270,7 +274,6 @@ contains
    end subroutine update_method_with_weightfactor_fallback
 
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
-      implicit none
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 

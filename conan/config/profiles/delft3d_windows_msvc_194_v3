@@ -1,0 +1,14 @@
+[settings]
+arch=x86_64
+compiler=msvc
+compiler.cppstd=20
+compiler.runtime=dynamic
+compiler.version=194
+fortran_compiler=ifx
+fortran_compiler.version=2024.2
+os=Windows
+
+[conf]
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_GENERATOR_TOOLSET': {'value': 'fortran=ifx', 'cache': True, 'type': 'STRING', 'force': True}}
+tools.microsoft.bash:subsystem=cygwin
+tools.microsoft.bash:path=C:/cygwin64/bin/bash.exe

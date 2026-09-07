@@ -1,0 +1,6 @@
+outs:
+- md5: f99d92bd01e739353c2fb8138bbf4caf.dir
+  size: 8004
+  nfiles: 4
+  hash: md5
+  path: doc

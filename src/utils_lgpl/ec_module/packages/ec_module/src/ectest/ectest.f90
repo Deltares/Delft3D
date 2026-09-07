@@ -242,7 +242,7 @@ program ectest
    ! Initialize the new Converter.
    success = ecSetConverterType(ecInstancePtr, converterId, convType_unimagdir)
    if (.not. success) stop 'Unable to set Converter type.'
-   success = ecSetConverterOperand(ecInstancePtr, converterId, operand_replace)
+   success = ecSetConverterOperand(ecInstancePtr, converterId, EC_OPERAND_REPLACE)
    if (.not. success) stop 'Unable to set Converter operand.'
    ! Construct a new Connection.
    connectionId = ecCreateConnection(ecInstancePtr)

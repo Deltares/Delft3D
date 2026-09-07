@@ -45,9 +45,9 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
-                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
+                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, stretch_type, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
-                        zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
+                        zslay, dzslay, STRETCH_USER, laycof, STRETCH_EXPONENT, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
                         sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
                         ucy_mor, uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, &
                         volonground, qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, &
@@ -58,13 +58,13 @@ contains
                         dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -90,12 +90,13 @@ contains
                         qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
-      use network_data, only: LINK_1D2D_STREETINLET     
+      use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
+      use m_physcoef, only: dynroughveg, frcuni
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -197,7 +198,7 @@ contains
          numkmax = -numkmin
          do Lf = Lnx1D + 1, Lnx ! we only need netnode nrs in 2D, todo: trim to numkmin
             L = ln2lne(Lf)
-            if (kn(3, L) == 2) then
+            if (kn(3, L) == LINK_2D) then
                numkmin = min(numkmin, kn(1, L), kn(2, L))
                numkmax = max(numkmax, kn(1, L), kn(2, L))
             end if
@@ -236,7 +237,7 @@ contains
 
          if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_DENS_SIGMA) then ! pure and density controlled sigma-layers
             mxlaydefs = 1
-            laytyp(1) = 1
+            laytyp(1) = LAYTP_SIGMA
             laymx(1) = kmx
             if (layertype == LAYTP_DENS_SIGMA) then
                call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
@@ -246,7 +247,7 @@ contains
             end if
          else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
-            laytyp(1) = 2
+            laytyp(1) = LAYTP_Z
 
             if (zlaybot == dmiss) then
                zmn = bl(1)
@@ -261,13 +262,7 @@ contains
                call reduce_double_min(zmn)
             end if
 
-            if (iStrchType >= 0) then
-               if (zlaytop == dmiss) then
-                  zmx = sini
-               else
-                  zmx = zlaytop
-               end if
-            else
+            if (stretch_type == STRETCH_UNI_OVER_EXP) then
                if (Floorlevtoplay == dmiss) then
                   zmx = sini
                else
@@ -276,6 +271,12 @@ contains
                   else
                      zmx = Floorlevtoplay + dztop
                   end if
+               end if
+            else
+               if (zlaytop == dmiss) then
+                  zmx = sini
+               else
+                  zmx = zlaytop
                end if
             end if
 
@@ -318,10 +319,10 @@ contains
             mx = max(mx, laymx(k))
          end do
 
-         call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.)
+         call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, fill=dmiss, keepexisting=.false.)
          call realloc(dzslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, fill=0.0_dp, keepexisting=.false.)
 
-         if (iStrchType == STRCH_USER) then
+         if (stretch_type == STRETCH_USER) then
             do j = 1, mxlaydefs
                mx = laymx(j)
                do k = 1, mx
@@ -329,7 +330,7 @@ contains
                end do
             end do
 
-         elseif (iStrchType == STRCH_EXPONENT) then
+         elseif (stretch_type == STRETCH_EXPONENT) then
             gfi = 1.0_dp / laycof(2)
             gf = laycof(3)
             do j = 1, mxlaydefs
@@ -358,45 +359,48 @@ contains
                   end do
                end if
             end do
-         else
+         else ! default: fill as uniform layers
             do j = 1, mxlaydefs
                mx = laymx(j)
-               do k = 1, mx
-                  dzslay(k, j) = 1.0_dp / mx
-               end do
+               dzslay(1:mx, j) = 1.0_dp / mx
             end do
          end if
 
          do j = 1, mxlaydefs
             mx = laymx(j)
-            if (laytyp(j) == 1) then
+            if (laytyp(j) == LAYTP_SIGMA) then
 
+               ! Fill layers based on dzslay computed above
                zslay(0, j) = 0.0_dp
                do k = 1, mx
                   zslay(k, j) = zslay(k - 1, j) + dzslay(k, j)
                end do
 
-            else if (laytyp(j) == 2) then
+            else if (laytyp(j) == LAYTP_Z) then
 
-               call realloc(zslay, uindex=[mx, mxlaydefs], lindex=[0, 1], stat=ierr, keepexisting=.false.) ! nr of layer distributions
-
-               if (iStrchType >= 0) then
-                  zslay(0, j) = zmn
-                  do k = 1, mx
-                     zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
-                  end do
-               else
+               if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
                   zslay(mx, j) = zmx
+                  
+                  ! Fill top uniform layers, thickness equal to dzm
                   do k = mx - 1, mx - kuni, -1
                      zslay(k, j) = zslay(k + 1, j) - dzm
                   end do
 
+                  ! Fill bottom layers with exponential growth factor
                   dzb = dzm
                   do k = mx - kuni - 1, 1, -1
                      dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
+                  
+               else
+                  ! Fill layers based on dzslay computed above, scaled to the actual depth range
+                  zslay(0, j) = zmn
+                  do k = 1, mx
+                     zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
+                  end do
+                  
                end if
             end if
          end do
@@ -409,10 +413,10 @@ contains
 
             Ldn = laydefnr(n)
             if (Ldn >= 1) then
-               if (laytyp(Ldn) == 1) then
+               if (laytyp(Ldn) == LAYTP_SIGMA) then
                   mx = laymx(Ldn)
                   kmxn(n) = mx
-               else if (laytyp(Ldn) == 2) then
+               else if (laytyp(Ldn) == LAYTP_Z) then
                   call getzlayerindices(n, nlayb, nrlay)
                   kmxn(n) = nrlay
                end if
@@ -504,8 +508,7 @@ contains
                Lt2 = laytyp(laydefnr(n2))
             end if
 
-            if (Lt1 == 2 .and. Lt2 == 2) then
-
+            if (Lt1 == LAYTP_Z .and. Lt2 == LAYTP_Z) then
                call getzlayerindices(n1, nlayb1, nrlay1) ! connection to be made at bedcell of highest adjacent cell
                call getzlayerindices(n2, nlayb2, nrlay2)
                kb1 = max(0, nlayb2 - nlayb1)
@@ -880,10 +883,16 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwwu_total(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwws(ndkx)', ierr, ndkx)
+         call realloc(vicwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('vicwws_total(ndkx)', ierr, ndkx)
          call realloc(difwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('difwws(ndkx)', ierr, ndkx)
+         call realloc(difwws_total, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('difwws_total(ndkx)', ierr, ndkx)
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
@@ -951,6 +960,8 @@ contains
       call aerr('au_nostrucs(lnkx)', ierr, lnkx)
       call realloc(viu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('viu(lnkx)', ierr, lnkx)
+      call realloc(vius, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('vius(ndkx)', ierr, ndkx)
       call realloc(vicLu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vicLu(lnkx)', ierr, lnkx)
       call realloc(suu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -991,6 +1002,12 @@ contains
       if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
+      end if
+      if (dynroughveg > 0) then
+         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+         call aerr('frcu0(lnx)', ierr, lnx)
+         call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
+         call aerr('dynveg(lnx)', ierr, lnx)
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then
@@ -1040,7 +1057,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1048,7 +1065,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1074,7 +1091,7 @@ contains
          end if
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
-            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
             end if

@@ -14,7 +14,8 @@ object LifecycleScanMain : BuildType({
     }
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     artifactRules = """
@@ -66,9 +67,14 @@ object LifecycleScanMain : BuildType({
 
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
-            vcs {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 3
+                    minute = 30
+                }
                 branchFilter = "+:<default>"
-                perCheckinTriggering = false
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
             schedule {
                 schedulingPolicy = weekly {

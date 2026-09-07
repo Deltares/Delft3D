@@ -25,6 +25,7 @@ f90twtest(${test_target}
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90
+        src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
         src/test_mdu_file_read_write.f90
@@ -32,8 +33,10 @@ f90twtest(${test_target}
         src/test_dflowfm_dambreak.f90
         src/test_init_spatial_field.f90
         src/test_init_spatial_field_integration.f90
+        src/test_offline_wave_external_forcing.f90
         src/test_atmospheric_stability.f90
         src/test_precice_adapter.f90
+        src/test_fm_external_forcings_utils.f90
     F2HFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
@@ -44,6 +47,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sources_sinks.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_timespace_parameters.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_block.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_data_value.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_inifields.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90
@@ -51,8 +55,10 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field_integration.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_offline_wave_external_forcing.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_precice_adapter.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_fm_external_forcings_utils.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test

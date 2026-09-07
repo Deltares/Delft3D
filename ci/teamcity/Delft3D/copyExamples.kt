@@ -14,7 +14,8 @@ object CopyExamples : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     vcs {

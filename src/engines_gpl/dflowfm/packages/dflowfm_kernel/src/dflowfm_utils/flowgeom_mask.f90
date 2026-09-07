@@ -30,8 +30,9 @@
 
 module m_flowgeom_mask
    use precision_basics, only: dp
-   use fm_location_types, only: parse_spatial_location_type, UNC_LOC_CN, UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, &
-      SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+   use fm_location_types, only: parse_spatial_location_type, UNC_LOC_3DV, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S, &
+      UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+   use messagehandling, only: LEVEL_FATAL, mess
 
    implicit none(type, external)
 
@@ -46,6 +47,7 @@ contains
    subroutine construct_mask(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       use m_flowgeom, only: lnx, ndx
       use network_data, only: numk
+      use m_alloc, only: realloc
 
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
@@ -62,22 +64,23 @@ contains
       select case (location_type)
       case (UNC_LOC_CN)
          num_elements = numk
-      case (UNC_LOC_S, UNC_LOC_S3D)
+      case (UNC_LOC_3DV, UNC_LOC_S, UNC_LOC_S3D)
          num_elements = ndx
       case (UNC_LOC_U)
          num_elements = lnx
+      case (UNC_LOC_GLOBAL)
+         num_elements = 1
+      case default
+         call mess(LEVEL_FATAL, 'm_flowgeom_mask::construct_mask: Unsupported location type: ', location_type)
       end select
 
-      if (size(mask) /= num_elements) then
-         if (allocated(mask)) then
-            deallocate(mask)
-         end if
-         allocate(mask(num_elements))
+      call realloc(mask, num_elements, keepExisting=.false., fill=0)
+
+      if (location_type == UNC_LOC_GLOBAL .or. spatial_location_type == SPATIAL_LOCATION_INVALID) then
+         mask = 1
+      else
+         call apply_spatial_location_mask(mask, location_type, spatial_location_type)
       end if
-
-      mask = 0
-
-      call apply_spatial_location_mask(mask, location_type, spatial_location_type)
 
       if (present(target_mask_file) .and. present(ierr)) then
          call apply_polygon_mask(mask, location_type, target_mask_file, ierr)
@@ -222,8 +225,8 @@ contains
       integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
       ! Local variables
-      integer :: i !< Loop variable for mask array.
       integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
+      integer, dimension(:), allocatable :: polygon_mask !< Direct mask of points selected by the polygon.
       integer :: number_of_selected_points !< The number of selected points based on the target mask file.
       integer :: point !< Loop variable for points.
       logical :: spatial_mask_applied !< Flag to indicate whether a spatial mask has already been applied to the mask array.
@@ -263,13 +266,12 @@ contains
          end select
 
          if (spatial_mask_applied) then
-            do i = 1, size(mask)
-               if (mask(i) == 1 .and. any(i == selected_points)) then
-                  mask(i) = 1
-               else
-                  mask(i) = 0
-               end if
+            allocate (polygon_mask(size(mask)))
+            polygon_mask = 0
+            do point = 1, number_of_selected_points
+               polygon_mask(selected_points(point)) = 1
             end do
+            mask = mask * polygon_mask
          else
             do point = 1, number_of_selected_points
                mask(selected_points(point)) = 1

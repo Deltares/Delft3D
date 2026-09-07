@@ -8,28 +8,26 @@ add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_di
 add_library(${library_name} SHARED ${library_files})
 target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
-# Set dependencies on windows
+target_link_libraries(${library_name} PRIVATE
+    wave_data
+    delftio
+    delftio_shm
+    deltares_common
+    deltares_common_c
+    deltares_common_mpi
+    ec_module
+    gridgeom
+    wave_io
+    io_netcdf
+    wave_kernel
+    wave_manager
+    nefis
+    netCDF::netcdff
+    triangle::triangle
+    swan
+)
+
 if (WIN32)
-    set(library_dependencies    wave_data
-                                delftio
-                                delftio_shm
-                                deltares_common
-                                deltares_common_c
-                                deltares_common_mpi
-                                ec_module
-                                gridgeom
-                                wave_io
-                                io_netcdf
-                                wave_kernel
-                                wave_manager
-                                nefis
-                                netCDF::netcdff
-                                triangle_c
-                                swan
-                                )
-
-    target_link_libraries(${library_name} PRIVATE ${library_dependencies})
-
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
@@ -46,38 +44,10 @@ if (WIN32)
     target_link_options(${library_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
-# Set dependencies on linux
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
-    set(library_dependencies    wave_data
-                                delftio
-                                delftio_shm
-                                deltares_common
-                                deltares_common_c
-                                ec_module
-                                gridgeom
-                                wave_io
-                                io_netcdf
-                                wave_kernel
-                                wave_manager
-                                nefis
-                                triangle_c
-                                swan
-                                esmfsm
-                                netCDF::netcdff
-                                )
-
-    target_link_libraries(${library_name} PRIVATE
-         ${library_dependencies}
-    )
+    target_link_libraries(${library_name} PRIVATE esmfsm)
 
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
-
 endif(UNIX)
 
 include_directories(${mpi_module_path} ${version_include_dir})

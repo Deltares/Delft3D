@@ -38,9 +38,9 @@ set exedir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 
     rem Run
-set PATH=%sharedir%
-echo executing: "%exedir%\dfmoutput.exe" --verbose %1 %2 %3 %4 %5 %6 %7 %8 %9
-"%exedir%\dfmoutput.exe" --verbose %1 %2 %3 %4 %5 %6 %7 %8 %9
+set PATH=%sharedir%;%libdir%
+echo executing: "%exedir%\dfmoutput.exe" --verbose %*
+"%exedir%\dfmoutput.exe" --verbose %*
 
 goto end
 

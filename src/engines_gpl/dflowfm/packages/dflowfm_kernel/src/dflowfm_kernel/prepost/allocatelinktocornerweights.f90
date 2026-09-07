@@ -46,6 +46,7 @@ contains
       use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, jacorner, lne2ln
       use m_netw, only: numk, numl, kn, lnn
       use m_alloc
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       implicit none
 
@@ -88,7 +89,7 @@ contains
 ! count number of attached and closed boundary links, and store it temporarily in jacorner
       jacorner = 0
       do L = 1, numL
-         if ((kn(3, L) == 2 .and. lnn(L) == 1 .and. lne2ln(L) <= 0)) then
+         if ((kn(3, L) == LINK_2D .and. lnn(L) == 1 .and. lne2ln(L) <= 0)) then
             k1 = kn(1, L)
             k2 = kn(2, L)
             jacorner(k1) = jacorner(k1) + 1
@@ -108,7 +109,7 @@ contains
 
       ! exclude all nodes with a disabled netlink attached from the projection
       do L = 1, numL
-         if (kn(3, L) == 0) then
+         if (kn(3, L) == LINK_CLOSED) then
             k1 = kn(1, L)
             k2 = kn(2, L)
             jacorner(k1) = 0

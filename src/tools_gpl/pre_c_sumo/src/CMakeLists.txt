@@ -1,6 +1,7 @@
 set(source_files
     endpoints.cpp
     pre_c_sumo_lib.cpp
+    connected_sinks_sources.cpp
     coupling_steps.cpp
     csumo_settings_reader.cpp
     FF2NF_writer.cpp
@@ -10,6 +11,7 @@ set(source_files
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
+    ${include_dir}/connected_sinks_sources.hpp
     ${include_dir}/coupling_steps.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/endpoints.hpp

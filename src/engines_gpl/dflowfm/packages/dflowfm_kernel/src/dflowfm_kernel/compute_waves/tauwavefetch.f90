@@ -380,6 +380,7 @@ contains
       use m_sferic
       use m_fetch_local_data
       use m_alloc
+      use network_data, only: LINK_CLOSED
 
       real(kind=dp), intent(in) :: u_wind, v_wind
       integer, intent(out) :: nr_cells_done
@@ -435,7 +436,7 @@ contains
                node2 = netcell(cell)%nod(index_cell_node + 1)
             end if
             wdep = s1(cell) - min(zk(node1), zk(node2))
-            if (lnn(link) == 1 .or. wdep < 0.5_dp .or. kn(3, link) == 0 .or. jaopen == 1) then ! link shallow or closed => start fetch here
+            if (lnn(link) == 1 .or. wdep < 0.5_dp .or. kn(3, link) == LINK_CLOSED .or. jaopen == 1) then ! link shallow or closed => start fetch here
                call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
                prin = u_wind * xn + v_wind * yn
                if (prin < 0.0_dp) then ! if upwind

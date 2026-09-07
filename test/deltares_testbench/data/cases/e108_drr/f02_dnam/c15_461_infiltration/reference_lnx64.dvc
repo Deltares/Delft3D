@@ -1,0 +1,6 @@
+outs:
+- md5: c8a59482ecafb71168fee9a329439adb.dir
+  size: 133278
+  nfiles: 11
+  hash: md5
+  path: reference_lnx64

@@ -52,6 +52,7 @@ contains
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_fm_erosed, only: ndx => ndx_mor
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -174,7 +175,7 @@ contains
                      cycle
                   end if
                   !
-                  if (pure1d_mor .and. kcu(Lf) == -1) then
+                  if (pure1d_mor .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                      if (link1(k2) == Lf) then
                         e_sn(Lf, l) = sx(k2, l)
                      else
