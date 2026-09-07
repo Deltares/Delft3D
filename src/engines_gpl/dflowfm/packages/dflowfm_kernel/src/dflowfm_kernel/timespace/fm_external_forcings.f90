@@ -42,8 +42,8 @@ module fm_external_forcings
 
    private
 
-      public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
-         allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
+      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -223,9 +223,9 @@ contains
             ! Retrieve stress's y-component for ext-file quantity 'stressy'.
          else if (ec_item_id == item_stressy) then
             call get_timespace_value_by_item(item_stressy)
-            ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
-         else if (ec_item_id == item_atmosphericpressure) then
-            call get_timespace_value_by_item(item_atmosphericpressure)
+            ! Retrieve wind's p-component for ext-file quantity 'airpressure'.
+         else if (ec_item_id == item_airpressure) then
+            call get_timespace_value_by_item(item_airpressure)
             ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.
          else if (ec_item_id == item_pseudo_air_pressure) then
             call get_timespace_value_by_item(item_pseudo_air_pressure)
@@ -283,7 +283,7 @@ contains
          end do
       end if
 
-      if (item_atmosphericpressure /= ec_undef_int) then
+      if (item_airpressure /= ec_undef_int) then
          do k = 1, ndx
             if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
                air_pressure(k) = BACKGROUND_AIR_PRESSURE
@@ -2752,14 +2752,15 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
-      type(t_storage), pointer :: stors(:)
+      type(t_storage), dimension(:), pointer :: stors
+      type(t_netcell_set) :: netcell_cache
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -2867,7 +2868,7 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if ((item_apwxwy_p == ec_undef_int) .and. (item_atmosphericpressure == ec_undef_int)) then
+         if ((item_apwxwy_p == ec_undef_int) .and. (item_airpressure == ec_undef_int)) then
             call mess(LEVEL_ERROR, 'When "computedAirdensity = 1", quantity airpressure must be provided in the .ext file.')
          end if
          if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &
@@ -3124,19 +3125,17 @@ contains
                end if
             end do
          end if
-         call init_cell_geom_as_polylines()
+         netcell_cache = t_netcell_set()
          !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
-               ja = point_find_netcell(Xz(n), Yz(n))
+               ja = netcell_cache%find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
          !$OMP END PARALLEL DO
-         call cleanup_cell_geom_polylines()
-
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)

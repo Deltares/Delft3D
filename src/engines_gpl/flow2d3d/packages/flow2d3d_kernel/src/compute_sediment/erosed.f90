@@ -79,6 +79,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_comphidexp, only: comphidexp
     use m_compsandfrac, only: compsandfrac
     use m_getfixfac, only: getfixfac
+    use m_updmorfac, only: updmorfac
+    use m_soursin_2d, only: soursin_2d
+    use m_soursin_3d, only: soursin_3d
+    use m_eqtran, only: eqtran
+    use m_erosilt, only: erosilt
     !
     implicit none
     !
@@ -151,6 +156,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: mudfrac_he ! dummy not used
     real(fp)         , dimension(:)      , pointer :: sandfrac
     real(fp)         , dimension(:,:)    , pointer :: hidexp
+    real(fp)         , dimension(:)      , pointer :: poros
     real(fp)         , dimension(:)      , pointer :: rsdqlc
     real(fp)         , dimension(:,:)    , pointer :: sbcu
     real(fp)         , dimension(:,:)    , pointer :: sbcv
@@ -178,6 +184,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: sourf
     real(fp)         , dimension(:)      , pointer :: taub
     real(fp)         , dimension(:,:)    , pointer :: taurat
+    real(fp)         , dimension(:)      , pointer :: tcrero_bed
+    real(fp)         , dimension(:)      , pointer :: eropar_bed
     real(fp)         , dimension(:)      , pointer :: ust2
     real(fp)         , dimension(:)      , pointer :: umod
     real(fp)         , dimension(:)      , pointer :: uuu
@@ -230,6 +238,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: mfluff
     integer                              , pointer :: ihidexptrcrs
     integer                              , pointer :: ithresh
+    integer                              , pointer :: iconsolidate
     include 'flow_steps_f.inc'
 !
 ! Local parameters
@@ -411,7 +420,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !       & -0.9512,-0.9850/
     integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
     integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
-    integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
 !
 !! executable statements -------------------------------------------------------
 !
@@ -482,6 +490,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
+    poros               => gdp%gderosed%poros
     mudfrac_he          => gdp%gderosed%mudfrac_he
     sandfrac            => gdp%gderosed%sandfrac
     hidexp              => gdp%gderosed%hidexp
@@ -513,6 +522,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     srcmax              => gdp%gderosed%srcmax
     taub                => gdp%gderosed%taub
     taurat              => gdp%gderosed%taurat
+    tcrero_bed          => gdp%gderosed%tcrero_bed
+    eropar_bed          => gdp%gderosed%eropar_bed
     ust2                => gdp%gderosed%ust2
     umod                => gdp%gderosed%umod
     uuu                 => gdp%gderosed%uuu
@@ -558,6 +569,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     wetslope            => gdp%gdmorpar%wetslope
     ihidexptrcrs        => gdp%gdmorlyr%settings%ihidexptrcrs
     ithresh             => gdp%gdmorpar%ithresh
+    iconsolidate        => gdp%gdmorlyr%settings%iconsolidate
     !
     allocate (localpar (npar), stat = istat)
     !
@@ -640,10 +652,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     ! Determine fractions of all sediments the top layer and
     ! compute the mud fraction.
     !
-    if (lsedtot > 1) then
-       call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
-                  & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
-    endif
+    call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
+               & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
+    call getbedprop(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, &
+               & poros, tcrero_bed, eropar_bed)
     !
     ! Calculate velocity components and magnitude at the zeta points
     ! based on velocity in the bottom computational layer
@@ -721,7 +733,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        !
        ! determine hiding & exposure factors
        !
-       if (ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+       if (ihidexptrcrs == HIDEXP_ACTIVE_AND_COARSE_LAYER) then 
           !In this case, the hiding and exposure factors are computed based on the mean grain
           !size of the sediment in both the active layer (which is the top layer in the bed) and
           !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
@@ -1008,7 +1020,9 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        dll_reals(RP_VMEAN) = real(vmean          ,hp)
        dll_reals(RP_VELMN) = real(velm           ,hp)
        dll_reals(RP_USTAR) = real(ustarc         ,hp)
+       dll_reals(RP_POROS) = real(poros(nm)      ,hp)
        dll_reals(RP_ZB   ) = real(-dps(nm)       ,hp)
+       dll_reals(RP_TAUCR) = real(tcrero_bed(nm) ,hp)
        !
        if (max_integers < MAX_IP) then
           write(errmsg,'(a)') 'Insufficient space to pass integer values to transport routine.'
@@ -1064,6 +1078,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
              ! l <= lsed for fractions with advection-diffusion transport
              !
              dll_reals(RP_SETVL) = real(ws(nm, kbed, l)  ,hp) ! Vertical velocity near bedlevel
+             if (iconsolidate == CONSOL_NONE) then
+                dll_reals(RP_POROS) = 1.0_hp - real(cdryb(l)/rhosol(l), hp)
+             endif
+             !
              if (flmd2l) then
                  localpar(11) = entr(nm)
              endif
@@ -1088,9 +1106,15 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                         & npar        ,localpar    ,max_integers,max_reals    , &
                         & max_strings ,dll_function(l),dll_handle(l),dll_integers, &
                         & dll_reals   ,dll_strings ,iflufflyr   ,mfltot       , &
-                        & fracf       ,maxslope    ,wetslope    , &
+                        & fracf       ,tcrero_bed(nm), eropar_bed(nm), maxslope    ,wetslope    , &
                         & error ,wstau(nm) ,sinktot ,sourse(nm,l), sourfluff)
              if (error) call d3stop(1, gdp)
+             if (gdp%gdmorpar%moroutput%sedpar) then
+                 do i = 1,gdp%gdtrapar%noutpar(l)
+                     j = gdp%gdtrapar%ioutpar(i,l)
+                     gdp%gdtrapar%outpar(j, nm) = localpar(i)
+                 enddo
+             endif
              !
              if (iflufflyr>0) then
                 if (iflufflyr==2) then

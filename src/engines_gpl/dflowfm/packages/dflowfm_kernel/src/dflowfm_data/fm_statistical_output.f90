@@ -2369,6 +2369,7 @@ contains
       use m_dambreak_breach, only: n_db_signals
       use m_waveconst
       use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2995,7 +2996,7 @@ contains
                temp_pointer(1:ntot * nlyrs) => valobs(:, IPNT_THLYR:IPNT_THLYR + (nlyrs - 1))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_THLYR), temp_pointer)
 
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                   temp_pointer(1:ntot * nlyrs) => valobs(:, IPNT_POROS:IPNT_POROS + (nlyrs - 1))
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POROS), temp_pointer)
                end if

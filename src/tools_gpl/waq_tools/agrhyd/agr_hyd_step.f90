@@ -53,7 +53,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     integer :: iq            ! exchange index
     integer :: i1, i2, i3, i4! indexes in array to point to a certain layer
     integer :: ierr_alloc    !
-    real, parameter :: rmiss = -999.
+    real, parameter :: vdfmiss = 0.0   ! Missing value for vertical diffusion
 
 
     ! some init
@@ -186,7 +186,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
             if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
             endif
             do iseg = 1, noseg2
-                vdfwork(iseg) = rmiss
+                vdfwork(iseg) = vdfmiss
             enddo
             call aggregate_extended(input_hyd%num_cells, noseg2, &
                     1, 1, &
