@@ -80,7 +80,7 @@ contains
       integer, dimension(nfiles + 1) :: ncids, id_time, id_timestep, id_mappingVar
       integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:)
       double precision :: convversion
-      integer :: jaugrid, iconvtype, formatCode, new_ndx
+      integer :: jaugrid, iconvtype, formatCode, new_ndx, jasedmor, jamorfac
       integer, dimension(nfiles) :: jaugridi, ioncids
       logical :: isNetCDF4
       integer, allocatable :: dimids(:, :, :) !<(nDims, maxTopodim,nfiles+1) Used for storing any remaining vectormax dimension IDs
@@ -630,11 +630,13 @@ contains
                      ! check if it is a dimension for sediment variables.
                      ! The sediment related dimensions cannot be dinstinguished on mesh 1d or 2d.
                      if (strcmpi(dimname, 'nSedTot')) then
+                        jasedmor = 1
                         id_sedtotdim(itopo, ii) = id
                         dimids(id, itopo, ii) = id
                         nsedtot(ii) = nlen
                         cycle
                      else if (strcmpi(dimname, 'nSedSus')) then
+                        jasedmor = 1
                         id_sedsusdim(itopo, ii) = id
                         dimids(id, itopo, ii) = id
                         nsedsus(ii) = nlen
@@ -731,8 +733,10 @@ contains
 
                      ! check if it is a dimension for sediment variables
                      if (strcmpi(dimname, 'nSedTot')) then
+                        jasedmor = 1
                         id_sedtotdim(itopo, ii) = id
                      else if (strcmpi(dimname, 'nSedSus')) then
+                        jasedmor = 1
                         id_sedsusdim(itopo, ii) = id
                      else if (strcmpi(dimname, 'nBedLayers')) then
                         id_nlyrdim(itopo, ii) = id
@@ -1089,22 +1093,25 @@ contains
                end if
             end if
             
-            ierr = nf90_inq_varid(ncids(ifileScan), 'morft', id_morft(ifileScan))
-            ! if morft doesn't exist -> no copy
-            ierr = nf90_def_var(ncids(noutfile), 'morft', nf90_double, (/id_timedim(itopo, noutfile)/), id_morft(noutfile))
-            ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
-            if (isNetCDF4) then
-               ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
-            end if
+            ! copy attributes of morft and morfac if they exist
+            if (jasedmor == 1) then
+               ierr = nf90_inq_varid(ncids(ifileScan), 'morft', id_morft(ifileScan))
+               ierr = nf90_def_var(ncids(noutfile), 'morft', nf90_double, (/id_timedim(itopo, noutfile)/), id_morft(noutfile))
+               ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
+                  if (isNetCDF4) then
+                     ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
+                  end if
             
-            ierr = nf90_inq_varid(ncids(ifileScan), 'morfac', id_morfac(ifileScan))
-            ! if morfac doesn't exist -> no copy
-            ierr = nf90_def_var(ncids(noutfile), 'morfac', nf90_double, (/id_timedim(itopo, noutfile)/), id_morfac(noutfile))
-            ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
-            if (isNetCDF4) then
-               ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+               ierr = nf90_inq_varid(ncids(ifileScan), 'morfac', id_morfac(ifileScan))
+               if  (ierr == nf90_noerr) then
+                  jamorfac = 1
+                  ierr = nf90_def_var(ncids(noutfile), 'morfac', nf90_double, (/id_timedim(itopo, noutfile)/), id_morfac(noutfile))
+                  ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+                  if (isNetCDF4) then
+                     ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+                  end if
+               end if
             end if
-            
 
             ! Only for ugrid format, because this variable will be defined in step 4 for old format
             if (jaugrid == 1) then
@@ -1838,6 +1845,26 @@ contains
                ierr = nf90_put_att(ncids(noutfile), varids_out(iv, itopo), '_FillValue', fill_value_int)
             end if
          end do
+      
+      ! copy the attrubutes of sedfrac_name and sussedfrac_name
+      if (jasedmor == 1) then
+         !!define sedfrac_name and sussedfrac_name variables and copy their attributes!!
+         ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
+         ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', 100, id_strlendim(itopo, noutfile))
+         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedtotdim(itopo, noutfile)/), id_frac_name(noutfile)) !TODO: relocate somewhere such that itopo=1?
+         ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
+         if (isNetCDF4) then
+            ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
+         end if
+      
+         ierr = nf90_inq_varid(ncids(ifileScan), 'sussedfrac_name', id_susfrac_name(ifileScan))
+         ierr = nf90_def_var(ncids(noutfile), 'sussedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedsusdim(itopo, noutfile)/), id_susfrac_name(noutfile))
+         ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
+         if (isNetCDF4) then
+            ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
+         end if
+      end if
+            
       end do ! itopo
 
       ! When both 1D and 2D meshes are present, the global numbering of 1D nodes (read from input files) includes the 2D faces.
@@ -2003,22 +2030,6 @@ contains
          continue ! non-UGRID 1D2D links not supported.
       end if
 
-      !!define sedfrac_name and sussedfrac_name variables and copy their attributes!!
-      ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
-      ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', 100, id_strlendim(1, noutfile))
-      ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(1, noutfile), id_sedtotdim(1, noutfile)/), id_frac_name(noutfile)) !TODO: relocate somewhere such that itopo=1?
-      ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
-      if (isNetCDF4) then
-         ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
-      end if
-      
-      ierr = nf90_inq_varid(ncids(ifileScan), 'sussedfrac_name', id_susfrac_name(ifileScan))
-      ierr = nf90_def_var(ncids(noutfile), 'sussedfrac_name', nf90_char, (/id_strlendim(1, noutfile), id_sedsusdim(1, noutfile)/), id_susfrac_name(noutfile))
-      ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
-      if (isNetCDF4) then
-         ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
-      end if
-            
       ierr = nf90_enddef(ncids(noutfile))
 
    !! 6. Write new flow geom to output file
@@ -2036,40 +2047,44 @@ contains
          do it = 1, ntsel
             ierr = nf90_get_var(ncids(ifileScan), id_time(ifileScan), times(it), start=(/itimsel(it)/)) ! count=1
             ierr = nf90_get_var(ncids(ifileScan), id_timestep(ifileScan), timestep(it), start=(/itimsel(it)/)) ! count=1
-            !make an additional condition to read morft/morfac -> copy & put it into nc
-            ierr = nf90_get_var(ncids(ifileScan), id_morft(ifileScan), morft(it), start=(/itimsel(it)/))
-            ierr = nf90_get_var(ncids(ifileScan), id_morfac(ifileScan), morfac(it), start=(/itimsel(it)/))
+            ! if it contains sedtrans/mor variables
+            if (jasedmor == 1) then
+               ierr = nf90_get_var(ncids(ifileScan), id_morft(ifileScan), morft(it), start=(/itimsel(it)/))
+               if (jamorfac == 1) then
+                  ierr = nf90_get_var(ncids(ifileScan), id_morfac(ifileScan), morfac(it), start=(/itimsel(it)/))
+               end if
+            end if
          end do
 
          ierr = nf90_put_var(ncids(noutfile), id_time(noutfile), times, count=(/ntsel/))
          ierr = nf90_put_var(ncids(noutfile), id_timestep(noutfile), timestep, count=(/ntsel/))
-         !make an additional condition to read morft/morfac -> copy & put it into nc
-         ierr = nf90_put_var(ncids(noutfile), id_morft(noutfile), morft, count=(/ntsel/))
-         ierr = nf90_put_var(ncids(noutfile), id_morfac(noutfile), morfac, count=(/ntsel/))
+         ! if it contains sedtrans/mor variables
+         if (jasedmor == 1) then
+            ierr = nf90_put_var(ncids(noutfile), id_morft(noutfile), morft, count=(/ntsel/))
+            if (jamorfac == 1) then
+               ierr = nf90_put_var(ncids(noutfile), id_morfac(noutfile), morfac, count=(/ntsel/))
+            end if
+         end if
       end if
       
-      !!copy the sediment fraction name to the merged file!!
-      nsedtotsel = nsedtot(ifileScan)
-      nsedtot(noutfile) = nsedtotsel
+      !copy the sediment fraction name to the merged file
+      if (jasedmor == 1) then
+         nsedtotsel = nsedtot(ifileScan)
+         nsedtot(noutfile) = nsedtotsel
+         allocate (sedfrac_name(nsedtotsel))
+         do it = 1, nsedtotsel
+             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it))
+         end do
+         ierr = nf90_put_var(ncids(noutfile), id_frac_name(noutfile), sedfrac_name)
       
-      allocate (sedfrac_name(nsedtotsel))
-      
-      do it = 1, nsedtotsel
-          ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it))
-      end do
-      
-      ierr = nf90_put_var(ncids(noutfile), id_frac_name(noutfile), sedfrac_name)
-      
-      nsedsussel = nsedsus(ifileScan)
-      nsedsus(noutfile) = nsedsussel
-      
-      allocate (sussedfrac_name(nsedsussel))
-      
-      do it = 1, nsedsussel
-          ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it))
-      end do
-      
-      ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
+         nsedsussel = nsedsus(ifileScan)
+         nsedsus(noutfile) = nsedsussel
+         allocate (sussedfrac_name(nsedsussel))
+         do it = 1, nsedsussel
+             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it))
+         end do
+         ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
+      end if
       
       ! 6b. A loop on meshe topology to write the merged variables to the output file.
       do itopo = minTopodim, maxTopodim
