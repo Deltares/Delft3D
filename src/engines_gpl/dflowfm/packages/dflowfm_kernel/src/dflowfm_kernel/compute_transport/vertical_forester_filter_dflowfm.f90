@@ -50,6 +50,7 @@ contains
       use timers, only: timon, timstrt, timstop
 
       ! Local variables
+      integer, parameter :: UNSTABLE_SALINITY_GRADIENT = 1
       integer :: i_bottom_layer
       integer :: i_flowcell
       integer :: number_of_layers
@@ -73,7 +74,7 @@ contains
             kmxn(i_flowcell), &
             i_bottom_layer, &
             max_iterations_vertical_forester_sal, &
-            1 &
+            UNSTABLE_SALINITY_GRADIENT &
          )
       end do
 
@@ -93,6 +94,7 @@ contains
       use timers, only: timon, timstrt, timstop
 
       ! Local variables
+      integer, parameter :: UNSTABLE_TEMPERATURE_GRADIENT = -1
       integer :: i_bottom_layer
       integer :: i_flowcell
       integer :: number_of_layers
@@ -116,7 +118,7 @@ contains
             kmxn(i_flowcell), &
             i_bottom_layer, &
             max_iterations_vertical_forester_tem, &
-            -1 &
+            UNSTABLE_TEMPERATURE_GRADIENT &
          )
       end do
 
