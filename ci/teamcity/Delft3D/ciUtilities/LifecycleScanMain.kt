@@ -6,7 +6,9 @@ import Delft3D.template.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 object LifecycleScanMain : BuildType({
-    name = "Lifecycle Scan Main"
+    id("LifecycleScanMain")
+    name = "Nexus IQ (product)"
+    description = "SBOM and Nexus IQ scan of the product tree."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {

@@ -9,11 +9,7 @@ import Delft3D.linux.containers.*
 
 object LinuxRuntimeContainers : BuildType({
 
-    description = ""
-    description = """
-        Build two separate container images: one for running the Delft3D software and the other for executing its tests.
-        The runtime container is the Docker image 'end-product' for releases that is published in Harbor.
-    """.trimIndent()
+    description = "Runtime and TestBench images; runtime is the Harbor release image."
 
     templates(
         TemplateLinuxAgent,
@@ -23,7 +19,7 @@ object LinuxRuntimeContainers : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Runtime Containers"
+    name = "Runtime containers"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     params {

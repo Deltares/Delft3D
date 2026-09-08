@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object SigCi : BuildType({
-    name = "Sig Ci"
+    id("SigCi")
+    name = "Sigrid"
+    description = "Upload Delft3D sources under src/ to Sigrid."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
