@@ -301,11 +301,12 @@ class TestSetRunner(ABC):
             if not skip_testcase:
                 logger.test_Result(TestResultType.Exception, str(exception))
 
-        logger.test_finished()
-        if in_use is not None:
-            with idle_process:
-                in_use.value -= config.process_count
-                idle_process.notify_all()
+        finally:
+            logger.test_finished()
+            if in_use is not None:
+                with idle_process:
+                    in_use.value -= config.process_count
+                    idle_process.notify_all()
 
         return test_result
 
@@ -473,6 +474,10 @@ class TestSetRunner(ABC):
 
     def __create_dvc_work_copies(self, dvc_configs: list[TestCaseConfig]) -> None:
         """Create _work copies of all DVC input directories serially."""
+        if PathType.INPUT in self.skip_download:
+            self.__logger.info("Skipping DVC work copies (skip download argument for cases)")
+            return
+
         for config in dvc_configs:
             if not config.absolute_test_case_path:
                 continue

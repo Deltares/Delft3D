@@ -1,12 +1,13 @@
 @ echo off
 
+setlocal
 set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
 set NPROC=2
+set installDir=install_fm-suite
 
-set bindir=..\..\..\..\install_fm-suite\bin
-set libdir=%bindir%\..\lib
+set bindir=..\..\..\%installDir%\bin
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q fm\2dis_*_net.nc
@@ -25,13 +26,11 @@ del /f /q precice_debug_output.txt
 del /f /q precice-profiling\*.*
 rmdir /s /q precice-run
 
-
-
 if %usePreCICE% EQU 1 (
     if %startPreCSUMO% EQU 1 (
         cd cosumo
-        set PATH=%bindir%;%libdir%
-        start %bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
+        set PATH=..\%bindir%
+        start ..\%bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
         cd ..
     ) else (
         echo Please start preC-SUMO
@@ -39,16 +38,19 @@ if %usePreCICE% EQU 1 (
     
     if %startFM% EQU 1 (
         cd fm
-        set PATH=%bindir%;%libdir%
-        call %bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
-        call mpiexec -n %NPROC% %bindir%\dflowfm-cli.exe FlowFM.mdu --precice
+        set PATH=..\%bindir%
+        rem call ..\%bindir%\dflowfm-cli.exe --partition:ndomains=%NPROC%:icgsolver=6 FlowFM.mdu
+        rem call ..\%bindir%\dflowfm-cli.exe --partition:icgsolver=6 FlowFM.mdu linux_partition.pol
+        call ..\%bindir%\dflowfm-cli.exe --partition:icgsolver=6 FlowFM.mdu windows_partition.pol
+        call ..\%bindir%\mpiexec -n %NPROC% ..\%bindir%\dflowfm-cli.exe FlowFM.mdu --precice
         cd ..
     ) else (
         echo Please start D-Flow FM
     )
 ) else (
-    call %bindir%\run_dimr.bat
+    echo Error: Parallel DIMR is not supported.
 )
+endlocal
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 pause

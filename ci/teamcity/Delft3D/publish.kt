@@ -12,7 +12,8 @@ object Publish : BuildType({
         TemplateLinuxAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateBuildConcurrency
     )
 
     name = "Publish Container"

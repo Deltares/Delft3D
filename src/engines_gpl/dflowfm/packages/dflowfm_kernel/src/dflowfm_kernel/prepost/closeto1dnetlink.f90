@@ -47,6 +47,7 @@ contains
       use geometry_module, only: dbdistance, dlinedis
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
 
       integer :: n1
       real(kind=dp) :: XP1, YP1, XN1, YN1
@@ -62,7 +63,7 @@ contains
       N1 = 0
       DISMIN = 9e+33
       do L = 1, numl
-         if (kn(3, L) == 1 .or. kn(3, L) == 6 .or. (kn3channelonly == 0 .and. (kn(3, L) == 5 .or. kn(3, L) == 7))) then !  .or. kn(3,L) == 4) THEN
+         if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH .or. (kn3channelonly == 0 .and. (kn(3, L) == LINK_1D2D_STREETINLET .or. kn(3, L) == LINK_1D2D_ROOF))) then !  .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) THEN
             K1 = kn(1, L)
             K2 = kn(2, L)
             XA = Xk(K1)

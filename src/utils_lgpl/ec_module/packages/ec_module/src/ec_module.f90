@@ -141,6 +141,9 @@ module m_ec_module
       module procedure ecFileReaderFindItem
    end interface ecFindItemInFileReader
    
+   interface ecFindItemsInFileReader
+      module procedure ecFileReaderFindItems
+   end interface ecFindItemsInFileReader   
    interface ecGetFileReaderNumberOfItems
       module procedure ecFileReaderGetNumberOfItems
    end interface ecGetFileReaderNumberOfItems
@@ -184,7 +187,7 @@ module m_ec_module
    interface ecSetElementSetZArray
       module procedure ecElementSetSetZArray
    end interface ecSetElementSetZArray
-
+   
    interface ecSetElementSetvptyp
       module procedure ecElementSetSetvptyp
    end interface ecSetElementSetvptyp
@@ -764,6 +767,8 @@ module m_ec_module
          convtype = convType_netcdf
       case (provFile_qhtable)
          convtype = convType_qhtable
+      case (provFile_datavalue)
+         convtype = convType_datavalue
       case default
          convtype = convType_undefined
       end select

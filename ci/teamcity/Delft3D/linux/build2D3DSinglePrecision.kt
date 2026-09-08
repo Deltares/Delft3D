@@ -17,7 +17,8 @@ object LinuxBuild2D3DSP : BuildType({
         TemplateDetermineProduct,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Build 2D3D single-precision"

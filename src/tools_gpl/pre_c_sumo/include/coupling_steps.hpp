@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "csumo_settings_reader.hpp"
+#include "connected_sinks_sources.hpp"
 #include "parsing_types.hpp"
 #include "NF2FF_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -93,8 +94,9 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      * @param current_time_seconds Current time in seconds.
+     * @returns true on successful wait, false on timeout.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -119,6 +121,19 @@ namespace pre_c_sumo
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
     /**
+     * @brief Convert NF data to sources and sinks to be communicated via preCICE.
+     *
+     * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
+     *
+     * @param csumoSettings Parsed C-SUMO settings.
+     * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
+     *
+     * @return Connected source/sink pairs to be written to preCICE.
+     */
+    [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
+    convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumoSettings,
+                                    const std::vector<NF2FFReader>& nf2ff_readers);
+    /**
      * @brief Send computed sources/sinks to the farfield model.
      *
      * Sends the converted sources and sinks to the farfield component.
@@ -129,35 +144,11 @@ namespace pre_c_sumo
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 
     /**
-     * @brief Convert NF sinks to farfield sinks.
-     *
-     * Converts NF sink information into the format required by the
-     * farfield component.
-     */
-    void convertNFSinksToFF();
-
-    /**
-     * @brief Convert NF intakes to farfield sinks.
-     *
-     * Converts NF intake information into the format required by the
-     * farfield component.
-     */
-    void convertNFIntakesToFF();
-
-    /**
-     * @brief Convert NF source definitions to farfield sources.
-     *
-     * Depending on whether a diffuser is modelled this will either
-     * process explicit source locations or build a diffuser model.
-     */
-    void convertNFSourcesToFF();
-
-    /**
      * @brief Query whether the diffuser is modelled explicitly.
      *
      * @return true if the diffuser is modelled, false otherwise.
      */
-    bool isDiffuserModelled();
+    bool isDiffuserModelled(const NF2FFReader& diffuser);
 
     /**
      * @brief Process explicit source locations from NF data.
@@ -170,10 +161,10 @@ namespace pre_c_sumo
      * @brief Create an approximate diffuser model from NF source data.
      *
      * When diffusers are not modelled explicitly this function creates
-     * a simplified diffuser representation and converts the created source information into the format required by the
-     * farfield component.
+     * the sources for a simplified diffuser representation that can be used
+     * to create the farfield component.
      */
-    void createDiffuserModel();
+    std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFReader& diffuser);
 
 } // namespace pre_c_sumo
 

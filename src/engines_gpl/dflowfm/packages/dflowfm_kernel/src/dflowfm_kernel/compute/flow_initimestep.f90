@@ -72,6 +72,9 @@ contains
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
+      use m_physcoef, only: dynroughveg
+      use m_update_dynveg, only: update_dynveg
+
       implicit none
 
       integer, intent(in) :: jazws0
@@ -159,13 +162,18 @@ contains
          end if
 
          if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-            call compute_air_water_interaction_most_fluxes()
+            call compute_air_water_interaction_most_fluxes(initialization=.false.)
          end if
 
          call calculate_wind_stresses(iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
+      end if
+
+      ! Adapt roughness according to burial/erosion
+      if (dynroughveg > 0) then
+         call update_dynveg()
       end if
 
       call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi

@@ -1,6 +1,9 @@
 {
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "args": {
+            "THIRD_PARTY_LIBS_TAG": "oneapi-2024-ifx-release"
+        }
     },
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
@@ -21,6 +24,24 @@
             "type": "volume",
             "source": "delft3d-conan",
             "target": "/home/dev/.conan2",
+        },
+        // The `~/.config` directory hosts some configuration for the `gh` and `teamcity` commmand line tools.
+        {
+            "type": "volume",
+            "source": "delft3d-home-config",
+            "target": "/home/dev/.config",
+        },
+        // The `~/.vscode-server` directory hosts Copilot chat sessions amongst other things.
+        {
+            "type": "volume",
+            "source": "delft3d-vscode-server",
+            "target": "/home/dev/.vscode-server",
+        },
+        // The `~/.copilot` hosts skills that users might install but don't want to commit to the Delft3D repository yet.
+        {
+            "type": "volume",
+            "source": "delft3d-copilot",
+            "target": "/home/dev/.copilot",
         },
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],

@@ -17,6 +17,10 @@ namespace
         <constituents>10.0 0.0</constituents>
      </discharge>
      <NFResult>
+      <intakes>
+         1550.000 950.000 0.500
+         1550.000 950.000 1.500
+      </intakes>
         <sinks>
             250.000 350.087 9.700 1.000 0.000 0.000
             252.500 350.048 9.700 5     0.250 0.380
@@ -41,11 +45,22 @@ namespace
      <fileVersion>0.3</fileVersion>
   </NF2FF>)";
 
-    constexpr std::string_view invalid_xml_no_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
+    constexpr std::string_view valid_xml_no_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
      <discharge>
+      <Qsource>10.0</Qsource>
+      <constituentsOperator>excess</constituentsOperator>
+      <constituents>10.0 0.0</constituents>
      </discharge>
+    <NFResult>
+      <sinks>
+         250.000 350.087 9.700 1.000 0.000 0.000
+      </sinks>
+      <sources>
+         1050.000 350.365 5.000 5.000 5 15.000
+      </sources>
+    </NFResult>
   </NF2FF>)";
 
     constexpr std::string_view invalid_xml_empty_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
@@ -70,6 +85,25 @@ namespace
      <discharge>
         <Qintake>10.0 11.0</Qintake>
      </discharge>
+  </NF2FF>)";
+
+    constexpr std::string_view invalid_xml_negative_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>-1.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+      <sinks>
+         250.000 350.087 9.700 1.000 0.000 0.000
+      </sinks>
+      <sources>
+         1050.000 350.365 5.000 5.000 5 15.000
+      </sources>
+    </NFResult>
   </NF2FF>)";
 
     constexpr std::string_view invalid_xml_no_source_flow = R"(<?xml version="1.0" encoding="utf-8"?>
@@ -441,11 +475,18 @@ TEST(NF2FFReaderTest, ReturnsErrorOnSurplusQintake)
     EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qintake> must contain exactly one numeric value");
 }
 
-TEST(NF2FFReaderTest, ReturnsErrorOnMissingQintake)
+TEST(NF2FFReaderTest, ReturnsErrorOnNegativeQintake)
 {
-    const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_intake_flow);
+    const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_negative_intake_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <Qintake> not found");
+    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> should be a value >= 0.0");
+}
+
+TEST(NF2FFReaderTest, ParsesMissingQintakeAsZero)
+{
+    const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml_no_intake_flow);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_DOUBLE_EQ(result->intakeFlowRate(), 0.0);
 }
 
 TEST(NF2FFReaderTest, ParsesQsource)
@@ -665,6 +706,22 @@ TEST(NF2FFReaderTest, ParsesSinks)
     EXPECT_DOUBLE_EQ(sinks[1].half_plume_width, 0.380);
     EXPECT_FALSE(sinks[1].has_u);
     EXPECT_FALSE(sinks[1].has_weight);
+}
+
+TEST(NF2FFReaderTest, ParsesIntakes)
+{
+    const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
+    ASSERT_TRUE(result.has_value());
+    const auto& intakes = result.value().intakes();
+    ASSERT_EQ(intakes.size(), 2u);
+    EXPECT_DOUBLE_EQ(intakes[0].x_coordinate, 1550.000);
+    EXPECT_DOUBLE_EQ(intakes[0].y_coordinate, 950.000);
+    EXPECT_DOUBLE_EQ(intakes[0].z_coordinate, 0.500);
+    EXPECT_FALSE(intakes[0].has_weight);
+    EXPECT_DOUBLE_EQ(intakes[1].x_coordinate, 1550.000);
+    EXPECT_DOUBLE_EQ(intakes[1].y_coordinate, 950.000);
+    EXPECT_DOUBLE_EQ(intakes[1].z_coordinate, 1.500);
+    EXPECT_FALSE(intakes[1].has_weight);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)

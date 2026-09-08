@@ -32,6 +32,7 @@ object TestFortranStyler : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {

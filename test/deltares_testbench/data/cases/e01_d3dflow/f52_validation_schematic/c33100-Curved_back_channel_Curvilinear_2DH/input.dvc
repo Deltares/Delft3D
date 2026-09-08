@@ -1,0 +1,6 @@
+outs:
+- md5: 17e56c63418ffd30fa280c3082baffed.dir
+  size: 138794
+  nfiles: 12
+  hash: md5
+  path: input

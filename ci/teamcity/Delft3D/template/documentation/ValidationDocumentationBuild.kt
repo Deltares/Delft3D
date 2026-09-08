@@ -12,15 +12,10 @@ object TemplateValidationDocumentation : Template({
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
-        %engine_dir%/*.log=>logging
-        %engine_dir%/doc/validation/*.pdf=>pdf
-        %engine_dir%/doc/validation/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/doc/validation/*.pdf=>pdf
+        test/deltares_testbench/data/cases/%engine_dir%/doc/validation/*.log=>logging
     """.trimIndent()
-
-    params {
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
-    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -38,7 +33,7 @@ object TemplateValidationDocumentation : Template({
             command = module {
                 module = "ci_tools.documentation.generate_validation_report"
                 scriptArguments = """
-                    --tex-file %engine_dir%/doc/validation/%engine_name%_validation_doc.tex
+                    --tex-file test/deltares_testbench/data/cases/%engine_dir%/doc/validation/%engine_name%_validation_doc.tex
                     --teamcity
                 """.trimIndent()
             }

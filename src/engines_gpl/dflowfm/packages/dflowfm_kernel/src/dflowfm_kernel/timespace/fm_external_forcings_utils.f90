@@ -156,7 +156,9 @@ contains
 
    !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
    !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
+   !! The quantity can have a postfix 'Delta', but this is optional:
    !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
+   !! Or:          'sourcesink_salinity' -> 'sourcesink_constituentDelta', 'salinity'.
    !!
    !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
@@ -177,11 +179,18 @@ contains
       index_prefix_end = min(len_trim('sourcesink_'), quantity_length)
       index_suffix_start = max(1, quantity_length - len_trim('Delta') + 1)
 
-      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
-          .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
-         ! First, remove the 'sourcesink_' and 'Delta' parts from the original quantity.
+      ! First, remove the 'sourcesink_' and (optionally) 'Delta' parts from the original quantity.
+      if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_')) then
+         if (strcmpi(original_quantity(index_prefix_end + 1: quantity_length), 'discharge')) then
+            return  ! Discharge is not a constituent. Do nothing.
+         end if
+
          base_quantity = 'sourcesink_constituentDelta'
-         constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+         if (strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+            constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)
+         else
+            constituent_name = original_quantity(index_prefix_end + 1:)
+         end if
 
          ! Then, optionally remove the special constituent group name 'tracer' or 'sedFrac' part from the constituent name.
          if (strcmpi(constituent_name(1:6), 'tracer')) then
@@ -190,8 +199,6 @@ contains
             constituent_name = constituent_name(8:)
          end if
       end if
-
-      return
    end subroutine get_constituent_name
 
    !> Read tracer properties from an ini file node.

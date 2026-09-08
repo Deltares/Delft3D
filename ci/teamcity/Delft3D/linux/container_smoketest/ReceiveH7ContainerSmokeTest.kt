@@ -13,7 +13,8 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
     templates(
         TemplateLinuxAgentNoFips,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     name = "Receive"
@@ -38,6 +39,10 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
         password("h7_account_password", DslContext.getParameter("ad_h7_smoke_test_password"))
         
         param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma8-%dep.${LinuxBuild.id}.product%-%dep.${LinuxBuild.id}.commit_id%")
+
+        // TestBench still takes --username/--password; map them to DVC remote credentials.
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     vcs {
@@ -73,12 +78,12 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
+                    --username "%dvc_testbench_accesskey%"
+                    --password "%dvc_testbench_secret%"
                     --compare 
                     --skip-run
                     --skip-download cases 
-                    --config configs/apptainer/dimr/dimr_smoke_test_lnx64.xml
+                    --config configs/smoke_tests/apptainer_lnx64.xml
                     --log-level INFO 
                     --teamcity 
                     --parallel
@@ -91,8 +96,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
                 --rm
                 --pull always
                 --shm-size 8G
-                -v %teamcity.build.workingDir%:/data/data/cases
-                -v %teamcity.build.workingDir%/test/deltares_testbench:/testbench
+                --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
     }

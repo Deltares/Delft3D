@@ -29,142 +29,24 @@ module m_array_or_scalar
 
    implicit none
 
-   private
-
-   interface realloc
-      module procedure realloc_t_array
-      module procedure realloc_t_scalar
-   end interface
-
-   public :: realloc, assign_pointer_to_t_array
-
-   !> Abstract base type for array or scalar type.
-   type, public, abstract :: t_array_or_scalar
+   type t_array_or_scalar
+      real(dp) :: scalar = 0.0_dp
+      real(dp), allocatable :: values(:) ! allocated only in the array case
    contains
-      procedure(get_array_or_scalar), deferred :: get
-   end type t_array_or_scalar
-
-   !> Interface for deferred binding.
-   abstract interface
-      pure function get_array_or_scalar(this, k) result(val)
-         import :: t_array_or_scalar, dp
-         class(t_array_or_scalar), intent(in) :: this
-         integer, intent(in) :: k
-         real(kind=dp) :: val
-      end function get_array_or_scalar
-   end interface
-
-   !> Concrete type for scalar.
-   type, extends(t_array_or_scalar) :: t_scalar
-      real(kind=dp) :: value
-   contains
-      procedure :: get => get_t_scalar
-   end type t_scalar
-
-   !> Concrete type for array.
-   type, extends(t_array_or_scalar) :: t_array
-      real(kind=dp), dimension(:), allocatable, public :: values
-   contains
-      procedure :: get => get_t_array
-   end type t_array
+      procedure :: get
+   end type
 
 contains
 
-   !> Scalar implementation of get, returns the scalar value regardless of index k.
-   pure function get_t_scalar(this, k) result(val)
-      class(t_scalar), intent(in) :: this !< T_scalar object to obtain value from regardless of index k.
-      integer, intent(in) :: k !< Dummy index to make call consistent.
-      real(kind=dp) :: val
-      associate (k_dummy => k)
-      end associate
-      val = this%value
-   end function get_t_scalar
-
-   !> Array implementation of get, returns value of the underlying array at index k.
-   pure function get_t_array(this, k) result(val)
-      class(t_array), intent(in) :: this !< T_array object to obtain value from at index k.
-      integer, intent(in) :: k !< Index in the array to obtain value from.
-      real(kind=dp) :: val
-      val = this%values(k)
-   end function get_t_array
-
-!> (Re)allocate array_or_scalar object as scalar regardless of previous status.
-   subroutine realloc_t_scalar(array_or_scalar, fill)
-      class(t_array_or_scalar), allocatable, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
-      real(kind=dp), intent(in), optional :: fill !< Value to be set in the scalar array_or_scalar.
-
-      if (allocated(array_or_scalar)) then
-         deallocate (array_or_scalar)
-      end if
-
-      allocate (t_scalar :: array_or_scalar)
-      if (present(fill)) then
-         select type (array_or_scalar)
-         type is (t_scalar)
-            array_or_scalar%value = fill
-         end select
-      end if
-   end subroutine realloc_t_scalar
-
-!> (Re)allocate array_or_scalar as array regardless of previous status, optionally with a fill value and a pointer to the values array.
-   subroutine realloc_t_array(array_or_scalar, n, keepExisting, fill, stat)
-      use m_alloc, only: m_alloc_realloc => realloc
-
-      class(t_array_or_scalar), allocatable, target, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
-      integer, intent(in) :: n !< Size of the array to allocate.
-      logical, optional, intent(in) :: keepExisting !< Array_or_scalar object to be reallocated.
-      real(kind=dp), optional, intent(in) :: fill !< Value to fill the array with, if present.
-      integer, optional, intent(inout) :: stat !< Result status of the realloc operation.
-
-      logical :: keepExisting_
-      real(kind=dp) :: fill_
-      integer :: stat_
-
-      if (present(keepExisting)) then
-         keepExisting_ = keepExisting
+   elemental function get(this, k) result(val)
+      class(t_array_or_scalar), intent(in) :: this
+      integer, intent(in) :: k
+      real(dp) :: val
+      if (allocated(this%values)) then
+         val = this%values(k)
       else
-         keepExisting_ = .false.
+         val = this%scalar
       end if
-      if (present(fill)) then
-         fill_ = fill
-      else
-         fill_ = 0.0_dp
-      end if
-      if (present(stat)) then
-         stat_ = stat
-      else
-         stat_ = 0
-      end if
-
-      if (.not. allocated(array_or_scalar)) then
-         allocate (t_array :: array_or_scalar)
-      end if
-
-      select type (array => array_or_scalar)
-      type is (t_array)
-         call m_alloc_realloc(array%values, n, keepExisting=keepExisting_, fill=fill_, stat=stat_)
-      end select
-   end subroutine realloc_t_array
-
-!> Assign a pointer to the values array of an array_or_scalar object if possible, otherwise sets an error code.
-   subroutine assign_pointer_to_t_array(array_or_scalar, values_ptr, ierr)
-      class(t_array_or_scalar), allocatable, target, intent(in) :: array_or_scalar !< Array_or_scalar object to assign pointer to.
-      real(kind=dp), dimension(:), pointer, intent(out) :: values_ptr !< Pointer to the values array to assign.
-      integer, intent(out) :: ierr !< Error code, 0 if successful, 1 if array_or_scalar is not allocated or underlying values array is not allocated.
-
-      ierr = 1
-      nullify (values_ptr)
-      if (.not. allocated(array_or_scalar)) then
-         return
-      end if
-      select type (array_or_scalar)
-      type is (t_array)
-         if (.not. allocated(array_or_scalar%values)) then
-            return
-         end if
-         values_ptr => array_or_scalar%values
-         ierr = 0
-      end select
-   end subroutine assign_pointer_to_t_array
+   end function
 
 end module m_array_or_scalar

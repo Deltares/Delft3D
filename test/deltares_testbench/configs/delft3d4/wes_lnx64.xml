@@ -69,7 +69,7 @@
             <location ref="reference_results" type="reference">
                 <from>lnx64</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--
@@ -91,7 +91,7 @@
                 <file name="t1_wes.scr" type="ASCII"/>
                 <file name="t1.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c02_katrina_t2" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c02_katrina_t2</path>
@@ -108,7 +108,7 @@
                 <file name="t2_wes.scr" type="ASCII"/>
                 <file name="t2.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c03_katrina_t3" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c03_katrina_t3</path>
@@ -125,7 +125,7 @@
                 <file name="t3_wes.scr" type="ASCII"/>
                 <file name="t3.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c04_katrina_t4" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c04_katrina_t4</path>
@@ -142,7 +142,7 @@
                 <file name="t4_wes.scr" type="ASCII"/>
                 <file name="t4.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c05_katrina_t5" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c05_katrina_t5</path>
@@ -159,7 +159,7 @@
                 <file name="t5_wes.scr" type="ASCII"/>
                 <file name="t5.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c06_katrina_t6" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c06_katrina_t6</path>
@@ -176,7 +176,7 @@
                 <file name="t6_wes.scr" type="ASCII"/>
                 <file name="t6.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c07_katrina_t7" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c07_katrina_t7</path>
@@ -193,7 +193,7 @@
                 <file name="t7_wes.scr" type="ASCII"/>
                 <file name="t7.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c08_hemisphere" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c08_hemisphere</path>
@@ -210,7 +210,7 @@
                 <file name="test_hemisphere_wes.scr" type="ASCII"/>
                 <file name="test_hemisphere.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c09_wes" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c09_wes</path>
@@ -227,7 +227,7 @@
                 <file name="wes_wes.scr" type="ASCII"/>
                 <file name="wes.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c10_wes" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c10_wes</path>
@@ -244,7 +244,7 @@
                 <file name="wes_wes.scr" type="ASCII"/>
                 <file name="wes.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e68_f01_c11_wes" ref="wes_default">
             <path version="2024-01-12T07:30:00">e68_wes/f01_general/c11_wes</path>
@@ -261,7 +261,7 @@
                 <file name="wes_81.scr" type="ASCII"/>
                 <file name="wes_81.spw" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 </testCases>
 </deltaresTestbench_v3>

@@ -150,6 +150,7 @@
     </testCase>
     <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <maxRunTime>900</maxRunTime>
       <programs>
         <program ref="execute_singularity" seq="1">
           <arguments>
@@ -172,7 +173,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
            <parameters>
@@ -207,7 +208,6 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>
@@ -219,6 +219,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c100" ref="sif_dimr">
+      <maxRunTime>900</maxRunTime>
         <path version="2025-10-15T15:07:15.034000">e02_dflowfm/f014_parallel/c100_guayas_model</path>
         <programs>
           <program ref="execute_singularity">
@@ -257,6 +258,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c101_icg7" ref="sif_dimr">
+      <maxRunTime>900</maxRunTime>
         <path version="2025-10-15T15:07:16.919000">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
         <programs>
           <program ref="execute_singularity">

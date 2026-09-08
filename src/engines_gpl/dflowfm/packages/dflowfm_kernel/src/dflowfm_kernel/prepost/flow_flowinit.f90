@@ -33,8 +33,6 @@ module m_flow_flowinit
    use m_statisticsini, only: statisticsini
    use m_setzminmax, only: setzminmax
    use m_flow_settidepotential, only: flow_settidepotential
-   use m_set_saltem_nudge, only: set_saltem_nudge
-   use m_set_nudgerate, only: set_nudgerate
    use m_setvelocityfield, only: setvelocityfield
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
@@ -51,7 +49,6 @@ module m_flow_flowinit
    use m_thacker1d, only: thacker1d
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
-   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -81,10 +78,6 @@ module m_flow_flowinit
    integer, parameter :: OFF = 0
    integer, parameter :: ON = 1
    integer, parameter :: INITIALIZE = 1
-   integer, parameter :: LATERAL_1D2D_LINK = 3
-   integer, parameter :: STREET_INLET_1D2D_LINK = 5
-   integer, parameter :: ROOF_GUTTER_1D2D_LINK = 7
-   integer, parameter :: BOUNDARY_1D = -1
    integer, parameter :: SET_ZWS0 = 1
    logical, parameter :: INITIALIZATION_PHASE = .true.
 
@@ -236,7 +229,11 @@ contains
       end if
 
       call setFrictionForLongculverts()
-      call set_friction_coefficient_by_initial_fields()
+      call set_friction_coefficient_by_initial_fields(error)
+      if (is_error_at_any_processor(error)) then
+         return
+      end if
+
       call set_friction_uniform_value_on_links_where_friction_is_not_set()
       call set_internal_tides_friction_coefficient()
       call setupwslopes() ! set upwind slope pointers and weightfactors
@@ -278,7 +275,11 @@ contains
          call restore_au_q1_3D_for_1st_history_record()
       end if
 
-      call initialize_salinity_and_temperature_with_nudge_variables()
+      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
+      if (is_error_at_any_processor(error)) then
+         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
+         return
+      end if
 
       if (jasal > OFF) then
          call fill_constituents_with_salinity()
@@ -288,12 +289,6 @@ contains
       end if
 
       call initialise_density_at_cell_centres()
-
-      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
-      if (is_error_at_any_processor(error)) then
-         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
-         return
-      end if
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -632,6 +627,7 @@ contains
    subroutine set_advection_type_for_lateral_flow_and_pipes()
       use m_flowparameters, only: iadveccorr1D2D
       use m_flowgeom, only: lnxi, iadv, kcu, IADV_ORIGINAL_LATERAL_OVERFLOW
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -639,13 +635,13 @@ contains
 
       do link = 1, lnxi
          if (iadv(link) /= OFF) then
-            if (kcu(link) == LATERAL_1D2D_LINK) then
+            if (kcu(link) == LINK_1D2D_INTERNAL) then
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
                   iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
-            else if (kcu(link) == STREET_INLET_1D2D_LINK .or. kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF) then
                iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
@@ -683,29 +679,31 @@ contains
 
    end subroutine set_floodfill_water_levels_based_on_sample_file
 
-!> sert friction coefficient by initial fields
-   subroutine set_friction_coefficient_by_initial_fields()
+!> Insert friction coefficient by initial fields
+   subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
       integer, parameter :: MANNING = 1
 
       integer :: link
+      integer, intent(inout) :: error
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
-               if (kcu(link) == LATERAL_1D2D_LINK) then
+               if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = frcuni1d2d
-               else if (kcu(link) == STREET_INLET_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
                   frcu(link) = frcunistreetinlet
                   ifrcutp(link) = MANNING
-               else if (kcu(link) == ROOF_GUTTER_1D2D_LINK) then
+               else if (kcu(link) == LINK_1D2D_ROOF) then
                   ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
                   frcu(link) = frcuniroofgutterpipe
                   ifrcutp(link) = MANNING
@@ -723,8 +721,74 @@ contains
             frcmax = frcu(link)
          end if
       end do
+      
+      call init_dynamic_vegetation_roughness(error)
 
    end subroutine set_friction_coefficient_by_initial_fields
+
+!> initialize dynamic vegetation roughness   
+!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
+   subroutine init_dynamic_vegetation_roughness(error)
+      use dfm_error, only: DFM_WRONGINPUT
+      use m_flowgeom, only: lnx
+      use m_flow, only: frcu, frcu0, dynveg
+      use m_physcoef, only: frcu_no_vegetation, dynroughveg
+      use m_alloc
+      use unstruc_model, only: md_dynvegpol
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_links
+      use m_delpol
+      use MessageHandling
+
+      implicit none
+
+      integer, intent(inout) :: error
+      
+      integer :: link
+      integer :: k
+      integer :: pointscount
+      logical :: ex
+
+      integer, dimension(:), allocatable :: kp
+   
+      if (dynroughveg == 0) then
+         return
+      end if
+   
+      frcu0 = frcu
+      dynveg(:) = .false.
+      if (md_dynvegpol == ' ') then
+         do link = 1, lnx
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+         
+      else
+         inquire (file=trim(md_dynvegpol), exist=ex)
+         if (.not. ex) then
+            call mess(LEVEL_ERROR, 'Unable to access dynamic vegetation polygon file "'//trim(md_dynvegpol)//'"')
+            error = DFM_WRONGINPUT
+            return
+         end if   
+
+         allocate (kp(1:lnx))
+         kp = 0
+         ! find links inside polygon
+         call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+         call delpol()
+         !
+         dynveg(:) = .false.
+         do k = 1, pointscount
+            link = kp(k)
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+      end if
+      
+   end subroutine init_dynamic_vegetation_roughness
 
 !> set friction uniform value on links where_friction_is_not_set
    subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
@@ -967,6 +1031,7 @@ contains
       use m_flowparameters, only: jaconveyance2D
       use m_flowgeom, only: lnxi, lnx, kcu, Lbnd1D, aifu
       use m_flow, only: frcu, ifrcutp
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -974,7 +1039,7 @@ contains
       integer :: boundary_link
 
       do flow_link = lnxi + 1, lnx
-         if (kcu(flow_link) == BOUNDARY_1D) then
+         if (kcu(flow_link) == LINK_1D_BOUNDARY) then
             boundary_link = Lbnd1D(flow_link)
             frcu(flow_link) = frcu(boundary_link)
             ifrcutp(flow_link) = ifrcutp(boundary_link)
@@ -1003,6 +1068,7 @@ contains
       use m_flowparameters, only: nonlin1d, nonlin2D
       use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
       use m_missing, only: dmiss
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -1025,7 +1091,7 @@ contains
             end if
          end do
          do boundary_link = lnxi + 1, lnx
-            if (kcu(boundary_link) == BOUNDARY_1D) then
+            if (kcu(boundary_link) == LINK_1D_BOUNDARY) then
                link1D = lbnd1d(boundary_link)
                if (abs(prof1d(3, link1D)) == CIRCLE) then
                   teta(boundary_link) = 1.0_dp ! closed pipes always implicit
@@ -1233,16 +1299,15 @@ contains
    subroutine temporary_fix_for_sepr_3D()
       use m_flow, only: kmx, hu, au
       use m_flowgeom, only: lnx, kcu, wu
+      use network_data, only: LINK_1D
 
       implicit none
-
-      integer, parameter :: link_1D = 1
 
       integer :: link
 
       if (kmx > 0) then
          do link = 1, lnx
-            if (abs(kcu(link)) == link_1D) then
+            if (abs(kcu(link)) == LINK_1D) then
                call addlink1D(link, 1)
                if (hu(link) > 0.0_dp) then
                   wu(link) = au(link) / hu(link)
@@ -1278,24 +1343,20 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
-      use m_flowgeom, only: lnx, ln, csu, snu, ndx
+      use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
-      use m_transform_wave_physics
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_UNIFORM, WAVE_NC_OFFLINE
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
       integer :: right_node
-      integer :: ierror
 
       real(kind=dp) :: hw
       real(kind=dp) :: tw
@@ -1306,54 +1367,25 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
-         if (jawave >= SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         twav = twavcom
-         !
-         if (jawave == WAVE_NC_OFFLINE) then
-            !
-            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
-                               & sxwav, sywav, mxwav, mywav, &
-                               & distot, dsurf, dwcap, &
-                               & ndx, 1, hwav, twav, &
-                               & ag, .true., waveforcing, &
-                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
-         end if
-         !
-         call wave_uorbrlabda()
+         call compute_wave_parameters()
          if (kmx == 0) then
-            call wave_comp_stokes_velocities()
             call tauwave()
          end if
          call setwavfu()
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
-         ! Only compute uorb
-         ! Works both for 2D and 3D
-         if (jawave == SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call compute_wave_parameters()
       end if
 
-      if (jawave == CONST .and. .not. flow_without_waves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavcom, gammax * hs)
+         hwav = min(hwavuni, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then
@@ -1572,26 +1604,6 @@ contains
       end if
 
    end subroutine initialize_salinity_temperature_on_boundary
-
-!> initialize salinity and temperature with nudge variables
-   subroutine initialize_salinity_and_temperature_with_nudge_variables()
-      use m_flowparameters, only: janudge, jainiwithnudge
-      use m_nudge
-
-      implicit none
-
-      if (janudge == ON) then ! and here last actions on sal/tem nudging, before we set rho
-         call set_nudgerate()
-         if (jainiwithnudge > OFF) then
-            call set_saltem_nudge()
-            if (jainiwithnudge == 2) then
-               janudge = OFF
-               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
-            end if
-         end if
-      end if
-
-   end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with_salinity
    subroutine fill_constituents_with_salinity()

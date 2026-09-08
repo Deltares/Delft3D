@@ -1,10 +1,3 @@
-module m_trabwc
-   implicit none
-
-contains
-
-   subroutine trabwc(utot, di, taub, npar, par, &
-                   & sbot, ssus, dg, fs, chezy)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,21 +24,25 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_trabwc
+   implicit none
+   private
+   public trabwc
+
+contains
+
+   subroutine trabwc(utot, di, taub, npar, par, &
+                   & sbot, ssus, dg, fs, chezy)
 !!--description-----------------------------------------------------------------
 !
 !  Computes sediment transport according to the Wilcock and Crowe sediment
 !  transport formula. See: Wilcock and Crowe "Surface based transport for mixed
 !  size sediment", Journal of Hydraulic Engineering, Feb 2003
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use morphology_data_module, only: missing_value
-      !
-      implicit none
+      use morphology_data_module, only: MISSING_VALUE
 !
 ! Arguments
 !
@@ -107,7 +104,7 @@ contains
       sbot = a * wistar * ustar**3 / (delta * ag)
       ! note: proportion of size fraction on surface (fi) is included elsewhere
       !
-      par = missing_value
+      par = MISSING_VALUE
       par(1) = wistar
       par(2) = ustar
       par(3) = phi

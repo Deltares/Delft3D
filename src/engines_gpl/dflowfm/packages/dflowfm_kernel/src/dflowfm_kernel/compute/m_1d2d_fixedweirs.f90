@@ -127,7 +127,7 @@ contains
    subroutine find_1d2d_fixedweirs(ilink, ilinkCount)
       use m_alloc, only: realloc
       use m_flowgeom, only: kcu
-      !use m_flow,          only :
+      use network_data, only: LINK_1D2D_INTERNAL
 
       integer, dimension(:), intent(in) :: ilink !< list with fixed weir links
       integer, intent(in) :: ilinkcount !< number of fixed weir links
@@ -139,7 +139,7 @@ contains
       do i = 1, ilinkcount
          L = ilink(i)
 
-         if (kcu(L) == 3) then ! Lateral 1d2d link
+         if (kcu(L) == LINK_1D2D_INTERNAL) then ! Lateral 1d2d link
 
             n_1d2d_fixedweirs = n_1d2d_fixedweirs + 1
             index_1d2d_fixedweirs(n_1d2d_fixedweirs) = L
@@ -602,13 +602,15 @@ contains
       use m_flow, only: u0
       use m_flowgeom, only: nd, iadv, kcu
       use m_flowparameters, only: iadvec
+      use network_data, only: LINK_2D
+      
       integer :: n, L, kk, LL, nod
       do n = 1, n_1d2d_fixedweirs
          nod = kindex(2, n)
          L = index_1d2d_fixedweirs(n)
          do kk = 1, nd(nod)%lnx
             LL = abs(nd(nod)%ln(kk))
-            if (kcu(LL) == 2) then ! Only for regular 2D.
+            if (kcu(LL) == LINK_2D) then ! Only for regular 2D.
                if (iadvec /= 0 .and. direction(n) * u0(L) < 0) then
                   iadv(LL) = 0
                else

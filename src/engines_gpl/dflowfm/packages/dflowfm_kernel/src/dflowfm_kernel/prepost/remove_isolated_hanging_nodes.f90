@@ -46,6 +46,7 @@ contains
       use m_netw
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_find_common_node
+      use network_data, only: LINK_2D
 
       integer, dimension(numL), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node, dim: numL
       integer, intent(out) :: num !< number of removed isolated hanging nodes
@@ -62,11 +63,11 @@ contains
 
       do L = 1, numL
 !     check if link is 2D
-         if (kn(3, L) == 2) then
+         if (kn(3, L) == LINK_2D) then
             Lother = Linkbrother(L)
             if (Lother > 0) then
 !           check if other link is 2D
-               if (kn(3, L) == 2) then
+               if (kn(3, L) == LINK_2D) then
 
 !              find common node
                   call find_common_node(L, Lother, k)

@@ -36,7 +36,7 @@ module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_array_or_scalar, only: t_array_or_scalar
-   implicit none
+   implicit none(type, external)
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
@@ -51,6 +51,10 @@ module m_physcoef
    real(kind=dp), parameter :: frcuniroof = 0.030_dp
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
+   integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
+   real(kind=dp) :: frcu_no_vegetation !< base (Manning) friction (without vegetation), default 0.023 [s/m^(1/3)]
+   real(kind=dp) :: droot !< root depth for dynamic roughness vegetation, range 0-100m, default 0.5m
+   real(kind=dp) :: dstem !< stem height for dynamic roughness vegetation, range 0-100m, default 0.5m
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !< uniform friction coeff
@@ -67,9 +71,8 @@ module m_physcoef
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
 
-   real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
-   real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
-   class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
+   type(t_array_or_scalar), target :: dicoww !< background vertical eddy diffusivity (m2/s)
+   type(t_array_or_scalar), target :: vicoww !< background vertical eddy viscosity (m2/s)
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -130,6 +133,7 @@ contains
 
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
+
       ag = 9.81_dp
       frcuni = 0.023_dp
       frcuni1D = frcuni
@@ -144,8 +148,8 @@ contains
       dicouv = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
-      vicoww = 1e-6_dp
-      constant_dicoww = 1e-6_dp
+      dicoww%scalar = 1e-6_dp
+      vicoww%scalar = 1e-6_dp
       rhomean = 1000.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
@@ -172,6 +176,10 @@ contains
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp
       NFEntrainmentMomentum = 0
+      dynroughveg = 0
+      droot = 0.5_dp
+      dstem = 0.5_dp
+      frcu_no_vegetation = 2.3e-2_dp
    end subroutine default_physcoef
 
    !> Calculates derived coefficients.

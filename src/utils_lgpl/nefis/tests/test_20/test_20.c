@@ -148,22 +148,6 @@ int main(int argc, char** argv)
 } // end main function
 
 /*==========================================================================*/
-retrieve* free_retrieve_ptrs(retrieve* p)
-{
-    if (p->left != NULL)
-    {
-        p->left = free_retrieve_ptrs(p->left);
-    }
-    if (p->right != NULL)
-    {
-        p->right = free_retrieve_ptrs(p->right);
-    }
-    free((BData)p);
-    p = NULL;
-
-    return p;
-}
-/*==========================================================================*/
 BUInt8*** new_capacity_retrieve_var_v2(BUInt8*** retrieve, BInt4 length, BInt4 new_length)
 {
     long i, j;

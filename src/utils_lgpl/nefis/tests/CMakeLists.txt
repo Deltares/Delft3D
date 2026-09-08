@@ -37,6 +37,15 @@ foreach(test_dir ${TEST_DIRS})
     
     target_link_libraries(${executable_name} nefis)
     
+    if (MSVC AND executable_name STREQUAL "test_20")
+        # test_20 references only the internal `nefis[]` data symbol and no
+        # NEFIS API function, so the MSVC linker does not pull any .obj from
+        # nefis.lib on demand. Force the whole archive in.
+        target_link_options(${executable_name} PRIVATE
+            /WHOLEARCHIVE:$<TARGET_FILE_NAME:nefis>)
+        add_dependencies(${executable_name} nefis)
+    endif()
+    
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
     set_target_properties (${executable_name} PROPERTIES FOLDER tests/nefis/${executable_name})

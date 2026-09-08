@@ -20,7 +20,8 @@ object LinuxDevContainer : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {

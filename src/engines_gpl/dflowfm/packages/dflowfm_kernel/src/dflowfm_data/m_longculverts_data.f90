@@ -33,6 +33,7 @@
 module m_longculverts_data
    use precision, only: dp
    use messagehandling, only: idlen
+   use network_data, only: Lperm
    implicit none
 
    private
@@ -54,6 +55,7 @@ module m_longculverts_data
       !< 1 only positive flow
       !< 2 only negative flow
       !< 3 no flow allowed
+      integer :: orientation = 1 !< Orientation of the long culverts representative link, 1 = positive (from coordinate 1 to coordinate 2), -1 = negative
       real(kind=dp) :: friction_value = -999.0_dp !< Friction value
       real(kind=dp), dimension(:), allocatable :: xcoords !< X-coordinates of the numlinks+1 points
       real(kind=dp), dimension(:), allocatable :: ycoords !< Y-coordinates of the numlinks+1 points
@@ -68,6 +70,7 @@ module m_longculverts_data
    end type
 
    type(t_longculvert), dimension(:), allocatable, public :: longculverts !< Array containing long culvert data (size >= nlongculverts)
+   type(t_longculvert), dimension(:), allocatable, public :: longculverts0 !< backup of longculverts for partitioning
 
    integer, public :: nlongculverts !< Number of longculverts
    logical, public :: newculverts
@@ -80,7 +83,7 @@ contains
       class(t_longculvert), intent(in) :: self
       logical :: res
       res = .false.
-      if (newculverts .and. allocated(self%netlinks)) then
+      if (allocated(self%netlinks)) then
          res = size(self%netlinks) == 1
       end if
    end function is_2D2D
@@ -89,6 +92,7 @@ contains
    elemental subroutine is_2D2D_longculvertlink(L, i)
       integer, intent(in) :: L !< Flowlink number
       integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
+
       do i = 1, nlongculverts
          if (longculverts(i)%is_2D2D()) then
             if ((longculverts(i)%netlinks(1) == L)) then

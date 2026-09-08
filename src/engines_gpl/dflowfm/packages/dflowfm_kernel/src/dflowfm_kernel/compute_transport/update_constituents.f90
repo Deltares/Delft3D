@@ -103,7 +103,7 @@ contains
       use m_flowtimes, only: dts
       use m_turbulence, only: sigdifi
       use m_transport
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flow_without_waves
       use m_alloc
       use m_partitioninfo
