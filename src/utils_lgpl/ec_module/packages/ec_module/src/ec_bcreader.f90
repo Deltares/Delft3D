@@ -530,10 +530,10 @@ contains
        case ('FACTOR')
           if (iq>0) cycle
           read(hdrvals(ifld)%s,*) bc%quantity%factor
-       case ('VERTICALPOSITION','VERTPOSITIONINDEX')
+       case ('VERTICALPOSITION','VERTPOSITIONINDEX','VERTICALPOSITIONINDEX')
           read(hdrvals(ifld)%s,*) il(iq)
           bc%quantity%vertndx = il(iq)                          ! layer this column belongs to, default 1
-       case ('VERTICALPOSITIONSPECIFICATION','VERTPOSITIONS')
+       case ('VERTICALPOSITIONSPECIFICATION','VERTPOSITIONS','VERTICALPOSITIONS')
           npos=0
           if (len_trim(hdrvals(ifld)%s)>0) then
              npos = count([(verify(hdrvals(ifld)%s(i:i),', ')>0   &
@@ -572,7 +572,7 @@ contains
           case default
              bc%periodic = .False.
           end select
-       case ('VERTICALINTERPOLATION','VERTINTERPOLATION')
+       case ('VERTICALINTERPOLATION','VERTINTERPOLATION','VERTICALINTERPOLATION')
           select case (adjustl(hdrvals(ifld)%s))
           case ('LINEAR')
              bc%zInterpolationType = zinterpolate_linear
@@ -588,7 +588,7 @@ contains
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".") 
              return
           end select
-       case ('VERTICALPOSITIONTYPE','VERTPOSITIONTYPE')
+       case ('VERTICALPOSITIONTYPE','VERTPOSITIONTYPE','VERTICALPOSITIONTYPE')
           IF (index(hdrvals(ifld)%s,'PERCEN')>0 .and. index(hdrvals(ifld)%s,'BED')>0) then
              hdrvals(ifld)%s = 'PERCBED'
           endif
@@ -619,8 +619,8 @@ contains
            if (index(hdrkeys(ifld)%s, "VERT") > 0 .and. index(hdrkeys(ifld)%s, "POS") > 0) then
                call set_ec_message("Unknown keyword '"//trim(adjustl(hdrkeys(ifld)%s))//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".")
-               call set_ec_message("Use one of: 'VERTICALPOSITION', 'VERTPOSITIONINDEX', " // &
-                                              "'VERTICALPOSITIONSPECIFICATION', 'VERTPOSITIONS'")
+               call set_ec_message("Use one of: 'verticalPositionType', 'verticalPositions', " // &
+                                              "'verticalInterpolation' or 'verticalPositionIndex'.")
                return
            end if
        end select
