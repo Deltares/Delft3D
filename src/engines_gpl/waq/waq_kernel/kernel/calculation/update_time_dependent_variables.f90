@@ -43,7 +43,7 @@ contains
     !! to determine drying and flooding and for a number of
     !! numerical schemes.
     subroutine update_volumes_and_time_step(file_unit_list, itime, itimel, harmat, array, &
-            iharm, nrharm, nrftot, num_cells_dummy, volume, &
+            iharm, nrharm, nrftot, volume, &
             ipoint, luntxt, ftype, isflag, ivflag, &
             updatv, inwspc, anwspc, inwtyp, iwork, &
             lstrec, lrewin, vollst, dlwqd)
@@ -59,7 +59,6 @@ contains
         integer(kind = int_wp), intent(in) :: iharm (num_harmonics)        !< Harmonic time space
         integer(kind = int_wp), intent(in) :: nrharm(num_items_time_fn)    !< Set of nrs of harmonic records
         integer(kind = int_wp), intent(in) :: nrftot(num_items_time_fn)    !< Set of record lengthes
-        integer(kind = int_wp), intent(in) :: num_cells_dummy              !< Nr of computational volumes -- resolve conflict with imported variable
         real(kind = real_wp), intent(out) :: volume(num_cells)             !< Array of volumes per gridcell
         integer(kind = int_wp), intent(in) :: ipoint(num_indices)          !< Set of pointers to destination
         character(len = *), intent(in) :: luntxt(*)             !< Text with the unit numbers

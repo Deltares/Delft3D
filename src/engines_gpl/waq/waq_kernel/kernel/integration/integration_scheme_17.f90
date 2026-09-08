@@ -162,7 +162,7 @@ contains
             if (j(inrh2 + 1) >= 0 .and. ivflag == 0 .and. &
                     idt > 0 .and. lstrec) then
                 call update_volumes_and_time_step(file_unit_list, itstrt + idt, itstrt, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivol2:), &
+                        j(inrha:), j(inrh2:), j(inrft:), a(ivol2:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         update, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivoll:), dlwqd)
