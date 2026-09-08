@@ -742,17 +742,19 @@ contains
          end if
       end if
 
-      longculverts0 = longculverts !> save original longculverts for later use (technically only needs longculverts(i)%netlinks
-      do i = 1, nlongculverts
-         if (allocated(longculverts(i)%netlinks)) then
-            do j = 1, size(longculverts(i)%netlinks)
-               L = longculverts0(i)%netlinks(j)
-               if (L > 0 .and. L < size(lperminv)) then
-                  longculverts(i)%netlinks(j) = Lperminv(L) !> global to local link number
-               end if
-            end do
-         end if
-      end do
+      if (nlongculverts > 0) then
+         longculverts0 = longculverts !> save original longculverts for later use (technically only needs longculverts(i)%netlinks
+         do i = 1, nlongculverts
+            if (allocated(longculverts(i)%netlinks)) then
+               do j = 1, size(longculverts(i)%netlinks)
+                  L = longculverts0(i)%netlinks(j)
+                  if (L > 0 .and. L < size(lperminv)) then
+                     longculverts(i)%netlinks(j) = Lperminv(L) !> global to local link number
+                  end if
+               end do
+            end if
+         end do
+      end if
       ierror = DFM_NOERR
 1234  continue
 
@@ -955,9 +957,9 @@ contains
       use m_longculverts_data
 
       implicit none
-
-      longculverts = longculverts0
-
+      if (allocated(longculverts0)) then
+         longculverts = longculverts0
+      end if
    end subroutine restorestructures
 
 !> find original cell numbers for the current subset of cells.

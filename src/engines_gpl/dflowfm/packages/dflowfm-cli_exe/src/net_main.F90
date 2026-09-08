@@ -69,7 +69,7 @@ program unstruc
    use m_netw, only: kmax, knx, mxb, lmax, maxlan, maxpol, imake1d2dtype, i1d2dtp_1to1, netflow
    use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
                             md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
-                            md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
+                            md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
                             md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_numthreads
    use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
    use unstruc_api, only: flow
@@ -125,12 +125,10 @@ program unstruc
    integer :: KEY
    integer :: ierr, lastmode, IDUM
    logical :: JAWEL
-   integer :: i, L, n12
-   integer :: Lrst = 0, Lmap = 0, L_merge = 0, jamergedrst = 0, Lmap1 = 0
+   integer :: i, L, n12, Lmap1 = 0
    integer, parameter :: numlen = 4 !< number of digits in domain number string/filename
    integer, parameter :: maxnamelen = 256 !< number of digits in filename
    character(len=numlen) :: sdmn_loc !< domain number string
-   character(len=maxnamelen) :: restartfile !< storing the name of the restart files
    character(len=maxnamelen) :: md_mapfile_base !< storing the user-defined map file
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
@@ -292,16 +290,6 @@ program unstruc
          md_convertlongculverts = 0 ! The longculvert conversion is done before the partitioning of the net-file and the mdu-file.
          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
-         if (len_trim(md_restartfile) > 0) then ! If there is a restart file
-            L_merge = index(md_restartfile, '_merged')
-            if (L_merge > 0) then
-               jamergedrst = 1
-            else ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
-               restartfile = md_restartfile
-               Lrst = index(restartfile, '_rst.nc')
-               Lmap = index(restartfile, '_map.nc')
-            end if
-         end if
 
          md_mapfile_base = md_mapfile
          md_flowgeomfile_base = md_flowgeomfile
@@ -312,13 +300,6 @@ program unstruc
             md_netfile = trim(md_netfile(1:L)//'_'//sdmn_loc//'_net.nc')
             if (md_genpolygon == 1) then
                md_partitionfile = trim(md_netfile(1:L))//'_part.pol'
-            end if
-            if (jamergedrst == 0) then ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
-               if (Lrst > 0) then ! If the restart file is a rst file
-                  md_restartfile = trim(restartfile(1:Lrst - 16)//sdmn_loc//'_'//restartfile(Lrst - 15:Lrst + 7))
-               else if (Lmap > 0) then ! If the restart file is a map file
-                  md_restartfile = trim(restartfile(1:Lmap)//sdmn_loc//'_map.nc')
-               end if
             end if
             if (len_trim(md_mapfile_base) > 0) then
                Lmap1 = index(md_mapfile_base, '_map.nc')
