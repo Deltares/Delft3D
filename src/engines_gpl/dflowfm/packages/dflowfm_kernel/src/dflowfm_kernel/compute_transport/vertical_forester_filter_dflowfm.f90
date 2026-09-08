@@ -151,13 +151,13 @@ contains
       logical :: filtered_this_iteration !< Flag to track if any filtering was done in the current iteration
 
       ! Copy constituent values for the vertical column to a local array
-      updated_constituent(1:number_of_layers) = constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1)
+      constituent_updated(1:number_of_layers) = constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1)
 
       ! Iteratively apply the Forester filter until no more filtering is needed or the maximum number of iterations is reached
       do m = 1, max_iterations
 
          ! Copy the current constituent values to the reference array for this iteration
-         constituent_last_iteration(1:number_of_layers) = updated_constituent(1:number_of_layers)
+         constituent_last_iteration(1:number_of_layers) = constituent_updated(1:number_of_layers)
          filtered_this_iteration = .false.
 
          ! Loop over layers in the vertical column and apply the Forester filter based on the difference between adjacent layers
@@ -167,8 +167,8 @@ contains
                if (cell_volume(k) > EPS10 .and. cell_volume(k + 1) > EPS10) then
                   filtered_this_iteration = .true.
                   difference = difference / 6.0_dp * (cell_volume(k + 1) + cell_volume(k))
-                  updated_constituent(k) = updated_constituent(k) + difference / cell_volume(k)
-                  updated_constituent(k + 1) = updated_constituent(k + 1) - difference / cell_volume(k + 1)
+                  constituent_updated(k) = constituent_updated(k) + difference / cell_volume(k)
+                  constituent_updated(k + 1) = constituent_updated(k + 1) - difference / cell_volume(k + 1)
                else
                   difference = 0.0_dp
                end if
@@ -183,12 +183,12 @@ contains
       end do
 
       ! Copy the filtered constituent values back to the main constituents array
-      constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1) = updated_constituent(1:number_of_layers)
+      constituents(i_constituent, i_bottom_layer:i_bottom_layer + number_of_layers - 1) = constituent_updated(1:number_of_layers)
 
       ! If the number of active layers is larger than the number of layers in this column,
       ! fill the remaining layers with the value of the last layer (which is the value at the water surface)
       if (number_of_active_layers > number_of_layers) then
-         constituents(i_constituent, i_bottom_layer + number_of_layers:i_bottom_layer + number_of_active_layers - 1) = updated_constituent(number_of_layers)
+         constituents(i_constituent, i_bottom_layer + number_of_layers:i_bottom_layer + number_of_active_layers - 1) = constituent_updated(number_of_layers)
       end if
 
    end subroutine apply_vertical_forester_filter_to_column_and_constituent
