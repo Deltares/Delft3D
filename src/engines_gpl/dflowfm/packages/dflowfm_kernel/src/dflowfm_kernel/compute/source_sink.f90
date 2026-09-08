@@ -109,8 +109,8 @@ contains
    ! SourceSinks type-bound procedures.
    ! ====================================================================================================
 
-   !> Deallocates and resets all source/sink administration.
-   subroutine dealloc_source_sinks(self)
+   !> Resets the source/sink administration to its default state.
+   subroutine default_source_sinks(self)
       class(SourceSinks), intent(inout) :: self
 
       self%num_total = 0
@@ -118,6 +118,12 @@ contains
       self%num_oldfile = 0
       self%num_nearfield = 0
       self%max_polyline_points = 2
+      self%add_k_to_turkin = .false.
+   end subroutine default_source_sinks
+
+   !> Deallocates and resets all source/sink administration.
+   subroutine dealloc_source_sinks(self)
+      class(SourceSinks), intent(inout) :: self
 
       if (allocated(self%name)) then
          deallocate (self%name)
@@ -158,7 +164,6 @@ contains
       if (allocated(self%is_normal)) then
          deallocate (self%is_normal)
       end if
-      self%add_k_to_turkin = .false.
       if (allocated(self%cumulative_volume)) then
          deallocate (self%cumulative_volume)
       end if
@@ -184,6 +189,8 @@ contains
       if (allocated(source_sink_reduction)) then
          deallocate (source_sink_reduction)
       end if
+
+      call default_source_sinks(self)
    end subroutine dealloc_source_sinks
 
    !> Allocates and initializes the SourceSinks attributes to size.
