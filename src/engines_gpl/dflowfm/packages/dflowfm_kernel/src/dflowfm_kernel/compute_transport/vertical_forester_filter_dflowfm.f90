@@ -75,7 +75,7 @@ contains
             i_bottom_layer, &
             max_iterations_vertical_forester_sal, &
             UNSTABLE_SALINITY_GRADIENT &
-         )
+            )
       end do
 
       ! Stop timer for Forester filter if timing is enabled
@@ -119,7 +119,7 @@ contains
             i_bottom_layer, &
             max_iterations_vertical_forester_tem, &
             UNSTABLE_TEMPERATURE_GRADIENT &
-         )
+            )
       end do
 
       ! Stop timer for Forester filter if timing is enabled
@@ -143,7 +143,7 @@ contains
       integer, intent(in) :: gradient !< Gradient to be applied in the Forester filter, either +1 or -1
 
       ! Local variables
-      real(kind=dp), dimension(number_of_layers) :: constituent_updated!< Array to hold the updated constituent values during filtering
+      real(kind=dp), dimension(number_of_layers) :: constituent_updated !< Array to hold the updated constituent values during filtering
       real(kind=dp), dimension(number_of_layers) :: constituent_last_iteration !< Array to hold the constituent values from the previous iteration for comparison
       real(kind=dp) :: difference !< Difference in constituent values between adjacent layers
       integer :: k !< Layer index
