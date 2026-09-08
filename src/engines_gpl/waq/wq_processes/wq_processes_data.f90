@@ -154,7 +154,7 @@ module processes_pointers
                                                "RESDM ", "BURIAL", "DIGGIN", "S12TIM", "S12TRA", &
                                                "RESANT", "SOMSED", "ADVTRA", "TRASE2"] !< Processes for adsorption, sedimentation, and resuspension
     logical, allocatable :: is_always_process(:) !< Is an always process or not
-    logical, allocatable :: is_ads_sed_res_process(:) !< Is adsorption, sedimentation, or resuspension process or not
+    logical, allocatable :: is_ads_sed_tra_process(:) !< Is adsorption, sedimentation or sediment layer transport (resuspension, burial and digging) process
     logical, allocatable :: run_process(:) !< Whether to run this process or not
 
     integer(kind = int_wp), allocatable :: process_space_int(:)        !< Start index in process_space_real array

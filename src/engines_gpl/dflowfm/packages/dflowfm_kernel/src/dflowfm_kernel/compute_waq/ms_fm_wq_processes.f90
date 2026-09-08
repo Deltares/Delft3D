@@ -34,7 +34,7 @@ module m_fm_wq_processes_sub
 
    public :: default_fm_wq_processes, finalize_waq_spatial_fields, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
              get_waqinputname
-   public :: WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER
+   public :: WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER
 
    interface
 
@@ -59,7 +59,7 @@ module m_fm_wq_processes_sub
          implicit none
          real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
          real(kind=dp), intent(in) :: time !< time     for waq in seconds
-         integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER)
+         integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
       end subroutine fm_wq_processes_step
 
       module subroutine get_waqinputname(qid, inputname, qidname)
@@ -74,8 +74,9 @@ module m_fm_wq_processes_sub
 
    end interface
 
-   integer, parameter :: WQ_RUNALL = 0
-   integer, parameter :: WQ_RUNADSSEDMOR = 1
-   integer, parameter :: WQ_RUNOTHER = 2
+   integer, parameter :: WQ_RUNALL = 0 ! Run all processes
+   integer, parameter :: WQ_RUNADSSEDTRA = 1 ! Run only advection, sedimentation and sediment layer transport
+   !                                           (resuspension, burial and digging) processes
+   integer, parameter :: WQ_RUNOTHER = 2 ! Run other processes
 
 end module m_fm_wq_processes_sub

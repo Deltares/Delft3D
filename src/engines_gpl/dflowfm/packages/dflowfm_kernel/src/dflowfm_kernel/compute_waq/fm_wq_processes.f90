@@ -1475,7 +1475,7 @@ contains
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
-      integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER)
+      integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
 
       integer :: ipoiconc
 
@@ -1491,10 +1491,10 @@ contains
       end if
 
       select case (processselection)
-      case (WQ_RUNADSSEDMOR)
-         run_process = is_always_process .or. is_ads_sed_res_process
+      case (WQ_RUNADSSEDTRA)
+         run_process = is_always_process .or. is_ads_sed_tra_process
       case (WQ_RUNOTHER)
-         run_process = .not. is_ads_sed_res_process
+         run_process = .not. is_ads_sed_tra_process
       case default !run all processes
          run_process = .true.
       end select
