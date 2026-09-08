@@ -11,7 +11,7 @@ import Delft3D.step.*
 
 object RunBashBatonUtilities : BuildType({
     id("RunBashBatonUtilities")
-    name = "Shell"
+    name = "Shell checks"
     description = "codespell, shfmt, and shellcheck on CI bash scripts."
 
     templates(

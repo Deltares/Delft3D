@@ -11,7 +11,7 @@ import java.io.File
 
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
-    name = "TestBench"
+    name = "TestBench checks"
     buildNumberPattern = "%build.vcs.number%"
     description = "pytest and ruff for test/deltares_testbench."
 

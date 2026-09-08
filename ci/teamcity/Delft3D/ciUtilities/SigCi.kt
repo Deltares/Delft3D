@@ -6,7 +6,7 @@ import Delft3D.template.*
 
 object SigCi : BuildType({
     id("SigCi")
-    name = "Sigrid"
+    name = "Sigrid scan"
     description = "Upload Delft3D sources under src/ to Sigrid."
     buildNumberPattern = "%build.vcs.number%"
 

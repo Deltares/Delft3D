@@ -144,8 +144,8 @@ project {
         id("CiUtilities")
         name = "CI utilities"
         description = """
-            Checks: Python CI tools, TestBench, Fortran styler, Shell.
-            Scans: Sigrid, Nexus IQ (product / TestBench / Python CI tools).
+            Checks: Python CI tools, TestBench checks, Fortran styler, Shell checks.
+            Scans: Sigrid scan, Nexus IQ (product / TestBench / Python CI tools).
             Delivery: copy DIMRset examples to the P-drive.
         """.trimIndent()
 
