@@ -48,7 +48,8 @@ contains
       use m_culvert, only: computeculvert
       use m_bridge, only: computebridge
       use m_oned_functions, only: computepump_all_links
-      use unstruc_channel_flow, only: network, st_pump, st_general_st, getcsparsflow, st_dambreak, st_culvert, st_uni_weir, st_bridge, st_longculvert, msgbuf, err_flush, level_warn
+      use unstruc_channel_flow, only: network, st_pump, st_general_st, st_weir, st_gate, st_orifice, getcsparsflow, st_dambreak, &
+                                      st_culvert, st_uni_weir, st_bridge, st_longculvert, msgbuf, err_flush, level_warn
       use m_get_chezy, only: get_chezy
       use m_distribute_linearized_3d_structure_coefficients, only: distribute_linearized_3d_structure_coefficients
       use network_data, only: LINK_1D
@@ -129,9 +130,7 @@ contains
                      au(L) = pstru%au(L0)
                      call compute_general_structure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
                                                   au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
-                     if (kmx > 0) then
-                        call distribute_linearized_3d_structure_coefficients(pstru)
-                     end if
+                     
                   case (ST_DAMBREAK)
                      continue
                   case (ST_CULVERT)
@@ -197,6 +196,10 @@ contains
                call set_fu_ru_structure(pstru, L0, fu(L), ru(L), au(L))
                call check_for_changes_on_structures(LEVEL_WARN, pstru, bob0(:, L))
             end do
+            if (kmx > 0 .and. (pstru%type == ST_GENERAL_ST .or. pstru%type == ST_WEIR .or. &
+                               pstru%type == ST_ORIFICE    .or. pstru%type == ST_GATE  )) then
+               call distribute_linearized_3d_structure_coefficients(pstru)
+            end if
          end if
 
       end do

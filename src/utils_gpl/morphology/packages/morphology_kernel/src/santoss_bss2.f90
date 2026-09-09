@@ -1,35 +1,41 @@
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
+module m_santoss_bss2
+   implicit none
+   private
+   public santoss_bss2
+
+contains
+
 subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
                & d50, d90, b, r, t, uw, aw, uwc, uwt, uc, ut, unet_delwblt, &
                & ang, delwblt, alpha, ksw, ksc, fw, fcw, tc, tt, tcu, tcd, &
                & ttu, ttd, fc, sc, st, swc, swt, scx, scy, stx, sty, fcwc, fcwt)
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
 !!--description-----------------------------------------------------------------
 !
 !   The SANTOSS practical sand transport model, version 2.08  
@@ -41,12 +47,9 @@ subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
 !   Part 2: Addition of acceleration effect on friction factor, surface wave effect
 !   and resulting bed shear stress
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts, only: pi,degrad
-    implicit none
 !
 ! arguments
 !
@@ -250,3 +253,5 @@ subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
         st = sqrt(stx**2 + sty**2)
      endif
 end subroutine santoss_bss2
+
+end module m_santoss_bss2
