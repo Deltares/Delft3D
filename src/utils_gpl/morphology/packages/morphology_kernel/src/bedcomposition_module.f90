@@ -5096,7 +5096,7 @@ subroutine consolidate_decon(this, nm, dtmor)
     enddo
 
     ! if the Gibson's height, i.e. total mass, has increased
-    if (thmudgibson_new + thsandgibson_new - thmudgibson(nm) - thsandgibson(nm) > 0.0_fp) then
+    if (thmudgibson_new + thsandgibson_new > thmudgibson(nm) + thsandgibson(nm)) then
 
         ! compute permud(l) and persand(l)
         do l = 1, this%settings%nfrac
