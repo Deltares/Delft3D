@@ -375,7 +375,10 @@ contains
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
-      ! Constituents
+      ! Write constituents. At the moment we support only up to NUM_CONSTITUENTS (=10).
+      if (NUMCONST > NUM_CONSTITUENTS) then
+         call mess(LEVEL_ERROR, "The number of configured D-Flow FM constituents exceeds maximum! (10)")
+      end if
       do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
@@ -571,7 +574,7 @@ contains
             ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
-         do constituent_index = 1, NUMCONST
+         do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
             source_sinks%constituents(source_sinks%num_total, constituent_index) = self%sources_sinks_constituents(constituent_index, i)
          end do
       end do
