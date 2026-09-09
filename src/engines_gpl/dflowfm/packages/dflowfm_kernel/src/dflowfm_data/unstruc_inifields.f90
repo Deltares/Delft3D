@@ -958,7 +958,7 @@ contains
       use m_sediment, only: stm_included
       use m_transportdata, only: constituents, const_names
       use m_find_name, only: find_name
-      use fm_external_forcings_utils, only: get_sedfracname
+      use fm_external_forcings_utils, only: split_qid
       use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
 
@@ -975,7 +975,8 @@ contains
       target_array => null()
       target_location_type = 0
       success = .true.
-      select case (str_tolower(qid))
+      call split_qid(qid, qid_base, qid_specific)
+      select case (str_tolower(qid_base))
       case ('waterlevel', 'initialwaterlevel')
          if (str_tolower(qid) == 'waterlevel') then
             call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
@@ -1078,7 +1079,6 @@ contains
 
       case ('initialverticalsedfracprofile', 'initialverticalsigmasedfracprofile')
          if (stm_included .and. kmx > 0) then
-            call get_sedfracname(qid, qid_specific, qid_base)
             iconst = find_name(const_names, qid_specific)
             if (iconst <= 0) then
                call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' refers to unknown sediment fraction '''//trim(qid_specific)//'''.')
