@@ -648,8 +648,12 @@ contains
       integer :: ktop
       integer :: kbot
       integer :: nk
-      !
-      ! Body
+
+      ! Initialize source_sinks if not already done.
+      if (.not. allocated(source_sinks%name)) then
+         call source_sinks%initialize(1)
+      end if
+
       if (NFEntrainmentMomentum > 0) then
          nf_entr_start(idif) = source_sinks%num_total + 1
          nf_entr_end(idif) = nf_entr_start(idif) - 1

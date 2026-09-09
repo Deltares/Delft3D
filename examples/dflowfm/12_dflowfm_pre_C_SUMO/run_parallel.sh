@@ -4,7 +4,7 @@ usePreCICE=1
 startFM=1
 startPreCSUMO=1
 NPROC=2
-installDir=install_fm-suite
+installDir=build_fm-suite_debug/install
 
 bindir=$(readlink -f ../../../${installDir}/bin)
 libdir=$(readlink -f ../../../${installDir}/lib)
@@ -34,7 +34,9 @@ if [ "$usePreCICE" = "1" ] ; then
     fi
     if [ "$startFM" = "1" ] ; then
         cd fm
-        $bindir/dflowfm --partition:ndomains=$NPROC:icgsolver=6 FlowFM.mdu
+        # $bindir/dflowfm --partition:ndomains=$NPROC:icgsolver=6 FlowFM.mdu
+        # $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu linux_partition.pol
+        $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu windows_partition.pol
         mpiexec -n $NPROC $bindir/dflowfm FlowFM.mdu --precice
         cd ..
     else

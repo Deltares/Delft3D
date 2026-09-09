@@ -42,10 +42,10 @@ module m_waves
    real(kind=dp), allocatable :: fetdp(:, :) !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
    real(kind=dp), allocatable :: fett(:, :) !< reduce array, (2,ndx)
 
-   real(kind=dp), allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
-   real(kind=dp), allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwav(:) !< [m] FM-derived root mean square wave height, {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] raw root mean square wave height from external source
+   real(kind=dp), allocatable, target :: twav(:) !< [s] FM-derived wave period {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: twavcom(:) !< [s] raw wave period from external source {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
    real(kind=dp), allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
@@ -63,8 +63,10 @@ module m_waves
 
    real(kind=dp) :: ftauw !< Swartfactor, tune bed shear stress
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
-   real(kind=dp) :: fbreak !< tune breaking in tke model
-   real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+   real(kind=dp) :: fbreak !< factor for adjusting wave breaking contribution in tke model
+   real(kind=dp) :: fforc !< factor for adjusting wave forces in momentum equation, default 1
+   real(kind=dp) :: fwavpendep !< layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 1.5
+   real(kind=dp) :: strlyrfac !< streaming layer thickness is strlyrfac*wave boundary layer thickness. Default 3.0 
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 
@@ -95,12 +97,14 @@ module m_waves
 
    ! parameters, may be overwritten by user in mdu-file
    real(kind=dp) :: gammax !< Maximum wave height/water depth ratio
-   real(kind=dp) :: alfdeltau = 20.0_dp !< coeff for thickness of wave bed boundary layer
    real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style
    integer :: jauorbfromswan !< 1: get uorb from SWAN, compare with Delft3D
+   integer :: jawavevellogprof !< 1: set depth-averaged velocity from u1 of base layers
    logical :: extfor_wave_initialized !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
+   integer :: offline_wave_input_requirements = 0 !< Bit mask of required Wavemodelnr=7 input quantities
+   integer :: offline_wave_input_providers = 0 !< Bit mask of configured Wavemodelnr=7 input providers
 
 contains
 
@@ -118,7 +122,12 @@ contains
       fwfac = 1.0_dp
       fbreak = 1.0_dp
       fwavpendep = 1.5_dp ! best setting based on sensitivity
+      jawavevellogprof = 1
+      fforc = 1.0_dp
+      strlyrfac = 3.0_dp
 
+      offline_wave_input_requirements = 0
+      offline_wave_input_providers = 0
       call reset_waves()
    end subroutine default_waves
 
@@ -127,5 +136,17 @@ contains
    subroutine reset_waves()
       extfor_wave_initialized = .false. !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
    end subroutine reset_waves
+
+!> Record that an external-forcing provider was configured for an offline wave quantity.
+   subroutine register_offline_wave_input_provider(quantity_flag)
+      integer, intent(in) :: quantity_flag
+
+      offline_wave_input_providers = ior(offline_wave_input_providers, quantity_flag)
+   end subroutine register_offline_wave_input_provider
+
+!> Clear provider registration before external forcings are initialized.
+   subroutine reset_offline_wave_input_providers()
+      offline_wave_input_providers = 0
+   end subroutine reset_offline_wave_input_providers
 
 end module m_waves

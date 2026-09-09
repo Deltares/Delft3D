@@ -275,16 +275,17 @@ contains
 
 !> optimized ray-casting point-in-polygon test.
 !! pure function that works with array slices or full arrays.
-   pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+   pure function pinpok_raycast(xl, yl, x, y, n, edge_indices) result(is_inside)
       use precision_basics, only: equal
 
       real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
       integer, intent(in) :: n !< number of polygon points
       real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
+      integer, dimension(:), intent(in), optional :: edge_indices !< Ordered indices of edges to test; each index identifies the edge ending at that point
       logical :: is_inside !< result: true if inside (respecting jins mode)
 
       ! locals
-      integer :: i, j, crossings
+      integer :: i, i_edge, j, crossings, num_edges
       real(kind=dp) :: x_intersect
       real(kind=dp), parameter :: TOLERANCE_FACTOR = 100.0_dp
 
@@ -301,9 +302,21 @@ contains
 
       ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
       crossings = 0
-      j = n ! In order to check the entire polygon, start the first link which lies between the last point (n) and the first point
+      num_edges = n
+      if (present(edge_indices)) then
+         num_edges = size(edge_indices)
+      end if
 
-      do i = 1, n
+      do i_edge = 1, num_edges
+         i = i_edge
+         if (present(edge_indices)) then
+            i = edge_indices(i_edge)
+         end if
+         j = i - 1
+         if (i == 1) then
+            j = n
+         end if
+
          ! check for missing value (polygon separator)
          if (x(i) == dmiss) then
             exit
@@ -347,7 +360,6 @@ contains
                return
             end if
          end if
-         j = i ! current point becomes previous for next iteration
       end do
 
       ! odd number of crossings = inside, even = outside

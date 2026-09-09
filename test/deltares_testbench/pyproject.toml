@@ -23,19 +23,19 @@ authors = [
 requires-python = ">= 3.11"
 dependencies = [
     "bmi-python ~= 0.3.0",
+    "setuptools < 82.0.0", # Version 82.0.0 removed `pkg_resources` module that `bmi-python` unfortunately depends on
     "pywin32 ; platform_system == 'Windows'",  # Required for Windows to access the registry.
     "netCDF4 ~= 1.7.2",
-    "lxml ~= 5.1",
-    "pyarrow ~= 16.1", # PyArrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
-    "pandas ~= 2.0",
-    "matplotlib >=3.7,<3.9",
-    "numpy ~= 1.24",
-    "minio ~= 7.2",
+    "lxml ~= 5.4.0",
+    "pandas ~= 2.3.3",
+    "matplotlib ~= 3.11.1",
+    "numpy ~= 1.26.4",
+    "minio ~= 7.2.20",
     "s3-path-wrangler ~= 0.5",
     "urllib3 >= 2.6.3",
     "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'",
-    "dvc ~= 3.0",
-    "dvc-s3 ~= 3.0",
+    "dvc ~= 3.67.1",
+    "dvc-s3 ~= 3.3.0",
 ]
 
 [project.optional-dependencies]
@@ -45,7 +45,7 @@ dev = [
     "pytest ~= 8.0",
     "pytest-cov ~= 6.1.1",
     "pytest-mock ~= 3.12",
-    "ruff ~= 0.4",
+    "ruff ~= 0.15",
     "requests ~= 2.32",
 ]
 
@@ -116,6 +116,17 @@ module = [
     "s3_path_wrangler.*"
 ]
 ignore_missing_imports = true
+
+# Coverage settings (pytest-cov / coverage.py)
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.run]
+# This prevents a strange error when running `pytest` with coverage. For some reason this doesn't
+# work well in combination with the `netCDF4` package which includes `Cython` code: A file with
+# `.pyx` extension that `coverage.py` tries to parse as python code and gives the following
+# warning: https://coverage.readthedocs.io/en/7.15.2/messages.html#warning-couldnt-parse
+omit = [
+    "src/netCDF4/*",
+]
 
 # Pytest settings
 # https://docs.pytest.org/en/stable/reference/customize.html

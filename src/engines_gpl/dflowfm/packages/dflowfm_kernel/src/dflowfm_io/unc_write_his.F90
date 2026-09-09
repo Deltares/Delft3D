@@ -62,14 +62,15 @@ module m_unc_write_his
               id_cmpstrudim, id_cmpstru_id, &
               id_longculvertdim, id_longculvert_id, &
               id_latdim, id_lat_id, &
-              id_rugdim, id_rugname
+              id_rugdim, id_rugname, &
+              id_morfac, id_morft
 
    ! ids for geometry variables, only use them once at the first time of history output
    integer :: &
       id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, id_statgeom_node_lon, id_statgeom_node_lat, &
       id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy, &
       id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, id_weirgen_xmid, id_weirgen_ymid, &
-      id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, id_crs_xmid, id_crs_ymid, &
+      id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, id_crsgeom_node_lat, id_crsgeom_node_lon, id_crs_xmid, id_crs_ymid, &
       id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
       id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, id_genstru_xmid, id_genstru_ymid, &
       id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, id_uniweir_xmid, id_uniweir_ymid, &
@@ -135,6 +136,7 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
+      real(kind=dp) :: moravg, dmorft, mortime
 
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
@@ -208,7 +210,7 @@ contains
 
       ! Only add auto-tranformed lat/lon coordinates if model is Cartesian and user has requested extra latlon output.
 #ifdef HAVE_PROJ
-      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON
+      add_latlon = jsferic == 0 .and. iand(unc_writeopts, UG_WRITE_LATLON) /= 0
 #else
       add_latlon = .false.
 #endif
@@ -274,6 +276,11 @@ contains
             if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr == 2) then
                call check_netcdf_error(nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
             end if
+            if (stmpar%morpar%moroutput%morfac) then
+               call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morfac, nf90_double, [id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-'))
+            end if
+         
+            call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morft, nf90_double, [id_timedim], 'morft', '', 'Current morphological time', 's'))
          end if
 
          ! Time
@@ -307,10 +314,9 @@ contains
                                                   id_zcs, id_zws, id_zwu)
 
          end if
-
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, &
                                                   id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, &
-                                                  id_poly_xmid=id_crs_xmid, id_poly_ymid=id_crs_ymid)
+                                                  add_latlon, id_crsgeom_node_lon, id_crsgeom_node_lat, id_poly_xmid=id_crs_xmid, id_poly_ymid=id_crs_ymid)
 
          ! Runup gauges
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, &
@@ -677,6 +683,12 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_count, nodeCountCrs))
+#ifdef HAVE_PROJ
+               if (add_latlon) then
+                  call transform_and_put_latlon_coordinates(ihisfile, id_crsgeom_node_lon, id_crsgeom_node_lat, &
+                                                   nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs])
+               end if
+#endif
                if (allocated(geomXCrs)) then
                   deallocate (geomXCrs)
                end if
@@ -764,6 +776,23 @@ contains
       call check_netcdf_error(nf90_put_var(ihisfile, id_timestep, dts, [it_his]))
       if (timon) then
          call timstop(handle_extra(64))
+      end if
+      
+      !morfac and morft
+      if (his_write_settings%sed > 0 .and. stm_included) then
+         dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
+         mortime = stmpar%morpar%morft * 86400.0_dp ! seconds*morfac since tstart_user
+         if (stmpar%morpar%hydrt > stmpar%morpar%hydrt0) then
+            moravg = dmorft / (stmpar%morpar%hydrt - stmpar%morpar%hydrt0)
+         else
+            moravg = 0.0_dp
+         end if
+      
+         if (stmpar%morpar%moroutput%morfac) then
+            call check_netcdf_error(nf90_put_var(ihisfile, id_morfac, moravg, [it_his]))
+         end if
+      
+         call check_netcdf_error(nf90_put_var(ihisfile, id_morft, mortime, [it_his]))
       end if
 
 !   Observation points (fixed+moving)

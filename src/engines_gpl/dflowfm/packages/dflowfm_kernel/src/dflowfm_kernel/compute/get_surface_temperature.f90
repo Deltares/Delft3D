@@ -31,6 +31,10 @@ module m_get_surface_temperature
    use precision_basics, only: dp
    use m_flowgeom, only: ndx
    use m_get_kbot_ktop, only: getkbotktop
+   use m_transport, only: constituents, itemp
+   use m_flow, only: tem1
+   use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE
+   use MessageHandling, only: mess, LEVEL_ERROR
    
    implicit none
 
@@ -43,40 +47,24 @@ module m_get_surface_temperature
       real(kind=dp), intent(out) :: surface_temperature(ndx)   
       logical, intent(in) :: initialization !< initialization phase
       
+      real(kind=dp), dimension(:), pointer :: temperature_ptr
+      integer :: n, kb, kt
+      
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
+         call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu')
+         return
+      end if
+
       if (initialization) then
-         call get_surface_temperature_from_tem1(surface_temperature)
+         temperature_ptr => tem1
       else
-         call get_surface_temperature_from_constituents(surface_temperature)
+         temperature_ptr => constituents(itemp,:)
       end if
       
+      do n = 1, ndx
+         call getkbotktop(n, kb, kt)
+         surface_temperature(n) = temperature_ptr(kt)
+      end do
    end subroutine get_surface_temperature
-   
-   !> Returns the surface-layer temperature from constituents(itemp,:) for all horizontal cells.
-   subroutine get_surface_temperature_from_constituents(surface_temperature)
-      use m_transport, only: constituents, itemp
-
-      real(kind=dp), intent(out) :: surface_temperature(ndx)
-
-      integer :: n, kb, kt
-
-      do n = 1, ndx
-         call getkbotktop(n, kb, kt)
-         surface_temperature(n) = constituents(itemp, kt)
-      end do
-   end subroutine get_surface_temperature_from_constituents
-
-   !> Returns the surface-layer temperature from tem1 for all horizontal cells.
-   subroutine get_surface_temperature_from_tem1(surface_temperature)
-      use m_flow, only: tem1
-
-      real(kind=dp), intent(out) :: surface_temperature(ndx)
-
-      integer :: n, kb, kt
-
-      do n = 1, ndx
-         call getkbotktop(n, kb, kt)
-         surface_temperature(n) = tem1(kt)
-      end do
-   end subroutine get_surface_temperature_from_tem1
 
 end module m_get_surface_temperature

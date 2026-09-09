@@ -1,0 +1,6 @@
+outs:
+- md5: f9526f12334b339e72934488e4841aca.dir
+  size: 260644
+  nfiles: 32
+  hash: md5
+  path: reference_win64

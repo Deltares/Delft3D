@@ -1,0 +1,6 @@
+outs:
+- md5: 94a94643f55b3436bcfd1e447978abdb.dir
+  size: 47129
+  nfiles: 10
+  hash: md5
+  path: input

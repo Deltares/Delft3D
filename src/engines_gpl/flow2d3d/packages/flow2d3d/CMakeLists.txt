@@ -182,10 +182,6 @@ install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
-    
-    # Add scripts for running coupled Delft3D4 - C-SUMO computations. These .sh scripts make sure that C-SUMO is started in the background
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d_AL8_csumo.sh                DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d_AL8_csumo.sh      DESTINATION bin)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.${platform_extension}                   DESTINATION bin)

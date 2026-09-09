@@ -10,52 +10,26 @@ add_rc_object_library(${executable_name} "${rc_version_file};${icon_file}" "${ve
 add_executable(${executable_name} ${executable_files})
 target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
-# Set dependencies
-if (WIN32)
-    set(exe_dependencies    wave_data
-                            delftio
-                            delftio_shm
-                            deltares_common
-                            deltares_common_c
-                            ec_module
-                            gridgeom
-                            wave_io
-                            io_netcdf
-                            wave_kernel
-                            wave_manager
-                            nefis
-                            netCDF::netcdff
-                            triangle_c
-                            swan
-                            )
+target_link_libraries(${executable_name} PRIVATE
+    wave_data
+    delftio
+    delftio_shm
+    deltares_common
+    deltares_common_c
+    ec_module
+    gridgeom
+    wave_io
+    io_netcdf
+    wave_kernel
+    wave_manager
+    nefis
+    netCDF::netcdff
+    triangle::triangle
+    swan
+)
 
-    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
-
-endif(WIN32)
-
-# Add dependencies
 if(UNIX)
-    set(exe_dependencies    wave_data
-                            delftio
-                            delftio_shm
-                            deltares_common
-                            deltares_common_c
-                            ec_module
-                            gridgeom
-                            wave_io
-                            io_netcdf
-                            wave_kernel
-                            wave_manager
-                            nefis
-                            triangle_c
-                            swan
-                            esmfsm
-                            netCDF::netcdff
-                            )
-
-    target_link_libraries(${executable_name} PRIVATE
-         ${exe_dependencies}
-         )
+    target_link_libraries(${executable_name} PRIVATE esmfsm)
 endif(UNIX)
 
 include_directories(${mpi_module_path} ${version_include_dir})

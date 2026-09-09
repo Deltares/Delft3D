@@ -1,0 +1,6 @@
+outs:
+- md5: 3ec49b0517f8dc6159d82ab9d4621deb.dir
+  size: 8231
+  nfiles: 3
+  hash: md5
+  path: doc

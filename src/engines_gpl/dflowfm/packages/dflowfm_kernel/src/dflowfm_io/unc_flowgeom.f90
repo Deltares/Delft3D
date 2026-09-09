@@ -194,7 +194,6 @@ contains
       integer :: numl2d, numNodes, numFace, numEdge
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
       logical :: use_mask
-
       integer, allocatable :: tmp_edge_nodes(:, :), tmp_edge_type(:)
       integer, pointer :: tmp_edge_faces(:, :)
       real(kind=dp), allocatable :: tmp_xue(:), tmp_yue(:)
@@ -202,6 +201,7 @@ contains
       integer, allocatable :: inverse_face_map(:) !< full-grid face index -> output index (0 = excluded)
 
       use_mask = present(cell_mask)
+      flowgeom%remapping_active = use_mask
 
       numl2d = numl - numl1d
       if (use_mask) then
@@ -229,7 +229,7 @@ contains
       ! edge_map_2D(i)    = full-grid edge index for output edge i
       ! inverse_edge_map(l)= output edge index for full-grid edge l  (0 = excluded)
       !
-      ! In the unmasked case both maps are the identity; Phase 2 is then identical.
+      ! In the unmasked case no maps are needed because the output ordering is contiguous.
 
       if (use_mask) then
          call realloc(flowgeom%face_map_2D, numFace, keepExisting=.false., fill=0)
@@ -267,7 +267,6 @@ contains
             end if
          end do
       end if
-
       ! =========================================================
       ! Build geometry
       ! =========================================================
@@ -281,17 +280,16 @@ contains
       call reallocP(flowgeom%mesh2d%nodey, numk, fill=dmiss, keepExisting=.false.)
       call reallocP(flowgeom%mesh2d%nodez, numk, fill=dmiss, keepExisting=.false.)
 
-      ! facex/facey: owned memory when masked (non-contiguous gather), pointer slice otherwise.
+      call reallocP(flowgeom%mesh2d%facex, numFace, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%facey, numFace, fill=dmiss, keepExisting=.false.)
       if (use_mask) then
-         allocate (flowgeom%mesh2d%facex(numFace))
-         allocate (flowgeom%mesh2d%facey(numFace))
          do i = 1, numFace
             flowgeom%mesh2d%facex(i) = xz(flowgeom%face_map_2D(i))
             flowgeom%mesh2d%facey(i) = yz(flowgeom%face_map_2D(i))
          end do
       else
-         flowgeom%mesh2d%facex => xz(1:ndx2d)
-         flowgeom%mesh2d%facey => yz(1:ndx2d)
+         flowgeom%mesh2d%facex = xz(1:ndx2d)
+         flowgeom%mesh2d%facey = yz(1:ndx2d)
       end if
 
       !> find max polygon size (up to 6) to allocate face_nodes.
@@ -466,7 +464,7 @@ contains
 
       ! Reconstruct inverse_face_map from face_map_2D (already populated by build_flowgeom_2d).
       allocate (inverse_face_map(ndx2d))
-      if (allocated(flowgeom%face_map_2D)) then
+      if (flowgeom%remapping_active) then
          ! Masked case: face_map_2D is a sparse subset; invert it.
          inverse_face_map = 0
          do i = 1, size(flowgeom%face_map_2D)
@@ -724,21 +722,21 @@ contains
 
 !> Builds the complete flow geometry object for both 1D and 2D meshes.
 !! An optional polygon file can be provided to crop the geometry to a subset of the 1D and 2D meshes.
-   function build_flowgeom(jabndnd, polygon_file) result(flowgeom)
+   function build_flowgeom(jabndnd, polygon_files) result(flowgeom)
       use m_flowgeom, only: ndx2d
       use m_pol_to_cellmask, only: cell_mask_from_polygon_file
       implicit none
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
-      character(len=*), intent(in), optional :: polygon_file !< File containing output polygon (e.g., *_output.pol)
+      character(len=*), intent(in), optional :: polygon_files !< Space-separated output-polygon files (e.g., *_output.pol)
       integer, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells (nonzero = include); if absent, all cells are included.
 
-      if (present(polygon_file)) then
-         cell_mask = cell_mask_from_polygon_file(polygon_file)
+      if (present(polygon_files)) then
+         cell_mask = cell_mask_from_polygon_file(polygon_files)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
-      else
+      else 
          call build_flowgeom_2d(flowgeom)
          call build_flowgeom_1d(flowgeom, jabndnd)
       end if

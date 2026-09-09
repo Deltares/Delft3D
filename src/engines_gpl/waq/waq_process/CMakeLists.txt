@@ -26,3 +26,4 @@ install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/open_process_lib_example DESTINATION share/delft3d)

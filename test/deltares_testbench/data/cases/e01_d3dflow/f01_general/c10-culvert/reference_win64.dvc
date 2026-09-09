@@ -1,0 +1,6 @@
+outs:
+- md5: 08a909f4b48f6e5b6c31c41657937fab.dir
+  size: 662158
+  nfiles: 10
+  hash: md5
+  path: reference_win64

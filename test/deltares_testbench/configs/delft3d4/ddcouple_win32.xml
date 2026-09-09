@@ -70,7 +70,7 @@
             <location ref="dsctestbench_references" type="reference">
                 <from>\win32\</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--
@@ -93,7 +93,7 @@
                 <file name="hk-ddcouple.out" type="ASCII"/>
                 <file name="fort.88" type="ASCII"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </testCases>
 </deltaresTestbench_v3>

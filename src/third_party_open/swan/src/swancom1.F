@@ -6047,7 +6047,7 @@
 !
 !     --- calculate fraction of breakers
 !
-      IF ( ETOT .GT. 0. ) THEN
+      IF ( ETOT .GT. 0. .AND. ISURF .GT. 0 ) THEN
 !
 !       --- calculate Qb when BJ78 breaker is activated
 !
