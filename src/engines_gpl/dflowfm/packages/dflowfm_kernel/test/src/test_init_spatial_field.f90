@@ -7,6 +7,7 @@ module test_init_spatial_field
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
    use precision_basics, only: dp
+   use iso_c_utils, only: cstr
 
    implicit none(type, external)
 
@@ -16,11 +17,54 @@ module test_init_spatial_field
 
 contains
 
-   subroutine make_test_input(input)
+   subroutine make_test_input( &
+         input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
+         operand_string, data_value, is_extrapolation_allowed)
+      use m_missing, only: dmiss
+
       type(t_spatial_field_input), intent(out) :: input
+      character(len=*), intent(in), optional :: quantity
+      character(len=*), intent(in), optional :: forcing_file
+      character(len=*), intent(in), optional :: forcing_file_type
+      character(len=*), intent(in), optional :: target_mask_file
+      character(len=*), intent(in), optional :: interpolation_method
+      character(len=*), intent(in), optional :: operand_string
+      real(dp), intent(in), optional :: data_value
+      logical, intent(in), optional :: is_extrapolation_allowed
+
       input%quantity = 'windx'
-      input%forcing_file_type = 'netcdf'
+      if (present(quantity)) then
+         input%quantity = quantity
+      end if
+
       input%forcing_file = 'dummy.nc'
+      if (present(forcing_file)) then
+         input%forcing_file = forcing_file
+      end if
+
+      input%forcing_file_type = 'netcdf'
+      if (present(forcing_file_type)) then
+         input%forcing_file_type = forcing_file_type
+      end if
+
+      if (present(target_mask_file)) then
+         input%target_mask_file = target_mask_file
+      end if
+      if (present(interpolation_method)) then
+         input%interpolation_method = interpolation_method
+      end if
+      if (present(operand_string)) then
+         input%operand_string = operand_string
+      end if
+
+      input%data_value = dmiss
+      if (present(data_value)) then
+         input%data_value = data_value
+      end if
+
+      if (present(is_extrapolation_allowed)) then
+         input%is_extrapolation_allowed = is_extrapolation_allowed
+      end if
    end subroutine make_test_input
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unrecognized_interpolation_method, test_validate_unrecognized_interpolation_method,
@@ -30,9 +74,8 @@ contains
    subroutine test_validate_unrecognized_interpolation_method() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
-      call make_test_input(input)
+      call make_test_input(input, interpolation_method='this_method_does_not_exist')
       threshold_abort = LEVEL_FATAL
-      input%interpolation_method = 'this_method_does_not_exist'
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
    end subroutine test_validate_unrecognized_interpolation_method
@@ -78,8 +121,7 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_file_type_extension_mismatch, test_validate_file_type_extension_mismatch,
    subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input
-      call make_test_input(input)
-      input%forcing_file_type = 'bcascii' ! bcascii has no spatial default method
+      call make_test_input(input, forcing_file_type='bcascii')
       input%interpolation_method = ' ' ! no explicit method either
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when forcingFileType does not match input file extension")
@@ -92,8 +134,7 @@ contains
    !! in integration tests because they either omit the mask or supply a real file.
    subroutine test_validate_nonexistent_target_mask_file() bind(C)
       type(t_spatial_field_input) :: input
-      call make_test_input(input)
-      input%target_mask_file = 'this_mask_does_not_exist.pol'
+      call make_test_input(input, target_mask_file='this_mask_does_not_exist.pol')
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when targetMaskFile does not exist on disk")
    end subroutine test_validate_nonexistent_target_mask_file
@@ -108,19 +149,31 @@ contains
       type(t_spatial_field_input) :: input_with_extrap
       logical :: success_without, success_with
 
-      call make_test_input(input_without_extrap)
-      input_without_extrap%is_extrapolation_allowed = .false.
+      call make_test_input(input_without_extrap, is_extrapolation_allowed=.false.)
       success_without = validate_spatial_field_input(input_without_extrap, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_assert_true(success_without, "baseline validation without extrapolation should succeed")
 
-      call make_test_input(input_with_extrap)
-      input_with_extrap%is_extrapolation_allowed = .true.
+      call make_test_input(input_with_extrap, is_extrapolation_allowed=.true.)
       success_with = validate_spatial_field_input(input_with_extrap, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_assert_true(success_with, "validation with extrapolation should succeed")
 
       call f90_expect_true(input_with_extrap%method /= input_without_extrap%method, &
                            "enabling extrapolation should produce a different method value")
    end subroutine test_validate_extrapolation_changes_method
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spatial_field_input__data_value, test_validate_spatial_field_input__data_value,
+   subroutine test_validate_spatial_field_input__data_value() bind(C)
+      type(t_spatial_field_input) :: input
+      logical :: success
+
+      call make_test_input(input, data_value=0.875_dp, forcing_file_type="", forcing_file="")
+
+      success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
+
+      call f90_assert_true(success, cstr("forcing_file_type and forcing_file may be empty if data_value is supplied"))
+   end subroutine test_validate_spatial_field_input__data_value
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
@@ -329,8 +382,7 @@ contains
       integer :: log_level
       character(len=512) :: message
 
-      call make_test_input(input)
-      input%operand_string = '+'
+      call make_test_input(input, operand_string='+')
 
       threshold_abort = LEVEL_FATAL
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
@@ -352,8 +404,7 @@ contains
       type(t_spatial_field_input) :: input
       logical :: success
 
-      call make_test_input(input)
-      input%operand_string = 'add'
+      call make_test_input(input, operand_string='add')
 
       threshold_abort = LEVEL_FATAL
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
@@ -364,6 +415,139 @@ contains
       call f90_expect_eq(input%oper, OPERAND_ADD)
       call f90_expect_eq(GetMessageCount(), 0)
    end subroutine test_validate_nonlegacy_operand_does_not_warn
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_radiation_stress, test_offline_wave_requirements_radiation_stress,
+   subroutine test_offline_wave_requirements_radiation_stress() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                   "direct radiation-stress forcing does not require wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), &
+                           "radiation-stress forcing requires xwaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), &
+                           "radiation-stress forcing requires ywaveforce")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                            "direct radiation-stress forcing does not require wave height")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "direct radiation-stress forcing does not require direction")
+   end subroutine test_offline_wave_requirements_radiation_stress
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_stokes_adds_kinematics, test_offline_wave_requirements_stokes_adds_kinematics,
+   subroutine test_offline_wave_requirements_stokes_adds_kinematics() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
+                                                          STOKES_DRIFT_DEPTHUNIFORM, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_OFF)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "Stokes drift requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "Stokes drift requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                           "Stokes drift requires wave direction")
+   end subroutine test_offline_wave_requirements_stokes_adds_kinematics
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_flow_without_waves, test_offline_wave_requirements_flow_without_waves,
+   subroutine test_offline_wave_requirements_flow_without_waves() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_OFF)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "FlowWithoutWaves requires wave height for D-WAQ orbital velocity")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "FlowWithoutWaves requires wave period for D-WAQ orbital velocity")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "FlowWithoutWaves does not require wave direction")
+   end subroutine test_offline_wave_requirements_flow_without_waves
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_breaker_turbulence, test_offline_wave_requirements_breaker_turbulence,
+   subroutine test_offline_wave_requirements_breaker_turbulence() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_ON)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "breaker turbulence requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "breaker turbulence requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "breaker turbulence alone does not require wave direction")
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_ON)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
+                           "FlowWithoutWaves still requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
+                           "FlowWithoutWaves still requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "FlowWithoutWaves with breaker turbulence requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "FlowWithoutWaves with breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
+                            "FlowWithoutWaves with breaker turbulence does not require wave direction")
+   end subroutine test_offline_wave_requirements_breaker_turbulence
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_disabled_forces, test_offline_wave_requirements_disabled_forces,
+   subroutine test_offline_wave_requirements_disabled_forces() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_TOTAL, WAVE_FORCES_OFF, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+
+      call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
+   end subroutine test_offline_wave_requirements_disabled_forces
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_offline_wave_requirements_3d_dissipation, test_offline_wave_requirements_3d_dissipation,
+   subroutine test_offline_wave_requirements_3d_dissipation() bind(C)
+      use m_waveconst
+
+      integer :: requirements
+
+      requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_3D, WAVE_FORCES_ON, &
+                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), "3D dissipation requires wave height")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), "3D dissipation requires wave period")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), "3D dissipation requires wave direction")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), "3D dissipation requires xwaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), "3D dissipation requires ywaveforce")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                           "3D dissipation requires surface-breaking dissipation")
+      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                           "3D dissipation requires white-capping dissipation")
+   end subroutine test_offline_wave_requirements_3d_dissipation
    !$f90tw)
 
 end module test_init_spatial_field

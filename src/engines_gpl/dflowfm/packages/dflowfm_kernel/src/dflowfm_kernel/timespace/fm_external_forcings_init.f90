@@ -221,7 +221,13 @@ contains
 
          threshold_abort = initial_threshold_abort
 
-         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
+         call check_file_tree_for_deprecated_keywords( &
+            bnd_ptr, &
+            deprecated_ext_keywords, &
+            istat, &
+            prefix='While reading '''//trim(file_names(i_ext))//'''', &
+            print_context_keywords=['quantity', 'dataFile'] &
+         )
 
          if (allocated(itpenzr)) then
             deallocate (itpenzr)
@@ -816,7 +822,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -969,7 +975,7 @@ contains
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
-                                   resolve_mass_balance_area_target, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
+                                   initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -978,6 +984,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -1013,7 +1020,9 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -1053,9 +1062,6 @@ contains
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
-         end if
-         if (.not. res) then
-            res = resolve_mass_balance_area_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             if (str_tolower(quantity) == 'bedlevel') then
@@ -1135,7 +1141,7 @@ contains
                   res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if
@@ -1153,7 +1159,7 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper, target_data)
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper)
             res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
@@ -1165,16 +1171,15 @@ contains
    end function init_spatial_fields
 
    !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
-   function enable_special_quantity(quantity, block_ptr, operand, target_data) result(success)
+   function enable_special_quantity(quantity, block_ptr, operand) result(success)
       use fm_external_forcings_utils, only: split_qid
       use tree_data_types, only: tree_data
-      use unstruc_inifields, only: finish_mass_balance_area_target, set_friction_type_values_explicit
+      use unstruc_inifields, only: set_friction_type_values_explicit
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
       type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
       integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
-      real(dp), dimension(:), pointer, intent(inout) :: target_data !< pointer to the target data array, for now only used for mass_balance_area
       logical :: success
 
       character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
@@ -1183,8 +1188,6 @@ contains
       select case (str_tolower(quantity_base))
       case ('frictioncoefficient')
          success = set_friction_type_values_explicit(block_ptr, operand)
-      case ('massbalancearea', 'waqmassbalancearea')
-         success = finish_mass_balance_area_target(quantity, quantity_base, quantity_specific, target_data)
       case default
          success = .false.
       end select
@@ -1247,7 +1250,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')
@@ -1379,7 +1382,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_polygon, only: dzL, npl
+      use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1394,6 +1397,7 @@ contains
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
+      real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
       logical :: is_successful
       logical :: is_read
@@ -1417,7 +1421,7 @@ contains
 
       ! Use generic polyline reader
       call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       if (.not. is_successful) return
 
       ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
@@ -1437,16 +1441,14 @@ contains
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = z_coordinates(npts)
             if (num_columns > 3) then
-               ! 4th column (dzL) needs to be read from the polygon module directly,
-               ! since read_polyline_coordinates only returns the 3rd column (zpl).
-               z_range_source(2) = dzL(npl)
+               z_range_source(2) = fourth_coordinates(npts)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = z_coordinates(1)
             if (num_columns > 3) then
-               z_range_sink(2) = dzL(1)
+               z_range_sink(2) = fourth_coordinates(1)
             end if
          end if
       end if
@@ -1604,7 +1606,7 @@ contains
       use string_module, only: strcmpi, str_tolower
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1637,6 +1639,7 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      type(t_netcell_set) :: netcell_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1645,8 +1648,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
+      netcell_cache = t_netcell_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1684,7 +1686,8 @@ contains
                   end if
                end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
-               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               call netcell_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
+                                                                 bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
@@ -1705,7 +1708,6 @@ contains
          end if
       end do
 
-      call cleanup_cell_geom_polylines()
       ! initialize global geometry
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       nNodesBubbleScreen = 0
@@ -1749,7 +1751,6 @@ contains
       use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use m_polygon, only: xpl, ypl, zpl, npl
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
       use network_data
       use m_flow
       use fm_external_forcings_data

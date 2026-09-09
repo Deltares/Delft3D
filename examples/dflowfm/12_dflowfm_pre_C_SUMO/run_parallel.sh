@@ -34,7 +34,9 @@ if [ "$usePreCICE" = "1" ] ; then
     fi
     if [ "$startFM" = "1" ] ; then
         cd fm
-        $bindir/dflowfm --partition:ndomains=$NPROC:icgsolver=6 FlowFM.mdu
+        # $bindir/dflowfm --partition:ndomains=$NPROC:icgsolver=6 FlowFM.mdu
+        # $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu linux_partition.pol
+        $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu windows_partition.pol
         mpiexec -n $NPROC $bindir/dflowfm FlowFM.mdu --precice
         cd ..
     else

@@ -52,6 +52,7 @@ module timespace_parameters
    integer, parameter :: FIELD1D = 18 ! Scalar quantity on a 1D network, used for initial/parameter fields.
    integer, parameter :: GEOTIFF = 19 ! GeoTIFF, used for initial/parameter fields.
    integer, parameter :: NODE_ID = 20 ! for a reference to a node ID
+   integer, parameter :: DATAVALUE = 21 !< Time and space independent value specified directly in ext file.
    integer, parameter :: MAX_FILE_TYPES = 103 !  max nr of supported types for end user in ext file.
    ! Enumeration for file types of sub-providers (not directly in ext file)
    integer, parameter :: FOURIER = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
@@ -236,6 +237,8 @@ contains
       case ('polygon')
          method = METHOD_CONSTANT
       case ('1dfield')
+         method = JUSTUPDATE
+      case ('datavalue')
          method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN

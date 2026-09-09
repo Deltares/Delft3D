@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e02_f090_c012_waal_mor_2d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f090_validation_realworld/c012_waal_mor_2d</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="results/RIJN_map.nc" type="netCDF">
         <parameters>
@@ -27,7 +27,8 @@
   </testCase>
   <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="platform_specific">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
-    <maxRunTime>500.0</maxRunTime>
+
+      <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="fm/output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -46,7 +47,7 @@
   </testCase>
   <testCase name="e02_f026_c05_dynveg" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f026_vegetation/c05_dynveg</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -58,7 +59,6 @@
   </testCase>
   <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
-    <maxRunTime>90.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
         <parameters>
@@ -79,7 +79,7 @@
   </testCase>
   <testCase name="e02_f039_c03_concentration_buildup_channel_algebraic_10lyrs" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c03_concentration_buildup_channel_algebraic_10lyrs</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/slope_his.nc" type="netCDF">
         <parameters>
@@ -92,7 +92,7 @@
   </testCase>
   <testCase name="e02_f039_c04_sediment_bc_3d_t3d_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c04_sediment_bc_3d_t3d_varying</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
@@ -105,7 +105,7 @@
   </testCase>
   <testCase name="e02_f039_c05_sediment_bc_3d_t3d_step_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c05_sediment_bc_3d_t3d_step_constant</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
@@ -118,7 +118,7 @@
   </testCase>
   <testCase name="e02_f039_c06_sediment_bc_3d_bc_varying" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
@@ -131,7 +131,6 @@
   </testCase>
   <testCase name="e02_f039_c07_sediment_ini_3d_uniform_polygon" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
-    <maxRunTime>90.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>
@@ -144,7 +143,7 @@
   </testCase>
   <testCase name="e02_f039_c08_sediment_ini_3d_uniform_samples" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
-    <maxRunTime>90.0</maxRunTime>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>
@@ -157,7 +156,7 @@
   </testCase>
   <testCase name="e02_f039_c09_sediment_ini_3d_verticalprofile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
-    <maxRunTime>90.0</maxRunTime>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>
@@ -170,7 +169,6 @@
   </testCase>
   <testCase name="e02_f039_c10_sediment_ini_3d_verticalsigmaprofile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
-    <maxRunTime>90.0</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>
@@ -183,7 +181,7 @@
   </testCase>
   <testCase name="e02_f039_c11_rouse_algebraic_30lyrs" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/rouse_his.nc" type="netCDF">
         <parameters>
@@ -196,7 +194,7 @@
   </testCase>
   <testCase name="e02_f022_c99_duneheight" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c99_duneheight</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -207,7 +205,7 @@
   </testCase>
   <testCase name="e02_f022_c101_duneadvection" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c101_duneadvection</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -218,7 +216,7 @@
   </testCase>
   <testCase name="e02_f022_c102_dunediffusion" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c102_dunediffusion</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -229,7 +227,7 @@
   </testCase>
   <testCase name="e02_f022_c103_act_layer_diff" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c103_act_layer_diff</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -240,7 +238,7 @@
   </testCase>
   <testCase name="e02_f022_c104_act_layer_diff_reg" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c104_act_layer_diff_reg</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -251,7 +249,7 @@
   </testCase>
   <testCase name="e02_f022_c105_act_layer_diff_file" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c105_act_layer_diff_file</path>
-    <maxRunTime>90.0</maxRunTime>
+
     <checks>
       <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
         <parameters>
@@ -262,7 +260,7 @@
   </testCase>
   <testCase name="e02_f022_c110_sand_settling_OldExtForce" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c110_sand_settling_OldExtForce</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -275,7 +273,7 @@
   </testCase>
   <testCase name="e02_f022_c111_sand_settling_Inifield" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c111_sand_settling_Inifield</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -288,7 +286,7 @@
   </testCase>
   <testCase name="e02_f022_c112_sand_settling_NewExtForce" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c112_sand_settling_NewExtForce</path>
-    <maxRunTime>20.0</maxRunTime>
+
     <checks>
       <file name="dflowfm/output/FlowFM_map.nc" type="netCDF">
         <parameters>

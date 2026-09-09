@@ -78,7 +78,7 @@
       <file name="rr/sobek_3b.rtn" type="NUMBERTEXT">
                 </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
@@ -145,7 +145,7 @@
                     </parameters>
                 </file>              
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase>
 		
 	-->
@@ -210,7 +210,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c04_450_gwpump" ref="drr_default">
@@ -274,7 +274,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c05_451_gwpump" ref="drr_default">
@@ -338,7 +338,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
@@ -406,7 +406,7 @@
                     </parameters>
                 </file>              
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase>
 		
 	-->
@@ -471,7 +471,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c08_454_transpiration" ref="drr_default">
@@ -535,7 +535,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c09_455_evaporation" ref="drr_default">
@@ -599,7 +599,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c10_456_transpiration_evaporation" ref="drr_default">
@@ -663,7 +663,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c11_457_rainfall" ref="drr_default">
@@ -727,7 +727,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c12_458_interflow" ref="drr_default">
@@ -791,7 +791,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c13_459_overland_flow" ref="drr_default">
@@ -855,7 +855,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c14_460_infiltration" ref="drr_default">
@@ -919,7 +919,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c15_461_infiltration" ref="drr_default">
@@ -983,7 +983,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c16_462_infiltration" ref="drr_default">
@@ -1047,7 +1047,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c17_463_infiltration" ref="drr_default">
@@ -1111,7 +1111,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c18_464_infiltration" ref="drr_default">
@@ -1175,7 +1175,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c19_465_infiltration" ref="drr_default">
@@ -1239,7 +1239,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c20_466_infiltration" ref="drr_default">
@@ -1303,7 +1303,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c21_467_infiltration" ref="drr_default">
@@ -1367,7 +1367,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c22_468_infiltration" ref="drr_default">
@@ -1431,7 +1431,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c23_469_correction_NH_distribution" ref="drr_default">
@@ -1495,7 +1495,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f02(dnam)_c24_470_correction_NH_distribution" ref="drr_default">
@@ -1559,7 +1559,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen		
@@ -1627,7 +1627,7 @@
                     </parameters>
                 </file>              
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase> 
 
 	-->
@@ -1695,7 +1695,7 @@
                     </parameters>
                 </file>              
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase> 
 		
 	-->
@@ -1763,7 +1763,7 @@
                     </parameters>
                 </file>              
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase> 
 
     -->
@@ -1828,7 +1828,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
 </testCases>

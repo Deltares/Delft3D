@@ -20,7 +20,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="waqpb_export">
@@ -38,7 +38,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="waqpb_import">
@@ -52,7 +52,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

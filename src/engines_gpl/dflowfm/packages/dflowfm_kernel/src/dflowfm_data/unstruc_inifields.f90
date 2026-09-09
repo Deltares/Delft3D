@@ -49,7 +49,6 @@ module unstruc_inifields
    public :: init1dField, spaceInit1dField, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             resolve_mass_balance_area_target, finish_mass_balance_area_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
 
@@ -472,8 +471,13 @@ contains
          goto 888
       end if
 
-      call check_file_tree_for_deprecated_keywords(field_ptr, deprecated_ext_keywords, istat, &
-                                                   prefix='While reading '''//trim(filename)//'''')
+      call check_file_tree_for_deprecated_keywords( &
+         field_ptr, &
+         deprecated_ext_keywords, &
+         istat, &
+         prefix='While reading '''//trim(filename)//'''', &
+         print_context_keywords=['quantity', 'dataFile'] &
+      )
       ! No errors
       write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, &
          ' [Branch] blocks have been read and handled.'
@@ -823,89 +827,6 @@ contains
       end select
    end function resolve_integer_target
 
-   !> Resolve a named mass-balance area and allocate a work array to hold the result of the polygon mask.
-   function resolve_mass_balance_area_target(qid, target_location_type, target_array) result(success)
-      use fm_external_forcings_utils, only: split_qid
-      use fm_location_types, only: UNC_LOC_S
-      use m_alloc, only: realloc, reallocP
-      use m_find_name, only: find_name
-      use m_flowgeom, only: ndx
-      use m_mass_balance_areas, only: mbaname, nomba
-      use m_missing, only: dmiss
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: qid !< quantity id to resolve.
-      integer, intent(out) :: target_location_type !< output target location type, always UNC_LOC_S for mass-balance areas.
-      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< output target array, to be allocated if target is mass-balance area.
-      logical :: success
-
-      character(len=256) :: qid_base, qid_specific
-      integer :: area_index
-
-      target_array => null()
-      target_location_type = 0
-      success = .false.
-
-      call split_qid(qid, qid_base, qid_specific)
-      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') then
-         return
-      end if
-
-      if (.not. allocated(mbaname)) allocate (mbaname(0))
-      area_index = find_name(mbaname, qid_specific)
-      if (area_index == 0) then
-         nomba = nomba + 1
-         call realloc(mbaname, nomba, keepExisting=.true., fill=qid_specific)
-      end if
-
-      target_location_type = UNC_LOC_S
-      call reallocP(target_array, ndx, fill=dmiss, keepExisting=.false.)
-      success = .true.
-   end function resolve_mass_balance_area_target
-
-   !> Convert a mass-balance area's temporary coverage field to integer area IDs.
-   function finish_mass_balance_area_target(qid, qid_base, qid_specific, target_array) result(success)
-      use m_find_name, only: find_name
-      use m_flowgeom, only: ndxi
-      use m_flowtimes, only: ti_mba
-      use m_get_kbot_ktop, only: getkbotktop
-      use m_mass_balance_areas, only: mbadef, mbaname
-      use m_missing, only: dmiss
-      use messageHandling, only: err_flush, msgbuf
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: qid !< full quantity id, e.g. 'waqmassbalanceareaarea1'.
-      character(len=*), intent(in) :: qid_base !< base quantity id, e.g. 'massbalancearea' or 'waqmassbalancearea'.
-      character(len=*), intent(in) :: qid_specific !< specific quantity id, e.g. 'area1'.
-      real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< input/output target array, to be converted to integer area IDs and then nullified.
-      logical :: success
-
-      integer :: area_index
-      integer :: kk, kb, kt
-
-      success = .false.
-      if (str_tolower(qid_base) /= 'massbalancearea' .and. str_tolower(qid_base) /= 'waqmassbalancearea') return
-
-      if (ti_mba <= 0.0_dp) then
-         write (msgbuf, '(a)') 'Quantity '''//qid//''' requires MbaInterval to be specified in the MDU file.'
-         call err_flush()
-         success = .false.
-      else
-         area_index = find_name(mbaname, qid_specific)
-         do kk = 1, ndxi
-            if (target_array(kk) /= dmiss) then
-               call getkbotktop(kk, kb, kt)
-               mbadef(kk) = area_index
-               mbadef(kb:kt) = area_index
-            end if
-         end do
-         success = .true.
-      end if
-
-      deallocate (target_array)
-      nullify (target_array)
-   end function finish_mass_balance_area_target
-
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
    function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
@@ -1141,7 +1062,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_GLOBAL
       use m_flow, only: frcu, cftrtfac, viusp, diusp, frcInternalTides2D, DissInternalTidesPerArea, frculin, Cdwusp, jacftrtfac
       use m_flowgeom, only: ndx, lnx, grounlay, jagrounlay
-      use m_flowparameters, only: jatrt, javiusp, jadiusp, jafrculin, jaCdwusp, jafrcInternalTides2D, ibedlevtyp, jawave, waveforcing
+      use m_flowparameters, only: jatrt, javiusp, jadiusp, jafrculin, jaCdwusp, jafrcInternalTides2D, ibedlevtyp, jawave
       use m_heatfluxes, only: spatial_secchi_depth
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1149,7 +1070,10 @@ contains
       use m_physcoef, only: dicoww, vicoww
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
+      use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+                    WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                    WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING, wave_input_is_required
+      use m_waves, only: offline_wave_input_requirements
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
       use fm_external_forcings_utils, only: split_qid
       use string_module, only: str_tolower
@@ -1166,6 +1090,7 @@ contains
       integer :: ierr
       character(len=idlen) :: qid_base, qid_specific
       integer :: index_waq_input
+      integer :: wave_input_flag
 
       call split_qid(qid, qid_base, qid_specific)
 
@@ -1314,7 +1239,8 @@ contains
          end if
          target_location_type = UNC_LOC_S
 
-      case ('wavesignificantheight', 'waveperiod', 'wavedirection')
+      case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'wavebreakerdissipation', &
+            'whitecappingdissipation', 'xwaveforce', 'ywaveforce', 'totalwaveenergydissipation')
          if (jawave /= WAVE_NC_OFFLINE) then
             write (msgbuf, '(a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
                '" requires WaveModelNr=', WAVE_NC_OFFLINE, '.'
@@ -1322,37 +1248,30 @@ contains
             success = .false.
             return
          end if
-         target_location_type = UNC_LOC_S
 
-      case ('wavebreakerdissipation', 'whitecappingdissipation')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
-            write (msgbuf, '(a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_DISSIPATION_3D, '.'
-            call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
+         select case (str_tolower(qid_base))
+         case ('wavesignificantheight')
+            wave_input_flag = WAVE_INPUT_SIGNIFICANT_HEIGHT
+         case ('waveperiod')
+            wave_input_flag = WAVE_INPUT_PERIOD
+         case ('wavedirection')
+            wave_input_flag = WAVE_INPUT_DIRECTION
+         case ('xwaveforce')
+            wave_input_flag = WAVE_INPUT_FORCE_X
+         case ('ywaveforce')
+            wave_input_flag = WAVE_INPUT_FORCE_Y
+         case ('totalwaveenergydissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_TOTAL
+         case ('wavebreakerdissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_SURFACE
+         case ('whitecappingdissipation')
+            wave_input_flag = WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+         end select
 
-      case ('xwaveforce', 'ywaveforce')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. &
-                    (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D))) then
-            write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_RADIATION_STRESS, &
-               ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+         if (.not. wave_input_is_required(offline_wave_input_requirements, wave_input_flag)) then
+            write (msgbuf, '(a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
+               '" is not required by the active offline wave configuration and will not be read during the simulation.'
             call warn_flush()
-            success = .false.
-            return
-         end if
-         target_location_type = UNC_LOC_S
-
-      case ('totalwaveenergydissipation')
-         if (.not. (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL)) then
-            write (msgbuf, '(a,i0,a,i0,a)') 'Reading '''//trim(inifilename)//''', quantity "'//trim(qid)// &
-               '" requires WaveModelNr=', WAVE_NC_OFFLINE, ' and WaveForcing=', WAVEFORCING_DISSIPATION_TOTAL, '.'
-            call warn_flush()
-            success = .false.
-            return
          end if
          target_location_type = UNC_LOC_S
 

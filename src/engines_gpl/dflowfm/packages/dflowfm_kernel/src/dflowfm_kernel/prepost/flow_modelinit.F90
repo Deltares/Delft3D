@@ -76,6 +76,7 @@ contains
       use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag, zws
       use m_flowtimes
       use m_laterals, only: numlatsg
+      use m_mass_balance_area, only: read_and_initialize_mass_balance_area
       use network_data, only: NETSTAT_CELLS_DIRTY
       use gridoperations, only: make1D2Dinternalnetlinks
       use m_partitioninfo
@@ -133,7 +134,7 @@ contains
       use m_flowparameters, only: map_write_settings
       use m_unc_flowgeom, only: build_flowgeom
       use m_unstruc_netcdf_data, only: flowgeom_map, flowgeom_full
-      use m_unstruc_model_data, only: md_map_output_polyfile
+      use m_unstruc_model_data, only: md_map_output_polyfile, md_mbafile
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -399,6 +400,10 @@ contains
          call fill_geometry_arrays_crs()
       end if
       call timstop(handle_extra(21)) ! end observations init
+
+      call timstrt('Mass balance area init', handle_extra(22)) ! mass balance area init
+      call read_and_initialize_mass_balance_area(md_mbafile)
+      call timstop(handle_extra(22)) ! end mass balance area init
 
       call timstrt('Ice init', handle_extra(84)) ! ice
       call fm_ice_alloc(ndx) ! needs to happen after flow_geominit to know ndx, but before flow_flowinit where we need the arrays for the external forcings

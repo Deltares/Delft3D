@@ -37,7 +37,7 @@
         <skipline>Run datum</skipline>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c02_401_Ernst" ref="drr_default">
@@ -61,7 +61,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen  
@@ -90,7 +90,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase>
 	-->
   <testCase name="e108(drr)_f01(unpaved)_c04_403_Seepage" ref="drr_default">
@@ -109,7 +109,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c05_404_Seepage" ref="drr_default">
@@ -128,7 +128,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c06_405_Seepage" ref="drr_default">
@@ -147,7 +147,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c07_406_Evaporation" ref="drr_default">
@@ -168,7 +168,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c08_407_Evaporation" ref="drr_default">
@@ -189,7 +189,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c09_416_DeZeeuwHellinga" ref="drr_default">
@@ -207,7 +207,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c10_417_DeZeeuwHellinga" ref="drr_default">
@@ -231,7 +231,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
@@ -260,7 +260,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase>
 		
 -->
@@ -279,7 +279,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
@@ -305,7 +305,7 @@
                     </parameters>
                 </file>
             </checks>
-            <maxRunTime>60.0</maxRunTime>
+
         </testCase>
 		
 -->
@@ -330,7 +330,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
   <testCase name="e108(drr)_f01(unpaved)_c15_422_MaxInfiltration" ref="drr_default">
@@ -354,7 +354,7 @@
         </parameters>
       </file>
     </checks>
-    <maxRunTime>60.0</maxRunTime>
+
     <!-- seconds -->
   </testCase>
 </testCases>

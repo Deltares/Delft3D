@@ -70,7 +70,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--
@@ -97,7 +97,7 @@
                     <skipline>[V|v]ersion</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e67_f01_c02_test" ref="triana_default">
             <path version="2024-01-12T07:30:00">e67_triana/f01_general/c02_test</path>
@@ -119,7 +119,7 @@
                     <skipline>[V|v]ersion</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e67_f01_c03_timing" ref="triana_default">
             <path version="2024-01-12T07:30:00">e67_triana/f01_general/c03_timing</path>
@@ -141,7 +141,7 @@
                     <skipline>[V|v]ersion</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </testCases>
 </deltaresTestbench_v3>

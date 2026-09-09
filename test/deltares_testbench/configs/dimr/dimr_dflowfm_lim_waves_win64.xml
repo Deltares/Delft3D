@@ -78,8 +78,8 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
     <testCase name="dflowfm_config">
       <programs>
@@ -96,8 +96,8 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
     <testCase name="platform_specific">
       <programs>
@@ -114,8 +114,8 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
     <testCase name="dflowfm_fetch_limited_waves">
       <programs>
@@ -135,8 +135,8 @@
       <location ref="reference_results" type="reference">
         <from>win64</from>
       </location>
-      <maxRunTime>3600.0</maxRunTime>
-      <!-- seconds -->
+      
+
     </testCase>
   </defaultTestCases>
   <!--

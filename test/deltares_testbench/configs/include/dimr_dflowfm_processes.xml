@@ -735,7 +735,7 @@
   </testCase>
   <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+
     <checks>
       <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">
         <parameters>
@@ -1480,6 +1480,7 @@
   </testCase>
   <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
+    <maxRunTime>600</maxRunTime>
     <programs>
       <program ref="dimr_plain" seq="1">
         <arguments>
@@ -1525,6 +1526,7 @@
   </testCase>
   <testCase name="e02_f030_c202_parallel_dredge_dump" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c202_parallel_dredge_dump</path>
+    <maxRunTime>600</maxRunTime>
     <programs>
       <program ref="dimr_plain" seq="1">
         <arguments>
@@ -1594,6 +1596,7 @@
   </testCase>
   <testCase name="e02_f030_c401_Course_tracers" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
@@ -1622,6 +1625,7 @@
   </testCase>
   <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
@@ -1640,6 +1644,7 @@
   </testCase>
   <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
