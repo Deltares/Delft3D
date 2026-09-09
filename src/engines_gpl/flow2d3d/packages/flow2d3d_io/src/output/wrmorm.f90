@@ -89,6 +89,8 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     real(fp)         , dimension(:,:)   , pointer :: mobile
     real(fp)         , dimension(:)     , pointer :: thclyr
     real(fp)         , dimension(:,:)   , pointer :: svfrac
+    real(fp)         , dimension(:,:)   , pointer :: td
+    real(fp)         , dimension(:,:)   , pointer :: preload
     real(fp)         , dimension(:,:,:) , pointer :: msed
     type (moroutputtype)                , pointer :: moroutput
     !
@@ -136,6 +138,8 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        if (istat==0) istat = bedcomp_getpointer_realfp(gdp%gdmorlyr,'dpsed',dpsed)
     case (2)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'svfrac',svfrac)
+       if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'td',td)
+       if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'preload',preload)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'msed',msed)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'thlyr',thlyr)
        if (crslyr) then
@@ -184,6 +188,12 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        endif
        if (iporos>0 .and. moroutput%poros) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EPSPOR', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Porosity coefficient', acl='z')
+       endif
+       if (moroutput%td .and. associated(td)) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TD', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Time of last load increment', unit='minutes', acl='z')
+       endif
+       if (moroutput%preload .and. associated(preload)) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'PRELOAD', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Largest load on layer', unit='kg/m2', acl='z')
        endif
        if (crslyr) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THTRLYR', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Thickness of transport layer')
@@ -381,6 +391,45 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
           if (ierror /= 0) goto 9999       
        endif
        !
+       ! element 'TD'
+       !
+       if (moroutput%td .and. associated(td)) then
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, nlyr) )
+          rbuff3(:, :, :) = -999.0_fp
+          do k = 1, nlyr
+             do m = 1, mmax
+                do n = 1, nmaxus
+                   call n_and_m_to_nm(n, m, nm, gdp)
+                   rbuff3(n, m, k) = td(k, nm)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, nlyr, &
+                        & ierror, lundia, rbuff3, 'TD')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999
+       endif
+       !
+       ! element 'PRELOAD'
+       !
+       if (moroutput%preload .and. associated(preload)) then
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, nlyr) )
+          rbuff3(:, :, :) = -999.0_fp
+          do k = 1, nlyr
+             do m = 1, mmax
+                do n = 1, nmaxus
+                   call n_and_m_to_nm(n, m, nm, gdp)
+                   rbuff3(n, m, k) = preload(k, nm)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, nlyr, &
+                        & ierror, lundia, rbuff3, 'PRELOAD')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999
+       endif
  9999  continue
        if (ierror/= 0) error = .true.
     endselect

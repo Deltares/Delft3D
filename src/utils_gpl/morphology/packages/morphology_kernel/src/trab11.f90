@@ -1,11 +1,3 @@
-module m_trab11
-   implicit none
-
-contains
-
-   subroutine trab11(u, v, hrms, h, tp, &
-                   & d50, npar, par, sbotx, sboty, &
-                   & ssusx, ssusy, ubot, vonkar, ubot_from_com)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -32,19 +24,23 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_trab11
+   implicit none
+   private
+   public trab11
+
+contains
+
+   subroutine trab11(u, v, hrms, h, tp, &
+                   & d50, npar, par, sbotx, sboty, &
+                   & ssusx, ssusy, ubot, vonkar, ubot_from_com)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! the transport formula of Soulsby / Van Rijn
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use mathconsts
-      !
-      implicit none
 !
 ! Arguments
 !
