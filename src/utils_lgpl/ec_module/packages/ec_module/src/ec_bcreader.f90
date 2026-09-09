@@ -530,10 +530,10 @@ contains
        case ('FACTOR')
           if (iq>0) cycle
           read(hdrvals(ifld)%s,*) bc%quantity%factor
-       case ('VERTICALPOSITION','VERTPOSITIONINDEX')
+       case ('VERTICALPOSITION','VERTPOSITIONINDEX','VERTICALPOSITIONINDEX')
           read(hdrvals(ifld)%s,*) il(iq)
           bc%quantity%vertndx = il(iq)                          ! layer this column belongs to, default 1
-       case ('VERTICALPOSITIONSPECIFICATION','VERTPOSITIONS')
+       case ('VERTICALPOSITIONSPECIFICATION','VERTPOSITIONS','VERTICALPOSITIONS')
           npos=0
           if (len_trim(hdrvals(ifld)%s)>0) then
              npos = count([(verify(hdrvals(ifld)%s(i:i),', ')>0   &
