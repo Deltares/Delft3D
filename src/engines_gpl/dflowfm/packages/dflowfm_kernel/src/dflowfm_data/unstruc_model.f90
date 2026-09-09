@@ -2435,6 +2435,10 @@ contains
             ti_mba = md_dt_waqbal
          end if
       end if
+      if (ti_mba > 0.0_dp .and. len_trim(md_mbafile) == 0 .and. len_trim(md_extfile) == 0) then
+         call mess(LEVEL_WARN, 'MbaInterval is positive, but no MbaFile was specified. Mass balance area output has been disabled.')
+         ti_mba = 0.0_dp
+      end if
       if (ti_mba > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
          if (ti_mba < md_dt_waqproc .or. modulo(ti_mba, md_dt_waqproc) /= 0.0_dp) then
             ti_mba = max(1, floor(ti_mba / md_dt_waqproc)) * dt_user
