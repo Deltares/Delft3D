@@ -96,7 +96,7 @@ class VerschilanalyseComparison:
             with path.open("rb") as stream:
                 try:
                     workbook = openpyxl.load_workbook(stream)
-                    try: 
+                    try:
                         result[key] = VerschillentoolOutput3D.from_verschillentool_workbook(workbook, output_type)
                     except TypeError:
                         # type error means there were not enough cells

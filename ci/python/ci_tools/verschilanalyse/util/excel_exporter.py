@@ -53,36 +53,34 @@ class ExcelExporter:
         stats: VerschillentoolOutput2D | VerschillentoolOutput3D,
         ndigits: int = 4,
     ) -> None:
-        sheet.append(
-            [
-                model_name,
-                stats.row_count,
-                round(stats.water_level.avg_max, ndigits=ndigits),
-                round(stats.water_level.avg_bias, ndigits=ndigits),
-                round(stats.water_level.avg_rms, ndigits=ndigits),
-                round(stats.water_level.max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_bias, ndigits=ndigits),
-                round(stats.flow_velocity.avg_rms, ndigits=ndigits),
-                round(stats.flow_velocity.max, ndigits=ndigits),
-                round(stats.salinity.avg_max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
-                round(stats.salinity.avg_bias, ndigits=ndigits)
-                if isinstance(stats, VerschillentoolOutput3D)
-                else "N/A",
-                round(stats.salinity.avg_rms, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
-                round(stats.salinity.max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
-                round(stats.temperature.avg_max, ndigits=ndigits)
-                if isinstance(stats, VerschillentoolOutput3D)
-                else "N/A",
-                round(stats.temperature.avg_bias, ndigits=ndigits)
-                if isinstance(stats, VerschillentoolOutput3D)
-                else "N/A",
-                round(stats.temperature.avg_rms, ndigits=ndigits)
-                if isinstance(stats, VerschillentoolOutput3D)
-                else "N/A",
-                round(stats.temperature.max, ndigits=ndigits) if isinstance(stats, VerschillentoolOutput3D) else "N/A",
+        new_row = [
+            model_name,
+            stats.row_count,
+            round(stats.water_level.avg_max, ndigits=ndigits),
+            round(stats.water_level.avg_bias, ndigits=ndigits),
+            round(stats.water_level.avg_rms, ndigits=ndigits),
+            round(stats.water_level.max, ndigits=ndigits),
+            round(stats.flow_velocity.avg_max, ndigits=ndigits),
+            round(stats.flow_velocity.avg_bias, ndigits=ndigits),
+            round(stats.flow_velocity.avg_rms, ndigits=ndigits),
+            round(stats.flow_velocity.max, ndigits=ndigits),
+        ]
+
+        if isinstance(stats, VerschillentoolOutput3D):
+            new_row += [
+                round(stats.salinity.avg_max, ndigits=ndigits),
+                round(stats.salinity.avg_bias, ndigits=ndigits),
+                round(stats.salinity.avg_rms, ndigits=ndigits),
+                round(stats.salinity.max, ndigits=ndigits),
+                round(stats.temperature.avg_max, ndigits=ndigits),
+                round(stats.temperature.avg_bias, ndigits=ndigits),
+                round(stats.temperature.avg_rms, ndigits=ndigits),
+                round(stats.temperature.max, ndigits=ndigits),
             ]
-        )
+        else:
+            new_row = ["N/A"] * 8
+
+        sheet.append(new_row)
 
         row = sheet[sheet.max_row]
         red_fill = cls._status_to_fill(Status.ERROR)
