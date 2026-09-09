@@ -189,9 +189,9 @@ class MapFlowVelocityTolerances:
 class MapSalinityTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
-    MAX: ClassVar[float] = 0.5  # 1e-3 ppt
-    RMS: ClassVar[float] = 0.1  # 1e-3 ppt
-    BIAS: ClassVar[float] = 0.05  # 1e-3 ppt
+    MAX: ClassVar[float] = 0.5  # ppt
+    RMS: ClassVar[float] = 0.1  # ppt
+    BIAS: ClassVar[float] = 0.05  # ppt
 
 
 class MapTemperatureTolerances:
