@@ -96,10 +96,11 @@ class VerschilanalyseComparison:
             with path.open("rb") as stream:
                 try:
                     workbook = openpyxl.load_workbook(stream)
-                    if "2d" in path.absolute().as_posix():
-                        result[key] = VerschillentoolOutput2D.from_verschillentool_workbook(workbook, output_type)
-                    else:
+                    try: 
                         result[key] = VerschillentoolOutput3D.from_verschillentool_workbook(workbook, output_type)
+                    except TypeError:
+                        # type error means there were not enough cells
+                        result[key] = VerschillentoolOutput2D.from_verschillentool_workbook(workbook, output_type)
                 except Exception as exc:
                     logging.warning("Invalid excel file: %s", path, exc_info=exc)
         if not result:

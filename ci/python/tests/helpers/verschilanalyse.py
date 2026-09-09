@@ -181,7 +181,7 @@ def make_verschillentool_workbook_3d(
         ["", "Time", "Maximum value over all times", "layers of max"],
         ["sea_surface_height (m)", "2-1-2035  11:00:00", water_level_stats.max, "2D variable"],
         ["sea_water_speed (m s-1)", "2-1-2035  06:00:00", flow_velocity_stats.max, "2D variable"],
-        ["sea_water_salinity (1e-3)", "2-1-2035  11:00:00", salinity_stats.max, "3D variable"],
+        ["sea_water_salinity (ptt)", "2-1-2035  11:00:00", salinity_stats.max, "3D variable"],
         ["sea_water_temperature (degC)", "2-1-2035  06:00:00", temperature_stats.max, "3D variable"],
     ]:
         maxima_sheet.append(row)
@@ -199,9 +199,9 @@ def make_verschillentool_workbook_3d(
         ["sea_water_temperature_bias (degC)", temperature_stats.avg_bias],
         ["sea_water_temperature_max (degC)", temperature_stats.avg_max],
         ["sea_water_temperature_rms (degC)", temperature_stats.avg_rms],
-        ["sea_water_salinity_bias (1e-3)", salinity_stats.avg_bias],
-        ["sea_water_salinity_max (1e-3)", salinity_stats.avg_max],
-        ["sea_water_salinity_rms (1e-3)", salinity_stats.avg_rms],
+        ["sea_water_salinity_bias (ptt)", salinity_stats.avg_bias],
+        ["sea_water_salinity_max (ptt)", salinity_stats.avg_max],
+        ["sea_water_salinity_rms (ptt)", salinity_stats.avg_rms],
     ]:
         averages_sheet.append(row)
 

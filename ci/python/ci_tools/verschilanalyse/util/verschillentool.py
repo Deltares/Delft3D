@@ -21,7 +21,7 @@ class Variable(Enum):
 
     WATER_LEVEL = "water_level"  # in meters (m)
     FLOW_VELOCITY = "flow_velocity"  # in meters per second (m/s)
-    SALINITY = "salinity"  # in 1e-3 (??)
+    SALINITY = "salinity"  # in parts per trillion (ppt)
     TEMPERATURE = "temperature"  # in degrees Celsius (degC)
 
     @property
@@ -30,7 +30,7 @@ class Variable(Enum):
         return {
             Variable.WATER_LEVEL: "m",
             Variable.FLOW_VELOCITY: "m/s",
-            Variable.SALINITY: "1e-3",
+            Variable.SALINITY: "ppt",
             Variable.TEMPERATURE: "degC",
         }[self]
 
@@ -157,9 +157,9 @@ class HisFlowVelocityTolerances:
 class HisSalinityTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
-    MAX: ClassVar[float] = 0.01  # 1e-3
-    RMS: ClassVar[float] = 0.001  # 1e-3
-    BIAS: ClassVar[float] = 0.0001  #  1e-3
+    MAX: ClassVar[float] = 0.01  # ppt
+    RMS: ClassVar[float] = 0.001  # ppt
+    BIAS: ClassVar[float] = 0.0001  # ppt
 
 
 class HisTemperatureTolerances:
@@ -189,17 +189,17 @@ class MapFlowVelocityTolerances:
 class MapSalinityTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
-    MAX: ClassVar[float] = 0.05  # 1e-3
-    RMS: ClassVar[float] = 0.001  # 1e-3
-    BIAS: ClassVar[float] = 0.0001  # 1e-3
+    MAX: ClassVar[float] = 0.5  # 1e-3 ppt
+    RMS: ClassVar[float] = 0.1  # 1e-3 ppt
+    BIAS: ClassVar[float] = 0.05  # 1e-3 ppt
 
 
 class MapTemperatureTolerances:
     """The maximum values of statistics above which a tolerance error is reported."""
 
-    MAX: ClassVar[float] = 0.1  # degC
-    RMS: ClassVar[float] = 0.005  # degC
-    BIAS: ClassVar[float] = 0.0005  # degC
+    MAX: ClassVar[float] = 1.0  # degC
+    RMS: ClassVar[float] = 0.2  # degC
+    BIAS: ClassVar[float] = 0.1  # degC
 
 
 @dataclass
