@@ -1,0 +1,234 @@
+999 80 ';'
+;DELWAQ_VERSION_4.910                        		; Delwaq version number
+;PRINT_OUTPUT_OPTION_4                       		; Debug level
+
+; TEMPLATE FILE FOR D-EMISSION 
+; First input block
+'D-Emission Model linked to WFLOW '
+' '
+' '
+INCLUDE '..\config\B1_timestamp.inc'
+
+ 8    0
+
+;Nr      Name        
+1       Dww      ;   Compartment: domestic wastewater
+2       Sew      ;   Compartment: mixed sewers
+3       Pav      ;   Compartment: impermeable surfaces
+4       Unp      ;   Compartment: permeable surfaces
+5       Stw      ;   Compartment: separated sewers
+6       Sfw      ;   Compartment: surface waters
+7       Soi      ;   Compartment: (active) soil system
+8       SoilPass                ; passive soil store 
+#1;
+
+;###############################################################################
+; Second input block
+      1 'DDHHMMSS' 'DDHHMMSS'  ; system clock
+      
+; The above sets the so-called processes time step to be 1 second
+; (as apposed to 1 day as in all common DELWAQ applications)
+; This should not be changed
+; It has no implications for the user
+
+     1.03                      ; integration option 
+   BAL_NOLUMPPROCESSES
+   BAL_NOLUMPLOADS
+   BAL_NOLUMPTRANSPORT
+   BAL_NOSUPPRESSSPACE
+   BAL_NOSUPPRESSTIME
+
+INCLUDE '..\config\B2_timers.inc'
+
+ 1                                                 	; Monitoring areas in this file
+
+INCLUDE '..\config\B2_nrofmon.inc'
+INCLUDE '..\config\B2_monareas.inc'
+INCLUDE '..\config\B2_stations.inc'
+
+ 2                                                 	; No monitoring cross areas
+
+INCLUDE '..\config\B2_outputtimes.inc'
+
+#2;
+;###############################################################################
+; Third input block
+
+; Name of coordinates file - conforming to UGRID conventions
+;UGRID '..\config\B3_waqgeom.nc'    SSIBREN this cused a problem which I could not resolve
+
+INCLUDE '..\config\B3_nrofseg.inc'
+
+
+      2                     ; grid layout not used
+      
+      0                     ; constant property arrays
+      0                     ; time varying property arrays
+
+ 
+      1                     ; volumes in this file
+      2                     ; constant with defaults
+      1.0                   ; scale factor
+      1.0                   ; default volume
+      0                     ; overrides
+
+#3;
+;###############################################################################
+; Fourth input block
+; 
+1 0 0 ; nr of exchanges
+      0                     ; # of dispersion arrays
+      0                     ; # of velocity arrays
+      1                     ; first form is used for input
+      1                     ; exchange pointers in this file
+0 0 0 0
+
+ 
+      1                     ; dispersions in this file
+     1.0      1.0     1.0   ; scale factors in 3 directions
+     0.0      0.0     0.0   ; values in 3 directions
+      1                     ; areas in this file
+      2                     ; constant, defaults
+     1.0      1.0           ; scale and value
+      0
+      
+      1                     ; flows in this file
+      2                     ; constant, defaults
+     1.0      0.0           ; scale and value
+      0
+     
+      0                     ; constant length
+     1.0                    ; scale factor
+     1.0      1.0     1.0   ; values in 3 directions
+
+#4;
+;###############################################################################
+; Fifth input block, water quality calculation
+
+
+#5;
+;###############################################################################
+; Sixth input block, Dry Waste Loads block
+; Number of loads (dummy value)
+0							; Number of loads
+
+#6;
+;###############################################################################
+; Seventh input block
+
+
+CONSTANTS Nothreads          DATA  1                       ; Nr of cores to be used (1 is recommended)
+CONSTANTS Only_Active        DATA  1                       ; Presence of this constant will avoid automatic activation of processes
+
+CONSTANTS Active_EM_GSS      DATA  1                       ; Presence of this constant activates D-Emissions main process
+  
+                                                           ; grid data from WFLOW (compulsory!), river cells and flow direction
+PARAMETERS River      ALL BINARY_FILE ..\staticdata\river.dat
+PARAMETERS Downstream ALL BINARY_FILE ..\staticdata\ptiddown.dat
+
+                                                           ; land use (compulsory!)
+INCLUDE '..\config\B7_geometry-parameters.inc'
+ALL BINARY_FILE '..\config\B7_geometry.bin'
+
+                                                           ; hydrology (compulsory!)
+INCLUDE '..\config\B7_hydrology.inc'
+ALL BINARY_FILE '..\dynamicdata\hydrology.bin'
+
+                                                           ; erosion (optioal, from wflow sediment model)
+INCLUDE '..\config\B7_sediment.inc'
+ALL BINARY_FILE '..\dynamicdata\sediment.dat'
+
+                                                           ; meteo (optional, from wflow model)
+INCLUDE '..\config\B7_climate.inc'
+ALL BINARY_FILE '..\dynamicdata\climate.dat'
+
+;=======================================================================================================
+; NOW FOLLOWS THE USER DEFINED INPUT DATA, BELOW THE OBLIGATORY INPUT                        
+; NOTE THAT D-EMISSIONS PROVIDES DEFAULTS FOR ALL INPUT ITEMS NOT LISTED BELOW
+; THESE DEFAULTS ARE HOWEVER NOT BY DEFINITION MEANINGFUL
+; SOME MEANINGLESS SOURCE INFORMATION IS ADDED SO THAT EVEN THIS TEMPLATE WILL PROVIDE SOME RESULTS
+;=======================================================================================================
+
+; releases TO BE ADDED
+
+; atmospheric deposition
+
+CONSTANTS EF_DDp   DATA       0.002     ; dry deposition rate                                    (g/m2/d)            
+CONSTANTS EF_WDp   DATA       0.300     ; wet deposition rate (concentration in rainfall)        (g/m3)              
+
+; source B01, mimicking population
+
+CONSTANTS EV_B01   DATA       10.       ; emission explaining variable, people per grid cell
+CONSTANTS EF_B01   DATA       0.009     ; emission factor in kg/d per EV unit
+CONSTANTS B01toWW  DATA       1.000     ; source allocated to wastewater, true destiation dependent on wastweater management
+
+	; management of wastewater and stormwater EXAMPLES
+
+	CONSTANTS FrSewered  DATA       0.80000     ; fraction WW    to sewer systems                        (-)                 
+	CONSTANTS FrRainSew  DATA       0.60000     ; fraction    SW to sewer systems                        (-)                 
+	CONSTANTS fComSew    DATA      0.700000     ; fraction of combined sewers                            (-)                 
+
+	CONSTANTS SewLeakage DATA       0.02000     ; sewer leakage / CSO definition                         (- or mm)           
+	CONSTANTS FrTreat1   DATA       0.30000     ; fraction WW primary treated                            (-)                 
+	CONSTANTS FrTreat2   DATA       0.60000     ; fraction WW secondary treated                          (-)                 
+	CONSTANTS FrTreat3   DATA       0.00000     ; fraction WW tertiary treated                           (-)                 
+	CONSTANTS Eff_Treat1 DATA       0.40000     ; fracion to effluent for primary treatment              (-)                 
+	CONSTANTS Eff_Treat2 DATA       0.10000     ; fracion to effluent for secondary treatment            (-)                 
+	CONSTANTS Eff_Treat3 DATA       0.10000     ; fracion to effluent for tertiary treatment             (-)                 
+	CONSTANTS Sld_Treat1 DATA       0.50000     ; fracion to sludge for primary treatment                (-)                 
+	CONSTANTS Sld_Treat2 DATA       0.30000     ; fracion to sludge for secondary treatment              (-)                 
+	CONSTANTS Sld_Treat3 DATA       0.30000     ; fracion to sludge for tertiary treatment               (-)                 
+
+	CONSTANTS Eff_RS     DATA       0.90000     ; Fraction to effluent of rain sewers influent           (-)                 
+	CONSTANTS Sld_RS     DATA       0.10000     ; Fraction to sludge   of rain sewers influent           (-)                 
+
+	; Pathways in the environment TO BE ADDED
+
+	CONSTANTS kBurial    DATA       0.02000     ; burial rate of unpaved pool                            (-)                 
+	CONSTANTS DecPav     DATA       0.01000     ; decay rate paved                                       (/d)                
+	CONSTANTS DecUnp     DATA       0.03000     ; decay rate unpaved                                     (/d)                
+	CONSTANTS KdUnpa     DATA       1.00000     ; fraction of bound vs unbound                           (-)                 
+	CONSTANTS DecSoi     DATA       0.01000     ; decay rate soils                                       (/d)                
+	CONSTANTS KdSoi      DATA       1.00000     ; fraction of bound vs unbound                           (-)                 
+	CONSTANTS CBack      DATA       0.00200     ; Concentration from pas
+                                                           ; definition of soil system (compulsory)
+PARAMETERS SoilThick     ALL BINARY_FILE ..\staticdata\soilthickness.dat 
+PARAMETERS SoilPoros     ALL BINARY_FILE ..\staticdata\porosity.dat 
+
+; SUPPORTIVE: initialize soil 
+
+CONSTANTS  Active_InitSoi       DATA  1      ; presence of this constant activates soil initialization
+CONSTANTS  QTopSoil             DATA  3.0    ; initial top soil concentration
+CONSTANTS  FracPass             DATA  1.0    ; fraction to be allocated to the passive pool
+
+
+#7
+;###############################################################################
+; Eighth input block
+
+INITIALS  Dww Sew Pav Unp Stw Sfw Soi Soilpass DEFAULTS  8*0.0
+
+ 
+#8
+;###############################################################################
+; Ninth input block
+ 1                                           		; Conditions follow in this file
+ 1                                           		; Monitor-file
+ 0                                           		; Grid-file
+ 2                                                      ; His-file; all pools + user defined output
+ 0                                                      ; count of user defined output
+ 3                                                      ; Map-file only user defined output
+ 0                                                      ; count of user defined output
+ 
+
+ ; formats of History/Map
+ 1                                           		; switch on  binary History file
+ 1                                           		; switch on  binary Map     file
+ 0                                           		; not used
+ 0                                           		; switch off NetCDF Map     file
+#9
+;###############################################################################
+; Tenth input block
+
+
+#10

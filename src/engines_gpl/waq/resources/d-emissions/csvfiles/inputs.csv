@@ -1,0 +1,305 @@
+inpupr,inpuit,inpunm,inpude,inpudo,inpusx
+"EMEP_Nit  ","DDp_Nox   ",   1,"N","x",1
+"EMEP_Nit  ","DDp_Nred  ",   2,"N","x",1
+"EMEP_Nit  ","WDp_Nox   ",   3,"N","x",1
+"EMEP_Nit  ","WDp_Nred  ",   4,"N","x",1
+"EMEP_Nit  ","WDp_Rain  ",   5,"N","x",1
+"EMEP_Nit  ","ScalDum   ",   6,"Y"," ",1
+"Soil_Pho  ","pho_tot   ",   1,"N","x",1
+"Soil_Pho  ","pho_lab   ",   2,"N","x",1
+"Soil_Pho  ","PDatThick ",   3,"Y","x",1
+"Soil_Pho  ","SoilPoros ",   4,"Y","x",1
+"Soil_Pho  ","RhoDM     ",   5,"Y","x",1
+"Soil_Nit  ","nit_layer1",   1,"N","x",1
+"Soil_Nit  ","nit_layer2",   2,"N","x",1
+"Soil_Nit  ","nit_layer3",   3,"Y","x",1
+"Soil_Nit  ","fac_layer1",   4,"Y","x",1
+"Soil_Nit  ","fac_layer2",   5,"Y","x",1
+"Soil_Nit  ","fac_layer3",   6,"Y","x",1
+"InitSoi   ","DELT      ",   1,"N","x",1
+"InitSoi   ","fUnpaved  ",   2,"N","x",1
+"InitSoi   ","SoilThick ",   3,"Y","x",1
+"InitSoi   ","SoilPoros ",   4,"Y","x",1
+"InitSoi   ","RhoDM     ",   5,"Y","x",1
+"InitSoi   ","QTopSoil  ",   6,"N","x",1
+"InitSoi   ","TotArea   ",   7,"N","x",1
+"InitSoi   ","FracPass  ",   8,"Y","x",1
+"InitSoi   ","Soi       ",   9,"N","x",1
+"InitSoi   ","SoilPass  ",  10,"N","x",1
+"SetFate   ","DecPav20  ",   1,"N","x",1
+"SetFate   ","DecUnp20  ",   2,"N","x",1
+"SetFate   ","DecSoi20  ",   3,"Y","x",1
+"SetFate   ","KdUnpa20  ",   4,"N","x",1
+"SetFate   ","KdSoi20   ",   5,"N","x",1
+"SetFate   ","DecPavThet",   6,"Y","x",1
+"SetFate   ","DecUnpThet",   7,"Y","x",1
+"SetFate   ","DecSoiThet",   8,"Y","x",1
+"SetFate   ","KdUnpaThet",   9,"Y","x",1
+"SetFate   ","KdSoiThet ",  10,"Y","x",1
+"SetFate   ","Tempair   ",  11,"Y","x",1
+"SetSoiKd  ","SoilPoros ",   1,"Y","x",1
+"SetSoiKd  ","RhoDM     ",   2,"Y","x",1
+"SetSoiKd  ","SoilOM    ",   3,"Y","x",1
+"SetSoiKd  ","SoilKd    ",   4,"O","x",1
+"SetSoiKd  ","SoilKoc   ",   5,"O","x",1
+"EM_GSS    ","nsrca     ",   1,"Y","x",1
+"EM_GSS    ","nsrcb     ",   2,"Y","x",1
+"EM_GSS    ","nreceptor ",   3,"Y","x",1
+"EM_GSS    ","DELT      ",   4,"N","x",1
+"EM_GSS    ","ITIME     ",   5,"N","x",1
+"EM_GSS    ","TotArea   ",   6,"N","x",1
+"EM_GSS    ","fPaved    ",   7,"N","x",1
+"EM_GSS    ","fUnpaved  ",   8,"N","x",1
+"EM_GSS    ","fOpenWater",   9,"N","x",1
+"EM_GSS    ","Rainfall  ",  10,"N","x",1
+"EM_GSS    ","RunoffPav ",  11,"N","x",1
+"EM_GSS    ","RunoffUnp ",  12,"N","x",1
+"EM_GSS    ","Infiltr   ",  13,"N","x",1
+"EM_GSS    ","FacErod   ",  14,"Y","x",1
+"EM_GSS    ","ErodIM1   ",  15,"Y","x",1
+"EM_GSS    ","ErodIM2   ",  16,"Y","x",1
+"EM_GSS    ","ErodIM3   ",  17,"Y","x",1
+"EM_GSS    ","fComSew   ",  18,"Y","x",1
+"EM_GSS    ","SewLeakage",  19,"Y","x",1
+"EM_GSS    ","SoilThick ",  20,"Y","x",1
+"EM_GSS    ","SoilPoros ",  21,"Y","x",1
+"EM_GSS    ","kBurial   ",  22,"Y","x",1
+"EM_GSS    ","DecPav    ",  23,"Y","x",1
+"EM_GSS    ","DecUnp    ",  24,"Y","x",1
+"EM_GSS    ","KdUnpa    ",  25,"Y","x",1
+"EM_GSS    ","DecSoi    ",  26,"Y","x",1
+"EM_GSS    ","ImmoSoi   ",  27,"Y","x",1
+"EM_GSS    ","KdSoi     ",  28,"Y","x",1
+"EM_GSS    ","ro_lothr  ",  29,"Y","x",1
+"EM_GSS    ","ro_hithr  ",  30,"Y","x",1
+"EM_GSS    ","ra_lothr  ",  31,"Y","x",1
+"EM_GSS    ","ra_hithr  ",  32,"Y","x",1
+"EM_GSS    ","disp_hithr",  33,"Y","x",1
+"EM_GSS    ","EF_DDp    ",  34,"Y","x",1
+"EM_GSS    ","EF_WDp    ",  35,"Y","x",1
+"EM_GSS    ","Eff_RS    ",  36,"Y","x",1
+"EM_GSS    ","Sld_RS    ",  37,"Y","x",1
+"EM_GSS    ","FrRainSew ",  38,"Y","x",1
+"EM_GSS    ","RhoDM     ",  39,"Y","x",1
+"EM_GSS    ","SoilPass  ",  40,"Y","x",1
+"EM_GSS    ","Population",  41,"Y","x",1
+"EM_GSS    ","PCWastWat ",  42,"Y","x",1
+"EM_GSS    ","FrSewered ",  43,"Y","x",1
+"EM_GSS    ","FrSldgRem ",  44,"Y","x",1
+"EM_GSS    ","FrSeptic  ",  45,"Y","x",1
+"EM_GSS    ","FrTreat1  ",  46,"Y","x",1
+"EM_GSS    ","FrTreat2  ",  47,"Y","x",1
+"EM_GSS    ","FrTreat3  ",  48,"Y","x",1
+"EM_GSS    ","Eff_Septic",  49,"Y","x",1
+"EM_GSS    ","Eff_Treat1",  50,"Y","x",1
+"EM_GSS    ","Eff_Treat2",  51,"Y","x",1
+"EM_GSS    ","Eff_Treat3",  52,"Y","x",1
+"EM_GSS    ","Sld_Septic",  53,"Y","x",1
+"EM_GSS    ","Sld_Treat1",  54,"Y","x",1
+"EM_GSS    ","Sld_Treat2",  55,"Y","x",1
+"EM_GSS    ","Sld_Treat3",  56,"Y","x",1
+"EM_GSS    ","Exfiltr   ",  57,"N","x",1
+"EM_GSS    ","River     ",  58,"N","x",1
+"EM_GSS    ","Downstream",  59,"N","x",1
+"EM_GSS    ","over_hithr",  60,"Y","x",1
+"EM_GSS    ","Subsurface",  61,"N","x",1
+"EM_GSS    ","Overland  ",  62,"N","x",1
+"EM_GSS    ","CBack     ",  63,"Y","x",1
+"EM_GSS    ","EV_A01    ",  64,"Y","x",1
+"EM_GSS    ","LOC_A01   ",  65,"Y","x",1
+"EM_GSS    ","EF_A01    ",  66,"Y","x",1
+"EM_GSS    ","A01toWW   ",  67,"Y","x",1
+"EM_GSS    ","A01toSew  ",  68,"Y","x",1
+"EM_GSS    ","A01toPav  ",  69,"Y","x",1
+"EM_GSS    ","A01toUnp  ",  70,"Y","x",1
+"EM_GSS    ","A01toStw  ",  71,"Y","x",1
+"EM_GSS    ","A01toSfw  ",  72,"Y","x",1
+"EM_GSS    ","A01toSoi  ",  73,"Y","x",1
+"EM_GSS    ","EV_B01    ",  74,"Y","x",1
+"EM_GSS    ","EF_B01    ",  75,"Y","x",1
+"EM_GSS    ","B01toWW   ",  76,"Y","x",1
+"EM_GSS    ","B01toSew  ",  77,"Y","x",1
+"EM_GSS    ","B01toPav  ",  78,"Y","x",1
+"EM_GSS    ","B01toUnp  ",  79,"Y","x",1
+"EM_GSS    ","B01toStw  ",  80,"Y","x",1
+"EM_GSS    ","B01toSfw  ",  81,"Y","x",1
+"EM_GSS    ","B01toSoi  ",  82,"Y","x",1
+"EM_GSS    ","EV_B02    ",  83,"Y","x",1
+"EM_GSS    ","EF_B02    ",  84,"Y","x",1
+"EM_GSS    ","B02toWW   ",  85,"Y","x",1
+"EM_GSS    ","B02toSew  ",  86,"Y","x",1
+"EM_GSS    ","B02toPav  ",  87,"Y","x",1
+"EM_GSS    ","B02toUnp  ",  88,"Y","x",1
+"EM_GSS    ","B02toStw  ",  89,"Y","x",1
+"EM_GSS    ","B02toSfw  ",  90,"Y","x",1
+"EM_GSS    ","B02toSoi  ",  91,"Y","x",1
+"EM_GSS    ","EV_B03    ",  92,"Y","x",1
+"EM_GSS    ","EF_B03    ",  93,"Y","x",1
+"EM_GSS    ","B03toWW   ",  94,"Y","x",1
+"EM_GSS    ","B03toSew  ",  95,"Y","x",1
+"EM_GSS    ","B03toPav  ",  96,"Y","x",1
+"EM_GSS    ","B03toUnp  ",  97,"Y","x",1
+"EM_GSS    ","B03toStw  ",  98,"Y","x",1
+"EM_GSS    ","B03toSfw  ",  99,"Y","x",1
+"EM_GSS    ","B03toSoi  ", 100,"Y","x",1
+"EM_GSS    ","EV_B04    ", 101,"Y","x",1
+"EM_GSS    ","EF_B04    ", 102,"Y","x",1
+"EM_GSS    ","B04toWW   ", 103,"Y","x",1
+"EM_GSS    ","B04toSew  ", 104,"Y","x",1
+"EM_GSS    ","B04toPav  ", 105,"Y","x",1
+"EM_GSS    ","B04toUnp  ", 106,"Y","x",1
+"EM_GSS    ","B04toStw  ", 107,"Y","x",1
+"EM_GSS    ","B04toSfw  ", 108,"Y","x",1
+"EM_GSS    ","B04toSoi  ", 109,"Y","x",1
+"EM_GSS    ","EV_B05    ", 110,"Y","x",1
+"EM_GSS    ","EF_B05    ", 111,"Y","x",1
+"EM_GSS    ","B05toWW   ", 112,"Y","x",1
+"EM_GSS    ","B05toSew  ", 113,"Y","x",1
+"EM_GSS    ","B05toPav  ", 114,"Y","x",1
+"EM_GSS    ","B05toUnp  ", 115,"Y","x",1
+"EM_GSS    ","B05toStw  ", 116,"Y","x",1
+"EM_GSS    ","B05toSfw  ", 117,"Y","x",1
+"EM_GSS    ","B05toSoi  ", 118,"Y","x",1
+"EM_GSS    ","EV_B06    ", 119,"Y","x",1
+"EM_GSS    ","EF_B06    ", 120,"Y","x",1
+"EM_GSS    ","B06toWW   ", 121,"Y","x",1
+"EM_GSS    ","B06toSew  ", 122,"Y","x",1
+"EM_GSS    ","B06toPav  ", 123,"Y","x",1
+"EM_GSS    ","B06toUnp  ", 124,"Y","x",1
+"EM_GSS    ","B06toStw  ", 125,"Y","x",1
+"EM_GSS    ","B06toSfw  ", 126,"Y","x",1
+"EM_GSS    ","B06toSoi  ", 127,"Y","x",1
+"EM_GSS    ","EV_B07    ", 128,"Y","x",1
+"EM_GSS    ","EF_B07    ", 129,"Y","x",1
+"EM_GSS    ","B07toWW   ", 130,"Y","x",1
+"EM_GSS    ","B07toSew  ", 131,"Y","x",1
+"EM_GSS    ","B07toPav  ", 132,"Y","x",1
+"EM_GSS    ","B07toUnp  ", 133,"Y","x",1
+"EM_GSS    ","B07toStw  ", 134,"Y","x",1
+"EM_GSS    ","B07toSfw  ", 135,"Y","x",1
+"EM_GSS    ","B07toSoi  ", 136,"Y","x",1
+"EM_GSS    ","EV_B08    ", 137,"Y","x",1
+"EM_GSS    ","EF_B08    ", 138,"Y","x",1
+"EM_GSS    ","B08toWW   ", 139,"Y","x",1
+"EM_GSS    ","B08toSew  ", 140,"Y","x",1
+"EM_GSS    ","B08toPav  ", 141,"Y","x",1
+"EM_GSS    ","B08toUnp  ", 142,"Y","x",1
+"EM_GSS    ","B08toStw  ", 143,"Y","x",1
+"EM_GSS    ","B08toSfw  ", 144,"Y","x",1
+"EM_GSS    ","B08toSoi  ", 145,"Y","x",1
+"EM_GSS    ","EV_B09    ", 146,"Y","x",1
+"EM_GSS    ","EF_B09    ", 147,"Y","x",1
+"EM_GSS    ","B09toWW   ", 148,"Y","x",1
+"EM_GSS    ","B09toSew  ", 149,"Y","x",1
+"EM_GSS    ","B09toPav  ", 150,"Y","x",1
+"EM_GSS    ","B09toUnp  ", 151,"Y","x",1
+"EM_GSS    ","B09toStw  ", 152,"Y","x",1
+"EM_GSS    ","B09toSfw  ", 153,"Y","x",1
+"EM_GSS    ","B09toSoi  ", 154,"Y","x",1
+"EM_GSS    ","EV_B10    ", 155,"Y","x",1
+"EM_GSS    ","EF_B10    ", 156,"Y","x",1
+"EM_GSS    ","B10toWW   ", 157,"Y","x",1
+"EM_GSS    ","B10toSew  ", 158,"Y","x",1
+"EM_GSS    ","B10toPav  ", 159,"Y","x",1
+"EM_GSS    ","B10toUnp  ", 160,"Y","x",1
+"EM_GSS    ","B10toStw  ", 161,"Y","x",1
+"EM_GSS    ","B10toSfw  ", 162,"Y","x",1
+"EM_GSS    ","B10toSoi  ", 163,"Y","x",1
+"EM_GSS    ","EV_B11    ", 164,"Y","x",1
+"EM_GSS    ","EF_B11    ", 165,"Y","x",1
+"EM_GSS    ","B11toWW   ", 166,"Y","x",1
+"EM_GSS    ","B11toSew  ", 167,"Y","x",1
+"EM_GSS    ","B11toPav  ", 168,"Y","x",1
+"EM_GSS    ","B11toUnp  ", 169,"Y","x",1
+"EM_GSS    ","B11toStw  ", 170,"Y","x",1
+"EM_GSS    ","B11toSfw  ", 171,"Y","x",1
+"EM_GSS    ","B11toSoi  ", 172,"Y","x",1
+"EM_GSS    ","EV_B12    ", 173,"Y","x",1
+"EM_GSS    ","EF_B12    ", 174,"Y","x",1
+"EM_GSS    ","B12toWW   ", 175,"Y","x",1
+"EM_GSS    ","B12toSew  ", 176,"Y","x",1
+"EM_GSS    ","B12toPav  ", 177,"Y","x",1
+"EM_GSS    ","B12toUnp  ", 178,"Y","x",1
+"EM_GSS    ","B12toStw  ", 179,"Y","x",1
+"EM_GSS    ","B12toSfw  ", 180,"Y","x",1
+"EM_GSS    ","B12toSoi  ", 181,"Y","x",1
+"EM_GSS    ","Dww       ", 182,"N","x",1
+"EM_GSS    ","Sew       ", 183,"N","x",1
+"EM_GSS    ","Pav       ", 184,"N","x",1
+"EM_GSS    ","Unp       ", 185,"N","x",1
+"EM_GSS    ","Stw       ", 186,"N","x",1
+"EM_GSS    ","Sfw       ", 187,"N","x",1
+"EM_GSS    ","Soi       ", 188,"N","x",1
+"TempDifInf","noexF1toW ",   1,"Y","x",1
+"TempDifInf","noexF2toW ",   2,"Y","x",1
+"TempDifInf","Tempair   ",   3,"N","x",1
+"TempDifInf","Volume    ",   4,"N","x",1
+"TempDifInf","CloudFrac ",   5,"N","x",1
+"TempDifInf","AvPerDifT1",   6,"Y","x",1
+"TempDifInf","TempWrk1  ",   7,"N","x",1
+"TempDifInf","AvPerDifT2",   8,"Y","x",1
+"TempDifInf","TempWrk2  ",   9,"N","x",1
+"TempDifInf","DELT      ",  10,"N"," ",1
+"TempDifInf","TemMin    ",  11,"Y"," ",1
+"TempDifInf","FLOW      ",  12,"N","x",0
+"WFLOW_Hydr","Volume    ",   1,"N","x",1
+"WFLOW_Hydr","Surf      ",   2,"N","x",1
+"WFLOW_Hydr","Riverlen  ",   3,"N","x",1
+"WFLOW_Hydr","Chezy     ",   4,"Y"," ",1
+"WFLOW_Hydr","FLOW      ",   5,"N","x",0
+"SedimLink ","Volume    ",   1,"N","x",1
+"SedimLink ","FacErod   ",   2,"Y","x",1
+"SedimLink ","ErodIM1   ",   3,"Y","x",1
+"SedimLink ","ErodIM2   ",   4,"Y","x",1
+"SedimLink ","ErodIM3   ",   5,"Y","x",1
+"SedimLink ","ErodIM4   ",   6,"Y","x",1
+"SedimLink ","ErodIM5   ",   7,"Y","x",1
+"SedimLink ","ErodIM6   ",   8,"Y","x",1
+"EM_BOD    ","Volume    ",   1,"N","x",1
+"EM_BOD    ","EmisWBOD  ",   2,"N","x",1
+"EM_BOD    ","nUSEBOD   ",   3,"Y"," ",1
+"EM_BOD    ","BODtoCBODu",   4,"Y","x",1
+"EM_BOD    ","dummyUSEF ",   5,"Y"," ",1
+"EM_BOD    ","dummyUSEF ",   6,"Y"," ",1
+"EM_BOD    ","dummyUSEF ",   7,"Y"," ",1
+"EM_BOD    ","dummyUSEF ",   8,"Y"," ",1
+"EM_TNI    ","Volume    ",   1,"N","x",1
+"EM_TNI    ","EmisWTNI  ",   2,"N","x",1
+"EM_TNI    ","nUSETNI   ",   3,"Y"," ",1
+"EM_TNI    ","TNItoNH4  ",   4,"Y","x",1
+"EM_TNI    ","TNItoNO3  ",   5,"Y","x",1
+"EM_TNI    ","TNItoPON1 ",   6,"Y","x",1
+"EM_TNI    ","TNItoPON2 ",   7,"Y","x",1
+"EM_TNI    ","TNItoDON  ",   8,"Y","x",1
+"EM_TPH    ","Volume    ",   1,"N","x",1
+"EM_TPH    ","EmisWTPH  ",   2,"N","x",1
+"EM_TPH    ","nUSETPH   ",   3,"Y"," ",1
+"EM_TPH    ","TPHtoPO4  ",   4,"Y","x",1
+"EM_TPH    ","TPHtoAAP  ",   5,"Y","x",1
+"EM_TPH    ","TPHtoPOP1 ",   6,"Y","x",1
+"EM_TPH    ","TPHtoPOP2 ",   7,"Y","x",1
+"EM_TPH    ","TPHtoDOP  ",   8,"Y","x",1
+"EM_TSS    ","Volume    ",   1,"N","x",1
+"EM_TSS    ","EmisWTSS  ",   2,"N","x",1
+"EM_TSS    ","nUSETSS   ",   3,"Y"," ",1
+"EM_TSS    ","TSStoIM1  ",   4,"Y","x",1
+"EM_TSS    ","TSStoIM2  ",   5,"Y","x",1
+"EM_TSS    ","TSStoIM3  ",   6,"Y","x",1
+"EM_TSS    ","dummyUSEF ",   7,"Y"," ",1
+"EM_TSS    ","dummyUSEF ",   8,"Y"," ",1
+"EM_COL    ","Volume    ",   1,"N","x",1
+"EM_COL    ","EmisWCOL  ",   2,"N","x",1
+"EM_COL    ","nUSECOL   ",   3,"Y"," ",1
+"EM_COL    ","COLtoEColi",   4,"Y","x",1
+"EM_COL    ","COLtoFColi",   5,"Y","x",1
+"EM_COL    ","COLtoTColi",   6,"Y","x",1
+"EM_COL    ","dummyUSEF ",   7,"Y"," ",1
+"EM_COL    ","dummyUSEF ",   8,"Y"," ",1
+"EM_TRA    ","Volume    ",   1,"N","x",1
+"EM_TRA    ","EmisWTRA  ",   2,"N","x",1
+"EM_TRA    ","nUSETRA   ",   3,"Y"," ",1
+"EM_TRA    ","TRAtocTR1 ",   4,"Y","x",1
+"EM_TRA    ","TRAtodTR1 ",   5,"Y","x",1
+"EM_TRA    ","TRAtocTR2 ",   6,"Y","x",1
+"EM_TRA    ","TRAtodTR2 ",   7,"Y","x",1
+"EM_TRA    ","dummyUSEF ",   8,"Y"," ",1

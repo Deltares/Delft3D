@@ -63,3 +63,11 @@ install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
 install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/bloom.spe DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.dat DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/d-emissions/em_proc_def.dat DESTINATION share/d-emissions)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/d-emissions/em_proc_def.def DESTINATION share/d-emissions)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/d-emissions)
