@@ -1,6 +1,3 @@
-# Generated on 2025-11-21 15:55:13
-# Deltares, Plugin D-FLOW FM Version 4.18.0.9276, D-Flow FM Version Deltares, D-Flow FM1.2.184.057d2f7ceeafda462a1b4e598efa4ce4f0c97cc5
-
 [General]
 Program                           = D-Flow FM                                                           # Program name
 Version                           = Deltares, D-Flow FM1.2.184.057d2f7ceeafda462a1b4e598efa4ce4f0c97cc5 # FM kernel Version
@@ -46,7 +43,7 @@ Nonlin2D                          = 0                                           
 Bamin                             = 1E-06                                                               # Minimum grid cell area, in combination with cut cells
 OpenBoundaryTolerance             = 3                                                                   # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                                                                   # Renumber the flow nodes (1: yes, 0: no)
-UseCaching                        = 1                                                                   # Use caching of flow model geometry input (1: yes, 0: no)
+UseCaching                        = 0                                                                   # Use caching of flow model geometry input (1: yes, 0: no)
 
 [numerics]
 CFLMax                            = 0.7                                                                 # Maximum Courant number
@@ -67,12 +64,9 @@ Lincontin                         =                                             
 Jaembed1D                         =                                                                     # 1 : use embedded 1d channels, first run: Operations: Embed 1D channels
 Chkadvd                           = 0.1                                                                 # Check advection terms if depth < chkadvdp, => less setbacks
 Teta0                             = 0.55                                                                # Theta of time integration (0.5 < theta < 1)
-Maxitverticalforester             =                                                                     # 0 : no vertical filter, > 0 = Max nr of iterations
 TimeStepType                      = 2                                                                   # Time step handling (0: only transport, 1: transport + velocity update, 2: full implicit step-reduce, 3: step-Jacobi, 4: explicit)
 FixedWeirRelaxationcoef           = 0.6                                                                 # Fixed weir relaxation coefficient for the computation of energy loss (0 <= coefficient <= 1)
 cstbnd                            = 0                                                                   # Delft3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)
-Maxitverticalforestersal          = 0                                                                   # Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)
-Maxitverticalforestertem          = 0                                                                   # Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)
 Turbulencemodel                   = 3                                                                   # Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau)
 Turbulenceadvection               = 3                                                                   # Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)
 AntiCreep                         = 0                                                                   # Include anti-creep calculation (0: no, 1: yes)
@@ -83,7 +77,6 @@ Epshu                             = 0.0001                                      
 [physics]
 UnifFrictCoef                     = 65                                                                  # Uniform friction coefficient (0: no friction)
 UnifFrictType                     = 0                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
-Umodlin                           = 1                                                                   # Linear friction umod, for ifrctyp=4,5,6
 Vicouv                            = 2                                                                   # Uniform horizontal eddy viscosity
 Dicouv                            = 10                                                                  # Uniform horizontal eddy diffusivity
 Vicoww                            = 1E-06                                                               # Uniform vertical eddy viscosity

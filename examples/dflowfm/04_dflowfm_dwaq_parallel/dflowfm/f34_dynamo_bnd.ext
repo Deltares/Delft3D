@@ -1,5 +1,5 @@
 [General]
-fileVersion = 2.02
+fileVersion = 3.00
 fileType    = extForce
 
 [Spatial]
@@ -98,7 +98,7 @@ quantity     = tracerbndGreen
 locationFile = f34_NE_Green.pli
 forcingFile  = f34_NE_Green.bc
 
-[Meteo]
+[Spatial]
 quantity            = windxy
 forcingFile         = f34.wnd
 forcingFileType     = uniMagDir

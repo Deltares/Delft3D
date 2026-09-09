@@ -1,6 +1,3 @@
-# Generated on 2020-07-09 11:48:08
-# Deltares, Delft3D FM 2018 Suite Version 1.6.2.49199, D-Flow FM Version 1.2.94.66020M
-
 [General]
 Program                           = D-Flow FM       # Program name
 Version                           = 1.2.94.66020M   # FM kernel Version
@@ -65,8 +62,6 @@ Slopedrop2D                       = 0               # Apply drop losses only if 
 Chkadvd                           = 0.1             # Check advection terms if depth < chkadvdp, => less setbacks
 Teta0                             = 0.55            # Theta of time integration (0.5 < theta < 1)
 cstbnd                            = 0               # Delft3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)
-Maxitverticalforestersal          = 0               # Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)
-Maxitverticalforestertem          = 0               # Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)
 Turbulencemodel                   = 3               # Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau)
 Turbulenceadvection               = 3               # Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)
 AntiCreep                         = 0               # Include anti-creep calculation (0: no, 1: yes)
@@ -79,7 +74,6 @@ UnifFrictCoef                     = 0.023           # Uniform friction coefficie
 UnifFrictType                     = 1               # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
 UnifFrictCoef1D                   = 0.023           # Uniform friction coefficient in 1D links (0: no friction)
 UnifFrictCoefLin                  = 0               # Uniform linear friction coefficient for ocean models (0: no friction)
-Umodlin                           = 0               # Linear friction umod, for ifrctyp=4,5,6
 Vicouv                            = 1               # Uniform horizontal eddy viscosity
 Dicouv                            = 1               # Uniform horizontal eddy diffusivity
 Vicoww                            = 5E-05           # Uniform vertical eddy viscosity
