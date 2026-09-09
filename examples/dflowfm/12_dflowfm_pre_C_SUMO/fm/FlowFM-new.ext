@@ -1,3 +1,6 @@
+[General]
+fileVersion = 3.00
+fileType    = extForce
 
 [Initial]
 quantity            = initialtracerTracer1 # Name of the quantity. See UM Table D.2.
