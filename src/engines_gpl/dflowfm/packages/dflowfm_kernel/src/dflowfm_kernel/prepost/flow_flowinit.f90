@@ -37,7 +37,7 @@ module m_flow_flowinit
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
    use m_setpillars, only: setpillars
-   use m_setinitialverticalprofile, only: setinitialverticalprofile
+   use m_setinitialverticalprofile, only: setinitialverticalprofilez
    use m_setfixedweirs, only: setfixedweirs
    use m_setbobs_fixedweirs, only: setbobs_fixedweirs
    use m_flow_setstarttime, only: flow_setstarttime
@@ -1188,7 +1188,7 @@ contains
             inquire (file='verticalsalinityprofile.pli', exist=success)
             call set_kbot_ktop(jazws0=1)
             if (success) then
-               call setinitialverticalprofile(sa1, ndkx, 'verticalsalinityprofile.pli')
+               call setinitialverticalprofilez(sa1, ndkx, 'verticalsalinityprofile.pli')
             end if
          end if
       end if
