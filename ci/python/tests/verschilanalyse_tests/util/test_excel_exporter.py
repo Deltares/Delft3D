@@ -58,20 +58,41 @@ def test_make_summary_workbook__log_comparisons() -> None:
 def test_make_summary_workbook(output_type: OutputType) -> None:
     # Arrange
     red_fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
-    foo_output = helper.make_verschillentool_output_2d(  # All stats within tolerance.
+    ok_2d_output = helper.make_verschillentool_output_2d(  # All stats within tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=-1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=-1e-6),
         row_count=42,
     )
-    bar_output = helper.make_verschillentool_output_2d(  # All stats over tolerance.
+    fail_2d_output = helper.make_verschillentool_output_2d(  # All stats over tolerance.
         output_type=output_type,
-        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=1e-6),
-        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=1e-6),
+        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=10),
+        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=10),
+        row_count=43,
+    )
+    ok_3d_output = helper.make_verschillentool_output_3d(  # All stats within tolerance.
+        output_type=output_type,
+        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=-1e-6),
+        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=-1e-6),
+        salinity=helper.tolerance_stats(output_type, Variable.SALINITY, diff=-1e-6),
+        temperature=helper.tolerance_stats(output_type, Variable.TEMPERATURE, diff=-1e-6),
+        row_count=42,
+    )
+    fail_3d_output = helper.make_verschillentool_output_3d(  # All stats over tolerance.
+        output_type=output_type,
+        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, diff=10),
+        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, diff=10),
+        salinity=helper.tolerance_stats(output_type, Variable.SALINITY, diff=10),
+        temperature=helper.tolerance_stats(output_type, Variable.TEMPERATURE, diff=10),
         row_count=43,
     )
 
-    outputs = {"foo": foo_output, "bar": bar_output}
+    outputs = {
+        "fail_2d": fail_2d_output,
+        "ok_2d": ok_2d_output,
+        "fail_3d": fail_3d_output,
+        "ok_3d": ok_3d_output
+        }
     count_header = ExcelExporter.VERSCHILLENTOOL_COUNT_HEADERS[output_type]
     sheet_title = ExcelExporter.VERSCHILLENTOOL_SHEET_NAMES[output_type]
     if output_type == OutputType.HIS:
@@ -82,18 +103,28 @@ def test_make_summary_workbook(output_type: OutputType) -> None:
     # Act
     workbook = ExcelExporter.make_summary_workbook(verschilanalyse_comparison)
     sheet = workbook[sheet_title]
-    header_row, bar_row, foo_row = sheet["A1:H3"]
+    header_row, fail_2d_row, fail_3d_row,ok_2d_row, ok_3d_row = sheet["A1:R5"]
 
     # Assert
     assert header_row[1].value == count_header
 
-    # Assert all bar statistics are over tolerance.
-    assert bar_row[0].value == "bar"
-    assert bar_row[1].value == 43
-    assert all(cell.fill == red_fill and str(cell.value).startswith("❌") for cell in bar_row[2:5])
-    assert all(cell.fill == red_fill and str(cell.value).startswith("❌") for cell in bar_row[6:9])
+    assert fail_2d_row[0].value == "fail_2d"
+    assert fail_2d_row[1].value == 43
+    assert all(cell.fill == red_fill and str(cell.value).startswith("❌") for cell in fail_2d_row[2:9])
+    assert all(str(cell.value) == "N/A" for cell in fail_2d_row[10:])
 
-    # Assert all foo statistics are within tolerance.
-    assert foo_row[0].value == "foo"
-    assert foo_row[1].value == 42
-    assert all(cell.fill != red_fill and not str(cell.value).startswith("❌") for cell in foo_row[2:])
+    assert ok_2d_row[0].value == "ok_2d"
+    assert ok_2d_row[1].value == 42
+    assert all(cell.fill != red_fill and not str(cell.value).startswith("❌") for cell in ok_2d_row[2:9])
+    assert all(str(cell.value) == "N/A" for cell in ok_2d_row[10:])
+
+    assert fail_3d_row[0].value == "fail_3d"
+    assert fail_3d_row[1].value == 43
+    assert all(cell.fill == red_fill and str(cell.value).startswith("❌") for cell in fail_3d_row[2:])
+    assert not any(str(cell.value) == "N/A" for cell in fail_3d_row[2:])
+
+    assert ok_3d_row[0].value == "ok_3d"
+    assert ok_3d_row[1].value == 42
+    assert all(cell.fill != red_fill and not str(cell.value).startswith("❌") for cell in ok_3d_row[2:])
+    assert not any(str(cell.value) == "N/A" for cell in ok_3d_row[2:])
+

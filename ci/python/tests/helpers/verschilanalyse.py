@@ -109,7 +109,7 @@ def make_verschilanalyse_comparison(
 
     Has default values for all parameters to make it easier to create test instances.
     """
-    default_models = ["foo", "bar", "baz"]
+    default_models = ["fail_2d", "ok_2d", "fail_3d", "ok_3d"]
     if current_log_data is None:
         current_log_data = {name: make_log_data() for name in default_models}
     if reference_log_data is None:
@@ -121,7 +121,7 @@ def make_verschilanalyse_comparison(
     if map_outputs is None:
         map_outputs_2d = {name: make_verschillentool_output_2d(output_type=OutputType.MAP) for name in default_models}
         map_outputs_3d = {name: make_verschillentool_output_3d(output_type=OutputType.MAP) for name in default_models}
-        map_outputs = {**map_outputs_3d, **map_outputs_2d}
+        map_outputs = {**map_outputs_2d, **map_outputs_3d}
 
     return VerschilanalyseComparison(
         s3_current_prefix=s3_current_prefix,

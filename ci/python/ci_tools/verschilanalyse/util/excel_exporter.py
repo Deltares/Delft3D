@@ -78,7 +78,7 @@ class ExcelExporter:
                 round(stats.temperature.max, ndigits=ndigits),
             ]
         else:
-            new_row = ["N/A"] * 8
+            new_row += ["N/A"] * 8
 
         sheet.append(new_row)
 
@@ -94,6 +94,10 @@ class ExcelExporter:
         if stats.water_level.avg_rms > Tolerances.rms(stats.output_type, Variable.WATER_LEVEL):
             row[4].fill = red_fill
             row[4].value = f"❌ {row[4].value}"
+        if stats.water_level.max > Tolerances.max(stats.output_type, Variable.WATER_LEVEL):
+            row[5].fill = red_fill
+            row[5].value = f"❌ {row[5].value}"
+
         if stats.flow_velocity.avg_max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
             row[6].fill = red_fill
             row[6].value = f"❌ {row[6].value}"
@@ -103,6 +107,36 @@ class ExcelExporter:
         if stats.flow_velocity.avg_rms > Tolerances.rms(stats.output_type, Variable.FLOW_VELOCITY):
             row[8].fill = red_fill
             row[8].value = f"❌ {row[8].value}"
+        if stats.flow_velocity.max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
+            row[9].fill = red_fill
+            row[9].value = f"❌ {row[9].value}"
+
+        if isinstance(stats,VerschillentoolOutput3D):
+            if stats.salinity.avg_max > Tolerances.max(stats.output_type, Variable.SALINITY):
+                row[10].fill = red_fill
+                row[10].value = f"❌ {row[10].value}"
+            if stats.salinity.avg_bias > Tolerances.bias(stats.output_type, Variable.SALINITY):
+                row[11].fill = red_fill
+                row[11].value = f"❌ {row[11].value}"
+            if stats.salinity.avg_rms > Tolerances.rms(stats.output_type, Variable.SALINITY):
+                row[12].fill = red_fill
+                row[12].value = f"❌ {row[12].value}"
+            if stats.salinity.max > Tolerances.max(stats.output_type, Variable.SALINITY):
+                row[13].fill = red_fill
+                row[13].value = f"❌ {row[13].value}"
+
+            if stats.temperature.avg_max > Tolerances.max(stats.output_type, Variable.TEMPERATURE):
+                row[14].fill = red_fill
+                row[14].value = f"❌ {row[14].value}"
+            if stats.temperature.avg_bias > Tolerances.bias(stats.output_type, Variable.TEMPERATURE):
+                row[15].fill = red_fill
+                row[15].value = f"❌ {row[15].value}"
+            if stats.temperature.avg_rms > Tolerances.rms(stats.output_type, Variable.TEMPERATURE):
+                row[16].fill = red_fill
+                row[16].value = f"❌ {row[16].value}"
+            if stats.temperature.max > Tolerances.max(stats.output_type, Variable.TEMPERATURE):
+                row[17].fill = red_fill
+                row[17].value = f"❌ {row[17].value}"
 
     @staticmethod
     def _to_column(log_data: SlurmLogData | None) -> Sequence[str | int | float]:
