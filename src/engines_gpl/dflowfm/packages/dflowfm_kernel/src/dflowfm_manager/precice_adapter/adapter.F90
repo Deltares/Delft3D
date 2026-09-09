@@ -25,7 +25,7 @@ module precice_adapter
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
 
    !> Fixed number of constituents we communicate.
-   integer, parameter :: NUM_CONSTITUENTS = 10
+   integer, parameter :: NUM_COUPLED_CONSTITUENTS = 10
 
    !> A single quantity that can be exchanged with preCICE.
    type :: quantity_t
@@ -42,7 +42,7 @@ module precice_adapter
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
       ! Constituents (reading and writing)
-      type(quantity_t), dimension(NUM_CONSTITUENTS) :: constituents
+      type(quantity_t), dimension(NUM_COUPLED_CONSTITUENTS) :: constituents
       ! Reading
       type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
       type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
@@ -153,8 +153,8 @@ contains
       adapter_instance%cell_center_mesh_coordinates_2d = cell_center_mesh_coordinates_2d
       adapter_instance%cell_center_mesh_coordinates_3d = cell_center_mesh_coordinates_3d
 
-      ! Set up constituents (fixed to NUM_CONSTITUENTS and named C01..C10 for now)
-      do constituent_index = 1,NUM_CONSTITUENTS
+      ! Set up constituents (fixed to NUM_COUPLED_CONSTITUENTS and named C01..C10 for now)
+      do constituent_index = 1,NUM_COUPLED_CONSTITUENTS
          write(constituent_name, '(A, I2.2)') 'C', constituent_index
          adapter_instance%quantities%constituents(constituent_index) = quantity_t(standard_name=constituent_name, is_active=.true.)
       end do
@@ -329,7 +329,7 @@ contains
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_magnitude_weighted, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sources_momentum_direction, self%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(self%sources_sinks_constituents, [NUM_CONSTITUENTS, self%mesh_sources_sinks_size], keepExisting=.false.)
+      call realloc(self%sources_sinks_constituents, [NUM_COUPLED_CONSTITUENTS, self%mesh_sources_sinks_size], keepExisting=.false.)
    end subroutine precice_adapter_allocate_read_arrays
 
 
@@ -348,7 +348,7 @@ contains
       use m_flow, only: hs, s1
       use m_flowgeom, only: bl, ndx2d,  ndx
       use m_turbulence, only: potential_density
-      use m_transport, only: NUMCONST, constituents
+      use m_transport, only: numconst, constituents
             
       implicit none(type, external)
       class(precice_adapter_t), intent(in) :: self
@@ -375,11 +375,11 @@ contains
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
-      ! Write constituents. At the moment we support only up to NUM_CONSTITUENTS (=10).
-      if (NUMCONST > NUM_CONSTITUENTS) then
+      ! Write constituents. At the moment we support only up to NUM_COUPLED_CONSTITUENTS (=10).
+      if (numconst > NUM_COUPLED_CONSTITUENTS) then
          call mess(LEVEL_ERROR, "The number of configured D-Flow FM constituents exceeds maximum! (10)")
       end if
-      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
+      do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   constituents(constituent_index,ndx+1:), len(self%cell_center_mesh_3d_name), &
@@ -404,7 +404,7 @@ contains
                          precicef_read_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_transport, only: NUMCONST
+      use m_transport, only: numconst
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: current_time_in_window
@@ -508,7 +508,7 @@ contains
                               self%sources_momentum_direction, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_momentum_direction%standard_name)))
       ! Read constituents
-      do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
+      do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
          call precicef_read_data(self%sources_sinks_mesh_name, &
                                  self%quantities%constituents(constituent_index)%standard_name, &
                                  self%mesh_sources_sinks_size, &
@@ -533,7 +533,7 @@ contains
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
       use m_cellmask_from_polygon_set, only: t_netcell_set
-      use m_transport, only: NUMCONST
+      use m_transport, only: numconst
 
       class(precice_adapter_t), intent(inout) :: self
       integer :: i
@@ -574,7 +574,7 @@ contains
             ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
-         do constituent_index = 1, min(NUM_CONSTITUENTS, NUMCONST)
+         do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
             source_sinks%constituents(source_sinks%num_total, constituent_index) = self%sources_sinks_constituents(constituent_index, i)
          end do
       end do
