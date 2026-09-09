@@ -341,25 +341,29 @@ contains
           call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
          endif
          !
-         if (iconsolidate /= CONSOL_NONE) then
+         call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
+         if (iconsolidate /= CONSOL_NONE .and. iporosity == POROS_IN_DENSITY) then
             iporosity = POROS_SVFRAC0SM
-         else
-            call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
-            txtput1 = 'Porosity'
-            select case (iporosity)
-            case (POROS_IN_DENSITY, POROS_CDRYB)
-               txtput2 = '      Based on CDRYB'
-            case (POROS_FRINGS)
-               txtput2 = '              Linear'
-            case (POROS_WELTJE)
-               txtput2 = '          Non-linear'
-            case (POROS_SVFRAC0)
-               txtput2 = '            Constant'
-            case (POROS_SVFRAC0SM) 
-               txtput2 = '      Weight Average'
-            end select
-            write (lundia, '(3a)') txtput1, ':', txtput2
-         end if
+         endif
+         txtput1 = 'Porosity'
+         select case (iporosity)
+         case (POROS_IN_DENSITY, POROS_CDRYB)
+            txtput2 = '      Based on CDRYB'
+         case (POROS_FRINGS)
+            txtput2 = '              Linear'
+         case (POROS_WELTJE)
+            txtput2 = '          Non-linear'
+         case (POROS_SVFRAC0)
+            txtput2 = '            Constant'
+         case (POROS_SVFRAC0SM) 
+            txtput2 = '      Weight Average'
+         case default
+            errmsg = 'Invalid porosity option specified in '//trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         end select
+         write (lundia, '(3a)') txtput1, ':', txtput2
          !
          nlalyr = 0
          neulyr = 0
@@ -1159,7 +1163,7 @@ contains
               call prop_get(mor_ptr, 'Consolidate', 'plyrstr', morlyr%settings%plyrstr)
               txtput1 = 'Percentage of each layer'
               plyrstr = morlyr%settings%plyrstr
-              write (lundia, '(2a,999a)') txtput1, ':', plyrstr
+              write (lundia, '(3a)') txtput1, ':', trim(plyrstr)
   
               !! read in plyrthk from string 'plyrstr' in *.mor file
               lenc = 999
@@ -1811,7 +1815,7 @@ end subroutine rderosion
                end do
                if (inisedunit(1) == 'm') then
                   !
-                  ! all input specified as thickness
+                  ! all input specified as thickness ... we assume that porosity for all fractions is equal ... this is fundamentally different than using cdryb(mud) << cdryb(sand)
                   !
                   do nm = 1, nmmax
                      mfracsum = 0.0_fp
