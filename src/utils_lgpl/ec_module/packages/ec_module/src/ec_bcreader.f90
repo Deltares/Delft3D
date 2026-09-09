@@ -106,13 +106,8 @@ contains
             return ! quantityName-plilabel combination not found
          end if
 
-         ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
-         do nrVar = 1, size(bc%ncptr%variable_names)
-            if (strcmpi(bc%ncptr%variable_names(nrVar), quantityName)) then
-               exit
-            end if
-         end do
-
+         ! Determine dimension (2 or 3) and then decide TSERIES or TIM3D
+         nrVar = bc%ncvarndx(1)
          if (bc%ncptr%variable_ndims(nrVar) == 2) then
             bc%func = BC_FUNC_TSERIES
          end if
@@ -569,7 +564,7 @@ contains
             case default
                bc%periodic = .false.
             end select
-         case ('VERTICALINTERPOLATION', 'VERTINTERPOLATION', 'VERTICALINTERPOLATION')
+         case ('VERTICALINTERPOLATION', 'VERTINTERPOLATION')
             select case (adjustl(hdrvals(ifld)%s))
             case ('LINEAR')
                bc%zInterpolationType = zinterpolate_linear
@@ -585,7 +580,7 @@ contains
                                    "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".")
                return
             end select
-         case ('VERTICALPOSITIONTYPE', 'VERTPOSITIONTYPE', 'VERTICALPOSITIONTYPE')
+         case ('VERTICALPOSITIONTYPE', 'VERTPOSITIONTYPE')
             if (index(hdrvals(ifld)%s, 'PERCEN') > 0 .and. index(hdrvals(ifld)%s, 'BED') > 0) then
                hdrvals(ifld)%s = 'PERCBED'
             end if
@@ -611,7 +606,7 @@ contains
             end select
          case default
             ! Give a warning/error if the key that looks like one of the keys
-            ! related to vertical positions is used, but is not recoqnized.
+            ! related to vertical positions is used, but is not recognized.
             ! Note that key "NAME" is ignored here.
             if (index(hdrkeys(ifld)%s, "VERT") > 0 .and. index(hdrkeys(ifld)%s, "POS") > 0) then
                call set_ec_message("Unknown keyword '"//trim(adjustl(hdrkeys(ifld)%s))// &
@@ -629,7 +624,7 @@ contains
       end if
 
       ! Fill bc%quantity%col2elm(nq) which holds the mapping of columns in the file to vector positions
-      bc%quantity%col2elm(iq) = -1
+      bc%quantity%col2elm = -1
       bc%numcols = iq
       do iq = 1, nq
          if (iv(iq) > 0) then
