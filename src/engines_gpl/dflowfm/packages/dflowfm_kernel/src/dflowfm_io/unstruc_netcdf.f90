@@ -913,15 +913,23 @@ contains
 
 !> Creates or opens a NetCDF file for writing.
 !! The file is maintained in the open-file-list.
-   function unc_create(filename, cmode, ncid)
+   function unc_create(filename, cmode, ncid, overwrite_cmode)
       character(len=*), intent(in) :: filename !< Filename to be created
       integer, intent(in) :: cmode !< Creation mode, must be a valid NetCDF flags integer.
       integer, intent(out) :: ncid !< Resulting NetCDF data set id, undefined in case an error occurred.
+      logical, optional, intent(in) :: overwrite_cmode !< Flag indicating whether to overwrite existing cmode (or perform ior).
       integer :: unc_create !< Integer result status (nf90_noerr if successful).
 
       integer :: cmode_
-
-      cmode_ = ior(cmode, unc_cmode)
+      if (present(overwrite_cmode)) then
+         if (overwrite_cmode) then
+            cmode_ = cmode
+         else
+            cmode_ = ior(cmode, unc_cmode)
+         end if
+      else
+         cmode_ = ior(cmode, unc_cmode)
+      end if
 
       unc_create = nf90_create(filename, cmode_, ncid)
       if (unc_create == nf90_noerr) then

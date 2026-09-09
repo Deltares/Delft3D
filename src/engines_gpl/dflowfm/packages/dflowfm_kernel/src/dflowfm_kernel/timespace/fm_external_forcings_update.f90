@@ -32,7 +32,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
    use m_flowgeom, only: ndx, lnx
    use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, &
-                      air_density, ja_computed_airdensity, item_atmosphericpressure, item_air_temperature, air_temperature, &
+                      air_density, ja_computed_airdensity, item_airpressure, item_air_temperature, air_temperature, &
                       item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, temperature_model, &
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
@@ -945,14 +945,14 @@ contains
 
 !> prepare_air_pressure_temperature_dew_point_temperature
    module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
-      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
+      use m_meteo, only: item_apwxwy_p, item_airpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
                          item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       ! air pressure items
       call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
-      call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_airpressure, time_in_seconds)
 
       ! air temperature items
       call get_timespace_value_by_item_and_consider_success_value(item_hac_air_temperature, time_in_seconds)
