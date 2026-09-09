@@ -1074,7 +1074,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
+            write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
          end if
