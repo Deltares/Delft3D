@@ -1,0 +1,12 @@
+# Build
+bin
+obj
+
+# NuGet
+*.nupkg
+
+# ReSharper
+*.DotSettings
+
+# Generated
+*.g.props
