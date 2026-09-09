@@ -38,7 +38,6 @@ RenumberFlowNodes                 = 1                                           
 Kmx                               = 0                                                                   # Number of vertical layers use 0 for 2D
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 PillarFile                        =                                                                     # Polyline file *.pliz, containing bridge pillars with rows x, y, drag coefficient and diameter
-IniFieldFile                      =
 UseCaching                        = 0                                                                   # Use caching of flow model geometry input (1: yes, 0: no)
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
 ManholeFile                       =                                                                     # File *.ini containing manholes
@@ -147,7 +146,6 @@ RestartFile                       =                                             
 RestartDateTime                   =                                                                     # Restart date and time when restarting from *_map.nc [YYYYMMDDHHMMSS]
 
 [external forcing]
-ExtForceFile                      =                                                                     # Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification
 ExtForceFileNew                   = westerscheldt.ext                                                   # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [output]
