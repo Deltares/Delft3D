@@ -82,6 +82,7 @@ def run_conan(
     build_dir: Path,
     *,
     build_type: str,
+    profile: str | None = None,
     ci: bool = False,
     build_dependencies: bool = False,
 ) -> None:
@@ -95,6 +96,8 @@ def run_conan(
     ]
     if platform.system() != "Windows":
         cmd.append(f"--build-type={build_type}")
+    if profile:
+        cmd.append(f"--profile={profile}")
     if ci:
         cmd.append("--ci")
     if build_dependencies:
@@ -128,6 +131,9 @@ def run_cmake_configure(
         cmd += ["-T", "fortran=ifx", "-A", "x64"]
         if vs_year and vs_year in VS_GENERATORS:
             cmd += ["-G", VS_GENERATORS[vs_year]]
+            generator_instance = os.environ.get("CMAKE_GENERATOR_INSTANCE")
+            if generator_instance:
+                cmd.append(f"-DCMAKE_GENERATOR_INSTANCE:STRING={generator_instance}")
     else:
         # On Linux, single-config generator; pass build type directly
         cmd += [f"-DCMAKE_BUILD_TYPE={build_type}"]
@@ -179,6 +185,10 @@ def main() -> None:
         default="Debug",
         choices=["Debug", "Release", "RelWithDebInfo"],
         help="CMake build type (default: Debug).",
+    )
+    parser.add_argument(
+        "--profile",
+        help="Conan profile to pass to run_conan.py (overrides environment variable CONAN_DEFAULT_PROFILE and its default).",
     )
     parser.add_argument(
         "--vs",
@@ -238,7 +248,13 @@ def main() -> None:
         clean_directories(build_dir, install_dir)
 
     # Conan
-    run_conan(build_dir, build_type=args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
+    run_conan(
+        build_dir,
+        build_type=args.build_type,
+        profile=args.profile,
+        ci=args.ci,
+        build_dependencies=args.build_dependencies,
+    )
 
     # CMake configure
     run_cmake_configure(

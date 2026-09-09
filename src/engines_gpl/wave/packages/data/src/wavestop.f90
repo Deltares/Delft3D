@@ -39,6 +39,8 @@ subroutine wavestop(iexit, message)
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+    use swan_input, only: cleanup_boundary_spectrum_files
+
     implicit none
 !
 ! Global variables
@@ -53,6 +55,7 @@ subroutine wavestop(iexit, message)
 !
     write(*,*) 'ERROR: ', trim(message)
     write(*,*) 'Wave exited abnormally'
+    call cleanup_boundary_spectrum_files()
     !
     ! Terminate now
     !

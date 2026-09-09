@@ -35,7 +35,7 @@ class ProgramConfig:
         self.__arguments: List[str] = []
         self.__sequence: int = 0
         self.__delay: float = 0
-        self.__max_run_time: float = 0
+        self.__max_run_time: float | None = None
 
     @property
     def shell(self) -> Optional["ProgramConfig"]:
@@ -221,7 +221,7 @@ class ProgramConfig:
         self.__delay = value
 
     @property
-    def max_run_time(self) -> float:
+    def max_run_time(self) -> float | None:
         """Given maximum runtime."""
         return self.__max_run_time
 

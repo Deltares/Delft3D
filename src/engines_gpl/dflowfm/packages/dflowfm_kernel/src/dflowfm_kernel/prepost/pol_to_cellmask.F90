@@ -30,7 +30,7 @@
 !> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
    use precision, only: dp
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+   use m_cellmask_from_polygon_set, only: t_polygon_set
 
    implicit none
 
@@ -41,16 +41,18 @@ module m_pol_to_cellmask
 contains
 
    !> Create a cellmask from a set of x,y coordinates and a set of polygon points. Any  point inside the polygon is masked as 1.
-   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points) result(mask)
+   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points, enable_binning) result(mask)
       use m_alloc, only: realloc
 
       integer, intent(in) :: polygon_points !< Number of polygon points
       integer, intent(in) :: num_netcells !< Number of points to mask
-      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
+      real(kind=dp), dimension(polygon_points), intent(in) :: x_poly, y_poly, z_poly !< Polygon coordinate arrays
       real(kind=dp), intent(in), dimension(:) :: x_points, y_points !< Point coordinates to mask
+      logical, intent(in) :: enable_binning !< Whether to use latitude bins for large polygon sets.
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
 
       integer :: k
+      type(t_polygon_set) :: polygon_cache
 
       if (polygon_points == 0) then
          return
@@ -58,22 +60,20 @@ contains
 
       call realloc(mask, num_netcells, keepexisting=.false., fill=0)
 
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
+      polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, num_netcells
-         mask(k) = cellmask_from_polygon_set(x_points(k), y_points(k))
+         mask(k) = merge(1, 0, polygon_cache%is_masked(x_points(k), y_points(k)))
       end do
       !$OMP END PARALLEL DO
 
-      call cellmask_from_polygon_set_cleanup()
-
    end function pol_to_cellmask
 
-!> Wrapper around pol_to_cellmask that loads a polygon from a file and returns a mask over all internal cells (ndxi). 
+!> Wrapper around pol_to_cellmask that loads polygons from space-separated files and returns a mask over all internal cells (ndxi).
 !! treating 1D and 2D separately. The mask is unallocated if no polygon is loaded. 2D cells are masked by x/y zw, and 1D cells are masked by x/y z.
-   function cell_mask_from_polygon_file(polygon_file) result(mask)
+   function cell_mask_from_polygon_file(polygon_input) result(mask)
       use m_flowgeom, only: ndxi, ndx2d, xz, yz
       use network_data, only: nump, xzw, yzw
       use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol
@@ -82,21 +82,28 @@ contains
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use m_fix_global_polygons, only: fix_global_polygons
+      use string_module, only: strsplit
       implicit none
 
-      character(len=*), intent(in) :: polygon_file !< Path to polygon file defining the output region.
+      character(len=*), intent(in) :: polygon_input !< Space-separated paths to polygon files defining the output region.
       integer, allocatable :: mask(:) !< Output mask over ndxi internal cells (nonzero = include); unallocated when no polygon is loaded.
 
-      integer :: minp, ndx1d
+      integer :: minp, ndx1d, ifile, jadoorladen
+      character(len=len(polygon_input)), allocatable :: polygon_files(:)
 
-      if (len_trim(polygon_file) == 0) return
+      if (len_trim(polygon_input) == 0) return
 
       ndx1d = ndxi - ndx2d
 
-      ! Save any polygon currently in memory, load the output polygon, then restore afterwards.
+      ! Save any polygon currently in memory, load all output polygons, then restore afterwards.
       call savepol()
-      call oldfil(minp, polygon_file)
-      call reapol(minp, 0)
+      call strsplit(polygon_input, 1, polygon_files, 1)
+      jadoorladen = 0
+      do ifile = 1, size(polygon_files)
+         call oldfil(minp, polygon_files(ifile))
+         call reapol(minp, jadoorladen)
+         jadoorladen = 1
+      end do
 
       if (npl == 0) then
          call restorepol()
@@ -110,11 +117,12 @@ contains
       allocate (mask(ndxi), source=0)
 
       if (ndx2d > 0) then
-         mask(1:ndx2d) = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump))
+         mask(1:ndx2d) = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump), enable_binning=.false.)
       end if
 
       if (ndx1d > 0) then
-         mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), yz(ndx2d + 1:ndxi))
+         mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), &
+                                                yz(ndx2d + 1:ndxi), enable_binning=.false.)
       end if
 
       call delpol()

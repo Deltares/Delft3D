@@ -54,7 +54,7 @@ contains
       use fm_external_forcings_data, only: wstracers
       use m_source_sink, only: source_sinks
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
-      use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
+      use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
       use m_flowtimes, only: dts
@@ -373,7 +373,7 @@ contains
    contains
 
       subroutine set_sorsin(i1, i2, n, k, qsrck, dvoli)
-         use m_mass_balance_areas, only: imbs2sed
+         use m_mass_balance_area_data, only: imbs2sed
          use m_fm_erosed, only: morfac
 
          integer, intent(in) :: i1 !< flow direction 1=from TO to FROM, 2=from FROM to TO

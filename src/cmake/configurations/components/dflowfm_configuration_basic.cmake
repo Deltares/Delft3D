@@ -73,9 +73,7 @@ if(NOT TARGET dhydrology_kernel)
 endif()
 
 # PreCICE
-if(NOT TARGET precice::precice)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice)
-endif()
+# precice::precice comes from the Conan package, see src/cmake/CMakeLists.txt.
 
 # precicef (preCICE fortran bindings)
 if (NOT TARGET precicef)
@@ -129,11 +127,6 @@ endif()
 
 if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
-endif()
-
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
 endif()
 
 # libsigwatch

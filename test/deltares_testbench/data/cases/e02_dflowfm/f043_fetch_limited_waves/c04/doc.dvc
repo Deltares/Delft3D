@@ -1,0 +1,6 @@
+outs:
+- md5: f6917a6d60fd7bd610e1554f69801fab.dir
+  size: 10250
+  nfiles: 5
+  hash: md5
+  path: doc

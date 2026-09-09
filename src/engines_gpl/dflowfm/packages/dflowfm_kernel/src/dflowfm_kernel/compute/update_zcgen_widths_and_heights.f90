@@ -60,7 +60,7 @@ contains
       do ng = 1, ncgensg ! Loop over general structures
 
          ! Crest level is the same across all crossed flow links. Possibly time-dependent:
-         generalstruc(ng)%levelcenter = zcgen((ng - 1) * 3 + 1)
+         generalstruc(ng)%levelcenter = zcgen((ng - 1) * 4 + 1)
 
          ! 1: First determine total width of all genstru links (TODO: AvD: we should not recompute this every user time step)
          totalWidth = 0.0_dp
@@ -79,9 +79,9 @@ contains
          !     Also: only for gates, the desired door opening width for this overall structure
          !           (should be smaller than crestwidth, and for this portion the open gate door is emulated by dummy very high lower edge level)
          if (cgen_type(ng) == ICGENTP_WEIR) then
-            crestwidth = zcgen((ng - 1) * 3 + 3)
+            crestwidth = zcgen((ng - 1) * 4 + 4)
             if (crestwidth > totalwidth) then
-               zcgen((ng - 1) * 3 + 3) = totalwidth
+               zcgen((ng - 1) * 4 + 4) = totalwidth
                crestwidth = totalwidth
                write (msgbuf, '(a,a,a,es12.5,a)') 'Weir ''', trim(cgen_ids(ng)), ''', crest width (re)set to ', totalwidth, '.'
                call warn_flush()
@@ -92,26 +92,26 @@ contains
             if (cgen_type(ng) == ICGENTP_GENSTRU) then
                !crestwidth = totalWidth ! No crest/sill-width setting for true general structure yet (not old ext, nor new ext)
                crestwidth = min(totalWidth, generalstruc(ng)%widthcenter)
-               !crestwidth = zcgen((ng-1)*3+3) ! NOTE: AvD: this now comes from scalar attribute 'widthcenter', no timeseries yet.
+               !crestwidth = zcgen((ng-1)*4+4) ! NOTE: AvD: this now comes from scalar attribute 'widthcenter', no timeseries yet.
                ! genstru: always IOPENDIR_SYMMETRIC (TODO: UNST-1935)
-               closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
-               closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
-               !closedGateWidthL = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*3+3))) ! Default symmetric opening
-               !closedGateWidthR = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*3+3)))
+               closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 4 + 4)))
+               closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 4 + 4)))
+               !closedGateWidthL = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*4+4))) ! Default symmetric opening
+               !closedGateWidthR = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*4+4)))
             end if
             if (cgen_type(ng) == ICGENTP_GATE) then
-               ! For a gate: zcgen(3,ng) is limited to the door opening width, but we want to open all links
+               ! For a gate: zcgen(4,ng) is limited to the door opening width, but we want to open all links
                ! *underneath* the two doors as well, (if lower_edge_level is still high enough above sill_level)
                crestwidth = min(totalWidth, gates(cgen2str(ng))%sill_width)
                if (gates(cgen2str(ng))%opening_direction == IOPENDIR_FROMLEFT) then
-                  closedGateWidthL = max(0.0_dp, crestwidth - zcgen((ng - 1) * 3 + 3))
+                  closedGateWidthL = max(0.0_dp, crestwidth - zcgen((ng - 1) * 4 + 4))
                   closedGateWidthR = 0.0_dp
                else if (gates(cgen2str(ng))%opening_direction == IOPENDIR_FROMRIGHT) then
                   closedGateWidthL = 0.0_dp
-                  closedGateWidthR = max(0.0_dp, crestwidth - zcgen((ng - 1) * 3 + 3))
+                  closedGateWidthR = max(0.0_dp, crestwidth - zcgen((ng - 1) * 4 + 4))
                else ! IOPENDIR_SYMMETRIC
-                  closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
-                  closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
+                  closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 4 + 4)))
+                  closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 4 + 4)))
                end if
             end if
             generalstruc(ng)%gateheightonlink(1:generalstruc(ng)%numlinks) = 1.0e10_dp ! As a start, gate door is open everywhere. Below, we will close part of the gate doors.
@@ -171,7 +171,7 @@ contains
 
             if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthL > 0.0_dp) then
                !if (closedGateWidthL > .5d0*wu(Lf)) then
-               generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 3 + 2)
+               generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 4 + 2)
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedGateWidthL)
                closedGateWidthL = closedGateWidthL - help
                !end if
@@ -197,7 +197,7 @@ contains
 
             if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthR > 0.0_dp) then
                !if (closedGateWidthL > .5d0*wu(Lf)) then
-               generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 3 + 2)
+               generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 4 + 2)
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedGateWidthR)
                closedGateWidthR = closedGateWidthR - help
                !end if
@@ -214,7 +214,7 @@ contains
          end do
 
          !if ( L2cgensg(ng) == L1cgensg(ng) ) then
-         !   generalstruc(ng)%widthcenteronlink(L0) = min( wu(Lf), zcgen((ng-1)*3+3) )
+         !   generalstruc(ng)%widthcenteronlink(L0) = min( wu(Lf), zcgen((ng-1)*4+4) )
          !endif
 
       end do ! 1,ngensg

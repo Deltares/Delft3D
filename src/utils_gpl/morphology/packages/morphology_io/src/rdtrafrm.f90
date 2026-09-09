@@ -1090,7 +1090,7 @@ contains
       pardef = NO_DEFAULT_VALUE
       if (iform == -4) then
          name = 'Van der A et al. (2013): SANTOSS extended Van Rijn (2007)'
-         nparopt = 13
+         nparopt = 14
          parkeyw(1) = 'IopSus'
          pardef(1) = 0.0_fp
          parkeyw(2) = 'Pangle'
@@ -1109,16 +1109,18 @@ contains
          pardef(8) = 3.0_fp
          parkeyw(9) = 'Wform'
          pardef(9) = 1.0_fp
+         parkeyw(10) = 'iTauCr'
+         pardef(10)  = 1.0_fp
          ! NOTE UP TO HERE IDENTICAL TO VAN RIJN (2007) FORMULA -2: Numbers/parameters must match!
-         parkeyw(10) = 'SW_effects'
-         pardef(10) = 1.0_fp
-         parkeyw(11) = 'AS_effects'
+         parkeyw(11) = 'SW_effects'
          pardef(11) = 1.0_fp
-         parkeyw(12) = 'PL_effects'
+         parkeyw(12) = 'AS_effects'
          pardef(12) = 1.0_fp
-         parkeyw(13) = 'SL_effects'
+         parkeyw(13) = 'PL_effects'
          pardef(13) = 1.0_fp
-         if (present(noutpar)) then
+         parkeyw(14) = 'SL_effects'
+         pardef(14) = 1.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 24
             outpar_name(1) = 'uwc'
             outpar_longname(1) = 'orbital velocity at crest' ! m/s
@@ -1169,8 +1171,12 @@ contains
             outpar_name(24) = 'ak'
             outpar_longname(24) = 'asymmetry' ! -
          end if
-      elseif (iform == -3) then
-         name = 'Partheniades-Krone'
+      elseif (iform == -3 .or. iform == -5) then
+         if (iform == -3) then
+            name = 'Partheniades-Krone (t/tcr-1)'
+         else
+            name = 'Partheniades-Krone (t-tcr)'
+         endif
          nparreq = 3
          parkeyw(1) = 'EroPar'
          pardef(1) = 0.0_fp
@@ -1189,9 +1195,16 @@ contains
          pardef(7) = -1.0_fp
          parkeyw(8) = 'PowerN'
          pardef(8) = 1.0_fp
+         if (present(noutpar)) then
+            noutpar = 2
+            outpar_name( 1)     = 'EroPar'
+            outpar_longname( 1) = 'erosion parameter' ! -
+            outpar_name( 2)     = 'TcrEro'
+            outpar_longname( 2) = 'critical shear stress for erosion' ! N/m2
+         endif
       elseif (iform == -2) then
          name = 'Van Rijn (2007): TRANSPOR2004'
-         nparopt = 9
+         nparopt = 10
          parkeyw(1) = 'IopSus'
          pardef(1) = 0.0_fp
          parkeyw(2) = 'Pangle'
@@ -1210,8 +1223,10 @@ contains
          pardef(8) = 3.0_fp
          parkeyw(9) = 'Wform'
          pardef(9) = 1.0_fp
+         parkeyw(10) = 'iTauCr'
+         pardef(10)  = 1.0_fp
          ! NOTE PARAMETERS ADDED HERE MUST BE COPIED TO SANTOSS FORMULA -4: Numbers/parameters must match!
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 17
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1250,7 +1265,7 @@ contains
          end if
       elseif (iform == -1) then
          name = 'Van Rijn (1993)'
-         nparopt = 8
+         nparopt = 9
          parkeyw(1) = 'IopSus'
          pardef(1) = 0.0_fp
          parkeyw(2) = 'AksFac'
@@ -1267,7 +1282,9 @@ contains
          pardef(7) = 0.0_fp ! false
          parkeyw(8) = 'BetaM'
          pardef(8) = 3.0_fp
-         if (present(noutpar)) then
+         parkeyw(9) = 'iTauCr'
+         pardef(9)  = 1.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 16
             outpar_name(1) = 'tauc'
             outpar_longname(1) = 'bed shear stress due to currents' ! kg/(m s2)
@@ -1307,21 +1324,44 @@ contains
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 2
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
          parkeyw(3) = 'SusFac'
          pardef(3) = 0.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 2) then
          name = 'Meyer-Peter-Mueller (1948)'
          nparreq = 1
          parkeyw(1) = 'ACal'
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 3
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+            outpar_name(3) = 'excess_theta'
+            outpar_longname(3) = 'Excess Shields parameter' ! -
+         end if
       elseif (iform == 3) then
          name = 'Swanby / Ackers-White'
          nparreq = 1
          parkeyw(1) = 'ACal'
          nparopt = 1
-         parkeyw(2) = 'RouKs'
+         parkeyw(2) = 'RouKs' !obsolete, but don't remove: backward compatibility!
          pardef(2) = 1.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'u_star'
+            outpar_longname(2) = 'Shear velocity' ! m/s
+         end if
       elseif (iform == 4) then
          name = 'General formula'
          nparreq = 5
@@ -1341,6 +1381,13 @@ contains
          pardef(9) = 1.0_fp
          parkeyw(10) = 'SusThetaC'
          pardef(10) = 0.0_fp
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
+            noutpar = 2
+            outpar_name(1) = 'chezy'
+            outpar_longname(1) = 'Chezy coefficient' ! m^{1/2}/s
+            outpar_name(2) = 'theta'
+            outpar_longname(2) = 'Shields parameter' ! -
+         end if
       elseif (iform == 5) then
          name = 'Bijker (1971)'
          nparreq = 9
@@ -1423,7 +1470,7 @@ contains
          nparopt = 1
          parkeyw(1) = 'ACal'
          pardef(1) = 1.0_fp
-         if (present(noutpar)) then
+         if (present(noutpar) .and. present(outpar_name) .and. present(outpar_longname)) then
             noutpar = 6
             outpar_name(1) = 'wistar'
             outpar_longname(1) = 'dimensionless bedload transport rate' ! -

@@ -49,7 +49,6 @@ module m_flow_flowinit
    use m_thacker1d, only: thacker1d
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
-   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -230,7 +229,11 @@ contains
       end if
 
       call setFrictionForLongculverts()
-      call set_friction_coefficient_by_initial_fields()
+      call set_friction_coefficient_by_initial_fields(error)
+      if (is_error_at_any_processor(error)) then
+         return
+      end if
+
       call set_friction_uniform_value_on_links_where_friction_is_not_set()
       call set_internal_tides_friction_coefficient()
       call setupwslopes() ! set upwind slope pointers and weightfactors
@@ -676,8 +679,8 @@ contains
 
    end subroutine set_floodfill_water_levels_based_on_sample_file
 
-!> sert friction coefficient by initial fields
-   subroutine set_friction_coefficient_by_initial_fields()
+!> Insert friction coefficient by initial fields
+   subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
@@ -689,6 +692,7 @@ contains
       integer, parameter :: MANNING = 1
 
       integer :: link
+      integer, intent(inout) :: error
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
@@ -717,8 +721,74 @@ contains
             frcmax = frcu(link)
          end if
       end do
+      
+      call init_dynamic_vegetation_roughness(error)
 
    end subroutine set_friction_coefficient_by_initial_fields
+
+!> initialize dynamic vegetation roughness   
+!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
+   subroutine init_dynamic_vegetation_roughness(error)
+      use dfm_error, only: DFM_WRONGINPUT
+      use m_flowgeom, only: lnx
+      use m_flow, only: frcu, frcu0, dynveg
+      use m_physcoef, only: frcu_no_vegetation, dynroughveg
+      use m_alloc
+      use unstruc_model, only: md_dynvegpol
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_links
+      use m_delpol
+      use MessageHandling
+
+      implicit none
+
+      integer, intent(inout) :: error
+      
+      integer :: link
+      integer :: k
+      integer :: pointscount
+      logical :: ex
+
+      integer, dimension(:), allocatable :: kp
+   
+      if (dynroughveg == 0) then
+         return
+      end if
+   
+      frcu0 = frcu
+      dynveg(:) = .false.
+      if (md_dynvegpol == ' ') then
+         do link = 1, lnx
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+         
+      else
+         inquire (file=trim(md_dynvegpol), exist=ex)
+         if (.not. ex) then
+            call mess(LEVEL_ERROR, 'Unable to access dynamic vegetation polygon file "'//trim(md_dynvegpol)//'"')
+            error = DFM_WRONGINPUT
+            return
+         end if   
+
+         allocate (kp(1:lnx))
+         kp = 0
+         ! find links inside polygon
+         call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+         call delpol()
+         !
+         dynveg(:) = .false.
+         do k = 1, pointscount
+            link = kp(k)
+            if (frcu(link) > frcu_no_vegetation) then
+               dynveg(link) = .true.
+            end if
+         end do
+      end if
+      
+   end subroutine init_dynamic_vegetation_roughness
 
 !> set friction uniform value on links where_friction_is_not_set
    subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
@@ -1273,24 +1343,20 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
-      use m_flowgeom, only: lnx, ln, csu, snu, ndx
+      use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
-      use m_transform_wave_physics
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_UNIFORM, WAVE_NC_OFFLINE
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
       integer :: right_node
-      integer :: ierror
 
       real(kind=dp) :: hw
       real(kind=dp) :: tw
@@ -1301,54 +1367,25 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
-         if (jawave >= SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         twav = twavcom
-         !
-         if (jawave == WAVE_NC_OFFLINE) then
-            !
-            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
-                               & sxwav, sywav, mxwav, mywav, &
-                               & distot, dsurf, dwcap, &
-                               & ndx, 1, hwav, twav, &
-                               & ag, .true., waveforcing, &
-                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
-         end if
-         !
-         call wave_uorbrlabda()
+         call compute_wave_parameters()
          if (kmx == 0) then
-            call wave_comp_stokes_velocities()
             call tauwave()
          end if
          call setwavfu()
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
-         ! Only compute uorb
-         ! Works both for 2D and 3D
-         if (jawave == SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call compute_wave_parameters()
       end if
 
-      if (jawave == CONST .and. .not. flow_without_waves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavcom, gammax * hs)
+         hwav = min(hwavuni, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then

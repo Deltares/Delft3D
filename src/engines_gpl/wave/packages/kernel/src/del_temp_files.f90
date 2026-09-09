@@ -79,7 +79,7 @@ subroutine del_temp_files(n_swan_grids)
        ! Remove tempgrid<igrid> files, created by WAVE for nesting
        ! tempgrid001 will not exist (only tempgrid002, tempgrid003, etc.)
        ! But it will not harm when checking/deleting it
-       ! 
+       !
        do i=1,numtempgrid
           write (filnam,'(a,i3.3)') trim(tmpfiles(i)), igrid
           inquire (file = trim(filnam), exist = ex, iostat = istat)

@@ -1,0 +1,6 @@
+outs:
+- md5: 9c05301e1aaa710f09d4a586b1ca2d94.dir
+  size: 147313
+  nfiles: 11
+  hash: md5
+  path: doc

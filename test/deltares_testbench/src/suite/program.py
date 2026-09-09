@@ -8,15 +8,18 @@ import ctypes
 import os
 import platform
 import re
+import signal
 import subprocess
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from src.config.program_config import ProgramConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import add_search_path, get_default_logging_folder_path, stripPassword
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.file_logger import FileLogger
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
@@ -31,6 +34,7 @@ class Program:
         self.__settings: TestBenchSettings = copy.deepcopy(settings)
         self.__last_return_code: int = 0
         self.__error: Exception | None = None
+        self.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
 
     @property
     def name(self) -> str:
@@ -92,9 +96,6 @@ class Program:
             if len(program_config.modules) > 0:
                 for mod in program_config.modules:
                     self.__program_config.modules.append(mod)
-            # overwrite max run time if one is given
-            if program_config.max_run_time > 0:
-                self.__program_config.max_run_time = program_config.max_run_time
             # overwrite delay if one is given
             if program_config.delay > 0:
                 self.__program_config.delay = program_config.delay
@@ -155,8 +156,15 @@ class Program:
                 else:
                     logger.warning(f"{prog_path} contained error message - {error_message}")
                     self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
+        except subprocess.TimeoutExpired as e:
+            timeout_msg = (
+                f"Program {self.__program_config.path} exceeded its max run time of "
+                f"{self.__program_config.max_run_time}s and was terminated: {e!r}"
+            )
+            logger.exception(timeout_msg)
+            self.__error = e
         except Exception as e:
-            logger.exception(f"Could not execute program: {repr(e)}")
+            logger.exception(f"{repr(e)} Could not execute program: {getattr(e, 'filename', 'unknown')}")
             self.__error = e
 
     def __handle_process_output(self, logger: ILogger, completed_process: subprocess.CompletedProcess) -> None:
@@ -204,16 +212,69 @@ class Program:
             program_env["TestBenchRoot"] = tb_root
 
         logger.debug("Creating subprocess")
-        timeout = self.__program_config.max_run_time if self.__program_config.max_run_time != 0 else None
-        completed_process = subprocess.run(
+        assert self.max_run_time is not None
+        logger.info(f"starting test: {self.__program_config.case_name}")
+        completed_process = self._run_in_subprocess(
             execmd,
-            capture_output=True,
+            working_dir=self.__program_config.working_directory,
             env=program_env,
-            cwd=self.__program_config.working_directory,
-            timeout=timeout,
+            timeout=self.max_run_time,
         )
 
         return completed_process
+
+    @staticmethod
+    def _run_in_subprocess(
+        exec: str,
+        working_dir: Path,
+        env: dict[str, str],
+        timeout: float,
+    ) -> subprocess.CompletedProcess:
+        """Run a command and capture its output, killing the whole process tree on timeout.
+
+        ``subprocess.run(..., timeout=...)`` only terminates the direct child on
+        Windows, which lets grandchildren keep the stdout/stderr pipes open and
+        makes the internal ``communicate()`` hang forever. This helper uses
+        ``Popen`` with a new process group / session so the entire tree can be
+        killed when the timeout fires.
+        """
+        popen_kwargs: dict = {
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "env": env,
+            "cwd": working_dir,
+        }
+        if platform.system() == "Windows":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            popen_kwargs["start_new_session"] = True
+
+        proc = subprocess.Popen(exec, **popen_kwargs)
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as err:
+            Program._kill_process_tree(proc.pid)
+            # Drain the pipes now that the whole tree is gone so we don't leak.
+            stdout, stderr = proc.communicate()
+            raise subprocess.TimeoutExpired(exec, timeout, output=stdout, stderr=stderr) from err
+
+        return subprocess.CompletedProcess(exec, proc.returncode, stdout, stderr)
+
+    @staticmethod
+    def _kill_process_tree(pid: int) -> None:
+        """Kill a process and all of its descendants."""
+        if platform.system() == "Windows":
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(pid)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+            )
+        else:
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
 
     # create a command string for either windows or linux
     def __buildExeCommand__(self, logger: ILogger):

@@ -274,42 +274,6 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
-
-        script {
-            name = "Start DVC diff report build"
-
-            conditions {
-                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                startsWith("teamcity.build.branch", "pull")
-            }
-
-            scriptContent = """
-                curl --fail --silent --show-error \
-                     -u %teamcity_user%:%teamcity_pass% \
-                     -X POST \
-                     -H "Content-Type: application/xml" \
-                     -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${DvcDiffComment.id}"/>
-                            <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
-                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
-                                </revision>
-                            </revisions>
-                            <properties>
-                                <property name="product" value="%product%"/>
-                            </properties>
-                            <snapshot-dependencies>
-                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
-                            </snapshot-dependencies>
-                         </build>' \
-                     "%teamcity.serverUrl%/app/rest/buildQueue"
-                if (test $? -ne 0)
-                then
-                    echo Start dvc report through TC API failed.
-                    exit 1
-                fi
-            """.trimIndent()
-        }
     }
 
     if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
