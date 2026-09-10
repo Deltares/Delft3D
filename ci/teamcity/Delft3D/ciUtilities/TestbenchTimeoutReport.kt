@@ -34,7 +34,7 @@ object TestbenchTimeoutReport : BuildType({
         param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
         param("last_n", "100")
         param("top_n", "40")
-        param("email_to", "robin.vanwestrenen@deltares.nl")
+        param("email_to", "black-ops@deltares.nl")
         checkbox(
             "send_email",
             "true",
