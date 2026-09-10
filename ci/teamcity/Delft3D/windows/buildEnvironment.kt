@@ -12,7 +12,7 @@ import Delft3D.step.*
 object WindowsBuildEnvironment : BuildType({
 
     id("WindowsBuildEnvironmentI24")
-    description = "Build-environment container images used to build the Delft3D software on Windows."
+    description = "Images used to compile Delft3D on Windows."
 
     templates(
         TemplateMergeRequest,
@@ -22,7 +22,7 @@ object WindowsBuildEnvironment : BuildType({
         TemplateBuildConcurrency
     )
 
-    name = "Delft3D Windows build environment containers"
+    name = "Build environment"
     buildNumberPattern = "%build.vcs.number%"
 
     params {

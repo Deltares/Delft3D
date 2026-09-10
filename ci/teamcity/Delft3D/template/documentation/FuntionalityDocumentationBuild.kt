@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 object TemplateFunctionalityDocumentation : Template({
     name = "Generate functionality report"
-    description = "This build configuration generates functionality reports for the Delft3D engine."
+    description = "Generate functionality reports for a Delft3D engine."
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
