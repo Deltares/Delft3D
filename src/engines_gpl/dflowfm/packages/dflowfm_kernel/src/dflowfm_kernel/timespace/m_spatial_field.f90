@@ -230,38 +230,38 @@ contains
       if (comparereal(input%data_value, dmiss) /= 0) then
          if (len_trim(input%forcing_file_type) > 0 .or. len_trim(input%forcing_file) > 0) then
             write (msgbuf, '(5a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
-               ']. Fields ''forcingFileType'' and ''forcingFile'' cannot be combined with ''dataValue''.'
+                  ']. Fields ''dataFileType'' and ''dataFile'' cannot be combined with ''dataValue''.'
             call err_flush()
             return
          end if
          input%forcing_file_type = "datavalue"
          input%filetype = DATAVALUE
       else
-         ! ForcingFileType is required only if `dataValue` is not present.
-         ! Do all ForcingFile related validation and option setting in this branch.
+         ! dataFileType is required only if `dataValue` is not present.
+         ! Do all dataFile related validation and option setting in this branch.
          if (len_trim(input%forcing_file_type) == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' is missing.'
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' is missing.'
             call err_flush()
             return
          end if
 
          input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
          if (input%filetype == FILE_TYPE_UNKNOWN) then
-            write (msgbuf, '(7a)') 'Field ''forcingFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
-               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' has unknown value.'
+            write (msgbuf, '(7a)') 'Field ''dataFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' has unknown value.'
             call err_flush()
             return
          end if
 
          if (len_trim(input%forcing_file) == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''dataFile'' is missing.'
             call err_flush()
             return
          end if
    
          if (file_extension_conflicts_with_type(input%forcing_file, input%filetype)) then
             write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
-               ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
+               ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
                trim(input%forcing_file_type), '''.'
             call err_flush()
             return
@@ -311,7 +311,7 @@ contains
                trim(input%interpolation_method), ' in block in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
          else
             write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
-               '] nor an internal value associated with given ''forcingFileType'':', trim(input%forcing_file_type), '.'
+               '] nor an internal value associated with given ''dataFileType'':', trim(input%forcing_file_type), '.'
          end if
          call err_flush()
          return
