@@ -365,7 +365,7 @@ contains
          ncstdnames(1) = 'surface_downward_eastward_stress'
          ncvarnames(2) = 'tauv' ! northward wind stress
          ncstdnames(2) = 'surface_downward_northward_stress'
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
          ncvarnames(1) = 'msl' ! mean sea-level pressure

@@ -11845,4 +11845,15 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e03_f20_c08_poc_dependency" ref="dwaq_default">
+    <path version="DVC">e03_waq/f20_flocculation/c08_poc_dependency</path>
+    <checks>
+      <file name="depos.hda" type="NEFIS">
+        <parameters name="DELWAQ_RESULTS">
+          <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+          <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
 </testCases>
