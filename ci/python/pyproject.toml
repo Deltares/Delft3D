@@ -36,7 +36,12 @@ dimrset_delivery = [
     "python-certifi-win32~=1.6.1 ; platform_system == 'Windows'",
     "openpyxl~=3.1.5",
 ]
-all = ["ci-tools[verschilanalyse,dimrset_delivery,dev]"]
+testbench_timeout_report = [
+    "lxml~=5.3.0",
+    "lxml-stubs~=0.5.1",
+    "matplotlib~=3.10.0",
+]
+all = ["ci-tools[verschilanalyse,dimrset_delivery,dev,testbench_timeout_report]"]
 
 [project.scripts]
 minio-sync = "ci_tools.minio.synchronize.cli:CommandLine.run"

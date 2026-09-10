@@ -151,9 +151,10 @@ project {
         buildType(LifecycleScanMain)
         buildType(LifecycleScanTestBench)
         buildType(LifecycleScanCiTools)
+        buildType(TestbenchTimeoutReport)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools, TestbenchTimeoutReport
         )
     }
 
