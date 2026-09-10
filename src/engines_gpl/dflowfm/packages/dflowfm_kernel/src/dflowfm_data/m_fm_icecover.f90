@@ -399,7 +399,9 @@ contains
          !
          ! Calculate heat flux out of the ocean
          !
-         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * max(-0.01_fp, min(0.0_fp, tempwat - t_freeze))
+         ! the heat flux from ice to water is negative since the water temperature is at or above freezing point
+         ! assume at least a temperature difference of 0.01 degC to represent some sediment heat release that is not otherwise accounted for in the model
+         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * min(-0.01_fp, t_freeze - tempwat)
          !
          ! adaptation of QH_ICE2WAT conform KNMI approach (QH_ICE2WAT = 2.4 W/m2)
          !

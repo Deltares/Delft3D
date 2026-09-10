@@ -251,16 +251,16 @@ contains
 
          end if
 
-         if (kmx > 0 .and. soiltempthick > 0.0_dp) then
+         if (soiltempthick > 0.0_dp) then
             if (solar_radiation_flux > 0.0_dp) then
-               solar_radiation_soil_heat_flux = net_solar_radiation_in_cell * explo
+               solar_radiation_soil_heat_flux = net_solar_radiation_in_cell * explo * ice_free_area_fraction
             else
                solar_radiation_soil_heat_flux = 0.0_dp
             end if
             soil_water_heat_transfer_coefficient = 1.0_dp / (0.5_dp * soiltempthick) ! thermalcond sand = 0.15 -> 4 for dry -> saturated, [weighted_sums/mK]
             bottom_water_temperature = constituents(itemp, k_bot)
             soil_to_water_heat_flux = soil_water_heat_transfer_coefficient * (bottom_water_temperature - tbed(n))
-            heatsrc0(k_bot) = heatsrc0(k_bot) - heat_capacity_water_cell_area * soil_to_water_heat_flux * ice_free_area_fraction
+            heatsrc0(k_bot) = heatsrc0(k_bot) - heat_capacity_water_cell_area * soil_to_water_heat_flux
             rdtsdz = rcpi * dts / soiltempthick
             tbed(n) = (tbed(n) + rdtsdz * (solar_radiation_soil_heat_flux + soil_water_heat_transfer_coefficient * bottom_water_temperature)) / (1.0_dp + soil_water_heat_transfer_coefficient * rdtsdz)
          end if
