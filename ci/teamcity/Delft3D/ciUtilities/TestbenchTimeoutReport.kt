@@ -46,6 +46,8 @@ object TestbenchTimeoutReport : BuildType({
         param("env.EMAIL_PORT", "25")
         param("env.EMAIL_FROM", "black-ops@deltares.nl")
         param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl.replace(Regex("/+$"), ""))
+        param("teamcity_user", DslContext.getParameter("teamcity_user"))
+        password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
     }
 
     if (DslContext.getParameter("enable_testbench_timeout_report_trigger").lowercase() == "true") {
@@ -86,8 +88,8 @@ object TestbenchTimeoutReport : BuildType({
             dockerRunParameters = """
                 --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
                 --env UV_LINK_MODE=copy
-                --env TEAMCITY_USERNAME=%teamcity.auth.userId%
-                --env TEAMCITY_PASSWORD=%teamcity.auth.password%
+                --env TEAMCITY_USERNAME=%teamcity_user%
+                --env TEAMCITY_PASSWORD=%teamcity_pass%
                 --rm
             """.trimIndent()
         }
