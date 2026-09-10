@@ -9,7 +9,7 @@ import Delft3D.linux.containers.*
 
 object LinuxRuntimeContainers : BuildType({
 
-    description = "Runtime and TestBench images; runtime is the Harbor release image."
+    description = "Build Runtime and TestBench images; runtime is the Harbor release image."
 
     templates(
         TemplateLinuxAgent,
