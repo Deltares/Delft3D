@@ -25,8 +25,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
 
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
