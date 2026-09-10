@@ -27,62 +27,71 @@ namespace pre_c_sumo
     {
     public:
         /**
-         * @brief Adds a connected sink and source entry to this instance.
-         * @param sink_x Sink X coordinate.
-         * @param sink_y Sink Y coordinate.
-         * @param sink_z_bottom Sink lower Z extent.
-         * @param sink_z_top Sink upper Z extent.
-         * @param source_x Source X coordinate.
-         * @param source_y Source Y coordinate.
-         * @param source_z_bottom Source lower Z extent.
-         * @param source_z_top Source upper Z extent.
-         * @param discharge Discharge value.
-         * @param momentum_magnitude_weighted Momentum magnitude value, weighted.
-         * @param momentum_direction Momentum direction.
+         * @anchor pre_c_sumo_connected_sink_sources_add_entry
+         * @brief Adds one connected sink/source entry to the instance.
+         * @param sink_x Sink x-coordinate.
+         * @param sink_y Sink y-coordinate.
+         * @param sink_z_bottom Lower z-boundary of the sink.
+         * @param sink_z_top Upper z-boundary of the sink.
+         * @param source_x Source x-coordinate.
+         * @param source_y Source y-coordinate.
+         * @param source_z_bottom Lower z-boundary of the source.
+         * @param source_z_top Upper z-boundary of the source.
+         * @param discharge Discharge value [m³/s].
+         * @param momentum_magnitude_weighted Weighted momentum magnitude.
+         * @param momentum_direction Momentum direction [rad].
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
                        double source_y, double source_z_bottom, double source_z_top, double discharge,
                        double momentum_magnitude_weighted, double momentum_direction);
 
         /**
-         * @brief Clear all data from this class instance.
+         * @anchor pre_c_sumo_connected_sink_sources_clear
+         * @brief Clears all stored data from the instance.
          */
         void clear();
 
         /**
-         * @brief Get the number of entries stored.
+         * @anchor pre_c_sumo_connected_sink_sources_get_number_of_entries
+         * @brief Returns the number of stored source/sink entries.
+         * @return Number of entries in the aligned vectors.
          */
         std::size_t get_number_of_entries() const;
 
         /**
-         * @brief Writes all accrued data to preCICE as the specified participant on the specified
-         * mesh and accompanying vertices. After writing the data, the accrued data is cleared.
-         * @param participant preCICE participant of the connection
-         * @param mesh_name Provided mesh name
-         * @param precice_ids Vertex ID's registered on the provided mesh.
+         * @anchor pre_c_sumo_connected_sink_sources_write_to_precice
+         * @brief Writes all accrued data to preCICE for the specified participant and mesh.
+         *
+         * After writing the data, the stored values are cleared.
+         *
+         * @param participant preCICE participant used for the write operation.
+         * @param mesh_name Name of the mesh on which vertices are registered.
+         * @param precice_ids Vertex IDs registered on the provided mesh.
          * @return std::expected containing void on success or pre_C_sumo::ConnectedSinkSourcesError on failure;
          */
         [[nodiscard]] std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> write_to_precice(
             precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids);
 
         /**
-         * @brief Read-only access to converted discharge values - used by unit test.
+         * @anchor pre_c_sumo_connected_sink_sources_get_discharge_value
+         * @brief Returns the discharge values in read-only form.
+         * @return Vector of discharge values used by unit tests and diagnostics.
          */
         const std::vector<double>& get_discharge_value() const { return discharge_vector; }
 
     private:
         // attributes
-        std::vector<double> sink_x_vector;                      //< X coordinates of sinks
-        std::vector<double> sink_y_vector;                      //< Y coordinates of sinks
-        std::vector<double> sink_z_bottom_vector;               //< Lowest Z coordinate of sink extents
-        std::vector<double> sink_z_top_vector;                  //< Highest Z coordinate of sink extents
-        std::vector<double> source_x_vector;                    //< X coordinates of sources
-        std::vector<double> source_y_vector;                    //< Y coordinates of sources
-        std::vector<double> source_z_bottom_vector;             //< Lowest Z coordinate of source extents
-        std::vector<double> source_z_top_vector;                //< Highest Z coordinate of source extents
-        std::vector<double> discharge_vector;                   //< Discharges [m^3/s]
-        std::vector<double> momentum_magnitude_weighted_vector; //< Momentum magnitude weighted [kg m/s]
-        std::vector<double> momentum_direction_vector;          //< Momentum direction [rad]
+        std::vector<double> sink_x_vector;                      ///< X coordinates of sinks.
+        std::vector<double> sink_y_vector;                      ///< Y coordinates of sinks.
+        std::vector<double> sink_z_bottom_vector;               ///< Lowest z-boundary of sink extents.
+        std::vector<double> sink_z_top_vector;                  ///< Highest z-boundary of sink extents.
+        std::vector<double> source_x_vector;                    ///< X coordinates of sources.
+        std::vector<double> source_y_vector;                    ///< Y coordinates of sources.
+        std::vector<double> source_z_bottom_vector;             ///< Lowest z-boundary of source extents.
+        std::vector<double> source_z_top_vector;                ///< Highest z-boundary of source extents.
+        std::vector<double> discharge_vector;                   ///< Discharges [m³/s].
+        std::vector<double> momentum_magnitude_weighted_vector; ///< Weighted momentum magnitude [kg m/s].
+        std::vector<double> momentum_direction_vector;          ///< Momentum direction [rad].
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
 

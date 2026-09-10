@@ -8,15 +8,17 @@
 namespace pre_c_sumo
 {
     /**
+     * @anchor pre_c_sumo_constituent_count
      * @brief Number of additional constituent slots beyond temperature and salinity.
      */
     inline constexpr std::size_t constituent_count = 5;
 
     /**
+     * @anchor pre_c_sumo_endpoint
      * @brief Shared endpoint fields for NF2FF source/sink entries.
      *
-     * One endpoint can represent a source or a sink. The @ref connected_id links
-     * paired source/sink records (-1 means unpaired).
+     * One endpoint can represent a source or a sink. The @ref connected_id links paired
+     * source/sink records and uses -1 to indicate that no partner is present.
      */
     struct Endpoint
     {
@@ -30,6 +32,7 @@ namespace pre_c_sumo
         double vertical_boundary_upper{}; ///< Upper vertical boundary of injection/withdrawal zone [m].
 
         /**
+         * @anchor pre_c_sumo_endpoint_discharge
          * @brief Fully weighted discharge [m3/s].
          *
          * Negative values represent withdrawals (sink/intake).
@@ -38,6 +41,7 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_momentum
      * @brief Optional momentum information for a source.
      */
     struct Momentum
@@ -47,6 +51,7 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_constituents
      * @brief Optional constituent concentrations for a source.
      *
      * Values are absolute concentrations.
@@ -66,36 +71,39 @@ namespace pre_c_sumo
     };
 
     /**
+     * @anchor pre_c_sumo_source
      * @brief NF2FF source entry.
      */
     struct Source
     {
-        Endpoint endpoint;
+        Endpoint endpoint; ///< Source endpoint geometry and discharge characteristics.
         std::optional<Momentum> momentum;         ///< Optional momentum data used for directional source forcing.
         std::optional<Constituents> constituents; ///< Optional constituent concentrations carried by this source.
     };
 
     /**
-     * @brief Attach momentum data to a source.
+     * @anchor pre_c_sumo_add_momentum
+     * @brief Attaches momentum data to a source.
      *
      * Momentum is only valid for non-negative endpoint discharge. If the endpoint has
      * negative discharge, this function leaves the endpoint unchanged.
      *
      * @param source Source endpoint to update.
      * @param momentum Momentum information to attach.
-     * @return true if momentum was attached; false if the endpoint discharge is negative.
+     * @return True if momentum was attached; false if the endpoint discharge is negative.
      */
     bool addMomentum(Source& source, const Momentum& momentum);
 
     /**
-     * @brief Attach constituent data to a source.
+     * @anchor pre_c_sumo_add_constituents
+     * @brief Attaches constituent data to a source.
      *
      * Constituents are only valid for non-negative endpoint discharge. If the endpoint
      * has negative discharge, this function leaves the endpoint unchanged.
      *
      * @param source Source endpoint to update.
      * @param constituents Constituent concentrations to attach.
-     * @return true if constituents were attached; false if the endpoint discharge is negative.
+     * @return True if constituents were attached; false if the endpoint discharge is negative.
      */
     bool addConstituents(Source& source, const Constituents& constituents);
 } // namespace pre_c_sumo

@@ -26,9 +26,6 @@ namespace pre_c_sumo
         momentum_direction_vector.push_back(momentum_direction);
     }
 
-    /**
-     * @brief Clear all data from this class instance.
-     */
     void ConnectedSinkSources::clear()
     {
         sink_x_vector.clear();
@@ -44,18 +41,8 @@ namespace pre_c_sumo
         momentum_direction_vector.clear();
     }
 
-    /**
-     * @brief Get the number of entries stored.
-     */
     std::size_t ConnectedSinkSources::get_number_of_entries() const { return sink_x_vector.size(); }
 
-    /**
-     * @brief Writes all accrued data to preCICE as the specified participant on the specified
-     * mesh and accompanying vertices. After writing the data, the accrued data is cleared.
-     * @param participant preCICE participant of the connection
-     * @param mesh_name Provided mesh name
-     * @param precice_ids Vertex ID's registered on the provided mesh.
-     */
     std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> ConnectedSinkSources::write_to_precice(
         precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids)
     {
