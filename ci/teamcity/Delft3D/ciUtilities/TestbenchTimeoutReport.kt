@@ -17,7 +17,7 @@ object TestbenchTimeoutReport : BuildType({
     """.trimIndent()
 
     artifactRules = """
-        timeout-report/**
+        timeout-report/** => timeout-report
     """.trimIndent()
 
     templates(
