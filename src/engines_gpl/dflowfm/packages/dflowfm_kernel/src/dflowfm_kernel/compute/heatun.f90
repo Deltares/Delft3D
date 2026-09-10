@@ -247,6 +247,16 @@ contains
 
             else
                heatsrc0(n) = heatsrc0(n) + solar_radiation_flux * ice_free_area_fraction
+               diffuse_attenuation_coefficient_in_cell(1) = diffuse_attenuation_coefficient(1)
+               if (secchi_depth_is_spatially_varying) then
+                  diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / POOLE_ATKINS_PARAMETER
+               end if
+               ratio = hs(n) / diffuse_attenuation_coefficient_in_cell(1)
+               if (ratio > 4.0_dp) then
+                  explo = 0.0_dp
+               else
+                  explo = exp(-ratio)
+               end if
             end if
 
          end if
