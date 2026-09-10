@@ -87,12 +87,7 @@ def test_make_summary_workbook(output_type: OutputType) -> None:
         row_count=43,
     )
 
-    outputs = {
-        "fail_2d": fail_2d_output,
-        "ok_2d": ok_2d_output,
-        "fail_3d": fail_3d_output,
-        "ok_3d": ok_3d_output
-        }
+    outputs = {"fail_2d": fail_2d_output, "ok_2d": ok_2d_output, "fail_3d": fail_3d_output, "ok_3d": ok_3d_output}
     count_header = ExcelExporter.VERSCHILLENTOOL_COUNT_HEADERS[output_type]
     sheet_title = ExcelExporter.VERSCHILLENTOOL_SHEET_NAMES[output_type]
     if output_type == OutputType.HIS:
@@ -103,7 +98,7 @@ def test_make_summary_workbook(output_type: OutputType) -> None:
     # Act
     workbook = ExcelExporter.make_summary_workbook(verschilanalyse_comparison)
     sheet = workbook[sheet_title]
-    header_row, fail_2d_row, fail_3d_row,ok_2d_row, ok_3d_row = sheet["A1:R5"]
+    header_row, fail_2d_row, fail_3d_row, ok_2d_row, ok_3d_row = sheet["A1:R5"]
 
     # Assert
     assert header_row[1].value == count_header
@@ -127,4 +122,3 @@ def test_make_summary_workbook(output_type: OutputType) -> None:
     assert ok_3d_row[1].value == 42
     assert all(cell.fill != red_fill and not str(cell.value).startswith("❌") for cell in ok_3d_row[2:])
     assert not any(str(cell.value) == "N/A" for cell in ok_3d_row[2:])
-

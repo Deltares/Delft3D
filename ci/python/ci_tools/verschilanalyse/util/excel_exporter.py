@@ -111,7 +111,7 @@ class ExcelExporter:
             row[9].fill = red_fill
             row[9].value = f"❌ {row[9].value}"
 
-        if isinstance(stats,VerschillentoolOutput3D):
+        if isinstance(stats, VerschillentoolOutput3D):
             if stats.salinity.avg_max > Tolerances.max(stats.output_type, Variable.SALINITY):
                 row[10].fill = red_fill
                 row[10].value = f"❌ {row[10].value}"
