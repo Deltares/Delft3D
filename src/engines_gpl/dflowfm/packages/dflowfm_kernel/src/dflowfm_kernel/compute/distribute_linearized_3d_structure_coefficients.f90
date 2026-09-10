@@ -26,10 +26,17 @@ contains
       real(kind=dp) :: hhi(3), zti(3), zbi(3)
       real(kind=dp) :: wstr, gatefraction
       real(kind=dp) :: au1, au2, au3
+      
+      hhi = 0.0_dp
+      zti = 0.0_dp
 
       genstr => structure%generalst
+      zbi(1) = genstr%zs_actual
+      zbi(2) = genstr%gateLowerEdgeLevel_actual + genstr%gatedoorheight
+      zbi(3) = zbi(1)
+
       do L0 = 1, structure%numlinks
-         Lf = structure%linknumbers(L0)
+         Lf = abs(structure%linknumbers(L0))
          k1 = ln(1, Lf)
          k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
@@ -69,6 +76,7 @@ contains
             ff3(:, 0) = 0.0_dp
             do LL = Lb, Lt
                kk = ln(iup, LL)
+               ff3(:, LL - Lb + 1) = 0.0_dp
                if (genstr%au(1, L0) > 0) then
                   ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
                end if

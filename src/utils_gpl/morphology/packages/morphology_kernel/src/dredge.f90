@@ -24,15 +24,13 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!-------------------------------------------------------------------------------
+
 module m_dredge
-    private
+   implicit none
+   private
+   public dredge
     
-    public dredge
-    
-    contains
+   contains
     
 subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
             & dbodsd, kfsed, s1, timhr, morhr, dadpar, error, &
@@ -43,8 +41,6 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     use dredge_data_module
     use morphology_data_module
     use message_module
-
-    implicit none
 
     type (dredge_type)                                   , target        :: dadpar     !< data structure for dredging and dumping settings
     type (sedtra_type)                                   , target        :: gderosed   !< data structure for sediment variables
@@ -156,7 +152,6 @@ subroutine update_active_flags(dadpar, dt, morhr, timhr, julrefdate, lundia, err
     use table_handles
     use dredge_data_module
     use message_module
-    implicit none
     
     type (dredge_type)            , target  , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     real(fp)                                , intent(in)    :: dt         !< time step
@@ -206,7 +201,6 @@ end subroutine update_active_flags
 subroutine determine_max_dump_capacity(dadpar, nmlb, nmub, s1, kfsed, dpsign, dps)  
     use precision
     use dredge_data_module
-    implicit none
     
     type (dredge_type)            , target  , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     integer                                 , intent(in)    :: nmlb       !< lower array bound for spatial index nm
@@ -274,7 +268,7 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
     use dredge_data_module
     use morphology_data_module
     use message_module
-    implicit none
+    use m_sortindices, only: sortindices
       
     real(fp)                                 , intent(in)    :: dt         !< time step
     integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
@@ -1203,8 +1197,7 @@ end subroutine calculate_dredging
 subroutine distribute_sediments_over_dump_areas(lsedtot, dadpar)
     use precision
     use dredge_data_module
-    implicit none
-      
+
     integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
     type (dredge_type)          , target     , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     
@@ -1374,7 +1367,7 @@ subroutine calculation_of_dumping(dadpar, lsedtot, nmmax, nmlb, nmub, comm, lund
     use precision
     use dredge_data_module
     use message_module
-    implicit none
+    use m_sortindices, only: sortindices
 
     type (dredge_type)                          , target , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     integer                                              , intent(in)    :: lsedtot    !< total number of sediment fractions

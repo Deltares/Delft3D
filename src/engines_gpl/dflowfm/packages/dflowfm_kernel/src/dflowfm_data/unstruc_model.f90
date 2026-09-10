@@ -25,8 +25,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
 
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
@@ -2182,7 +2180,6 @@ contains
       call prop_get(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
       call prop_get(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
 
-!    call prop_get(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
       ! Default basename of Delwaq files is model identifier:
       if (len_trim(md_waqfilebase) == 0) then
          md_waqfilebase = md_ident
@@ -2438,6 +2435,10 @@ contains
             call mess(LEVEL_WARN, 'MbaInterval was not specified, will use DtMassBalance for backwards compatibility.')
             ti_mba = md_dt_waqbal
          end if
+      end if
+      if (ti_mba > 0.0_dp .and. len_trim(md_mbafile) == 0 .and. len_trim(md_extfile) == 0) then
+         call mess(LEVEL_WARN, 'MbaInterval is positive, but no MbaFile was specified. Mass balance area output has been disabled.')
+         ti_mba = 0.0_dp
       end if
       if (ti_mba > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
          if (ti_mba < md_dt_waqproc .or. modulo(ti_mba, md_dt_waqproc) /= 0.0_dp) then
@@ -3880,8 +3881,6 @@ contains
 
       call prop_set(prop_ptr, 'output', 'StatsInterval', ti_stat, 'Screen step output interval in seconds simulation time, if negative in seconds wall clock time')
 
-      ! call prop_set(prop_ptr, 'output', 'SnapshotDir', trim(md_snapshotdir), 'Directory where snapshots/screendumps are saved.')
-
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
       write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
@@ -4072,19 +4071,29 @@ contains
 
       implicit none
 
-      integer :: mdia2, mdia, ierr
+      integer :: mdia2, mdia, ierr, connected_unit
       character(len=256) :: rec
-      logical :: line_copied
+      character(len=512) :: diagnostic_file
+      logical :: line_copied, is_open
 
       call makedir(getoutputdir()) ! No problem if it exists already.
 
+      diagnostic_file = trim(getoutputdir())//trim(md_ident)//'.dia'
+      call getmdia(mdia)
+      if (mdia /= 0) then
+         inquire (file=trim(diagnostic_file), opened=is_open, number=connected_unit)
+         if (is_open .and. connected_unit == mdia) then
+            ! The diagnostics file may already be connected to the current unit, e.g. when running unit tests.
+            ! Copying a file onto itself would keep extending it, preventing the read from reaching end-of-file.
+            return
+         end if
+      end if
+
 !   SPvdP : check status of file, mostly copied from inidia
-      open (newunit=MDIA2, FILE=trim(getoutputdir())//trim(md_ident)//'.dia', action='readwrite', IOSTAT=IERR)
+      open (newunit=MDIA2, FILE=trim(diagnostic_file), action='readwrite', IOSTAT=IERR)
 
       line_copied = .false.
       if (ierr == 0) then
-
-         call getmdia(mdia)
 
          if (mdia /= 0) then ! rename diagnostic file to md_ident.dia
             rewind (mdia)

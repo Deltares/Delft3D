@@ -11,7 +11,7 @@ import Delft3D.linux.containers.*
 
 object LinuxConanPackages : BuildType({
 
-    description = "Build all Conan packages from source and push them to the Deltares Nexus remote."
+    description = "Build Conan packages and push them to Nexus."
 
     templates(
         TemplateLinuxAgent,

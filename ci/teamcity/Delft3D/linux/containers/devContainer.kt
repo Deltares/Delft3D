@@ -11,8 +11,8 @@ import java.io.File
 import Trigger
 
 object LinuxDevContainer : BuildType({
-    name = "Dev Container"
-    description = "Test Build the dev container"
+    name = "Dev container"
+    description = "Build the development container."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(

@@ -1,14 +1,13 @@
 [General]
-fileVersion=2.02
-fileType=extForce
+fileVersion = 3.00
+fileType    = extForce
 
 [Boundary]
-quantity=waterlevelbnd
-locationFile=boundarysea.pli
-forcingFile=boundarysea.bc
+quantity     = waterlevelbnd
+locationFile = boundarysea.pli
+forcingFile  = boundarysea.bc
 
 [Boundary]
-quantity=dischargebnd
-locationFile=boundaryriver.pli
-forcingFile=boundaryriver.bc
-
+quantity     = dischargebnd
+locationFile = boundaryriver.pli
+forcingFile  = boundaryriver.bc

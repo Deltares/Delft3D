@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 object TemplateValidationDocumentation : Template({
     name = "Generate validation report"
-    description = "This build configuration generates validation reports for the Delft3D engine."
+    description = "Generate validation reports for a Delft3D engine."
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """

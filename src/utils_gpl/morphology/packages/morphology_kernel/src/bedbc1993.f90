@@ -1,57 +1,58 @@
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
+module m_bedbc1993
+   implicit none
+   private
+   public bedbc1993
+
+contains
+
 subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
                    & zumod     ,d50       ,d90       ,z0cur     ,z0rou     , &
-                   & dstar     ,taucr     ,aks       ,usus      ,zusus     , &
+                   & dstar     ,taucr1    ,aks       ,usus      ,zusus     , &
                    & uwb       ,delr      ,muc       ,tauwav    ,ustarc    , &
                    & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
-                   & dss       ,mudfrac   ,eps       ,aksfac    ,rwave     , &
+                   & dss       ,eps       ,aksfac    ,rwave     , &
                    & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                   & vonkar    ,wave      ,tauadd    ,betam     ,awb       )
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
+                   & vonkar    ,wave      ,tauadd    ,awb       )
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed roughness and shear stress parameters
 ! Van Rijn (1993,2000)
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts
-    !
-    implicit none
 !
 ! Arguments
 !
     real(fp), intent(out)   :: aks    !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: awb
-    real(fp), intent(in)    :: betam
     real(fp), intent(out)   :: caks
     real(fp), intent(in)    :: d50
     real(fp), intent(in)    :: d90
@@ -60,12 +61,11 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp), intent(in)    :: dstar
     real(fp), intent(in)    :: h1
     real(fp), intent(out)   :: muc
-    real(fp), intent(in)    :: mudfrac
     real(fp), intent(in)    :: rhowat !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: ta
     real(fp), intent(out)   :: taubcw
     real(fp), intent(out)   :: tauc
-    real(fp), intent(in)    :: taucr
+    real(fp), intent(in)    :: taucr1
     real(fp), intent(out)   :: taurat
     real(fp), intent(out)   :: tauwav
     real(fp), intent(in)    :: tp     !  Description and declaration in esm_alloc_real.f90
@@ -103,7 +103,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp) :: ra
     real(fp) :: rc
     real(fp) :: rw
-    real(fp) :: taucr1   ! critical shear stress corrected for mud fraction
 !
 !! executable statements -------------------------------------------------------
 !
@@ -257,7 +256,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     ! Note: this ignores bed-slope effects on initiation of motion
     !
     taubcw = muc*tauc + muw*tauwav
-    taucr1 = taucr*(1.0_fp + mudfrac)**betam
     taurat = taubcw/taucr1
     !
     ! Calculate Van Rijn's Dimensionless bed-shear stress for reference
@@ -286,3 +284,5 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
        endif
     endif
 end subroutine bedbc1993
+
+end module m_bedbc1993

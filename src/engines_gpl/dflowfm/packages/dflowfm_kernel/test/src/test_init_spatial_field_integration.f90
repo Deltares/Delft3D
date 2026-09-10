@@ -522,7 +522,7 @@ contains
    !! connection when its provider-specific source mapping does not support BC.
    subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_atmosphericpressure
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -564,11 +564,11 @@ contains
       call tree_destroy(bnd_ptr)
 
       call f90_expect_true(success, "init_spatial_fields should use the generic fallback for bcascii airpressure")
-      call f90_expect_true(item_atmosphericpressure /= -999, "airpressure should have an EC target item")
+      call f90_expect_true(item_airpressure /= -999, "airpressure should have an EC target item")
 
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 0.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
       value_at_t0 = air_pressure(1)
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_atmosphericpressure, irefdate, tzone, tunit, 50.0_dp)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
       value_at_t50 = air_pressure(1)
 
       call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "airpressure at t=0 should be read from the BC file")
@@ -576,6 +576,66 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_airpressure_bcascii_uses_generic_source_fallback
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_atmosphericpressure_alias_works_as_airpressure, test_atmosphericpressure_alias_works_as_airpressure,
+   !> Verifies that the 'atmosphericpressure' ext alias correctly works with 'airpressure' .bc data.
+   subroutine test_atmosphericpressure_alias_works_as_airpressure() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: AIRPRESSURE_BC = "test_airpressure.bc"
+      character(len=*), parameter :: AIRPRESSURE_EXT = "test_atmosphericpressure.ext"
+
+      call create_file(AIRPRESSURE_BC, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = airpressure", &
+                       "    unit                  = Pa", &
+                       "    0    101325.0", &
+                       "    100  101300.0"])
+
+      call create_file(AIRPRESSURE_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = atmosphericpressure", &
+                       "    dataFile     = "//AIRPRESSURE_BC, &
+                       "    dataFileType = bcascii"])
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(AIRPRESSURE_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, AIRPRESSURE_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "init_spatial_fields should map atmosphericpressure alias to airpressure")
+      call f90_expect_true(item_airpressure /= -999, "atmosphericpressure should have an EC target item")
+
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
+      value_at_t0 = air_pressure(1)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
+      value_at_t50 = air_pressure(1)
+
+      call f90_expect_near(value_at_t0, 101325.0_dp, 1.0e-6_dp, "atmosphericpressure at t=0 should be read from the BC file")
+      call f90_expect_near(value_at_t50, 101312.5_dp, 1.0e-6_dp, "atmosphericpressure at t=50 should be linearly interpolated")
+
+      call teardown_minimal_grid()
+   end subroutine test_atmosphericpressure_alias_works_as_airpressure
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,
@@ -1752,7 +1812,7 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsalinityprofile, test_initialverticalsalinityprofile,
    !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
    !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
-   !! calls setinitialverticalprofile directly with the polygon profile file..
+   !! calls setinitialverticalprofilez directly with the polygon profile file..
    subroutine test_initialverticalsalinityprofile() bind(C)
       use m_flow, only: sa1, kmx, kmxx, kbot, ktop, zws, layertype, ndkx
       use m_flowgeom, only: ndx2D, ndxi
@@ -1800,7 +1860,7 @@ contains
       call realloc(sa1, ndkx, fill=0.0_dp, keepExisting=.false.)
 
       ! zws(0:ndkx): zws(0)=bed interface, zws(1)=surface interface.
-      ! setinitialverticalprofile computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
+      ! setinitialverticalprofilez computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
       if (allocated(zws)) deallocate (zws)
       allocate (zws(0:ndkx))
       zws(0) = -10.0_dp
@@ -1837,6 +1897,164 @@ contains
       if (allocated(zws))  deallocate (zws)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsedfracprofile, test_initialverticalsedfracprofile,
+   !> Verifies that an initialverticalsedfracprofile [Spatial] block populates
+   !! the selected sediment constituent using absolute z coordinates.
+   subroutine test_initialverticalsedfracprofile() bind(C)
+      use m_flow, only: kmx, kbot, ktop, zws, ndkx
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_sediment, only: stm_included
+      use m_transportdata, only: constituents, const_names, NUMCONST
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: PROFILE_FILE = "test_sedfrac_z_profile.pol"
+      character(len=*), parameter :: EXT_FILE = "test_sedfrac_z_profile.ext"
+
+      call create_file(PROFILE_FILE, [ &
+                       "sedfracprofile", &
+                       "2  2", &
+                       "-10.0  2.0", &
+                       "  0.0  4.0"])
+      call create_file(EXT_FILE, [character(len=128) :: &
+                       "[Spatial]", &
+                       "    quantity        = initialverticalsedfracprofileSediment_sand", &
+                       "    forcingFile     = "//PROFILE_FILE, &
+                       "    forcingFileType = Polygon"])
+
+      call setup_minimal_grid()
+      ndxi = ndx
+      ndx2D = 0
+      ndkx = ndx
+      kmx = 1
+      stm_included = .true.
+      NUMCONST = 1
+
+      call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws = [-10.0_dp, 0.0_dp]
+      if (allocated(constituents)) deallocate (constituents)
+      allocate (constituents(NUMCONST, ndkx), source=0.0_dp)
+      if (allocated(const_names)) deallocate (const_names)
+      allocate (const_names(NUMCONST))
+      const_names(1) = "Sediment_sand"
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "z sediment profile initialization should succeed")
+      call f90_expect_near(constituents(1, 1), 3.0_dp, 1.0e-10_dp, &
+                           "z profile should be evaluated at the absolute layer-center elevation")
+
+      stm_included = .false.
+      NUMCONST = 0
+      kmx = 0
+      ndkx = 0
+      ndxi = 0
+      ndx2D = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(zws)) deallocate (zws)
+      if (allocated(constituents)) deallocate (constituents)
+      if (allocated(const_names)) deallocate (const_names)
+      call teardown_minimal_grid()
+   end subroutine test_initialverticalsedfracprofile
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsigmasedfracprofile, test_initialverticalsigmasedfracprofile,
+   !> Verifies that an initialverticalsigmasedfracprofile [Spatial] block populates
+   !! the selected sediment constituent using sigma coordinates.
+   subroutine test_initialverticalsigmasedfracprofile() bind(C)
+      use m_flow, only: kmx, kbot, ktop, zws, ndkx, s1
+      use m_flowgeom, only: ndx2D, ndxi, bl
+      use m_sediment, only: stm_included
+      use m_transportdata, only: constituents, const_names, NUMCONST
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: PROFILE_FILE = "test_sedfrac_sigma_profile.pol"
+      character(len=*), parameter :: EXT_FILE = "test_sedfrac_sigma_profile.ext"
+
+      call create_file(PROFILE_FILE, [ &
+                       "sedfracprofile", &
+                       "2  2", &
+                       "0.0  10.0", &
+                       "1.0  20.0"])
+      call create_file(EXT_FILE, [character(len=128) :: &
+                       "[Spatial]", &
+                       "    quantity        = initialverticalsigmasedfracprofileSediment_sand", &
+                       "    forcingFile     = "//PROFILE_FILE, &
+                       "    forcingFileType = Polygon"])
+
+      call setup_minimal_grid()
+      ndxi = ndx
+      ndx2D = 0
+      ndkx = ndx
+      kmx = 1
+      stm_included = .true.
+      NUMCONST = 1
+
+      call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
+      call realloc(bl, ndxi, fill=-10.0_dp, keepExisting=.false.)
+      call realloc(s1, ndxi, fill=0.0_dp, keepExisting=.false.)
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws = [-10.0_dp, 0.0_dp]
+      if (allocated(constituents)) deallocate (constituents)
+      allocate (constituents(NUMCONST, ndkx), source=0.0_dp)
+      if (allocated(const_names)) deallocate (const_names)
+      allocate (const_names(NUMCONST))
+      const_names(1) = "Sediment_sand"
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "sigma sediment profile initialization should succeed")
+      call f90_expect_near(constituents(1, 1), 15.0_dp, 1.0e-10_dp, &
+                           "sigma profile should be evaluated at the layer-center sigma coordinate")
+
+      stm_included = .false.
+      NUMCONST = 0
+      kmx = 0
+      ndkx = 0
+      ndxi = 0
+      ndx2D = 0
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(zws)) deallocate (zws)
+      if (allocated(constituents)) deallocate (constituents)
+      if (allocated(const_names)) deallocate (const_names)
+      call teardown_minimal_grid()
+   end subroutine test_initialverticalsigmasedfracprofile
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_field1d_global_value_applied_to_frictioncoefficient, test_field1d_global_value_applied_to_frictioncoefficient,
@@ -1997,7 +2215,7 @@ contains
    end subroutine run_scalar_meteo_case
 
    subroutine scalar_meteo_target(quantity, item_id, target_data)
-      use m_meteo, only: item_air_density, item_atmosphericpressure, item_air_temperature, item_cloudiness, &
+      use m_meteo, only: item_air_density, item_airpressure, item_air_temperature, item_cloudiness, &
                          item_dew_point_temperature, item_relative_humidity, item_latent_heat_flux, item_long_wave_radiation, &
                          item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy
       use m_wind, only: air_density, air_pressure, air_temperature, cloudiness, dew_point_temperature, relative_humidity, &
@@ -2016,7 +2234,7 @@ contains
          item_id = item_air_density
          target_data => air_density
       case ('airpressure')
-         item_id = item_atmosphericpressure
+         item_id = item_airpressure
          target_data => air_pressure
       case ('airtemperature')
          item_id = item_air_temperature

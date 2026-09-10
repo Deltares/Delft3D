@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object LifecycleScanCiTools : BuildType({
-    name = "Lifecycle Scan CiTools"
+    id("LifecycleScanCiTools")
+    name = "Nexus IQ (Python CI tools)"
+    description = "SBOM and Nexus IQ scan of ci/python."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {
@@ -45,9 +47,14 @@ object LifecycleScanCiTools : BuildType({
 
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
-            vcs {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 3
+                    minute = 30
+                }
                 branchFilter = "+:<default>"
-                perCheckinTriggering = false
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
         }
     }
