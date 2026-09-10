@@ -13,7 +13,8 @@ object ValidationDocumentMatrix : BuildType({
         TemplateValidationDocumentation
     )
 
-    name = "Validation document (Latex/PDF)"
+    name = "Validation document"
+    description = "Generate validation PDF reports."
 
     val engineOptions = listOf(
         "dflowfm:e02_dflowfm",

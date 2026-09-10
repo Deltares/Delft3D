@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 object TemplateDockerRegistry : Template({
 
-    name = "Docker Registry"
-    description = "Login to Docker Registry."
+    name = "Docker registry"
+    description = "Log in to the Docker registry."
 
     features {
         dockerSupport {
