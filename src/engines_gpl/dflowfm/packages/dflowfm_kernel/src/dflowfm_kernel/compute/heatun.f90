@@ -369,6 +369,8 @@ contains
             end if
             t_freeze = freezing_temperature(salinity)
 
+            qh_air2ice(n) = 0.0_fp
+            qh_ice2wat(n) = 0.0_fp
             if (ice_thickness(n) > MIN_ICE_SNOW_THICKNESS .or. (water_temperature_in_cell < t_freeze + 0.1_fp .and. air_temperature(n) < 0.0_fp)) then
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW

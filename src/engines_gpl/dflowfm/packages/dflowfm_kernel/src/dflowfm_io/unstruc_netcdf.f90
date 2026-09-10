@@ -6151,7 +6151,7 @@ contains
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
             if (soiltempthick > 0.0_dp) then
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, tbed, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, UNC_LOC_S, tbed, jabndnd=jabndnd_)
             end if
          end if
       end if

@@ -1675,7 +1675,7 @@ contains
                              'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QH_AIR2ICE, &
-                             'Wrihis_qh_air2ice', 'qh_air2ice', 'Heat flux from air to ice', '', &
+                             'Wrihis_heatflux_air_to_ice', 'qh_air2ice', 'Heat flux from air to ice', '', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from air to ice to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QH_ICE2WAT, &
