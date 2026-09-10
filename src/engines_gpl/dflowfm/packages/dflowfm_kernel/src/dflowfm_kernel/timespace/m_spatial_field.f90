@@ -228,6 +228,12 @@ contains
       end if
 
       if (comparereal(input%data_value, dmiss) /= 0) then
+         if (len_trim(input%forcing_file_type) > 0 .or. len_trim(input%forcing_file) > 0) then
+            write (msgbuf, '(5a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+               ']. Fields ''forcingFileType'' and ''forcingFile'' cannot be combined with ''dataValue''.'
+            call err_flush()
+            return
+         end if
          input%forcing_file_type = "datavalue"
          input%filetype = DATAVALUE
       else
@@ -241,8 +247,8 @@ contains
 
          input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
          if (input%filetype == FILE_TYPE_UNKNOWN) then
-            write (msgbuf, '(7a)') 'Field ''forcingFile'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
-               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' has unknown value.'
+            write (msgbuf, '(7a)') 'Field ''forcingFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' has unknown value.'
             call err_flush()
             return
          end if
