@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import logging
 from pathlib import Path
 
@@ -20,7 +21,8 @@ def load_catalog(csv_path: Path, configs_root: Path) -> pd.DataFrame:
     timeout and set ``timeout_conflict``.
     """
     rows: list[dict[str, object]] = []
-    table = pd.read_csv(csv_path)
+    with csv_path.open(newline="", encoding="utf-8") as handle:
+        table = pd.DataFrame(list(csv.DictReader(handle)))
     active_flag = table["all-testbench"].astype(str).str.upper().eq("TRUE")
     for relative in table.loc[active_flag, "#config"].dropna().astype(str).str.strip():
         platform = _platform(relative)

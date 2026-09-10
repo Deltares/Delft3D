@@ -3,4 +3,4 @@ fm sample,dimr/sample_lnx64.xml,TRUE,FALSE
 fm sample conflict,dimr/sample_lnx64_conflict.xml,TRUE,FALSE
 fm sample win,dimr/sample_win64.xml,TRUE,FALSE
 fm inactive,dimr/sample_inactive.xml,FALSE,FALSE
-fm missing,dimr/does_not_exist_lnx64.xml,TRUE,FALSE
+fm missing,dimr/does_not_exist_lnx64.xml,TRUE,FALSE,comment with, extra, commas
