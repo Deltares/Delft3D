@@ -5082,7 +5082,9 @@ subroutine consolidate_decon(this, nm, dtmor)
     ! here we need separate gibson heights for mud and sand
     thmudgibson_new    = 0.0_fp
     thsandgibson_new   = 0.0_fp
+    thconlyr = 0.0_fp
     do k = 1,nconlyr
+        thconlyr = thconlyr + thlyr(k,nm)
         do l = 1, this%settings%nfrac
             if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
                 thmudgibson_new = thmudgibson_new + msed(l,k,nm)/this%settings%rhofrac(l)
@@ -5099,6 +5101,7 @@ subroutine consolidate_decon(this, nm, dtmor)
        thconlyreqm = thsandgibson_new + nfd/(nfd - 1.0)*ksigma/ag/(rhos-rhow(nm))*(ag*(rhos-rhow(nm))*thmudgibson_new/ksigma)**((nfd-1.0)/nfd)
        ! don't consolidate more than the sand skeleton can support, i.e. don't consolidate below the minimum porosity of sand
        thconlyreqm = max(thconlyreqm, thsandgibson_new/(1.0_fp - MIN_POROSITY_SAND))
+       thconlyreqm = thconlyr ! we don't have compaction/expansion yet, use current thickness
 
        if (thconlyreqm > this%settings%max_thick_decon) then
           ! move (thconlyreqm-max_thick_decon) to layer nconlyr+1:nlyr ...
