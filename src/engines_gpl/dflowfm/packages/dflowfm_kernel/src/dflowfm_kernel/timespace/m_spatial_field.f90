@@ -328,24 +328,23 @@ contains
 
    end function validate_spatial_field_input
 
+   !> Checks whether a forcing file extension is compatible with its file type.
    function file_extension_conflicts_with_type(forcing_file, file_type) result(conflicts)
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
                        SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR
-      character(len=*), intent(in) :: forcing_file
-      integer, intent(in) :: file_type
-      logical :: conflicts
+      character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
+      integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
+      logical :: conflicts !< `.true.` when the file extension is incompatible with file_type.
 
       integer :: dot_pos
       character(len=16) :: ext
 
+      ext = ''
       dot_pos = index(trim(forcing_file), '.', back=.true.)
-      if (dot_pos == 0) then
-         conflicts = .true.
-         return
+      if (dot_pos > 0) then
+         ext = str_tolower(trim(forcing_file(dot_pos:)))
       end if
-
-      ext = str_tolower(trim(forcing_file(dot_pos:)))
 
       select case (file_type)
       case (FIELD1D)
