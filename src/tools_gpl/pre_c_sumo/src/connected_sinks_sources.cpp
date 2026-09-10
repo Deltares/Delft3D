@@ -24,7 +24,7 @@ namespace pre_c_sumo
         discharge_vector.push_back(discharge);
         momentum_magnitude_weighted_vector.push_back(momentum_magnitude_weighted);
         momentum_direction_vector.push_back(momentum_direction);
-        for (int constituent_index = 0; constituent_index < max_number_of_consituents; constituent_index++)
+        for (std::size_t constituent_index = 0; constituent_index < max_number_of_consituents; constituent_index++)
         {
             if (constituent_index < constituents.size())
             {
