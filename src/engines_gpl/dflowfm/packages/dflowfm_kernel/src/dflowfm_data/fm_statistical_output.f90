@@ -1674,6 +1674,14 @@ contains
                              'Wrihis_snow_temperature', 'snow_temperature', 'snow temperature', 'temperature_in_surface_snow', &
                              'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_QH_AIR2ICE, &
+                             'Wrihis_qh_air2ice', 'qh_air2ice', 'Heat flux from air to ice', '', &
+                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from air to ice to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_QH_ICE2WAT, &
+                             'Wrihis_qh_ice2wat', 'qh_ice2wat', 'Heat flux from ice to water', '', &
+                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from ice to water to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
 
       ! Sediment model
       call add_output_config(config_set_his, IDX_HIS_SED, &
@@ -2912,6 +2920,12 @@ contains
             end if
             if (IPNT_SNOW_TEMPERATURE > 0) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SNOW_TEMPERATURE), valobs(:, IPNT_SNOW_TEMPERATURE))
+            end if
+            if (IPNT_QH_AIR2ICE > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QH_AIR2ICE), valobs(:, IPNT_QH_AIR2ICE))
+            end if
+            if (IPNT_QH_ICE2WAT > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QH_ICE2WAT), valobs(:, IPNT_QH_ICE2WAT))
             end if
          end if
 

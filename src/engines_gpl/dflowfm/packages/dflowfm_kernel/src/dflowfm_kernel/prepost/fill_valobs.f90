@@ -784,10 +784,10 @@ contains
    subroutine collect_ice_values(valobs, i, k)
       use precision, only: dp
       use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
-      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat
       use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
                                      IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
-                                     IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+                                     IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE, IPNT_QH_AIR2ICE, IPNT_QH_ICE2WAT
 
       real(kind=dp), dimension(:, :), intent(inout) :: valobs !< values at observations stations
       integer, intent(in) :: i !< index of the observation station
@@ -806,6 +806,8 @@ contains
       call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
       call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
       call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+      call conditional_assign(valobs, i, IPNT_QH_AIR2ICE, qh_air2ice, k)
+      call conditional_assign(valobs, i, IPNT_QH_ICE2WAT, qh_ice2wat, k)
    end subroutine collect_ice_values
 
    !> Support routine to conditionally assign values to the target variable
