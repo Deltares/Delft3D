@@ -12,7 +12,7 @@ import Delft3D.linux.containers.*
 
 object TestPythonCiTools : BuildType({
     id("TestPythonCiTools")
-    name = "Python CI tools"
+    name = "Lint Python CI tools"
     buildNumberPattern = "%build.vcs.number%"
     description = "ruff, mypy, and pytest for ci/python."
 
