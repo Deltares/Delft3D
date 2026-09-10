@@ -1,11 +1,11 @@
 import os
 
+import pandas as pd
 import pytest
 from pytest_mock import MockerFixture
 
 from ci_tools.teamcity.client import TeamcityClient
-from ci_tools.testbench_timeout_report.catalog import CaseTimeout
-from ci_tools.testbench_timeout_report.cli import _limit_catalog, build_client, create_parser
+from ci_tools.testbench_timeout_report.cli import build_client, create_parser, limit_catalog
 
 
 def test_build_client_prefers_token(mocker: MockerFixture) -> None:
@@ -32,12 +32,9 @@ def test_build_client_requires_credentials() -> None:
 
 
 def test_limit_catalog_caps_per_platform() -> None:
-    catalog = [
-        CaseTimeout("linux", "a", 300.0, ("a.xml",), False),
-        CaseTimeout("linux", "b", 300.0, ("b.xml",), False),
-        CaseTimeout("windows", "c", 300.0, ("c.xml",), False),
-        CaseTimeout("windows", "d", 300.0, ("d.xml",), False),
-    ]
-    limited = _limit_catalog(catalog, 1)
-    assert [(case.platform, case.name) for case in limited] == [("linux", "a"), ("windows", "c")]
-    assert _limit_catalog(catalog, 0) == catalog
+    catalog = pd.DataFrame(
+        {"platform": ["linux", "linux", "windows", "windows"], "name": ["a", "b", "c", "d"], "timeout_s": [300.0] * 4}
+    )
+    limited = limit_catalog(catalog, 1)
+    assert list(zip(limited["platform"], limited["name"], strict=False)) == [("linux", "a"), ("windows", "c")]
+    assert len(limit_catalog(catalog, 0)) == 4
