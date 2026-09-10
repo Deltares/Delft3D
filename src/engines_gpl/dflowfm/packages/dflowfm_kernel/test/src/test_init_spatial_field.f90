@@ -128,6 +128,34 @@ contains
    end subroutine test_validate_file_type_extension_mismatch
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_supported_file_type_extensions, test_validate_supported_file_type_extensions,
+   subroutine test_validate_supported_file_type_extensions() bind(C)
+      character(len=16), parameter :: file_types(11) = [character(len=16) :: &
+         '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
+      character(len=16), parameter :: extensions(11) = [character(len=16) :: &
+         '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
+      type(t_spatial_field_input) :: input
+      integer :: i
+
+      do i = 1, size(file_types)
+         call make_test_input(input, forcing_file='dummy'//trim(extensions(i)), forcing_file_type=trim(file_types(i)), &
+                              interpolation_method='linearSpaceTime')
+         call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                              trim(file_types(i))//' should accept '//trim(extensions(i)))
+      end do
+   end subroutine test_validate_supported_file_type_extensions
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unknown_file_extension, test_validate_unknown_file_extension,
+   subroutine test_validate_unknown_file_extension() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.unsupported')
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            "validation should fail for an extension unsupported by forcingFileType")
+   end subroutine test_validate_unknown_file_extension
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_nonexistent_target_mask_file, test_validate_nonexistent_target_mask_file,
    !> Specifying a targetMaskFile= that does not exist on disk must fail.
    !! The inquire() branch inside validate_spatial_field_input is never reached

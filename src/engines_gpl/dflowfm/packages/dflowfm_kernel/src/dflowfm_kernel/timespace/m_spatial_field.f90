@@ -253,7 +253,7 @@ contains
             return
          end if
    
-         if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
+         if (file_extension_conflicts_with_type(input%forcing_file, input%filetype)) then
             write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
                trim(input%forcing_file_type), '''.'
@@ -328,30 +328,52 @@ contains
 
    end function validate_spatial_field_input
 
-   function file_extension_conflicts_with_type(forcing_file, forcing_file_type) result(conflicts)
+   function file_extension_conflicts_with_type(forcing_file, file_type) result(conflicts)
       use string_module, only: str_tolower
+      use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
+                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR
       character(len=*), intent(in) :: forcing_file
-      character(len=*), intent(in) :: forcing_file_type
+      integer, intent(in) :: file_type
       logical :: conflicts
 
       integer :: dot_pos
       character(len=16) :: ext
 
-      conflicts = .false.
       dot_pos = index(trim(forcing_file), '.', back=.true.)
-      if (dot_pos == 0) return
+      if (dot_pos == 0) then
+         conflicts = .true.
+         return
+      end if
 
       ext = str_tolower(trim(forcing_file(dot_pos:)))
 
-      select case (ext)
-      case ('.nc')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'netcdf'
-      case ('.tif', '.tiff')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
-      case ('.spw')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
-      case ('.pol')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'polygon'
+      select case (file_type)
+      case (FIELD1D)
+         conflicts = ext /= '.ini'
+      case (ARCINFO)
+         conflicts = .not. any(ext == [character(len=16) :: '.asc', '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', &
+                                                           '.ams', '.amr', '.sdu', '.aice', '.hice'])
+      case (BCASCII)
+         conflicts = ext /= '.bc'
+      case (CURVI)
+         conflicts = .not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', &
+                                                           '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
+      case (GEOTIFF)
+         conflicts = .not. any(ext == [character(len=16) :: '.tif', '.tiff'])
+      case (NCGRID)
+         conflicts = ext /= '.nc'
+      case (INSIDE_POLYGON)
+         conflicts = .not. any(ext == [character(len=16) :: '.pol', '.pli', '.pliz'])
+      case (SAMPLE)
+         conflicts = .not. any(ext == [character(len=16) :: '.xyz', '.xyb'])
+      case (SPIDERWEB)
+         conflicts = ext /= '.spw'
+      case (UNIFORM)
+         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.tem'])
+      case (UNIMAGDIR)
+         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.wnd'])
+      case default
+         conflicts = .true.
       end select
 
    end function file_extension_conflicts_with_type
