@@ -560,14 +560,6 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
-      ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
-      integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
-      integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
-
-      ! Salinity and temperature vertical Forester filter is turned off by default (value 0)
-      max_iterations_vertical_forester_sal = 0
-      max_iterations_vertical_forester_tem = 0
-
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree
@@ -1036,13 +1028,8 @@ contains
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
 
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal) ! Deprecated, use maxItVerticalForester instead
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem) ! Deprecated, use maxItVerticalForester instead
-
-      ! Set max_iterations_vertical_forester to the maximum of max_iterations_vertical_forester_sal/tem
-      max_iterations_vertical_forester = max(max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem)
-
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem)
 
       call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
@@ -1300,6 +1287,10 @@ contains
          write (msgbuf, '(a,g0,a)') 'salinityDependentFreezingPoint is set to true, but Tempmin = ', temperature_min, &
             ' is not below 0 degrees Celsius. This may lead to incorrect results.'
          call mess(LEVEL_WARN, msgbuf)
+      end if
+      if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
+         call mess(LEVEL_ERROR, &
+            'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
       end if
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
@@ -3155,7 +3146,8 @@ contains
       call prop_set(prop_ptr, 'numerics', 'cstbnd', jacstbnd, 'Delft-3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)')
 
       if (writeall .or. kmx > 0) then
-         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester, 'Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal, 'Forester iterations for salinity (0: no vertical filter, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem, 'Forester iterations for temperature (0: no vertical filter, > 0: max nr of iterations)')
       end if
 
       if (writeall .or. kmx > 0) then
