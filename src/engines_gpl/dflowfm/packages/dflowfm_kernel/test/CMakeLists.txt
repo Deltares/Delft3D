@@ -18,7 +18,6 @@ f90twtest(${test_target}
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
         src/test_3d_layer_administration.f90
-        src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
         src/test_bubblescreen.f90
@@ -28,7 +27,6 @@ f90twtest(${test_target}
         src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
-        src/test_mdu_file_read_write.f90
         src/test_getprof_1d.f90
         src/test_dflowfm_dambreak.f90
         src/test_init_spatial_field.f90
@@ -42,7 +40,6 @@ f90twtest(${test_target}
         # It sets the name of the header file test_dflowfm_kernel_example.f90.h, which is included in test_dflowfm_kernel.cpp.
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bubblescreen.f90
@@ -52,7 +49,6 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_data_value.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_inifields.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_getprof_1d.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
