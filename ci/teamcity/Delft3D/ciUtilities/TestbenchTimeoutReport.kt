@@ -48,16 +48,18 @@ object TestbenchTimeoutReport : BuildType({
         param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl.replace(Regex("/+$"), ""))
     }
 
-    triggers {
-        // Cadence only: collect default-branch Test history. Not a DIMRset weekly/release job.
-        schedule {
-            schedulingPolicy = weekly {
-                dayOfWeek = ScheduleTrigger.DAY.Monday
-                hour = 6
+    if (DslContext.getParameter("enable_testbench_timeout_report_trigger").lowercase() == "true") {
+        triggers {
+            // Cadence only: collect default-branch Test history. Not a DIMRset weekly/release job.
+            schedule {
+                schedulingPolicy = weekly {
+                    dayOfWeek = ScheduleTrigger.DAY.Monday
+                    hour = 6
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
-            branchFilter = "+:<default>"
-            triggerBuild = always()
-            withPendingChangesOnly = false
         }
     }
 
