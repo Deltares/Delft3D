@@ -212,6 +212,7 @@ type bedcomp_settings
     real(fp) :: ksigma                               !< effective stress coefficient [Pa]
     real(fp) :: ksigma0                              !< effective stress coefficient (usually set as 0) [Pa]
     real(fp) :: ky                                   !< strength coefficient [Pa]
+    real(fp) :: max_thick_decon                      !< maximum thickness of the nconlyr DECON layers [m]
     real(fp) :: confac                               !< ratio between consolidation and morphological time scales [-]
     real(fp) :: svfrac0                              !< user-input initial solids volume fraction for newly deposited sediments (general)
     real(fp) :: svfrac0m                             !< user-input initial solids volume fraction for newly deposited mud fractions
@@ -337,11 +338,11 @@ type bedcomp_state
     real(fp)   , dimension(:,:)  , pointer :: mobile   ! sediment mobility parameter for 0->1 = not mobile->fully mobile
     real(fp)   , dimension(:)    , pointer :: dpsed        !< Total depth sediment layer [m]
     real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
-    real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg /m2]
-    real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m3]
+    real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg/m2]
+    real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: td           !< (morphological) time of latest load increment, i.e. that initiates primary compaction [minutes]
     real(fp)   , dimension(:)    , pointer :: rhow         !< Water density [kg/m3] (currently 2D, but should be 3D in the future)
-    real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg /m2]
+    real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
     real(fp)   , dimension(:,:)  , pointer :: thlyr        !< thickness of morphological layers [m]
     real(fp)   , dimension(:)    , pointer :: thmudgibson  !<
@@ -1706,7 +1707,7 @@ end subroutine lyrerosion
 !
 !
 !==============================================================================
-subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
+subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, kmin_)
 !!--description-----------------------------------------------------------------
 !
 !    Function:
@@ -1725,6 +1726,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
     real(fp)                                 , intent(in) :: preloaddep
     real(fp)                                 , intent(in) :: tddep
     real(fp), dimension(this%settings%nfrac)              :: dmi
+    integer, optional, intent(in) :: kmin_  !< minimum layer to fill, default = 2
 !
 ! Local variables
 !
@@ -1763,9 +1765,13 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
     td          => this%state%td
     work        => this%work
     !
-    kmin = 2
-    if (this%settings%crslyr)  kmin = kmin + 1
-    if (this%settings%exchlyr) kmin = kmin + 1
+    if (present(kmin_)) then
+        kmin = kmin_
+    else
+        kmin = 2
+        if (this%settings%crslyr)  kmin = kmin + 1
+        if (this%settings%exchlyr) kmin = kmin + 1
+    endif
     dz = dzini
     !
     ! copy Lagrangian layer data to temporary array
@@ -3359,6 +3365,7 @@ function initmorlyr(this) result (istat)
     settings%ierosion     = EROS_CONST             ! by default, critical bed shear stress for erosion is determined using empirical relation between mud fraction and bed strength.
     settings%ag           = 9.81_fp                ! gravitational acceleration [m/s2] (default value on Earth; to be overruled by calling component)
     settings%dtdecon      = 1209600.0_fp           ! seconds, default 2 week to update consolidation once
+    settings%max_thick_decon = 1.0e10_fp           ! no limiting thickness by default
     settings%svgel        = 0.158_fp               ! volume fraction of pure sediment at gelling point
     settings%svmax        = 0.6_fp                 ! if svfrac > svmax, consolidation stops
     settings%isedcrs2tr   = 0
@@ -4515,18 +4522,18 @@ subroutine consolidate_gibson(this, nm, dtmor)
     !
     ! Local variables
     !
-    integer                                   :: j         ! loop index used to deal with 0 layer thickness!, z.z
+    integer                                   :: j         ! loop index used to deal with 0 layer thickness!
     integer                                   :: k
-    integer                                   :: i         ! loop index used for replenish step, property change for transport layer, z.z
+    integer                                   :: i         ! loop index used for replenish step, property change for transport layer
     integer                                   :: l
-    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction, z.z
-    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf), z.z
-    real(fp)                                  :: load      ! not used in Gibson's formulation, z.z
-    real(fp)                                  :: thnew     ! not used in Gibson's formulation, z.z
+    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction
+    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf)
+    real(fp)                                  :: load      ! not used in Gibson's formulation
+    real(fp)                                  :: thnew     ! not used in Gibson's formulation
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:), pointer          :: dzc
     real(fp) , dimension(:,:,:), pointer      :: msed
-    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: strain
     real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
@@ -4875,20 +4882,21 @@ subroutine consolidate_decon(this, nm, dtmor)
     !
     ! Local variables
     !
-    integer                                   :: j         ! loop index used to deal with 0 layer thickness!, z.z
+    integer                                   :: j         ! loop index used to deal with 0 layer thickness!
     integer                                   :: k
-    integer                                   :: i         ! loop index used for replenish step, property change for transport layer, z.z
+    integer                                   :: i         ! loop index used for replenish step, property change for transport layer
     integer                                   :: l
-    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction, z.z
-    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf), z.z
-    real(fp)                                  :: load      ! not used in Gibson's formulation, z.z
-    real(fp)                                  :: thnew     ! not used in Gibson's formulation, z.z
+    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction
+    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf)
+    real(fp)                                  :: load      ! not used in Gibson's formulation
+    real(fp)                                  :: thnew     ! not used in Gibson's formulation
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:), pointer          :: dzc
     real(fp) , dimension(:,:,:), pointer      :: msed
     real(fp) , dimension(this%settings%nlyr)  :: csandlyr  ! sand concentration at each layer
     real(fp) , dimension(this%settings%nlyr)  :: cmudlyr   ! mud concentration at each layer
-    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
+    real(fp) , dimension(:,:)  , pointer      :: preload   ! preload for Terzaghi
+    real(fp) , dimension(:,:)  , pointer      :: td        ! deposition time for Terzaghi
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: strain
     real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
@@ -4979,10 +4987,22 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp)           :: critpor
     real(fp)           :: thicks
     real(fp)           :: thickm
+    
+    integer             :: k2
+    real(fp)           :: mudthk ! equilibrium thickness of mud fractions [m]
+    real(fp)           :: thlyr_rem ! remaining thickness of layer to be processed [m]
+    real(fp)           :: thlyr_new ! new thickness of layer being processed [m]
+    real(fp)           :: dzini ! thickness of sediment to be moved to bookkeeping [m]
+    real(fp), dimension(this%settings%nfrac) :: dmi ! mass of sediment to be moved to bookkeeping [kg/m2]
+    real(fp)            :: svfracdep ! solid volument fraction of sediment to be moved to bookkeeping [-]
+    real(fp)            :: preloaddep ! preload of sediment to be move to bookkeeping [kg/m2] ... only relevant for Terzaghi
+    real(fp)            :: tddep ! (morphological) time of latest load increment of sediment to be move to bookkeeping [kg/m2] ... only relevant for Terzaghi
+    real(fp), parameter :: MIN_POROSITY_SAND = 0.35_fp
 
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
     preload        => this%state%preload
+    td             => this%state%td
     svfrac         => this%state%svfrac
     thlyr          => this%state%thlyr
     rhow           => this%state%rhow
@@ -5054,92 +5074,119 @@ subroutine consolidate_decon(this, nm, dtmor)
     temp1    = 0.0_fp                              ! temporary variable
     temp2    = 0.0_fp                              ! temporary variable
 
-    thmudgibson_new    = 0.0_fp
-    thsandgibson_new   = 0.0_fp
     thconlyr           = 0.0_fp
     mmudtot            = 0.0_fp
     msandtot           = 0.0_fp
 
-    ! loop over all fractions to compute svfracsand and svfracmud
+    ! the total gibson height would equal sum of thlyr(k,nm)*svfrac(k,nm) over k
+    ! here we need separate gibson heights for mud and sand
+    thmudgibson_new    = 0.0_fp
+    thsandgibson_new   = 0.0_fp
     do k = 1,nconlyr
-         ! check if the layer thickness is larger than zero
-         if (thlyr(k,nm)>0.0_fp) then
-             svfracsand(k) = 0.0_fp
-             svfracmud(k)  = 0.0_fp
-             mmudlyr(k)    = 0.0_fp
-             msandlyr(k)   = 0.0_fp
-             do l = 1, this%settings%nfrac
-                 svfractemp = msed(l,k,nm)/this%settings%rhofrac(l)/thlyr(k,nm)
-                 if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                     svfracmud(k) = svfracmud(k) + svfractemp
-                     mmudlyr(k)   = mmudlyr(k) + msed(l,k,nm)
-                 else
-                     svfracsand(k) = svfracsand(k) + svfractemp
-                     msandlyr(k)   = msandlyr(k) + msed(l,k,nm)
-                 endif
-             enddo
-             csandlyr(k) =  msandlyr(k)/thlyr(k,nm)
-             cmudlyr(k) = mmudlyr(k)/thlyr(k,nm)
-         else
-             mmudlyr(k)       = 0.0_fp
-             msandlyr(k)      = 0.0_fp
-             svfracsand(k)    = 0.0_fp
-             svfracmud(k)     = 0.0_fp
-             csandlyr(k)      = 0.0_fp
-             cmudlyr(k)       = 0.0_fp
-         endif
-         thmudgibson_new   = thmudgibson_new + cmudlyr(k)/(rhos-csandlyr(k))*thlyr(k,nm)
-         thsandgibson_new  = thsandgibson_new + csandlyr(k)/rhos*thlyr(k,nm)
-         thconlyr = thconlyr + thlyr(k,nm)
-         mmudtot  = mmudtot  + mmudlyr(k)
-         msandtot = msandtot + msandlyr(k)
+        do l = 1, this%settings%nfrac
+            if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                thmudgibson_new = thmudgibson_new + msed(l,k,nm)/this%settings%rhofrac(l)
+            else
+                thsandgibson_new = thsandgibson_new + msed(l,k,nm)/this%settings%rhofrac(l)
+            endif
+        enddo
     enddo
-
+    
     ! if the Gibson's height, i.e. total mass, has increased
     if (thmudgibson_new + thsandgibson_new > thmudgibson(nm) + thsandgibson(nm)) then
 
-        ! compute permud(l) and persand(l)
-        do l = 1, this%settings%nfrac
-            mmud(l) = 0.0_fp
-            msand(l)= 0.0_fp
-            do k = 1, nconlyr
-                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                    mmud(l) = mmud(l) + msed(l,k,nm)
-                else
-                    msand(l) = msand(l) + msed(l,k,nm)
-                endif
-            enddo
-            permud(l) = mmud(l)/mmudtot
-            persand(l)= msand(l)/msandtot
-        enddo
+       ! calculate equilibrium consolidating layer thickness, Delta_C
+       thconlyreqm = thsandgibson_new + nfd/(nfd - 1.0)*ksigma/ag/(rhos-rhow(nm))*(ag*(rhos-rhow(nm))*thmudgibson_new/ksigma)**((nfd-1.0)/nfd)
+       ! don't consolidate more than the sand skeleton can support, i.e. don't consolidate below the minimum porosity of sand
+       thconlyreqm = max(thconlyreqm, thsandgibson_new/(1.0_fp - MIN_POROSITY_SAND))
 
-        ! calculate equilibrium consolidating layer thickness, Delta_C
-        thconlyreqm = thsandgibson_new + nfd/(nfd - 1.0)*ksigma/ag/(rhos-rhow(nm))*(ag*(rhos-rhow(nm))*thmudgibson_new/ksigma)**((nfd-1.0)/nfd)
-        do k = 1, nconlyr
-            thlyr(k,nm) = thconlyreqm * plyrthk(k)                  !layer thickness computation
-            z_up=sum(plyrthk(k:size(plyrthk)))*(thconlyreqm-thsandgibson_new)          !elevation of the upper border of the layer
-            z_low=sum(plyrthk((k+1):size(plyrthk)))*(thconlyreqm-thsandgibson_new)     !elevation of the lower border of the layer
-            !averaged integral of the concentration profile from z low to z up
-            cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*(max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
-            svfracmud(k) = cmudlyr(k)/rhos
-            svfrac(k,nm) = svfracmud(k) + svfracsand(k)
+       if (thconlyreqm > this%settings%max_thick_decon) then
+          ! move (thconlyreqm-max_thick_decon) to layer nconlyr+1:nlyr ...
+          ! TODO: mud consolidation is not yet considered in this step!
+          dzini = thconlyreqm - this%settings%max_thick_decon
+          dmi = 0.0_fp
+          svfracdep = 0.0_fp
+          preloaddep = 0.0_fp
+          tddep = 0.0_fp
+          do k = nconlyr, 1, -1
+             if (thlyr(k,nm) < dzini) then
+                dmi = dmi + msed(:,k,nm)
+                svfracdep = svfracdep + svfrac(k,nm)*thlyr(k,nm)
+                preloaddep = preloaddep + preload(k,nm)*thlyr(k,nm)
+                tddep = tddep + td(k,nm)*thlyr(k,nm)
+                !
+                dzini = dzini - thlyr(k,nm)
+                msed(:,k,nm) = 0.0_fp
+                thlyr(k,nm) = 0.0_fp
+             else
+                frac = dzini/thlyr(k,nm)
+                dmi = dmi + msed(:,k,nm)*frac
+                svfracdep = svfracdep + svfrac(k,nm)*dzini
+                preloaddep = preloaddep + preload(k,nm)*dzini
+                tddep = tddep + td(k,nm)*dzini
+                !
+                msed(:,k,nm) = msed(:,k,nm)*(1.0_fp-frac)
+                thlyr(k,nm) = thlyr(k,nm) - dzini
+                dzini = 0.0_fp
+                exit
+             endif
+          enddo
+          dzini = thconlyreqm - this%settings%max_thick_decon
+          svfracdep = svfracdep/dzini
+          preloaddep = preloaddep/dzini
+          tddep = tddep/dzini
+          call lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, nconlyr+1)
+          !
+          thconlyreqm = this%settings%max_thick_decon
+       endif
+       
+       z_up = -thconlyreqm
+       do k = nconlyr, 1, -1
+          thlyr_new = thconlyreqm * plyrthk(k)
+          z_low = z_up
+          z_up = min(z_low + thlyr_new, 0.0_fp)
+          ! compute the mud gibson thickness between z_low and z_up
+          mudthk = ((((nfd - 1.0_fp) / nfd) * ag * (rhos - rhow(nm)) / ksigma)**(1.0_fp / (nfd - 1.0_fp))) &
+             & * (-(nfd - 1.0_fp) / nfd) &
+             & * (max(0.0_fp, thconlyreqm - z_up - thsandgibson_new)**(nfd / (nfd - 1.0_fp)) &
+             &    - (thconlyreqm - z_low - thsandgibson_new)**(nfd / (nfd - 1.0_fp)))
+          !
+          ! TODO: mud consolidation is not yet considered in this step!
+          svfrac(k,nm) = svfrac(k,nm)*thlyr(k,nm)
+          preload(k,nm) = preload(k,nm)*thlyr(k,nm)
+          td(k,nm) = td(k,nm)*thlyr(k,nm)
+          thlyr_rem = thlyr_new - thlyr(k,nm)
+          do k2 = k-1, 1, -1
+             if (thlyr(k2,nm) < thlyr_rem) then
+                ! merge whole layer
+                msed(:,k,nm) = msed(:,k,nm) + msed(:,k2,nm)
+                svfrac(k,nm) = svfrac(k,nm) + svfrac(k2,nm)*thlyr(k2,nm)
+                preload(k,nm) = preload(k,nm) + preload(k2,nm)*thlyr(k2,nm)
+                td(k,nm) = td(k,nm) + td(k2,nm)*thlyr(k2,nm)
+                !
+                thlyr_rem = thlyr_rem - thlyr(k2,nm)
+                msed(:,k2,nm) = 0.0_fp
+                thlyr(k2,nm) = 0.0_fp
+             else
+                ! merge part of layer
+                frac = thlyr_rem / thlyr(k2,nm)
+                msed(:,k,nm) = msed(:,k,nm) + msed(:,k2,nm) * frac
+                svfrac(k,nm) = svfrac(k,nm) + svfrac(k2,nm)*thlyr_rem
+                preload(k,nm) = preload(k,nm) + preload(k2,nm)*thlyr_rem
+                td(k,nm) = td(k,nm) + td(k2,nm)*thlyr_rem
+                !
+                msed(:,k2,nm) = msed(:,k2,nm) * (1.0_fp - frac)
+                thlyr(k2,nm) = thlyr(k2,nm) - thlyr_rem
+                thlyr_rem = 0.0_fp
+                exit
+             endif
+          enddo
+          svfrac(k,nm) = svfrac(k,nm)/thlyr_new
+          preload(k,nm) = preload(k,nm)/thlyr_new
+          td(k,nm) = td(k,nm)/thlyr_new
+          thlyr(k,nm) = thlyr_new
        enddo
-       ! redistribute mass and concentration in each layer
-       do k = 1, nconlyr
-           if (thlyr(k,nm) > 0.0_fp) then
-               do l = 1, this%settings%nfrac
-                   if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                       msed(l,k,nm) = thlyr(k,nm)*cmudlyr(k)*permud(l)
-                   else
-                       msed(l,k,nm) = thlyr(k,nm)*csandlyr(k)*persand(l)
-                   endif
-               enddo
-            else
-               do l = 1, this%settings%nfrac
-                   msed(l,k,nm) = 0.0_fp
-               enddo
-            endif
-       enddo
+
        thmudgibson(nm)  = thmudgibson_new
        thsandgibson(nm) = thsandgibson_new
     endif
