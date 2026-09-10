@@ -16,7 +16,7 @@ digraph preCSUMOSwimlanes {
     style="rounded";
 
     s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
-    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open run() setup phase docs"];
+    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref anonymous_namespace{pre_c_sumo_lib.cpp}::getMesh2D3D()", tooltip="Set up meshes for preCICE exchange"];
     s2 [label="wait + read\nNF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open initial NF2FF bootstrap docs"];
     s3 [label="init\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open participant initialization docs"];
 

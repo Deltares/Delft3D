@@ -239,12 +239,12 @@ namespace
     }
 
     /**
-     * @brief Parse intake rows from the <intakes> block.
+     * @brief Parse intake rows from the &lt;intakes&gt; block.
      *
      * Expected per-line format is handled by extractIntakeData.
      * This wrapper delegates common line parsing mechanics to parseBlockVector.
      *
-     * @param text Contents of the <intakes> element.
+     * @param text Contents of the &lt;intakes&gt; element.
      * @return std::expected containing parsed intake records or a ParseError.
      */
     std::expected<std::vector<pre_c_sumo::IntakeData>, parsing_utils::ParseError> parseIntakeVector(
@@ -261,11 +261,6 @@ namespace
 
 namespace pre_c_sumo
 {
-    /**
-     * @brief Reads NF2FF XML content from a file.
-     * @param file_path The path to the input file.
-     * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-     */
     std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromFile(const std::filesystem::path& file_path)
     {
         std::ifstream file(file_path);
@@ -278,11 +273,6 @@ namespace pre_c_sumo
         return fromString(buffer.str());
     }
 
-    /**
-     * @brief Reads NF2FF XML content from a string.
-     * @param xml input string.
-     * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-     */
     std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;

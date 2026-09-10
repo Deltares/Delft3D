@@ -12,23 +12,20 @@ Current core responsibilities are:
 - wait for and read NF2FF output files,
 - convert NF2FF results to connected source/sink writes for D-FlowFM via preCICE.
 
-\section workflow Core Workflow
-The implementation follows the main sequence in \ref pre_c_sumo::run. The flow reads settings,
-receives ambient data, writes FF2NF input, waits for NF2FF results, converts the near-field
-output to connected source/sink entries, and then writes the final coupling data to D-Flow FM via preCICE.
+For the underlying preCICE concepts and API details, see the external documentation:
+- <a href="https://precice.org/docs.html">preCICE documentation</a>
 
-\dotfile preC_SUMO_Swimlanes.dot "preC-SUMO core coupling workflow (current implementation)"
+\section coupling_workflow Core Coupling
+The coupling between D-Flow FM and C-SUMO is handled using preCICE. The D-FlowFM has an adapter implementation which does the conversion between FM mesh/data to and from preCICE. 
+The preC-SUMO executable is a wrapper that interacts with preCICE and writes FF2NF file, which are concumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
+
+\dotfile coupled_solvers_fm_csumo.dot "FM and preC-SUMO coupling overview"
 
 \section architecture Architecture Overview
-The system-level picture shows the surrounding coupled components: D-Flow FM, the preCICE adapter,
+The system-level picture below shows the surrounding coupled components: D-Flow FM, the preCICE adapter,
 C-SUMO, and the NF2FF/FF2NF exchange files.
-
 \image html FM-C-SUMO_scheme_precice.drawio.svg "Coupled FM/C-SUMO architecture via preCICE" width=1000px
-
-The more detailed data-mapping view shows how the configuration data is transformed into the
-1D arrays used by the preCICE exchange buffers.
-
-\image html "preC-SUMO data mapping diagram-3D Mapping.drawio.svg" "3D data mapping" width=900px
+preCICE offers tools like config-visualizer which can be used to view the in use precice-config file.
 
 \section code_map Code Entry Points
 Main implementation entry points:
@@ -39,7 +36,10 @@ Main implementation entry points:
 - \ref pre_c_sumo::waitForNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
 - \ref pre_c_sumo::readNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
 - \ref pre_c_sumo::convertNFtoConnectedSinkSources in coupling_steps.hpp / coupling_steps.cpp
-- \ref pre_c_sumo_connected_sink_sources_write_to_precice in connected_sinks_sources.hpp / connected_sinks_sources.cpp
+- \ref pre_c_sumo::ConnectedSinkSources::write_to_precice in connected_sinks_sources.hpp / connected_sinks_sources.cpp
+
+\section coding_guidelines Coding Guidelines
+\include guidelines.md
 
 \section notes Diagram Source Files
 Diagrams are maintained in docs/include as .dot and .drawio source files.

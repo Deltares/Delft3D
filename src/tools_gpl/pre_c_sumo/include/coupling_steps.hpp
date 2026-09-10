@@ -16,12 +16,12 @@
 namespace pre_c_sumo
 {
     /**
-     * @file pre_c_sumo_internal.hpp
-     * @brief Internal helper functions for the preC-SUMO tool.
+     * @file coupling_steps.hpp
+     * @brief Internal coupling helper functions for the preC-SUMO tool.
      *
      * These functions are internal implementation helpers used by the
      * preC-SUMO library. They handle timestepping control, configuration and settings
-     * files parsing and the conversion/communication of NF/FF data.
+     * file parsing and the conversion/communication of NF/FF data.
      */
     // TODO?: Move/fold into class(es)?
     constexpr std::string_view water_levels_id = "sea_surface_height";
@@ -29,24 +29,38 @@ namespace pre_c_sumo
     constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
     constexpr std::string_view densities_id = "sea_water_potential_density";
 
+    /**
+     * @brief Mapping information for a diffuser's ambient and intake points.
+     *
+     * The mapping links a diffuser entry in the C-SUMO model to the corresponding
+     * near-field intake definition and the related ambient point indices used when
+     * creating the far-field input data.
+     */
     struct DiffuserMapping
     {
-        std::size_t diffuser_index;
-        bool has_intake;
-        std::size_t intake_index;
-        std::size_t number_of_ambient_points;
-        std::size_t first_ambient_point_index;
+        std::size_t diffuser_index;               ///< Index of the diffuser in the configured mesh.
+        bool has_intake;                          ///< True when the diffuser has an associated intake point.
+        std::size_t intake_index;                 ///< Index of the intake point in the intake mesh.
+        std::size_t number_of_ambient_points;     ///< Number of ambient points associated with this diffuser.
+        std::size_t first_ambient_point_index;    ///< First index of the ambient point range in the mesh.
     };
 
+    /**
+     * @brief Container for a mesh used in the preC-SUMO coupling workflow.
+     *
+     * Each mesh stores the coordinates, topology and scalar quantities exchanged
+     * with preCICE for the 2D and 3D coupling steps. The forward mapping links
+     * diffuser entries to their corresponding ambient and intake point data.
+     */
     struct Mesh
     {
-        std::string name;
-        std::vector<double> coordinates;
-        std::vector<int> vertex_ids;
-        std::vector<DiffuserMapping> forward_map;
-        std::size_t number_of_nodes;
-        std::size_t number_of_zcoordinates;
-        std::unordered_map<std::string_view, std::vector<double>> quantities;
+        std::string name;                                             ///< Mesh name as used in the preCICE configuration.
+        std::vector<double> coordinates;                              ///< XYZ coordinates for each mesh node.
+        std::vector<int> vertex_ids;                                  ///< Vertex identifiers used by the coupled mesh.
+        std::vector<DiffuserMapping> forward_map;                     ///< Mapping from diffuser entries to intake/ambient data.
+        std::size_t number_of_nodes;                                  ///< Total number of mesh nodes.
+        std::size_t number_of_zcoordinates;                           ///< Number of vertical coordinates in the 3D mesh.
+        std::unordered_map<std::string_view, std::vector<double>> quantities; ///< Per-quantity values associated with the mesh.
     };
 
     /**
@@ -57,11 +71,11 @@ namespace pre_c_sumo
      * On success returns a populated `CSumoSettingsReader`. On failure
      * returns a `ParseError` describing the problem.
      *
-     * @param csumoSettingsFileName Path or name of the C-SUMO settings file.
+     * @param csumo_settings_file_name Path or name of the C-SUMO settings file.
      * @return std::expected containing `CSumoSettingsReader` on success or `ParseError` on failure.
      */
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
-        const std::string_view csumoSettingsFileName);
+        const std::string_view csumo_settings_file_name);
 
     /**
      * @anchor pre_c_sumo_receive_ff_data
@@ -79,67 +93,71 @@ namespace pre_c_sumo
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
      *
      * Writes a FF2NF file for each configured diffuser.
-     * If `csumoSettings` holds an error, no files are written.
+     * If `csumo_settings` holds an error, no files are written.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param csumo_settings Parsed C-SUMO settings used to determine which diffuser files to write.
+     * @param csumo_2d_mesh 2D mesh containing the ambient and coupling data for the far-field exchange.
+     * @param csumo_3d_mesh 3D mesh containing the vertical data used when writing the FF2NF content.
+     * @param current_time_seconds Current simulation time in seconds used to resolve time-dependent file names.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
                          double current_time_seconds);
 
     /**
      * @anchor pre_c_sumo_wait_nf2ff
      * @brief Wait until NF2FF files become available.
      *
-     * For each diffuser configured in `csumoSettings` this will wait for
-     * the corresponding NF2FF file to appear. If `csumoSettings` contains
+     * For each diffuser configured in `csumo_settings` this will wait for
+     * the corresponding NF2FF file to appear. If `csumo_settings` contains
      * a parse error, the function returns immediately without waiting.
-     *
+     * 
      * Note: If any diffuser is configured, this function will wait
-     *       INDEFINITELY for file(s) to appear.
+     *       10 seconds for file(s) to appear. If the time elapses, it will fail with error.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param csumo_settings Expected C-SUMO settings or a parse error.
      * @param current_time_seconds Current time in seconds.
      * @returns true on successful wait, false on timeout.
      */
-    bool waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
+    bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds);
 
     /**
      * @anchor pre_c_sumo_read_nf2ff
      * @brief Read NF2FF files and extract the required data.
      *
-     * Reads NF2FF files referenced in `csumoSettings` and extracts the
+     * Reads NF2FF files referenced in `csumo_settings` and extracts the
      * data that will be converted to sources/sinks.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param csumo_settings Expected C-SUMO settings or a parse error.
+     * @param current_time_seconds Current simulation time in seconds used to locate the matching NF2FF files.
      * @returns std::vector<NF2FFReader> with the content of all NF2FF files of all
      * diffusers in the settings.
      */
-    const std::vector<NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumoSettings,
+    const std::vector<NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
                                                   double current_time_seconds);
 
     /**
      * @anchor pre_c_sumo_convert_nf_to_sources_sinks
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
      *
-     * Uses the data referenced in `csumoSettings` to perform the conversion.
+     * Uses the data referenced in `csumo_settings` to perform the conversion.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param csumo_settings Expected C-SUMO settings or a parse error.
      */
-    void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
+    void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings);
 
     /**
      * @anchor pre_c_sumo_convert_nf_to_connected_sink_sources
      * @brief Convert NF2FF results into connected source/sink entries for the FM adapter.
      *
-     * Uses the data referenced in @p nf2ff_readers and @p csumoSettings to perform the conversion.
+     * Uses the data referenced in @p nf2ff_readers and @p csumo_settings to perform the conversion.
      *
-     * @param csumoSettings Parsed C-SUMO settings.
+     * @param csumo_settings Parsed C-SUMO settings.
      * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
      *
      * @return Connected source/sink pairs to be written to preCICE.
      */
     [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
-    convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumoSettings,
+    convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumo_settings,
                                     const std::vector<NF2FFReader>& nf2ff_readers);
     /**
      * @anchor pre_c_sumo_send_sources_sinks_to_ff
@@ -148,7 +166,8 @@ namespace pre_c_sumo
      * Sends the converted sources and sinks to the farfield component.
      * The demo implementation logs an informational message.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param participant Active preCICE participant used to write the exchange data.
+     * @param sources_sinks Source and sink exchange data prepared for the far-field send.
      */
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 

@@ -1,4 +1,4 @@
-# Guidelines
+# Development Guidelines
 This document contains a number of topics we decided on while developing pre_C_Sumo.
 
 ## Error handling
