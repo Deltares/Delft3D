@@ -80,7 +80,8 @@ object TestbenchTimeoutReport : BuildType({
                     --configs-root "%teamcity.build.checkoutDir%/test/deltares_testbench/configs" \
                     --csv "%teamcity.build.checkoutDir%/ci/teamcity/Delft3D/vars/dimr_testbench_table.csv" \
                     --output-dir "%teamcity.build.checkoutDir%/timeout-report" \
-                    --report-url "%env.TEAMCITY_SERVER_URL%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%"
+                    --report-url "%env.TEAMCITY_SERVER_URL%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%" \
+                    --full-report-url "%env.TEAMCITY_SERVER_URL%/repository/download/%system.teamcity.buildType.id%/%teamcity.build.id%:id/timeout-report/report.html"
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux

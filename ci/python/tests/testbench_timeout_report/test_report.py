@@ -46,6 +46,7 @@ def test_generate_report_writes_artifacts(tmp_path: Path) -> None:
         output_dir=tmp_path,
         top_n=40,
         report_url="https://example.test/build/1",
+        full_report_url="https://example.test/artifacts/timeout-report/report.html",
     )
 
     assert (tmp_path / "linux.png").is_file()
@@ -57,7 +58,9 @@ def test_generate_report_writes_artifacts(tmp_path: Path) -> None:
     assert "tight" in html_text
     assert "missing_in_tc" in html_text
     assert "testStarted to testFinished" in html_text
-    assert "https://example.test/build/1" in email_text
+    assert "https://example.test/build/1" in html_text
+    assert "Open the full report" in email_text
+    assert "https://example.test/artifacts/timeout-report/report.html" in email_text
     assert "tight" in email_text
 
 
@@ -75,3 +78,4 @@ def test_write_email_handles_no_at_risk(tmp_path: Path) -> None:
     path = tmp_path / "email.html"
     write_email_html([_stats("loose", 0.1)], path)
     assert "No at-risk cases." in path.read_text(encoding="utf-8")
+    assert "Full report is attached to the TeamCity build artifacts." in path.read_text(encoding="utf-8")

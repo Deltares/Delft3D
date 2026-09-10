@@ -158,6 +158,7 @@ def write_email_html(
     stats: list[CaseStats],
     path: Path,
     report_url: str = "",
+    full_report_url: str = "",
     top_n: int = 20,
 ) -> None:
     """Write a short HTML email body.
@@ -169,7 +170,9 @@ def write_email_html(
     path : Path
         Output HTML path.
     report_url : str, optional
-        TeamCity build URL.
+        TeamCity build overview URL.
+    full_report_url : str, optional
+        Direct URL to the HTML report artifact.
     top_n : int, optional
         Number of at-risk rows to include. Defaults to 20.
     """
@@ -177,11 +180,11 @@ def write_email_html(
     p95_count = sum(1 for item in stats if not item.insufficient_data and item.p95_ratio >= 0.8)
     timeout_count = sum(1 for item in stats if item.timeout_failures > 0)
     rows = at_risk[:top_n]
-    link = (
-        f"<p>Full report: <a href='{html.escape(report_url)}'>{html.escape(report_url)}</a></p>"
-        if report_url
-        else "<p>Full report is attached to the TeamCity build artifacts.</p>"
-    )
+    href = full_report_url or report_url
+    if href:
+        link = f"<p><a href='{html.escape(href)}'>Open the full report</a></p>"
+    else:
+        link = "<p>Full report is attached to the TeamCity build artifacts.</p>"
     body = [
         "<html><body>",
         "<h2>TestBench duration vs maxRunTime</h2>",

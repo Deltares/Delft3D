@@ -51,6 +51,11 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--report-url", default="", help="TeamCity build URL to embed in the report.")
     parser.add_argument(
+        "--full-report-url",
+        default="",
+        help="Direct URL to the HTML report artifact, used as the email link.",
+    )
+    parser.add_argument(
         "--max-cases",
         type=int,
         default=0,
@@ -165,6 +170,7 @@ def generate_report(
     output_dir: Path,
     top_n: int,
     report_url: str,
+    full_report_url: str = "",
 ) -> None:
     """Write PNG, HTML, CSV, and email artifacts.
 
@@ -180,6 +186,8 @@ def generate_report(
         Cases per boxplot.
     report_url : str
         TeamCity build URL.
+    full_report_url : str, optional
+        Direct URL to the HTML report artifact.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     plot_names: dict[str, str] = {}
@@ -202,7 +210,12 @@ def generate_report(
         path=output_dir / "report.html",
         report_url=report_url,
     )
-    write_email_html(stats=stats, path=output_dir / "email.html", report_url=report_url)
+    write_email_html(
+        stats=stats,
+        path=output_dir / "email.html",
+        report_url=report_url,
+        full_report_url=full_report_url,
+    )
 
 
 def run(arguments: argparse.Namespace) -> int:
@@ -242,6 +255,7 @@ def run(arguments: argparse.Namespace) -> int:
         output_dir=arguments.output_dir,
         top_n=arguments.top_n,
         report_url=arguments.report_url,
+        full_report_url=arguments.full_report_url,
     )
     LOGGER.info("Wrote report to %s", arguments.output_dir)
     return 0
