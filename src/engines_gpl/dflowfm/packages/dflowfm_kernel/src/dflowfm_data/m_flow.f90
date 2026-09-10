@@ -74,9 +74,12 @@ module m_flow ! flow arrays-999
    integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)
    integer, parameter :: LAYTP_DENS_SIGMA = 4 !< Density controlled sigma-layers
 
-   integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
-   integer, parameter :: STRCH_USER = 1
-   integer, parameter :: STRCH_EXPONENT = 2
+   integer, parameter :: STRETCH_UNI_OVER_EXP = -1 !< uniform over exponential, for backward compatibility (only for layertype = LAYTP_Z)
+   integer, parameter :: STRETCH_UNIFORM = 0 !< uniform layers
+   integer, parameter :: STRETCH_USER = 1 !< user defined layers
+   integer, parameter :: STRETCH_EXPONENT = 2 !< exponential layers
+   integer, parameter :: STRETCH_UNDEFINED = -999 !< undefined stretching type
+   integer :: stretch_type = STRETCH_UNDEFINED !< Stretching type for layers
 
    integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
@@ -96,8 +99,8 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: uuk !< coefficient vertical mom exchange of kmx layers
 
    real(kind=dp), allocatable, dimension(:) :: laycof !< coefficients for sigma layer
-   !    1: Percentages of the layers, user defined, laycof(kmx)
-   !    2: Stretching level, and two coefficients for layers growth, laycof(3)
+   !    if stretch_type = STRETCH_USER: Percentages of the layers, user defined, laycof(kmx)
+   !    if stretch_type = STRETCH_EXPONENT: Stretching level, and two coefficients for layers growth, laycof(3)
    !
    real(kind=dp), allocatable, dimension(:, :) :: dzslay ! the normalized thickness of layer, dim = (: , maxlaydefs)
 

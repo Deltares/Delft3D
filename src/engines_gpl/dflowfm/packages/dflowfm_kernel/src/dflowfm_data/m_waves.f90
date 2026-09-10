@@ -42,10 +42,10 @@ module m_waves
    real(kind=dp), allocatable :: fetdp(:, :) !< wind dir dep. waterdepth (m)   of each cell, dimension 5,*, or 13, * nr of wind dirs + 1
    real(kind=dp), allocatable :: fett(:, :) !< reduce array, (2,ndx)
 
-   real(kind=dp), allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
-   real(kind=dp), allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwav(:) !< [m] FM-derived root mean square wave height, {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: hwavcom(:) !< [m] raw root mean square wave height from external source
+   real(kind=dp), allocatable, target :: twav(:) !< [s] FM-derived wave period {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: twavcom(:) !< [s] raw wave period from external source {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
    real(kind=dp), allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
@@ -103,6 +103,8 @@ module m_waves
    integer :: jauorbfromswan !< 1: get uorb from SWAN, compare with Delft3D
    integer :: jawavevellogprof !< 1: set depth-averaged velocity from u1 of base layers
    logical :: extfor_wave_initialized !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
+   integer :: offline_wave_input_requirements = 0 !< Bit mask of required Wavemodelnr=7 input quantities
+   integer :: offline_wave_input_providers = 0 !< Bit mask of configured Wavemodelnr=7 input providers
 
 contains
 
@@ -124,6 +126,8 @@ contains
       fforc = 1.0_dp
       strlyrfac = 3.0_dp
 
+      offline_wave_input_requirements = 0
+      offline_wave_input_providers = 0
       call reset_waves()
    end subroutine default_waves
 
@@ -132,5 +136,17 @@ contains
    subroutine reset_waves()
       extfor_wave_initialized = .false. !< is set to .true. when the "external forcing"-part that must be initialized for WAVE during running (instead of during initialization) has actually been initialized
    end subroutine reset_waves
+
+!> Record that an external-forcing provider was configured for an offline wave quantity.
+   subroutine register_offline_wave_input_provider(quantity_flag)
+      integer, intent(in) :: quantity_flag
+
+      offline_wave_input_providers = ior(offline_wave_input_providers, quantity_flag)
+   end subroutine register_offline_wave_input_provider
+
+!> Clear provider registration before external forcings are initialized.
+   subroutine reset_offline_wave_input_providers()
+      offline_wave_input_providers = 0
+   end subroutine reset_offline_wave_input_providers
 
 end module m_waves

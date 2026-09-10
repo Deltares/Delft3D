@@ -623,6 +623,34 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f020_c002_uniform_netcdf_heat_transfer" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f020_heat_flux/c002_uniform_netcdf_heat_transfer</path>
+
+    <checks>
+      <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Patm" toleranceAbsolute="5e-3"/>
+          <parameter name="mesh2d_windx" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_windy" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_windxu" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_windyu" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Tair" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Rhum" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Clou" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh2d_Qsun" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qeva" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qcon" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qlong" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qfreva" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qfrcon" toleranceAbsolute="1e-4"/>
+          <parameter name="mesh2d_Qtot" toleranceAbsolute="1e-4"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f020_c031_heatmodel5_secchidepth2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f020_heat_flux/c031_heatmodel5_secchidepth2</path>
 
@@ -705,6 +733,18 @@
   </testCase>
   <testCase name="e02_f020_c044_sensibleheatflux_latentheatflux" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f020_heat_flux/c044_sensibleheatflux_latentheatflux</path>
+
+    <checks>
+      <file name="DFM_OUTPUT_model/model_map.nc" type="netcdf">
+        <parameters>
+          <parameter name="mesh2d_Qeva" toleranceAbsolute="1e-5"/>
+          <parameter name="mesh2d_Qcon" toleranceAbsolute="1e-5"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f020_c045_uniform_netcdf_sensible_latent_heatflux" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f020_heat_flux/c045_uniform_netcdf_sensible_latent_heatflux</path>
 
     <checks>
       <file name="DFM_OUTPUT_model/model_map.nc" type="netcdf">
@@ -841,7 +881,7 @@
   </testCase>
   <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">
         <parameters>
@@ -1013,9 +1053,9 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c011_gate_sub_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c011_gate_sub_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">
         <parameters>
@@ -1068,7 +1108,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c015_gate_free_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1082,7 +1122,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c016_gate_free_3Dzsigma1" ref="platform_specific">
+  <testCase name="e02_f208_c016_gate_free_3Dzsigma1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c016_gate_free_3Dzsigma1</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1096,7 +1136,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="platform_specific">
+  <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c017_gate_free_3Dzsigma2</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1175,7 +1215,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c023_sill_free_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c023_sill_free_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c023_sill_free_3Dz</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1612,7 +1652,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="platform_specific">
+  <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
 
     <checks>

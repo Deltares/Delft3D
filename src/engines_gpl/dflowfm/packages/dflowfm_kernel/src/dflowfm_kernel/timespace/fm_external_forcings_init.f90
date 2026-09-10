@@ -221,7 +221,13 @@ contains
 
          threshold_abort = initial_threshold_abort
 
-         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
+         call check_file_tree_for_deprecated_keywords( &
+            bnd_ptr, &
+            deprecated_ext_keywords, &
+            istat, &
+            prefix='While reading '''//trim(file_names(i_ext))//'''', &
+            print_context_keywords=['quantity', 'dataFile'] &
+         )
 
          if (allocated(itpenzr)) then
             deallocate (itpenzr)
@@ -816,7 +822,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -1053,6 +1059,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+               target_data => target_array_3d(first_index, :)
+            end if
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
@@ -1065,7 +1074,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
+            write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
          end if
@@ -1078,7 +1087,7 @@ contains
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
-               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
             else ! normal spatial field
                block
@@ -1244,7 +1253,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')
@@ -1376,7 +1385,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_polygon, only: dzL, npl
+      use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1391,6 +1400,7 @@ contains
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
+      real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
       logical :: is_successful
       logical :: is_read
@@ -1414,7 +1424,7 @@ contains
 
       ! Use generic polyline reader
       call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       if (.not. is_successful) return
 
       ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
@@ -1434,16 +1444,14 @@ contains
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = z_coordinates(npts)
             if (num_columns > 3) then
-               ! 4th column (dzL) needs to be read from the polygon module directly,
-               ! since read_polyline_coordinates only returns the 3rd column (zpl).
-               z_range_source(2) = dzL(npl)
+               z_range_source(2) = fourth_coordinates(npts)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = z_coordinates(1)
             if (num_columns > 3) then
-               z_range_sink(2) = dzL(1)
+               z_range_sink(2) = fourth_coordinates(1)
             end if
          end if
       end if
@@ -1601,7 +1609,7 @@ contains
       use string_module, only: strcmpi, str_tolower
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1634,6 +1642,7 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      type(t_netcell_set) :: netcell_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1642,8 +1651,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
+      netcell_cache = t_netcell_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1681,7 +1689,8 @@ contains
                   end if
                end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
-               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               call netcell_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
+                                                                 bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
@@ -1702,7 +1711,6 @@ contains
          end if
       end do
 
-      call cleanup_cell_geom_polylines()
       ! initialize global geometry
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       nNodesBubbleScreen = 0
@@ -1746,7 +1754,6 @@ contains
       use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use m_polygon, only: xpl, ypl, zpl, npl
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
       use network_data
       use m_flow
       use fm_external_forcings_data

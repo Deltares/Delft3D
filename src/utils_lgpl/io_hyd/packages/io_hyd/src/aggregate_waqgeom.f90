@@ -293,7 +293,6 @@ contains
       type(t_ug_meshgeom), intent(inout) :: output !< Aggregated layers and interfaces.
       integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
-      logical :: no_aggregation !< Is there no aggregation at all?
       logical :: to_2D !< Is there aggregation to 2D?
       logical :: top_to_bottom !< Are layers defined from top to bottom?
       integer :: i, old_layer, new_layer, increment !< Loop variable and increment variable.
@@ -301,7 +300,6 @@ contains
 
       ! Set defaults
       success = .false.
-      no_aggregation = .true.
       to_2D = .true.
 
       ! Check the validity of the layer mapping table
@@ -338,9 +336,6 @@ contains
             call mess(LEVEL_ERROR, trim(message))
             return
          end if
-         if (increment == 0) then
-            no_aggregation = .false.
-         end if
          if (increment == 1) then
             to_2D = .false.
          end if
@@ -358,13 +353,6 @@ contains
       ! When we aggregate to 2D, then the new %num_layers is 0, the rest is the default. We don't need to aggregate the layers.
       if (to_2D) then
          output%num_layers = 0
-         success = .true.
-         return
-      end if
-
-      ! When there is no aggregation, just copy the input to the output and return.
-      if (no_aggregation) then
-         output = input
          success = .true.
          return
       end if

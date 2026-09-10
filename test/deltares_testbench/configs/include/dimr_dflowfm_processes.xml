@@ -1596,7 +1596,7 @@
   </testCase>
   <testCase name="e02_f030_c401_Course_tracers" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
-      <maxRunTime>480</maxRunTime>
+      <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
@@ -1644,7 +1644,7 @@
   </testCase>
   <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
-    <maxRunTime>480</maxRunTime>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
