@@ -49,6 +49,7 @@ contains
       use m_transport, only: ISED1, ISEDN ! preferably in argument list
       use m_sediment, only: mtd
       use m_sediment, only: jased, sedtra, stm_included
+      use m_fm_wq_processes, only: iconstituent_to_fall_velocity_waq, fall_velocity_waq
       use timers, only: timon, timstrt, timstop
       use m_dlimiter, only: dlimiter
 
@@ -133,9 +134,9 @@ contains
             do j = 1, NUMCONST
                qw_loc = qw(k)
                if (jaimplicitfallvelocity == 0) then ! explicit
-                  if (jased < 4) then
-                     qw_loc = qw(k) - wsf(j) * ba(kk)
-                  elseif (stm_included .and. j >= ISED1 .and. j <= ISEDN) then
+                  if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                     qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * ba(kk)
+                  else if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
                         qw_loc = qw(k) ! settling flux zero below kmxsed layer
@@ -143,7 +144,7 @@ contains
                         qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
                      end if
                   else
-                     qw_loc = qw(k) - wsf(j) * ba(kk) ! enable tracers with settling vel icw morphology
+                     qw_loc = qw(k) - wsf(j) * ba(kk)
                   end if
                end if
 

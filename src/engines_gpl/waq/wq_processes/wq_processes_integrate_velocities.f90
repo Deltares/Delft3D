@@ -28,9 +28,8 @@ module m_wq_processes_integrate_velocities
 contains
 
 
-    subroutine wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays, &
-            velo, area, volume, ipoint, iknmrk, &
-            ivpnt, conc, dts, deriv)
+    subroutine wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, &
+            num_exchanges, num_velocity_arrays, velo, area, volume, ipoint, iknmrk, ivpnt, conc, dts, deriv)
 
         !     Deltares Software Centre
 
