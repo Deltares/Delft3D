@@ -82,6 +82,8 @@ type icecover_output_flags
    logical :: ice_temperature = .false. !< temperature of ice cover
    logical :: snow_thickness = .false. !< snow thickness
    logical :: snow_temperature = .false. !< temperature of snow cover
+   logical :: qh_air2ice = .false. !< heat flux from air to ice
+   logical :: qh_ice2wat = .false. !< heat flux from ice to water
 end type icecover_output_flags
 
 ! ice cover type
@@ -244,6 +246,8 @@ subroutine apply_default_output_flag(flags, model_type)
    flags%ice_temperature = default
    flags%snow_thickness = default
    flags%snow_temperature = default
+   flags%qh_air2ice = default
+   flags%qh_ice2wat = default
    
    call check_output_flags(flags, model_type)
 end subroutine apply_default_output_flag
@@ -270,6 +274,8 @@ subroutine check_output_flags(flags, model_type)
    flags%ice_temperature = filter .and. flags%ice_temperature
    flags%snow_thickness = filter .and. flags%snow_thickness
    flags%snow_temperature = filter .and. flags%snow_temperature
+   flags%qh_air2ice = filter .and. flags%qh_air2ice
+   flags%qh_ice2wat = filter .and. flags%qh_ice2wat
 end subroutine check_output_flags
 
 !> Check if icecover has been allocated

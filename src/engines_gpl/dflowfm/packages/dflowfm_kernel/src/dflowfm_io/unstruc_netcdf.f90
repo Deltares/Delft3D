@@ -3787,7 +3787,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -4327,6 +4327,12 @@ contains
             if (ice_mapout%snow_temperature) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, nf90_double, UNC_LOC_S, 'snow_temperature', 'temperature_in_surface_snow', 'Temperature of the snow layer', 'K', jabndnd=jabndnd_)
             end if
+            if (ice_mapout%qh_air2ice) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, nf90_double, UNC_LOC_S, 'qh_air2ice', '', 'Heat flux from air to snow/ice cover', 'W m-2', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, nf90_double, UNC_LOC_S, 'qh_ice2wat', '', 'Heat flux from ice cover to water', 'W m-2', jabndnd=jabndnd_)
+            end if
          end if
 
          if (jawind > 0) then
@@ -4386,6 +4392,9 @@ contains
                end if
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
+               if (soiltempthick > 0.0_dp) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, nc_precision, UNC_LOC_S, 'tbed', '', 'Temperature of the bed', 'degC', jabndnd=jabndnd_)
+               end if
             end if
          end if
 
@@ -6079,6 +6088,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, UNC_LOC_S, snow_temperature, jabndnd=jabndnd_)
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, UNC_LOC_S, qh_air2ice, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, UNC_LOC_S, qh_ice2wat, jabndnd=jabndnd_)
+         end if
       end if
 
       ! Heat flux models
@@ -6103,6 +6118,9 @@ contains
             end if
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
+            if (soiltempthick > 0.0_dp) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, tbed, jabndnd=jabndnd_)
+            end if
          end if
       end if
 
@@ -6633,7 +6651,8 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
-                               ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+                               ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, &
+                               ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -6679,9 +6698,10 @@ contains
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
          id_q1main, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
-         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
+         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
          id_ice_s1, id_ice_zmax, id_ice_zmin, id_ice_area_fraction, id_ice_thickness, id_ice_pressure, id_ice_temperature, id_snow_thickness, id_snow_temperature, &
+         id_qh_air2ice, id_qh_ice2wat, &
          id_cwav, id_cgwav, id_sigmwav, &
          id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
          id_1d2d_edges, id_1d2d_zeta1d, id_1d2d_crest_level, id_1d2d_b_2di, id_1d2d_b_2dv, id_1d2d_d_2dv, id_1d2d_q_zeta, id_1d2d_q_lat, &
@@ -6833,6 +6853,9 @@ contains
                   end if
 
                   call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  if (soiltempthick > 0.0_dp) then
+                     call definencvar(imapfile, id_tbed(iid), nf90_double, idims, 'tbed', 'Temperature of the bed', 'degC', 'FlowElem_xcc FlowElem_ycc')
+                  end if
                end if
             end if
 
@@ -7954,6 +7977,12 @@ contains
             end if
             if (ice_mapout%snow_temperature) then
                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%qh_air2ice) then
+               call definencvar(imapfile, id_qh_air2ice(iid), nf90_double, idims, 'qh_air2ice', 'Heat flux from air to snow/ice cover', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               call definencvar(imapfile, id_qh_ice2wat(iid), nf90_double, idims, 'qh_ice2wat', 'Heat flux from ice cover to water', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
             end if
          end if
 
@@ -9410,6 +9439,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = nf90_put_var(imapfile, id_qh_air2ice(iid), qh_air2ice, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = nf90_put_var(imapfile, id_qh_ice2wat(iid), qh_ice2wat, [1, itim], [ndxndxi, 1])
+         end if
       end if
 
       if (map_write_settings%heatflux > 0) then ! Heat modelling only
@@ -9428,6 +9463,9 @@ contains
             end if
 
             ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
+            if (soiltempthick > 0.0_dp) then
+               ierr = nf90_put_var(imapfile, id_tbed(iid), tbed, [1, itim], [ndxndxi, 1])
+            end if
          end if
       end if
       call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
