@@ -822,7 +822,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -1059,6 +1059,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+               target_data => target_array_3d(first_index, :)
+            end if
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
@@ -1071,7 +1074,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
+            write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
          end if
@@ -1084,7 +1087,7 @@ contains
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
-               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
             else ! normal spatial field
                block
@@ -1250,7 +1253,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')
@@ -1382,7 +1385,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_polygon, only: dzL, npl
+      use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1397,6 +1400,7 @@ contains
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
+      real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
       logical :: is_successful
       logical :: is_read
@@ -1420,7 +1424,7 @@ contains
 
       ! Use generic polyline reader
       call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       if (.not. is_successful) return
 
       ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
@@ -1440,16 +1444,14 @@ contains
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = z_coordinates(npts)
             if (num_columns > 3) then
-               ! 4th column (dzL) needs to be read from the polygon module directly,
-               ! since read_polyline_coordinates only returns the 3rd column (zpl).
-               z_range_source(2) = dzL(npl)
+               z_range_source(2) = fourth_coordinates(npts)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = z_coordinates(1)
             if (num_columns > 3) then
-               z_range_sink(2) = dzL(1)
+               z_range_sink(2) = fourth_coordinates(1)
             end if
          end if
       end if
