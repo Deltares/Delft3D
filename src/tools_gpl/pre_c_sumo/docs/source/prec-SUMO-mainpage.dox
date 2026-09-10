@@ -39,7 +39,10 @@ Main implementation entry points:
 - \ref pre_c_sumo::ConnectedSinkSources::write_to_precice in connected_sinks_sources.hpp / connected_sinks_sources.cpp
 
 \section coding_guidelines Coding Guidelines
-\include guidelines.md
+See the project development guidelines in [guidelines.md](../include/guidelines.md).
+
+\section clang_setup Set up clang-format C++ formatting
+See the C++ formatting and static analysis setup notes in [README.md](../README.md).
 
 \section notes Diagram Source Files
 Diagrams are maintained in docs/include as .dot and .drawio source files.

@@ -147,9 +147,48 @@ namespace pre_c_sumo
 
     /**
      * @anchor pre_c_sumo_convert_nf_to_connected_sink_sources
-     * @brief Convert NF2FF results into connected source/sink entries for the FM adapter.
+     * @brief Convert NF2FF near-field output into connected source/sink entries for the FM adapter.
      *
-     * Uses the data referenced in @p nf2ff_readers and @p csumo_settings to perform the conversion.
+     * Each NF2FF file contains a diffuser snapshot with:
+     * - a source list, which represents the source points or the generated DESA plume track,
+     * - a sink list, which contains the entrainment points and their entrainment factors,
+     * - intake data, which is treated as a sink-only withdrawal when the intake flow is non-zero,
+     * - the total source and intake discharge used to distribute the exchange over the points.
+     *
+     * The conversion follows the near-field transport logic used by the legacy DIMR/nearfield implementation:
+     *
+     * 1. The data in @p nf2ff_readers is projected onto the diffuser model used by the FM adapter.
+     *    If a diffuser is not explicitly modelled and only a single NF2FF source is present,
+     *    the source is expanded into a generated DESA track by @ref pre_c_sumo_create_diffuser_model.
+     *    In that case the generated source points are used in the downstream loops instead of the raw source snapshot.
+     *
+     * 2. Entrainment is converted from cumulative sink entries to connected source/sink pairs.
+     *    For sink i > 0 the code computes the increment
+     *    `delta_s = sinks[i].entrainment - sinks[i - 1].entrainment`.
+     *    This delta is the actual sink-driven entrainment discharge for that sink, and it is distributed
+     *    over all active source points with the weight of each source point. A negative delta is rejected,
+     *    because it would correspond to physically invalid entrainment behavior.
+     *
+     * 3. Each entrainment discharge is converted to a connected sink/source pair by calling
+     *    @ref pre_c_sumo::ConnectedSinkSources::add_entry. The sink location is the sink coordinates,
+     *    and the source location is the associated source-point coordinates. The sink z-extent is derived
+     *    from the sink plume half-height, while the source z-extent is taken from the source plume height,
+     *    or from a finite plume thickness in the single-source fallback case.
+     *
+     * 4. Explicit discharge from the source points is added separately to match the near-field dischargeToSrc
+     *    behavior. The source discharge is `source_flow_rate * weight_fraction`; the momentum magnitude is
+     *    weighted with `weight_fraction^2` to preserve the same area/momentum scaling used by the original model.
+     *    This keeps the explicit source contribution independent from the entrainment-driven sink deltas.
+     *
+     * 5. Intakes are treated as sink-only withdrawals. When the intake flow rate is above the numerical cutoff,
+     *    each intake point contributes a negative discharge equal to
+     *    `intake_flow_rate * intake_weight / intake_weight_norm` and is added to the output as a sink entry
+     *    without any source partner. If the NF2FF file has no intake points, the code falls back to the
+     *    configured intake location from the C-SUMO settings when one is available.
+     *
+     * The DESA geometry determines the source-to-sink pairing and the local plume geometry used for each pair:
+     *
+     * \dotfile desa_source.dot "DESA source/sink geometry used for NF2FF conversion"
      *
      * @param csumo_settings Parsed C-SUMO settings.
      * @param nf2ff_readers NF2FF snapshots containing the latest near-field data.
