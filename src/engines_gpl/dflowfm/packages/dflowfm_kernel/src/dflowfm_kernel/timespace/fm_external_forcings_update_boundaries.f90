@@ -58,7 +58,7 @@ contains
       use m_oned_functions
       use m_obs_on_flowgeom, only: obs_on_flowgeom
       use unstruc_messages, only: callback_msg
-!      use m_filez
+      use m_filez
 
       implicit none
 
@@ -66,7 +66,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k2, kb, L, itrac, isf
-!      integer, save :: minp                         
+ !     integer, save :: minp                         
       real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR

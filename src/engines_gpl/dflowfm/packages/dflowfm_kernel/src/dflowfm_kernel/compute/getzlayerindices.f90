@@ -82,5 +82,5 @@ contains
          nrlay = nrlayn(n)
       end if
 
-   end subroutine getzlayerindices
+    end subroutine getzlayerindices
 end module m_get_zlayer_indices
