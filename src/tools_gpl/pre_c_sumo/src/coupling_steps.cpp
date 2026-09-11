@@ -32,8 +32,9 @@ namespace pre_c_sumo
             layers.emplace_back(FarFieldLayer{
                 // 3d.coordinates = (x1, y1, z1, x2, y2, z2, ...): skip "index_3d + i" points, then skip x and y
                 .z_coordinate = mesh_3d.coordinates[(index_3d + i) * 3 + 2],
-                .x_velocity = 0.0, // TODO: obtain from far-field data
-                .y_velocity = 0.0, // TODO: obtain from far-field data
+                // 3d.velocities = (vx1, vy1, vz1, vx2, vy2, vz2, ...): skip "index_3d + i" points, then get x and y
+                .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + 1) * 3 + 0],
+                .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + 1) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
                 .constituents = {0.0, 0.0, 0.0}, // constituents, // TODO: obtain layered data from far-field
             });
