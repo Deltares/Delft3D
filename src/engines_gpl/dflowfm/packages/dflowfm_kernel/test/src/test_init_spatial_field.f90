@@ -2,7 +2,7 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
-   use timespace_parameters, only: OPERAND_ADD
+   use timespace_parameters, only: METHOD_TRIANGULATION, NCFLOW, OPERAND_ADD
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -79,6 +79,20 @@ contains
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
    end subroutine test_validate_unrecognized_interpolation_method
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_dflowfm_map_file_type, test_validate_dflowfm_map_file_type,
+   subroutine test_validate_dflowfm_map_file_type() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, quantity='initialwaterlevel', forcing_file='flow_map.nc', forcing_file_type='map')
+
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                  "map should accept an FM map NetCDF file")
+      call f90_expect_eq(input%filetype, NCFLOW)
+      call f90_expect_eq(input%method, METHOD_TRIANGULATION)
+      call f90_expect_true(input%is_static_field, "map should be initialized as a static spatial field")
+   end subroutine test_validate_dflowfm_map_file_type
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_inline_polygon_selection_restores_polygon_state, test_inline_polygon_selection_restores_polygon_state,

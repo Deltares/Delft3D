@@ -177,7 +177,7 @@ contains
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff', 'polygon', '1dfield')
+      case ('sample', 'geotiff', 'polygon', '1dfield', 'map')
          is_static = .true.
       case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
@@ -345,7 +345,7 @@ contains
 
       select case (ext)
       case ('.nc')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'netcdf'
+         conflicts = .not. any(str_tolower(trim(forcing_file_type)) == [character(len=16) :: 'netcdf', 'map'])
       case ('.tif', '.tiff')
          conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
       case ('.spw')
