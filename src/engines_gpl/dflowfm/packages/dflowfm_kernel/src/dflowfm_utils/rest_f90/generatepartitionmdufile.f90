@@ -126,7 +126,9 @@ contains
          if (len_trim(md_restartfile) > 0) then
             keyword_present(3) = index(keyword, 'restartfile') /= 0
          end if
-         if (len_trim(md_mapfile) > 0) then
+         ! ClassMapFile must be checked before MapFile, since 'classmapfile' also contains the substring 'mapfile'
+         keyword_present(7) = index(keyword, 'classmapfile') /= 0
+         if (len_trim(md_mapfile) > 0 .and. .not. keyword_present(7)) then
             keyword_present(4) = index(keyword, 'mapfile') /= 0
          end if
          if (md_genpolygon == 1) then
@@ -134,9 +136,6 @@ contains
          end if
          if (len_trim(md_flowgeomfile) > 0) then
             keyword_present(6) = index(keyword, 'flowgeomfile') /= 0
-         end if
-         if (len_trim(md_classmap_file) > 0) then
-            keyword_present(7) = index(keyword, 'classmapfile') /= 0
          end if
          if (len_trim(md_1dfiles%structures) > 0) then
             keyword_present(8) = index(keyword, 'structurefile') /= 0
@@ -160,7 +159,11 @@ contains
                mdu_line_partition = trim(keyword)//" "//trim(md_restartfile)//"       # Restart file, only from netcdf-file, hence: either *_rst.nc or *_map.nc"
                write (unit_partition, "(a)") trim(mdu_line_partition)
             else if (keyword_present(7)) then ! Modify ClassMapFile, must be before mapfile as we don't check on whole words
-               mdu_line_partition = trim(keyword)//" "//trim(md_classmap_file)//"       # ClassMapFile name *.nc"
+               if (len_trim(md_classmap_file) > 0) then
+                  mdu_line_partition = trim(keyword)//" "//trim(md_classmap_file)//"       # ClassMapFile name *.nc"
+               else ! Keep the line unchanged, so an empty ClassMapFile stays empty instead of being filled with MapFile's value
+                  mdu_line_partition = mdu_line_main
+               end if
                write (unit_partition, "(a)") trim(mdu_line_partition)
             else if (keyword_present(4)) then ! Modify MapFile
                mdu_line_partition = trim(keyword)//" "//trim(md_mapfile)//"       # MapFile name *_map.nc"
