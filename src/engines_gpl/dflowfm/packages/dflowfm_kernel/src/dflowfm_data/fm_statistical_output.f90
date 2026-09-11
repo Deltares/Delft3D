@@ -1679,7 +1679,7 @@ contains
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from air to ice to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_QH_ICE2WAT, &
-                             'Wrihis_qh_ice2wat', 'qh_ice2wat', 'Heat flux from ice to water', '', &
+                             'Wrihis_heatflux_ice_to_water', 'qh_ice2wat', 'Heat flux from ice to water', '', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from ice to water to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
 
