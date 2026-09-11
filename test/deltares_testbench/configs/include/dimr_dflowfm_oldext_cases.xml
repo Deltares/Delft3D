@@ -1920,7 +1920,7 @@
   </testCase>
   <testCase name="e02_f010_c011_oldext_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_oldext_gate_free</path>
-      <maxRunTime>450</maxRunTime>
+    <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -2007,7 +2007,7 @@
   </testCase>
   <testCase name="e02_f010_c021_oldext_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_oldext_gate_free_ini_newkeywords</path>
-      <maxRunTime>450</maxRunTime>
+    <maxRunTime>450</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -3834,7 +3834,7 @@
   </testCase>
   <testCase name="e02_f022_c26_oldext_boundary_condition_icond4_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c26_oldext_boundary_condition_icond4_graded</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -3874,7 +3874,7 @@
   </testCase>
   <testCase name="e02_f022_c28_oldext_boundary_condition_icond2_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c28_oldext_boundary_condition_icond2_graded</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -4056,7 +4056,6 @@
   <testCase name="e02_f022_c55_oldext_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c55_oldext_curvebend_spiral_mor_Bedup_Unstr</path>
     <maxRunTime>600</maxRunTime>
-
     <checks>
       <file name="dflowfmoutput/c31smallbendUnstr_map.nc" type="netCDF">
         <parameters>
@@ -4224,7 +4223,7 @@
   </testCase>
   <testCase name="e02_f022_c72_oldext_boundary_condition_icond4_graded_linear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c72_oldext_boundary_condition_icond4_graded_linear</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5068,8 +5067,7 @@
   </testCase>
   <testCase name="e02_f422_c05_oldext_migratinghump" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c05_oldext_migratinghump</path>
-
-      <maxRunTime>1500</maxRunTime>
+    <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/hump_19920831_114000_rst.nc" type="netCDF">
         <parameters>
@@ -5741,7 +5739,7 @@
   </testCase>
   <testCase name="e02_f422_c31_oldext_curvebend_spiral_mor_Bedup" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c31_oldext_curvebend_spiral_mor_Bedup</path>
-
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -5949,7 +5947,7 @@
   </testCase>
   <testCase name="e02_f422_c51_oldext_bedslope_effect_slope022_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c51_oldext_bedslope_effect_slope022_Unstr</path>
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>1380</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_unstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -6051,7 +6049,7 @@
   </testCase>
   <testCase name="e02_f422_c55_oldext_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c55_oldext_curvebend_spiral_mor_Bedup_Unstr</path>
-    <maxRunTime>600</maxRunTime>
+    <maxRunTime>720</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/c31smallbendUnstr_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -6179,7 +6177,7 @@
   </testCase>
   <testCase name="e02_f422_c60_oldext_thindams" ref="dflowfm_restart_platform">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c60_oldext_thindams</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/dams_sed_20010101_002000_rst.nc" type="netCDF">
         <parameters>

@@ -479,6 +479,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
         </testCase>
         <testCase name="e05_f03_zlayers_c02_tracer" ref="part_default">
                 <path version="DVC">e05_part/f03_zlayers/c02_tracer</path>
+                <maxRunTime>360</maxRunTime>
                 <checks>
                         <file name="tracer_outside.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>
@@ -529,6 +530,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
         </testCase>
         <testCase name="e05_f03_zlayers_c11_oil" ref="part_default">
                 <path version="DVC">e05_part/f03_zlayers/c11_oil</path>
+                <maxRunTime>540</maxRunTime>
                 <checks>
                         <file name="oil_outside.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>
@@ -603,6 +605,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
         </testCase>
         <testCase name="e05_f03_zlayers_c12_oil" ref="part_default">
                 <path version="DVC">e05_part/f03_zlayers/c12_oil</path>
+                <maxRunTime>540</maxRunTime>
                 <checks>
                         <file name="oil_outside.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>
@@ -677,6 +680,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
         </testCase>
         <testCase name="e05_f03_zlayers_c13_oil" ref="part_default">
                 <path version="DVC">e05_part/f03_zlayers/c13_oil</path>
+                <maxRunTime>540</maxRunTime>
                 <checks>
                         <file name="oil_outside.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>
@@ -751,6 +755,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
         </testCase>
         <testCase name="e05_f03_zlayers_c14_oil" ref="part_default">
                 <path version="DVC">e05_part/f03_zlayers/c14_oil</path>
+                <maxRunTime>540</maxRunTime>
                 <checks>
                         <file name="oil_outside.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>

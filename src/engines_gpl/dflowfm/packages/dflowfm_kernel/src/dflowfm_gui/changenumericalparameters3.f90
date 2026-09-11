@@ -38,7 +38,7 @@ module m_changenumericalparameters3
 contains
 
    subroutine CHANGENUMERICALPARAMETERS3()
-      use m_flow, only: clveg, cdveg, rhoveg, cbveg, stemheightstd, modind, slotw1d, slotw2d, epsmaxlev, epsmaxlevm, jawavestreaming, jawavestokes, max_iterations_vertical_forester, noderivedtypes
+      use m_flow, only: clveg, cdveg, rhoveg, cbveg, stemheightstd, modind, slotw1d, slotw2d, epsmaxlev, epsmaxlevm, jawavestreaming, jawavestokes, max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem, noderivedtypes
       use m_sediment, only: hwavuni, twavuni, phiwavuni, jaseddenscoupling, hwav, twav, phiwav
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
@@ -53,7 +53,7 @@ contains
       use m_wind, only: jaqin, jaevap, evap
 
       integer :: numpar, numfld, numparactual, numfldactual
-      parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)
+      parameter(NUMPAR=21, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
@@ -92,16 +92,18 @@ contains
       it(2 * 14) = 2
       OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'
       it(2 * 15) = 2
-      OPTION(16) = 'maxItVerticalForester                ( )'
+      OPTION(16) = 'maxItVerticalForesterSal             ( )'
       it(2 * 16) = 2
-      OPTION(17) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'
+      OPTION(17) = 'maxItVerticalForesterTem             ( )'
       it(2 * 17) = 2
-      OPTION(18) = 'Maxdegree                            ( )'
+      OPTION(18) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'
       it(2 * 18) = 2
-      OPTION(19) = 'Jaevap                               ( )'
+      OPTION(19) = 'Maxdegree                            ( )'
       it(2 * 19) = 2
-      OPTION(20) = 'Jaseddenscoupling                    ( )'
+      OPTION(20) = 'Jaevap                               ( )'
       it(2 * 20) = 2
+      OPTION(21) = 'Jaseddenscoupling                    ( )'
+      it(2 * 21) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -121,11 +123,12 @@ contains
       HELPM(13) = 'Max level diff in outer loop of Nested Newton def 1d-8  (m) '
       HELPM(14) = '>=1 streaming, >= 2 streaming + turb                        '
       HELPM(15) = '0=no, 1 = uniform, 2 = non-uniform, 3=2+vertical visc Stokes'
-      HELPM(16) = 'Max nr of vertical Forester iterations                      '
-      HELPM(17) = '0=use der. types, 1 = less, 2 = lesser, 5 = also deallo der.'
-      HELPM(18) = '6 = default, 666 = number of the devil                      '
-      HELPM(19) = '1 = evaporation computed bij heatfluxmodel , 0= no evap     '
-      HELPM(20) = '0=no, 1 = yes                                               '
+      HELPM(16) = 'Max nr of vertical Forester iterations for salinity         '
+      HELPM(17) = 'Max nr of vertical Forester iterations for temperature      '
+      HELPM(18) = '0=use der. types, 1 = less, 2 = lesser, 5 = also deallo der.'
+      HELPM(19) = '6 = default, 666 = number of the devil                      '
+      HELPM(20) = '1 = evaporation computed bij heatfluxmodel , 0= no evap     '
+      HELPM(21) = '0=no, 1 = yes                                               '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -208,11 +211,12 @@ contains
       call IFORMputdouble(2 * 13, Epsmaxlevm, '(E8.2)')
       call IFORMputinteger(2 * 14, jawavestreaming)
       call IFORMputinteger(2 * 15, jawaveStokes)
-      call IFORMputinteger(2 * 16, max_iterations_vertical_forester)
-      call IFORMputinteger(2 * 17, Noderivedtypes)
-      call IFORMputinteger(2 * 18, maxdge)
-      call IFORMputinteger(2 * 19, Jaevap)
-      call IFORMputinteger(2 * 20, Jaseddenscoupling)
+      call IFORMputinteger(2 * 16, max_iterations_vertical_forester_sal)
+      call IFORMputinteger(2 * 17, max_iterations_vertical_forester_tem)
+      call IFORMputinteger(2 * 18, Noderivedtypes)
+      call IFORMputinteger(2 * 19, maxdge)
+      call IFORMputinteger(2 * 20, Jaevap)
+      call IFORMputinteger(2 * 21, Jaseddenscoupling)
 
       !  Display the form with numeric fields left justified
       !  and set the initial field to number 2
@@ -275,11 +279,12 @@ contains
             call IFORMGETdouble(2 * 13, Epsmaxlevm)
             call IFORMGETinteger(2 * 14, jawavestreaming)
             call IFORMGETinteger(2 * 15, jawaveStokes)
-            call IFORMGETinteger(2 * 16, max_iterations_vertical_forester)
-            call IFORMGETinteger(2 * 17, Noderivedtypes)
-            call IFORMGETinteger(2 * 18, Maxdge)
-            call IFORMGETinteger(2 * 19, Jaevap)
-            call IFORMgetinteger(2 * 20, Jaseddenscoupling)
+            call IFORMGETinteger(2 * 16, max_iterations_vertical_forester_sal)
+            call IFORMGETinteger(2 * 17, max_iterations_vertical_forester_tem)
+            call IFORMGETinteger(2 * 18, Noderivedtypes)
+            call IFORMGETinteger(2 * 19, Maxdge)
+            call IFORMGETinteger(2 * 20, Jaevap)
+            call IFORMgetinteger(2 * 21, Jaseddenscoupling)
             if (jaevap > 0) then
                if (.not. allocated(evap)) then
                   allocate (evap(ndx))

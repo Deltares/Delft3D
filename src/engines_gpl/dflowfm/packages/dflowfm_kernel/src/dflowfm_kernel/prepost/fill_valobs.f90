@@ -77,6 +77,7 @@ contains
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_rwin, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -512,7 +513,7 @@ contains
                elseif (stmpar%morlyr%settings%iunderlyr == 2) then
                   nlyrs = stmpar%morlyr%settings%nlyr
                   do l = 1, stmpar%lsedtot
-                     if (stmpar%morlyr%settings%iporosity == 0) then
+                     if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                         dens = stmpar%sedpar%cdryb(l)
                      else
                         dens = stmpar%sedpar%rhosol(l)
@@ -527,7 +528,7 @@ contains
                      end do
                   end do
                   !
-                  if (stmpar%morlyr%settings%iporosity > 0) then
+                  if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                      poros = 1.0_dp - stmpar%morlyr%state%svfrac(:, k)
                   end if
                   !
@@ -793,10 +794,10 @@ contains
    subroutine collect_ice_values(valobs, i, k)
       use precision, only: dp
       use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
-      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat
       use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
                                      IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
-                                     IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+                                     IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE, IPNT_QH_AIR2ICE, IPNT_QH_ICE2WAT
 
       real(kind=dp), dimension(:, :), intent(inout) :: valobs !< values at observations stations
       integer, intent(in) :: i !< index of the observation station
@@ -815,6 +816,8 @@ contains
       call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
       call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
       call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+      call conditional_assign(valobs, i, IPNT_QH_AIR2ICE, qh_air2ice, k)
+      call conditional_assign(valobs, i, IPNT_QH_ICE2WAT, qh_ice2wat, k)
    end subroutine collect_ice_values
 
    !> Support routine to conditionally assign values to the target variable

@@ -232,6 +232,7 @@ module m_unstruc_netcdf_data
       integer :: id_qfreva(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_qfrcon(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_qtot(MAX_ID_VAR) = -1 !< Variable ID for
+      integer :: id_tbed(MAX_ID_VAR) = -1 !< Variable ID for bed temperature
       integer :: id_rain(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_icepths(MAX_ID_VAR) = -1 !< Variable ID for interception layer waterdepth.
       integer :: id_wind(MAX_ID_VAR) = -1 !< Variable ID for
@@ -245,6 +246,8 @@ module m_unstruc_netcdf_data
       integer :: id_ice_temperature(MAX_ID_VAR) = -1 !< Variable ID for temperature of the ice cover
       integer :: id_snow_thickness(MAX_ID_VAR) = -1 !< Variable ID for snow_thickness
       integer :: id_snow_temperature(MAX_ID_VAR) = -1 !< Variable ID for temperature of the snow cover
+      integer :: id_qh_air2ice(MAX_ID_VAR) = -1 !< Variable ID for heat flux from air to snow/ice cover
+      integer :: id_qh_ice2wat(MAX_ID_VAR) = -1 !< Variable ID for heat flux from ice cover to water
       integer :: id_air_temperature(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_relative_humidity(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_cloudiness(MAX_ID_VAR) = -1 !< Variable ID for
@@ -401,6 +404,9 @@ module m_unstruc_netcdf_data
       integer :: id_fixfac(MAX_ID_VAR) = -1
       integer :: id_hidexp(MAX_ID_VAR) = -1
       integer :: id_mfluff(MAX_ID_VAR) = -1
+      integer :: id_depflxf(MAX_ID_VAR) = -1
+      integer :: id_eroflxf(MAX_ID_VAR) = -1
+      integer :: id_burflxf(MAX_ID_VAR) = -1
       integer :: id_sxwav(MAX_ID_VAR) = -1
       integer :: id_sywav(MAX_ID_VAR) = -1
       integer :: id_sbxwav(MAX_ID_VAR) = -1

@@ -3,9 +3,22 @@
 
 #include <precice/precice.hpp>
 #include <vector>
+#include <string>
+#include <expected>
 
 namespace pre_c_sumo
 {
+    /* Maximum number of communicated constituents */
+    constexpr int max_number_of_consituents = 10;
+
+    /**
+     * @brief Error returned when we entounted a runtime problem.
+     */
+    struct ConnectedSinkSourcesError
+    {
+        std::string message;
+    };
+
     /**
      * @brief Connected Sinks and Sources administration
      * This class collects the sinks and sources data that is sent through preCICE.
@@ -32,7 +45,7 @@ namespace pre_c_sumo
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
                        double source_y, double source_z_bottom, double source_z_top, double discharge,
-                       double momentum_magnitude_weighted, double momentum_direction);
+                       double momentum_magnitude_weighted, double momentum_direction, std::vector<double> consituents);
 
         /**
          * @brief Clear all data from this class instance.
@@ -50,9 +63,10 @@ namespace pre_c_sumo
          * @param participant preCICE participant of the connection
          * @param mesh_name Provided mesh name
          * @param precice_ids Vertex ID's registered on the provided mesh.
+         * @return std::expected containing void on success or pre_C_sumo::ConnectedSinkSourcesError on failure;
          */
-        void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                              const std::vector<int>& precice_ids);
+        [[nodiscard]] std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> write_to_precice(
+            precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids);
 
         /**
          * @brief Read-only access to converted discharge values - used by unit test.
@@ -61,17 +75,18 @@ namespace pre_c_sumo
 
     private:
         // attributes
-        std::vector<double> sink_x_vector;                      //< X coordinates of sinks
-        std::vector<double> sink_y_vector;                      //< Y coordinates of sinks
-        std::vector<double> sink_z_bottom_vector;               //< Lowest Z coordinate of sink extents
-        std::vector<double> sink_z_top_vector;                  //< Highest Z coordinate of sink extents
-        std::vector<double> source_x_vector;                    //< X coordinates of sources
-        std::vector<double> source_y_vector;                    //< Y coordinates of sources
-        std::vector<double> source_z_bottom_vector;             //< Lowest Z coordinate of source extents
-        std::vector<double> source_z_top_vector;                //< Highest Z coordinate of source extents
-        std::vector<double> discharge_vector;                   //< Discharges [m^3/s]
-        std::vector<double> momentum_magnitude_weighted_vector; //< Momentum magnitude weighted [kg m/s]
-        std::vector<double> momentum_direction_vector;          //< Momentum direction [rad]
+        std::vector<double> sink_x_vector;                                   //< X coordinates of sinks
+        std::vector<double> sink_y_vector;                                   //< Y coordinates of sinks
+        std::vector<double> sink_z_bottom_vector;                            //< Lowest Z coordinate of sink extents
+        std::vector<double> sink_z_top_vector;                               //< Highest Z coordinate of sink extents
+        std::vector<double> source_x_vector;                                 //< X coordinates of sources
+        std::vector<double> source_y_vector;                                 //< Y coordinates of sources
+        std::vector<double> source_z_bottom_vector;                          //< Lowest Z coordinate of source extents
+        std::vector<double> source_z_top_vector;                             //< Highest Z coordinate of source extents
+        std::vector<double> discharge_vector;                                //< Discharges [m^3/s]
+        std::vector<double> momentum_magnitude_weighted_vector;              //< Momentum magnitude weighted [kg m/s]
+        std::vector<double> momentum_direction_vector;                       //< Momentum direction [rad]
+        std::vector<double> constituents_vectors[max_number_of_consituents]; //< Consituents
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
 

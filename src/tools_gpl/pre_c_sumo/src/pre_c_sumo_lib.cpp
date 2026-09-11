@@ -143,6 +143,16 @@ namespace pre_c_sumo
         participant.setMeshVertices(csumo_3d_mesh.name, csumo_3d_mesh.coordinates, csumo_3d_mesh.vertex_ids);
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c01_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c02_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c03_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c04_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c05_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c06_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c07_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c08_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c09_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[c10_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         double current_time_seconds = 0.0;
         if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
@@ -153,17 +163,15 @@ namespace pre_c_sumo
         }
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-        ConnectedSinkSources initial_connected_sink_sources;
-        try
+        auto initial_result = convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+
+        if (!initial_result.has_value())
         {
-            initial_connected_sink_sources =
-                convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
-        }
-        catch (const std::exception& exception)
-        {
-            std::println(stderr, "Error: Unable to convert NF2FF data: {}", exception.what());
+            std::println(stderr, "Error: Unable to convert initial NF2FF data: {}", initial_result.error().message);
             return -1;
         }
+
+        ConnectedSinkSources initial_connected_sink_sources = initial_result.value();
 
         // Set sources_sinks mesh
         constexpr std::string_view sources_sinks_mesh = "sources_sinks_nodes";
@@ -175,14 +183,12 @@ namespace pre_c_sumo
         participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
-            try
+            auto write_result = initial_connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes",
+                                                                                sources_sinks.precice_ids);
+            if (!write_result.has_value())
             {
-                initial_connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes",
-                                                                sources_sinks.precice_ids);
-            }
-            catch (const std::exception& exception)
-            {
-                std::println(stderr, "Error: Unable to write initial sources/sinks data: {}", exception.what());
+                std::println(stderr, "Error: Unable to write initial sources/sinks data: {}",
+                             write_result.error().message);
                 return -1;
             }
         }
@@ -201,8 +207,14 @@ namespace pre_c_sumo
                 return -1;
             }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            ConnectedSinkSources connected_sink_sources =
-                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            auto conversion_result = convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            if (!conversion_result.has_value())
+            {
+                std::println(stderr, "Unable to convert NF to ConnectedSinkSources: {}",
+                             conversion_result.error().message);
+                return -1;
+            }
+            ConnectedSinkSources connected_sink_sources = conversion_result.value();
 
             if (participant.isTimeWindowComplete())
             {
@@ -218,14 +230,13 @@ namespace pre_c_sumo
                              connected_sink_sources.get_number_of_entries(), sources_sinks.precice_ids.size());
             }
 
-            try
-            {
+            auto write_result =
                 connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes", sources_sinks.precice_ids);
-            }
-            catch (const std::exception& exception)
+
+            if (!write_result.has_value())
             {
                 std::println(stderr, "Error: Unable to write sources/sinks data at time {} s: {}", current_time_seconds,
-                             exception.what());
+                             write_result.error().message);
                 return -1;
             }
 

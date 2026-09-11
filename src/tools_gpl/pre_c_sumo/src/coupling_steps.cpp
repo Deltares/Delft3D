@@ -239,10 +239,11 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Parsed C-SUMO settings.
      * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return Connected source/sink data ready to write via preCICE.
+     * @return std::expected with a ConnectedSinkSources object with source/sink data ready to be written via preCICE or
+     * a ConnectedSinkSourcesError on failure.
      */
-    ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
-                                                         const std::vector<NF2FFReader>& nf2ff_readers)
+    std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
+        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
         const auto& diffuser_settings = csumoSettings.diffusers();
@@ -283,8 +284,9 @@ namespace pre_c_sumo
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
                 if (delta_s < 0.0)
                 {
-                    throw std::runtime_error("Negative entrainment factor for sink " + std::to_string(sink_index) +
-                                             ": " + std::to_string(delta_s));
+                    return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
+                        "Negative entrainment factor for sink " + std::to_string(sink_index) + ": " +
+                        std::to_string(delta_s)});
                 }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
@@ -304,7 +306,7 @@ namespace pre_c_sumo
                     // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_top, discharge, 0.0, 0.0, diffuser.constituents());
                 }
             }
 
@@ -339,9 +341,9 @@ namespace pre_c_sumo
                     double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge,
-                                                   source_moment_magnitude_weighted, source_moment_direction);
+                    connectedsinksources.add_entry(
+                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
+                        discharge, source_moment_magnitude_weighted, source_moment_direction, diffuser.constituents());
                 }
             }
 
@@ -384,7 +386,7 @@ namespace pre_c_sumo
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
                                                        -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0);
+                                                       0.0, diffuser.constituents());
                     }
                 }
             }

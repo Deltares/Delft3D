@@ -8,7 +8,7 @@ import Delft3D.template.*
 
 object PublishToGui : BuildType({
     name = "Publish to GUI"
-    description = "Push latest DIMR release to NuGet for GUI pipeline"
+    description = "Push the latest DIMR release to NuGet for the GUI pipeline."
 
     templates(
         TemplateBuildConcurrency
