@@ -50,7 +50,6 @@ public erosion_settings
 !
 ! public routines
 !
-public  bedcomposition_module_info
 public  copybedcomp
 public  updmorlyr
 public  gettoplyr
@@ -389,17 +388,6 @@ type bedcomp_data
 end type bedcomp_data
 
 contains
-
-!> module version information ... this isn't going to work in Git ...
-subroutine bedcomposition_module_info(messages)
-    use message_module
-    !
-    type(message_stack) :: messages
-    !
-    call addmessage(messages,'$Id: bedcomposition_module.f90 140649 2022-01-20 14:39:56Z jagers $')
-    call addmessage(messages,'$URL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Technical%20University%20of%20Delft/20190419_consolidation_compaction_v2/src/utils_gpl/morphology/packages/morphology_kernel/src/bedcomposition_module.f90 $')
-end subroutine bedcomposition_module_info
-
 
 subroutine set_default_fractions(this)
     !
