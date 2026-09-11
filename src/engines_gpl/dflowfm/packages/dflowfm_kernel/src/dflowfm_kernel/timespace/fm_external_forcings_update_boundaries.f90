@@ -58,6 +58,7 @@ contains
       use m_oned_functions
       use m_obs_on_flowgeom, only: obs_on_flowgeom
       use unstruc_messages, only: callback_msg
+      use m_filez
 
       implicit none
 
@@ -65,6 +66,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k2, kb, L, itrac, isf
+ !     integer, save :: minp                         
       real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR
@@ -165,6 +167,7 @@ contains
 
       if (item_dischargebnd /= ec_undef_int) then
          success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
+         zbndq = zbndq*kbndu(8,:)
          if (.not. success) then
             goto 888
          end if
@@ -175,6 +178,15 @@ contains
          if (.not. success) then
             goto 888
          end if
+         
+!         if (time0 == 0.0) then
+!            call newfil(minp,' compare_bigSmall_bndForcing/fromEcModule.tim')
+!         end if
+
+!         write(minp,'(7f12.3)') time/60.0,zbnds(4),zbnds(74),zbnds(5),zbnds(75),zbnds(1),zbnds(71)
+!         if (time == tstop_user) then
+!            call doclose(minp)
+!         end if
       end if
 
       if (nbndTM > 0) then

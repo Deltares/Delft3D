@@ -89,15 +89,6 @@ contains
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
       end if
-      if (allocated(netcdf%standard_names)) then
-         deallocate (netcdf%standard_names)
-      end if
-      if (allocated(netcdf%long_names)) then
-         deallocate (netcdf%long_names)
-      end if
-      if (allocated(netcdf%variable_names)) then
-         deallocate (netcdf%variable_names)
-      end if
       if (allocated(netcdf%tsid)) then
          deallocate (netcdf%tsid)
       end if
@@ -192,14 +183,6 @@ contains
       if (ierr /= 0) then
          return
       end if
-      allocate (ncptr%standard_names(nVars), stat=ierr)
-      if (ierr /= NF90_NOERR) then 
-         return
-      end if
-      allocate (ncptr%long_names(nVars), stat=ierr)
-      if (ierr /= NF90_NOERR) then
-         return
-      end if      
       allocate (ncptr%variable_ndims(nVars), stat=ierr)
       if (ierr /= 0) then
          return
@@ -222,8 +205,6 @@ contains
       end if
       
       ncptr%variable_names = ' '
-      ncptr%standard_names = ' '
-      ncptr%long_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
       ncptr%offsets = 0.0_dp
@@ -239,11 +220,7 @@ contains
       
       do iVars = 1, nVars ! Inventorize variables
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'standard_name', ncptr%standard_names(iVars)) ! Standard name if available
-         if (ierr /= NF90_NOERR) then
-            ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
-         end if
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'long_name', ncptr%long_names(iVars)) ! Long name for non CF names         
+         
          !
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) then
@@ -285,26 +262,6 @@ contains
             end do
             ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
             ncptr%tsiddimid = dimids_tsid(2) ! For convenience also store the Station's dimension ID explicitly
-            station_id_found = .true.
-         end if
-
-     ! Check for important var: was it the crossections? (for nestinmg of discharge bnds)
-         if (strcmpi(ncptr%variable_names(iVars),'cross_section_name') ) then        
-            ! Compose an index timeseries id's 
-            ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
-            if (ierr /= NF90_NOERR) return
-            tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
-            nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
-         
-            allocate (ncptr%tsid_q(nTims), stat=ierr)
-            if (ierr /= 0) return
-            tslen = min(tslen, len(ncptr%tsid_q(1)))
-            ncptr%tsid_q = ''
-            do iTims = 1, nTims
-               ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid_q(iTims), (/1, iTims/), (/tslen, 1/))
-               if (ierr /= NF90_NOERR) return
-               call replace_char(ncptr%tsid_q(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
-            end do
             station_id_found = .true.
          end if
 
@@ -417,55 +374,18 @@ contains
       integer :: n_dims
       integer :: ivar, itim, ltl, iv
       integer :: ierr, vmax
-      integer :: no_stat_crs
       character(len=30), dimension(:), allocatable :: elmnames
-      character(len=:) , dimension(:), allocatable :: name_stat_crs
       integer, dimension(:), allocatable :: dimids_check
-      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
-      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
-      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search      
 
       success = .false.
       vmax = 1
 
-      ! Distinguish between stations and crossections 
-      if (.not. strcmpi(quantity,'CROSS_SECTION_DISCHARGE') ) then
-         ! Stations, waterlevels, salinity etc
-         no_stat_crs  = size(ncptr%tsid)
-         allocate(character(len=len(ncptr%tsid(1))):: name_stat_crs(1:no_stat_crs))
-         name_stat_crs = ncptr%tsid
-     else
-        no_stat_crs  = size(ncptr%tsid_q)
-        allocate(character(len=len(ncptr%tsid_q(1))):: name_stat_crs(1:no_stat_crs))
-        name_stat_crs = ncptr%tsid_q
-     end if
      do ivar = 1, ncptr%nVars
          ltl = len_trim(quantity)
-         if (strcmpi(ncptr%variable_names(ivar), quantity)) then
+         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) then
             exit
          end if
-      end do 
-
-      if (ivar < 0) then
-         ! get candidate names for the quantity
-         call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
-      end if
-
-      ! search for standard_name
-      if (ivar < 0 .and. allocated(ncptr%standard_names) .and. allocated(ncstdnames)) then
-         ivar = find_candidates_in_targets(ncptr%standard_names, ncstdnames)
-      end if
-
-      ! if standard_name not found, search for long_name
-      if (ivar < 0 .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
-         ivar = find_candidates_in_targets(ncptr%long_names, ncstdnames_fallback)
-      end if
-
-      ! if also long_name not found, search for variable_name
-      if (ivar < 0 .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
-         ivar = find_candidates_in_targets(ncptr%variable_names, ncvarnames)
-      end if
+     end do 
 
      if (ivar <= ncptr%nVars) then
          q_id(1) = ivar
@@ -487,17 +407,15 @@ contains
          q_id(1) = -1
       end if
 
-      ! Find location number (station or crosssection) 
-      do itim = 1, no_stat_crs
+      do itim = 1, ncptr%nTims
          ltl = len_trim(location)
-         if (strcmpi(name_stat_crs(itim), location)) exit ! Found
+         if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
       end do
-      if (itim <= no_stat_crs) then
+      if (itim <= ncptr%nTims) then
          l_id = itim
       else
          l_id = -1
       end if
-      deallocate(name_stat_crs)
       if (l_id <= 0 .or. q_id(1) <= 0) then
          return ! l_id<0 means : location not found, q_id<0 means quantity not found
       end if

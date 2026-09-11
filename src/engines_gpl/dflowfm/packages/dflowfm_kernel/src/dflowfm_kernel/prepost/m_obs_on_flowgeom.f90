@@ -262,7 +262,7 @@ contains
    subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs,intobs)
       
       use m_observations_data      , only: xobs, yobs, numobs, nummovobs, kobs, namobs  
-      use m_flowgeom               , only: xz, yz, ndx2d
+      use m_flowgeom               , only: xz, yz, ndx2d,ndx
       use m_missing                , only: dmiss
       use m_sferic                 , only: jsferic, jasfer3D
       use fm_external_forcings_data, only: transformcoef
@@ -296,7 +296,11 @@ contains
       call realloc(indxx, [3, numobs + nummovobs], keepexisting=.false., fill=0)
       call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
             
-      call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
+      ! call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
+      !                           jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
+      !
+      ! TK, triangulation over all points, including boundary points, hopefully resolves partitioning problem
+      call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx), yz(1:ndx), dummyZ, ndx2d, dmiss, jsferic, 1   , &
                                  jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       
        do i = n_start, n_end

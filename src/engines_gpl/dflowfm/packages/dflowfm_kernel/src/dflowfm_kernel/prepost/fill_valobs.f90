@@ -143,12 +143,21 @@ contains
 
       if (model_is_3D()) then
          ! Allocate as 2D arry for cell z centers
-         call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
-         do j = 2, ndkx
-            cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
+         call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=DMISS)
+!         do j = 2, ndkx
+!             if (zws(j) .NE. dmiss .and. zws(J-1) .NE. dmiss) then 
+!               cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
+!             end if
+!         end do
+         ! Only for ective points, otherwise stick to initial dmiss value
+         do k= 1,ndx
+            call getkbotktop(k, kb, kt)
+            do kk=kb,kt
+               cell_z_centers(kk) = 0.5_dp * (zws(kk) + zws(kk - 1))
+            end do
          end do
-
       end if
+
       if ((nshiptxy > 0) .and. allocated(zsp)) then
          call realloc(ship_level, ndx, keepExisting=.false., fill=0.0_dp)
          ship_level = s1 + zsp
@@ -223,8 +232,8 @@ contains
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
-         if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
-            if (intobs(i) /= 0 .and. kobs(i) /= 0) then
+         if (kobs(i) /= 0 .and. (intobs(i) == 0 .or. neighbour_nodes_obs(1, i) == 0)) then
+            if (intobs(i) /= 0 .and. neighbour_nodes_obs(1, i) == 0) then   
                write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
                call mess(LEVEL_WARN, msgbuf)
             end if
