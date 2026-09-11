@@ -27,8 +27,7 @@
   </testCase>
   <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="platform_specific">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
-
-      <maxRunTime>1500</maxRunTime>
+    <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="fm/output/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -59,6 +58,7 @@
   </testCase>
   <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
         <parameters>
@@ -131,6 +131,7 @@
   </testCase>
   <testCase name="e02_f039_c07_sediment_ini_3d_uniform_polygon" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>
@@ -169,6 +170,7 @@
   </testCase>
   <testCase name="e02_f039_c10_sediment_ini_3d_verticalsigmaprofile" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
         <parameters>

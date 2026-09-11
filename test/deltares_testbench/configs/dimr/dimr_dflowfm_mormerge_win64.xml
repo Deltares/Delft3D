@@ -160,7 +160,7 @@
     </testCase>
     <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
       <path version="DVC">e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
-
+      <maxRunTime>360</maxRunTime>
       <programs>
         <program ref="mormerge">
           <workingDirectory>merge</workingDirectory>
