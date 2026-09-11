@@ -2,6 +2,7 @@
   <!-- ======================================================================== -->
   <testCase name="e121_f02_c01_sequential" ref="dimr_trunk">
     <path version="DVC">e121_dflowfm_wanda/f02_turbines/c01_sequential</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_map.nc" type="NETCDF">
         <parameters>
