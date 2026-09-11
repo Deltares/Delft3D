@@ -228,34 +228,58 @@ contains
       end if
 
       if (comparereal(input%data_value, dmiss) /= 0) then
+         if (len_trim(input%forcing_file) > 0) then
+            write (msgbuf, '(5a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+               ']. Fields ''dataFile'' and ''dataValue'' cannot be combined.'
+            call err_flush()
+            return
+         end if
+
+         if (len_trim(input%forcing_file_type) > 0) then ! Filetype is optional, but if supplied must equal datavalue
+            input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+            if (input%filetype /= DATAVALUE) then
+               write (msgbuf, '(7a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+                  ']. dataFileType ''', trim(input%forcing_file_type), ''' cannot be used with ''dataValue''; expected ''datavalue''.'
+               call err_flush()
+               return
+            end if
+         end if
+
          input%forcing_file_type = "datavalue"
          input%filetype = DATAVALUE
       else
-         ! ForcingFileType is required only if `dataValue` is not present.
-         ! Do all ForcingFile related validation and option setting in this branch.
+         ! dataFileType is required only if `dataValue` is not present.
+         ! Do all dataFile related validation and option setting in this branch.
          if (len_trim(input%forcing_file_type) == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFileType'' is missing.'
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' is missing.'
             call err_flush()
             return
          end if
 
          input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
          if (input%filetype == FILE_TYPE_UNKNOWN) then
-            write (msgbuf, '(7a)') 'Field ''forcingFile'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
-               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''forcingFile'' has unknown value.'
+            write (msgbuf, '(7a)') 'Field ''dataFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' has unknown value.'
+            call err_flush()
+            return
+         end if
+
+         if (input%filetype == DATAVALUE) then
+            write (msgbuf, '(5a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
+               ']. dataFileType ''datavalue'' requires ''dataValue''.'
             call err_flush()
             return
          end if
 
          if (len_trim(input%forcing_file) == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''dataFile'' is missing.'
             call err_flush()
             return
          end if
    
-         if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
+         if (file_extension_conflicts_with_type(input%forcing_file, input%filetype)) then
             write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
-               ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
+               ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
                trim(input%forcing_file_type), '''.'
             call err_flush()
             return
@@ -305,7 +329,7 @@ contains
                trim(input%interpolation_method), ' in block in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
          else
             write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
-               '] nor an internal value associated with given ''forcingFileType'':', trim(input%forcing_file_type), '.'
+               '] nor an internal value associated with given ''dataFileType'':', trim(input%forcing_file_type), '.'
          end if
          call err_flush()
          return
@@ -328,30 +352,51 @@ contains
 
    end function validate_spatial_field_input
 
-   function file_extension_conflicts_with_type(forcing_file, forcing_file_type) result(conflicts)
+   !> Checks whether a forcing file extension is compatible with its file type.
+   function file_extension_conflicts_with_type(forcing_file, file_type) result(conflicts)
       use string_module, only: str_tolower
-      character(len=*), intent(in) :: forcing_file
-      character(len=*), intent(in) :: forcing_file_type
-      logical :: conflicts
+      use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
+                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR
+      character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
+      integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
+      logical :: conflicts !< `.true.` when the file extension is incompatible with file_type.
 
       integer :: dot_pos
       character(len=16) :: ext
 
-      conflicts = .false.
+      ext = ''
       dot_pos = index(trim(forcing_file), '.', back=.true.)
-      if (dot_pos == 0) return
+      if (dot_pos > 0) then
+         ext = str_tolower(trim(forcing_file(dot_pos:)))
+      end if
 
-      ext = str_tolower(trim(forcing_file(dot_pos:)))
-
-      select case (ext)
-      case ('.nc')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'netcdf'
-      case ('.tif', '.tiff')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
-      case ('.spw')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
-      case ('.pol')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'polygon'
+      select case (file_type)
+      case (FIELD1D)
+         conflicts = ext /= '.ini'
+      case (ARCINFO)
+         conflicts = .not. any(ext == [character(len=16) :: '.asc', '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', &
+                                                           '.ams', '.amr', '.sdu', '.aice', '.hice'])
+      case (BCASCII)
+         conflicts = ext /= '.bc'
+      case (CURVI)
+         conflicts = .not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', &
+                                                           '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
+      case (GEOTIFF)
+         conflicts = .not. any(ext == [character(len=16) :: '.tif', '.tiff'])
+      case (NCGRID)
+         conflicts = ext /= '.nc'
+      case (INSIDE_POLYGON)
+         conflicts = .not. any(ext == [character(len=16) :: '.pol', '.pli', '.pliz'])
+      case (SAMPLE)
+         conflicts = .not. any(ext == [character(len=16) :: '.xyz', '.xyb'])
+      case (SPIDERWEB)
+         conflicts = ext /= '.spw'
+      case (UNIFORM)
+         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.tem', '.wnd'])
+      case (UNIMAGDIR)
+         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.wnd'])
+      case default
+         conflicts = .true.
       end select
 
    end function file_extension_conflicts_with_type
