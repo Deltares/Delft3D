@@ -392,7 +392,7 @@ contains
       case (SPIDERWEB)
          conflicts = ext /= '.spw'
       case (UNIFORM)
-         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.tem'])
+         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.tem', '.wnd'])
       case (UNIMAGDIR)
          conflicts = .not. any(ext == [character(len=16) :: '.tim', '.wnd'])
       case default
