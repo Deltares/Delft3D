@@ -144,11 +144,28 @@ object WindowsTest : BuildType({
                 uv pip sync pip/win-requirements.txt
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
 
-                rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
-                rem been dealing with during the module import phase of "Python TestBench.py"
+                rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've
+                rem been dealing with during the module import phase of "Python TestBench.py".
                 ping -n 5 -w 1000 localhost > nul
 
+                rem Retry only on STATUS_ACCESS_VIOLATION (0xC0000005 / -1073741819).
+                rem Other TestBench exit codes fail the step immediately.
+                set ATTEMPT=1
+                :run_testbench
                 python TestBench.py %%argsList%%
+                set EXITCODE=%%ERRORLEVEL%%
+                if %%EXITCODE%% EQU 0 goto :testbench_done
+                if %%EXITCODE%% EQU -1073741819 goto :retry_testbench
+                if %%EXITCODE%% EQU 3221225477 goto :retry_testbench
+                exit /b %%EXITCODE%%
+                :retry_testbench
+                if %%ATTEMPT%% GEQ 3 exit /b %%EXITCODE%%
+                echo TestBench.py crashed with 0xC0000005 on attempt %%ATTEMPT%%, retrying...
+                set /a ATTEMPT+=1
+                ping -n 3 -w 1000 localhost > nul
+                goto :run_testbench
+                :testbench_done
+                exit /b 0
             """.trimIndent()
 
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
