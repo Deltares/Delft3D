@@ -171,6 +171,8 @@ contains
          file_type = BCASCII
       case ('curvigrid')
          file_type = CURVI
+      case ('map')
+         file_type = NCFLOW
       case ('geotiff')
          file_type = GEOTIFF
       case ('netcdf')
@@ -226,6 +228,8 @@ contains
       select case (str_tolower(trim(string)))
       case ('bcascii')
          method = SPACEANDTIME
+      case ('map')
+         method = METHOD_TRIANGULATION
       case ('netcdf')
          method = WEIGHTFACTORS
       case ('sample')
