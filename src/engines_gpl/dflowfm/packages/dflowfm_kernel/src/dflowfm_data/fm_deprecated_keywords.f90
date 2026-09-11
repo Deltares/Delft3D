@@ -8,7 +8,7 @@ module fm_deprecated_keywords
 
 contains
 
-   !> subroutine that initialises all deprecated keyword sets
+   !> Subroutine that initialises all deprecated keyword sets
    subroutine default_fm_deprecated_keywords()
 
       if (allocated(deprecated_mdu_keywords%deprecated_keyword_list)) then
@@ -35,8 +35,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
