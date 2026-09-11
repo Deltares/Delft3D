@@ -285,6 +285,8 @@ module m_output_config
    integer, public :: IDX_HIS_ICE_TEMPERATURE
    integer, public :: IDX_HIS_SNOW_THICKNESS
    integer, public :: IDX_HIS_SNOW_TEMPERATURE
+   integer, public :: IDX_HIS_QH_AIR2ICE
+   integer, public :: IDX_HIS_QH_ICE2WAT
 
    integer, public :: IDX_HIS_SED_FRAC_NAME
    integer, public :: IDX_HIS_SED
