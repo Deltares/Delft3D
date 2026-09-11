@@ -32,9 +32,7 @@ object TestbenchTimeoutReport : BuildType({
 
     params {
         param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
-        param("last_n", "100")
-        param("top_n", "40")
-        param("email_to", "black-ops@deltares.nl")
+        param("email_to", "black-ops@deltares.nl,Julien.Groenenboom@deltares.nl")
         checkbox(
             "send_email",
             "true",
@@ -42,9 +40,6 @@ object TestbenchTimeoutReport : BuildType({
             checked = "true",
             unchecked = "false"
         )
-        param("env.EMAIL_SERVER", "smtp.directory.intra")
-        param("env.EMAIL_PORT", "25")
-        param("env.EMAIL_FROM", "black-ops@deltares.nl")
         param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl.replace(Regex("/+$"), ""))
         param("teamcity_user", DslContext.getParameter("teamcity_user"))
         password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
@@ -73,15 +68,17 @@ object TestbenchTimeoutReport : BuildType({
                 #!/usr/bin/env bash
                 set -euo pipefail
                 uv sync --extra=testbench_timeout_report
+                email_args=()
+                if [ "%send_email%" = "true" ]; then
+                  email_args+=(--email-to "%email_to%")
+                fi
                 uv run python -m ci_tools.testbench_timeout_report \
                     --server "%env.TEAMCITY_SERVER_URL%" \
-                    --last-n "%last_n%" \
-                    --top-n "%top_n%" \
                     --configs-root "%teamcity.build.checkoutDir%/test/deltares_testbench/configs" \
                     --csv "%teamcity.build.checkoutDir%/ci/teamcity/Delft3D/vars/dimr_testbench_table.csv" \
                     --output-dir "%teamcity.build.checkoutDir%/timeout-report" \
-                    --report-url "%env.TEAMCITY_SERVER_URL%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%" \
-                    --full-report-url "%env.TEAMCITY_SERVER_URL%/repository/download/%system.teamcity.buildType.id%/%teamcity.build.id%:id/timeout-report/report.html"
+                    --report-url "%env.TEAMCITY_SERVER_URL%/repository/download/%system.teamcity.buildType.id%/%teamcity.build.id%:id/timeout-report/report.html" \
+                    "${email_args[@]}"
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
@@ -91,30 +88,6 @@ object TestbenchTimeoutReport : BuildType({
                 --env UV_LINK_MODE=copy
                 --env TEAMCITY_USERNAME=%teamcity_user%
                 --env TEAMCITY_PASSWORD=%teamcity_pass%
-                --rm
-            """.trimIndent()
-        }
-        script {
-            name = "Send email"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            conditions { equals("send_email", "true") }
-            workingDir = "ci/python"
-            scriptContent = """
-                #!/usr/bin/env bash
-                set -euo pipefail
-                uv run python -m ci_tools.testbench_timeout_report.send_email \
-                    --email-server "%env.EMAIL_SERVER%" \
-                    --email-port "%env.EMAIL_PORT%" \
-                    --email-from "%env.EMAIL_FROM%" \
-                    --email-to "%email_to%" \
-                    --email-content "%teamcity.build.checkoutDir%/timeout-report/email.html"
-            """.trimIndent()
-            dockerImage = "%docker_image%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerPull = true
-            dockerRunParameters = """
-                --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
-                --env UV_LINK_MODE=copy
                 --rm
             """.trimIndent()
         }

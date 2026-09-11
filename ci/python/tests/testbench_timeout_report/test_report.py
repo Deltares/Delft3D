@@ -83,8 +83,7 @@ def test_write_artifacts(tmp_path: Path) -> None:
         teamcity_names={"linux": {"tight", "orphan"}, "windows": set()},
         output_dir=tmp_path,
         top_n=40,
-        report_url="https://example.test/build/1",
-        full_report_url="https://example.test/artifacts/timeout-report/report.html",
+        report_url="https://example.test/artifacts/timeout-report/report.html",
     )
     email = (tmp_path / "email.html").read_text(encoding="utf-8")
     html = (tmp_path / "report.html").read_text(encoding="utf-8")

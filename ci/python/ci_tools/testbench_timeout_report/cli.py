@@ -12,6 +12,7 @@ import pandas as pd
 from ci_tools.teamcity.client import TeamcityClient
 from ci_tools.testbench_timeout_report.catalog import load_catalog
 from ci_tools.testbench_timeout_report.report import summarize, write_artifacts
+from ci_tools.testbench_timeout_report.send_email import send_report
 from ci_tools.testbench_timeout_report.teamcity import BUILD_TYPES, fetch_runs, list_test_names
 
 LOGGER = logging.getLogger(__name__)
@@ -39,9 +40,9 @@ def create_parser() -> argparse.ArgumentParser:
         default=Path("ci/teamcity/Delft3D/vars/dimr_testbench_table.csv"),
         help="TestBench config CSV.",
     )
-    parser.add_argument("--report-url", default="", help="TeamCity build URL to embed in the report.")
-    parser.add_argument("--full-report-url", default="", help="Direct URL to the HTML report artifact.")
+    parser.add_argument("--report-url", default="", help="URL of the HTML report artifact to embed in email.")
     parser.add_argument("--max-cases", type=int, default=0, help="Cap catalog cases per platform. 0 means no cap.")
+    parser.add_argument("--email-to", default="", help="Send email.html to this address. Empty means do not send.")
     parser.add_argument(
         "--verify", action=argparse.BooleanOptionalAction, default=True, help="Verify TLS certificates."
     )
@@ -65,7 +66,7 @@ def build_client(arguments: argparse.Namespace) -> TeamcityClient:
 
 
 def run(arguments: argparse.Namespace) -> int:
-    """Load catalog, fetch TeamCity history, and write artifacts."""
+    """Load catalog → fetch history → summarize → write report → optional email."""
     catalog = load_catalog(arguments.csv, arguments.configs_root)
     LOGGER.info("Loaded %s catalog cases", len(catalog))
     catalog = limit_catalog(catalog, arguments.max_cases)
@@ -73,23 +74,21 @@ def run(arguments: argparse.Namespace) -> int:
         LOGGER.info("Limited catalog to %s cases (max %s per platform)", len(catalog), arguments.max_cases)
 
     client = build_client(arguments)
-    teamcity_names = {platform: list_test_names(client, build_type) for platform, build_type in BUILD_TYPES.items()}
-    for platform, names in teamcity_names.items():
-        LOGGER.info("TeamCity %s has %s tests in recent builds", platform, len(names))
-
     runs, failures = fetch_runs(client, catalog, last_n=arguments.last_n)
+    seen_names = {platform: list_test_names(client, build_type) for platform, build_type in BUILD_TYPES.items()}
     stats = summarize(catalog, runs, failures)
     write_artifacts(
         stats=stats,
         runs=runs,
         catalog=catalog,
-        teamcity_names=teamcity_names,
+        teamcity_names=seen_names,
         output_dir=arguments.output_dir,
         top_n=arguments.top_n,
         report_url=arguments.report_url,
-        full_report_url=arguments.full_report_url,
     )
     LOGGER.info("Wrote report to %s", arguments.output_dir)
+    if arguments.email_to:
+        send_report(arguments.output_dir / "email.html", arguments.email_to)
     return 0
 
 
