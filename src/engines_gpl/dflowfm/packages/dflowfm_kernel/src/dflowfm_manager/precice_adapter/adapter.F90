@@ -35,12 +35,12 @@ module precice_adapter
 
    !> Container with all quantities used by the adapter.
    type :: quantities_t
-      ! TODO: Add constituents C01..C10
       ! Writing
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
       type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+      type(quantity_t) :: flow_velocity_3d = quantity_t(standard_name="flow_velocity_3d", is_active=.true.)
       ! Constituents (reading and writing)
       type(quantity_t), dimension(NUM_COUPLED_CONSTITUENTS) :: constituents
       ! Reading
@@ -354,6 +354,9 @@ contains
       class(precice_adapter_t), intent(in) :: self
 
       integer :: constituent_index
+      ! Temporary flow velocity buffer [v1x,v1y,v1z, v2x, v2y, v2z, ... , vNx, vNy, vNz]
+      integer :: i
+      real(kind=c_double), dimension(:), allocatable :: flow_velocity_3d_buffer
 
       if (self%quantities%hs%is_active) then
          call precicef_write_data(self%cell_center_mesh_name, self%quantities%hs%standard_name, &
@@ -374,6 +377,19 @@ contains
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
+      end if
+      if (self%quantities%flow_velocity_3d%is_active) then
+         ! TODO: Actually access FM velocities. Requires to look up how to get the cell centre values.
+         ! For now: send 3,2,1 ..
+         if (.not. allocated(flow_velocity_3d_buffer)) then
+            allocate(flow_velocity_3d_buffer(size(self%cell_center_mesh_coordinates_3d)))
+            do i = 1, size(self%cell_center_mesh_coordinates_3d)
+               flow_velocity_3d_buffer(i) = 3.0 - mod(i,3)
+            end do
+         end if
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%flow_velocity_3d%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  flow_velocity_3d_buffer, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%flow_velocity_3d%standard_name)))
       end if
       ! Write constituents. At the moment we support only up to NUM_COUPLED_CONSTITUENTS (=10).
       if (numconst > NUM_COUPLED_CONSTITUENTS) then
