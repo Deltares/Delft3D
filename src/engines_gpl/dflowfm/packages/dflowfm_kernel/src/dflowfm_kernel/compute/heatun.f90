@@ -89,6 +89,7 @@ contains
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
       real(kind=dp) :: t_freeze !< freezing point, which depends on salinity concentration (degrees)
+      real(kind=dp), parameter :: FREEZING_MARGIN = 0.1_dp
       integer :: cell_index_3D, k_bot, k_top, k2, L, LL, j, j2, ncols
       
       if (ja_icecover /= ICECOVER_NONE) then
@@ -381,7 +382,7 @@ contains
 
             qh_air2ice(n) = 0.0_fp
             qh_ice2wat(n) = 0.0_fp
-            if (ice_thickness(n) > 0.0_fp .or. (water_temperature_in_cell < t_freeze .and. air_temperature(n) < 0.0_fp)) then
+            if (ice_thickness(n) > 0.0_fp .or. (water_temperature_in_cell < t_freeze + FREEZING_MARGIN .and. air_temperature(n) < 0.0_dp)) then
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW
                qlong_ice = EMMISIVITY_FACTOR * stf * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity)) * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
