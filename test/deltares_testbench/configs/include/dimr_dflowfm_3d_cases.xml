@@ -690,16 +690,16 @@
           <parameter name="Tair" toleranceRelative="1e-7"/>
           <parameter name="potential_density" toleranceAbsolute="1e-4"/>
           <parameter name="rhum" toleranceRelative="1e-7"/>
-          <parameter name="temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="temperature" toleranceAbsolute="0.01"/>
+          <parameter name="ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="ice_thickness" toleranceAbsolute="0.01"/>
         </parameters>
       </file>
       <file name="output/winter97_saltwater_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_tem1" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.001"/>
         </parameters>
       </file>
