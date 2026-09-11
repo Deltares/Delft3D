@@ -259,8 +259,9 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f014_c101_icg7" ref="sif_dimr">        <maxRunTime>900</maxRunTime>
+    <testCase name="e02_f014_c101_icg7" ref="sif_dimr">
         <path version="2025-10-15T15:07:16.919000">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
+        <maxRunTime>900</maxRunTime>
         <programs>
           <program ref="execute_singularity">
             <arguments>
