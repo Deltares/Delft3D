@@ -232,8 +232,8 @@ contains
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
-         if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
-            if (intobs(i) /= 0 .and. kobs(i) /= 0) then
+         if (kobs(i) /= 0 .and. (intobs(i) == 0 .or. neighbour_nodes_obs(1, i) == 0)) then
+            if (intobs(i) /= 0 .and. neighbour_nodes_obs(1, i) == 0) then   
                write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
                call mess(LEVEL_WARN, msgbuf)
             end if
