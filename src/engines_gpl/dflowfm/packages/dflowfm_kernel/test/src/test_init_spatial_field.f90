@@ -2,7 +2,7 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
-   use timespace_parameters, only: OPERAND_ADD
+   use timespace_parameters, only: DATAVALUE, OPERAND_ADD
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -202,6 +202,52 @@ contains
 
       call f90_assert_true(success, cstr("forcing_file_type and forcing_file may be empty if data_value is supplied"))
    end subroutine test_validate_spatial_field_input__data_value
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_data_value_with_datavalue_type_succeeds, test_validate_data_value_with_datavalue_type_succeeds,
+   subroutine test_validate_data_value_with_datavalue_type_succeeds() bind(C)
+      type(t_spatial_field_input) :: input
+      logical :: success
+
+      call make_test_input(input, data_value=0.875_dp, forcing_file_type='datavalue', forcing_file='')
+
+      success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
+
+      call f90_expect_true(success, "dataValue may explicitly use dataFileType=datavalue")
+      call f90_expect_eq(input%filetype, DATAVALUE)
+   end subroutine test_validate_data_value_with_datavalue_type_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_data_value_with_file_type_fails, test_validate_data_value_with_file_type_fails,
+   subroutine test_validate_data_value_with_file_type_fails() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, data_value=0.875_dp, forcing_file_type="not_a_file_type", forcing_file="")
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            "dataValue cannot be combined with dataFileType")
+   end subroutine test_validate_data_value_with_file_type_fails
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_unknown_file_type_message, test_validate_unknown_file_type_message,
+   subroutine test_validate_unknown_file_type_message() bind(C)
+      type(t_spatial_field_input) :: input
+      integer :: log_level
+      character(len=512) :: message
+
+      call make_test_input(input, forcing_file_type="not_a_file_type")
+      threshold_abort = LEVEL_FATAL
+      call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            "validation should reject an unknown dataFileType")
+      call f90_expect_eq(GetMessageCount(), 1)
+      log_level = GetMessage_MH(1, message)
+      call f90_expect_true(index(message, "Field 'dataFileType' has unknown value 'not_a_file_type'") > 0)
+   end subroutine test_validate_unknown_file_type_message
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
