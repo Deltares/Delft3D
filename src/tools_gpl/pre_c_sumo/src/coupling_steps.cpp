@@ -306,7 +306,7 @@ namespace pre_c_sumo
                     // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_top, discharge, 0.0, 0.0, diffuser.constituents());
                 }
             }
 
@@ -341,9 +341,9 @@ namespace pre_c_sumo
                     double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge,
-                                                   source_moment_magnitude_weighted, source_moment_direction);
+                    connectedsinksources.add_entry(
+                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
+                        discharge, source_moment_magnitude_weighted, source_moment_direction, diffuser.constituents());
                 }
             }
 
@@ -386,7 +386,7 @@ namespace pre_c_sumo
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
                                                        -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0);
+                                                       0.0, diffuser.constituents());
                     }
                 }
             }

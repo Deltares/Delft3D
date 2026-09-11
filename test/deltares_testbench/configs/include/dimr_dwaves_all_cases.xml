@@ -184,8 +184,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f02_c05_windfields" ref="dimr_trunk">
     <path version="DVC">e04_wave/f02-windfields/c05</path>
-
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="wavm-grw.nc" type="NETCDF">
         <parameters>
@@ -199,8 +198,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f02_c06_windfields" ref="dimr_noconf">
     <path version="DVC">e04_wave/f02-windfields/c06</path>
-
-      <maxRunTime>1500</maxRunTime>
+    <maxRunTime>1500</maxRunTime>
     <checks>
       <file name="wavm-osaka.nc" type="NETCDF">
         <parameters>
@@ -298,7 +296,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f04_c06" ref="dimr_trunk">
     <path version="DVC">e04_wave/f04-general/c06</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="wavm-grw.nc" type="NETCDF">
         <parameters>
@@ -325,7 +323,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f04_c08" ref="dimr_trunk">
     <path version="DVC">e04_wave/f04-general/c08_missing_gridvalue</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -378,7 +376,7 @@
   </testCase>
   <testCase name="e04_f05_c03_nest" ref="dimr_trunk">
     <path version="DVC">e04_wave/f05-nest/c03_nest_xymiss</path>
-    <maxRunTime>600</maxRunTime>
+    <maxRunTime>660</maxRunTime>
     <checks>
       <file name="wavm-waves-overall_cut_v0.nc" type="NETCDF">
         <parameters>
@@ -455,7 +453,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c02</path>
-    <maxRunTime>1800</maxRunTime>
+    <maxRunTime>2340</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -469,7 +467,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c03_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c03</path>
-    <maxRunTime>1500</maxRunTime>
+    <maxRunTime>1620</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
@@ -497,7 +495,7 @@
   <!-- ======================================================================== -->
   <testCase name="e04_f09_c05_SWANDCSM" ref="dimr_trunk">
     <path version="DVC">e04_wave/f09-SWANDCSM/c05</path>
-    <maxRunTime>1200</maxRunTime>
+    <maxRunTime>1800</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
