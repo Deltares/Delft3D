@@ -230,6 +230,12 @@ contains
       valobs = DMISS
 
       do i = 1, numobs + nummovobs
+         write (msgbuf, '(a, i5)') "Numobs = ", numobs
+         call mess(LEVEL_WARN, msgbuf)
+         write (msgbuf, '(i5, i5)') size(kobs),size(intobs)
+         call mess(LEVEL_WARN, msgbuf)
+         write (msgbuf, '(a, i5,a,i5)') "kobs = ", kobs(i),"intobs = ",intobs(i)
+         call mess(LEVEL_WARN, msgbuf) 
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
          if (kobs(i) /= 0 .and. (intobs(i) == 0 .or. neighbour_nodes_obs(1, i) == 0)) then
