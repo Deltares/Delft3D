@@ -336,7 +336,7 @@ type bedcomp_state
     real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
     real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: td           !< (morphological) time of latest load increment, i.e. that initiates primary compaction [minutes]
+    real(fp)   , dimension(:,:)  , pointer :: depos_time   !< (morphological) time of latest load increment, i.e. that initiates primary compaction [days since reference date]
     real(fp)   , dimension(:)    , pointer :: rhow         !< Water density [kg/m3] (currently 2D, but should be 3D in the future)
     real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
@@ -353,7 +353,7 @@ type bedcomp_work
     real(fp), dimension(:)   , pointer :: svfrac2
     real(fp), dimension(:)   , pointer :: thlyr2
     real(fp), dimension(:)   , pointer :: preload2
-    real(fp), dimension(:)   , pointer :: td2
+    real(fp), dimension(:)   , pointer :: depos_time2
 
     ! working arrays for high-concentration consolidation
     real(fp), dimension(:)   , pointer :: dthsedlyr      !< thickness of average pure sediment between two neighbouring layers [m]
@@ -466,7 +466,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     real(fp)   , dimension(:)     , pointer :: thtrlyr
     integer                       , pointer :: imobility
     real(fp)   , dimension(:,:)   , pointer :: preload
-    real(fp)   , dimension(:,:)   , pointer :: td
+    real(fp)   , dimension(:,:)   , pointer :: depos_time
     real(fp)                                :: poros
 
     real(fp),dimension(this%settings%nfrac) :: mfrac
@@ -495,7 +495,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     thlyr       => this%state%thlyr
     imobility   => this%settings%imobility
     preload     => this%state%preload
-    td          => this%state%td
+    depos_time => this%state%depos_time
     !
     istat = allocwork(this)
     if (istat /= 0) return
@@ -613,7 +613,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                            td0 = real(morft,fp)
                            ! some deposition (maybe also some erosion)
                            preload(1,nm) = (thick * preload(1,nm) + thickd * preload0) / (thick + thickd)
-                           td(1,nm)      = (thick * td(1,nm) + thickd * td0) / (thick + thickd)
+                           depos_time(1,nm) = (thick * depos_time(1,nm) + thickd * td0) / (thick + thickd)
                         endif
                         svfrac(1,nm)  = (thick * svfrac(1,nm) + thickd * svfracd) / (thick + thickd)
                         !
@@ -709,7 +709,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                    ! store surplus of mass in underlayers
                    !
                    if (iconsolidate == CONSOL_TERZAGHI) then
-                      call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, td(1, nm))
+                      call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, depos_time(1, nm))
                    else
                       call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
                    endif
@@ -722,7 +722,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                    !
                    thdiff = -thdiff
                    !
-                   call lyrerosion(this , nm, thdiff, dmi) ! TODO: get porosity, preload and td
+                   call lyrerosion(this , nm, thdiff, dmi) ! TODO: get porosity, preload and depos_time
                    !
                    ! add to top layer
                    !
@@ -896,7 +896,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                    ! store surplus of mass in underlayers
                    !
                    if (iconsolidate == CONSOL_TERZAGHI) then
-                      call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), sdbodsed, td(2, nm))
+                      call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), sdbodsed, depos_time(2, nm))
                    else
                       call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
                    endif
@@ -1101,7 +1101,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     real(fp)   , dimension(:)     , pointer :: rhofrac
     real(fp)   , dimension(:,:)   , pointer :: thlyr
     real(fp)   , dimension(:)     , pointer :: thtrlyr
-    real(fp)   , dimension(:,:)   , pointer :: td
+    real(fp)   , dimension(:,:)   , pointer :: depos_time
     !
     !! executable statements -------------------------------------------------------
     !
@@ -1114,7 +1114,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     msed        => this%state%msed
     sedshort    => this%state%sedshort
     thlyr       => this%state%thlyr
-    td          => this%state%td
+    depos_time => this%state%depos_time
     !
     istat = allocwork(this)
     if (istat /= 0) return
@@ -1193,7 +1193,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 ! store surplus of mass in underlayers
                 !
                 if (iconsolidate == CONSOL_TERZAGHI) then
-                   call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm), sdbodsed, td(1, nm))
+                   call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm), sdbodsed, depos_time(1, nm))
                 else
                    call lyrsedimentation(this , nm, dz, dmi, svfrac(1, nm))
                 endif
@@ -1203,7 +1203,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 ! erosion of underlayers
                 !
                 dz = -dz
-                call lyrerosion(this , nm, dz, dmi) ! TODO: might also get porosity, preload, td
+                call lyrerosion(this , nm, dz, dmi) ! TODO: might also get porosity, preload, depos_time
                 !
                 ! add to top layer
                 !
@@ -1287,7 +1287,7 @@ end function gettoplyr
 
 !> lyrerosion implements the erosion of sediment from the layers below the
 !! transport and exchange layers
-subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preload and td information as well
+subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preload and depos_time information as well
     use precision
     !
     ! Function/routine arguments
@@ -1318,7 +1318,7 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     integer                                  , pointer :: peatfrac
     real(fp)                                           :: mpeat
     real(fp), dimension(:,:)                 , pointer :: preload
-    real(fp), dimension(:,:)                 , pointer :: td
+    real(fp), dimension(:,:)                 , pointer :: depos_time
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1331,7 +1331,7 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     msed        => this%state%msed
     thlyr       => this%state%thlyr
     preload     => this%state%preload
-    td          => this%state%td
+    depos_time => this%state%depos_time
     !
     k   = 2
     if (this%settings%exchlyr) k = k + 1
@@ -1379,11 +1379,11 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*thlyr(k, nm)
                preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*thlyr(k, nm)
-               td(kero1,nm)      = td(kero1,nm)*thlyr(kero1, nm) + td(k,nm)*thlyr(k, nm)
+               depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*thlyr(k, nm)
                thlyr(kero1, nm)  = thlyr(kero1, nm) + thlyr(k, nm)
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
                preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
-               td(kero1,nm)      = td(kero1,nm)/thlyr(kero1,nm)
+               depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
             endif
             thlyr(k, nm) = 0.0_fp
             k           = k+1
@@ -1406,11 +1406,11 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*dz
                preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*dz
-               td(kero1,nm)      = td(kero1,nm)*thlyr(kero1, nm) + td(k,nm)*dz
+               depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*dz
                thlyr(kero1, nm)  = thlyr(kero1, nm) + dz
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
                preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
-               td(kero1,nm)      = td(kero1,nm)/thlyr(kero1,nm)
+               depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
             endif
             !
             ! erosion complete (dz=0) now continue to replenish the
@@ -1540,7 +1540,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
     real(fp), dimension(:,:)  , pointer         :: thlyr
     real(fp), dimension(this%settings%nfrac)    :: dmi2
     real(fp), dimension(:,:)  , pointer         :: preload
-    real(fp), dimension(:,:)  , pointer         :: td
+    real(fp), dimension(:,:)  , pointer         :: depos_time
     real(fp)                                    :: temp
     type(bedcomp_work)        , pointer         :: work
 !
@@ -1556,7 +1556,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
     thlyr       => this%state%thlyr
     if (iconsolidate == CONSOL_TERZAGHI) then
        preload     => this%state%preload
-       td          => this%state%td
+       depos_time => this%state%depos_time
     endif
     work        => this%work
     !
@@ -1580,7 +1580,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
        work%thlyr2(k)   = thlyr(k, nm)
        if (iconsolidate == CONSOL_TERZAGHI) then
           work%preload2(k) = preload(k, nm)
-          work%td2(k)      = td(k, nm)
+          work%depos_time2(k) = depos_time(k, nm)
        endif
        thlyr(k, nm)     = 0.0_fp
     enddo
@@ -1604,7 +1604,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
           svfrac(k, nm)  = svfracdep
           if (iconsolidate == CONSOL_TERZAGHI) then
              preload(k, nm) = preloaddep
-             td(k,nm)       = tddep
+             depos_time(k,nm) = tddep
           endif
           thlyr(k, nm)   = thlalyr
           dz             = dz - thlalyr
@@ -1619,7 +1619,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
           svfrac(k, nm)  = svfracdep
           if (iconsolidate == CONSOL_TERZAGHI) then
              preload(k, nm) = preloaddep
-             td(k, nm)      = tddep
+             depos_time(k, nm) = tddep
           endif
           thlyr(k, nm)   = dz
           dz             = 0.0_fp
@@ -1649,13 +1649,13 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
                 svfrac(k, nm)   = svfrac(k, nm)*thlyr(k, nm) + work%svfrac2(k2)*dzc
                 if (iconsolidate == CONSOL_TERZAGHI) then
                    preload(k, nm)  = preload(k, nm)*thlyr(k, nm) + work%preload2(k2)*dzc
-                   td(k, nm)       = td(k, nm)*thlyr(k, nm) + work%td2(k2)*dzc
+                   depos_time(k, nm) = depos_time(k, nm)*thlyr(k, nm) + work%depos_time2(k2)*dzc
                 endif
                 thlyr(k, nm)    = thlalyr
                 svfrac(k, nm)   = svfrac(k, nm)/thlyr(k, nm)
                 if (iconsolidate == CONSOL_TERZAGHI) then
                    preload(k, nm)  = preload(k, nm) / thlyr(k, nm)
-                   td(k, nm)       = td(k, nm) / thlyr(k, nm)
+                   depos_time(k, nm) = depos_time(k, nm) / thlyr(k, nm)
                 endif
                 work%thlyr2(k2) = work%thlyr2(k2) - dzc
              else
@@ -1669,13 +1669,13 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
                 svfrac(k, nm)   = svfrac(k, nm)*thlyr(k, nm) + work%svfrac2(k2)*work%thlyr2(k2)
                 if (iconsolidate == CONSOL_TERZAGHI) then
                    preload(k, nm)  = preload(k, nm)*thlyr(k, nm) + work%preload2(k2)*work%thlyr2(k2)
-                   td(k, nm)       = td(k, nm)*thlyr(k, nm) + work%td2(k2)*work%thlyr2(k2)
+                   depos_time(k, nm) = depos_time(k, nm)*thlyr(k, nm) + work%depos_time2(k2)*work%thlyr2(k2)
                 endif
                 thlyr(k, nm)    = thlyr(k, nm) + work%thlyr2(k2)
                 svfrac(k, nm)   = svfrac(k, nm)/thlyr(k, nm)
                 if (iconsolidate == CONSOL_TERZAGHI) then
                    preload(k, nm)  = preload(k, nm) / thlyr(k, nm)
-                   td(k, nm)       = td(k, nm) / thlyr(k, nm)
+                   depos_time(k, nm) = depos_time(k, nm) / thlyr(k, nm)
                 endif
                 work%thlyr2(k2) = 0.0_fp
              endif
@@ -1694,7 +1694,7 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
              dmi2(l) = work%msed2(l, k2)
           enddo
           if (iconsolidate == CONSOL_TERZAGHI) then
-             call lyrsedimentation_eulerian(this, nm, work%thlyr2(k2), dmi2, work%svfrac2(k2), work%preload2(k2), work%td2(k2), kmin_=max(keuler,kmin))
+             call lyrsedimentation_eulerian(this, nm, work%thlyr2(k2), dmi2, work%svfrac2(k2), work%preload2(k2), work%depos_time2(k2), kmin_=max(keuler,kmin))
           else
              call lyrsedimentation_eulerian(this, nm, work%thlyr2(k2), dmi2, work%svfrac2(k2), kmin_=max(keuler,kmin))
           endif
@@ -1752,7 +1752,7 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
     real(fp), dimension(:,:,:), pointer         :: msed
     real(fp), dimension(:,:)  , pointer         :: thlyr
     real(fp), dimension(:,:)  , pointer         :: preload
-    real(fp), dimension(:,:)  , pointer         :: td
+    real(fp), dimension(:,:)  , pointer         :: depos_time
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1766,7 +1766,7 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
     thlyr       => this%state%thlyr
     if (iconsolidate == CONSOL_TERZAGHI) then
        preload     => this%state%preload
-       td          => this%state%td
+       depos_time => this%state%depos_time
     endif
     !
     dz = dzini
@@ -1808,13 +1808,13 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
              svfrac(k, nm)  = svfrac(k, nm)*thlyr(k, nm) + svfracdep*(theulyr-thlyr(k, nm))
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(k, nm) = preload(k, nm)*thlyr(k, nm) + preloaddep*(theulyr-thlyr(k, nm))
-                td(k, nm)      = td(k, nm)*thlyr(k, nm) + tddep*(theulyr-thlyr(k, nm))
+                depos_time(k, nm) = depos_time(k, nm)*thlyr(k, nm) + tddep*(theulyr-thlyr(k, nm))
              endif
              thlyr(k, nm)   = theulyr
              svfrac(k, nm)  = svfrac(k, nm) / thlyr(k, nm)
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(k, nm) = preload(k, nm) / thlyr (k, nm)
-                td(k, nm)      = td(k, nm) / thlyr (k, nm)
+                depos_time(k, nm) = depos_time(k, nm) / thlyr (k, nm)
              endif
           else
              !
@@ -1827,13 +1827,13 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
              svfrac(k, nm)  = svfrac(k, nm)*thlyr(k, nm) + svfracdep*dz
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(k, nm) = preload(k, nm)*thlyr(k, nm) + preloaddep*dz
-                td(k, nm)      = td(k, nm)*thlyr(k, nm) + tddep*dz
+                depos_time(k, nm) = depos_time(k, nm)*thlyr(k, nm) + tddep*dz
              endif
              thlyr(k, nm)   = thlyr(k, nm) + dz
              svfrac(k, nm)  = svfrac(k, nm) / thlyr(k, nm)
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(k, nm) = preload(k, nm) / thlyr (k, nm)
-                td(k, nm)      = td(k, nm) / thlyr (k, nm)
+                depos_time(k, nm) = depos_time(k, nm) / thlyr (k, nm)
              endif
              dz             = 0.0_fp
           endif
@@ -1861,13 +1861,13 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
              svfrac(nlyr, nm)  = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfracdep*dz
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(nlyr, nm) = preload(nlyr, nm)*thlyr(nlyr, nm) + preloaddep*dz
-                td(nlyr, nm)      = td(nlyr, nm)*thlyr(nlyr, nm) + tddep*dz
+                depos_time(nlyr, nm) = depos_time(nlyr, nm)*thlyr(nlyr, nm) + tddep*dz
              endif
              thlyr(nlyr, nm)   = thlyr(nlyr, nm) + dz
              svfrac(nlyr, nm)  = svfrac(nlyr, nm)/thlyr(nlyr, nm)
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(nlyr, nm) = preload(nlyr, nm)/thlyr(nlyr, nm)
-                td(nlyr, nm)      = td(nlyr, nm)/thlyr(nlyr, nm)
+                depos_time(nlyr, nm) = depos_time(nlyr, nm)/thlyr(nlyr, nm)
              endif
              dz                = 0.0_fp
 
@@ -1919,12 +1919,12 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
                    svfrac(nlyr, nm)  = svfrac(nlyr, nm)*thlyr(nlyr, nm) + svfrac(nlyr-1, nm)*thlyr(nlyr-1, nm)
                    if (iconsolidate == CONSOL_TERZAGHI) then
                       preload(nlyr, nm) = preload(nlyr, nm)*thlyr(nlyr, nm) + preload(nlyr-1, nm)*thlyr(nlyr-1, nm)
-                      td(nlyr, nm)      = td(nlyr, nm)*thlyr(nlyr, nm) + td(nlyr-1, nm)*thlyr(nlyr-1, nm)
+                      depos_time(nlyr, nm) = depos_time(nlyr, nm)*thlyr(nlyr, nm) + depos_time(nlyr-1, nm)*thlyr(nlyr-1, nm)
                    endif
                    svfrac(nlyr, nm)  = svfrac(nlyr, nm)/newthlyr
                    if (iconsolidate == CONSOL_TERZAGHI) then
                       preload(nlyr, nm) = preload(nlyr, nm)/newthlyr
-                      td(nlyr, nm)      = td(nlyr, nm)/newthlyr
+                      depos_time(nlyr, nm) = depos_time(nlyr, nm)/newthlyr
                    endif
                 endif
 
@@ -1975,7 +1975,7 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
                 svfrac(k, nm)  = svfrac(k-1, nm)
                 if (iconsolidate == CONSOL_TERZAGHI) then
                    preload(k, nm) = preload(k-1, nm)
-                   td(k, nm)      = td(k-1, nm)
+                   depos_time(k, nm) = depos_time(k-1, nm)
                 endif
              enddo
              !
@@ -1989,7 +1989,7 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
              svfrac(k, nm)  = svfracdep
              if (iconsolidate == CONSOL_TERZAGHI) then
                 preload(k, nm) = preloaddep
-                td(k, nm)      = tddep
+                depos_time(k, nm) = tddep
              endif
              dz             = 0.0_fp
           enddo
@@ -3303,7 +3303,7 @@ function initmorlyr(this) result (istat)
     nullify(state%msed)
     nullify(state%mobile)
     nullify(state%preload)
-    nullify(state%td)
+    nullify(state%depos_time)
     nullify(state%rhow)
     nullify(state%sedshort)
     nullify(state%svfrac)
@@ -3319,7 +3319,7 @@ function initmorlyr(this) result (istat)
     nullify(work%thlyr2)
     nullify(work%svfrac2)
     nullify(work%preload2)
-    nullify(work%td2)
+    nullify(work%depos_time2)
 
     ! work arrays for full Gibson model
     nullify(work%dthsedlyr)
@@ -3441,8 +3441,8 @@ function allocmorlyr(this) result (istat)
        case (CONSOL_TERZAGHI)
           if (istat == 0) allocate (state%preload(settings%nlyr,nmlb:nmub), stat = istat)
           if (istat == 0) state%preload = 0.0_fp
-          if (istat == 0) allocate (state%td(settings%nlyr,nmlb:nmub), stat = istat)
-          if (istat == 0) state%td = 0.0_fp
+          if (istat == 0) allocate (state%depos_time(settings%nlyr,nmlb:nmub), stat = istat)
+          if (istat == 0) state%depos_time = 0.0_fp
           if (istat == 0) allocate (state%strain(settings%nlyr,nmlb:nmub), stat = istat)
           if (istat == 0) state%strain = 0.0_fp
        case (CONSOL_DECON)
@@ -3495,19 +3495,19 @@ function allocwork(this) result (istat)
     if (associated(this%work%thlyr2))   deallocate (this%work%thlyr2 , stat = istat)
     if (associated(this%work%svfrac2))  deallocate (this%work%svfrac2, stat = istat)
     if (associated(this%work%preload2)) deallocate (this%work%preload2, stat = istat)
-    if (associated(this%work%td2))      deallocate (this%work%td2, stat = istat)
+    if (associated(this%work%depos_time2)) deallocate (this%work%depos_time2, stat = istat)
     !
     if (istat == 0) allocate (this%work%msed2(nfrac, nlyr), stat = istat)
     if (istat == 0) allocate (this%work%thlyr2(nlyr)      , stat = istat)
     if (istat == 0) allocate (this%work%svfrac2(nlyr)     , stat = istat)
     if (istat == 0) allocate (this%work%preload2(nlyr)    , stat = istat)
-    if (istat == 0) allocate (this%work%td2(nlyr)         , stat = istat)
+    if (istat == 0) allocate (this%work%depos_time2(nlyr) , stat = istat)
     !
     if (istat == 0) this%work%msed2 = dmiss
     if (istat == 0) this%work%thlyr2 = dmiss
     if (istat == 0) this%work%svfrac2 = dmiss
     if (istat == 0) this%work%preload2 = dmiss
-    if (istat == 0) this%work%td2 = dmiss
+    if (istat == 0) this%work%depos_time2 = dmiss
     ! work arrys for full Gibson model
     if (istat == 0) allocate (this%work%dthsedlyr(nlyr-1), stat = istat)
 
@@ -3543,7 +3543,7 @@ function deallocwork(this) result (istat)
     if (istat == 0) deallocate (this%work%thlyr2       , stat = istat)
     if (istat == 0) deallocate (this%work%svfrac2      , stat = istat)
     if (istat == 0) deallocate (this%work%preload2     , stat = istat)
-    if (istat == 0) deallocate (this%work%td2          , stat = istat)
+    if (istat == 0) deallocate (this%work%depos_time2  , stat = istat)
 
     if (istat == 0) deallocate (this%work%dthsedlyr    , stat = istat)
 
@@ -3891,8 +3891,8 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
        val => this%settings%kdiff
     case ('solid_volume_fraction','svfrac')
        val => this%state%svfrac
-    case ('time of load increment','td')
-        val => this%state%td
+    case ('time of load increment','depos_time')
+        val => this%state%depos_time
     case ('historical largest load','preload')
        val => this%state%preload
     case ('layer_thickness','thlyr')
@@ -4650,7 +4650,7 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:,:,:), pointer      :: msed
     real(fp) , dimension(:,:)  , pointer      :: preload   ! preload for Terzaghi
-    real(fp) , dimension(:,:)  , pointer      :: td        ! deposition time for Terzaghi
+    real(fp) , dimension(:,:)  , pointer      :: depos_time ! deposition time for Terzaghi
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
     real(fp) , dimension(:)    , pointer      :: rhow
@@ -4702,12 +4702,10 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), dimension(this%settings%nconlyr) :: svfrac2
     real(fp), dimension(this%settings%nconlyr) :: thlyr2
 
-    logical :: all_sediment_processed
-
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
     preload        => this%state%preload
-    td             => this%state%td
+    depos_time => this%state%depos_time
     svfrac         => this%state%svfrac
     thlyr          => this%state%thlyr
     rhow           => this%state%rhow
@@ -4772,7 +4770,6 @@ subroutine consolidate_decon(this, nm, dtmor)
        
        ! build up the new stratigraphy by copying sediment from the work arrays
        z_low = 0
-       all_sediment_processed = .false.
        do k = 1, nconlyr
           thlyr_new = thconlyreqm * plyrthk(k)
           z_up = z_low
@@ -4813,9 +4810,6 @@ subroutine consolidate_decon(this, nm, dtmor)
                 svfrac2(k2) = 0.0_fp
                 msed2(:,k2) = 0.0_fp
                 thlyr2(k2) = 0.0_fp
-                if (k2 == nconlyr) then
-                   all_sediment_processed = .true.
-                endif
              else
                 ! merge part of layer
                 frac = thlyr_rem / thlyr2(k2)
@@ -4834,35 +4828,35 @@ subroutine consolidate_decon(this, nm, dtmor)
        enddo
        
        ! if there is still sediment in the work arrays
-       if (.not. all_sediment_processed) then
-          ! move the remaining sediment to layer nconlyr+1:nlyr ...
-          dzini = 0.0_fp
-          dmi = 0.0_fp
-          svfracdep = 0.0_fp
-          eqm_mudconc = 600.0_fp
-          do k2 = 1, nconlyr
-             if (thlyr2(k2) > 0.0_fp) then
-                ! adjust the properties of the work layer to match this layer
-                msed_mud = 0.0_fp
-                thgibson_mud = 0.0_fp
-                thgibson_sand = 0.0_fp
-                do l = 1, this%settings%nfrac
-                   if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                      msed_mud = msed_mud + msed2(l,k2)
-                      thgibson_mud = thgibson_mud + msed2(l,k2) / this%settings%rhofrac(l)
-                   else
-                      thgibson_sand = thgibson_sand + msed2(l,k2) / this%settings%rhofrac(l)
-                   endif
-                enddo
-                thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY_SAND), msed_mud / eqm_mudconc + thgibson_sand)
-                svfrac2(k2) = (thgibson_mud + thgibson_sand) / thlyr2(k2)
-                
-                dmi = dmi + msed2(:,k2)
-                svfracdep = svfracdep + svfrac2(k2)*thlyr2(k2)
-                dzini = dzini + thlyr2(k2)
-             endif
-          enddo
-          svfracdep = svfracdep/dzini
+       ! move the remaining sediment to layer nconlyr+1:nlyr ...
+       dzini = 0.0_fp
+       dmi = 0.0_fp
+       svfracdep = 0.0_fp
+       eqm_mudconc = 600.0_fp
+       do k2 = 1, nconlyr
+          if (thlyr2(k2) > 0.0_fp) then
+             ! adjust the properties of the work layer to match this layer
+             msed_mud = 0.0_fp
+             thgibson_mud = 0.0_fp
+             thgibson_sand = 0.0_fp
+             do l = 1, this%settings%nfrac
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                   msed_mud = msed_mud + msed2(l,k2)
+                   thgibson_mud = thgibson_mud + msed2(l,k2) / this%settings%rhofrac(l)
+                else
+                   thgibson_sand = thgibson_sand + msed2(l,k2) / this%settings%rhofrac(l)
+                endif
+             enddo
+             thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY_SAND), msed_mud / eqm_mudconc + thgibson_sand)
+             svfrac2(k2) = (thgibson_mud + thgibson_sand) / thlyr2(k2)
+             
+             dmi = dmi + msed2(:,k2)
+             svfracdep = svfracdep + svfrac2(k2)*thlyr2(k2)
+             dzini = dzini + thlyr2(k2)
+          endif
+       enddo
+       svfracdep = svfracdep/dzini
+       if (dzini > 0.0_fp) then
           call lyrsedimentation(this, nm, dzini, dmi, svfracdep, kmin_=nconlyr+1)
        endif
        
@@ -4904,7 +4898,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
     !
     real(fp) , dimension(:,:,:), pointer      :: msed     !<
     real(fp) , dimension(:,:)  , pointer      :: preload  !< previous overburden weight [kg/m2]
-    real(fp) , dimension(:,:)  , pointer      :: td       !> time of latest load increment (days)
+    real(fp) , dimension(:,:)  , pointer      :: depos_time !> time of latest load increment (days)
     real(fp) , dimension(:,:)  , pointer      :: svfrac   !<
     real(fp) , dimension(:,:)  , pointer      :: thlyr    !< layer thickness, including pore water
     real(fp) , dimension(:)    , pointer      :: ymod     !<
@@ -4926,7 +4920,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
     preload        => this%state%preload
-    td             => this%state%td
+    depos_time => this%state%depos_time
     svfrac         => this%state%svfrac
     thlyr          => this%state%thlyr
     rhofrac        => this%settings%rhofrac
@@ -4955,7 +4949,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
             !
             ! update time of deposition
             !
-            td(k,nm) = real(morft,fp)
+            depos_time(k,nm) = real(morft,fp)
             !
             ! compute critical porosity
             !
@@ -5026,7 +5020,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
                         cceff =  cceff + frac * cc(l)
                     endif
                 enddo
-                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * this%settings%crmsec * (log(max(1.0_fp, real(morft,fp)) - td(k,nm)) - (log(max(1.0_fp, real(morft,fp)) - td(k,nm) - real(dtmor,hp)/86400.0_hp)))
+                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * this%settings%crmsec * (log(max(1.0_fp, real(morft,fp)) - depos_time(k,nm)) - (log(max(1.0_fp, real(morft,fp)) - depos_time(k,nm) - real(dtmor,hp)/86400.0_hp)))
             endif
             svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
             if (svfrac(k,nm) > (1.0_fp - critpor)) then
@@ -5057,7 +5051,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     ! State/settings pointers
     real(fp), dimension(:,:,:), pointer :: msed       !< sediment mass per unit area [kg/m2]
     real(fp), dimension(:,:)  , pointer :: preload    !< maximum previous overburden mass [kg/m2]
-    real(fp), dimension(:,:)  , pointer :: td         !< time of latest load increment [days]
+    real(fp), dimension(:,:)  , pointer :: depos_time !< time of latest load increment [days]
     real(fp), dimension(:,:)  , pointer :: svfrac     !< total solid volume fraction [-]
     real(fp), dimension(:,:)  , pointer :: strain     !< peat strain diagnostic [-]
     real(fp), dimension(:,:)  , pointer :: thlyr      !< layer thickness including pore water [m]
@@ -5111,7 +5105,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     ! Pointer associations
     msed      => this%state%msed
     preload   => this%state%preload
-    td        => this%state%td
+    depos_time => this%state%depos_time
     svfrac    => this%state%svfrac
     strain    => this%state%strain
     thlyr     => this%state%thlyr
@@ -5209,7 +5203,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
             thnew = thtrial
 
             if (load > oldload) then
-                td(k, nm) = real(morft, fp)
+                depos_time(k, nm) = real(morft, fp)
             endif
             preload(k, nm) = max(oldload, load)
 
@@ -5233,13 +5227,13 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
                 enddo
 
                 thnew = thnew - cceff_primary * thold * load_increment * ag
-                td(k, nm) = real(morft, fp)
+                depos_time(k, nm) = real(morft, fp)
             endif
 
             ! Secondary mud consolidation. This is an incremental logarithmic-age term
             ! and is applied only after a layer has experienced loading history.
             if (this%settings%crmsec > 0.0_fp .and. oldload > 0.0_fp .and. solidvol > eps_mass) then
-                age_new = max((real(morft, fp) - td(k, nm)) * 86400.0_fp, 0.0_fp)
+                age_new = max((real(morft, fp) - depos_time(k, nm)) * 86400.0_fp, 0.0_fp)
                 age_old = max(age_new - dtmor, 0.0_fp)
                 dlogage = log(1.0_fp + age_new) - log(1.0_fp + age_old)
 
@@ -5305,26 +5299,26 @@ subroutine initpreload(this)
     integer                                   :: nm
     real(fp)                                  :: load
     real(fp) , dimension(:,:,:), pointer      :: msed
-    real(fp) , dimension(:,:)  , pointer      :: td
+    real(fp) , dimension(:,:)  , pointer      :: depos_time
     real(fp) , dimension(:,:)  , pointer      :: preload
     !
     !! executable statements -------------------------------------------------------
     !
     msed       => this%state%msed
     preload    => this%state%preload
-    td         => this%state%td
+    depos_time => this%state%depos_time
     !
     select case (this%settings%iunderlyr)
     case (BED_LAYERED)
        do nm = this%settings%nmlb, this%settings%nmub
-          td(1, nm)      = 0.0_fp
+          depos_time(1, nm) = 0.0_fp
           preload(1, nm) = 0.0_fp
           load = 0.0_fp
           do k = 2, this%settings%nlyr
               do l = 1, this%settings%nfrac
                   load = load + msed(l, k-1, nm)
               enddo
-              td(k, nm) = 0.0_fp
+              depos_time(k, nm) = 0.0_fp
               preload(k, nm) = load
           enddo
        enddo

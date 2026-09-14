@@ -1162,6 +1162,12 @@ contains
 
               call prop_get(mor_ptr, 'Consolidate', 'maxTotalThickDeconLyrs', morlyr%settings%max_total_thick_decon_lyrs)
               txtput1 = 'Maximum total thickness consolidating layers'
+              if (morlyr%settings%max_total_thick_decon_lyrs <= 0.0_fp) then
+                 write(errmsg,'(2a)') 'Maximum total thickness consolidating layers should be positive in ',trim(filmor)
+                 call write_error(errmsg, unit=lundia)
+                 error = .true.
+                 return
+              endif
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%max_total_thick_decon_lyrs
 
               call prop_get(mor_ptr, 'Consolidate', 'plyrstr', morlyr%settings%plyrstr)
