@@ -173,6 +173,8 @@ contains
          file_type = CURVI
       case ('geotiff')
          file_type = GEOTIFF
+      case ('datavalue')
+         file_type = DATAVALUE
       case ('netcdf')
          file_type = NCGRID
       case ('polygon')
