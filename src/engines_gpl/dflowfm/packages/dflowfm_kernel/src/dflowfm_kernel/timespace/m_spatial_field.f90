@@ -259,7 +259,7 @@ contains
          input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
          if (input%filetype == FILE_TYPE_UNKNOWN) then
             write (msgbuf, '(7a)') 'Field ''dataFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
-               trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' has unknown value.'
+               trimmed_file_name, ''': [', trimmed_group_name, '].'
             call err_flush()
             return
          end if
