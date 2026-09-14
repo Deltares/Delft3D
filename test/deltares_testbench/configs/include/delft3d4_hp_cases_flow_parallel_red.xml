@@ -400,6 +400,7 @@
 		</testCase>
 		<testCase name="e01_f29_c05-tsunami-banda-aceh_original_model" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c05-tsunami-banda-aceh_original_model</path>
+			<maxRunTime>480</maxRunTime>
 			<checks>
 				<file name="trih-tsu5d.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -421,6 +422,7 @@
 		</testCase>
 		<testCase name="e01_f29_c06-tsunami-banda-aceh_instant_uplift" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c06-tsunami-banda-aceh_instant_uplift</path>
+			<maxRunTime>480</maxRunTime>
 			<checks>
 				<file name="trih-tsu5d.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -442,6 +444,7 @@
 		</testCase>
 		<testCase name="e01_f29_c07-tsunami-banda-aceh_instant_4areas" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c07-tsunami-banda-aceh_instant_4areas</path>
+			<maxRunTime>480</maxRunTime>
 			<checks>
 				<file name="trih-tsu5d.dat" type="NEFIS">
 					<parameters name="his-series">
@@ -463,6 +466,7 @@
 		</testCase>
 		<testCase name="e01_f29_c08-tsunami-banda-aceh_slow_4areas" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c08-tsunami-banda-aceh_slow_4areas</path>
+			<maxRunTime>480</maxRunTime>
 			<checks>
 				<file name="trih-tsu5d.dat" type="NEFIS">
 					<parameters name="his-series">

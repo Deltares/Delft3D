@@ -9,7 +9,7 @@ import Delft3D.step.*
 
 object WindowsCollect : BuildType({
 
-    description = "Prepping the binaries for testing/release and verify the signing and directory structure."
+    description = "Prepare binaries for testing and release; verify signing and layout."
 
     templates(
         TemplateMergeRequest,

@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object LifecycleScanCiTools : BuildType({
-    name = "Lifecycle Scan CiTools"
+    id("LifecycleScanCiTools")
+    name = "Nexus IQ (Python CI tools)"
+    description = "SBOM and Nexus IQ scan of ci/python."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {
