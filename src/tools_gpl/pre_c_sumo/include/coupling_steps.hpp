@@ -48,11 +48,11 @@ namespace pre_c_sumo
      */
     struct DiffuserMapping
     {
-        std::size_t diffuser_index;               ///< Index of the diffuser in the configured mesh.
-        bool has_intake;                          ///< True when the diffuser has an associated intake point.
-        std::size_t intake_index;                 ///< Index of the intake point in the intake mesh.
-        std::size_t number_of_ambient_points;     ///< Number of ambient points associated with this diffuser.
-        std::size_t first_ambient_point_index;    ///< First index of the ambient point range in the mesh.
+        std::size_t diffuser_index;            ///< Index of the diffuser in the configured mesh.
+        bool has_intake;                       ///< True when the diffuser has an associated intake point.
+        std::size_t intake_index;              ///< Index of the intake point in the intake mesh.
+        std::size_t number_of_ambient_points;  ///< Number of ambient points associated with this diffuser.
+        std::size_t first_ambient_point_index; ///< First index of the ambient point range in the mesh.
     };
 
     /**
@@ -64,13 +64,14 @@ namespace pre_c_sumo
      */
     struct Mesh
     {
-        std::string name;                                             ///< Mesh name as used in the preCICE configuration.
-        std::vector<double> coordinates;                              ///< XYZ coordinates for each mesh node.
-        std::vector<int> vertex_ids;                                  ///< Vertex identifiers used by the coupled mesh.
-        std::vector<DiffuserMapping> forward_map;                     ///< Mapping from diffuser entries to intake/ambient data.
-        std::size_t number_of_nodes;                                  ///< Total number of mesh nodes.
-        std::size_t number_of_zcoordinates;                           ///< Number of vertical coordinates in the 3D mesh.
-        std::unordered_map<std::string_view, std::vector<double>> quantities; ///< Per-quantity values associated with the mesh.
+        std::string name;                         ///< Mesh name as used in the preCICE configuration.
+        std::vector<double> coordinates;          ///< XYZ coordinates for each mesh node.
+        std::vector<int> vertex_ids;              ///< Vertex identifiers used by the coupled mesh.
+        std::vector<DiffuserMapping> forward_map; ///< Mapping from diffuser entries to intake/ambient data.
+        std::size_t number_of_nodes;              ///< Total number of mesh nodes.
+        std::size_t number_of_zcoordinates;       ///< Number of vertical coordinates in the 3D mesh.
+        std::unordered_map<std::string_view, std::vector<double>>
+            quantities; ///< Per-quantity values associated with the mesh.
     };
 
     /**
@@ -120,7 +121,7 @@ namespace pre_c_sumo
      * For each diffuser configured in `csumo_settings` this will wait for
      * the corresponding NF2FF file to appear. If `csumo_settings` contains
      * a parse error, the function returns immediately without waiting.
-     * 
+     *
      * Note: If any diffuser is configured, this function will wait
      *       10 seconds for file(s) to appear. If the time elapses, it will fail with error.
      *

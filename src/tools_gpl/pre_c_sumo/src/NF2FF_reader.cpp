@@ -171,8 +171,9 @@ namespace
      * @return std::expected containing parsed records or the first parse error.
      */
     template <typename TItem, typename TExtractor>
-    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(
-        const std::string_view text, const std::string_view element_name, TExtractor extractor)
+    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(const std::string_view text,
+                                                                                  const std::string_view element_name,
+                                                                                  TExtractor extractor)
     {
         std::vector<std::string> newline_separated_tokens;
         boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
@@ -181,8 +182,8 @@ namespace
         auto is_non_empty = [](const std::string_view token) {
             return token.find_first_not_of(" \t\r") != std::string_view::npos;
         };
-        auto to_item = [element_name, extractor](const std::string_view token)
-            -> std::expected<TItem, parsing_utils::ParseError> {
+        auto to_item = [element_name,
+                        extractor](const std::string_view token) -> std::expected<TItem, parsing_utils::ParseError> {
             ASSIGN_OR_RETURN(auto values, parsing_utils::parseDoubleVector(token, element_name));
             return extractor(values);
         };
@@ -250,8 +251,8 @@ namespace
     std::expected<std::vector<pre_c_sumo::IntakeData>, parsing_utils::ParseError> parseIntakeVector(
         const std::string_view text)
     {
-        auto extractor = [](const std::vector<double>& values)
-            -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
+        auto extractor =
+            [](const std::vector<double>& values) -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
             return extractIntakeData(values);
         };
         return parseBlockVector<pre_c_sumo::IntakeData>(text, "intakes", extractor);

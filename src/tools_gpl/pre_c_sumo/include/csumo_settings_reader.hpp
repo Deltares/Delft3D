@@ -36,8 +36,10 @@ namespace pre_c_sumo
     struct Discharge
     {
         double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;).
-        ConstituentsOperator constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;).
-        std::vector<double> constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;).
+        ConstituentsOperator
+            constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;).
+        std::vector<double>
+            constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;).
     };
 
     /**
@@ -55,7 +57,8 @@ namespace pre_c_sumo
 
         // --- data section ---
         parsing_utils::Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;).
-        std::vector<parsing_utils::Point2D> ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more).
+        std::vector<parsing_utils::Point2D>
+            ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more).
         std::optional<parsing_utils::Point2D> intake; ///< Intake location (&lt;XYintake&gt;, optional).
         Discharge discharge;                          ///< Discharge characteristics (&lt;discharge&gt;).
         double nozzle_diameter{};                     ///< Nozzle diameter [m] (&lt;D0&gt;).

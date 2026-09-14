@@ -1,0 +1,45 @@
+/*!
+\page build_and_run_example_12 Build and run Example 12
+
+This page points to the standard Delft3D build instructions and the example run instructions for the
+preC-SUMO / D-Flow FM coupling case in Example 12.
+
+\section build_compile Build and compile Delft3D
+
+The canonical build documentation lives in the project docs folder:
+- [Building Delft3D on Windows](../../../../../../doc/compiling_Windows.md)
+- [Building Delft3D on Linux](../../../../../../doc/compiling_Linux.md)
+
+The repository-level build scripts are also the starting point for local builds:
+- [run_conan.py](../../../../../../run_conan.py)
+- [build.py](../../../../../../build.py)
+
+In practice the usual workflow is:
+1. configure the Conan environment,
+2. run the repository build script,
+3. build the required binaries and then use the generated executables from the install tree.
+
+\section run_example_12 Run Example 12
+
+The example case is located here:
+- [Example 12: D-Flow FM / preC-SUMO](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/readme.md)
+
+That example contains the configuration and launch scripts for both coupled workflows:
+- [dimr_config.xml](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/dimr_config.xml) for the DIMR-based run,
+- [precice_config.xml](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/precice_config.xml) for the preCICE-based run,
+- [run.bat](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/run.bat) / [run.sh](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/run.sh) for the preCICE workflow,
+- [run_parallel.bat](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/run_parallel.bat) / [run_parallel.sh](../../../../../../examples/dflowfm/12_dflowfm_pre_C_SUMO/run_parallel.sh) for the parallel variant.
+
+The example uses the same pattern as the project scripts:
+- preCICE coupling starts preC-SUMO and D-Flow FM from the example directory,
+- the DIMR option runs the DIMR configuration when the preCICE route is not selected.
+
+\section results Compare results
+
+Once the run completes, results can be compared in the user's preferred tooling:
+- Delft3D Q-Plot,
+- NetCDF comparison tools,
+- or any other output diff / validation workflow the user chooses.
+
+This page is intentionally kept brief; it points to the canonical build and example documentation rather than repeating the detailed comparison procedures.
+*/

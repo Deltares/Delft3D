@@ -76,7 +76,7 @@ namespace pre_c_sumo
      */
     struct Source
     {
-        Endpoint endpoint; ///< Source endpoint geometry and discharge characteristics.
+        Endpoint endpoint;                        ///< Source endpoint geometry and discharge characteristics.
         std::optional<Momentum> momentum;         ///< Optional momentum data used for directional source forcing.
         std::optional<Constituents> constituents; ///< Optional constituent concentrations carried by this source.
     };
