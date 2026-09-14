@@ -14,7 +14,7 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
-    description = "Run TestBench.py on a list of testbench XML files."
+    description = "Run TestBench."
 
     templates(
         TemplateMergeRequest,
