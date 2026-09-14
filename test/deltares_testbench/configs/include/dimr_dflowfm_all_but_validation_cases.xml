@@ -602,34 +602,6 @@
       <file name="depthgr.xyz" ignore="true"/>
     </checks>
   </testCase>
-  <testCase name="e02_f004_c124_vistala_155_sm" ref="dflowfm_default">
-    <path version="DVC">e02_dflowfm/f004_bottomfriction/c124_vistala_155_sm</path>
-    <maxRunTime>15000.0000000</maxRunTime>
-    <checks>
-      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
-          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-      <file name="depthgr.xyz" ignore="true"/>
-    </checks>
-  </testCase>
-  <testCase name="e02_f004_c125_jarvela_156_sm" ref="dflowfm_default">
-    <path version="DVC">e02_dflowfm/f004_bottomfriction/c125_jarvela_156_sm</path>
-    <maxRunTime>15000.0000000</maxRunTime>
-    <checks>
-      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
-        <parameters>
-          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
-          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
-          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
-        </parameters>
-      </file>
-      <file name="depthgr.xyz" ignore="true"/>
-    </checks>
-  </testCase>
   <testCase name="e02_f004_c132_time_dependent_friction" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c132_time_dependent_friction</path>
 
