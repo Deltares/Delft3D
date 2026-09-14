@@ -4406,11 +4406,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     real(fp), dimension(:)   , pointer :: svfracsand0p5    ! sand solids fraction at layer interface
     real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface
 
-    !critical porosity
-    real(fp)           :: critpor
-    real(fp)           :: thicks
-    real(fp)           :: thickm
-
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
     preload        => this%state%preload
@@ -4691,11 +4686,6 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
     real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand
 
-    !critical porosity
-    real(fp)           :: critpor
-    real(fp)           :: thicks
-    real(fp)           :: thickm
-    
     integer             :: k2
     real(fp)           :: eqm_mudconc ! equilibrium mass concentration of the mud fractions [kg/m2]
     real(fp)           :: thlyr_rem ! remaining thickness of layer to be processed [m]
@@ -4711,6 +4701,8 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), dimension(this%settings%nfrac,this%settings%nconlyr) :: msed2
     real(fp), dimension(this%settings%nconlyr) :: svfrac2
     real(fp), dimension(this%settings%nconlyr) :: thlyr2
+
+    logical :: all_sediment_processed
 
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
@@ -4748,8 +4740,12 @@ subroutine consolidate_decon(this, nm, dtmor)
             endif
         enddo
     enddo
-    rho_mud = rho_mud / thmudgibson_new
-
+    if (thmudgibson_new > 0.0_fp) then
+       rho_mud = rho_mud / thmudgibson_new
+    else
+       rho_mud = this%settings%rhofrac(1) ! use the first fraction as default
+    endif
+    
     ! if the Gibson's height, i.e. total mass, has increased
     if (thmudgibson_new + thsandgibson_new > thmudgibson(nm) + thsandgibson(nm)) then
 
@@ -4776,11 +4772,12 @@ subroutine consolidate_decon(this, nm, dtmor)
        
        ! build up the new stratigraphy by copying sediment from the work arrays
        z_low = 0
+       all_sediment_processed = .false.
        do k = 1, nconlyr
           thlyr_new = thconlyreqm * plyrthk(k)
           z_up = z_low
           z_low = z_up + thlyr_new
-          ! compute the equilibrium mud concentraion averaged over z_low to z_up
+          ! compute the equilibrium mud concentration averaged over z_low to z_up
           eqm_mudconc = (rho_mud / (z_low - z_up)) &
              & * ((nfd - 1.0_fp) / nfd) &
              & * ((((nfd - 1.0_fp) / nfd) * ag * (rho_mud - rhow(nm)) / ksigma)**(1.0_fp / (nfd - 1.0_fp))) &
@@ -4816,6 +4813,9 @@ subroutine consolidate_decon(this, nm, dtmor)
                 svfrac2(k2) = 0.0_fp
                 msed2(:,k2) = 0.0_fp
                 thlyr2(k2) = 0.0_fp
+                if (k2 == nconlyr) then
+                   all_sediment_processed = .true.
+                endif
              else
                 ! merge part of layer
                 frac = thlyr_rem / thlyr2(k2)
@@ -4834,7 +4834,7 @@ subroutine consolidate_decon(this, nm, dtmor)
        enddo
        
        ! if there is still sediment in the work arrays
-       if (thlyr2(nconlyr) > 0.0_fp) then
+       if (.not. all_sediment_processed) then
           ! move the remaining sediment to layer nconlyr+1:nlyr ...
           dzini = 0.0_fp
           dmi = 0.0_fp
