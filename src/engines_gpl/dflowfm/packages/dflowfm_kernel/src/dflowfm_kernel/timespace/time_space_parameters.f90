@@ -175,6 +175,8 @@ contains
          file_type = NCFLOW
       case ('geotiff')
          file_type = GEOTIFF
+      case ('datavalue')
+         file_type = DATAVALUE
       case ('netcdf')
          file_type = NCGRID
       case ('polygon')
