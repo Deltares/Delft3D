@@ -312,6 +312,7 @@ contains
          case default
             write(lundia, '(A,I0,A)') 'Unknown value (',iconsolidate,') specified for IConsolidate. Value ignored.'
             txtput2 = '                  NO'
+            iconsolidate = CONSOL_NONE
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
@@ -1235,6 +1236,16 @@ contains
 
           if (iconsolidate == CONSOL_TERZAGHI) then
               if (morlyr%settings%include_peat) then
+                 call prop_get(mor_ptr, 'peat', 'peatfrac', morlyr%settings%peatfrac)
+                 txtput1 = 'peatfrac'
+                 write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%peatfrac
+                 if (morlyr%settings%peatfrac < 1 .or. morlyr%settings%peatfrac > morlyr%settings%nfrac) then
+                    write(errmsg,'(a,i0,2a)') 'Peat fraction should be in range 1 to ',morlyr%settings%nfrac,' in ',trim(filmor)
+                    call write_error(errmsg, unit=lundia)
+                    error = .true.
+                    return
+                 endif
+
                  call prop_get(mor_ptr, 'peat', 'ymodpeat', morlyr%settings%ymodpeat)
                  txtput1 = 'ymod'
                  write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ymodpeat
@@ -1242,10 +1253,6 @@ contains
                  call prop_get(mor_ptr, 'peat', 'ccpeat', morlyr%settings%ccpeat)
                  txtput1 = 'cc'
                  write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ccpeat
-
-                 call prop_get(mor_ptr, 'peat', 'peatfrac', morlyr%settings%peatfrac)
-                 txtput1 = 'peatfrac'
-                 write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%peatfrac
 
                  call prop_get(mor_ptr, 'peat', 'LOI', morlyr%settings%peatloi)
                  txtput1 = 'LOI'

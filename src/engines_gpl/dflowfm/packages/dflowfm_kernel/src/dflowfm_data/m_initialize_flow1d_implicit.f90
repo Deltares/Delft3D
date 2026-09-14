@@ -739,6 +739,7 @@ contains
       use m_flow, only: s0, s1, u1, v, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb, z0ucur
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
+      use bedcomposition_module, only: CONSOL_TERZAGHI
       use m_turbulence, only: rhowat
       use m_xbeach_data, only: ktb
       use m_bedform, only: bfmpar
@@ -886,11 +887,13 @@ contains
             allocate (svfrac_o(nlyr, ndx))
             svfrac_o = stmpar%morlyr%state%svfrac
 
-            if (allocated(preload_o)) then
-               deallocate (preload_o)
+            if (stmpar%morlyr%settings%iconsolidate == CONSOL_TERZAGHI) then
+               if (allocated(preload_o)) then
+                  deallocate (preload_o)
+               end if
+               allocate (preload_o(nlyr, ndx))
+               preload_o = stmpar%morlyr%state%preload
             end if
-            allocate (preload_o(nlyr, ndx))
-            preload_o = stmpar%morlyr%state%preload
 
          end if !underlayer==2
 

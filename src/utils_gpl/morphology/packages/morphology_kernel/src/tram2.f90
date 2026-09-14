@@ -290,7 +290,7 @@ contains
          ws0 = 1.1_fp * sqrt(drho * ag * di50)
       end if
       !
-      taucr1 = compute_taucr1(itaucr, di50, gamtcr, mudfrac, taucr0, betam, taucrb)
+      taucr1 = compute_taucr1(itaucr, di50, gamtcr, mudfrac, betam, taucr0, taucrb)
       !
       call bedbc2004(tp, rhowat, &
                    & h1, umod, d10, zumod, di50, &
