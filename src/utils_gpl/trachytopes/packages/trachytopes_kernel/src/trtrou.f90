@@ -1061,7 +1061,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                     iuc = iuc + 1
                     
                     ! Vegetation parameter
-                    phi = drag*densit*(umag/uchistem)**expchistem
+                    phi = drag*densit*(uc/uchistem)**expchistem
                     
                     ! Effective bed friction 
                     ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
@@ -1180,7 +1180,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                     iuc = iuc + 1
                     
                     ! Vegetation parameter
-                    phi = drag*densit*(umag/uchistem)**expchistem
+                    phi = drag*densit*(uc/uchistem)**expchistem
                     
                     ! Effective bed friction 
                     ch_icode = cbed + sqrt(ag)/(karmanalpha*vonkar)*log(hk)* &
