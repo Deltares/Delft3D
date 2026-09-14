@@ -55,7 +55,7 @@ contains
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
                         u1, v, ltop
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
-      use m_flowtimes, only: handle_extra
+      use m_flowtimes, only: handle_extra  ! , time0, tstart_user
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba, snu, csu
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
@@ -75,7 +75,7 @@ contains
                                      ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_vicwws_total, ipnt_difwws, ipnt_difwws_total, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_rwin, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
-                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
+                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs ! , xobs, yobs, namobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use bedcomposition_module, only: POROS_IN_DENSITY
       use Timers, only: timon, timstrt, timstop
@@ -144,11 +144,6 @@ contains
       if (model_is_3D()) then
          ! Allocate as 2D arry for cell z centers
          call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=DMISS)
-!         do j = 2, ndkx
-!             if (zws(j) .NE. dmiss .and. zws(J-1) .NE. dmiss) then 
-!               cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
-!             end if
-!         end do
          ! Only for ective points, otherwise stick to initial dmiss value
          do k= 1,ndx
             call getkbotktop(k, kb, kt)
@@ -230,19 +225,15 @@ contains
       valobs = DMISS
 
       do i = 1, numobs + nummovobs
-         write (msgbuf, '(a, i5)') "Numobs = ", numobs
-         call mess(LEVEL_WARN, msgbuf)
-         write (msgbuf, '(i5, i5)') size(kobs),size(intobs)
-         call mess(LEVEL_WARN, msgbuf)
-         write (msgbuf, '(a, i5,a,i5,a,i6,i6,i6)') "kobs = ", kobs(i)," intobs = ",intobs(i)," neighbours = ",neighbour_nodes_obs(1, i),neighbour_nodes_obs(2, i),neighbour_nodes_obs(3, i)
-         call mess(LEVEL_WARN, msgbuf) 
+        
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
          if (kobs(i) > 0 .and. (intobs(i) == 0 .or. neighbour_nodes_obs(1, i) == 0)) then
-            if (intobs(i) /= 0 .and. neighbour_nodes_obs(1, i) == 0) then   
-               write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
-               call mess(LEVEL_WARN, msgbuf)
-            end if
+!            Message already displayed in m_obs_on_flowgeom 
+!            if (intobs(i) /= 0 .and. neighbour_nodes_obs(1, i) == 0 .and. time0 == tstart_user) then   
+!               write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
+!               call mess(LEVEL_WARN, msgbuf)
+!           end if
             ! Treat snapped stations as interpolated ones!
             neighbour_nodes_obs(1, i) = k
             neighbour_nodes_obs(2, i) = k
