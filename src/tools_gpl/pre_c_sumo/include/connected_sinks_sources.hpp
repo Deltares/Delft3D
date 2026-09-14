@@ -8,6 +8,9 @@
 
 namespace pre_c_sumo
 {
+    /* Maximum number of communicated constituents */
+    constexpr int max_number_of_consituents = 10;
+
     /**
      * @brief Error returned when we entounted a runtime problem.
      */
@@ -43,7 +46,7 @@ namespace pre_c_sumo
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
                        double source_y, double source_z_bottom, double source_z_top, double discharge,
-                       double momentum_magnitude_weighted, double momentum_direction);
+                       double momentum_magnitude_weighted, double momentum_direction, std::vector<double> consituents);
 
         /**
          * @anchor pre_c_sumo_connected_sink_sources_clear
@@ -81,17 +84,18 @@ namespace pre_c_sumo
 
     private:
         // attributes
-        std::vector<double> sink_x_vector;                      ///< X coordinates of sinks.
-        std::vector<double> sink_y_vector;                      ///< Y coordinates of sinks.
-        std::vector<double> sink_z_bottom_vector;               ///< Lowest z-boundary of sink extents.
-        std::vector<double> sink_z_top_vector;                  ///< Highest z-boundary of sink extents.
-        std::vector<double> source_x_vector;                    ///< X coordinates of sources.
-        std::vector<double> source_y_vector;                    ///< Y coordinates of sources.
-        std::vector<double> source_z_bottom_vector;             ///< Lowest z-boundary of source extents.
-        std::vector<double> source_z_top_vector;                ///< Highest z-boundary of source extents.
-        std::vector<double> discharge_vector;                   ///< Discharges [m³/s].
-        std::vector<double> momentum_magnitude_weighted_vector; ///< Weighted momentum magnitude [kg m/s].
-        std::vector<double> momentum_direction_vector;          ///< Momentum direction [rad].
+        std::vector<double> sink_x_vector;                                   ///< X coordinates of sinks.
+        std::vector<double> sink_y_vector;                                   ///< Y coordinates of sinks.
+        std::vector<double> sink_z_bottom_vector;                            ///< Lowest z-boundary of sink extents.
+        std::vector<double> sink_z_top_vector;                               ///< Highest z-boundary of sink extents.
+        std::vector<double> source_x_vector;                                 ///< X coordinates of sources.
+        std::vector<double> source_y_vector;                                 ///< Y coordinates of sources.
+        std::vector<double> source_z_bottom_vector;                          ///< Lowest z-boundary of source extents.
+        std::vector<double> source_z_top_vector;                             ///< Highest z-boundary of source extents.
+        std::vector<double> discharge_vector;                                ///< Discharges [m³/s].
+        std::vector<double> momentum_magnitude_weighted_vector;              ///< Weighted momentum magnitude [kg m/s].
+        std::vector<double> momentum_direction_vector;                       ///< Momentum direction [rad].
+        std::vector<double> constituents_vectors[max_number_of_consituents]; ///< Consituents
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
 
