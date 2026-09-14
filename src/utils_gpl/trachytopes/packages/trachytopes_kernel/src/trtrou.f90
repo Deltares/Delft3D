@@ -31,11 +31,27 @@ module m_trtrou
 !
 ! functions and subroutines
 !
+use precision, only: fp
 implicit none 
 
+private
 public trtrou
 public chktra
 public chktrt
+
+type :: trachy_vegetation_parameters
+   integer :: code
+   real(fp) :: vheigh, densit, drag, uchistem, expchistem
+   real(fp) :: densitfoliage, dragfoliage, uchifoliage, expchifoliage
+   real(fp) :: cbed, karmanalpha, blockage_factor, blockage_power
+   logical :: iterate_uc, use_foliage, accumulate_lambda
+end type trachy_vegetation_parameters
+
+type :: trachy_vegetation_result
+   real(fp) :: ch_icode, phi, lambda_factor, uc
+   integer :: iteration_count
+   logical :: converged
+end type trachy_vegetation_result
 
 contains
     
@@ -265,6 +281,9 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     character(12), dimension(2) :: cnum
     character(132)              :: cmsg
     character(256)              :: errmsg
+   type(trachy_vegetation_parameters) :: vegetation_parameters
+   type(trachy_vegetation_result) :: vegetation_result
+   logical :: vegetation_error
     
 !
 !
@@ -860,7 +879,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                 kn_icode = max(rktra, 0.50_fp)
              endif
              rgh_geom = area_rgh
-          elseif (ircod==153 .or. ircod==154) then
+          elseif (ircod==153) then
              !
              ! Baptist vegetation formulation
              !
@@ -878,7 +897,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              !
              if (vheigh < eps) then
                 rgh_geom = skip_rgh
-             elseif (ircod==153) then
+             else
+             !elseif (ircod==153) then
                 if (depth>vheigh) then
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*vheigh)/(2.0_fp*ag)) &
@@ -887,322 +907,32 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*depth)/(2.0_fp*ag))
                 endif
-             else
-                hk     = max(1.0_fp,depth/vheigh)
-                ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-                         & sqrt(1.0_fp+(drag*densit*vheigh*cbed**2)/(2.0_fp*ag))
-                !call n_and_m_to_nm(nc, mc, nmc, gdp)
-                rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & drag*densit/hk*(cbed*cbed)/(ch_icode*ch_icode)
+            !  else
+            !     hk     = max(1.0_fp,depth/vheigh)
+            !     ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
+            !              & sqrt(1.0_fp+(drag*densit*vheigh*cbed**2)/(2.0_fp*ag))
+            !     !call n_and_m_to_nm(nc, mc, nmc, gdp)
+            !     rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
+            !              & drag*densit/hk*(cbed*cbed)/(ch_icode*ch_icode)
              endif
              !
              rgh_type = ch_type
              rgh_geom = area_rgh
-          elseif (ircod==155) then
-             !
-             ! Vastila & Jarvela (2017) formula 
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             densitfoliage  = rttdef(itrt, 6)
-             dragfoliage    = rttdef(itrt, 7)
-             uchifoliage    = rttdef(itrt, 8)
-             expchifoliage  = rttdef(itrt, 9)
-             cbed           = rttdef(itrt, 10)
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp, depth/vheigh)
-             
-             ! Calculate roughness 
-             if (umag > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer), but
-                ! uc depends on phi. We approximate uc=u2dh
-                ! Dimensionless vegetation parameter with uc = u2dh
-                phi = drag*densit*(umag/uchistem)**expchistem + &
-                    & densitfoliage*dragfoliage*(u2dh/uchifoliage)**expchifoliage
-                    
-                ! Effective bed friction 
-                ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-                         & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                                    
-                ! Lambda 
-                rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode)
-                
-             else
-                 ! zero umag will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
+          elseif (ircod>=154 .and. ircod<=162 .and. ircod/=157) then
+             call decode_vegetation_parameters(ircod, rttdef(itrt, :), vegetation_parameters, vegetation_error)
+             if (vegetation_error) then
+                errmsg = 'Trachytopes: Invalid parameters for vegetation roughness formulation.'
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
+             call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, ag, vonkar, vegetation_result)
+             ch_icode = vegetation_result%ch_icode
+             if (vegetation_parameters%accumulate_lambda) then
+                rttfu(nm, 1) = rttfu(nm, 1) + fraccu*vegetation_result%lambda_factor
              endif
              rgh_type = ch_type
              rgh_geom = area_rgh
-        elseif (ircod==156) then
-             !
-             ! Jarvela (2014) formula
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             cbed           = rttdef(itrt, 6)
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp,depth/vheigh)
-             
-             ! Calculate roughness
-             if (umag > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer), but
-                ! uc depends on phi. We approximate uc=u2dh
-                ! Dimensionless vegetation parameter with uc = u2dh
-                phi = drag*densit*(umag/uchistem)**expchistem
-                
-                ! Effective bed friction 
-                ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-                         & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                
-                ! Lambda 
-                rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode) 
-             else
-                 ! zero umag will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
-             endif
-             rgh_type = ch_type
-             rgh_geom = area_rgh
-         elseif (ircod==158) then
-             !
-             ! Vastila & Jarvela (2017) formula with  u_c 
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             densitfoliage  = rttdef(itrt, 6)
-             dragfoliage    = rttdef(itrt, 7)
-             uchifoliage    = rttdef(itrt, 8)
-             expchifoliage  = rttdef(itrt, 9)
-             cbed           = rttdef(itrt, 10)
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp, depth/vheigh)
-             
-             ! Calculate roughness 
-             if (u2dh > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer)
-                uc = u2dh ! first approximation
-                
-                iuc = 1
-                iuc_err = 1
-                iuc_max = 10
-                iuc_tol = 1e-3
-                
-                do while (iuc < iuc_max .AND. iuc_err > iuc_tol)
-                    iuc = iuc + 1
-                    
-                    ! Vegetation parameter
-                    phi = drag*densit*(uc/uchistem)**expchistem + &
-                        & densitfoliage*dragfoliage*(uc/uchifoliage)**expchifoliage
-                    
-                    ! Effective bed friction 
-                    ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-                             & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                    
-                    ! update uc
-                    iuc_err = abs(uc - u2dh * cbed / ch_icode)
-                    uc =  u2dh * cbed / ch_icode
-                enddo
-                
-                ! Lambda 
-                rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode)
-                
-             else
-                 ! zero umag will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
-             endif
-             rgh_type = ch_type
-             rgh_geom = area_rgh
-         elseif (ircod==159) then
-             !
-             ! Jarvela (2014) formula with u_c
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             cbed           = rttdef(itrt, 6)
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp,depth/vheigh)
-             
-             ! Calculate roughness
-             if (u2dh > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer)
-                uc = u2dh ! first approximation
-                
-                iuc = 1
-                iuc_err = 1
-                iuc_max = 10
-                iuc_tol = 1e-3
-                
-                do while (iuc < iuc_max .AND. iuc_err > iuc_tol)
-                    iuc = iuc + 1
-                    
-                    ! Vegetation parameter
-                    phi = drag*densit*(uc/uchistem)**expchistem
-                    
-                    ! Effective bed friction 
-                    ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-                         & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                    
-                    ! update uc
-                    iuc_err = abs(uc - u2dh * cbed / ch_icode)
-                    uc =  u2dh * cbed / ch_icode
-                enddo
-                    
-                ! Lambda 
-                    rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode) 
-                
-             else
-                 ! zero u2dh will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
-             endif
-             rgh_type = ch_type
-             rgh_geom = area_rgh 
-        
-        elseif ((ircod==160).or.(ircod==162)) then
-             !
-             ! Vastila & Jarvela (2017) formula with  u_c and alpha*kappa
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             densitfoliage  = rttdef(itrt, 6)
-             dragfoliage    = rttdef(itrt, 7)
-             uchifoliage    = rttdef(itrt, 8)
-             expchifoliage  = rttdef(itrt, 9)
-             cbed           = rttdef(itrt, 10)
-             karmanalpha    = rttdef(itrt, 11)
-             if (ircod==162) then
-                 blockage_factor= rttdef(itrt, 12)
-                 blockage_power = rttdef(itrt, 13)
-             else
-                 blockage_factor = 1.0_fp
-                 blockage_power = 1.0_fp
-             endif
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp, depth/vheigh)
-             
-             ! Calculate roughness 
-             if (u2dh > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer)
-                uc = u2dh ! first approximation
-                
-                iuc = 1
-                iuc_err = 1
-                iuc_max = 10
-                iuc_tol = 1e-3
-                
-                do while (iuc < iuc_max .AND. iuc_err > iuc_tol)
-                    iuc = iuc + 1
-                    
-                    ! Vegetation parameter
-                    !phi = drag*densit*(uc/uchistem)**expchistem + &
-                    !                        & densitfoliage*dragfoliage*(uc/uchifoliage)**expchifoliage
-                    phi = drag*densit*(uc/uchistem)**expchistem + &
-                        & densitfoliage*dragfoliage*(uc/uchifoliage)**expchifoliage*blockage_factor**blockage_power
-                    
-                    ! Effective bed friction 
-                    ch_icode = cbed + sqrt(ag)/(karmanalpha*vonkar)*log(hk)* &
-                             & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                    
-                    ! update uc
-                    iuc_err = abs(uc - u2dh * cbed / ch_icode)
-                    uc =  u2dh * cbed / ch_icode
-                enddo
-                
-                ! Lambda 
-                rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode)
-                
-             else
-                 ! zero umag will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
-             endif
-             rgh_type = ch_type
-             rgh_geom = area_rgh
-         elseif (ircod==161) then
-             !
-             ! Jarvela (2014) formula with u_c & alpha*karman
-             !
-             ! input parameters
-             vheigh         = rttdef(itrt, 1)
-             densit         = rttdef(itrt, 2)
-             drag           = rttdef(itrt, 3)
-             uchistem       = rttdef(itrt, 4)
-             expchistem     = rttdef(itrt, 5)
-             cbed           = rttdef(itrt, 6)
-             karmanalpha    = rttdef(itrt, 7)
-             
-             ! Relative vegetation height
-             hk     = max(1.0_fp,depth/vheigh)
-             
-             ! Calculate roughness
-             if (u2dh > 0) then 
-                ! Phi is a function of uc (flow velocity in vegetation layer)
-                uc = u2dh ! first approximation
-                
-                iuc = 1
-                iuc_err = 1
-                iuc_max = 10
-                iuc_tol = 1e-3
-                
-                do while (iuc < iuc_max .AND. iuc_err > iuc_tol)
-                    iuc = iuc + 1
-                    
-                    ! Vegetation parameter
-                    phi = drag*densit*(uc/uchistem)**expchistem
-                    
-                    ! Effective bed friction 
-                    ch_icode = cbed + sqrt(ag)/(karmanalpha*vonkar)*log(hk)* &
-                         & sqrt(1.0_fp+(phi*cbed**2)/(2.0_fp*ag))
-                    
-                    ! update uc
-                    iuc_err = abs(uc - u2dh * cbed / ch_icode)
-                    uc =  u2dh * cbed / ch_icode
-                enddo
-                    
-                ! Lambda 
-                    rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-                         & phi / depth * (cbed*cbed)/(ch_icode*ch_icode) 
-                
-             else
-                 ! zero u2dh will through dividebyzero error (since expchi are expected to be negative)
-                 ! so for zero velocities, use cbed instead
-                 ch_icode = cbed
-             endif
-             rgh_type = ch_type
-             rgh_geom = area_rgh 
-             
           elseif (ircod==201) then
              !
              ! Get coefficients for hedges
@@ -1332,6 +1062,176 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     ! close (luntmp)
 
 end subroutine trtrou
+
+subroutine decode_vegetation_parameters(code, parameters, formulation, error)
+   integer, intent(in) :: code
+   real(fp), dimension(:), intent(in) :: parameters
+   type(trachy_vegetation_parameters), intent(out) :: formulation
+   logical, intent(out) :: error
+
+   formulation%code = code
+   formulation%vheigh = 0.0_fp
+   formulation%densit = 0.0_fp
+   formulation%drag = 0.0_fp
+   formulation%uchistem = 1.0_fp
+   formulation%expchistem = 0.0_fp
+   formulation%densitfoliage = 0.0_fp
+   formulation%dragfoliage = 0.0_fp
+   formulation%uchifoliage = 1.0_fp
+   formulation%expchifoliage = 0.0_fp
+   formulation%cbed = 0.0_fp
+   formulation%karmanalpha = 1.0_fp
+   formulation%blockage_factor = 1.0_fp
+   formulation%blockage_power = 1.0_fp
+   formulation%iterate_uc = .false.
+   formulation%use_foliage = .false.
+   formulation%accumulate_lambda = .false.
+   error = .false.
+
+   select case (code)
+   case (154)
+      if (size(parameters) < 4) then
+         error = .true.
+         return
+      endif
+      formulation%vheigh = parameters(1)
+      formulation%densit = parameters(2)
+      formulation%drag = parameters(3)
+      formulation%cbed = parameters(4)
+      formulation%accumulate_lambda = .true.
+   case (155, 158, 160, 162)
+      if (size(parameters) < 10) then
+         error = .true.
+         return
+      endif
+      formulation%vheigh = parameters(1)
+      formulation%densit = parameters(2)
+      formulation%drag = parameters(3)
+      formulation%uchistem = parameters(4)
+      formulation%expchistem = parameters(5)
+      formulation%densitfoliage = parameters(6)
+      formulation%dragfoliage = parameters(7)
+      formulation%uchifoliage = parameters(8)
+      formulation%expchifoliage = parameters(9)
+      formulation%cbed = parameters(10)
+      formulation%use_foliage = .true.
+      formulation%accumulate_lambda = .true.
+      formulation%iterate_uc = code /= 155
+      if (code == 160 .or. code == 162) then
+         if (size(parameters) < 11) then
+            error = .true.
+            return
+         endif
+         formulation%karmanalpha = parameters(11)
+      endif
+      if (code == 162) then
+         if (size(parameters) < 13) then
+            error = .true.
+            return
+         endif
+         formulation%blockage_factor = parameters(12)
+         formulation%blockage_power = parameters(13)
+      endif
+   case (156, 159, 161)
+      if (size(parameters) < 6) then
+         error = .true.
+         return
+      endif
+      formulation%vheigh = parameters(1)
+      formulation%densit = parameters(2)
+      formulation%drag = parameters(3)
+      formulation%uchistem = parameters(4)
+      formulation%expchistem = parameters(5)
+      formulation%cbed = parameters(6)
+      formulation%accumulate_lambda = .true.
+      formulation%iterate_uc = code /= 156
+      if (code == 161) then
+         if (size(parameters) < 7) then
+            error = .true.
+            return
+         endif
+         formulation%karmanalpha = parameters(7)
+      endif
+   case default
+      error = .true.
+   end select
+end subroutine decode_vegetation_parameters
+
+subroutine evaluate_vegetation(formulation, depth, u2dh, umag, ag, vonkar, result)
+   type(trachy_vegetation_parameters), intent(in) :: formulation
+   real(fp), intent(in) :: depth, u2dh, umag, ag, vonkar
+   type(trachy_vegetation_result), intent(out) :: result
+   real(fp) :: hk, iuc_err, velocity
+   real(fp), parameter :: iuc_tol = 1.0e-3_fp
+   integer :: iuc
+
+   result%ch_icode = formulation%cbed
+   result%phi = 0.0_fp
+   result%lambda_factor = 0.0_fp
+   result%uc = u2dh
+   result%iteration_count = 0
+   result%converged = .true.
+   hk = max(1.0_fp, depth/formulation%vheigh)
+
+   if (formulation%code == 154) then
+      result%phi = formulation%drag*formulation%densit*formulation%vheigh
+      result%ch_icode = formulation%cbed + sqrt(ag)/vonkar*log(hk) * &
+         & sqrt(1.0_fp + result%phi*formulation%cbed**2/(2.0_fp*ag))
+      result%lambda_factor = formulation%drag*formulation%densit/hk * &
+         & formulation%cbed**2/result%ch_icode**2
+      return
+   endif
+
+   if (formulation%iterate_uc) then
+      if (u2dh <= 0.0_fp) return
+      iuc = 1
+      iuc_err = 1.0_fp
+      do while (iuc < 10 .and. iuc_err > iuc_tol)
+         iuc = iuc + 1
+         call compute_vegetation_phi(formulation, result%uc, result%phi)
+         call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
+         iuc_err = abs(result%uc - u2dh*formulation%cbed/result%ch_icode)
+         result%uc = u2dh*formulation%cbed/result%ch_icode
+      enddo
+      result%iteration_count = iuc
+      result%converged = iuc_err <= iuc_tol
+   else
+      if (umag <= 0.0_fp) return
+      velocity = umag
+      call compute_vegetation_phi(formulation, velocity, result%phi)
+      if (formulation%use_foliage) then
+         result%phi = formulation%drag*formulation%densit*(umag/formulation%uchistem)**formulation%expchistem + &
+            & formulation%densitfoliage*formulation%dragfoliage*(u2dh/formulation%uchifoliage)**formulation%expchifoliage
+      endif
+      call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
+      result%iteration_count = 1
+   endif
+   result%lambda_factor = result%phi/depth * formulation%cbed**2/result%ch_icode**2
+end subroutine evaluate_vegetation
+
+subroutine compute_vegetation_phi(formulation, velocity, phi)
+   type(trachy_vegetation_parameters), intent(in) :: formulation
+   real(fp), intent(in) :: velocity
+   real(fp), intent(out) :: phi
+
+   phi = formulation%drag*formulation%densit*(velocity/formulation%uchistem)**formulation%expchistem
+   if (formulation%use_foliage) then
+      phi = phi + formulation%densitfoliage*formulation%dragfoliage * &
+         & (velocity/formulation%uchifoliage)**formulation%expchifoliage * &
+         & formulation%blockage_factor**formulation%blockage_power
+   endif
+end subroutine compute_vegetation_phi
+
+subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
+   type(trachy_vegetation_parameters), intent(in) :: formulation
+   real(fp), intent(in) :: depth, phi, ag, vonkar
+   real(fp), intent(out) :: ch_icode
+   real(fp) :: hk
+
+   hk = max(1.0_fp, depth/formulation%vheigh)
+   ch_icode = formulation%cbed + sqrt(ag)/(formulation%karmanalpha*vonkar)*log(hk) * &
+      & sqrt(1.0_fp + phi*formulation%cbed**2/(2.0_fp*ag))
+end subroutine compute_vegetation_chezy
 
 !> helper routine to update trachytope definitions in case of discharge or water level dependent roughnesses
 subroutine update_rttdef(rttdef, total, crs_obs, table_q_zs, rttdef_q_zs, cross, slope)
