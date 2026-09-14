@@ -48,7 +48,7 @@ digraph preCSUMOSwimlanes {
     l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
     l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
     l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertNFtoConnectedSinkSources", tooltip="Open convertNFtoConnectedSinkSources docs"];
-    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::sendSourcesSinksToFF", tooltip="Open write_to_precice docs"];
+    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open write_to_precice docs"];
     l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
     lane_left [label="", shape=point, width=0.01, height=0.01, style=invis];
 

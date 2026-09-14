@@ -36,9 +36,11 @@ C-SUMO, and the NF2FF/FF2NF exchange files.
 preCICE offers tools like config-visualizer which can be used to view the in use precice-config file.
 
 \section runtime_workflow Runtime Workflow
-The system overview above shows the participating components. The runtime workflow below shows the sequence inside preC-SUMO and where it interacts with preCICE and C-SUMO during initialization and each coupling cycle.
+The system overview above shows the participating components. The runtime workflow below gives a high-level view of the preC-SUMO processing sequence and interaction points.
 
-\dotfile preC_SUMO_Swimlanes.dot "preC-SUMO coupling workflow"
+\dotfile preC_SUMO_Core_Workflow.dot "preC-SUMO core workflow overview"
+
+For the detailed per-step swimlane view, see \ref pre_c_sumo::run in the API reference.
 
 \section code_map Code Entry Points
 Main implementation entry points:

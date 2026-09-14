@@ -39,7 +39,7 @@ digraph preCSUMOWorkflow {
 
     task6 [label="convertNFtoConnectedSinkSources()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Open conversion docs"];
 
-    task7 [label="write_to_precice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_to_precice", tooltip="Open write_to_precice docs"];
+   task7 [label="write_to_precice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open write_to_precice docs"];
 
     task1 -> task2;
     task2 -> task3;
