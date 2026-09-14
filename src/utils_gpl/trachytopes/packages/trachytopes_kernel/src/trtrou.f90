@@ -25,8 +25,8 @@ module m_trtrou
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id: trtrou.f90 140560 2021-12-24 11:09:51Z berend_kn $
-!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Aalto%20University/20210922_vegetation/src/utils_gpl/trachytopes/packages/trachytopes_kernel/src/trtrou.f90 $
+!  
+!  
 !-------------------------------------------------------------------------------
 !
 ! functions and subroutines
@@ -522,16 +522,15 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
           !
           ! Depth-average velocity (similar as in TAUBOT)
           !
-!          uuu  = uvdir(nc, mc, kmax)
-          umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2) !sqrt(uuu**2 + vvv**2)
+          umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2) 
           if (kmax==1) then
              u2dh = umag
           else
              z0rouL = rttacLin(nm)*z0rou(nm1)  + (1d0-rttacLin(nm))*z0rou(nm2)
              u2dh = (umag/depth*((depth + z0rouL)         &
-                  &              *log(1.0_fp + depth/max(z0rouL,1.0e-20_fp)) &
+                  &              *log(1.0_fp + depth/max(z0rouL,1.0e-5_fp)) &
                   &              - depth)                         ) &
-                  & /log(1.0_fp + (1.0_fp + sig(kmax))*depth/max(z0rouL,1.0e-20_fp))
+                  & /log(1.0_fp + (1.0_fp + sig(kmax))*depth/max(z0rouL,1.0e-5_fp))
           endif
        endif
        !
@@ -898,7 +897,6 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              if (vheigh < eps) then
                 rgh_geom = skip_rgh
              else
-             !elseif (ircod==153) then
                 if (depth>vheigh) then
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*vheigh)/(2.0_fp*ag)) &
@@ -907,13 +905,6 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*depth)/(2.0_fp*ag))
                 endif
-            !  else
-            !     hk     = max(1.0_fp,depth/vheigh)
-            !     ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
-            !              & sqrt(1.0_fp+(drag*densit*vheigh*cbed**2)/(2.0_fp*ag))
-            !     !call n_and_m_to_nm(nc, mc, nmc, gdp)
-            !     rttfu(nm, 1) = rttfu(nm, 1) + fraccu * &
-            !              & drag*densit/hk*(cbed*cbed)/(ch_icode*ch_icode)
              endif
              !
              rgh_type = ch_type
