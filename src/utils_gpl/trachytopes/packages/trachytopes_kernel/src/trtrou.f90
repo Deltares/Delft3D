@@ -1084,7 +1084,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              rgh_type = ch_type
              rgh_geom = area_rgh 
         
-        elseif (ircod==160) then
+        elseif ((ircod==160).or.(ircod==162)) then
              !
              ! Vastila & Jarvela (2017) formula with  u_c and alpha*kappa
              !
@@ -1100,8 +1100,13 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              expchifoliage  = rttdef(itrt, 9)
              cbed           = rttdef(itrt, 10)
              karmanalpha    = rttdef(itrt, 11)
-             blockage_factor= rttdef(itrt, 12)
-             blockage_power = rttdef(itrt, 13)
+             if (ircod==162) then
+                 blockage_factor= rttdef(itrt, 12)
+                 blockage_power = rttdef(itrt, 13)
+             else
+                 blockage_factor = 1.0_fp
+                 blockage_power = 1.0_fp
+             endif
              
              ! Relative vegetation height
              hk     = max(1.0_fp, depth/vheigh)

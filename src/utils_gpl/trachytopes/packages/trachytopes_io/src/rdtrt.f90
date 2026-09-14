@@ -513,8 +513,9 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     nropar(156) = 6
     nropar(158) = 10
     nropar(159) = 6
-    nropar(160) = 13
+    nropar(160) = 11
     nropar(161) = 7
+    nropar(162) = 13
     !
     ! 201-249: Vegetation roughness predictors (linear)
     !
