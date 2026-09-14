@@ -143,7 +143,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     real(fp), dimension(nmlb:nmub, 3)                                                :: cfrou
 !    real(fp), dimension(nmlb:nmub)              :: uvdir    (not used) 
 !    real(fp), dimension(nmlb:nmub), intent(in)  :: uvperp   (not used) 
-    real(fp), dimension(nmlbc:nmubc)                                                 :: umod  !,kmax) ?? WO
+    real(fp), dimension(nmlbc:nmubc)                                                 :: umod
     character(4)                                                                     :: rouflo
     logical                                                                          :: waqol
     real(fp)                                                            , intent(in) :: eps
