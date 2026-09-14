@@ -771,6 +771,7 @@ contains
       real(kind=dp), allocatable, dimension(:, :) :: sedshort_o
       real(kind=dp), allocatable, dimension(:, :) :: svfrac_o
       real(kind=dp), allocatable, dimension(:, :) :: preload_o
+      real(kind=dp), allocatable, dimension(:, :) :: depos_time_o
 
       real(kind=dp), allocatable, dimension(:, :, :) :: msed_o
 
@@ -887,12 +888,20 @@ contains
             allocate (svfrac_o(nlyr, ndx))
             svfrac_o = stmpar%morlyr%state%svfrac
 
-            if (stmpar%morlyr%settings%iconsolidate == CONSOL_TERZAGHI) then
+            if (associated(stmpar%morlyr%state%preload)) then
                if (allocated(preload_o)) then
                   deallocate (preload_o)
                end if
                allocate (preload_o(nlyr, ndx))
                preload_o = stmpar%morlyr%state%preload
+            end if
+
+            if (associated(stmpar%morlyr%state%depos_time)) then
+               if (allocated(depos_time_o)) then
+                  deallocate (depos_time_o)
+               end if
+               allocate (depos_time_o(nlyr, ndx))
+               depos_time_o = stmpar%morlyr%state%depos_time
             end if
 
          end if !underlayer==2
@@ -975,7 +984,12 @@ contains
 
             call reallocate_fill_manual_2(stmpar%morlyr%state%thlyr, thlyr_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
             call reallocate_fill_manual_2(stmpar%morlyr%state%svfrac, svfrac_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
-            call reallocate_fill_manual_2(stmpar%morlyr%state%preload, preload_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            if (associated(stmpar%morlyr%state%preload)) then
+               call reallocate_fill_manual_2(stmpar%morlyr%state%preload, preload_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            endif
+            if (associated(stmpar%morlyr%state%depos_time)) then
+               call reallocate_fill_manual_2(stmpar%morlyr%state%depos_time, depos_time_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            endif
 
             call reallocate_fill_manual_3(stmpar%morlyr%state%msed, msed_o, grd_fmmv_fmsv, ndx, ndx_mor, lsedtot, nlyr)
 
@@ -1007,6 +1021,10 @@ contains
 
          if (allocated(preload_o)) then
             deallocate (preload_o)
+         end if
+
+         if (allocated(depos_time_o)) then
+            deallocate (depos_time_o)
          end if
 
       end if
