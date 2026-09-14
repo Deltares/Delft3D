@@ -177,7 +177,7 @@ contains
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff', 'polygon', '1dfield')
+      case ('sample', 'geotiff', 'polygon', '1dfield', 'map')
          is_static = .true.
       case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
@@ -358,7 +358,7 @@ contains
       use m_string_utils, only: join_strings
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
-                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR
+                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
       character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
       integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
       character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
@@ -388,7 +388,7 @@ contains
          conflicts = .false. !.not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
       case (GEOTIFF)
          valid_extensions_array = [character(len=16) :: '.tif', '.tiff']
-      case (NCGRID)
+      case (NCGRID, NCFLOW)
          valid_extensions_array = [character(len=16) :: '.nc']
       case (INSIDE_POLYGON)
          valid_extensions_array = [character(len=16) :: '.pol', '.pli', '.pliz']
