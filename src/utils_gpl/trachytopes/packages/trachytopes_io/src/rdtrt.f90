@@ -1850,7 +1850,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ntrtobs = 0
     n_q     = 0
     n_zs    = 0
-    nroupa = 14
+    nroupa = 13
     do jdir = 1,nodir
        nttaru        => gdtrachy%dir(jdir)%nttaru
        nttaru = 0
