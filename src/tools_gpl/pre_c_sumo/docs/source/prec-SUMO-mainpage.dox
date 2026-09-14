@@ -25,7 +25,7 @@ For a developer-oriented overview without opening the implementation, read the d
 
 \section coupling_workflow Core Coupling
 The coupling between D-Flow FM and C-SUMO is handled using preCICE. The D-FlowFM has an adapter implementation which does the conversion between FM mesh/data to and from preCICE. 
-The preC-SUMO executable is a wrapper that interacts with preCICE and writes FF2NF file, which are concumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
+The preC-SUMO executable is a wrapper that interacts with preCICE, writes FF2NF files that are consumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
 
 \dotfile coupled_solvers_fm_csumo.dot "FM and preC-SUMO coupling overview"
 

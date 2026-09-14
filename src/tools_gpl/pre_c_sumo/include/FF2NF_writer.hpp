@@ -115,7 +115,7 @@ namespace pre_c_sumo
 
         /**
          * @anchor pre_c_sumo_ff2nf_writer_create_root_element
-         * @brief Creates the root `<COSUMO>` XML element.
+         * @brief Creates the root &lt;COSUMO&gt; XML element.
          * @param document XML document used to own the created root element.
          * @return Root XML node for the generated output.
          */

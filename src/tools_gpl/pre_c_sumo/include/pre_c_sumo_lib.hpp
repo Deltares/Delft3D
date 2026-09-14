@@ -128,7 +128,7 @@ namespace pre_c_sumo
         /**
          * @anchor pre_c_sumo_sources_sinks_set_coordinates_dimension
          * @brief Resizes the coordinate and ID vectors for a given number of entries.
-         * @param dimension Number of source/sink pairs to reserve capacity for.
+         * @param dimension Number of source/sink entries to allocate.
          */
         void setCoordinatesDimension(const std::size_t dimension)
         {
@@ -174,7 +174,7 @@ namespace pre_c_sumo
      *
      * The core sequence is: @ref pre_c_sumo_read_csumo_settings_file -> @ref pre_c_sumo_receive_ff_data ->
      * @ref pre_c_sumo_write_ff2nf -> @ref pre_c_sumo_wait_nf2ff -> @ref pre_c_sumo_read_nf2ff ->
-     * @ref pre_c_sumo_convert_nf_to_connected_sink_sources -> @ref pre_c_sumo_send_sources_sinks_to_ff.
+     * @ref pre_c_sumo_convert_nf_to_connected_sink_sources -> @ref pre_c_sumo_connected_sink_sources_write_to_precice.
      *
      * @param csumo_settings_file_name Path and filename of the C-SUMO configuration XML file.
      * @param precice_config_file_name Path and filename of the preCICE adapter configuration file.

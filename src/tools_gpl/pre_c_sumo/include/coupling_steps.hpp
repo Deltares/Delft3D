@@ -65,7 +65,7 @@ namespace pre_c_sumo
     struct Mesh
     {
         std::string name;                         ///< Mesh name as used in the preCICE configuration.
-        std::vector<double> coordinates;          ///< XYZ coordinates for each mesh node.
+        std::vector<double> coordinates;          ///< Interleaved coordinates in the mesh's active spatial dimensions.
         std::vector<int> vertex_ids;              ///< Vertex identifiers used by the coupled mesh.
         std::vector<DiffuserMapping> forward_map; ///< Mapping from diffuser entries to intake/ambient data.
         std::size_t number_of_nodes;              ///< Total number of mesh nodes.
@@ -119,8 +119,7 @@ namespace pre_c_sumo
      * @brief Wait until NF2FF files become available.
      *
      * For each diffuser configured in `csumo_settings` this will wait for
-     * the corresponding NF2FF file to appear. If `csumo_settings` contains
-     * a parse error, the function returns immediately without waiting.
+     * the corresponding NF2FF file to appear.
      *
      * Note: If any diffuser is configured, this function will wait
      *       10 seconds for file(s) to appear. If the time elapses, it will fail with error.
@@ -192,7 +191,7 @@ namespace pre_c_sumo
      *    This keeps the explicit source contribution independent from the entrainment-driven sink deltas.
      *
      * 5. Intakes are treated as sink-only withdrawals. When the intake flow rate is above the numerical cutoff,
-     *    each intake point contributes a negative discharge equal to
+     *    each intake point contributes a discharge magnitude equal to
      *    `intake_flow_rate * intake_weight / intake_weight_norm` and is added to the output as a sink entry
      *    without any source partner. If the NF2FF file has no intake points, the code falls back to the
      *    configured intake location from the C-SUMO settings when one is available.
