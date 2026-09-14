@@ -24,6 +24,13 @@ In practice the usual workflow is:
 The example case is located here:
 - <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/readme.md">Example 12: D-Flow FM / preC-SUMO</a>
 
+The graph below is best read as a data-channel inventory for the example configuration, not as the first design overview.
+If you are new to the coupling, start with the main page workflow diagram and then use this figure to confirm which meshes and data are exchanged in Example 12.
+The most important parts to inspect first are:
+- FM far-field meshes sent into preC-SUMO (\c fm_flow_cells and \c fm_flow_cells_3d),
+- the C-SUMO-side meshes used inside preC-SUMO (\c csumo_2d_nodes and \c csumo_3d_nodes),
+- the \c sources_sinks_nodes mesh used to send the converted NF2FF result back to FM.
+
 \dotfile preciceconfig_example12.dot "Example 12 preCICE Config"
 
 That example contains the configuration and launch scripts for both coupled workflows:
