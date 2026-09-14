@@ -43,10 +43,11 @@ namespace pre_c_sumo
          * @param discharge Discharge value [m³/s].
          * @param momentum_magnitude_weighted Weighted momentum magnitude.
          * @param momentum_direction Momentum direction [rad].
+         * @param constituents Constituents (maximum 10)
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
                        double source_y, double source_z_bottom, double source_z_top, double discharge,
-                       double momentum_magnitude_weighted, double momentum_direction, std::vector<double> consituents);
+                       double momentum_magnitude_weighted, double momentum_direction, std::vector<double> constituents);
 
         /**
          * @anchor pre_c_sumo_connected_sink_sources_clear
