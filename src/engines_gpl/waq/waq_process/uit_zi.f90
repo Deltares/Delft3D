@@ -21,18 +21,22 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-MODULE UITZICHT_DATA
+module m_uitzicht_spectrum
     use m_waq_precision
 
     !***********************************************************************
-    !     SPECTRALE GEGEVENS VAN 400 TOT 700 NM MET STAPPEN VAN 5 NM
+    !     spectrale gegevens van 400 tot 700 nm met stappen van 5 nm
     !***********************************************************************
     !
-    REAL(kind = dp), DIMENSION(61) :: AWATER, BWATER, CHLSPE, PLANCK
+    private
+    public :: num_spectrum, uit_zi
+
+    integer, parameter :: num_spectrum = 61
     !
-    !     SPECIFIEKE ABSORPTIE ALGEN
+    !     specifieke absorptie algen
     !
-    DATA CHLSPE / 0.685, 0.781, 0.828, 0.883, 0.913, &
+    real(kind = dp), dimension(num_spectrum) :: chlspe = &
+           [0.685, 0.781, 0.828, 0.883, 0.913, &
             0.939, 0.973, 1.001, 1.000, 0.971, &
             0.944, 0.928, 0.917, 0.902, 0.870, &
             0.839, 0.798, 0.773, 0.750, 0.717, &
@@ -44,10 +48,12 @@ MODULE UITZICHT_DATA
             0.299, 0.316, 0.328, 0.329, 0.337, &
             0.361, 0.397, 0.457, 0.529, 0.556, &
             0.534, 0.485, 0.411, 0.334, 0.270, &
-            0.215/
+            0.215]
     !
-    !     SPECTRALE VERDELING INVALLEND LICHT
-    DATA PLANCK / 0.18380, 0.18836, 0.19280, 0.19710, 0.20134, &
+    !     spectrale verdeling invallend licht
+    !
+    real(kind = dp), dimension(num_spectrum) :: planck = &
+           [0.18380, 0.18836, 0.19280, 0.19710, 0.20134, &
             0.20542, 0.20937, 0.21320, 0.21689, 0.22046, &
             0.22389, 0.22720, 0.23037, 0.23342, 0.23630, &
             0.23912, 0.24177, 0.24430, 0.24671, 0.24898, &
@@ -59,11 +65,12 @@ MODULE UITZICHT_DATA
             0.27209, 0.27189, 0.27163, 0.27130, 0.27094, &
             0.27050, 0.27004, 0.26950, 0.26894, 0.26833, &
             0.26767, 0.26697, 0.26620, 0.26545, 0.26464, &
-            0.26379/
+            0.26379]
     !
-    !     VERSTROOIING WATER
+    !     verstrooiing water
     !
-    DATA BWATER / 0.005290, 0.005025, 0.004776, 0.004543, 0.004323, &
+    real(kind = dp), dimension(num_spectrum) :: bwater = &
+           [0.005290, 0.005025, 0.004776, 0.004543, 0.004323, &
             0.004117, 0.003922, 0.003739, 0.003567, 0.003404, &
             0.003250, 0.003105, 0.002968, 0.002838, 0.002715, &
             0.002599, 0.002488, 0.002384, 0.002285, 0.002191, &
@@ -75,11 +82,12 @@ MODULE UITZICHT_DATA
             0.000833, 0.000806, 0.000780, 0.000755, 0.000731, &
             0.000708, 0.000686, 0.000664, 0.000644, 0.000624, &
             0.000605, 0.000587, 0.000569, 0.000552, 0.000536, &
-            0.00052/
+            0.00052]
     !
-    !     ABSORPTIE WATER
+    !     absorptie water
     !
-    DATA AWATER / 0.00576, 0.00617, 0.00669, 0.00727, 0.00790, &
+    real(kind = dp), dimension(num_spectrum) :: awater = &
+           [0.00576, 0.00617, 0.00669, 0.00727, 0.00790, &
             0.00854, 0.00918, 0.00980, 0.01039, 0.01093, &
             0.01144, 0.01193, 0.01241, 0.01293, 0.01353, &
             0.01426, 0.01520, 0.01645, 0.01810, 0.02032, &
@@ -91,288 +99,395 @@ MODULE UITZICHT_DATA
             0.31761, 0.31940, 0.32232, 0.32862, 0.33985, &
             0.35650, 0.37763, 0.40052, 0.42033, 0.43334, &
             0.44359, 0.45513, 0.47316, 0.50342, 0.55154, &
-            0.62200/
-END MODULE UITZICHT_DATA
+            0.62200]
 
-SUBROUTINE UIT_ZI (DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-        C_DET, HELHUM, TAU, CORCHL, CHLORO, &
-        DETRIT, GLOEIR, AH_380, SECCHI, D_1, &
-        EXTPAR, EXTP_D, DOSECC)
+contains
+
+subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
+        c_det, helhum, tau, corchl, chloro, &
+        detrit, gloeir, ah_380, secchi, d_1, &
+        extpar, extp_d, dosecc, spectrum, swspec,
+     &                    swkd)
     !>\file
-    !>       Transparency due to Chlorophyll, detritus, inorganics and humic accids
+    !>       transparency due to chlorophyll, detritus, inorganics and humic accids
 
     !***********************************************************************
-    !     SUBROUTINE UIT_ZI, GEBASEERD OP HET MODEL UITZICHT VAN
-    !     H. BUITEVELD, RIZA, POSTBUS 17, 8200 AA LELYSTAD (TEL 03200-70737)
+    !     subroutine uit_zi, gebaseerd op het model uitzicht van
+    !     h. buiteveld, riza, postbus 17, 8200 aa lelystad (tel 03200-70737)
     !
-    !     BEREKEND DOORZICHT EN EXTINKTIE OP BASIS VAN CHLOROFYL, DETRITUS
-    !     GLOEIREST, ABSORPTIE HUMUSZUREN BIJ 380 NM EN SPECTRA OM DE 5 NM
-    !     VAN DE ABSORPTIE EN VERSTROOIING VAN WATER, DE VERDELING DE
-    !     INVALLEND LICHT EN DE SPECIFIEKE SPECIFIEKE ABSORPTIE ALGEN
+    !     berekend doorzicht en extinktie op basis van chlorofyl, detritus
+    !     gloeirest, absorptie humuszuren bij 380 nm en spectra om de 5 nm
+    !     van de absorptie en verstrooiing van water, de verdeling de
+    !     invallend licht en de specifieke specifieke absorptie algen
     !
-    !     CHANGES IN THE MODULE:
-    !     DATE   AUTHOR          DESCRIPTION
+    !     changes in the module:
+    !     date   author          description
     !     ------ --------------- -------------------------------------------
-    !     971119 Jan van Beek    Extended Ascii characters verwijderd
-    !     970127 Rik Sonneveldt  In subroutine BEP_D beveiliging tegen CHLORO
-    !                            < 0 ingebouwd (op verzoek van Maarten Ouboter).
-    !     911125 Andre Hendriks  Code beter leesbaar gemaakt, en variabele-
+    !     971119 jan van beek    extended ascii characters verwijderd
+    !     970127 rik sonneveldt  in subroutine bep_d beveiliging tegen chloro
+    !                            < 0 ingebouwd (op verzoek van maarten ouboter).
+    !     911125 andre hendriks  code beter leesbaar gemaakt, en variabele-
     !                            namen langer dan 6 letters vervangen door korte
     !                            namen.
-    !     910926 WOLF MOOIJ      IMPLEMENTATION IN DELWAQ-BLOOM
-    !                            BELANGRIJKSTE VERANDERING: INPLAATS VAN
-    !                            TOTAAL ZWEVEND STOF WORDT NU DIRECT
-    !                            DE DETRITUS CONCENTRATIE INGELEZEN
+    !     910926 wolf mooij      implementation in delwaq-bloom
+    !                            belangrijkste verandering: inplaats van
+    !                            totaal zwevend stof wordt nu direct
+    !                            de detritus concentratie ingelezen
     !***********************************************************************
     !***********************************************************************
-    !     ARGUMENTS:
-    !     NAME   TYPE SIZE   I/O DESCRIPTION
+    !     arguments:
+    !     name   type size   i/o description
     !     ------ ---- ------ --- -------------------------------------------
-    !     ANGLE   R*8        IN  FUNCTION, DEFAULT constant = 30 x
-    !     AH_380  R*8        IN  PARAMETER: EXTINCTIE HUMUSZUREN (1/m)
-    !     CHLORO  R*8        IN  PARAMETER: CHLOROPHYL (mg/m3)
-    !     CORCHL  R*8        IN  CONSTANT, DEFAULT = 2.5
-    !     C_DET   R*8        IN  CONSTANT, DEFAULT = 0.026
-    !     C_GL1   R*8        IN  CONSTANT, DEFAULT = 0.73
-    !     C_GL2   R*8        IN  CONSTANT, DEFAULT = 1.0
-    !     DETRIT  R*8        IN  PARAMETER: GESUSPENDEERD DETRITUS (gDW/m3)
-    !     DIEP1   R*8        IN  CONSTANT, DEFAULT = 1.0 (m)
-    !     DIEP2   R*8        IN  CONSTANT, DEFAULT = 1.2 (m)
-    !     D_1     R*8        OUT DUMMY PARAMETER D 10% TRANSMIS 560 NM (m)
-    !     EXTPAR  R*8        OUT PARAMETER: EXTINCTIE OP 1M (1/m)
-    !     EXTP_D  R*8        OUT DUMMY PARAMETER EXTINCTIE OP D_1 (1/m)
-    !     GLOEIR  R*8        IN  PARAMETER: ANORGANISCH ZWEVEND STOF (gDW/m3)
-    !     HELHUM  R*8        IN  CONSTANT, DEFAULT = 0.014
-    !     SECCHI  R*8        OUT PARAMETER: DOORZICHT (m)
-    !     TAU     R*8        IN  CONSTANT, DEFAULT = 7.8
+    !     angle   r*8        in  function, default constant = 30 x
+    !     ah_380  r*8        in  parameter: extinctie humuszuren (1/m)
+    !     chloro  r*8        in  parameter: chlorophyl (mg/m3)
+    !     corchl  r*8        in  constant, default = 2.5
+    !     c_det   r*8        in  constant, default = 0.026
+    !     c_gl1   r*8        in  constant, default = 0.73
+    !     c_gl2   r*8        in  constant, default = 1.0
+    !     detrit  r*8        in  parameter: gesuspendeerd detritus (gdw/m3)
+    !     diep1   r*8        in  constant, default = 1.0 (m)
+    !     diep2   r*8        in  constant, default = 1.2 (m)
+    !     d_1     r*8        out dummy parameter d 10% transmis 560 nm (m)
+    !     extpar  r*8        out parameter: extinctie op 1m (1/m)
+    !     extp_d  r*8        out dummy parameter extinctie op d_1 (1/m)
+    !     gloeir  r*8        in  parameter: anorganisch zwevend stof (gdw/m3)
+    !     helhum  r*8        in  constant, default = 0.014
+    !     secchi  r*8        out parameter: doorzicht (m)
+    !     tau     r*8        in  constant, default = 7.8
     !***********************************************************************
     !***********************************************************************
-    !     COMMON VARIABLES:
-    !     NAME   TYPE SIZE   DESCRIPTION
+    !     common variables:
+    !     name   type size   description
     !     ------ ---- ------ -----------------------------------------------
-    !     AWATER  R*8 (61)   ABSORPTIE WATER
-    !     BWATER  R*8 (61)   VERSTROOING WATER
-    !     CHLSPE  R*8 (61)   SPECIFIEKE ABSORPTIE ALGEN
-    !     PLANCK  R*8 (61)   VERDELING INVALLEND LICHT
+    !     awater  r*8 (61)   absorptie water
+    !     bwater  r*8 (61)   verstrooing water
+    !     chlspe  r*8 (61)   specifieke absorptie algen
+    !     planck  r*8 (61)   verdeling invallend licht
     !***********************************************************************
     !***********************************************************************
-    !     LOCAL VARIABLES:
-    !     NAME   TYPE SIZE   DESCRIPTION
+    !     local variables:
+    !     name   type size   description
     !     ------ ---- ------ -----------------------------------------------
-    !     A       R*8
-    !     A_CHL   R*8
-    !     A_DET   R*8
-    !     A_HUM   R*8
-    !     B       R*8
-    !     B_CHL   R*8
-    !     B_GL    R*8
-    !     C_CHL   R*8
-    !     C_GL    R*8
-    !     C_MU    R*8
-    !     D_2     R*8
-    !     EXT_KI  R*8
-    !     I_550   I*8
-    !     LAMBDA  I*8
-    !     SOM_C   R*8
-    !     SOM_D1  R*8
-    !     SOM_D2  R*8
-    !     SOM_H   R*8
-    !     S_D1    R*8
-    !     S_D2    R*8
-    !     TELLER  I*8
-    !     ZW_STF  R*8
+    !     a       r*8
+    !     a_chl   r*8
+    !     a_det   r*8
+    !     a_hum   r*8
+    !     b       r*8
+    !     b_chl   r*8
+    !     b_gl    r*8
+    !     c_chl   r*8
+    !     c_gl    r*8
+    !     c_mu    r*8
+    !     d_2     r*8
+    !     ext_ki  r*8
+    !     i_550   i*8
+    !     lambda  i*8
+    !     som_c   r*8
+    !     som_d1  r*8
+    !     som_d2  r*8
+    !     som_h   r*8
+    !     s_d1    r*8
+    !     s_d2    r*8
+    !     teller  i*8
+    !     zw_stf  r*8
     !***********************************************************************
     !
-    !     include '..\inc\ioblck.inc'
-    USE UITZICHT_DATA
-    !
-    REAL(kind = dp) :: A, A_CHL, A_DET, A_HUM, AH_380, &
-            ANGLE, B, B_CHL, B_GL, &
-            C_CHL, C_DET, C_GL, C_GL1, C_GL2, &
-            C_MU, CHLORO, CORCHL, D_1, D_2, &
-            DETRIT, DIEP1, DIEP2, EXT_KI, EXTP_D, &
-            EXTPAR, GLOEIR, HELHUM, S_D1, S_D2, &
-            SECCHI, SOM_C, SOM_D1, SOM_D2, SOM_H, &
-            TAU, ZW_STF
-    INTEGER(kind = int_wp) :: I_550, LAMBDA, TELLER
-    LOGICAL DOSECC
-    !
-    IF (CHLORO >= 0.0 .OR. DETRIT >= 0.0 .OR. &
-            GLOEIR >= 0.0) THEN
-        C_MU = COS (ANGLE * 0.0174533)
-        IF (DOSECC) &
-                CALL BEP_D  (C_GL1, C_GL2, C_DET, HELHUM, CORCHL, &
-                        C_MU, CHLORO, DETRIT, GLOEIR, AH_380, &
-                        D_1, D_2)
-        I_550 = ((550 - 400) / 5) + 1
-        !
-        !        CHLOROFYL BUNDELVERZWAKKING
-        !
-        C_CHL = (0.058 + 0.018 * CHLORO) * CHLSPE (I_550)
-        C_CHL = (C_CHL + 0.12 * (CHLORO**0.63)) * CORCHL
-        SOM_D1 = 0.0
-        SOM_D2 = 0.0
-        S_D1 = 0.0
-        S_D2 = 0.0
-        SOM_C = 0.0
-        SOM_H = 0.0
-        DO TELLER = 1, 61
-            LAMBDA = 400 + (TELLER - 1) * 5
-            !
-            !           HUMUSZUREN ABOSORPTIE
-            !
-            A_HUM = AH_380 * EXP (-HELHUM * (LAMBDA - 380.0))
-            !
-            !           ALGEN ABSOROPTIE EN VERSTROOIING
-            !
-            IF (CHLORO < 0.000001) THEN
-                A_CHL = 0.0
-                B_CHL = 0.0
-            ELSE
-                A_CHL = (0.058 + 0.018 * CHLORO) * CHLSPE (TELLER) * &
-                        CORCHL
-                B_CHL = C_CHL - A_CHL
-            ENDIF
-            !
-            !           GLOEIREST EN DETRITUS
-            !
-            ZW_STF = GLOEIR + DETRIT
-            C_GL = C_GL1 * ((ZW_STF**C_GL2)) * (400.0 / LAMBDA)
-            A_DET = C_DET * DETRIT * (400.0 / LAMBDA)
-            B_GL = C_GL - A_DET
-            !
-            !           TOTAAL ABSORPTIE EN VERSTROOIING BIJ LAMBDA
-            !
-            A = AWATER (TELLER) + A_HUM + A_DET + A_CHL
-            B = BWATER (TELLER) + B_GL + B_CHL
-            !
-            !           EXTINKTIE BIJ LAMBDA
-            !
-            EXT_KI = 1 / C_MU * &
-                    SQRT (A * A + (0.425 * C_MU - 0.19) * A * B)
-            SOM_D1 = SOM_D1 + PLANCK (TELLER) * EXP (-EXT_KI * DIEP1)
-            SOM_D2 = SOM_D2 + PLANCK (TELLER) * EXP (-EXT_KI * DIEP2)
-            IF (DOSECC) THEN
-                S_D1 = S_D1 + PLANCK (TELLER) * EXP (-EXT_KI * D_1)
-                S_D2 = S_D2 + PLANCK (TELLER) * EXP (-EXT_KI * D_2)
-                SOM_H = SOM_H + PLANCK (TELLER) * EXP (-(A + B) * D_1)
-                SOM_C = SOM_C + PLANCK (TELLER) * EXP (-(A + B) * D_2)
-            ENDIF
-        end do
-        EXTPAR = (1.0 / (DIEP1 - DIEP2) * LOG (SOM_D2 / SOM_D1))
-        IF (DOSECC) THEN
-            EXTP_D = (1.0 / (D_1 - D_2) * LOG (S_D2 / S_D1))
-            SOM_C = (1.0 / (D_1 - D_2) * LOG (SOM_C / SOM_H))
-            SECCHI = TAU / (EXTP_D + SOM_C)
-        ELSE
-            SECCHI = -1.0
-        ENDIF
-    ENDIF
-    RETURN
-END
+    real(kind = dp) :: a, a_chl, a_det, a_hum, ah_380, &
+            angle, b, b_chl, b_gl, &
+            c_chl, c_det, c_gl, c_gl1, c_gl2, &
+            c_mu, chloro, corchl, d_1, d_2, &
+            detrit, diep1, diep2, ext_ki, extp_d, &
+            extpar, gloeir, helhum, s_d1, s_d2, &
+            secchi, som_c, som_d1, som_d2, som_h, &
+            tau, zw_stf
+    real(kind = dp) :: spectrum(:)
+    integer(kind = int_wp) :: i_550, lambda, teller
+    integer(kind = int_wp) :: dosecc, swkd
 
-SUBROUTINE BEP_D (C_GL1, C_GL2, C_DET, HELHUM, CORCHL, &
-        C_MU, CHLORO, DETRIT, GLOEIR, AH_380, &
-        D_1, D_2)
+    c_mu = cos (angle * 0.0174533)
+
+    if (dosecc) &
+            call bep_d  (c_gl1, c_gl2, c_det, helhum, corchl, &
+                    c_mu, chloro, detrit, gloeir, ah_380, &
+                    d_1, d_2)
+    i_550 = ((550 - 400) / 5) + 1
+    !
+    !        chlorofyl bundelverzwakking
+    !
+    c_chl = (0.058 + 0.018 * chloro) * chlspe (i_550)
+    c_chl = (c_chl + 0.12 * (chloro**0.63)) * corchl
+    som_d1 = 0.0
+    som_d2 = 0.0
+    s_d1 = 0.0
+    s_d2 = 0.0
+    som_c = 0.0
+    som_h = 0.0
+
+    do teller = 1,num_spectrum
+        lambda = 400 + (teller - 1) * 5
+        !
+        !           humuszuren abosorptie
+        !
+        a_hum = ah_380 * exp (-helhum * (lambda - 380.0))
+        !
+        !           algen absoroptie en verstrooiing
+        !
+        if (chloro < 0.000001) then
+            a_chl = 0.0
+            b_chl = 0.0
+        else
+            a_chl = (0.058 + 0.018 * chloro) * chlspe (teller) * &
+                    corchl
+            b_chl = c_chl - a_chl
+        endif
+        !
+        !           gloeirest en detritus
+        !
+        zw_stf = gloeir + detrit
+        c_gl = c_gl1 * ((zw_stf**c_gl2)) * (400.0 / lambda)
+        a_det = c_det * detrit * (400.0 / lambda)
+        b_gl = c_gl - a_det
+        !
+        !           totaal absorptie en verstrooiing bij lambda
+        !
+        a = awater (teller) + a_hum + a_det + a_chl
+        b = bwater (teller) + b_gl + b_chl
+
+        !
+        ! extinktie bij lambda
+        !
+        ! choose the calculation of the kd
+        !   0   = do not use uizicht
+        !   <>0 = use uitzicht
+        !   1: buiteveld z1%
+        !   2: buiteveld z10%
+        !   3: lee with zenith angle 30 eq 4  using 4x m
+        !   4: lee with zenith angle 30 eq 5  using 4x n
+        !   5: lee simplified eq 6 with 2 coeffs
+        !   6: nechad and ruddick 2010
+        !   7: nechad and ruddick 2010 reduced
+        !
+        select ( swkd ) then
+            case( 1 ) ! buiteveld z1%
+               ext_ki = 1.0 / c_mu * sqrt ( a**2 + (0.425 * c_mu - 0.19) * a * b)
+
+            case( 2 ) ! buiteveld z10%
+               ext_ki = 1.0 / c_mu * sqrt ( a**2 + (0.473 * c_mu - 0.218) * a * b)
+
+            case( 3 ) ! lee with zenith angle 30 eq 4  using 4x m
+               m0 = 1.108
+               m1 = 4.245
+               m2 = 0.526
+               m3 = 10.942
+               ! check if angle is correctly used
+               ext_ki = m0 * a + m1 * (1-m2*exp(-m3*a))*b
+
+            case( 4 ) ! lee with zenith angle 30 eq 5  using 4x n
+               m0 = 0.005
+               m1 = 4.18
+               m2 = 0.52
+               m3 = 10.8
+               ! check if angle is correctly used
+               ext_ki = (1 + m0 * angle) * a + m1 * (1-m2*exp(-m3*a))*b
+
+            case( 5 ) ! lee simplified eq 6 with 2 coeffs
+               m0 = 0.005
+               m4 = 3.47
+               ! check if angle is correctly used
+               ext_ki = (1 + m0 * angle) * a + m4 * b
+
+            case( 6 ) ! nechad and ruddick 2010
+               cc= 0.5 ! no actual cloudcover yet
+               anglepi = angle/360.0 * 2 * pi
+               m0 = 1.09 + 0.49 * cosh (anglepi)*cosh(0.7*cc)-0.56*(anglepi*cc)
+               m1=m0*m0*4.266-4.56*cosh(anglepi)*cosh(0.73*cc)+5.51*cosh(anglepi*cc)
+               m2 = m1
+               ext_ki = m0 * a + m1 * b - m2 * b*b/a
+
+            case( 7 ) ! nechad and ruddick 2010 reduced
+               m0 = 1.1
+               m4 = 4.5
+               m5 = -3.1
+               ext_ki = m0 * a + m4 * b + m5 * b*b/a
+
+            case default
+                ! no uitzicht
+        end select
+
+        sextdiep1 = spectrum(teller) * exp ( -ext_ki * diep1)
+
+        som_d1 = som_d1 + max(sextdiep1,1.e-30)
+        sextdiep2 = spectrum ( teller) * exp ( -ext_ki * diep2)
+        som_d2 = som_d2 + max(sextdiep2,1.e-30)
+
+
+        if ( dosecc >= 1 ) then
+            !switch bepaalt welke diepte wordt gebruikt............................
+            if ( dosecc >= 2 ) then ! secchi op basis van vaste diepte
+               s_d1   = s_d1   + spectrum ( teller) * exp ( -ext_ki * d_1)
+               s_d2   = s_d2   + spectrum ( teller) * exp ( -ext_ki * d_2)
+               som_h  = som_h  + spectrum ( teller) * exp ( -(a+b)  * d_1)
+               som_c  = som_c  + spectrum ( teller) * exp ( -(a+b)  * d_2)
+            else
+               s_d1   = s_d1   + spectrum ( teller) * exp ( -ext_ki * diep1)
+               s_d2   = s_d2   + spectrum ( teller) * exp ( -ext_ki * diep2)
+               som_h  = som_h  + spectrum ( teller) * exp ( -(a+b)  * diep1)
+               som_c  = som_c  + spectrum ( teller) * exp ( -(a+b)  * diep2)
+            endif
+        endif
+
+        !
+        ! restant van spectrum aan bodem van segment
+        ! skip if uitzicht in mode to calculate contribution of an individual oas (sw=0)
+        ! in that case provide spectrum based on actual composition (all oas) at top of segment
+        !
+        if (swspec .eq. 1) then
+            spectrum (teller) =sextdiep2
+        endif
+
+     enddo
+
+     !
+     ! at too small values of (sum of) spectral extinction (sextdiepx) abort the calculation
+     ! check for minimum size som_d1 and som_d2 at the two depth'
+     ! not sufficient to check their ratio!
+     !
+     if ( som_d2 > 1e-20 .and. som_d1 > 1e-20 ) then
+        extpar = 1.0 / ( diep1 - diep2) * log ( som_d2 / som_d1)
+     else
+        extpar = -1
+     endif
+
+
+     if ( dosecc >= 1 .and. extpar > -0.5 ) then
+         !
+         ! bepaal  de secchidiepte midden in segment (diep1,diep2) met lokale extpar
+         ! dit is een horizontaal zicht (secchih)
+         !
+         if ( dosecc >= 1 ) then ! secchi op basis van vaste diepte
+             extp_d = 1.0 / ( d_1   - d_2  ) * log ( s_d2   / s_d1  )
+             som_c  = 1.0 / ( d_1   - d_2  ) * log ( som_c  / som_h )
+             secchi = tau / ( extp_d + som_c)
+         else                      ! secchi op basis van lokale diepte in segment
+             extp_d = 1.0 / ( diep1   - diep2  ) * log ( s_d2   / s_d1  )
+             som_c  = 1.0 / ( diep1   - diep2  ) * log ( som_c  / som_h )
+             secchi = tau / ( extp_d + som_c)
+         endif
+     else
+         secchi = -1.0
+     endif
+
+end subroutine uit_zi
+
+subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
+        c_mu, chloro, detrit, gloeir, ah_380, &
+        d_1, d_2)
     !***********************************************************************
-    !     BEPAALD DIEPTE WAAR 10 % VAN HET LICHT OVER IS BIJ 550  NM
+    !     bepaalt diepte waar 10 % van het licht over is bij 550  nm
     !***********************************************************************
     !***********************************************************************
-    !     ARGUMENTS:
-    !     NAME   TYPE SIZE   I/O DESCRIPTION
+    !     arguments:
+    !     name   type size   i/o description
     !     ------ ---- ------ --- -------------------------------------------
-    !     AH_380  R*8        IN  PARAMETER: EXTINCTIE HUMUSZUREN (1/M)
-    !     CHLORO  R*8        IN  PARAMETER: CHLOROPHYL (fG/L)
-    !     CORCHL  R*8        IN  CONSTANT,  DEFAULT  =  2.5
-    !     C_DET   R*8        IN  CONSTANT,  DEFAULT  =  0.026
-    !     C_GL1   R*8        IN  CONSTANT,  DEFAULT  =  0.73
-    !     C_GL2   R*8        IN  CONSTANT,  DEFAULT  =  1.0
-    !     C_MU    R*8        IN  CONSTANT,  COSINUS VAN ANGLE (DEFAULT  =  30)
-    !     DETRIT  R*8        IN  PARAMETER: GESUSPENDEERD DETRITUS (MG/L)
-    !     D_1     R*8        OUT DUMMY PARAMETER D 10% TRANSMIS 560 NM (M)
-    !     D_2     R*8        OUT DUMMY PARAMETER D_1 + 0.1 (M)
-    !     GLOEIR  R*8        IN  PARAMETER: ANORGANISCH ZWEVEND STOF (MG/L)
-    !     HELHUM  R*8        IN  CONSTANT,  DEFAULT  =  0.014
+    !     ah_380  r*8        in  parameter: extinctie humuszuren (1/m)
+    !     chloro  r*8        in  parameter: chlorophyl (fg/l)
+    !     corchl  r*8        in  constant,  default  =  2.5
+    !     c_det   r*8        in  constant,  default  =  0.026
+    !     c_gl1   r*8        in  constant,  default  =  0.73
+    !     c_gl2   r*8        in  constant,  default  =  1.0
+    !     c_mu    r*8        in  constant,  cosinus van angle (default  =  30)
+    !     detrit  r*8        in  parameter: gesuspendeerd detritus (mg/l)
+    !     d_1     r*8        out dummy parameter d 10% transmis 560 nm (m)
+    !     d_2     r*8        out dummy parameter d_1 + 0.1 (m)
+    !     gloeir  r*8        in  parameter: anorganisch zwevend stof (mg/l)
+    !     helhum  r*8        in  constant,  default  =  0.014
     !***********************************************************************
     !***********************************************************************
-    !     COMMON VARIABLES:
-    !     NAME   TYPE SIZE   DESCRIPTION
+    !     common variables:
+    !     name   type size   description
     !     ------ ---- ------ -----------------------------------------------
-    !     AWATER  R*8 (61)   ABSORPTIE WATER
-    !     BWATER  R*8 (61)   VERSTROOING WATER
-    !     CHLSPE  R*8 (61)   SPECIFIEKE ABSORPTIE ALGEN
-    !     PLANCK  R*8 (61)   VERDELING INVALLEND LICHT
+    !     awater  r*8 (61)   absorptie water
+    !     bwater  r*8 (61)   verstrooing water
+    !     chlspe  r*8 (61)   specifieke absorptie algen
+    !     planck  r*8 (61)   verdeling invallend licht
     !***********************************************************************
     !***********************************************************************
-    !     LOCAL VARIABLES:
-    !     NAME   TYPE SIZE   DESCRIPTION
+    !     local variables:
+    !     name   type size   description
     !     ------ ---- ------ -----------------------------------------------
-    !     A      R*8
-    !     A_CHL  R*8
-    !     A_DET  R*8
-    !     A_HUM  R*8
-    !     B      R*8
-    !     B_CHL  R*8
-    !     B_GL   R*8
-    !     C_CHL  R*8
-    !     C_GL   R*8
-    !     EXT_KI R*8
-    !     I_550  I*8
-    !     LAMBDA I*8
-    !     TELLER I*8
-    !     ZW_STF R*8
+    !     a      r*8
+    !     a_chl  r*8
+    !     a_det  r*8
+    !     a_hum  r*8
+    !     b      r*8
+    !     b_chl  r*8
+    !     b_gl   r*8
+    !     c_chl  r*8
+    !     c_gl   r*8
+    !     ext_ki r*8
+    !     i_550  i*8
+    !     lambda i*8
+    !     teller i*8
+    !     zw_stf r*8
     !***********************************************************************
 
-    USE UITZICHT_DATA
+
+    real(kind = dp) :: a, a_chl, a_det, a_hum, ah_380, &
+            b, b_chl, b_gl, c_chl, c_det, &
+            c_gl, c_gl1, c_gl2, c_mu, chloro, &
+            corchl, d_1, d_2, detrit, ext_ki, &
+            gloeir, helhum, zw_stf
+    integer(kind = int_wp) :: i_550, lambda, teller
+
+    i_550 = ((550 - 400) / 5) + 1
+
     !
-    REAL(kind = dp) :: A, A_CHL, A_DET, A_HUM, AH_380, &
-            B, B_CHL, B_GL, C_CHL, C_DET, &
-            C_GL, C_GL1, C_GL2, C_MU, CHLORO, &
-            CORCHL, D_1, D_2, DETRIT, EXT_KI, &
-            GLOEIR, HELHUM, ZW_STF
-    INTEGER(kind = int_wp) :: I_550, LAMBDA, TELLER
+    !     beveiliging tegen negatieve waarde chloro (rs27jan97 voor maarten o.)
     !
-    I_550 = ((550 - 400) / 5) + 1
+    chloro = max(0.0_dp, chloro)
     !
-    !     Beveiliging tegen negatieve waarde CHLORO (RS27jan97 voor Maarten O.)
+    !     chlorofyl bundel verzwakking
     !
-    CHLORO = MAX(0.0_dp, CHLORO)
+    c_chl = (0.058 + 0.018 * chloro) * chlspe (i_550)
+    c_chl = (c_chl + 0.12 * (chloro**0.63)) * corchl
+    teller = ((560 - 400) / 5) + 1
+    lambda = 400 + (teller - 1) * 5
+
     !
-    !     CHLOROFYL BUNDEL VERZWAKKING
+    !     absorptie humuszuren
     !
-    C_CHL = (0.058 + 0.018 * CHLORO) * CHLSPE (I_550)
-    C_CHL = (C_CHL + 0.12 * (CHLORO**0.63)) * CORCHL
-    TELLER = ((560 - 400) / 5) + 1
-    LAMBDA = 400 + (TELLER - 1) * 5
+    a_hum = ah_380 * exp (-helhum * (lambda - 380))
+
     !
-    !     ABSORPTIE HUMUSZUREN
+    !     chlorofyl
     !
-    A_HUM = AH_380 * EXP (-HELHUM * (LAMBDA - 380))
+    if (chloro < 0.000001) then
+        a_chl = 0.0
+        b_chl = 0.0
+    else
+        a_chl = (0.058 + 0.018 * chloro) * chlspe (teller) * corchl
+        b_chl = c_chl - a_chl
+    endif
+
     !
-    !     CHLOROFYL
+    !     gloeirest en detritus
     !
-    IF (CHLORO < 0.000001) THEN
-        A_CHL = 0.0
-        B_CHL = 0.0
-    ELSE
-        A_CHL = (0.058 + 0.018 * CHLORO) * CHLSPE (TELLER) * CORCHL
-        B_CHL = C_CHL - A_CHL
-    ENDIF
+    zw_stf = gloeir + detrit
+    c_gl = c_gl1 * (zw_stf**c_gl2) * (400.0 / lambda)
+    a_det = c_det * detrit * (400.0 / lambda)
+    b_gl = c_gl - a_det
+    a = awater (teller) + a_hum + a_det + a_chl
+    b = bwater (teller) + b_gl + b_chl
+    ext_ki = 1 / c_mu * &
+            sqrt ((a * a + (0.425 * c_mu - 0.19) * a * b))
+
     !
-    !     GLOEIREST EN DETRITUS
+    !     diepte 10 % transmissie 560 nm
     !
-    ZW_STF = GLOEIR + DETRIT
-    C_GL = C_GL1 * (ZW_STF**C_GL2) * (400.0 / LAMBDA)
-    A_DET = C_DET * DETRIT * (400.0 / LAMBDA)
-    B_GL = C_GL - A_DET
-    A = AWATER (TELLER) + A_HUM + A_DET + A_CHL
-    B = BWATER (TELLER) + B_GL + B_CHL
-    EXT_KI = 1 / C_MU * &
-            SQRT ((A * A + (0.425 * C_MU - 0.19) * A * B))
-    !
-    !     DIEPTE 10 % TRANSMISSIE 560 NM
-    !
-    D_1 = 2.3 / EXT_KI
-    D_2 = D_1 + 0.1
-    RETURN
-END
+    d_1 = 2.3 / ext_ki
+    d_2 = d_1 + 0.1
+
+end subroutine bep_d
+
+end module m_uitzicht_spectrum

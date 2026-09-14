@@ -64,90 +64,105 @@ contains
         ! SECCHI  R*4 1 O secchi depth                                     [m]
         !
         !     Logical Units : -
-
+        !
         !     Modules called : -
-
+        !
         !     Name     Type   Library
         !     ------   -----  ------------
         !
-        IMPLICIT REAL (A-H, J-Z)
-        !
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(23), INCREM(23), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        INTEGER(kind = int_wp) :: IP(23)
-        INTEGER(kind = int_wp) :: IFLUX, ISEG
-        REAL(kind = real_wp) :: AH_380, EXT, PAC, SECCH, AIM1, AIM2, AIM3, &
-                POC1, POC2, POC3, POC4, CHLORP, DIEP1, DIEP2, &
-                CORCHL, C_DET, C_GL1, C_GL2, HELHUM, TAU, ANGLE, &
-                DETCDM, GLOEIR, DETRIC, EXTIO, EXTP_D, D_1, SW_UITZ
-        !
-        IP = IPOINT
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                !
-                SW_UITZ = process_space_real(IP(11))
-                IF (NINT(SW_UITZ) == 0) THEN
-                    !
-                    !  Calculate secchi depth without UITZICHT
-                    !
-                    EXT = process_space_real(IP(1))
-                    PAC = process_space_real(IP(22))
-                    IF (EXT > 0.0) THEN
-                        SECCH = PAC / EXT
-                    ELSE
-                        SECCH = -999.
-                    ENDIF
-                    !
-                ELSE
-                    !
-                    !  Calculate secchi depth with UITZICHT
-                    !
-                    AIM1 = process_space_real(IP(2))
-                    AIM2 = process_space_real(IP(3))
-                    AIM3 = process_space_real(IP(4))
-                    POC1 = process_space_real(IP(5))
-                    POC2 = process_space_real(IP(6))
-                    POC3 = process_space_real(IP(7))
-                    POC4 = process_space_real(IP(8))
-                    AH_380 = process_space_real(IP(9))
-                    CHLORP = process_space_real(IP(10))
-                    DIEP1 = process_space_real(IP(12))
-                    DIEP2 = process_space_real(IP(13))
-                    CORCHL = process_space_real(IP(14))
-                    C_DET = process_space_real(IP(15))
-                    C_GL1 = process_space_real(IP(16))
-                    C_GL2 = process_space_real(IP(17))
-                    HELHUM = process_space_real(IP(18))
-                    TAU = process_space_real(IP(19))
-                    ANGLE = process_space_real(IP(20))
-                    DETCDM = process_space_real(IP(21))
-                    !
-                    DETRIC = MAX (0.0, DETCDM * (POC1 + POC2 + POC3 + POC4))
-                    GLOEIR = AIM1 + AIM2 + AIM3
-                    !
-                    !  Calculate total extinction with UITZICHT
-                    !
-                    CALL UIT_ZI(DIEP1, DIEP2, ANGLE, C_GL1, C_GL2, &
-                            C_DET, HELHUM, TAU, CORCHL, CHLORP, &
-                            DETRIC, GLOEIR, AH_380, SECCH, D_1, &
-                            EXTIO, EXTP_D, .TRUE.)
-                    !
-                ENDIF
-                !
-                process_space_real(IP(23)) = SECCH
-                !
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP = IP + INCREM
-            !
+        use m_uitzicht_spectrum
+
+        integer, parameter :: num_basic = 23
+        integer, parameter :: num_pmsa = num_basic + num_spectrum
+
+        real(kind = real_wp)   :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(num_pmsa), increm(num_pmsa)
+        integer(kind = int_wp) :: num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+
+        integer(kind = int_wp) :: ip(num_pmsa)
+        integer(kind = int_wp) :: iflux, iseg
+
+        real(kind = dp)        :: ah_380, ext, pac, secch, aim1, aim2, aim3, &
+                poc1, poc2, poc3, poc4, chlorp, diep1, diep2, &
+                corchl, c_det, c_gl1, c_gl2, helhum, tau, angle, &
+                detcdm, gloeir, detric, extio, extp_d, d_1
+        integer(kind = int_wp) ::  sw_uitz, sw_uit3, dosecc
+
+        real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+        real(kind = dp), dimension(num_spectrum) :: Spectrum
+
+        ip = ipoint
+        iflux = 0
+
+        dosecc = 0 ! Detail concerning the "representative" depth
+        swspec = 0
+
+        do i = 1,num_spectrum
+            DaylightPlanck(i) = pmsa(ipoint(num_basic+i))
         end do
-        !
-        RETURN
-        !
-    END
+
+        do iseg = 1, num_cells
+            if (btest(iknmrk(iseg), 0)) then
+                !
+                sw_uitz = process_space_real(ip(11))
+                if (nint(sw_uitz) == 0) then
+                    !
+                    !  calculate secchi depth without uitzicht
+                    !
+                    ext = process_space_real(ip(1))
+                    pac = process_space_real(ip(22))
+                    if (ext > 0.0) then
+                        secch = pac / ext
+                    else
+                        secch = -999.
+                    endif
+
+                else
+                    !
+                    !  calculate secchi depth with uitzicht
+                    !
+                    aim1 = process_space_real(ip(2))
+                    aim2 = process_space_real(ip(3))
+                    aim3 = process_space_real(ip(4))
+                    poc1 = process_space_real(ip(5))
+                    poc2 = process_space_real(ip(6))
+                    poc3 = process_space_real(ip(7))
+                    poc4 = process_space_real(ip(8))
+                    ah_380 = process_space_real(ip(9))
+                    chlorp = process_space_real(ip(10))
+                    diep1 = process_space_real(ip(12))
+                    diep2 = process_space_real(ip(13))
+                    corchl = process_space_real(ip(14))
+                    c_det = process_space_real(ip(15))
+                    c_gl1 = process_space_real(ip(16))
+                    c_gl2 = process_space_real(ip(17))
+                    helhum = process_space_real(ip(18))
+                    tau = process_space_real(ip(19))
+                    angle = process_space_real(ip(20))
+                    detcdm = process_space_real(ip(21))
+                    sw_uit3 = int(process_space_real(ip(23)))
+
+                    detric = max (0.0, detcdm * (poc1 + poc2 + poc3 + poc4))
+                    gloeir = aim1 + aim2 + aim3
+                    !
+                    !  calculate total extinction with uitzicht
+                    !
+                    call uit_zi(diep1, diep2, angle, c_gl1, c_gl2, &
+                            c_det, helhum, tau, corchl, chlorp, &
+                            detric, gloeir, ah_380, secch, d_1, &
+                            extio, extp_d, .dosecc, Spectrum, swspec, sw_uit3 )
+
+                endif
+
+                process_space_real(ip(23)) = secch
+
+            endif
+
+            iflux = iflux + noflux
+            ip = ip + increm
+
+        end do
+    end subroutine secchi
 
 end module m_secchi
