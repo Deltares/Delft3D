@@ -121,10 +121,19 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_file_type_extension_mismatch, test_validate_file_type_extension_mismatch,
    subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input
+      integer :: log_level
+      character(len=512) :: message
+
       call make_test_input(input, forcing_file_type='bcascii')
       input%interpolation_method = ' ' ! no explicit method either
+      threshold_abort = LEVEL_FATAL
+      call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
+
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when forcingFileType does not match input file extension")
+      call f90_expect_eq(GetMessageCount(), 1)
+      log_level = GetMessage_MH(1, message)
+      call f90_expect_true(index(message, 'Accepted extensions: .bc.') > 0)
    end subroutine test_validate_file_type_extension_mismatch
    !$f90tw)
 

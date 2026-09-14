@@ -215,6 +215,7 @@ contains
       logical :: target_mask_file_exists
       character(len=:), allocatable :: trimmed_file_name
       character(len=:), allocatable :: trimmed_group_name
+      character(len=:), allocatable :: valid_extensions
 
       is_successful = .false.
       trimmed_file_name = trim(file_name)
@@ -264,9 +265,9 @@ contains
             return
          end if
 
-         if (input%filetype == DATAVALUE) then
+         if (input%filetype == DATAVALUE) then ! if we are in this block datavalue is not present, so this is an error
             write (msgbuf, '(5a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
-               ']. dataFileType ''datavalue'' requires ''dataValue''.'
+               ']. dataFileType ''dataValue'' requires field ''dataValue'' to be present.'
             call err_flush()
             return
          end if
@@ -277,10 +278,10 @@ contains
             return
          end if
    
-         if (file_extension_conflicts_with_type(input%forcing_file, input%filetype)) then
-            write (msgbuf, '(9a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
+         if (file_extension_conflicts_with_type(input%forcing_file, input%filetype, valid_extensions)) then
+            write (msgbuf, '(11a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
-               trim(input%forcing_file_type), '''.'
+               trim(input%forcing_file_type), '''. Accepted extensions: ', valid_extensions, '.'
             call err_flush()
             return
          end if
@@ -353,16 +354,19 @@ contains
    end function validate_spatial_field_input
 
    !> Checks whether a forcing file extension is compatible with its file type.
-   function file_extension_conflicts_with_type(forcing_file, file_type) result(conflicts)
+   function file_extension_conflicts_with_type(forcing_file, file_type, valid_extensions) result(conflicts)
+      use m_string_utils, only: join_strings
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
                        SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR
       character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
       integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
+      character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
       logical :: conflicts !< `.true.` when the file extension is incompatible with file_type.
 
       integer :: dot_pos
       character(len=16) :: ext
+      character(len=:), allocatable, dimension(:) :: valid_extensions_array
 
       ext = ''
       dot_pos = index(trim(forcing_file), '.', back=.true.)
@@ -370,34 +374,38 @@ contains
          ext = str_tolower(trim(forcing_file(dot_pos:)))
       end if
 
+      conflicts = .true.
+      valid_extensions = ''
+
       select case (file_type)
       case (FIELD1D)
-         conflicts = ext /= '.ini'
+         valid_extensions_array = [character(len=16) :: '.ini']
       case (ARCINFO)
-         conflicts = .not. any(ext == [character(len=16) :: '.asc', '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', &
-                                                           '.ams', '.amr', '.sdu', '.aice', '.hice'])
+         conflicts = .false. !.not. any(ext == [character(len=16) :: '.asc', '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', '.amr', '.sdu', '.aice', '.hice'])
       case (BCASCII)
-         conflicts = ext /= '.bc'
+         valid_extensions_array = [character(len=16) :: '.bc']
       case (CURVI)
-         conflicts = .not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', &
-                                                           '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
+         conflicts = .false. !.not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
       case (GEOTIFF)
-         conflicts = .not. any(ext == [character(len=16) :: '.tif', '.tiff'])
+         valid_extensions_array = [character(len=16) :: '.tif', '.tiff']
       case (NCGRID)
-         conflicts = ext /= '.nc'
+         valid_extensions_array = [character(len=16) :: '.nc']
       case (INSIDE_POLYGON)
-         conflicts = .not. any(ext == [character(len=16) :: '.pol', '.pli', '.pliz'])
+         valid_extensions_array = [character(len=16) :: '.pol', '.pli', '.pliz']
       case (SAMPLE)
-         conflicts = .not. any(ext == [character(len=16) :: '.xyz', '.xyb'])
+         valid_extensions_array = [character(len=16) :: '.xyz', '.xyb']
       case (SPIDERWEB)
-         conflicts = ext /= '.spw'
+         valid_extensions_array = [character(len=16) :: '.spw']
       case (UNIFORM)
-         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.tem', '.wnd'])
+         valid_extensions_array = [character(len=16) :: '.tim', '.tem', '.wnd']
       case (UNIMAGDIR)
-         conflicts = .not. any(ext == [character(len=16) :: '.tim', '.wnd'])
-      case default
-         conflicts = .true.
+         valid_extensions_array = [character(len=16) :: '.tim', '.wnd']
       end select
+
+      if (allocated(valid_extensions_array)) then
+         conflicts = .not. any(ext == valid_extensions_array)
+         valid_extensions = join_strings(valid_extensions_array, ', ')
+      end if
 
    end function file_extension_conflicts_with_type
 
