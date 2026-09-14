@@ -963,7 +963,7 @@ contains
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
@@ -1022,6 +1022,14 @@ contains
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
       if (.not. res) then
          return
+      end if
+
+      if (input%is_static_field) then
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as an initial field from file '"// &
+                               trim(input%forcing_file)//"'.")
+      else
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as a time-dependent forcing from file '"// &
+                               trim(input%forcing_file)//"'.")
       end if
 
       associate (quantity => input%quantity, &
