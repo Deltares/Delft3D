@@ -1161,8 +1161,9 @@ subroutine evaluate_vegetation(formulation, depth, u2dh, umag, ag, vonkar, resul
    type(trachy_vegetation_parameters), intent(in) :: formulation
    real(fp), intent(in) :: depth, u2dh, umag, ag, vonkar
    type(trachy_vegetation_result), intent(out) :: result
+   integer, parameter :: IUC_MAX = 10
+   real(fp), parameter :: IUC_TOL = 1.0e-3_fp
    real(fp) :: hk, iuc_err, velocity
-   real(fp), parameter :: iuc_tol = 1.0e-3_fp
    integer :: iuc
 
    result%ch_icode = formulation%cbed
@@ -1186,15 +1187,15 @@ subroutine evaluate_vegetation(formulation, depth, u2dh, umag, ag, vonkar, resul
       if (u2dh <= 0.0_fp) return
       iuc = 1
       iuc_err = 1.0_fp
-      do while (iuc < 10 .and. iuc_err > iuc_tol)
-         iuc = iuc + 1
+      do iuc = 2, IUC_MAX
          call compute_vegetation_phi(formulation, result%uc, result%phi)
          call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
          iuc_err = abs(result%uc - u2dh*formulation%cbed/result%ch_icode)
          result%uc = u2dh*formulation%cbed/result%ch_icode
+         if (iuc_err <= IUC_TOL) exit
       enddo
-      result%iteration_count = iuc
-      result%converged = iuc_err <= iuc_tol
+      result%iteration_count = min(iuc, IUC_MAX)
+      result%converged = iuc_err <= IUC_TOL
    else
       if (umag <= 0.0_fp) return
       velocity = umag
