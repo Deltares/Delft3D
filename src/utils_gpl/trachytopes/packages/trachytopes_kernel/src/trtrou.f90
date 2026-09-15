@@ -40,22 +40,38 @@ public chktra
 public chktrt
 
 type :: trachy_vegetation_parameters
-   integer :: code
-   integer :: evaluation_mode
-   real(fp) :: vheigh, densit, drag, uchistem, expchistem
-   real(fp) :: densitfoliage, dragfoliage, uchifoliage, expchifoliage
-   real(fp) :: cbed, karman_alpha, blockage_factor, blockage_power
-   logical :: iterate_uc, use_foliage, apply_blockage, accumulate_lambda
+   integer :: code !< Vegetation formulation code.
+   integer :: evaluation_mode !< Evaluation mode for vegetation velocity.
+   real(fp) :: vheigh !< Vegetation height.
+   real(fp) :: densit !< Stem density.
+   real(fp) :: drag !< Stem drag coefficient.
+   real(fp) :: uchistem !< Reference stem velocity.
+   real(fp) :: expchistem !< Stem velocity exponent.
+   real(fp) :: densitfoliage !< Foliage density.
+   real(fp) :: dragfoliage !< Foliage drag coefficient.
+   real(fp) :: uchifoliage !< Reference foliage velocity.
+   real(fp) :: expchifoliage !< Foliage velocity exponent.
+   real(fp) :: cbed !< Bed Chezy coefficient.
+   real(fp) :: karman_alpha !< Von Karman coefficient correction.
+   real(fp) :: blockage_factor !< Foliage blockage factor.
+   real(fp) :: blockage_power !< Foliage blockage exponent.
+   logical :: iterate_uc !< Whether to iterate the vegetation velocity.
+   logical :: use_foliage !< Whether foliage drag is included.
+   logical :: apply_blockage !< Whether foliage blockage is applied.
+   logical :: accumulate_lambda !< Whether vegetation resistance contributes to lambda.
 end type trachy_vegetation_parameters
 
 type :: trachy_vegetation_result
-   real(fp) :: ch_icode, phi, lambda_factor, uc
-   integer :: iteration_count
-   logical :: converged
+   real(fp) :: ch_icode !< Vegetation Chezy coefficient.
+   real(fp) :: phi !< Vegetation resistance factor.
+   real(fp) :: lambda_factor !< Vegetation contribution to the friction factor.
+   real(fp) :: uc !< Computed vegetation velocity.
+   integer :: iteration_count !< Number of vegetation velocity iterations.
+   logical :: converged !< Whether the vegetation velocity iteration converged.
 end type trachy_vegetation_result
 
-integer, parameter :: VEGETATION_APPROXIMATE_VELOCITY = 0
-integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1
+integer, parameter :: VEGETATION_APPROXIMATE_VELOCITY = 0 !< Evaluate vegetation velocity without iteration.
+integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1 !< Iteratively evaluate vegetation velocity.
 
 contains
     
