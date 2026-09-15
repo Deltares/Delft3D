@@ -269,13 +269,13 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         !   7: nechad and ruddick 2010 reduced
         !
         select ( swkd ) then
-            case( 1 ) ! buiteveld z1%
+            case( 1 ) ! Buiteveld z1%
                ext_ki = 1.0 / c_mu * sqrt ( a**2 + (0.425 * c_mu - 0.19) * a * b)
 
-            case( 2 ) ! buiteveld z10%
+            case( 2 ) ! Buiteveld z10%
                ext_ki = 1.0 / c_mu * sqrt ( a**2 + (0.473 * c_mu - 0.218) * a * b)
 
-            case( 3 ) ! lee with zenith angle 30 eq 4  using 4x m
+            case( 3 ) ! Lee with zenith angle 30 eq 4  using 4x m
                m0 = 1.108
                m1 = 4.245
                m2 = 0.526
@@ -283,7 +283,7 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
                ! check if angle is correctly used
                ext_ki = m0 * a + m1 * (1-m2*exp(-m3*a))*b
 
-            case( 4 ) ! lee with zenith angle 30 eq 5  using 4x n
+            case( 4 ) ! Lee with zenith angle 30 eq 5  using 4x n
                m0 = 0.005
                m1 = 4.18
                m2 = 0.52
@@ -291,13 +291,13 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
                ! check if angle is correctly used
                ext_ki = (1 + m0 * angle) * a + m1 * (1-m2*exp(-m3*a))*b
 
-            case( 5 ) ! lee simplified eq 6 with 2 coeffs
+            case( 5 ) ! Lee simplified eq 6 with 2 coeffs
                m0 = 0.005
                m4 = 3.47
                ! check if angle is correctly used
                ext_ki = (1 + m0 * angle) * a + m4 * b
 
-            case( 6 ) ! nechad and ruddick 2010
+            case( 6 ) ! Nechad and Ruddick 2010
                cc= 0.5 ! no actual cloudcover yet
                anglepi = angle/360.0 * 2 * pi
                m0 = 1.09 + 0.49 * cosh (anglepi)*cosh(0.7*cc)-0.56*(anglepi*cc)
@@ -305,7 +305,7 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
                m2 = m1
                ext_ki = m0 * a + m1 * b - m2 * b*b/a
 
-            case( 7 ) ! nechad and ruddick 2010 reduced
+            case( 7 ) ! Nechad and Ruddick 2010 reduced
                m0 = 1.1
                m4 = 4.5
                m5 = -3.1
