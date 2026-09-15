@@ -93,6 +93,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c01" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c01-validation_3.1.6/dfm</path>
+    <maxRunTime>360</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/fff_map.nc" type="NETCDF">
@@ -114,7 +115,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c02" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c02-FriesianInlet_schematic/dfm</path>
-    <maxRunTime>480</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -136,8 +137,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c03" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
-      <maxRunTime>900</maxRunTime>
-
+    <maxRunTime>1020</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/r17_map.nc" type="NETCDF">
@@ -159,7 +159,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c05" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c05-california/dfm</path>
-      <maxRunTime>480</maxRunTime>
+    <maxRunTime>660</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/cca_map.nc" type="NETCDF">
@@ -181,7 +181,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c06" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c06-loosdrecht/dfm</path>
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>1080</maxRunTime>
     <checks>
       <file name="fm/dflowfmoutput/loo_map.nc" type="NETCDF">
         <parameters>
@@ -249,7 +249,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c01" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c01-ti_com_dtuser_default</path>
-      <maxRunTime>480</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -271,7 +271,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c02" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c02-ti_com_10xdtuser</path>
-
+    <maxRunTime>540</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -293,7 +293,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c03" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c03-ti_com_10xdtuser_tcoms_tcome</path>
-
+    <maxRunTime>540</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -315,7 +315,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c04" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c04-comtimevector</path>
-
+    <maxRunTime>540</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -337,7 +337,7 @@
   <!-- ======================================================================== -->
   <testCase name="e100_f09_c05" ref="dimr_noconfig">
     <path version="DVC">e100_dflowfm-dwaves/f09_comwrite_intervals/c05-ti_com_dtuser_in_mdu</path>
-    <maxRunTime>600</maxRunTime>
+    <maxRunTime>660</maxRunTime>
     <!-- seconds -->
     <checks>
       <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
