@@ -54,8 +54,8 @@ type :: trachy_vegetation_result
    logical :: converged
 end type trachy_vegetation_result
 
-integer, parameter :: vegetation_single_evaluation = 0
-integer, parameter :: vegetation_iterate_uc = 1
+integer, parameter :: VEGETATION_APPROXIMATE_VELOCITY = 0
+integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1
 
 contains
     
@@ -1065,7 +1065,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    logical, intent(out) :: error
 
    formulation%code = code
-   formulation%evaluation_mode = vegetation_single_evaluation
+   formulation%evaluation_mode = VEGETATION_APPROXIMATE_VELOCITY
    formulation%vheigh = 0.0_fp
    formulation%densit = 0.0_fp
    formulation%drag = 0.0_fp
@@ -1112,7 +1112,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
       formulation%cbed = parameters(10)
       formulation%use_foliage = .true.
       formulation%accumulate_lambda = .true.
-      if (code /= 155) formulation%evaluation_mode = vegetation_iterate_uc
+      if (code /= 155) formulation%evaluation_mode = VEGETATION_ITERATE_VELOCITY
       if (code == 160 .or. code == 162) then
          if (size(parameters) < 11) then
             error = .true.
@@ -1141,7 +1141,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
       formulation%expchistem = parameters(5)
       formulation%cbed = parameters(6)
       formulation%accumulate_lambda = .true.
-      if (code /= 156) formulation%evaluation_mode = vegetation_iterate_uc
+      if (code /= 156) formulation%evaluation_mode = VEGETATION_ITERATE_VELOCITY
       if (code == 161) then
          if (size(parameters) < 7) then
             error = .true.
@@ -1212,7 +1212,7 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
       return
    endif
 
-   if (formulation%evaluation_mode == vegetation_iterate_uc) then
+   if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
       if (uc_reference <= 0.0_fp) return
    else
       if (stem_velocity <= 0.0_fp) return
@@ -1221,7 +1221,7 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
 
    iuc_err = 1.0_fp
    do iuc = 2, IUC_MAX
-      if (formulation%evaluation_mode == vegetation_iterate_uc) then
+      if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
          stem_velocity_i = result%uc
          foliage_velocity_i = result%uc
       else
@@ -1231,12 +1231,12 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
       call compute_vegetation_phi(formulation, stem_velocity_i, foliage_velocity_i, apply_blockage, result%phi)
       call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
       result%iteration_count = iuc
-      if (formulation%evaluation_mode /= vegetation_iterate_uc) exit
+      if (formulation%evaluation_mode /= VEGETATION_ITERATE_VELOCITY) exit
       iuc_err = abs(result%uc - uc_reference*formulation%cbed/result%ch_icode)
       result%uc = uc_reference*formulation%cbed/result%ch_icode
       if (iuc_err <= IUC_TOL) exit
    enddo
-   if (formulation%evaluation_mode == vegetation_iterate_uc) then
+   if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
       result%converged = iuc_err <= IUC_TOL
    else
       result%iteration_count = 1
