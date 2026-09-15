@@ -90,8 +90,8 @@ module m_GlobalParameters
    integer, public, parameter              :: ST_MAX_TYPE      = 20 !< Max id of structure types. The preceding ids must be lower than or equal to this.
 
    ! Flow geometry / computational grid
-   integer, public, parameter              :: INDTP_1D      = 1  !< Type code for flow nodes that are 1D
-   integer, public, parameter              :: INDTP_2D      = 2  !< Type code for flow nodes that are 2D
-   integer, public, parameter              :: INDTP_ALL     = 3  !< Type code for flow nodes that are 1D or 2D
+   integer, public, parameter              :: INDTP_1D          = 1  !< Type code for flow nodes that are 1D
+   integer, public, parameter              :: INDTP_2D          = 2  !< Type code for flow nodes that are 2D  
+   integer, public, parameter              :: INDTP_ALL         = 3  !< Type code for flow nodes that are 1D or 2D
    
 end module m_GlobalParameters                                 
