@@ -971,6 +971,10 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
+      call prop_get(md_ptr, 'numerics', 'PETScKrylovSolver', petsc_krylov_solver)
+      call prop_get(md_ptr, 'numerics', 'PETScPreconditioner', petsc_preconditioner)
+      call str_lower(petsc_krylov_solver)
+      call str_lower(petsc_preconditioner)
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
       if (icgsolver == 7 .or. icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
@@ -3047,6 +3051,12 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
+      if (writeall .or. trim(petsc_krylov_solver) /= 'cg') then
+         call prop_set(prop_ptr, 'numerics', 'PETScKrylovSolver', petsc_krylov_solver, 'PETSc KSP type (for example cg or pipecg)')
+      end if
+      if (writeall .or. trim(petsc_preconditioner) /= 'default') then
+         call prop_set(prop_ptr, 'numerics', 'PETScPreconditioner', petsc_preconditioner, 'PETSc PC type (for example jacobi, asm, gamg, or none; asm_icc selects ASM with overlap 2 and ICC subdomain solves)')
+      end if
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')

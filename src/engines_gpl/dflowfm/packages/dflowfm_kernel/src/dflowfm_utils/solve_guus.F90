@@ -120,9 +120,6 @@ contains
 
 ! check solver applicability
       if (jampi == 0) then
-         if (icgsolver == 6) then
-            icgsolver = 4 ! lets prevent hk geting tired
-         end if
          if (icgsolver > 4 .and. icgsolver /= 6 .and. icgsolver /= 10 .and. icgsolver /= 44 .and. icgsolver /= 8) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
@@ -130,11 +127,7 @@ contains
          end if
       else
          if (icgsolver == 4) then ! as a service to the user too
-            if (ARCH == 'linux') then ! on linux
-               icgsolver = 6
-            else ! on windows
-               icgsolver = 7
-            end if
+            icgsolver = 6
          else if (icgsolver < 4 .or. icgsolver == 44) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
@@ -612,7 +605,7 @@ contains
 !    call conjugategradientSAAD_global(s1,ndx,nocgiter)
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-         call conjugategradientPETSC(s1, ndx, nocgiter, 1, ipre) ! 1:always compute preconditioner
+         call conjugategradientPETSC(s1, ndx, nocgiter, 1) ! 1:always compute preconditioner
          if (nocgiter == -999) then
             ierror = 1
             goto 1234
