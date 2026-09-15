@@ -306,6 +306,11 @@ contains
        do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
+         
+         ! TK avoid interpolatirom from other partion!
+         if (kobs(i) <= 0) neighbour_nodes_obs(:,i) = 0
+         
+         ! No interpolation possible
          if (intobs(i) == 1 .and. neighbour_nodes_obs(1,i) == 0 .and. kobs(i) > 0) then
             write (msgbuf, '(a,i0,a,a,a)') 'No interpolation possible for support point from boundary pli. Observation station nr:', i, ' (', trim(namobs(i)), '). Taking nearest support point with valid signals.'
             call msg_flush()
