@@ -1,3 +1,5 @@
+\page pre_c_sumo_development_guidelines Development Guidelines
+
 # Development Guidelines
 This document contains a number of topics we decided on while developing pre_C_Sumo.
 
