@@ -4855,8 +4855,8 @@ subroutine consolidate_decon(this, nm, dtmor)
              dzini = dzini + thlyr2(k2)
           endif
        enddo
-       svfracdep = svfracdep/dzini
        if (dzini > 0.0_fp) then
+          svfracdep = svfracdep/dzini
           call lyrsedimentation(this, nm, dzini, dmi, svfracdep, kmin_=nconlyr+1)
        endif
        
