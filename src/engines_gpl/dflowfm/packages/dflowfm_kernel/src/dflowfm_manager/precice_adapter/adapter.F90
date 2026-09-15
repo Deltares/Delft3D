@@ -380,9 +380,9 @@ contains
       end if
       if (self%quantities%flow_velocity_3d%is_active) then
          if (.not. allocated(flow_velocity_3d_buffer)) then
-            allocate(flow_velocity_3d_buffer(size(self%cell_center_mesh_coordinates_3d)))
+            allocate(flow_velocity_3d_buffer(self%mesh_3d_size * 3))
          end if
-         do velocity_index = 1, size(self%cell_center_mesh_coordinates_3d) / 3
+         do velocity_index = 1, self%mesh_3d_size
             flow_velocity_3d_buffer(velocity_index) = ucx(velocity_index)
             flow_velocity_3d_buffer(velocity_index+1) = ucy(velocity_index)
             flow_velocity_3d_buffer(velocity_index+2) = ucz(velocity_index)
@@ -544,7 +544,6 @@ contains
    !! No checks needed: invalid data will be zero and need to be zero in the FM administration
    !! TODO: When computing in parallel, checks might be needed for sources/sinks outside the local domain
    !! TODO: Add constituents
-   !! TODO: Add momentum
    !! TODO, optionally: lump sources/sinks in the same cell
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
