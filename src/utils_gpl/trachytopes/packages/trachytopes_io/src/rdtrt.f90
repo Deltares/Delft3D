@@ -1851,7 +1851,18 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ntrtobs = 0
     n_q     = 0
     n_zs    = 0
-    nroupa = 13
+   ! 
+   !A line in the ttd-file (trachytope definition file) contains:
+   !```
+   ! TrachytopeNr FormulaNr Parameter1 ... ParameterN
+   !```
+   !E.g.:
+   ! ```
+   ! 102 155 0.176 0.0548 0.65 0.20 -0.03 1.38 0.50 0.20 -1.03 25.2   
+   ! ```
+   !Hence, the maximum number of parameters `nroupa` is the maximum number of fields minus 2.
+   ! 
+    nroupa = MAXFLD-2 
     do jdir = 1,nodir
        nttaru        => gdtrachy%dir(jdir)%nttaru
        nttaru = 0
