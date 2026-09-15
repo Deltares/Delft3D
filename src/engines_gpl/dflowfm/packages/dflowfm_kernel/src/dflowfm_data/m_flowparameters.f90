@@ -371,6 +371,8 @@ module m_flowparameters
    integer :: jsolpos !< in iterative solver force solution above bottom level
    integer :: Icgsolver !< 'Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS '
    integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
+   character(len=64) :: petsc_krylov_solver !< PETSc KSP type, for example cg or pipecg
+   character(len=64) :: petsc_preconditioner !< PETSc PC type, or default
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
@@ -952,6 +954,8 @@ contains
       jsolpos = 0 ! in iterative solver force solution above bottom level
       Icgsolver = 4 !    Icgsolver = 1      ! 1 = GS_OMP, 2 = GS_OMPthreadsafe, 3 = GS, 4 = Saadilud
       ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
+      petsc_krylov_solver = 'cg'
+      petsc_preconditioner = 'default'
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
       hwetbed = 0.2_dp ! for case wetbed

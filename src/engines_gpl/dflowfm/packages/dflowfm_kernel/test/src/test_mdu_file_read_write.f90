@@ -38,6 +38,7 @@ contains
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
       use m_resetfullflowmodel, only: resetFullFlowModel
+      use m_flowparameters, only: petsc_krylov_solver, petsc_preconditioner
 
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
@@ -56,6 +57,8 @@ contains
       threshold_abort = LEVEL_FATAL
       call readMDUFile('stretch_example.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
+      call F90_EXPECT_STREQ(trim(petsc_krylov_solver)//c_null_char, 'pipecg'//c_null_char, 'PETSc Krylov solver was not read or normalized.')
+      call F90_EXPECT_STREQ(trim(petsc_preconditioner)//c_null_char, 'asm_icc'//c_null_char, 'PETSc preconditioner was not read or normalized.')
 
       tm_md_obsfile = md_obsfile
       tm_md_crsfile = md_crsfile
@@ -71,6 +74,8 @@ contains
 
       call F90_EXPECT_STREQ(trim(md_obsfile)//c_null_char, trim(tm_md_obsfile)//c_null_char, 'Difference in md_obsfile after read-write-read cycle.')
       call F90_EXPECT_STREQ(trim(md_crsfile)//c_null_char, trim(tm_md_crsfile)//c_null_char, 'Difference in md_crsfile after read-write-read cycle.')
+      call F90_EXPECT_STREQ(trim(petsc_krylov_solver)//c_null_char, 'pipecg'//c_null_char, 'PETSc Krylov solver changed after read-write-read cycle.')
+      call F90_EXPECT_STREQ(trim(petsc_preconditioner)//c_null_char, 'asm_icc'//c_null_char, 'PETSc preconditioner changed after read-write-read cycle.')
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
 
    end subroutine test_mdu_read_write_read

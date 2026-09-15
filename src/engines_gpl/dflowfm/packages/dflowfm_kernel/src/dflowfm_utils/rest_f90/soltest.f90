@@ -179,9 +179,6 @@ contains
          s1 = 0.0_dp
          ccr = ccrsav
 
-!         if (icgsolver.eq.6) call setPETSCmatrixEntries()
-!         call createPETSCPreconditioner(iprecond)
-
          call solve_matrix(s1, Ndx, itsol)
 
       end do

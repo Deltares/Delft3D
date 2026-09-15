@@ -55,14 +55,13 @@ module m_solve_petsc
          integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
       end subroutine preparePETSCsolver
 
-      module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
+      module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond)
          use precision, only: dp
          implicit none
          integer, intent(in) :: ndx
          real(kind=dp), dimension(Ndx), intent(inout) :: s1
          integer, intent(out) :: its
          integer, intent(in) :: jacompprecond !< compute preconditioner (1) or not (0)
-         integer, intent(in) :: iprecond !< preconditioner type
       end subroutine conjugategradientPETSC
    end interface
 

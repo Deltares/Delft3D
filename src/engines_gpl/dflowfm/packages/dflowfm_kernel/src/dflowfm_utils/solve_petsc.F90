@@ -68,12 +68,6 @@ module m_petsc
    KSP :: Solver ! Solver for the equation Amat * sol = rhs
    logical :: isKSPCreated = .false. ! A flag to determine whether KSP is created
 
-   ! preconditioner
-   PC :: Preconditioner
-   KSP :: SubSolver
-   PC :: SubPrec
-   PCType :: PreconditioningType
-
    PetscErrorCode, parameter :: PETSC_OK = 0
 end module m_petsc
 
@@ -512,18 +506,20 @@ contains
    end subroutine setPETSCmatrixEntries
 
    !> Configure the preconditioner for the PETSc KSP solver
-   subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: KSPGetPC, PCSetType, PCASMSetOverlap, KSPSetUp, PCASMGetSubKSP, PCASMRestoreSubKSP, PETSC_NULL_INTEGER, tKSP, KSPSetReusePreconditioner, PETSC_FALSE
-      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
+   subroutine createPETSCPreconditioner()
+      use petsc, only: KSPGetPC, PCSetType, PCASMSetOverlap, KSPSetUp, PCASMGetSubKSP, PCASMRestoreSubKSP, tKSP, tPC, KSPSetReusePreconditioner, PETSC_FALSE
+      use m_petsc, only: PETSC_OK, Solver
+      use m_flowparameters, only: petsc_preconditioner
       use MessageHandling, only: mess, level_error
 
-      integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
+      integer :: jasucces, local_index
 
-      integer :: jasucces
-
-      PetscErrorCode :: ierr = PETSC_OK
+      PetscErrorCode :: ierr = PETSC_OK, restore_ierr = PETSC_OK
+      PetscInt :: number_of_local_subdomains, first_local_subdomain
       KSP, pointer, dimension(:) :: sub_solvers
-      character(len=8) :: preconditioning_type
+      PC :: Preconditioner
+      PC :: sub_preconditioner
+      character(len=10) :: sub_preconditioner_type
 
       jasucces = 0
 
@@ -538,24 +534,16 @@ contains
          goto 1234
       end if
 
-      ! Configure the preconditioner type
-      if (iprecnd == 0) then
-         ! Use default preconditioner, just set up with current matrix
+      select case (trim(petsc_preconditioner))
+      case ('default')
          call KSPSetUp(Solver, ierr)
-      else if (iprecnd == 1) then
-         ! No preconditioner
-         call PCSetType(Preconditioner, 'none', ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call KSPSetUp(Solver, ierr)
-      else if (iprecnd == 2 .or. iprecnd == 3) then
-         ! Incomplete Cholesky with ASM (2) or Cholesky with ASM (3)
-         if (iprecnd == 2) then
-            preconditioning_type = 'icc'
+      case ('asm_icc', 'asm_cholesky')
+         if (trim(petsc_preconditioner) == 'asm_icc') then
+            sub_preconditioner_type = 'icc'
          else
-            preconditioning_type = 'cholesky'
+            sub_preconditioner_type = 'cholesky'
          end if
+
          call PCSetType(Preconditioner, 'asm', ierr)
          if (ierr /= PETSC_OK) then
             goto 1234
@@ -568,30 +556,31 @@ contains
          if (ierr /= PETSC_OK) then
             goto 1234
          end if
-         call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
+         call PCASMGetSubKSP(Preconditioner, number_of_local_subdomains, first_local_subdomain, sub_solvers, ierr)
          if (ierr /= PETSC_OK) then
             goto 1234
          end if
-         SubSolver = sub_solvers(1)
-         call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
+         do local_index = 1, number_of_local_subdomains
+            call KSPGetPC(sub_solvers(local_index), sub_preconditioner, ierr)
+            if (ierr /= PETSC_OK) then
+               exit
+            end if
+            call PCSetType(sub_preconditioner, trim(sub_preconditioner_type), ierr)
+            if (ierr /= PETSC_OK) then
+               exit
+            end if
+         end do
+         call PCASMRestoreSubKSP(Preconditioner, number_of_local_subdomains, first_local_subdomain, sub_solvers, restore_ierr)
+         if (ierr == PETSC_OK) then
+            ierr = restore_ierr
          end if
-         call KSPGetPC(SubSolver, SubPrec, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call PCSetType(SubPrec, trim(preconditioning_type), ierr)
-      else if (iprecnd == 4) then
-         call PCSetType(Preconditioner, 'gamg', ierr)
+      case default
+         call PCSetType(Preconditioner, trim(petsc_preconditioner), ierr)
          if (ierr /= PETSC_OK) then
             goto 1234
          end if
          call KSPSetUp(Solver, ierr)
-      else
-         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
-         return
-      end if
+      end select
 
 1234  continue
 
@@ -604,8 +593,9 @@ contains
    !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
    !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine preparePETSCsolver(japipe)
-      use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
+      use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances, KSPSetFromOptions
       use m_reduce, only: dp
+      use m_flowparameters, only: petsc_krylov_solver
       use m_partitioninfo, only: ndomains
       use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
 
@@ -662,7 +652,7 @@ contains
       end if
       if (ierr == PETSC_OK) then
          if (japipe /= 1) then
-            call KSPSetType(Solver, 'cg', ierr)
+            call KSPSetType(Solver, trim(petsc_krylov_solver), ierr)
          else
             call KSPSetType(Solver, 'pipecg', ierr)
          end if
@@ -673,6 +663,9 @@ contains
       if (ierr == PETSC_OK) then
          call KSPSetTolerances(Solver, RelTol, AbsTol, dTol, maxits, ierr)
       end if
+      if (ierr == PETSC_OK) then
+         call KSPSetFromOptions(Solver, ierr)
+      end if
 
       ! Soheil: for imaginairy matrix entries use KSPCGSetType(Solver, ... )
 
@@ -681,7 +674,7 @@ contains
    end subroutine preparePETSCsolver
 
    !> Solve the linear system with PETSc KSP solver
-   module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
+   module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond)
       use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, &
                        eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
@@ -696,7 +689,6 @@ contains
       real(kind=dp), dimension(ndx), intent(inout) :: s1
       integer, intent(out) :: its
       integer, intent(in) :: jacompprecond !< compute preconditioner (1) or not (0)
-      integer, intent(in) :: iprecond !< preconditioner type
 
       real(kind=dp) :: rnorm ! residual norm
 
@@ -754,7 +746,7 @@ contains
 
       if (jacompprecond == 1) then
          ! compute preconditioner
-         call createPETSCPreconditioner(iprecond)
+         call createPETSCPreconditioner()
       end if
 
       ! solve system
