@@ -345,7 +345,7 @@ contains
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1
+      use m_flow, only: hs, s1, ucx, ucy, ucz
       use m_flowgeom, only: bl, ndx2d,  ndx
       use m_turbulence, only: potential_density
       use m_transport, only: numconst, constituents
@@ -354,8 +354,8 @@ contains
       class(precice_adapter_t), intent(in) :: self
 
       integer :: constituent_index
-      ! Temporary flow velocity buffer [v1x,v1y,v1z, v2x, v2y, v2z, ... , vNx, vNy, vNz]
-      integer :: i
+      ! Temporary flow velocity buffer [ucx(1), ucy(1), ucz(1), ucx(2), ucy(2), ucz(2), ... , ucx(N), ucy(N), ucz(N)]
+      integer :: velocity_index
       real(kind=c_double), dimension(:), allocatable :: flow_velocity_3d_buffer
 
       if (self%quantities%hs%is_active) then
@@ -379,14 +379,14 @@ contains
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
       if (self%quantities%flow_velocity_3d%is_active) then
-         ! TODO: Actually access FM velocities. Requires to look up how to get the cell centre values.
-         ! For now: send 3,2,1 ..
          if (.not. allocated(flow_velocity_3d_buffer)) then
             allocate(flow_velocity_3d_buffer(size(self%cell_center_mesh_coordinates_3d)))
-            do i = 1, size(self%cell_center_mesh_coordinates_3d)
-               flow_velocity_3d_buffer(i) = 3.0 - mod(i,3)
-            end do
          end if
+         do velocity_index = 1, size(self%cell_center_mesh_coordinates_3d) / 3
+            flow_velocity_3d_buffer(velocity_index) = ucx(velocity_index)
+            flow_velocity_3d_buffer(velocity_index+1) = ucy(velocity_index)
+            flow_velocity_3d_buffer(velocity_index+2) = ucz(velocity_index)
+         end do
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%flow_velocity_3d%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   flow_velocity_3d_buffer, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%flow_velocity_3d%standard_name)))
