@@ -44,7 +44,7 @@ type :: trachy_vegetation_parameters
    integer :: evaluation_mode
    real(fp) :: vheigh, densit, drag, uchistem, expchistem
    real(fp) :: densitfoliage, dragfoliage, uchifoliage, expchifoliage
-   real(fp) :: cbed, karmanalpha, blockage_factor, blockage_power
+   real(fp) :: cbed, karman_alpha, blockage_factor, blockage_power
    logical :: iterate_uc, use_foliage, apply_blockage, accumulate_lambda
 end type trachy_vegetation_parameters
 
@@ -219,28 +219,19 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     real(fp)                    :: d50
     real(fp)                    :: d90
     real(fp)                    :: densit
-    real(fp)                    :: densitfoliage 
     real(fp)                    :: depth
     real(fp)                    :: drag
-    real(fp)                    :: dragfoliage  
     real(fp)                    :: dstar
     real(fp)                    :: e1
-    real(fp)                    :: expchistem
-    real(fp)                    :: expchifoliage
     real(fp)                    :: f
     real(fp)                    :: fracbu
     real(fp)                    :: fraccu
     real(fp)                    :: fracto
     real(fp)                    :: hk
     real(fp)                    :: iuc_err
-    real(fp)                    :: iuc_tol
-    real(fp)                    :: karmanalpha
-    real(fp)                    :: blockage_factor
-    real(fp)                    :: blockage_power
     real(fp)                    :: kbed
     real(fp)                    :: kn_icode
     real(fp)                    :: kn_sum
-    real(fp)                    :: phi
     real(fp)                    :: rc0
     real(fp)                    :: rc3
     real(fp)                    :: rcgrn
@@ -270,12 +261,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     real(fp)                    :: u2dh
     real(fp)                    :: ubsvg2
     real(fp)                    :: ucbsv2
-    real(fp)                    :: uchistem
-    real(fp)                    :: uchifoliage
     real(fp)                    :: umag
-!    real(fp)                    :: uuu
     real(fp)                    :: uv0
-    real(fp)                    :: uc
     real(fp)                    :: vheigh
     real(fp)                    :: vd2d
     real(fp)                    :: vh2d
@@ -1076,7 +1063,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    formulation%uchifoliage = 1.0_fp
    formulation%expchifoliage = 0.0_fp
    formulation%cbed = 0.0_fp
-   formulation%karmanalpha = 1.0_fp
+   formulation%karman_alpha = 1.0_fp
    formulation%blockage_factor = 1.0_fp
    formulation%blockage_power = 1.0_fp
    formulation%apply_blockage = .false.
@@ -1118,7 +1105,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
             error = .true.
             return
          endif
-         formulation%karmanalpha = parameters(11)
+         formulation%karman_alpha = parameters(11)
       endif
       if (code == 162) then
          if (size(parameters) < 13) then
@@ -1147,7 +1134,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
             error = .true.
             return
          endif
-         formulation%karmanalpha = parameters(7)
+         formulation%karman_alpha = parameters(7)
       endif
    case default
       error = .true.
@@ -1267,7 +1254,7 @@ subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icod
    real(fp) :: hk
 
    hk = max(1.0_fp, depth/formulation%vheigh)
-   ch_icode = formulation%cbed + sqrt(ag)/(formulation%karmanalpha*vonkar)*log(hk) * &
+   ch_icode = formulation%cbed + sqrt(ag)/(formulation%karman_alpha*vonkar)*log(hk) * &
       & sqrt(1.0_fp + phi*formulation%cbed**2/(2.0_fp*ag))
 end subroutine compute_vegetation_chezy
 
