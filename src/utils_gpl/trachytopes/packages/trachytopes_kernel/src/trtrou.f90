@@ -41,10 +41,11 @@ public chktrt
 
 type :: trachy_vegetation_parameters
    integer :: code
+   integer :: evaluation_mode
    real(fp) :: vheigh, densit, drag, uchistem, expchistem
    real(fp) :: densitfoliage, dragfoliage, uchifoliage, expchifoliage
    real(fp) :: cbed, karmanalpha, blockage_factor, blockage_power
-   logical :: iterate_uc, use_foliage, accumulate_lambda
+   logical :: iterate_uc, use_foliage, apply_blockage, accumulate_lambda
 end type trachy_vegetation_parameters
 
 type :: trachy_vegetation_result
@@ -52,6 +53,9 @@ type :: trachy_vegetation_result
    integer :: iteration_count
    logical :: converged
 end type trachy_vegetation_result
+
+integer, parameter :: vegetation_single_evaluation = 0
+integer, parameter :: vegetation_iterate_uc = 1
 
 contains
     
@@ -917,7 +921,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                 error = .true.
                 return
              endif
-             call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, ag, vonkar, vegetation_result)
+             call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, u2dh, ag, vonkar, vegetation_result)
              ch_icode = vegetation_result%ch_icode
              if (vegetation_parameters%accumulate_lambda) then
                 rttfu(nm, 1) = rttfu(nm, 1) + fraccu*vegetation_result%lambda_factor
@@ -1061,6 +1065,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    logical, intent(out) :: error
 
    formulation%code = code
+   formulation%evaluation_mode = vegetation_single_evaluation
    formulation%vheigh = 0.0_fp
    formulation%densit = 0.0_fp
    formulation%drag = 0.0_fp
@@ -1074,7 +1079,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    formulation%karmanalpha = 1.0_fp
    formulation%blockage_factor = 1.0_fp
    formulation%blockage_power = 1.0_fp
-   formulation%iterate_uc = .false.
+   formulation%apply_blockage = .false.
    formulation%use_foliage = .false.
    formulation%accumulate_lambda = .false.
    error = .false.
@@ -1107,7 +1112,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
       formulation%cbed = parameters(10)
       formulation%use_foliage = .true.
       formulation%accumulate_lambda = .true.
-      formulation%iterate_uc = code /= 155
+      if (code /= 155) formulation%evaluation_mode = vegetation_iterate_uc
       if (code == 160 .or. code == 162) then
          if (size(parameters) < 11) then
             error = .true.
@@ -1122,6 +1127,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
          endif
          formulation%blockage_factor = parameters(12)
          formulation%blockage_power = parameters(13)
+         formulation%apply_blockage = .true.
       endif
    case (156, 159, 161)
       if (size(parameters) < 6) then
@@ -1135,7 +1141,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
       formulation%expchistem = parameters(5)
       formulation%cbed = parameters(6)
       formulation%accumulate_lambda = .true.
-      formulation%iterate_uc = code /= 156
+      if (code /= 156) formulation%evaluation_mode = vegetation_iterate_uc
       if (code == 161) then
          if (size(parameters) < 7) then
             error = .true.
@@ -1148,23 +1154,55 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    end select
 end subroutine decode_vegetation_parameters
 
-subroutine evaluate_vegetation(formulation, depth, u2dh, umag, ag, vonkar, result)
+! Iterative formulations solve a fixed-point relation for canopy velocity uc,
+! starting from u2dh, evaluating vegetation drag and Chezy, updating uc, and
+! repeating to convergence. 
+! $$
+! u_c^{(n+1)} = u_{2dh}\frac{C_\mathrm{bed}}{C_\mathrm{vegetation}(u_c^{(n)})}
+! $$
+! Non-iterative formulations do not simply perform
+! one iteration of that same equation: code 155 uses umag for stem drag and
+! u2dh for foliage drag, while code 156 uses umag for stem drag. 
+!
+! | Formulation                                 | Current velocity used for drag                  |
+! |---------------------------------------------|-------------------------------------------------|
+! | Iterative `158`, `159`, `160`, `161`, `162` | Iterated `uc` for all relevant vegetation terms |
+! | Non-iterative `155`                         | `umag` for stems, `u2dh` for foliage            |
+! | Non-iterative `156`                         | `umag` for stems                                |
+! | `154`                                       | Separate Baptist formulation; no `uc` feedback  |
+!
+subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar, result)
    type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: depth, u2dh, umag, ag, vonkar
+   real(fp), intent(in) :: depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar
    type(trachy_vegetation_result), intent(out) :: result
    integer, parameter :: IUC_MAX = 10
    real(fp), parameter :: IUC_TOL = 1.0e-3_fp
-   real(fp) :: hk, iuc_err, velocity
+   real(fp) :: hk, iuc_err, stem_velocity_i, foliage_velocity_i
+   logical :: apply_blockage
    integer :: iuc
 
    result%ch_icode = formulation%cbed
    result%phi = 0.0_fp
    result%lambda_factor = 0.0_fp
-   result%uc = u2dh
+   result%uc = uc_reference
    result%iteration_count = 0
    result%converged = .true.
    hk = max(1.0_fp, depth/formulation%vheigh)
 
+! In 154 it is:
+! ```
+! lambda_factor = drag*densit/hk*cbed**2/ch_icode**2
+! ```
+! While for the rest it is:
+! ```
+! lambda_factor = phi/depth*cbed**2/ch_icode**2
+! ```
+! They are equivalent only when `depth > vheigh`, because then:
+! ```
+! phi / depth = drag * densit * vheigh / depth
+!             = drag * densit / hk
+! For `depth <= vheigh`, `hk = 1`, so the existing 154 expression is different from `phi / depth`.
+!
    if (formulation%code == 154) then
       result%phi = formulation%drag*formulation%densit*formulation%vheigh
       result%ch_icode = formulation%cbed + sqrt(ag)/vonkar*log(hk) * &
@@ -1174,43 +1212,51 @@ subroutine evaluate_vegetation(formulation, depth, u2dh, umag, ag, vonkar, resul
       return
    endif
 
-   if (formulation%iterate_uc) then
-      if (u2dh <= 0.0_fp) return
-      iuc = 1
-      iuc_err = 1.0_fp
-      do iuc = 2, IUC_MAX
-         call compute_vegetation_phi(formulation, result%uc, result%phi)
-         call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
-         iuc_err = abs(result%uc - u2dh*formulation%cbed/result%ch_icode)
-         result%uc = u2dh*formulation%cbed/result%ch_icode
-         if (iuc_err <= IUC_TOL) exit
-      enddo
-      result%iteration_count = min(iuc, IUC_MAX)
+   if (formulation%evaluation_mode == vegetation_iterate_uc) then
+      if (uc_reference <= 0.0_fp) return
+   else
+      if (stem_velocity <= 0.0_fp) return
+   endif
+   apply_blockage = formulation%apply_blockage
+
+   iuc_err = 1.0_fp
+   do iuc = 2, IUC_MAX
+      if (formulation%evaluation_mode == vegetation_iterate_uc) then
+         stem_velocity_i = result%uc
+         foliage_velocity_i = result%uc
+      else
+         stem_velocity_i = stem_velocity
+         foliage_velocity_i = foliage_velocity
+      endif
+      call compute_vegetation_phi(formulation, stem_velocity_i, foliage_velocity_i, apply_blockage, result%phi)
+      call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
+      result%iteration_count = iuc
+      if (formulation%evaluation_mode /= vegetation_iterate_uc) exit
+      iuc_err = abs(result%uc - uc_reference*formulation%cbed/result%ch_icode)
+      result%uc = uc_reference*formulation%cbed/result%ch_icode
+      if (iuc_err <= IUC_TOL) exit
+   enddo
+   if (formulation%evaluation_mode == vegetation_iterate_uc) then
       result%converged = iuc_err <= IUC_TOL
    else
-      if (umag <= 0.0_fp) return
-      velocity = umag
-      call compute_vegetation_phi(formulation, velocity, result%phi)
-      if (formulation%use_foliage) then
-         result%phi = formulation%drag*formulation%densit*(umag/formulation%uchistem)**formulation%expchistem + &
-            & formulation%densitfoliage*formulation%dragfoliage*(u2dh/formulation%uchifoliage)**formulation%expchifoliage
-      endif
-      call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
       result%iteration_count = 1
    endif
    result%lambda_factor = result%phi/depth * formulation%cbed**2/result%ch_icode**2
 end subroutine evaluate_vegetation
 
-subroutine compute_vegetation_phi(formulation, velocity, phi)
+subroutine compute_vegetation_phi(formulation, stem_velocity, foliage_velocity, apply_blockage, phi)
    type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: velocity
+   real(fp), intent(in) :: stem_velocity, foliage_velocity
+   logical, intent(in) :: apply_blockage
    real(fp), intent(out) :: phi
 
-   phi = formulation%drag*formulation%densit*(velocity/formulation%uchistem)**formulation%expchistem
+   phi = formulation%drag*formulation%densit*(stem_velocity/formulation%uchistem)**formulation%expchistem
    if (formulation%use_foliage) then
       phi = phi + formulation%densitfoliage*formulation%dragfoliage * &
-         & (velocity/formulation%uchifoliage)**formulation%expchifoliage * &
-         & formulation%blockage_factor**formulation%blockage_power
+         & (foliage_velocity/formulation%uchifoliage)**formulation%expchifoliage
+      if (apply_blockage) then
+         phi = phi * formulation%blockage_factor**formulation%blockage_power
+      endif
    endif
 end subroutine compute_vegetation_phi
 
