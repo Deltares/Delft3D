@@ -50,14 +50,14 @@ namespace pre_c_sumo
         const std::string_view csumo_settings_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
-        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
+        auto expected_csumo_settings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
 
-        if (!expectedCsumoSettings.has_value())
+        if (!expected_csumo_settings.has_value())
         {
-            std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
-            return expectedCsumoSettings;
+            std::println(stderr, "Error parsing C-SUMO configuration: {}", expected_csumo_settings.error().message);
+            return expected_csumo_settings;
         }
-        auto csumo_settings = std::move(expectedCsumoSettings).value();
+        auto csumo_settings = std::move(expected_csumo_settings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return csumo_settings;
     }
@@ -231,22 +231,11 @@ namespace pre_c_sumo
                               sources_sinks.discharges);
     }
 
-    /**
-     * @brief Convert NF2FF output into connected source/sink entries.
-     *
-     * For each diffuser this constructs sink-source pairs based on sinks after the first
-     * sink point, and optionally intake-related pairs when intake is configured.
-     *
-     * @param csumoSettings Parsed C-SUMO settings.
-     * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return std::expected with a ConnectedSinkSources object with source/sink data ready to be written via preCICE or
-     * a ConnectedSinkSourcesError on failure.
-     */
     std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
-        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
+        const CSumoSettingsReader& csumo_settings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
-        const auto& diffuser_settings = csumoSettings.diffusers();
+        const auto& diffuser_settings = csumo_settings.diffusers();
 
         for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
