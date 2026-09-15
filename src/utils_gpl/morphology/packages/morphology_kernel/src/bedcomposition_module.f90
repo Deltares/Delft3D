@@ -3690,8 +3690,8 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
        val => this%settings%morlyrnum%track_mass_shortage
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_logical_scalar
 
 
@@ -3762,8 +3762,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%active_layer_diffusion
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_integer_scalar
 
 
@@ -3809,8 +3809,8 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
        val => this%settings%sinkfrac_max
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_scalar
 
 
@@ -3858,8 +3858,8 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
        val => this%settings%aldiff
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_1darray
 
 
@@ -3892,15 +3892,15 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
     case ('solid_volume_fraction','svfrac')
        val => this%state%svfrac
     case ('time of load increment','depos_time')
-        val => this%state%depos_time
+       val => this%state%depos_time
     case ('historical largest load','preload')
        val => this%state%preload
     case ('layer_thickness','thlyr')
        val => this%state%thlyr
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_2darray
 
 
@@ -3930,8 +3930,8 @@ function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
        val => this%state%msed
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_fp_3darray
 
 
@@ -3961,8 +3961,8 @@ function bedcomp_getpointer_prec_2darray(this, variable, val) result (istat)
        val => this%state%bodsed
     case default
        val => NULL()
+       istat = -1
     end select
-    if (.not.associated(val)) istat = -1
 end function bedcomp_getpointer_prec_2darray
 
 
