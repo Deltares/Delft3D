@@ -523,7 +523,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
           ! Depth-average velocity (similar as in TAUBOT)
           !
           umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2)
-          if (kmax==0) then
+          if (kmax==1) then
              u2dh = umag
           else
              z0rouL = rttacLin(nm)*z0rou(nm1)  + (1d0-rttacLin(nm))*z0rou(nm2)
