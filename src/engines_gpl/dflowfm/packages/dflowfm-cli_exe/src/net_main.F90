@@ -67,8 +67,8 @@ program unstruc
    use m_grid, only: nmax, mmax
    use m_boat, only: maxboat
    use m_netw, only: kmax, knx, mxb, lmax, maxlan, maxpol, imake1d2dtype, i1d2dtp_1to1, netflow
-   use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
-                            md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
+   use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_icgsolver, md_convnetcells, md_netfile, md_jasavenet, &
+                            md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
                             md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
                             md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_numthreads
    use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
@@ -105,7 +105,6 @@ program unstruc
    use m_resetFullFlowModel, only: resetFullFlowModel
    use m_dobatch, only: dobatch
    use m_generatepartitionmdufile, only: generate_partition_mdu_file
-   use m_soltest, only: soltest
    use m_start_program, only: start_program
    use m_pressakey, only: pressakey
    use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
@@ -226,11 +225,6 @@ program unstruc
       end do
 !      output timings
       write (6, '(a,E9.2,a,E9.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
-      goto 1234
-   end if
-
-   if (md_soltest == 1) then
-      call soltest(md_CFL, md_icgsolver, md_maxmatvecs, md_epsdiff, md_epscg)
       goto 1234
    end if
 

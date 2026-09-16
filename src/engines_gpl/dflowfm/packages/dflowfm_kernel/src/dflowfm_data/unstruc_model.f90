@@ -181,12 +181,7 @@ contains
       !md_M               = 1024   !< size of x in Axpy
       !md_N               = 2048   !< size of y in Axpy
       !md_Nruns           = 10     !< number of test runs
-      !md_soltest         = 0      !< solver test (1) or not (0)
-      !md_CFL             = 0      !< wave-based Courant number (if > 0)
       !md_icgsolver       = 0      !< overwrite solver type (if > 0)
-      !md_maxmatvecs      = 0      !< maximum number of matrix-vector multiplications in Krylov (if > 0 )
-      !md_epscg           = 0      !< -10log(epscg) (if > 0), tolerance in (inner) Krylov iterations
-      !md_epsdiff         = 0      !< -10log(epsdiff) (if > 0), tolerance in (outer) Schwarz iterations
       !md_convnetcells    = 0      !< Convert _net.nc files with only netnodes/links into _net.nc files with netcell info.
       !md_findcells       = 0      !< If it is not zero, then the codes call findcells
       !md_pressakey       = 0      !< press a key (1) or not (0)
@@ -973,6 +968,8 @@ contains
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
       if (icgsolver == 8) then
          call mess(LEVEL_ERROR, 'Icgsolver 8, the pARMS solver, is no longer supported.')
+      else if (icgsolver == 9 .or. icgsolver > 90) then
+         call mess(LEVEL_ERROR, 'Icgsolver 9 and values greater than 90 are no longer supported.')
       end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
       if (icgsolver == 7 .or. icgsolver == 6) then

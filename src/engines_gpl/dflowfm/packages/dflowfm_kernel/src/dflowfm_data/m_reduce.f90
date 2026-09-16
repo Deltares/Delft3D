@@ -119,6 +119,4 @@ module m_reduce
    integer :: mindgr
    integer :: nocgiter
 
-   real(kind=dp), allocatable, dimension(:) :: s1_ghost ! for testsolver
-
 end module m_reduce
