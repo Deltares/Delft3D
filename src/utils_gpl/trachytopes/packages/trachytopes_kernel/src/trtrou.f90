@@ -32,6 +32,7 @@ module m_trtrou
 ! functions and subroutines
 !
 use precision, only: fp
+use m_trachy, only: update_umag
 implicit none 
 
 private
@@ -75,7 +76,7 @@ integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1 !< Iteratively evaluate ve
 
 contains
     
-subroutine trtrou(lundia    ,kmax      ,nmmax   , &
+subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
                 & cfrou     ,rouflo    ,linit     ,gdis_zet  , &
                 & huv       ,kcuv      ,sig       , &
                 & z0rou     ,jdir      ,waqol     ,gdtrachy  , & 
@@ -146,7 +147,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
 ! Global variables
 !
     integer                                                            , intent(in)  :: jdir          !< Flag for direction, 1=U, 2=V
-    integer                                                            , intent(in)  :: kmax
+    integer                                                            , intent(in)  :: kmaxtrt       !< maximum number of vertical layers for trachytope calculations. ATTENTION: `kmaxtrt==1` corresponds to 2D model.
     integer                                                                          :: lundia
     integer                                                            , intent(in)  :: nmmax
     integer                                                            , intent(in)  :: nmlb          !< start space index (of edges)
@@ -155,7 +156,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     integer                                                            , intent(in)  :: nmubc         !< end space index   (flow nodes)
     integer, dimension(nmlb:nmub)                                                    :: kcuv
     logical                                                            , intent(in)  :: linit
-    real(fp), dimension(kmax)                                          , intent(in)  :: sig
+    real(fp), dimension(kmaxtrt)                                          , intent(in)  :: sig
     !real(fp), dimension(nmlb:nmub)                                     , intent(in)  :: gdis_dp  !(not used) 
     real(fp), dimension(nmlb:nmub)                                     , intent(in)  :: gdis_zet
     real(fp), dimension(nmlb:nmub)                                                   :: huv           !< water depth at u or v point 
@@ -352,7 +353,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     !
     ! Reset RTTFU to zero
     !
-    do k = 1, kmax
+    do k = 1, kmaxtrt
        do nm = 1, nmmax
           rttfu(nm, k) = 0.0_fp
        enddo
@@ -529,15 +530,17 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
           !
           ! Depth-average velocity (similar as in TAUBOT)
           !
-          umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2)
-          if (kmax==1) then !kmax=1 is the correct one. Main is wrong. kmax->as in D3D4 kmaxtrt
-             u2dh = umag
-          else
-             z0rouL = rttacLin(nm)*z0rou(nm1)  + (1d0-rttacLin(nm))*z0rou(nm2)
-             u2dh = (umag/depth*((depth + z0rouL)         &
-                  &              *log(1.0_fp + depth/max(z0rouL,1.0e-5_fp)) &
-                  &              - depth)                         ) &
-                  & /log(1.0_fp + (1.0_fp + sig(kmax))*depth/max(z0rouL,1.0e-5_fp))
+          if (update_umag) then
+            umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2)
+            if (kmaxtrt==1) then !ATTENTION this is D3D4 convention: `kmaxtrt==1` corresponds to 2D model.
+               u2dh = umag
+            else
+               z0rouL = rttacLin(nm)*z0rou(nm1)  + (1d0-rttacLin(nm))*z0rou(nm2)
+               u2dh = (umag/depth*((depth + z0rouL)         &
+                     &              *log(1.0_fp + depth/max(z0rouL,1.0e-5_fp)) &
+                     &              - depth)                         ) &
+                     & /log(1.0_fp + (1.0_fp + sig(kmaxtrt))*depth/max(z0rouL,1.0e-5_fp))
+            endif
           endif
        endif
        !
