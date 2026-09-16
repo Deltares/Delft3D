@@ -41,7 +41,7 @@ contains
 subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                & lsed      ,nmaxus    ,nto       ,lfbedfrm  , &
                & nambnd    ,julday    ,mor_ptr   ,sedpar    ,morpar    , &
-               & fwfac     ,morlyr    ,griddim)
+               & fwfac     ,morlyr    ,griddim   ,ag)
 !!--declarations----------------------------------------------------------------
     use precision, only: fp
     use properties
@@ -79,6 +79,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     type(bedcomp_data)             , pointer     :: morlyr
     real(fp)                       , intent(out) :: fwfac
     type(griddimtype)   , target   , intent(in)  :: griddim
+    real(fp)                       , intent(in)  :: ag !< gravity acceleration (m/s^2)
 !
 ! Local variables
 !
@@ -303,7 +304,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & nmaxus    ,nto       ,lfbedfrm  , &
                  & nambnd    ,version   ,lsedtot   , sedpar%namsed    , &
                  & morpar    ,morlyr    ,sedpar    ,mor_ptr   , &
-                 & griddim   )
+                 & griddim   ,ag)
     if (error) return
     !
     if (morlyr%settings%iunderlyr == BED_LAYERED) then
