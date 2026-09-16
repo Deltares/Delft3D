@@ -123,7 +123,7 @@ contains
          if (icgsolver == 6) then
             icgsolver = 4 ! lets prevent hk geting tired
          end if
-         if (icgsolver > 4 .and. icgsolver /= 6 .and. icgsolver /= 10 .and. icgsolver /= 44 .and. icgsolver /= 8) then
+         if (icgsolver > 4 .and. icgsolver /= 6 .and. icgsolver /= 10 .and. icgsolver /= 44) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
             icgsolver = 1
@@ -625,13 +625,6 @@ contains
          if (ierror == 1) then
             goto 1234
          end if
-      else if (icgsolver == 8) then
-#ifdef HAVE_PARMS
-         nocgiter = 999
-         call conjugategradient_parms(s1, ndx, nocgiter)
-#else
-         call qnerror('No pARMS solver available', ' ', ' ')
-#endif
       else if (icgsolver == 9 .or. icgsolver > 90) then
          call testsolver(Ndx, s1, nocgiter, ierror)
       else if (icgsolver == 10) then
@@ -1875,10 +1868,6 @@ contains
 #ifdef HAVE_PETSC
          call ini_petsc(Ndx, ierror)
          call preparePETSCsolver(1)
-#endif
-      else if (icgsolver == 8) then
-#ifdef HAVE_PARMS
-         call iniparms(ierror)
 #endif
       else if (icgsolver == 9 .or. icgsolver > 90) then
          call initestsolver()

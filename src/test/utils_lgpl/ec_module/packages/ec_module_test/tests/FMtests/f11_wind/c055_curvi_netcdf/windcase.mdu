@@ -66,9 +66,6 @@ cstbnd                               = 0                                     # D
 Maxitverticalforestersal             = 100                                   # 0 : no vertical filter, > 0 = Max nr of iterations
 Maxitverticalforestertem             = 0                                     # 0 : no vertical filter for temp, > 0 = Max nr of iterations
 Jaorgsethu                           = 1                                     # 0 : setumod, sethu, setau sequence, 1 : sethu, setau, setumod sequence (standard)
-ilutype                              = 0                                     # 0: parms-default
-nlevel                               = 0                                     # 0: parms-default
-dtol                                 = 0.                                    # 0d0: parms-default
 Maxwaterleveldiff                    = 0.                                    # upper bound (in m) on water level changes, <= 0: no bounds
 Maxvelocitydiff                      = 0.                                    # upper bound (in m/s) on velocity changes, <= 0: no bounds
 TransportMethod                      = 1                                     # Transport method, 0=Herman method, 1=Sander method
