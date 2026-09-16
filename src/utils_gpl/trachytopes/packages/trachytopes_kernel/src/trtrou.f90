@@ -530,7 +530,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
           ! Depth-average velocity (similar as in TAUBOT)
           !
           umag = rttacLin(nm)*umod(nm1) + (1d0-rttacLin(nm))*umod(nm2)
-          if (kmax==1) then
+          if (kmax==1) then !kmax=1 is the correct one. Main is wrong. kmax->as in D3D4 kmaxtrt
              u2dh = umag
           else
              z0rouL = rttacLin(nm)*z0rou(nm1)  + (1d0-rttacLin(nm))*z0rou(nm2)
@@ -1172,7 +1172,7 @@ end subroutine decode_vegetation_parameters
 ! | Iterative `158`, `159`, `160`, `161`, `162` | Iterated `uc` for all relevant vegetation terms |
 ! | Non-iterative `155`                         | `umag` for stems, `u2dh` for foliage            |
 ! | Non-iterative `156`                         | `umag` for stems                                |
-! | `154`                                       | Separate Baptist formulation; no `uc` feedback  |
+! | `154`                                       | no velocity used for drag                       |
 !
 subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar, result)
    type(trachy_vegetation_parameters), intent(in) :: formulation
@@ -1180,87 +1180,78 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
    type(trachy_vegetation_result), intent(out) :: result
    integer, parameter :: IUC_MAX = 10
    real(fp), parameter :: IUC_TOL = 1.0e-3_fp
-   real(fp) :: hk, iuc_err, stem_velocity_i, foliage_velocity_i
-   logical :: apply_blockage
+   real(fp) :: iuc_err, stem_velocity_i, foliage_velocity_i
    integer :: iuc
 
-   result%ch_icode = formulation%cbed
-   result%phi = 0.0_fp
-   result%lambda_factor = 0.0_fp
-   result%uc = uc_reference
-   result%iteration_count = 0
-   result%converged = .true.
-   hk = max(1.0_fp, depth/formulation%vheigh)
-
-! In 154 it is:
-! ```
-! lambda_factor = drag*densit/hk*cbed**2/ch_icode**2
-! ```
-! While for the rest it is:
-! ```
-! lambda_factor = phi/depth*cbed**2/ch_icode**2
-! ```
-! They are equivalent only when `depth > vheigh`, because then:
-! ```
-! phi / depth = drag * densit * vheigh / depth
-!             = drag * densit / hk
-! For `depth <= vheigh`, `hk = 1`, so the existing 154 expression is different from `phi / depth`.
-!
-   if (formulation%code == 154) then
-      result%phi = formulation%drag*formulation%densit*formulation%vheigh
-      result%ch_icode = formulation%cbed + sqrt(ag)/vonkar*log(hk) * &
-         & sqrt(1.0_fp + result%phi*formulation%cbed**2/(2.0_fp*ag))
-      result%lambda_factor = formulation%drag*formulation%densit/hk * &
-         & formulation%cbed**2/result%ch_icode**2
-      return
-   endif
-
-   if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
+   associate (evaluation_mode => formulation%evaluation_mode, cbed => formulation%cbed, &
+      & ch_icode => result%ch_icode, phi => result%phi, &
+      & lambda_factor => result%lambda_factor, uc => result%uc, iteration_count => result%iteration_count, &
+      & converged => result%converged, apply_blockage => formulation%apply_blockage)
+   !   
+   ch_icode = cbed
+   phi = 0.0_fp
+   lambda_factor = 0.0_fp
+   uc = uc_reference
+   iteration_count = 0
+   converged = .true.
+   if (evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
       if (uc_reference <= 0.0_fp) return
    else
       if (stem_velocity <= 0.0_fp) return
    endif
-   apply_blockage = formulation%apply_blockage
-
    iuc_err = 1.0_fp
    do iuc = 2, IUC_MAX
-      if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
-         stem_velocity_i = result%uc
-         foliage_velocity_i = result%uc
+      if (evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
+         stem_velocity_i = uc
+         foliage_velocity_i = uc
       else
          stem_velocity_i = stem_velocity
          foliage_velocity_i = foliage_velocity
       endif
-      call compute_vegetation_phi(formulation, stem_velocity_i, foliage_velocity_i, apply_blockage, result%phi)
-      call compute_vegetation_chezy(formulation, depth, result%phi, ag, vonkar, result%ch_icode)
-      result%iteration_count = iuc
-      if (formulation%evaluation_mode /= VEGETATION_ITERATE_VELOCITY) exit
-      iuc_err = abs(result%uc - uc_reference*formulation%cbed/result%ch_icode)
-      result%uc = uc_reference*formulation%cbed/result%ch_icode
+      call compute_vegetation_phi(formulation, depth, stem_velocity_i, foliage_velocity_i, apply_blockage, phi)
+      call compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
+      iteration_count = iuc
+      if (evaluation_mode /= VEGETATION_ITERATE_VELOCITY) exit
+      iuc_err = abs(uc - uc_reference*cbed/ch_icode)
+      uc = uc_reference*cbed/ch_icode
       if (iuc_err <= IUC_TOL) exit
    enddo
-   if (formulation%evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
-      result%converged = iuc_err <= IUC_TOL
+   if (evaluation_mode == VEGETATION_ITERATE_VELOCITY) then
+      converged = iuc_err <= IUC_TOL
    else
-      result%iteration_count = 1
+      iteration_count = 1
    endif
-   result%lambda_factor = result%phi/depth * formulation%cbed**2/result%ch_icode**2
+   lambda_factor = phi/depth * cbed**2/ch_icode**2
+   !
+   end associate
 end subroutine evaluate_vegetation
 
-subroutine compute_vegetation_phi(formulation, stem_velocity, foliage_velocity, apply_blockage, phi)
+subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_velocity, apply_blockage, phi)
    type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: stem_velocity, foliage_velocity
+   real(fp), intent(in) :: depth, stem_velocity, foliage_velocity
    logical, intent(in) :: apply_blockage
    real(fp), intent(out) :: phi
 
-   phi = formulation%drag*formulation%densit*(stem_velocity/formulation%uchistem)**formulation%expchistem
-   if (formulation%use_foliage) then
-      phi = phi + formulation%densitfoliage*formulation%dragfoliage * &
-         & (foliage_velocity/formulation%uchifoliage)**formulation%expchifoliage
-      if (apply_blockage) then
-         phi = phi * formulation%blockage_factor**formulation%blockage_power
+   associate (drag => formulation%drag, densit => formulation%densit, uchistem => formulation%uchistem, &
+      & expchistem => formulation%expchistem, use_foliage => formulation%use_foliage, &
+      & densitfoliage => formulation%densitfoliage, dragfoliage => formulation%dragfoliage, &
+      & uchifoliage => formulation%uchifoliage, expchifoliage => formulation%expchifoliage, &
+      & blockage_factor => formulation%blockage_factor, blockage_power => formulation%blockage_power, &
+      & vheigh => formulation%vheigh)
+   ! 
+   if (formulation%code == 154) then
+      phi = drag*densit*min(vheigh, depth)
+   else
+      phi = drag*densit*(stem_velocity/uchistem)**expchistem
+      if (use_foliage) then
+         phi = phi + densitfoliage*dragfoliage * (foliage_velocity/uchifoliage)**expchifoliage
+         if (apply_blockage) then
+            phi = phi * blockage_factor**blockage_power
+         endif
       endif
    endif
+   !
+   end associate
 end subroutine compute_vegetation_phi
 
 subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
@@ -1269,9 +1260,13 @@ subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icod
    real(fp), intent(out) :: ch_icode
    real(fp) :: hk
 
-   hk = max(1.0_fp, depth/formulation%vheigh)
-   ch_icode = formulation%cbed + sqrt(ag)/(formulation%karman_alpha*vonkar)*log(hk) * &
-      & sqrt(1.0_fp + phi*formulation%cbed**2/(2.0_fp*ag))
+   associate (vheigh => formulation%vheigh, cbed => formulation%cbed, &
+      & karman_alpha => formulation%karman_alpha)
+   !
+   hk = max(1.0_fp, depth/vheigh)
+   ch_icode = cbed + sqrt(ag)/(karman_alpha*vonkar)*log(hk) * sqrt(1.0_fp + phi*cbed**2/(2.0_fp*ag))
+   !
+   end associate
 end subroutine compute_vegetation_chezy
 
 !> helper routine to update trachytope definitions in case of discharge or water level dependent roughnesses
