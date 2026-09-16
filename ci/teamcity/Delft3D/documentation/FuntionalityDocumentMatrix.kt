@@ -13,7 +13,8 @@ object FunctionalityDocumentMatrix : BuildType({
         TemplateFunctionalityDocumentation
     )
 
-    name = "Functionality document (Latex/PDF)"
+    name = "Functionality document"
+    description = "Generate functionality PDF reports."
 
     val engineOptions = listOf(
         "dflowfm:e02_dflowfm",

@@ -8,7 +8,7 @@ import Delft3D.step.*
 
 object WindowsBuild2D3DSP : BuildType({
 
-    description = "CMake build 2D3D single-precision. This is part of the Delft3D 4 delivery."
+    description = "CMake build of 2D3D single-precision (Delft3D 4)."
 
     templates(
         TemplateMergeRequest,
@@ -18,7 +18,7 @@ object WindowsBuild2D3DSP : BuildType({
         TemplateBuildConcurrency
     )
  
-    name = "Build 2D3D single-precision"
+    name = "Build 2D3D (SP)"
     buildNumberPattern = "%product%: %build.vcs.number%"
 
     allowExternalStatus = true

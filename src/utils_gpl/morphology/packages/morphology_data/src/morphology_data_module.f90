@@ -142,7 +142,7 @@ module morphology_data_module
    integer, parameter, public :: RP_DZDY = 53 ! V component of bed slope [-]
    integer, parameter, public :: RP_DM = 54 ! median sediment diameter of particle size mix of the part of the bed exposed to transport [m]
    integer, parameter, public :: RP_ZB = 55 ! bed level (positive up) [m]
-   integer, parameter, public :: RP_DBG = 56 ! debug array value from eqtran [-]
+   integer, parameter, public :: RP_TAUCR = 56 ! critical shear stress of bed material [N/m2]
    integer, parameter, public :: MAX_RP = 56 ! maximum number of real parameters
 !
    integer, parameter, public :: IP_NM = 1 ! local (i.e. within partition) cell index
@@ -229,7 +229,13 @@ module morphology_data_module
 ! Threshold options for FIXFAC calculation
 !
    integer, parameter, public :: THRESH_CONSTANT = 1 ! constant value specified using Thresh
-   integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 !value based on thickness of alluvial transport layer
+   integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 ! value based on thickness of alluvial transport layer
+!
+! Hiding and exposure options
+!
+   integer, parameter, public :: HIDEXP_ACTIVE_LAYER_ONLY = 0
+   integer, parameter, public :: HIDEXP_ACTIVE_AND_COARSE_LAYER = 1
+
 !
 ! collection of morphology output options
 !
@@ -264,11 +270,13 @@ module morphology_data_module
       logical :: dpbedlyr
       logical :: dzduuvv
       logical :: fixfac
+      logical :: eropar
       logical :: hidexp
       logical :: frac
       logical :: lyrfrac
       logical :: msed
       logical :: mudfrac
+      logical :: orbvel
       logical :: percentiles
       logical :: poros
       logical :: rca
@@ -289,6 +297,8 @@ module morphology_data_module
       logical :: sourcesink
       logical :: taub
       logical :: taurat
+      logical :: tcrero
+      logical :: td
       logical :: umod
       logical :: ustar
       logical :: uuuvvv
@@ -307,6 +317,10 @@ module morphology_data_module
       logical :: morfac
       logical :: sxytot
       logical :: sxyavg
+      !
+      logical :: burflxf
+      logical :: depflxf
+      logical :: eroflxf
    end type moroutputtype
 
 !
@@ -369,6 +383,9 @@ module morphology_data_module
       !
       ! single / doubles (fp)
       !
+      real(fp) :: cmfluff   ! fluffy layer dry density, near gelling density
+      real(fp) :: kkfluff   ! permeability of fluffy layer
+      real(fp) :: acalbur0  ! calibration parameter
       !
       ! singles (sp)
       !
@@ -379,6 +396,9 @@ module morphology_data_module
       !  0: no fluff layer
       !  1: all mud to fluff layer, burial to bed layers
       !  2: part mud to fluff layer, other part to bed layers (no burial)
+      integer :: iburtype  !  switch for burial type
+      !  1: based on parameter bfluff0
+      !  2: based on parameters cmfluff, kkfluff, acalbur0
       !
       ! pointers
       !
@@ -389,6 +409,9 @@ module morphology_data_module
       real(fp), dimension(:, :), pointer :: depfac ! Deposition factor to fluff layer (only when FluffLayer=2) [-]
       real(fp), dimension(:, :), pointer :: sinkf ! Settling to fluff layer []
       real(fp), dimension(:, :), pointer :: sourf ! Source from fluff layer []
+      real(fp), dimension(:, :), pointer :: burflxf ! burial flux from fluff layer [kg/m2/s] 
+      real(fp), dimension(:, :), pointer :: depflxf ! deposition flux in fluff layer [kg/m2/s]
+      real(fp), dimension(:, :), pointer :: eroflxf ! erosion flux from fluff layer [kg/m2/s] 
       character(256), dimension(:), pointer :: mflfil ! fluff mass file
       !
       ! logicals
@@ -782,12 +805,15 @@ module morphology_data_module
       real(fp), dimension(:, :), pointer :: e_ssnc !(nu1:nu2,lsed)    ssuuc in structured Delft3D-FLOW
       real(fp), dimension(:, :), pointer :: e_sstc !(nu1:nu2,lsed)    ssvvc in structured Delft3D-FLOW
       !
+      real(fp), dimension(:), pointer :: poros    !< effective porosity in the part of the bed exposed to transport (nc1:nc2)
       real(fp), dimension(:, :), pointer :: frac_he !(nu1:nu2,lsedtot) effective fraction of sediment for computing hiding exposure (transport)
       real(fp), dimension(:), pointer :: dm_he !(nu1:nu2)         arithmetic mean sediment diameter for computing hiding exposure (transport)
       real(fp), dimension(:), pointer :: dg_he !(nu1:nu2)         geometric mean sediment diameter for computing hiding exposure (transport) (dummy, not used)
       real(fp), dimension(:, :), pointer :: frac !< (nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
       real(fp), dimension(:), pointer :: mudfrac !< (nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
       real(fp), dimension(:), pointer :: sandfrac !< (nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
+      real(fp), dimension(:), pointer :: tcrero_bed !< effective crtitical shear stress for erosion in the part of the bed exposed to transport (nc1:nc2)
+      real(fp), dimension(:), pointer :: eropar_bed !< effective erosion parameter in the part of the bed exposed to transport (nc1:nc2)
       real(fp), dimension(:), pointer :: dm !< (nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
       real(fp), dimension(:), pointer :: dg !< (nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
       real(fp), dimension(:), pointer :: dgsd !(nu1:nu2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
@@ -887,11 +913,14 @@ contains
       nullify (sedtra%frac)
       nullify (sedtra%mudfrac)
       nullify (sedtra%sandfrac)
+      nullify(sedtra%poros)
       nullify (sedtra%dm)
       nullify (sedtra%dg)
       nullify (sedtra%dgsd)
       nullify (sedtra%dxx)
       nullify (sedtra%hidexp)
+      nullify(sedtra%tcrero_bed)
+      nullify(sedtra%eropar_bed)
       !
       nullify (sedtra%frac_he)
       nullify (sedtra%mudfrac_he)
@@ -1009,11 +1038,14 @@ contains
       if (istat == 0) allocate (sedtra%frac(nc1:nc2, lsedtot), STAT=istat)
       if (istat == 0) allocate (sedtra%mudfrac(nc1:nc2), STAT=istat)
       if (istat == 0) allocate (sedtra%sandfrac(nc1:nc2), STAT=istat)
+      if (istat == 0) allocate (sedtra%poros(nc1:nc2), STAT=istat)
       if (istat == 0) allocate (sedtra%dm(nc1:nc2), STAT=istat)
       if (istat == 0) allocate (sedtra%dg(nc1:nc2), STAT=istat)
       if (istat == 0) allocate (sedtra%dgsd(nc1:nc2), STAT=istat)
       if (istat == 0) allocate (sedtra%dxx(nc1:nc2, nxx), STAT=istat)
       if (istat == 0) allocate (sedtra%hidexp(nc1:nc2, lsedtot), STAT=istat)
+      if (istat == 0) allocate (sedtra%tcrero_bed(nc1:nc2), STAT=istat)
+      if (istat == 0) allocate (sedtra%eropar_bed(nc1:nc2), STAT=istat)
       !
       ! hiding exposure computed on the basis of transport and coarse layer
       if (istat == 0) allocate (sedtra%frac_he(nu1:nu2, lsedtot), STAT=istat)
@@ -1105,11 +1137,14 @@ contains
       sedtra%frac = 0.0_fp
       sedtra%mudfrac = 0.0_fp
       sedtra%sandfrac = 0.0_fp
+      sedtra%poros = 0.0_fp
       sedtra%dm = 0.0_fp
       sedtra%dg = 0.0_fp
       sedtra%dgsd = 0.0_fp
       sedtra%dxx = 0.0_fp
       sedtra%hidexp = 1.0_fp
+      sedtra%tcrero_bed = 1.0_fp
+      sedtra%eropar_bed = 1.0_fp
       !
       sedtra%ust2 = 0.0_fp
       sedtra%uuu = 0.0_fp
@@ -1157,7 +1192,7 @@ contains
             sedtra%statqnt(:, moroutput%statflg(3, iq)) = -1e10
          end if
       end do
-   end subroutine allocsedtra
+end subroutine allocsedtra
 
 !> Clear the arrays of sedtra_type data structure.
    subroutine clrsedtra(istat, sedtra)
@@ -1210,11 +1245,14 @@ contains
       if (associated(sedtra%frac)) deallocate (sedtra%frac, STAT=istat)
       if (associated(sedtra%mudfrac)) deallocate (sedtra%mudfrac, STAT=istat)
       if (associated(sedtra%sandfrac)) deallocate (sedtra%sandfrac, STAT=istat)
+      if (associated(sedtra%poros)) deallocate(sedtra%poros, STAT=istat)
       if (associated(sedtra%dm)) deallocate (sedtra%dm, STAT=istat)
       if (associated(sedtra%dg)) deallocate (sedtra%dg, STAT=istat)
       if (associated(sedtra%dgsd)) deallocate (sedtra%dgsd, STAT=istat)
       if (associated(sedtra%dxx)) deallocate (sedtra%dxx, STAT=istat)
       if (associated(sedtra%hidexp)) deallocate (sedtra%hidexp, STAT=istat)
+      if (associated(sedtra%tcrero_bed)) deallocate(sedtra%tcrero_bed, STAT=istat)
+      if (associated(sedtra%eropar_bed)) deallocate(sedtra%eropar_bed, STAT=istat)
       !
       ! hiding exposure on the basis of transport and coarse layer
       if (associated(sedtra%frac_he)) deallocate (sedtra%frac_he, STAT=istat)
@@ -1260,7 +1298,7 @@ contains
       if (associated(sedtra%taurat)) deallocate (sedtra%taurat, STAT=istat)
       !
       if (associated(sedtra%statqnt)) deallocate (sedtra%statqnt, STAT=istat)
-   end subroutine clrsedtra
+end subroutine clrsedtra
 
 !> Nullify/initialize a sedpar_type data structure.
    subroutine nullsedpar(sedpar)
@@ -1347,7 +1385,7 @@ contains
       nullify (sedpar%namsed)
       nullify (sedpar%flsdbd)
       nullify (sedpar%flstcg)
-   end subroutine nullsedpar
+end subroutine nullsedpar
 
 !> Clean up a sedpar_type data structure.
    subroutine clrsedpar(istat, sedpar)
@@ -1398,7 +1436,7 @@ contains
       if (associated(sedpar%namsed)) deallocate (sedpar%namsed, STAT=istat)
       if (associated(sedpar%flsdbd)) deallocate (sedpar%flsdbd, STAT=istat)
       if (associated(sedpar%flstcg)) deallocate (sedpar%flstcg, STAT=istat)
-   end subroutine clrsedpar
+end subroutine clrsedpar
 
 !> Nullify/initialize a morpar_type data structure.
    subroutine nullmorpar(morpar)
@@ -1775,6 +1813,7 @@ contains
       moroutput%dmsedcum = no
       moroutput%dpbedlyr = yes
       moroutput%dzduuvv = no
+      moroutput%eropar = no
       moroutput%fixfac = no
       moroutput%hidexp = no
       moroutput%frac = no
@@ -1784,6 +1823,8 @@ contains
       moroutput%dpsed = yes
       moroutput%thlyr = yes
       moroutput%mudfrac = no
+      moroutput%td = no
+      moroutput%orbvel = no
       moroutput%percentiles = no
       moroutput%poros = yes
       moroutput%rca = yes
@@ -1806,6 +1847,7 @@ contains
       moroutput%sourcesink = no
       moroutput%taub = no
       moroutput%taurat = no
+      moroutput%tcrero = no
       moroutput%umod = no
       moroutput%ustar = no
       moroutput%uuuvvv = no
@@ -1816,9 +1858,13 @@ contains
       moroutput%bamor = no
       moroutput%wumor = no
       moroutput%aldiff = no
-      moroutput%preload = yes
+      moroutput%preload = no
       moroutput%morfac = yes
-   end subroutine initmoroutput
+      !
+      moroutput%burflxf = no
+      moroutput%depflxf = no
+      moroutput%eroflxf = no
+end subroutine initmoroutput
 
 !> Initialize a fluff layer data structure
    subroutine initfluffy(flufflyr)
@@ -1834,6 +1880,10 @@ contains
 !! executable statements -------------------------------------------------------
 !
       flufflyr%iflufflyr = 0
+      flufflyr%iburtype  = 1 ! set to 2 in case of consolidation
+      flufflyr%cmfluff  = 40.0_fp
+      flufflyr%kkfluff  = 8.0E-12_fp
+      flufflyr%acalbur0 = 1.0_fp
       !
       nullify (flufflyr%mfluni)
       nullify (flufflyr%mfluff)
@@ -1842,12 +1892,15 @@ contains
       nullify (flufflyr%depfac)
       nullify (flufflyr%sinkf)
       nullify (flufflyr%sourf)
+      nullify(flufflyr%burflxf)
+      nullify(flufflyr%depflxf)
+      nullify(flufflyr%eroflxf)
       nullify (flufflyr%mflfil)
       !
       flufflyr%bfluff0_fil = ' '
       flufflyr%bfluff1_fil = ' '
       flufflyr%depfac_fil = ' '
-   end subroutine initfluffy
+end subroutine initfluffy
 
 !> Allocate a fluff layer data structure.
    function allocfluffy(flufflyr, lsed, nmlb, nmub) result(istat)
@@ -1870,6 +1923,9 @@ contains
       if (istat == 0) allocate (flufflyr%mfluff(lsed, nmlb:nmub), STAT=istat)
       if (istat == 0) allocate (flufflyr%sinkf(lsed, nmlb:nmub), STAT=istat)
       if (istat == 0) allocate (flufflyr%sourf(lsed, nmlb:nmub), STAT=istat)
+      if (istat == 0) allocate(flufflyr%burflxf(lsed,nmlb:nmub), STAT=istat)
+      if (istat == 0) allocate(flufflyr%depflxf(lsed,nmlb:nmub), STAT=istat)
+      if (istat == 0) allocate(flufflyr%eroflxf(lsed,nmlb:nmub), STAT=istat)
       if (istat == 0) allocate (flufflyr%mflfil(lsed), STAT=istat)
       !
       select case (flufflyr%iflufflyr)
@@ -1879,7 +1935,7 @@ contains
       case (2)
          if (istat == 0) allocate (flufflyr%depfac(lsed, nmlb:nmub), STAT=istat)
       end select
-   end function allocfluffy
+end function allocfluffy
 
 !> Clean up a fluff layer data structure.
    subroutine clrfluffy(istat, flufflyr)
@@ -1904,8 +1960,11 @@ contains
       if (associated(flufflyr%depfac)) deallocate (flufflyr%depfac, STAT=istat)
       if (associated(flufflyr%sinkf)) deallocate (flufflyr%sinkf, STAT=istat)
       if (associated(flufflyr%sourf)) deallocate (flufflyr%sourf, STAT=istat)
+      if (associated(flufflyr%burflxf)) deallocate(flufflyr%burflxf, STAT=istat)
+      if (associated(flufflyr%depflxf)) deallocate(flufflyr%depflxf, STAT=istat)
+      if (associated(flufflyr%eroflxf)) deallocate(flufflyr%eroflxf, STAT=istat)
       if (associated(flufflyr%mflfil)) deallocate (flufflyr%mflfil, STAT=istat)
-   end subroutine clrfluffy
+end subroutine clrfluffy
 
 !> Clean up a morpar_type data structure.
    subroutine clrmorpar(istat, morpar)
@@ -1996,7 +2055,7 @@ contains
       nullify (trapar%parname)
       nullify (trapar%parfilename)
       nullify (trapar%iparfile)
-   end subroutine nulltrapar
+end subroutine nulltrapar
 
 !> Clean up a trapar_type data structure.
    subroutine clrtrapar(istat, trapar)
