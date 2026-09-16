@@ -1286,7 +1286,7 @@ contains
       if (use_salinity_freezing_point .and. temperature_min >= 0.0_dp) then
          write (msgbuf, '(a,g0,a)') 'salinityDependentFreezingPoint is set to true, but Tempmin = ', temperature_min, &
             ' is not below 0 degrees Celsius. This may lead to incorrect results.'
-         call mess(LEVEL_WARN, msgbuf)
+         call mess(LEVEL_ERROR, msgbuf)
       end if
       if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
          call mess(LEVEL_ERROR, &
@@ -3077,7 +3077,7 @@ contains
          end if
       end if
       if (writeall .or. (izbndpos > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: D3Dflow, 1: on net boundary, 2: on specified polyline)')
+         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: mirroring of closest cell (as in Delft3D-FLOW), 1: on net boundary')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Tlfsmo', Tlfsmo, 'Fourier smoothing time (s) on water level boundaries')

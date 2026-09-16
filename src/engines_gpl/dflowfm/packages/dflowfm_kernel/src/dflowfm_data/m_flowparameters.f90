@@ -806,7 +806,7 @@ contains
 
       jawavebreakerturbulence = WAVE_BREAKER_TURB_ON ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
-      jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
+      jawavedelta = WAVE_BOUNDARYLAYER_SANA ! Wave boundary layer formulation: 1=Sana
 
       jawaveforces = WAVE_FORCES_ON
 
@@ -840,7 +840,7 @@ contains
 
       ibedlevmode = BLMODE_DFM !< Default: Compute bed levels solely by ibedlevtyp, i.e., derived from velocity points (or direct bl tiles).
 
-      ibedlevtyp = 3 ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
+      ibedlevtyp = BEDLEV_TYPE_MEAN ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
       ! 2 : Bottom levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
       ! 3 : Bottom levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
       ! 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link

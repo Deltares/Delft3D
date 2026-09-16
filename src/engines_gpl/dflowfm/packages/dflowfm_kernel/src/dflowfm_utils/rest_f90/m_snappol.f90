@@ -637,8 +637,6 @@ contains
                      else if (izbndpos == 1) then ! on network boundary
                         xzz = 0.5_dp * (xk(k3) + xk(k4))
                         yzz = 0.5_dp * (yk(k3) + yk(k4))
-                     else if (izbndpos == 2) then ! on specified boundary polyline
-
                      end if
                      num = num + 1
                      Xout(Nout + num) = xzz
