@@ -4835,7 +4835,7 @@ subroutine consolidate_decon(this, nm, dtmor)
        dzini = 0.0_fp
        dmi = 0.0_fp
        svfracdep = 0.0_fp
-       eqm_mud_conc = rho_mud * min((ag * (rho_mud - rhow(nm)) / ksigma)**(1.0_fp / nfd), 1.0_fp - MIN_POROSITY)
+       eqm_mud_conc = rho_mud * min(((nfd - 1.0_fp) / nfd * ag * (rho_mud - rhow(nm)) * thconlyreqm / ksigma)**(1.0_fp / (nfd - 1.0_fp)), 1.0_fp - MIN_POROSITY)
        do k2 = 1, nconlyr
           if (thlyr2(k2) > 0.0_fp) then
              ! adjust the properties of the work layer to match this layer
