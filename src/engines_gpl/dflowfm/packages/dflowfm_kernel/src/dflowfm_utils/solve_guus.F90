@@ -1733,7 +1733,7 @@ contains
       ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
       use m_reduce
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
-      use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
+      use m_flowparameters, only: icgsolver, Noderivedtypes
       use m_partitioninfo
       use m_readyy
       use m_saad, only: inisaad

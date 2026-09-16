@@ -453,10 +453,8 @@ contains
    end subroutine generate_partitioning_from_pol
 
 !> set ghostlevel parameters
-   subroutine partition_setghost_params(icgsolver)
+   subroutine partition_setghost_params()
       implicit none
-
-      integer, intent(in) :: icgsolver !< solver type
 
       numlay_cellbased = 4
       numlay_nodebased = 3
@@ -469,14 +467,10 @@ contains
 
       minghostlev_u = 1
       maxghostlev_u = 5
-
-      return
    end subroutine partition_setghost_params
 
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
-      use m_flowparameters, only: icgsolver
-
       implicit none
 
       character(len=*), intent(in) :: md_ident
@@ -486,7 +480,7 @@ contains
       character(len=128) :: mesg
       ierror = 1
 
-      call partition_setghost_params(icgsolver)
+      call partition_setghost_params()
 
 !     the following subroutine will determine the number of domains and generate the domain numbering
       if (npartition_pol > 0) then

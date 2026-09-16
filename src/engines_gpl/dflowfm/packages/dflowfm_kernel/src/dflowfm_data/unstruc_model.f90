@@ -2636,7 +2636,7 @@ contains
       character(len=20) :: rundat
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
-      integer :: i, ibuf, fww
+      integer :: ibuf, fww
       real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
