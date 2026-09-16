@@ -56,7 +56,6 @@ type :: trachy_vegetation_parameters
    real(fp) :: karman_alpha !< Von Karman coefficient correction.
    real(fp) :: blockage_factor !< Foliage blockage factor.
    real(fp) :: blockage_power !< Foliage blockage exponent.
-   logical :: iterate_uc !< Whether to iterate the vegetation velocity.
    logical :: use_foliage !< Whether foliage drag is included.
    logical :: apply_blockage !< Whether foliage blockage is applied.
    logical :: accumulate_lambda !< Whether vegetation resistance contributes to lambda.
@@ -148,7 +147,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     integer , parameter :: line_rgh = 2
     integer , parameter :: pnt_rgh  = 3
     integer , parameter :: spec_rgh = 0
-    integer , parameter :: skip_rgh = -999
 !
 ! Global variables
 !
@@ -202,8 +200,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
 !
     integer                     :: ifrom
     integer                     :: ilist
-    integer                     :: iuc
-    integer                     :: iuc_max
     integer                     :: ircod
     integer                     :: ita
     integer                     :: ito
@@ -250,7 +246,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     real(fp)                    :: fracbu
     real(fp)                    :: fraccu
     real(fp)                    :: fracto
-    real(fp)                    :: iuc_err
     real(fp)                    :: kbed
     real(fp)                    :: kn_icode
     real(fp)                    :: kn_sum
