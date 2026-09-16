@@ -355,6 +355,7 @@ contains
 
       integer :: constituent_index
       ! Temporary flow velocity buffer [ucx(1), ucy(1), ucz(1), ucx(2), ucy(2), ucz(2), ... , ucx(N), ucy(N), ucz(N)]
+      integer :: uc_index
       integer :: velocity_index
       real(kind=c_double), dimension(:), allocatable :: flow_velocity_3d_buffer
 
@@ -382,10 +383,11 @@ contains
          if (.not. allocated(flow_velocity_3d_buffer)) then
             allocate(flow_velocity_3d_buffer(self%mesh_3d_size * 3))
          end if
-         do velocity_index = 1, self%mesh_3d_size
-            flow_velocity_3d_buffer(velocity_index) = ucx(velocity_index)
-            flow_velocity_3d_buffer(velocity_index+1) = ucy(velocity_index)
-            flow_velocity_3d_buffer(velocity_index+2) = ucz(velocity_index)
+         do uc_index = 1, self%mesh_3d_size
+            velocity_index = 3 * (uc_index - 1) + 1
+            flow_velocity_3d_buffer(velocity_index) = ucx(uc_index)
+            flow_velocity_3d_buffer(velocity_index+1) = ucy(uc_index)
+            flow_velocity_3d_buffer(velocity_index+2) = ucz(uc_index)
          end do
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%flow_velocity_3d%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
