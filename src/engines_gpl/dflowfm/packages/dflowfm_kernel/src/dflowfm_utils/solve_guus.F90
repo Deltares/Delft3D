@@ -50,7 +50,6 @@ contains
       use m_flowgeom
       use m_partitioninfo
       use m_alloc
-      use system_utils, only: ARCH
       use m_qnerror
 
       ! subroutine to intialise the following variables:
@@ -130,11 +129,7 @@ contains
          end if
       else
          if (icgsolver == 4) then ! as a service to the user too
-            if (ARCH == 'linux') then ! on linux
-               icgsolver = 6
-            else ! on windows
-               icgsolver = 7
-            end if
+            icgsolver = 6
          else if (icgsolver < 4 .or. icgsolver == 44) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
@@ -146,14 +141,7 @@ contains
       end if
 
 ! set preconditioner
-      if (icgsolver == 7) then
-         ipre = 4
-      else if (icgsolver == 88) then ! DEBUG
-         icgsolver = 7 ! DEBUG
-         ipre = 0 ! DEBUG
-      else
-         ipre = 0
-      end if
+      ipre = 0
 
       if (jampi == 1) then
 !   do not eliminate ghost- and sendnodes
@@ -620,11 +608,6 @@ contains
 #else
          call qnerror('No PETSC solver available', ' ', ' ')
 #endif
-      else if (icgsolver == 7) then
-         call conjugategradient_MPI(s1, ndx, ipre, nocgiter, ierror) ! parallel cg, ipre=0,1: "global" preconditioning, ipre=3,4: block preconditioning
-         if (ierror == 1) then
-            goto 1234
-         end if
       else if (icgsolver == 10) then
          call solve_jacobi(s1, ndx, nocgiter)
       else
@@ -1836,12 +1819,6 @@ contains
       nocg0 = nocg
       noel0 = noel
 
-#ifndef HAVE_PETSC
-      if (icgsolver == 6) then
-         icgsolver = 7
-      end if
-#endif
-
       if (Noderivedtypes >= 1) then
          call jipjanini()
       end if
@@ -1849,14 +1826,8 @@ contains
       call mess(LEVEL_INFO, 'nogauss , nocg : ', nogauss, nocg)
       call readyy('ini Gauss/CG', -1.0_dp)
 
-      if (icgsolver == 4 .or. icgsolver == 44 .or. icgsolver == 5 .or. (icgsolver == 7 .and. (ipre == 3 .or. ipre == 4))) then
-         if (icgsolver /= 7) then
-            call inisaad(epscg, maxmatvecs, 1.0_dp) ! 1d0: with MILU preconditioner
-            !call inisaad(epscg,1d0)   ! 1d0: with MILU preconditioner
-         else ! use Saad as preconditioner
-            call inisaad(epscg, maxmatvecs, 0.0_dp) ! 0.0d0: as ILU/MILU preconditioner, for robustness sake
-            !call inisaad(epscg,0.d0) ! 0.0d0: as ILU/MILU preconditioner, for robustness sake
-         end if
+      if (icgsolver == 4 .or. icgsolver == 44 .or. icgsolver == 5) then
+         call inisaad(epscg, maxmatvecs, 1.0_dp) ! 1d0: with MILU preconditioner
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
          call ini_petsc(Ndx, ierror)
@@ -1968,416 +1939,6 @@ contains
 
    end subroutine explicit
 
-   subroutine conjugategradient_MPI(s1, ndx, ipre, nocgiter_loc, ierror)
-      use m_reduce
-! BEGIN MPI
-#ifdef HAVE_MPI
-      use mpi
-#endif
-
-      use m_partitioninfo
-! END MPI
-      use m_timer
-      use MessageHandling
-      use m_flowparameters, only: jalogsolverconvergence
-
-      implicit none
-      integer :: ndx, ipre
-      real(kind=dp) :: s1(ndx)
-      integer, intent(out) :: nocgiter_loc
-      integer, intent(out) :: ierror !< error (1) or not (0)
-      character(len=100) :: message
-
-#ifdef HAVE_MPI
-      integer :: nopreconditioner
-
-      integer :: i, j, jj, n, ntot
-      real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
-      real(kind=dp) :: eps
-
-      ! BEGIN MPI
-      real(kind=dp) :: eps_tmp, rkzki_tmp, pkapki_tmp
-      ! END MPI
-
-      ierror = 0
-
-#endif
-
-      nocgiter_loc = 0
-
-      ! ddr (rechterlid), bbr (diag) , ccr (off diag), s1, row, row()%j, row()%a [AvD]
-
-#ifdef HAVE_MPI
-
-      eps = 0.0_dp
-      rkzki = 0.0_dp
-
-      if (nocg > 0) then
-         if (ipre == 2) then
-            write (6, *) "ipre=2 not supported"
-            stop
-         else if (ipre == 3 .or. ipre == 4) then ! Saad preconditioner
-            !   compute Saad matrix, preconditioner and permutation only
-            call conjugategradientSAAD(ddr, s1, ndx, nopreconditioner, -1, 1, ierror) ! ddr and s1 not used
-            if (ierror /= 0) then
-               goto 1234
-            end if
-         end if
-
-      else
-         rk = 0.0_dp
-      end if
-
-! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      !call update_ghost(s1, ierror)
-      call update_ghosts(ITYPE_S, 1, nodtot, s1, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      ! END MPI
-
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rk(ndn) = ddr(ndn) - bbr(ndn) * s1(ndn)
-         ntot = row(ndn)%l
-         do j = 1, ntot
-            i = row(ndn)%j(j)
-            jj = row(ndn)%a(j)
-            rk(ndn) = rk(ndn) - ccr(jj) * s1(i)
-         end do
-         if (abs(rk(ndn)) > eps) then
-            eps = abs(rk(ndn))
-         end if
-!   pk(ndn)=rk(ndn)/bbr(ndn)
-!   zkr(ndn)=pk(ndn)
-!   rkzki=rkzki+rk(ndn)*zkr(ndn)
-      end do
-
-      ! preconditioning
-      if (ipre == 3 .or. ipre == 4) then ! Saad preconditioner
-!  BEGIN MPI
-         if (jatimer == 1) then
-            call starttimer(IMPICOMM)
-         end if
-         !call update_ghost(rk,ierror)
-         call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) then
-            call stoptimer(IMPICOMM)
-         end if
-         if (ierror /= 0) then
-            goto 1234
-         end if
-! END MPI
-         if (nocg > 0) then
-            if (ipre == 3) then
-               call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 0, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) then
-                  goto 1234
-               end if
-            else if (ipre == 4) then
-               call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 2, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) then
-                  goto 1234
-               end if
-            end if
-         else
-            zkr = 0.0_dp
-         end if
-      else
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn) / bbr(ndn)
-         end do
-      end if
-
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         pk(ndn) = zkr(ndn)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-
-      ! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      call mpi_allreduce(rkzki, rkzki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      rkzki = rkzki_tmp
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      call mpi_allreduce(eps, eps_tmp, 1, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      eps = eps_tmp
-      ! END MPI
-
-      if (eps < epscg) then
-         if (my_rank == 0) then
-            if (jalogsolverconvergence == 1) then
-               write (message, *) 'Solver converged in ', nocgiter_loc, ' iterations'
-               call mess(LEVEL_INFO, message)
-            end if
-         end if
-         return
-      end if
-
-10    continue
-
-      ! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      !call update_ghost(pk(1:nodtot),ierror)
-      call update_ghosts(ITYPE_S, 1, nodtot, pk(1:nodtot), ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      ! END MPI
-
-      ! compute A pk and pk' A Pk
-      pkapki = 0.0_dp
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         apk(ndn) = bbr(ndn) * pk(ndn)
-         ntot = row(ndn)%l
-         do j = 1, ntot
-            i = row(ndn)%j(j)
-            jj = row(ndn)%a(j)
-            apk(ndn) = apk(ndn) + ccr(jj) * pk(i)
-         end do
-         pkapki = pkapki + pk(ndn) * apk(ndn)
-      end do
-
-      ! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      call mpi_allreduce(pkapki, pkapki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      pkapki = pkapki_tmp
-      ! END MPI
-
-      alfak = rkzki / pkapki
-      eps = 0.0_dp
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         s1(ndn) = s1(ndn) + alfak * pk(ndn)
-         rk(ndn) = rk(ndn) - alfak * apk(ndn)
-         if (abs(rk(ndn)) > eps) then
-            eps = abs(rk(ndn))
-         end if
-      end do
-
-      ! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      call mpi_allreduce(eps, eps_tmp, 1, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      eps = eps_tmp
-      ! END MPI
-
-      if (ipre == 0) then ! row scaling
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn) / bbr(ndn)
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-      else if (ipre == 1 .or. ipre == 2) then ! GS,  incomplete Choleski
-
-! BEGIN MPI
-         if (jatimer == 1) then
-            call starttimer(IMPICOMM)
-         end if
-         !call update_ghost(rk,ierror)
-         call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) then
-            call stoptimer(IMPICOMM)
-         end if
-         if (ierror /= 0) then
-            goto 1234
-         end if
-         zkr = rk
-! END MPI
-
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn)
-            ntot = row(ndn)%l
-            do j = 1, ntot
-               i = row(ndn)%j(j)
-               if (i < ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-            if (ipre == 1) then
-               zkr(ndn) = zkr(ndn) / bbr(ndn) ! GS
-            else
-               zkr(ndn) = zkr(ndn) / bbl(ndn) ! Chol
-            end if
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-
-         ! BEGIN MPI
-         if (jatimer == 1) then
-            call starttimer(IMPICOMM)
-         end if
-         !call update_ghost(zkr,ierror)
-         call update_ghosts(ITYPE_S, 1, nodtot, zkr, ierror)
-         if (jatimer == 1) then
-            call stoptimer(IMPICOMM)
-         end if
-         if (ierror /= 0) then
-            goto 1234
-         end if
-         ! END MPI
-
-         do n = nogauss + nocg, nogauss + 1, -1
-            ndn = noel(n)
-            if (ipre < 2) then
-               zkr(ndn) = bbr(ndn) * zkr(ndn)
-            else
-               zkr(ndn) = bbl(ndn) * zkr(ndn)
-            end if
-            ntot = row(ndn)%l
-            do j = 1, ntot
-               i = row(ndn)%j(j)
-               jj = row(ndn)%a(j)
-               if (i > ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-            if (ipre == 1) then
-               zkr(ndn) = zkr(ndn) / bbr(ndn) ! Gs
-            else
-               zkr(ndn) = zkr(ndn) / bbl(ndn) ! Chol
-            end if
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-      else if (ipre == 3 .or. ipre == 4) then ! Saad preconditioning
-!  BEGIN MPI
-         if (jatimer == 1) then
-            call starttimer(IMPICOMM)
-         end if
-         !call update_ghost(rk,ierror)
-         call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) then
-            call stoptimer(IMPICOMM)
-         end if
-         if (ierror /= 0) then
-            goto 1234
-         end if
-!  END MPI
-         if (nocg > 0) then
-            if (ipre == 3) then
-               call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 0, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) then
-                  goto 1234
-               end if
-            else if (ipre == 4) then
-               call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 2, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) then
-                  goto 1234
-               end if
-            end if
-         else
-            zkr = 0.0_dp
-         end if
-      end if
-
-      if (eps < epscg) then
-         if (my_rank == 0) then
-            if (jalogsolverconvergence == 1) then
-               write (message, *) 'Solver converged in ', nocgiter_loc, ' iterations'
-               call mess(LEVEL_INFO, message)
-            end if
-         end if
-         return
-      end if
-
-      nocgiter_loc = nocgiter_loc + 1
-
-      ! MPI
-! if ( my_rank.eq.0 .and. 100*(nocgiter_loc/10).eq.nocgiter_loc ) write(6,*) nocgiter_loc, eps
-!   if ( my_rank.eq.0 ) write(6,*) nocgiter_loc, eps, alfak
-      ! END MPI
-
-      if (nocgiter_loc > 1000) then
-         call mess(LEVEL_ERROR, ' no convergence for CG method, nr of iterations, eps : ', nocgiter_loc, eps)
-      end if
-
-      rkzki0 = rkzki
-      rkzki = 0.0_dp
-
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-
-      ! BEGIN MPI
-      if (jatimer == 1) then
-         call starttimer(IMPICOMM)
-      end if
-      call mpi_allreduce(rkzki, rkzki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) then
-         call stoptimer(IMPICOMM)
-      end if
-      if (ierror /= 0) then
-         goto 1234
-      end if
-      rkzki = rkzki_tmp
-      ! END MPI
-
-      betak = rkzki / rkzki0
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         pk(ndn) = zkr(ndn) + betak * pk(ndn)
-      end do
-      goto 10
-
-#endif
-
-      ierror = 0
-
-! error handling
-1234  continue
-
-      if (ierror /= 0) then
-         call mess(LEVEL_ERROR, 'conjugategradient_MPI error')
-      end if
-
-   end subroutine conjugategradient_MPI
 
    subroutine writematrix_matlab()
       use m_reduce
