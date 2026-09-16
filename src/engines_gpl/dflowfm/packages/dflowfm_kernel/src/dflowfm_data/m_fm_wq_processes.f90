@@ -148,6 +148,14 @@ module m_fm_wq_processes
    integer :: isfwavelength !< pointer to wave length     segment function
    integer :: isfwaveperiod !< pointer to wave period     segment function
    !
+   integer, parameter :: NODETECTNANNEG = 0 !< no detection
+   integer, parameter :: DETECTNANNEGCELL = 1 !< detect NaN and negative values per cell
+   integer, parameter :: DETECTNANNEGCOLUMN = 2 !< detect NaN and negative values per column
+   integer :: detectnanneg = NODETECTNANNEG !< setting for detecting NaN and negative values in concentration fields.
+   real(hp) :: detectnegthreshold = -1.0e-6_hp !< threshold for detecting negative values in concentration fields
+   integer :: detectnannegmsgmax = 10000 !< Maximum number of messages for detecting NaN and negative values in concentration fields
+   integer :: detectnannegmsg = 0 !< message counter for detecting NaN and negative values in concentration fields
+   !
    !     Balance output
    !
    integer :: ibflag !< if 1 then mass balance output

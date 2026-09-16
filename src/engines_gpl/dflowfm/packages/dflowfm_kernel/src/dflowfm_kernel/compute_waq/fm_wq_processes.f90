@@ -578,6 +578,9 @@ contains
       character(len=10), parameter :: cbloom = 'd40blo'
       character(len=20), parameter :: cdoprocesses = 'DoProcesses'
       character(len=20), parameter :: cprocessesinactive = 'ProcessesInactive'
+      character(len=20), parameter :: cdetectnanneg = 'DetectNaNNeg'
+      character(len=20), parameter :: cnegthreshold = 'NegThreshold'
+      character(len=20), parameter :: cdetectnannegmsgmax = 'DetectMsgMax'
 
       character(len=20), parameter :: cWaveH = 'WaveHeight'
       character(len=20), parameter :: cWaveL = 'WaveLength'
@@ -929,10 +932,6 @@ contains
          outputs%pointers(i) = -1
       end do
 
-      deallocate (coname_sub)
-      deallocate (covalue_sub)
-      deallocate (ouname_sub)
-
       !     calculation timers need to be known for the statistical processes (start time/stop time)
       isfact = 1
       itfact = 86400
@@ -979,7 +978,7 @@ contains
       !    count number of substances with fall velocities
       nfallwaq = 0
       if (perform_waq_sediment_transport_coupling) then
-         nfallwaq = count( ivpnw(1:num_substances_transported) > 0 )
+         nfallwaq = count(ivpnw(1:num_substances_transported) > 0)
       end if
       call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
       if (nfallwaq > 0) then
@@ -1082,9 +1081,47 @@ contains
          end do
       end if
 
+      ! Check if detection of NaN and negative values in substance concentrations is requested, and if so, get optional threshold and maximum number of messages.
+      icon = index_in_array(cdetectnanneg, coname_sub)
+      if (icon > 0) then
+         ! Detection of NaN and negative values in concentrations is requested.
+         call mess(LEVEL_INFO, 'Found constant ''DetectNaNNeg''. Water quality processes will detect NaN and negative values in the state vector.')
+         detectnanneg = nint(covalue_sub(icon))
+         select case (detectnanneg)
+         case (DETECTNANNEGCELL)
+            call mess(LEVEL_INFO, 'Detection of NaN and negative values in concentrations per cell.')
+         case (DETECTNANNEGCOLUMN)
+            call mess(LEVEL_INFO, 'Detection of NaN and negative values in concentrations per column.')
+         case default
+            call mess(LEVEL_ERROR, 'Invalid value detection of NaN or negative values in concentrations. Use 1 (per cell) or 2 (per column) to switch it on.')
+         end select
+
+         ! Get optional threshold for negative values.
+         icon = index_in_array(cnegthreshold, coname_sub)
+         if (icon > 0) then
+            detectnegthreshold = covalue_sub(icon)
+            call mess(LEVEL_INFO, 'Found constant ''NegThreshold''. Will detect values less than ', detectnegthreshold)
+         else
+            call mess(LEVEL_INFO, 'No constant ''NegThreshold'' found. Will detect values less than ', detectnegthreshold)
+         end if
+
+         ! Get optinonal maximum number of messages.
+         icon = index_in_array(cdetectnannegmsgmax, coname_sub)
+         if (icon > 0) then
+            detectnannegmsgmax = nint(covalue_sub(icon))
+            call mess(LEVEL_INFO, 'Found constant ''DetectMsgMax''. Will limit the number of messages to ', detectnannegmsgmax)
+         else
+            call mess(LEVEL_INFO, 'No constant ''DetectMsgMax'' found. Will limit the number of messages to ', detectnannegmsgmax)
+         end if
+      end if
+
       call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
       call mess(LEVEL_INFO, '==========================================================================')
       jawaqproc = 2 ! processes succesfully initiated
+
+      deallocate (coname_sub)
+      deallocate (covalue_sub)
+      deallocate (ouname_sub)
 
       if (timon) then
          call timstop(ithndl)
@@ -1490,6 +1527,10 @@ contains
          return
       end if
 
+      if (timon) then
+         call timstrt("fm_wq_processes_step", ithand0)
+      end if
+
       select case (processselection)
       case (WQ_RUNADSSEDTRA)
          run_process = is_always_process .or. is_ads_sed_tra_process
@@ -1498,10 +1539,6 @@ contains
       case default !run all processes
          run_process = .true.
       end select
-
-      if (timon) then
-         call timstrt("fm_wq_processes_step", ithand0)
-      end if
 
       !     copy data from D-FlowFM to WAQ
       if (timon) then
@@ -1566,6 +1603,7 @@ contains
       use m_get_kbot_ktop
       use m_get_link1
       use m_waveconst
+      use ieee_arithmetic
       implicit none
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
@@ -1579,6 +1617,7 @@ contains
       integer :: ip, ifun, isfun
       integer :: kk, k, kb, kt, ktmax, ktwq
       integer :: L
+      integer :: detectnannegmsgbefore
 
       logical, save :: first = .true.
 
@@ -1804,8 +1843,64 @@ contains
          end do
       end do
 
-      ! fill concentrations
+      ! check concentrations for NaN and negative values (when requested by user)
       ipoiconc = arrpoi(iiconc)
+      
+      ! switch messages off when maximum number of messages reached.
+      if (detectnanneg > 0 .and. detectnannegmsg > detectnannegmsgmax) then
+         call mess(LEVEL_INFO, 'Maximum number of massages on NaNs and Negative values reached: ', detectnannegmsgmax)
+         detectnanneg = 0
+      end if
+      detectnannegmsgbefore = detectnannegmsg
+
+      ! report fer cell or column depending on user choice.
+      select case (detectnanneg)
+      case (DETECTNANNEGCELL)
+         ! report by cell
+         do isys = 1, num_substances_transported
+            iconst = isys2const(isys)
+            do kk = 1, Ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  if (.not. ieee_is_finite(constituents(iconst, k))) then
+                     detectnannegmsg = detectnannegmsg + 1
+                     call mess(LEVEL_INFO, 'NaN value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
+                     call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
+                     call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
+                  else if (constituents(iconst, k) < detectnegthreshold) then
+                     detectnannegmsg = detectnannegmsg + 1
+                     call mess(LEVEL_INFO, 'Negative value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
+                     call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
+                     call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
+                  end if
+               end do
+            end do
+         end do
+      case (DETECTNANNEGCOLUMN)
+         ! report by column if any NaN or negative value is detected in the column
+         do isys = 1, num_substances_transported
+            iconst = isys2const(isys)
+            do kk = 1, Ndxi
+               call getkbotktop(kk, kb, kt)
+               if (any(.not. ieee_is_finite(constituents(iconst, kb:kt))) .or. any(constituents(iconst, kb:kt) < detectnegthreshold)) then
+                  detectnannegmsg = detectnannegmsg + 1
+                  call mess(LEVEL_INFO, 'NaN or negative value detected for substance '//trim(const_names(iconst))//' in column ', kk)
+                  call mess(LEVEL_INFO, 'Value received from D-FlowFM, old value in processes, top to bottom for cells', kt, kb)
+                  do k = kt, kb, -1
+                     call mess(LEVEL_INFO, constituents(iconst, k), real(process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1), 8))
+                  end do
+               end if
+            end do
+         end do
+      end select
+      
+      ! report time and number of new messages for this time step if any new messages were generated.
+      if (detectnannegmsg > detectnannegmsgbefore) then
+         call mess(LEVEL_INFO, 'The time in seconds of this time step: ', time)
+         call mess(LEVEL_INFO, 'Number of new messages in this time step: ', detectnannegmsg - detectnannegmsgbefore)
+      end if
+
+      ! fill concentrations
       do k = kbx, ktx
          do isys = 1, num_substances_transported
             iconst = isys2const(isys)
