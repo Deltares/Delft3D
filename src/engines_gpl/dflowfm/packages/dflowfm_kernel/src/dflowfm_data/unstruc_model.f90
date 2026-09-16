@@ -3077,7 +3077,7 @@ contains
          end if
       end if
       if (writeall .or. (izbndpos > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: D3Dflow, 1: on net boundary, 2: on specified polyline)')
+         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: mirroring of closest cell (as in Delft3D-FLOW), 1: on net boundary')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Tlfsmo', Tlfsmo, 'Fourier smoothing time (s) on water level boundaries')
