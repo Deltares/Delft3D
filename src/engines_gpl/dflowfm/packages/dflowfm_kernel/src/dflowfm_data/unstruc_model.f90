@@ -971,6 +971,9 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
+      if (icgsolver == 8) then
+         call mess(LEVEL_ERROR, 'Icgsolver 8, the pARMS solver, is no longer supported.')
+      end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
       if (icgsolver == 7 .or. icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
@@ -1059,16 +1062,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_get(md_ptr, 'numerics', trim(iparmsnam(i)), iparms(i))
-         end do
-
-         do i = 1, NPARMS_DBL
-            call prop_get(md_ptr, 'numerics', trim(dparmsnam(i)), dparms(i))
-         end do
-      end if
 
       call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
       call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
@@ -3182,15 +3175,6 @@ contains
       end if
       if (writeall .or. rhointerfaces /= BAROC_ORIGINAL) then
          call prop_set(prop_ptr, 'numerics', 'rhoInterfaces', rhointerfaces, 'Estimate rho at 3D layer interfaces for baroclinic pressure gradient method; -1 = original linear interpolation, 0 = improved linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
-      end if
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_set(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
-         end do
-         do i = 1, NPARMS_DBL
-            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0: parms-default')
-         end do
       end if
 
       if (writeall .or. (s01_max_err > 0.0_dp)) then

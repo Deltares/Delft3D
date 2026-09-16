@@ -4189,10 +4189,6 @@ contains
       call stoppetsc()
 #endif
 
-#ifdef HAVE_PARMS
-      call deallocparms()
-#endif
-
 #ifdef HAVE_MPI
       if (ja_mpi_init_by_fm == 1) then
          call mpi_finalize(ierr)

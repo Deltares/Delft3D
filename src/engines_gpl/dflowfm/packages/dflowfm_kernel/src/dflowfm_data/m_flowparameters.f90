@@ -650,18 +650,6 @@ module m_flowparameters
    integer :: jawriteDFMinterpretedvalues !< Write interpretedvalues
    integer :: jawriteDetailedTimers !< Write detailed timers output file
 
-   ! parameters for parms solver
-   integer, parameter :: NPARMS_INT = 2 !< for parms solver, number of integer parameters
-   integer, parameter :: IPARMS_ILUTYPE = 1
-   integer, parameter :: IPARMS_NLEVEL = 2
-   character(len=128), dimension(NPARMS_INT), parameter :: iparmsnam = [character(len=128) :: 'ilutype', 'nlevel']
-   integer, dimension(NPARMS_INT) :: iparms
-
-   integer, parameter :: NPARMS_DBL = 1 !< for parms solver, number of real(kind=dp) parameters
-   integer, parameter :: IPARMS_DTOL = 1
-   character(len=128), dimension(NPARMS_DBL), parameter :: dparmsnam = [character(len=128) :: 'dtol']
-   real(kind=dp), dimension(NPARMS_DBL) :: dparms
-
    ! parameters for nudging
    real(kind=dp) :: Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time
 
@@ -990,9 +978,6 @@ contains
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
       ! call reset_flowparameters()
-
-      iparms = 0 ! parms-default
-      dparms = 0.0_dp ! parms-default
 
       jaupwindsrc = 1
       jalogsolverconvergence = 0
