@@ -37,7 +37,7 @@ contains
    subroutine rdmorlyr(lundia, error, filmor, &
                      & nmaxus, nto, lfbedfrm, nambnd, version, &
                      & lsedtot, namsed, morpar, morlyr, sedpar, &
-                     & mor_ptr, griddim)
+                     & mor_ptr, griddim, ag)
 !!--description-----------------------------------------------------------------
 !
 ! Reads attribute file for 3D morphology computation
@@ -72,6 +72,7 @@ contains
       type(bedcomp_data), pointer :: morlyr
       type(griddimtype), target, intent(in) :: griddim
       type(tree_data), pointer :: mor_ptr
+      real(fp), intent(in) :: ag !< gravitational acceleration (m/s^2) coming from the main program
 !
 ! Local variables
 !
@@ -114,6 +115,7 @@ contains
       !
       logical, pointer :: exchlyr
       logical, pointer :: track_shortage
+      real(fp), pointer :: bedcomp_ag
       real(fp), pointer :: bed
       real(fp), pointer :: minmass
       real(fp), pointer :: theulyr
@@ -162,6 +164,7 @@ contains
       rfield        = -999.0_fp
       nxxuser       = 0
       istat = bedcomp_getpointer_integer(morlyr, 'IUnderLyr', iunderlyr)
+      if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'gravity', bedcomp_ag)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IFractions', ifractions)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'CrsLyr', crslyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'ExchLyr', exchlyr)
@@ -194,6 +197,7 @@ contains
       nmub = griddim%nmub
       nfrac = lsedtot
       !
+      bedcomp_ag = ag
       error = .false.
       rmissval = -999.0_fp
       fmttmp = 'formatted'
@@ -342,7 +346,7 @@ contains
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
          if (morlyr%settings%ierosion > 0) then
-          call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
+            call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
          endif
          !
          call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
@@ -1084,20 +1088,24 @@ contains
       if (iconsolidate /= CONSOL_NONE) then
           write (lundia, '(a)') '*** Start of consolidation input'
 
-          call prop_get(mor_ptr, 'Consolidate', 'svfrac0', morlyr%settings%svfrac0)
-          txtput1 = 'Initial volume fraction for initial stratigraphy, svfrac0'
-          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0
+          if (iporosity == POROS_SVFRAC0 .or. morlyr%settings%ierosion == EROS_LE_HIR) then
+             call prop_get(mor_ptr, 'Consolidate', 'svfrac0', morlyr%settings%svfrac0)
+             txtput1 = 'Solid volume fraction for new deposits'
+             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0
+          endif
 
-          call prop_get(mor_ptr, 'Consolidate', 'svfrac0m', morlyr%settings%svfrac0m)
-          txtput1 = 'Initial volume fraction for mud, svfrac0m'
-          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0m
+          if (iporosity == POROS_SVFRAC0SM) then
+             call prop_get(mor_ptr, 'Consolidate', 'svfrac0m', morlyr%settings%svfrac0m)
+             txtput1 = 'Solid volume fraction for new mud deposits'
+             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0m
 
-          call prop_get(mor_ptr, 'Consolidate', 'svfrac0s', morlyr%settings%svfrac0s)
-          txtput1 = 'Initial volume fraction for sand, svfrac0s'
-          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0s
+             call prop_get(mor_ptr, 'Consolidate', 'svfrac0s', morlyr%settings%svfrac0s)
+             txtput1 = 'Solid volume fraction for new sand deposits'
+             write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0s
+          endif
 
           call prop_get(mor_ptr, 'Consolidate', 'ky', morlyr%settings%ky)
-          txtput1 = 'Strength coeffi.'
+          txtput1 = 'Strength coefficient'
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ky
 
           call prop_get(mor_ptr, 'Consolidate', 'nf', morlyr%settings%nf)
@@ -1105,35 +1113,35 @@ contains
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%nf
 
           call prop_get(mor_ptr, 'Consolidate', 'ksigma', morlyr%settings%ksigma)
-          txtput1 = 'Effective stress coeff., ksigma'
+          txtput1 = 'Effective stress coefficient, ksigma'
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ksigma
 
           call prop_get(mor_ptr, 'Consolidate', 'kk', morlyr%settings%kk)
-          txtput1 = 'Permeability coeff., kk'
+          txtput1 = 'Permeability coefficient, kk'
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kk
 
           select case (iconsolidate)
           case (1) ! Gibson model parameters
 
               call prop_get(mor_ptr, 'Consolidate', 'ksigma0', morlyr%settings%ksigma0)
-              txtput1 = 'Effective stress coeff., ksigma0'
+              txtput1 = 'Effective stress coefficient, ksigma0'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ksigma0
 
               call prop_get(mor_ptr, 'Consolidate', 'kbioturb', morlyr%settings%kbioturb)
-              txtput1 = 'Bioturbation coeff., kb'
+              txtput1 = 'Bioturbation coefficient, kb'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kbioturb
 
               call prop_get(mor_ptr, 'Consolidate', 'rtcontmor', morlyr%settings%confac)
               call prop_get(mor_ptr, 'Consolidate', 'confac', morlyr%settings%confac)
-              txtput1 = 'ratio con/mor time scales, confac'
+              txtput1 = 'Ratio con/mor time scales, confac'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%confac
 
               call prop_get(mor_ptr, 'Consolidate', 'thtrconcr', morlyr%settings%thtrconcr)
-              txtput1 = '1st lyr thick call cons, thtrconcr'
+              txtput1 = 'Minimum thickness active layer for consolidation'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%thtrconcr
 
               call prop_get(mor_ptr, 'Consolidate', 'imixtr', morlyr%settings%imixtr)
-              txtput1 = 'replenish mix 2nd layer, imixtr'
+              txtput1 = 'Flag for replenish active layer, imixtr'
               write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%imixtr
 
               call prop_get(mor_ptr, 'Consolidate', 'svgel', morlyr%settings%svgel)

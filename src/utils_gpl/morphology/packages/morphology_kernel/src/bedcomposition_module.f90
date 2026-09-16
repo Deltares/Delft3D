@@ -3219,14 +3219,13 @@ function initmorlyr(this) result (istat)
     settings%sigma_sfm    = 0.2_fp
     settings%sinkfrac_max = 0.05_fp
     settings%initcl       = .false.
-    settings%nf           = 2.69!2.605_fp               ! fractal dimension [-]
+    settings%nf           = 2.69_fp                ! fractal dimension [-]
     settings%ky           = 1.0E3_fp               ! [Pa]
-    settings%ksigma       = 1.99E7_fp!7.1E7_fp               ! effective stress coefficient [Pa]
+    settings%ksigma       = 1.99E7_fp              ! effective stress coefficient [Pa]
     settings%ksigma0      = 0.0_fp                 ! effective stress coefficient (usually set as 0) [Pa]
-    settings%kk           = 1.59E-13_fp!7.6E-13_fp             ! permeability coefficient [m/s]
+    settings%kk           = 1.59E-13_fp            ! permeability coefficient [m/s]
     settings%kbioturb     = 0.0_fp                 ! bioturbation coefficient [m2/s]
-    !settings%svfrac0      = 500.0/2650.0           ! example from Townsend&MeVay1990
-    settings%svfrac0      = 1600.0/2650.0          ! Example from Townsend&MeVay1990, svfrac is around 0.18, which is reasonable for unconsolidated sediment
+    settings%svfrac0      = 500.0/2650.0           ! example from Townsend & McVay 1990, svfrac is around 0.18, which is reasonable for unconsolidated sediment
     settings%svfrac0m     = 0.2_fp                 ! depositional svfrac for mud
     settings%svfrac0s     = 0.6_fp                 ! depositional svfrac for sand
     settings%minporm      = 0.05_fp                ! compacted porosity for mud
@@ -3235,7 +3234,6 @@ function initmorlyr(this) result (istat)
     settings%thtrconcr    = 1.0E-6_fp              ! default very small value to avoid numerical problems
     settings%thtrempty    = 0.0001_fp
     settings%imixtr       = 1                      !
-    !settings%minpor       = 0.25_fp               ! overburden porosity of sand fraction at depth ~1.5 km
     settings%crmud        = 0.001_fp               ! consolidation rate of clay [m]
     settings%crsand       = 0.01_fp                ! consolidation rate of sand [m]
     settings%crmsec       = 3.0E-04_fp             ! secondary consolidation of mud
@@ -4687,16 +4685,16 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand
 
     integer             :: k2
-    real(fp)           :: eqm_mudconc ! equilibrium mass concentration of the mud fractions [kg/m2]
-    real(fp)           :: thlyr_rem ! remaining thickness of layer to be processed [m]
-    real(fp)           :: thlyr_new ! new thickness of layer being processed [m]
-    real(fp)           :: dzini ! thickness of sediment to be moved to bookkeeping [m]
+    real(fp)            :: eqm_mud_conc ! equilibrium mass concentration of the mud fractions [kg/m3]
+    real(fp)            :: thlyr_rem ! remaining thickness of layer to be processed [m]
+    real(fp)            :: thlyr_new ! new thickness of layer being processed [m]
+    real(fp)            :: dzini ! thickness of sediment to be moved to bookkeeping [m]
     real(fp), dimension(this%settings%nfrac) :: dmi ! mass of sediment to be moved to bookkeeping [kg/m2]
     real(fp)            :: svfracdep ! solid volument fraction of sediment to be moved to bookkeeping [-]
-    real(fp), parameter :: MIN_POROSITY_SAND = 0.35_fp
-    real(fp)            :: msed_mud
-    real(fp)            :: thgibson_mud
-    real(fp)            :: thgibson_sand
+    real(fp)            :: total_mass_mud ! total mass of mud in the nconclyr layers [kg/m2]
+    real(fp)            :: thgibson_mud ! total gibson height for mud [m]
+    real(fp)            :: thgibson_sand ! total gibson height for sand [m]
+    real(fp), parameter :: MIN_POROSITY = 0.3_fp
     
     real(fp), dimension(this%settings%nfrac,this%settings%nconlyr) :: msed2
     real(fp), dimension(this%settings%nconlyr) :: svfrac2
@@ -4740,10 +4738,13 @@ subroutine consolidate_decon(this, nm, dtmor)
     enddo
     if (thmudgibson_new > 0.0_fp) then
        rho_mud = rho_mud / thmudgibson_new
+       ! if sand is present, we need to adjust the mud height to account for the volume taken up by the sand.
+       ! if there is a small amount of sand, the Gibson height for mud is corrected for the sand volume.
+       ! if there is a lot of sand, the Gibson height for mud is restricted by the minimum porosity of sand.
+       thmudgibson_new = min(thmudgibson_new + thsandgibson_new,thmudgibson_new/MIN_POROSITY)
     else
        rho_mud = this%settings%rhofrac(1) ! use the first fraction as default
     endif
-    
     ! if the Gibson's height, i.e. total mass, has increased
     if (thmudgibson_new + thsandgibson_new > thmudgibson(nm) + thsandgibson(nm)) then
 
@@ -4752,7 +4753,7 @@ subroutine consolidate_decon(this, nm, dtmor)
 
        ! take into account that we may have sand that adds thsandgibson_new at least, but
        ! don't consolidate more than the sand skeleton can support, i.e. don't consolidate below the minimum porosity of sand
-       thconlyreqm = max(thsandgibson_new + thconlyreqm, thsandgibson_new/(1.0_fp - MIN_POROSITY_SAND))
+       thconlyreqm = max(thsandgibson_new + thconlyreqm, thsandgibson_new/(1.0_fp - MIN_POROSITY))
 
        ! thconlyreqm may be limited to a maximum thickness
        thconlyreqm = min(thconlyreqm, this%settings%max_total_thick_decon_lyrs)
@@ -4775,7 +4776,7 @@ subroutine consolidate_decon(this, nm, dtmor)
           z_up = z_low
           z_low = z_up + thlyr_new
           ! compute the equilibrium mud concentration averaged over z_low to z_up
-          eqm_mudconc = (rho_mud / (z_low - z_up)) &
+          eqm_mud_conc = (rho_mud / (z_low - z_up)) &
              & * ((nfd - 1.0_fp) / nfd) &
              & * ((((nfd - 1.0_fp) / nfd) * ag * (rho_mud - rhow(nm)) / ksigma)**(1.0_fp / (nfd - 1.0_fp))) &
              & * (z_low**(nfd / (nfd - 1.0_fp)) - z_up**(nfd / (nfd - 1.0_fp)))
@@ -4787,18 +4788,18 @@ subroutine consolidate_decon(this, nm, dtmor)
              endif
              
              ! adjust the properties of the work layer to match this layer
-             msed_mud = 0.0_fp
+             total_mass_mud = 0.0_fp
              thgibson_mud = 0.0_fp
              thgibson_sand = 0.0_fp
              do l = 1, this%settings%nfrac
                 if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                   msed_mud = msed_mud + msed2(l,k2)
+                   total_mass_mud = total_mass_mud + msed2(l,k2)
                    thgibson_mud = thgibson_mud + msed2(l,k2) / this%settings%rhofrac(l)
                 else
                    thgibson_sand = thgibson_sand + msed2(l,k2) / this%settings%rhofrac(l)
                 endif
              enddo
-             thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY_SAND), msed_mud / eqm_mudconc + thgibson_sand)
+             thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY), total_mass_mud / eqm_mud_conc + thgibson_sand)
              svfrac2(k2) = (thgibson_mud + thgibson_sand) / thlyr2(k2)
              
              if (thlyr2(k2) < thlyr_rem) then
@@ -4822,9 +4823,11 @@ subroutine consolidate_decon(this, nm, dtmor)
                 exit
              endif
           enddo
-          
-          svfrac(k,nm) = svfrac(k,nm)/thlyr_new
+          thlyr_new = thlyr_new - thlyr_rem
           thlyr(k,nm) = thlyr_new
+          if (thlyr_new > 0.0_fp) then
+             svfrac(k,nm) = svfrac(k,nm)/thlyr_new
+          endif
        enddo
        
        ! if there is still sediment in the work arrays
@@ -4832,22 +4835,22 @@ subroutine consolidate_decon(this, nm, dtmor)
        dzini = 0.0_fp
        dmi = 0.0_fp
        svfracdep = 0.0_fp
-       eqm_mudconc = 600.0_fp
+       eqm_mud_conc = rho_mud * min((ag * (rho_mud - rhow(nm)) / ksigma)**(1.0_fp / nfd), 1.0_fp - MIN_POROSITY)
        do k2 = 1, nconlyr
           if (thlyr2(k2) > 0.0_fp) then
              ! adjust the properties of the work layer to match this layer
-             msed_mud = 0.0_fp
+             total_mass_mud = 0.0_fp
              thgibson_mud = 0.0_fp
              thgibson_sand = 0.0_fp
              do l = 1, this%settings%nfrac
                 if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                   msed_mud = msed_mud + msed2(l,k2)
+                   total_mass_mud = total_mass_mud + msed2(l,k2)
                    thgibson_mud = thgibson_mud + msed2(l,k2) / this%settings%rhofrac(l)
                 else
                    thgibson_sand = thgibson_sand + msed2(l,k2) / this%settings%rhofrac(l)
                 endif
              enddo
-             thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY_SAND), msed_mud / eqm_mudconc + thgibson_sand)
+             thlyr2(k2) = max(thgibson_sand / (1.0_fp - MIN_POROSITY), total_mass_mud / eqm_mud_conc + thgibson_sand)
              svfrac2(k2) = (thgibson_mud + thgibson_sand) / thlyr2(k2)
              
              dmi = dmi + msed2(:,k2)
