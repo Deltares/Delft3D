@@ -1177,10 +1177,26 @@ end subroutine decode_vegetation_parameters
 ! | Non-iterative `156`                         | `umag` for stems                                |
 ! | `154`                                       | no velocity used for drag                       |
 !
+!> Evaluate the vegetation resistance and Chezy coefficient for a vegetation formulation.
+!> Iterative formulations update the vegetation velocity until convergence; approximate
+!> formulations evaluate the resistance using the supplied stem and foliage velocities.
+!> @param formulation vegetation formulation parameters.
+!> @param depth local water depth.
+!> @param uc_reference reference velocity used by the iterative formulation.
+!> @param stem_velocity stem velocity used by the approximate formulation.
+!> @param foliage_velocity foliage velocity used by the approximate formulation.
+!> @param ag gravitational acceleration.
+!> @param vonkar von Karman constant.
+!> @param result calculated vegetation resistance results.
 subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar, result)
-   type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar
-   type(trachy_vegetation_result), intent(out) :: result
+   type(trachy_vegetation_parameters), intent(in) :: formulation !< vegetation formulation parameters
+   real(fp), intent(in) :: depth !< local water depth
+   real(fp), intent(in) :: uc_reference !< reference velocity used by the iterative formulation
+   real(fp), intent(in) :: stem_velocity !< stem velocity used by the approximate formulation
+   real(fp), intent(in) :: foliage_velocity !< foliage velocity used by the approximate formulation
+   real(fp), intent(in) :: ag !< gravitational acceleration
+   real(fp), intent(in) :: vonkar !< von Karman constant
+   type(trachy_vegetation_result), intent(out) :: result !< calculated vegetation resistance results
    integer, parameter :: IUC_MAX = 10
    real(fp), parameter :: IUC_TOL = 1.0e-3_fp
    real(fp) :: iuc_err, stem_velocity_i, foliage_velocity_i
@@ -1229,11 +1245,22 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
    end associate
 end subroutine evaluate_vegetation
 
+!> Calculate the vegetation resistance factor for a vegetation formulation.
+!> Formulation 154 uses the density, drag coefficient, vegetation height, and water depth;
+!> the other formulations use the supplied stem and foliage velocities.
+!> @param formulation vegetation formulation parameters.
+!> @param depth local water depth.
+!> @param stem_velocity stem velocity.
+!> @param foliage_velocity foliage velocity.
+!> @param apply_blockage whether foliage blockage is applied.
+!> @param phi calculated vegetation resistance factor.
 subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_velocity, apply_blockage, phi)
-   type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: depth, stem_velocity, foliage_velocity
-   logical, intent(in) :: apply_blockage
-   real(fp), intent(out) :: phi
+   type(trachy_vegetation_parameters), intent(in) :: formulation !< vegetation formulation parameters
+   real(fp), intent(in) :: depth !< local water depth
+   real(fp), intent(in) :: stem_velocity !< stem velocity
+   real(fp), intent(in) :: foliage_velocity !< foliage velocity
+   logical, intent(in) :: apply_blockage !< whether foliage blockage is applied
+   real(fp), intent(out) :: phi !< calculated vegetation resistance factor
 
    associate (drag => formulation%drag, densit => formulation%densit, uchistem => formulation%uchistem, &
       & expchistem => formulation%expchistem, use_foliage => formulation%use_foliage, &
@@ -1243,8 +1270,10 @@ subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_vel
       & vheigh => formulation%vheigh)
    ! 
    if (formulation%code == 154) then
-      phi = drag*densit*min(vheigh, depth)
+      !`densit` = $n_baptist$ [1/m]
+      phi = drag*densit*min(vheigh, depth) 
    else
+      !`densit` = $n_others$ [-]
       phi = drag*densit*(stem_velocity/uchistem)**expchistem
       if (use_foliage) then
          phi = phi + densitfoliage*dragfoliage * (foliage_velocity/uchifoliage)**expchifoliage
@@ -1257,10 +1286,21 @@ subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_vel
    end associate
 end subroutine compute_vegetation_phi
 
+!> Calculate the vegetation Chezy coefficient from the vegetation resistance factor.
+!> The formulation height and Karman correction are taken from `formulation`.
+!> @param formulation vegetation formulation parameters.
+!> @param depth local water depth.
+!> @param phi vegetation resistance factor.
+!> @param ag gravitational acceleration.
+!> @param vonkar von Karman constant.
+!> @param ch_icode calculated vegetation Chezy coefficient.
 subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
-   type(trachy_vegetation_parameters), intent(in) :: formulation
-   real(fp), intent(in) :: depth, phi, ag, vonkar
-   real(fp), intent(out) :: ch_icode
+   type(trachy_vegetation_parameters), intent(in) :: formulation !< vegetation formulation parameters
+   real(fp), intent(in) :: depth !< local water depth
+   real(fp), intent(in) :: phi !< vegetation resistance factor
+   real(fp), intent(in) :: ag !< gravitational acceleration
+   real(fp), intent(in) :: vonkar !< von Karman constant
+   real(fp), intent(out) :: ch_icode !< calculated vegetation Chezy coefficient
    real(fp) :: hk
 
    associate (vheigh => formulation%vheigh, cbed => formulation%cbed, &
