@@ -71,6 +71,14 @@ type :: trachy_vegetation_result
    logical :: converged !< Whether the vegetation velocity iteration converged.
 end type trachy_vegetation_result
 
+type :: trachy_waq_vegetation_data
+   logical :: waqol !< Whether WAQ vegetation data is available.
+   real(fp) :: vh2d !< Interpolated vegetation height from WAQ.
+   real(fp) :: vd2d !< Interpolated vegetation density from WAQ.
+   real(fp), dimension(:), pointer :: vegh2d !< WAQ vegetation height per cell.
+   real(fp), dimension(:), pointer :: vden2d !< WAQ vegetation density per cell.
+end type trachy_waq_vegetation_data
+
 integer, parameter :: VEGETATION_APPROXIMATE_VELOCITY = 0 !< Evaluate vegetation velocity without iteration.
 integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1 !< Iteratively evaluate vegetation velocity.
 
@@ -129,8 +137,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     real(fp), dimension(:)     , pointer :: rttacLin
     real(fp), dimension(:)     , pointer :: blu_trt
     real(fp), dimension(:)     , pointer :: zsu_prev
-    real(fp), dimension(:)     , pointer :: vegh2d
-    real(fp), dimension(:)     , pointer :: vden2d 
     logical                    , pointer :: flsedprop_rqrd
     !
 !
@@ -244,7 +250,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     real(fp)                    :: fracbu
     real(fp)                    :: fraccu
     real(fp)                    :: fracto
-    real(fp)                    :: hk
     real(fp)                    :: iuc_err
     real(fp)                    :: kbed
     real(fp)                    :: kn_icode
@@ -281,8 +286,6 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     real(fp)                    :: umag
     real(fp)                    :: uv0
     real(fp)                    :: vheigh
-    real(fp)                    :: vd2d
-    real(fp)                    :: vh2d
     real(fp)                    :: vz0
     real(fp)                    :: zstemp
     real(fp)                    :: z0rouL
@@ -291,6 +294,7 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     character(256)              :: errmsg
    type(trachy_vegetation_parameters) :: vegetation_parameters
    type(trachy_vegetation_result) :: vegetation_result
+   type(trachy_waq_vegetation_data) :: waq_vegetation_data
    logical :: vegetation_error
     
 !
@@ -316,8 +320,11 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     ntrtobs         => gdtrachy%gen%ntrtobs
     rttdef          => gdtrachy%gen%rttdef
     trtminh         => gdtrachy%gen%trtminh
-    vegh2d          => gdtrachy%gen%vegh2d
-    vden2d          => gdtrachy%gen%vden2d
+    waq_vegetation_data%waqol = waqol
+    if (waq_vegetation_data%waqol) then
+       waq_vegetation_data%vegh2d => gdtrachy%gen%vegh2d
+       waq_vegetation_data%vden2d => gdtrachy%gen%vden2d
+    endif
     !
     ! Pointers to directional part 
     !
@@ -519,13 +526,18 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
              rksmru = rttacLin(nm)*rksmr(nm1) + (1d0-rttacLin(nm))*rksmr(nm2)
              rksdu  = rttacLin(nm)*rksd(nm1)  + (1d0-rttacLin(nm))*rksd(nm2)
              !
-             if (waqol) then
-                !
-                ! 2D Vegetation characterics (coming from WAQ)
-                !
-                vd2d = rttacLin(nm)*vden2d(nm1) + (1-rttacLin(nm))*vden2d(nm2)
-                vh2d = (rttacLin(nm)*vegh2d(nm1)*vden2d(nm1) + (1-rttacLin(nm))*vegh2d(nm2)*vden2d(nm2)) / max(vd2d,eps)
-             endif
+             associate (waqol => waq_vegetation_data%waqol, vh2d => waq_vegetation_data%vh2d, &
+                & vd2d => waq_vegetation_data%vd2d, vegh2d => waq_vegetation_data%vegh2d, &
+                & vden2d => waq_vegetation_data%vden2d)
+                if (waqol) then
+                   !
+                   ! 2D Vegetation characterics (coming from WAQ)
+                   !
+                   vd2d = rttacLin(nm)*vden2d(nm1) + (1-rttacLin(nm))*vden2d(nm2)
+                   vh2d = (rttacLin(nm)*vegh2d(nm1)*vden2d(nm1) + &
+                      & (1-rttacLin(nm))*vegh2d(nm2)*vden2d(nm2)) / max(vd2d,eps)
+                endif
+             end associate
           !endif
           !
           ! Depth-average velocity (similar as in TAUBOT)
@@ -889,18 +901,13 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
              endif
              rgh_geom = area_rgh
           elseif (ircod>=153 .and. ircod<=162 .and. ircod/=157) then
-             call decode_vegetation_parameters(ircod, rttdef(itrt, :), waqol, vh2d, vd2d, &
+             call decode_vegetation_parameters(ircod, rttdef(itrt, :), waq_vegetation_data, depth, ag, &
                                                 vegetation_parameters, vegetation_error)
              if (vegetation_error) then
                 errmsg = 'Trachytopes: Invalid parameters for vegetation roughness formulation.'
                 call write_error(errmsg, unit=lundia)
                 error = .true.
                 return
-             endif
-             if (ircod == 153) then
-                hk = min(vegetation_parameters%vheigh, depth)
-                vegetation_parameters%cbed = 1.0_fp/sqrt(1.0_fp/(vegetation_parameters%cbed**2) + &
-                   & vegetation_parameters%drag*vegetation_parameters%densit*hk/(2.0_fp*ag))
              endif
              call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, u2dh, ag, vonkar, vegetation_result)
              ch_icode = vegetation_result%ch_icode
@@ -1039,12 +1046,12 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
 
 end subroutine trtrou
 
-subroutine decode_vegetation_parameters(code, parameters, waqol, vh2d, vd2d, formulation, error)
+subroutine decode_vegetation_parameters(code, parameters, waq_vegetation_data, depth, ag, formulation, error)
    integer, intent(in) :: code
    real(fp), dimension(:), intent(in) :: parameters
-   logical, intent(in) :: waqol
-   real(fp), intent(in) :: vh2d
-   real(fp), intent(in) :: vd2d
+   type(trachy_waq_vegetation_data), intent(in) :: waq_vegetation_data
+   real(fp), intent(in) :: depth
+   real(fp), intent(in) :: ag
    type(trachy_vegetation_parameters), intent(out) :: formulation
    logical, intent(out) :: error
 
@@ -1137,10 +1144,25 @@ subroutine decode_vegetation_parameters(code, parameters, waqol, vh2d, vd2d, for
       error = .true.
    end select
 
-   if (.not.error .and. formulation%vheigh < 0.0_fp .and. waqol) then
-      formulation%vheigh = vh2d
-      formulation%densit = vd2d
-   endif
+   associate (vheigh => formulation%vheigh, densit => formulation%densit, &
+      & drag => formulation%drag, cbed => formulation%cbed, &
+      & waqol => waq_vegetation_data%waqol, vh2d => waq_vegetation_data%vh2d, &
+      & vd2d => waq_vegetation_data%vd2d)
+      if (.not.error .and. vheigh < 0.0_fp .and. waqol) then
+         vheigh = vh2d
+         densit = vd2d
+      endif
+
+      ! Option 153 is converted to the shared option-154 representation so
+      ! that its bed and stem resistance are represented by one effective Cbed.
+      ! $$
+      ! Cbed_{153_as_in_154} = \frac{1}{\sqrt{\frac{1}{Cbed_{153}^{2}} +
+      ! \frac{drag\,densit\,\min(vheigh, depth)}{2\,ag}}}
+      ! $$
+      if (.not.error .and. code == 153) then
+         cbed = 1.0_fp/sqrt(1.0_fp/(cbed**2) + drag*densit*min(vheigh, depth)/(2.0_fp*ag)) !cbed of 153 expressed as in 154
+      endif
+   end associate
 end subroutine decode_vegetation_parameters
 
 ! Iterative formulations solve a fixed-point relation for canopy velocity uc,
@@ -1250,11 +1272,11 @@ subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_vel
       & densitfoliage => formulation%densitfoliage, dragfoliage => formulation%dragfoliage, &
       & uchifoliage => formulation%uchifoliage, expchifoliage => formulation%expchifoliage, &
       & blockage_factor => formulation%blockage_factor, blockage_power => formulation%blockage_power, &
-      & vheigh => formulation%vheigh)
+      & vheigh => formulation%vheigh, code => formulation%code)
    ! 
-   if (formulation%code == 153) then
+   if (code == 153) then
       phi = 0.0_fp
-   elseif (formulation%code == 154) then
+   elseif (code == 154) then
       !`densit` = $n_baptist$ [1/m]
       phi = drag*densit*min(vheigh, depth) 
    else
