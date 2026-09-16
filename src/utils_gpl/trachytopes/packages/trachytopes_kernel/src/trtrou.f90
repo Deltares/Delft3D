@@ -888,44 +888,19 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
                 kn_icode = max(rktra, 0.50_fp)
              endif
              rgh_geom = area_rgh
-          elseif (ircod==153) then
-             !
-             ! Baptist vegetation formulation
-             !
-             vheigh = rttdef(itrt, 1)
-             densit = rttdef(itrt, 2)
-             if (vheigh < 0.0_fp) then
-                vheigh = vh2d
-                densit = vd2d
-             endif
-             drag   = rttdef(itrt, 3)
-             cbed   = rttdef(itrt, 4)
-             !
-             rgh_type = ch_type
-             rgh_geom = area_rgh
-             !
-             if (vheigh < eps) then
-                rgh_geom = skip_rgh
-             else
-                if (depth>vheigh) then
-                   ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
-                            &          (drag*densit*vheigh)/(2.0_fp*ag)) &
-                            & + sqrt(ag)*log(depth/vheigh)/vonkar
-                else
-                   ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
-                            &          (drag*densit*depth)/(2.0_fp*ag))
-                endif
-             endif
-             !
-             rgh_type = ch_type
-             rgh_geom = area_rgh
-          elseif (ircod>=154 .and. ircod<=162 .and. ircod/=157) then
-             call decode_vegetation_parameters(ircod, rttdef(itrt, :), vegetation_parameters, vegetation_error)
+          elseif (ircod>=153 .and. ircod<=162 .and. ircod/=157) then
+             call decode_vegetation_parameters(ircod, rttdef(itrt, :), waqol, vh2d, vd2d, &
+                                                vegetation_parameters, vegetation_error)
              if (vegetation_error) then
                 errmsg = 'Trachytopes: Invalid parameters for vegetation roughness formulation.'
                 call write_error(errmsg, unit=lundia)
                 error = .true.
                 return
+             endif
+             if (ircod == 153) then
+                hk = min(vegetation_parameters%vheigh, depth)
+                vegetation_parameters%cbed = 1.0_fp/sqrt(1.0_fp/(vegetation_parameters%cbed**2) + &
+                   & vegetation_parameters%drag*vegetation_parameters%densit*hk/(2.0_fp*ag))
              endif
              call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, u2dh, ag, vonkar, vegetation_result)
              ch_icode = vegetation_result%ch_icode
@@ -1064,9 +1039,12 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
 
 end subroutine trtrou
 
-subroutine decode_vegetation_parameters(code, parameters, formulation, error)
+subroutine decode_vegetation_parameters(code, parameters, waqol, vh2d, vd2d, formulation, error)
    integer, intent(in) :: code
    real(fp), dimension(:), intent(in) :: parameters
+   logical, intent(in) :: waqol
+   real(fp), intent(in) :: vh2d
+   real(fp), intent(in) :: vd2d
    type(trachy_vegetation_parameters), intent(out) :: formulation
    logical, intent(out) :: error
 
@@ -1091,7 +1069,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    error = .false.
 
    select case (code)
-   case (154)
+   case (153, 154)
       if (size(parameters) < 4) then
          error = .true.
          return
@@ -1100,7 +1078,7 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
       formulation%densit = parameters(2)
       formulation%drag = parameters(3)
       formulation%cbed = parameters(4)
-      formulation%accumulate_lambda = .true.
+      formulation%accumulate_lambda = code == 154
    case (155, 158, 160, 162)
       if (size(parameters) < 10) then
          error = .true.
@@ -1158,6 +1136,11 @@ subroutine decode_vegetation_parameters(code, parameters, formulation, error)
    case default
       error = .true.
    end select
+
+   if (.not.error .and. formulation%vheigh < 0.0_fp .and. waqol) then
+      formulation%vheigh = vh2d
+      formulation%densit = vd2d
+   endif
 end subroutine decode_vegetation_parameters
 
 ! Iterative formulations solve a fixed-point relation for canopy velocity uc,
@@ -1175,7 +1158,7 @@ end subroutine decode_vegetation_parameters
 ! | Iterative `158`, `159`, `160`, `161`, `162` | Iterated `uc` for all relevant vegetation terms |
 ! | Non-iterative `155`                         | `umag` for stems, `u2dh` for foliage            |
 ! | Non-iterative `156`                         | `umag` for stems                                |
-! | `154`                                       | no velocity used for drag                       |
+! | `153`, `154`                                | no velocity used for drag                       |
 !
 !> Evaluate the vegetation resistance and Chezy coefficient for a vegetation formulation.
 !> Iterative formulations update the vegetation velocity until convergence; approximate
@@ -1246,7 +1229,7 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
 end subroutine evaluate_vegetation
 
 !> Calculate the vegetation resistance factor for a vegetation formulation.
-!> Formulation 154 uses the density, drag coefficient, vegetation height, and water depth;
+!> Formulations 153 and 154 use the density, drag coefficient, vegetation height, and water depth;
 !> the other formulations use the supplied stem and foliage velocities.
 !> @param formulation vegetation formulation parameters.
 !> @param depth local water depth.
@@ -1269,7 +1252,9 @@ subroutine compute_vegetation_phi(formulation, depth, stem_velocity, foliage_vel
       & blockage_factor => formulation%blockage_factor, blockage_power => formulation%blockage_power, &
       & vheigh => formulation%vheigh)
    ! 
-   if (formulation%code == 154) then
+   if (formulation%code == 153) then
+      phi = 0.0_fp
+   elseif (formulation%code == 154) then
       !`densit` = $n_baptist$ [1/m]
       phi = drag*densit*min(vheigh, depth) 
    else
