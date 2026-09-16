@@ -575,7 +575,7 @@ contains
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
          do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
-            source_sinks%constituents(source_sinks%num_total, constituent_index) = self%sources_sinks_constituents(constituent_index, i)
+            source_sink_all_discharges(constituent_index + 1, source_sinks%num_total) = self%sources_sinks_constituents(constituent_index, i)
          end do
       end do
 
