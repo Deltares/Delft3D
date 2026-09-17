@@ -112,9 +112,9 @@
                     "value_type": "string",
                     "description": "File version. Do not edit this.",
                     "status": {
-                        "value": "obsolete",
+                        "value": "deprecated",
                         "comment": "Use `[general] fileVersion` instead.",
-                        "since_release": 2027.01
+                        "date": "2026-06-17"
                     }
                 },
                 {
@@ -1128,11 +1128,11 @@
                     "key": "Grdang",
                     "default_value": "",
                     "value_type": "string",
-                    "description": "Keyword is obsolete.",
+                    "description": "Keyword is no longer supported.",
                     "status": {
-                        "value": "obsolete",
-                        "comment": "Keyword no longer supported.",
-                        "since_release": 2022.02
+                        "value": "deprecated",
+                        "comment": "Keyword no longer supported, the provided value is ignored.",
+                        "date": "2022-01-31"
                     }
                 }
             ]
@@ -1434,11 +1434,11 @@
                     "key": "filter",
                     "default_value": "",
                     "value_type": "string",
-                    "description": "Keyword is obsolete.",
+                    "description": "Keyword is no longer supported.",
                     "status": {
-                        "value": "obsolete",
-                        "comment": "Option no longer supported.",
-                        "since_release": 2022.02
+                        "value": "deprecated",
+                        "comment": "Keyword no longer supported, the provided value is ignored.",
+                        "date": "2022-01-31"
                     }
                 },
                 {
@@ -1451,23 +1451,8 @@
                     "key": "maxItVerticalForesterSal",
                     "default_value": 0,
                     "value_type": "int",
-                    "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
-                    "status": {
-                        "value": "deprecated",
-                        "comment": "Use `[numerics] maxItVerticalForester` instead.",
-                        "date": "2026-06-01"
-                    },
-                    "validation": {
-                        "range": {
-                            "min_inclusive": 0
-                        }
-                    }
-                },
-                {
-                    "key": "maxItVerticalForester",
-                    "default_value": 0,
-                    "value_type": "int",
-                    "description": "Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations).",
+                    "description": "Maximum number of vertical Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
+
                     "validation": {
                         "range": {
                             "min_inclusive": 0
@@ -1478,12 +1463,7 @@
                     "key": "maxItVerticalForesterTem",
                     "default_value": 0,
                     "value_type": "int",
-                    "description": "Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
-                    "status": {
-                        "value": "deprecated",
-                        "comment": "Use `[numerics] maxItVerticalForester` instead.",
-                        "date": "2026-06-01"
-                    },
+                    "description": "Maximum number of vertical Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
                     "validation": {
                         "range": {
                             "min_inclusive": 0
@@ -2653,6 +2633,17 @@
                     "key": "sobekdfm_relax",
                     "default_value": 0.01,
                     "value_type": "float",
+                    "description": "Keyword is no longer supported.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Keyword no longer supported, the provided value is ignored. Use `[numerics] lateral_fixedweir_relax` instead.",
+                        "date": "2022-01-31"
+                    }
+                },
+                {
+                    "key": "relax",
+                    "default_value": 0.01,
+                    "value_type": "float",
                     "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
@@ -3265,9 +3256,9 @@
                     "default_value": 1.0,
                     "description": "Linear friction umod.",
                     "status": {
-                        "value": "obsolete",
-                        "since_release": 2027.01,
-                        "comment": "Keyword no longer supported."
+                        "value": "deprecated",
+                        "date": "2026-06-17",
+                        "comment": "Keyword no longer supported, the provided value is ignored."
                     }
                 },
                 {
