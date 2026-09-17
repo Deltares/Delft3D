@@ -239,6 +239,8 @@ contains
             call msg_flush()
             write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1.0e6_dp
             call msg_flush()
+         end if
+         if (ITRA1 > 0) then
             write (msgbuf, '(a,F25.3)') 'mass error from tracer limitation (10^6 kg)  :', maserrtra / 1.0e6_dp
             call msg_flush()
          end if
