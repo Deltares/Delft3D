@@ -35,12 +35,12 @@ module precice_adapter
 
    !> Container with all quantities used by the adapter.
    type :: quantities_t
-      ! TODO: Add constituents C01..C10
       ! Writing
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
       type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+      type(quantity_t) :: flow_velocity_3d = quantity_t(standard_name="flow_velocity_3d", is_active=.true.)
       ! Constituents (reading and writing)
       type(quantity_t), dimension(NUM_COUPLED_CONSTITUENTS) :: constituents
       ! Reading
@@ -345,7 +345,7 @@ contains
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1
+      use m_flow, only: hs, s1, ucx, ucy, ucz
       use m_flowgeom, only: bl, ndx2d,  ndx
       use m_turbulence, only: potential_density
       use m_transport, only: numconst, constituents
@@ -354,6 +354,10 @@ contains
       class(precice_adapter_t), intent(in) :: self
 
       integer :: constituent_index
+      ! Temporary flow velocity buffer [ucx(1), ucy(1), ucz(1), ucx(2), ucy(2), ucz(2), ... , ucx(N), ucy(N), ucz(N)]
+      integer :: uc_index
+      integer :: velocity_index
+      real(kind=c_double), dimension(:), allocatable :: flow_velocity_3d_buffer
 
       if (self%quantities%hs%is_active) then
          call precicef_write_data(self%cell_center_mesh_name, self%quantities%hs%standard_name, &
@@ -374,6 +378,20 @@ contains
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
+      end if
+      if (self%quantities%flow_velocity_3d%is_active) then
+         if (.not. allocated(flow_velocity_3d_buffer)) then
+            allocate(flow_velocity_3d_buffer(self%mesh_3d_size * 3))
+         end if
+         do uc_index = 1, self%mesh_3d_size
+            velocity_index = 3 * (uc_index - 1) + 1
+            flow_velocity_3d_buffer(velocity_index) = ucx(uc_index)
+            flow_velocity_3d_buffer(velocity_index+1) = ucy(uc_index)
+            flow_velocity_3d_buffer(velocity_index+2) = ucz(uc_index)
+         end do
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%flow_velocity_3d%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  flow_velocity_3d_buffer, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%flow_velocity_3d%standard_name)))
       end if
       ! Write constituents. At the moment we support only up to NUM_COUPLED_CONSTITUENTS (=10).
       if (numconst > NUM_COUPLED_CONSTITUENTS) then
@@ -528,7 +546,6 @@ contains
    !! No checks needed: invalid data will be zero and need to be zero in the FM administration
    !! TODO: When computing in parallel, checks might be needed for sources/sinks outside the local domain
    !! TODO: Add constituents
-   !! TODO: Add momentum
    !! TODO, optionally: lump sources/sinks in the same cell
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
