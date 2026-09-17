@@ -25,8 +25,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
 
 !> Manages the unstruc model definition for the active problem.
 module unstruc_model
@@ -562,14 +560,6 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
-      ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
-      integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
-      integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
-
-      ! Salinity and temperature vertical Forester filter is turned off by default (value 0)
-      max_iterations_vertical_forester_sal = 0
-      max_iterations_vertical_forester_tem = 0
-
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree
@@ -1038,13 +1028,8 @@ contains
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
 
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal) ! Deprecated, use maxItVerticalForester instead
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem) ! Deprecated, use maxItVerticalForester instead
-
-      ! Set max_iterations_vertical_forester to the maximum of max_iterations_vertical_forester_sal/tem
-      max_iterations_vertical_forester = max(max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem)
-
-      call prop_get(md_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem)
 
       call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
@@ -1302,6 +1287,10 @@ contains
          write (msgbuf, '(a,g0,a)') 'salinityDependentFreezingPoint is set to true, but Tempmin = ', temperature_min, &
             ' is not below 0 degrees Celsius. This may lead to incorrect results.'
          call mess(LEVEL_WARN, msgbuf)
+      end if
+      if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
+         call mess(LEVEL_ERROR, &
+            'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
       end if
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
@@ -2179,7 +2168,6 @@ contains
       call prop_get(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
       call prop_get(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
 
-!    call prop_get(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
       ! Default basename of Delwaq files is model identifier:
       if (len_trim(md_waqfilebase) == 0) then
          md_waqfilebase = md_ident
@@ -2435,6 +2423,10 @@ contains
             call mess(LEVEL_WARN, 'MbaInterval was not specified, will use DtMassBalance for backwards compatibility.')
             ti_mba = md_dt_waqbal
          end if
+      end if
+      if (ti_mba > 0.0_dp .and. len_trim(md_mbafile) == 0 .and. len_trim(md_extfile) == 0) then
+         call mess(LEVEL_WARN, 'MbaInterval is positive, but no MbaFile was specified. Mass balance area output has been disabled.')
+         ti_mba = 0.0_dp
       end if
       if (ti_mba > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
          if (ti_mba < md_dt_waqproc .or. modulo(ti_mba, md_dt_waqproc) /= 0.0_dp) then
@@ -3154,7 +3146,8 @@ contains
       call prop_set(prop_ptr, 'numerics', 'cstbnd', jacstbnd, 'Delft-3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)')
 
       if (writeall .or. kmx > 0) then
-         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester, 'Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal, 'Forester iterations for salinity (0: no vertical filter, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem, 'Forester iterations for temperature (0: no vertical filter, > 0: max nr of iterations)')
       end if
 
       if (writeall .or. kmx > 0) then
@@ -3877,8 +3870,6 @@ contains
 
       call prop_set(prop_ptr, 'output', 'StatsInterval', ti_stat, 'Screen step output interval in seconds simulation time, if negative in seconds wall clock time')
 
-      ! call prop_set(prop_ptr, 'output', 'SnapshotDir', trim(md_snapshotdir), 'Directory where snapshots/screendumps are saved.')
-
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
       write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
@@ -4069,19 +4060,29 @@ contains
 
       implicit none
 
-      integer :: mdia2, mdia, ierr
+      integer :: mdia2, mdia, ierr, connected_unit
       character(len=256) :: rec
-      logical :: line_copied
+      character(len=512) :: diagnostic_file
+      logical :: line_copied, is_open
 
       call makedir(getoutputdir()) ! No problem if it exists already.
 
+      diagnostic_file = trim(getoutputdir())//trim(md_ident)//'.dia'
+      call getmdia(mdia)
+      if (mdia /= 0) then
+         inquire (file=trim(diagnostic_file), opened=is_open, number=connected_unit)
+         if (is_open .and. connected_unit == mdia) then
+            ! The diagnostics file may already be connected to the current unit, e.g. when running unit tests.
+            ! Copying a file onto itself would keep extending it, preventing the read from reaching end-of-file.
+            return
+         end if
+      end if
+
 !   SPvdP : check status of file, mostly copied from inidia
-      open (newunit=MDIA2, FILE=trim(getoutputdir())//trim(md_ident)//'.dia', action='readwrite', IOSTAT=IERR)
+      open (newunit=MDIA2, FILE=trim(diagnostic_file), action='readwrite', IOSTAT=IERR)
 
       line_copied = .false.
       if (ierr == 0) then
-
-         call getmdia(mdia)
 
          if (mdia /= 0) then ! rename diagnostic file to md_ident.dia
             rewind (mdia)

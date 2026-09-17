@@ -282,7 +282,7 @@ subroutine restart_trim_lyrs (msed      ,thlyr     ,lsedtot   ,cdryb     , &
         ! Without the layer thickness we have too little information for a simulation with
         ! variable porosity; stop the simulation.
         !
-        if (iporosity==0) then
+        if (iporosity == POROS_IN_DENSITY) then
             do m = gdp%d%mlb, gdp%d%mub
                 do n = gdp%d%nlb, gdp%d%nub
                     sedthick = 0.0_fp
@@ -320,7 +320,7 @@ subroutine restart_trim_lyrs (msed      ,thlyr     ,lsedtot   ,cdryb     , &
     ! correct msed if it contains volume fractions
     !
     if (layerfrac==1) then
-       if (iporosity==0) then
+       if (iporosity == POROS_IN_DENSITY) then
           do m = gdp%d%mlb, gdp%d%mub
              do n = gdp%d%nlb, gdp%d%nub
                 do k = 1, nlyr
@@ -424,7 +424,7 @@ subroutine restart_trim_lyrs (msed      ,thlyr     ,lsedtot   ,cdryb     , &
           enddo 
        enddo
        !
-       if (iporosity>0) then
+       if (iporosity /= POROS_IN_DENSITY) then
           do m = gdp%d%mlb, gdp%d%mub
              do n = gdp%d%nlb, gdp%d%nub
                 call n_and_m_to_nm(n, m, nm, gdp)

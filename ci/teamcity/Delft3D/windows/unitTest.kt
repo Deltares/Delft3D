@@ -10,7 +10,7 @@ import Trigger
 
 object WindowsUnitTest : BuildType({
 
-    name = "Unit Test"
+    name = "Unit tests"
     description = "Run unit tests."
     buildNumberPattern = "%dep.${WindowsBuild.id}.product%: %build.vcs.number%"
 

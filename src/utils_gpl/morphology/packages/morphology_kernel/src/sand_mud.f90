@@ -1,9 +1,3 @@
-module m_sand_mud
-implicit none
-
-contains
-subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
-!
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2012-2026.
@@ -30,22 +24,23 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+
+module m_sand_mud
+   implicit none
+   private
+   public sand_mud
+
+contains
+
+subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes erosion velocities based
 !              on sand-mud interaction (Van Ledden (2003), Van Kessel (2002))
 !              Array E is recomputed.
-! Method used:
 !
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    !
-    implicit none
     !
     integer                                     , intent(in)    :: nfrac          ! number of sediment fractions
     integer                                     , intent(in)    :: max_mud_sedtyp ! highest sediment type number associated with mud

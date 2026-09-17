@@ -48,8 +48,10 @@ contains
       use properties
       use table_handles
       use morphology_data_module
+      use string_module
       use grid_dimens_module, only: griddimtype
       use dfparall, only: parll
+      use m_scannr, only: scannr
       !
       implicit none
 !
@@ -89,6 +91,7 @@ contains
       character(20) :: txtput2
       character(80) :: bndname
       character(256) :: errmsg
+      character(999) :: plyrstr
       character(:), allocatable :: filename
       logical :: ex
       logical :: found
@@ -116,7 +119,9 @@ contains
       real(fp), pointer :: theulyr
       real(fp), pointer :: thlalyr
       real(fp), dimension(:), pointer :: zdiff
+      integer, pointer :: iconsolidate
       integer, pointer :: idiffusion
+      integer, pointer :: ifractions
       integer, pointer :: active_layer_diffusion
       integer, pointer :: iporosity
       integer, pointer :: iunderlyr
@@ -127,26 +132,53 @@ contains
       integer, pointer :: nmub
       integer, pointer :: nfrac
       integer, pointer :: nlalyr
+      integer, pointer :: nconlyr
+      integer, pointer :: updtoplyr
       integer, pointer :: updbaselyr
       type(cmpbndtype), dimension(:), pointer :: cmpbnd
-      real(fp), parameter :: EPS = 0.000000001_fp !used is `comparereal`
+      real(fp), parameter :: EPS=0.000000001_fp !used is `comparereal`
+
+      real(fp), dimension(:), pointer :: plyrthk
+      real(fp) :: plyrthksum
+     
+      integer :: nxxuser
+      integer, dimension(:), allocatable :: itype
+      integer, dimension(:), allocatable :: ifield
+      integer, dimension(:), allocatable :: lenchr
+      real(fp), dimension(:), allocatable :: rfield
+      character(10), dimension(:), allocatable :: cfield
+      integer, parameter :: maxfld = 20
+      integer :: lenc
+      integer :: idummy
+     
+      allocate(itype  (maxfld))
+      allocate(ifield (maxfld))
+      allocate(lenchr (maxfld))
+      allocate(rfield (maxfld))
+      allocate(cfield (maxfld))
 !
 !! executable statements -------------------------------------------------------
 !
+      rfield        = -999.0_fp
+      nxxuser       = 0
       istat = bedcomp_getpointer_integer(morlyr, 'IUnderLyr', iunderlyr)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IFractions', ifractions)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'CrsLyr', crslyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'ExchLyr', exchlyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NLaLyr', nlalyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NEuLyr', neulyr)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NConLyr', nconlyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NFrac', nfrac)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nmLb', nmlb)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nmUb', nmub)
       if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'ThEuLyr', theulyr)
       if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'ThLaLyr', thlalyr)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdTopLyr' , updtoplyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdBaseLyr', updbaselyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'track_mass_shortage', track_shortage)
       if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'mass_shortage_thresh', minmass)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'max_num_shortage_warnings', maxwarn)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IConsolidate', iconsolidate)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IPorosity', iporosity)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'Ndiff', ndiff)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IDiffusion', idiffusion)
@@ -215,6 +247,15 @@ contains
       txtput1 = 'Underlayer mechanism'
       write (lundia, '(2a,i20)') txtput1, ':', iunderlyr
       !
+      call set_default_fractions(morlyr)
+      call prop_get(mor_ptr, 'Underlayer', 'IFractions', ifractions)
+      if (ifractions < 1 .or. ifractions > 2) then
+         errmsg = 'IFractions should be 1 or 2 in ' // trim(filmor)
+         call write_error(errmsg, unit=lundia)
+         error = .true.
+         return
+      endif
+      !
       ! underlayer mechanism parameters
       !
       select case (iunderlyr)
@@ -251,20 +292,78 @@ contains
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
-         call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
-         txtput1 = 'Porosity'
-         select case (iporosity)
-         case (0)
-            txtput2 = '      Based on CDRYB'
-         case (1)
-            txtput2 = '              Linear'
-         case (2)
-            txtput2 = '          Non-linear'
+         call prop_get(mor_ptr, 'Underlayer', 'cmet', iconsolidate) ! old keyword
+         call prop_get(mor_ptr, 'Underlayer', 'IConsolidate', iconsolidate)
+         txtput1 = 'Consolidation'
+         select case (iconsolidate)
+         case (CONSOL_NONE)
+            txtput2 = '                  NO'
+         case (CONSOL_GIBSON)
+            txtput2 = '   Full Gibson model'
+         case (CONSOL_DECON)
+            txtput2 = ' Dynamic Equilibrium' ! Dynamic Equilibrium CONsolidation (DECON)
+                                             ! Quasi-Equilibrium Model for Consolidation in Low-SPM Environments
+         case (CONSOL_TERZAGHI)
+            txtput2 = '      Simple Loading'
+         case (CONSOL_TERZ_PEAT)
+            txtput2 = ' Simple Loading+Peat'
+         case (CONSOL_NOCOMP)
+            txtput2 = '       No Compaction'
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
+         idummy = -999
+         call prop_get(mor_ptr, 'Consolidate', 'iero', idummy)
+         call prop_get(mor_ptr, 'Consolidate', 'ierosion', idummy)
+         if (idummy /= -999) then
+             write(lundia, '(A)') 'IErosion flags should be specified in UnderLayer block instead of Consolidate block.'
+         end if
+         !
+         call prop_get(mor_ptr, 'Underlayer' , 'IErosion', morlyr%settings%ierosion)
+         txtput1 = 'Erosion formulation'
+         select case (morlyr%settings%ierosion)
+         case (EROS_CONST)
+            txtput2 = '      User specified'
+         case (EROS_WHITEHOUSE)
+            txtput2 = '   Whitehouse (2001)'
+         case (EROS_LE_HIR)
+            txtput2 = '       Le Hir (2011)'
+         case (EROS_ALONSO)
+            txtput2 = '       Alonso (2021)'
+         case (EROS_WINTERWERP)
+            txtput2 = '   Winterwerp (2013)'
+         case (EROS_MUSA)
+            txtput2 = '         MUSA (2023)'
+         end select
+         write (lundia, '(3a)') txtput1, ':', txtput2
+         !
+         if (morlyr%settings%ierosion > 0) then
+          call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
+         endif
+         !
+         if (iconsolidate /= CONSOL_NONE) then
+            iporosity = POROS_SVFRAC0SM
+         else
+            call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
+            txtput1 = 'Porosity'
+            select case (iporosity)
+            case (POROS_IN_DENSITY, POROS_CDRYB)
+               txtput2 = '      Based on CDRYB'
+            case (POROS_FRINGS)
+               txtput2 = '              Linear'
+            case (POROS_WELTJE)
+               txtput2 = '          Non-linear'
+            case (POROS_SVFRAC0)
+               txtput2 = '            Constant'
+            case (POROS_SVFRAC0SM) 
+               txtput2 = '      Weight Average'
+            end select
+            write (lundia, '(3a)') txtput1, ':', txtput2
+         end if
+         !
          nlalyr = 0
          neulyr = 0
+         nconlyr = 0
          call prop_get(mor_ptr, 'Underlayer', 'NLaLyr', nlalyr)
          if (nlalyr < 0) then
             errmsg = 'Number of Lagrangian under layers should be 0 or more in '//trim(filmor)
@@ -361,6 +460,14 @@ contains
                   return
                end if
             end if
+         end if
+         !
+         call prop_get(mor_ptr, 'Underlayer', 'UpdTopLyr', updtoplyr)
+         if (updtoplyr < 1 .or. updtoplyr > 2) then
+            errmsg = 'UpdTopLyr should be 1-2 in ' // trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
          end if
          !
          call prop_get(mor_ptr, 'Underlayer', 'UpdBaseLyr', updbaselyr)
@@ -607,36 +714,33 @@ contains
             return
          end if
          !
-         call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
-         call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
-         call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
-         !
-         write (lundia, '(a,i2)') 'ISedCrs2Tr: ', isedcrs2tr
-         write (lundia, '(a,i2)') 'IHidExpTrCrs:', ihidexptrcrs
-         write (lundia, '(a,i2)') 'IMobility:', imobility
-         !
-         txtput1 = 'Mobility model for vertical sorting'
-         select case (imobility)
-         case (0)
-            txtput2 = ' not used'
-         case (1)
-            txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
-         case (2)
-            txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
-         case (3)
-            txtput2 = ' Wilcock and McArdell (1997)'
-         case (4)
-            txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
-         case default
-            txtput2 = ' not used'
-            errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
-            write (lundia, '(3a)') txtput1, ':', txtput2
-            call write_error(errmsg, unit=lundia)
-            error = .true.
-            return
-         end select
-         write (lundia, '(3a)') txtput1, ':', txtput2
          if (crslyr) then
+            call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
+            call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+            call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
+            !
+            txtput1 = 'Mobility model for vertical sorting'
+            select case (imobility)
+            case (MOBILITY_OFF)
+               txtput2 = ' not used'
+            case (MOBILITY_DISCRETE)
+               txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+            case (MOBILITY_SHIELDS)
+               txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+            case (MOBILITY_WILCOCKMCARDELL)
+               txtput2 = ' Wilcock and McArdell (1997)'
+            case (MOBILITY_SEDTRANS)
+               txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+            case default
+               txtput2 = ' not used'
+               errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
+               write (lundia, '(3a)') txtput1, ':', txtput2
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            end select
+            write (lundia, '(3a)') txtput1, ':', txtput2
+         
             associate (telfil => morpar%telfil)
                istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
                if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'SinkFrac_max', sinkfrac_max)
@@ -967,14 +1071,338 @@ contains
       write (lundia, '(a)') '*** End    of underlayer input'
       write (lundia, *)
       !
+      ! consolidation parameters
+      !
+      if (iconsolidate /= CONSOL_NONE) then
+          write (lundia, '(a)') '*** Start of consolidation input'  
+  
+          call prop_get(mor_ptr, 'Consolidate', 'svfrac0', morlyr%settings%svfrac0)
+          txtput1 = 'Initial volume fraction for initial stratigraphy, svfrac0'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0
+  
+          call prop_get(mor_ptr, 'Consolidate', 'svfrac0m', morlyr%settings%svfrac0m)
+          txtput1 = 'Initial volume fraction for mud, svfrac0m'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0m
+  
+          call prop_get(mor_ptr, 'Consolidate', 'svfrac0s', morlyr%settings%svfrac0s)
+          txtput1 = 'Initial volume fraction for sand, svfrac0s'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svfrac0s
+  
+          call prop_get(mor_ptr, 'Consolidate', 'ky', morlyr%settings%ky)
+          txtput1 = 'Strength coeffi.'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ky
+  
+          call prop_get(mor_ptr, 'Consolidate', 'nf', morlyr%settings%nf)
+          txtput1 = 'Fractal dimension, nf'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%nf
+  
+          call prop_get(mor_ptr, 'Consolidate', 'ksigma', morlyr%settings%ksigma)
+          txtput1 = 'Effective stress coeff., ksigma'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ksigma           
+  
+          call prop_get(mor_ptr, 'Consolidate', 'kk', morlyr%settings%kk)
+          txtput1 = 'Permeability coeff., kk'
+          write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kk
+  
+          select case (iconsolidate)
+          case (1) ! Gibson model parameters
+  
+              call prop_get(mor_ptr, 'Consolidate', 'ksigma0', morlyr%settings%ksigma0)
+              txtput1 = 'Effective stress coeff., ksigma0'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ksigma0 
+  
+              call prop_get(mor_ptr, 'Consolidate', 'kbioturb', morlyr%settings%kbioturb)
+              txtput1 = 'Bioturbation coeff., kb'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kbioturb
+  
+              call prop_get(mor_ptr, 'Consolidate', 'rtcontmor', morlyr%settings%confac)
+              call prop_get(mor_ptr, 'Consolidate', 'confac', morlyr%settings%confac)
+              txtput1 = 'ratio con/mor time scales, confac'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%confac 
+  
+              call prop_get(mor_ptr, 'Consolidate', 'thtrconcr', morlyr%settings%thtrconcr)
+              txtput1 = '1st lyr thick call cons, thtrconcr'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%thtrconcr
+  
+              call prop_get(mor_ptr, 'Consolidate', 'imixtr', morlyr%settings%imixtr)
+              txtput1 = 'replenish mix 2nd layer, imixtr'
+              write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%imixtr
+  
+              call prop_get(mor_ptr, 'Consolidate', 'svgel', morlyr%settings%svgel)
+              txtput1 = 'Gelling volume fraction, svgel'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svgel
+  
+              call prop_get(mor_ptr, 'Consolidate', 'svmax', morlyr%settings%svmax)
+              txtput1 = 'Maximum volume fraction, svmax'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svmax 
+  
+          case (2) ! Dynamic Equilibrium CONsolidation (DECON) parameters
+              call prop_get(mor_ptr, 'Consolidate', 'dtcon', morlyr%settings%dtdecon)
+              call prop_get(mor_ptr, 'Consolidate', 'dtdecon', morlyr%settings%dtdecon)
+              txtput1 = 'DECON consolidation update time step (s)'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%dtdecon
+  
+              call prop_get(mor_ptr, 'Consolidate', 'NConLyr', morlyr%settings%nconlyr)
+              txtput1 = 'Number of consolidating layers'
+              write (lundia, '(2a,i3)') txtput1, ':', nconlyr
+              if (nconlyr<1 .or. nconlyr>mxnulyr) then
+                 write(errmsg,'(a,i0,2a)') 'Number of consolidating under layers should be in range 1 to ',mxnulyr,' in ',trim(filmor)
+                 call write_error(errmsg, unit=lundia)
+                 error = .true.
+                 return
+              endif
+  
+              call prop_get(mor_ptr, 'Consolidate', 'dzprofile', morlyr%settings%dzprofile)
+              txtput1 = 'Resolution density profile, dzprofile'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%dzprofile 
+  
+              call prop_get(mor_ptr, 'Consolidate', 'plyrstr', morlyr%settings%plyrstr)
+              txtput1 = 'Percentage of each layer'
+              plyrstr = morlyr%settings%plyrstr
+              write (lundia, '(2a,999a)') txtput1, ':', plyrstr
+  
+              !! read in plyrthk from string 'plyrstr' in *.mor file
+              lenc = 999
+              call str_lower(plyrstr, lenc)
+              call remove_leading_spaces(plyrstr, lenc)
+              !
+              ! Process string
+              !
+              call scannr( plyrstr,       1,      len(plyrstr), nxxuser,   itype, &
+                        &  ifield,  rfield,  cfield,  lenchr,  maxfld,  .true., &
+                        & .false., .false.)
+  
+              if (nxxuser < 0) then
+                 errmsg = 'Cannot interpret Plyrstr string in '//trim(filmor)
+                 call write_error(errmsg, unit=lundia)
+                 error = .true.
+                 return
+              endif
+              do i = 1, nxxuser
+                 if (itype(i) == 1) then
+                    rfield(i) = ifield(i)
+                 elseif (itype(i) == 3) then
+                    errmsg = 'Cannot interpret Plyrstr string in '//trim(filmor)
+                    call write_error(errmsg, unit=lundia)
+                    error = .true.
+                    return
+                 endif
+              enddo
+              !
+              ! allocate memory for percentages of layer thickness
+              !
+              allocate (morlyr%settings%plyrthk(morlyr%settings%nconlyr), stat = istat)
+              !
+              ! Update local pointer
+              !
+              if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'PLyrThk'             , plyrthk)
+              plyrthksum = 0.0_fp
+              !
+              ! Copy percentages
+              !
+              do i = 1, morlyr%settings%nconlyr
+                 !
+                 plyrthk(i) = rfield(i)/100.0_fp
+                 if (plyrthk(i) <= 0.0_fp .or. plyrthk(i) >= 1.0_fp) then
+                    errmsg = 'Percentage of lyr should lie between 0 and 100'
+                    call write_error(errmsg, unit=lundia)
+                    error = .true.
+                    return
+                 endif
+                 plyrthksum = plyrthksum + plyrthk(i)
+              enddo
+              ! check if plyrthksum == 1.0
+              if (comparereal(plyrthksum,1.0_fp) /= 0) then
+                  errmsg = 'Sum values in keyword plyrstr in *.mor file and should equal 1.0'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+              endif
+              !
+              deallocate(itype)
+              deallocate(ifield)
+              deallocate(lenchr)
+              deallocate(rfield)
+              deallocate(cfield)
+          end select
+  
+          if (iconsolidate == CONSOL_TERZAGHI .or. iconsolidate == CONSOL_TERZ_PEAT) then
+              call prop_get(mor_ptr, 'peat', 'ymodpeat', morlyr%settings%ymodpeat)
+              txtput1 = 'ymod'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ymodpeat
+  
+              call prop_get(mor_ptr, 'peat', 'ccpeat', morlyr%settings%ccpeat)
+              txtput1 = 'cc'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ccpeat
+  
+              call prop_get(mor_ptr, 'peat', 'peatfrac', morlyr%settings%peatfrac)
+              txtput1 = 'peatfrac'
+              write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%peatfrac
+  
+              call prop_get(mor_ptr, 'peat', 'LOI', morlyr%settings%peatloi)
+              txtput1 = 'LOI'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%peatloi
+  
+              call prop_get(mor_ptr, 'peat', 'Peatthick', morlyr%settings%peatthick)
+              txtput1 = 'Peatthick'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%peatthick
+  
+              call prop_get(mor_ptr, 'Consolidate', 'minporm', morlyr%settings%minporm)
+              txtput1 = 'critical porosity for mud, minporm'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%minporm
+  
+              call prop_get(mor_ptr, 'Consolidate', 'minpors', morlyr%settings%minpors)
+              txtput1 = 'critical porosity for sand, minpors'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%minpors
+  
+              call prop_get(mor_ptr, 'Consolidate', 'porini', morlyr%settings%porini)
+              txtput1 = 'porosity threshold before consolidation starts'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%porini
+  
+              call prop_get(mor_ptr, 'Consolidate', 'crmsec', morlyr%settings%crmsec)
+              txtput1 = 'secondary consolidation rate of mud fraction'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crmsec
+  
+              call prop_get(mor_ptr, 'Consolidate', 'crmud', morlyr%settings%crmud)
+              txtput1 = 'consolidation rate of mud fraction'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crmud
+  
+              call prop_get(mor_ptr, 'Consolidate', 'crsand', morlyr%settings%crsand)
+              txtput1 = 'consolidation rate of sand fraction'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crsand
+  
+              call prop_get(mor_ptr, 'Consolidate', 'ptr', morlyr%settings%ptr)
+              txtput1 = 'percentage of thickness reduction'
+              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ptr
+          endif
+  
+          write (lundia, '(a)') '*** End   of consolidation input'  
+          write (lundia, '(a)') ' '
+      endif
+      !
       call set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
       !
       deallocate (parnames, stat=istat)
       !
    end subroutine rdmorlyr
 
+subroutine rderosion(lundia, mor_ptr, ierosion, erosion_config)
+    use properties
+    use bedcomposition_module
+    !
+    implicit none
+!
+! Arguments
+!
+    integer                                                       :: lundia         !< unit number of diagnostic file
+    integer                                         , intent(in)  :: ierosion       !< bed erodibility setting
+    type(tree_data)                                 , pointer     :: mor_ptr        !< pointer to configuration file in memory
+    type(erosion_settings)                          , pointer     :: erosion_config !< bed erodibility parameters
+    
+    character(40)            :: txtput1
+
+    select case(ierosion)
+    case (EROS_WHITEHOUSE)
+        ! no parameters
+        
+    case (EROS_LE_HIR)
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_lehir', erosion_config%alpha_lehir)
+        txtput1 = 'alpha_lehir used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_lehir
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_me', erosion_config%alpha_me)
+        txtput1 = 'alpha_me used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_me
+
+    case (EROS_ALONSO)
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_lehir', erosion_config%alpha_lehir)
+        txtput1 = 'alpha_lehir used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_lehir
+        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_me', erosion_config%alpha_me)
+        txtput1 = 'alpha_me used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_me
+
+    case (EROS_WINTERWERP)
+        call prop_get(mor_ptr, 'Erosion', 'A', erosion_config%A)
+        txtput1 = 'A used in PI index calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%A
+
+        call prop_get(mor_ptr, 'Erosion', 'C0', erosion_config%C0)
+        txtput1 = 'C0 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%C0
+
+        call prop_get(mor_ptr, 'Erosion', 'd50sed', erosion_config%d50sed)
+        txtput1 = 'grain-size of sediment supply'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%d50sed
+                        
+        call prop_get(mor_ptr, 'Erosion', 'alpha_mix', erosion_config%alpha_mix)
+        txtput1 = 'alpha_mix used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_mix
+        
+        call prop_get(mor_ptr, 'Erosion', 'beta_mix', erosion_config%beta_mix)
+        txtput1 = 'beta_mix used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%beta_mix
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha', erosion_config%alpha)
+        txtput1 = 'alpha used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha
+        
+        call prop_get(mor_ptr, 'Erosion', 'beta', erosion_config%beta)
+        txtput1 = 'beta used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%beta
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha_winterwerp', erosion_config%alpha_winterwerp)
+        txtput1 = 'alpha_winterwerp used in Me calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha_winterwerp
+
+    case (EROS_MUSA)
+        call prop_get(mor_ptr, 'Erosion', 'rho_min', erosion_config%rho_min)
+        txtput1 = 'rho_min used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_min
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_min1', erosion_config%taucr_min1)
+        txtput1 = 'taucr_min1 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_min1
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha1', erosion_config%alpha1)
+        txtput1 = 'alpha1 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha1
+
+        call prop_get(mor_ptr, 'Erosion', 'rho_star', erosion_config%rho_star)
+        txtput1 = 'rho_star used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_star
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_max', erosion_config%taucr_max)
+        txtput1 = 'taucr_max used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_max
+
+        call prop_get(mor_ptr, 'Erosion', 'alpha2', erosion_config%alpha2)
+        txtput1 = 'alpha2 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%alpha2
+
+        call prop_get(mor_ptr, 'Erosion', 'rho_max', erosion_config%rho_max)
+        txtput1 = 'rho_max used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%rho_max
+
+        call prop_get(mor_ptr, 'Erosion', 'taucr_min2', erosion_config%taucr_min2)
+        txtput1 = 'taucr_min2 used in tera calculation'
+        write (lundia, '(2a,ES20.4)') txtput1, ':', erosion_config%taucr_min2
+
+    end select
+        
+end subroutine rderosion
+
    subroutine set_sediment_properties_for_the_morphological_layers(iporosity, morlyr, sedpar)
-      use bedcomposition_module, only: bedcomp_data, setbedfracprop
+      use bedcomposition_module, only: bedcomp_data, setbedfracprop, POROS_IN_DENSITY
       use morphology_data_module, only: sedpar_type
       implicit none
 
@@ -982,7 +1410,7 @@ contains
       type(bedcomp_data), pointer, intent(inout) :: morlyr
       type(sedpar_type), pointer, intent(inout) :: sedpar
 
-      if (iporosity == 0) then
+      if (iporosity == POROS_IN_DENSITY) then
          !
          ! porosity is fraction dependent and included in cdryb densities
          !
@@ -1360,7 +1788,7 @@ contains
                   end if
                end if
             end do
-            if (iporosity == 0) then
+            if (iporosity == POROS_IN_DENSITY) then
                do ised = 1, lsedtot
                   if (inisedunit(ised) == 'm') then
                      do nm = 1, nmmax
@@ -1824,7 +2252,7 @@ contains
                      !
                      ! convert mass fractions into volume fractions
                      !
-                     if (iporosity == 0) then
+                     if (iporosity == POROS_IN_DENSITY) then
                         if (layertype == 'mass fraction') then
                            do nm = 1, nmmax
                               cdrybavg = 0.0_fp
@@ -2060,7 +2488,7 @@ contains
                      !
                      ! convert sediment mass to sediment thickness
                      !
-                     if (iporosity == 0) then
+                     if (iporosity == POROS_IN_DENSITY) then
                         if (layertype == 'sediment thickness') then
                            do ised = 1, lsedtot
                               do nm = 1, nmmax

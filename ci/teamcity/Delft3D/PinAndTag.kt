@@ -13,7 +13,7 @@ object PinAndTag : BuildType({
     )
 
     name = "Pin and tag"
-    description = "Pin and tag all the builds in the chain."
+    description = "Pin and tag all builds in the chain."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 

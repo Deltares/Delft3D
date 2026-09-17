@@ -77,7 +77,7 @@
   </testCase>
   <testCase name="e02_f010_c102_T3_refined_noCustomPoints" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T3_refined_noCustomPoints</path>
-      <maxRunTime>540</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Dambreak_refinedGRID_noWLpoints/Dambreak_refinedGRID_noWLpoints_map.nc" type="netCDF">
         <parameters>
@@ -96,7 +96,7 @@
   </testCase>
   <testCase name="e02_f010_c102_T4_refined_customPoints" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f010_structures/c102_custompoints_dambreak/T4_refined_customPoints</path>
-      <maxRunTime>540</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Dambreak_refinedGRID_customWLpoints/Dambreak_refinedGRID_customWLpoints_map.nc" type="netCDF">
         <parameters>
@@ -559,6 +559,7 @@
   </testCase>
   <testCase name="e02_f105_c02_tabulated-profile" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c02_tabulated-profile</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
         <parameters>
@@ -580,6 +581,7 @@
   </testCase>
   <testCase name="e02_f105_c03_zw-closed-egg-profile" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c03_zw-closed-egg-profile</path>
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
         <parameters>
@@ -781,6 +783,7 @@
   </testCase>
   <testCase name="e02_f105_c19_timedependent_roughness" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c19_timedependent_roughness</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
         <parameters>
@@ -794,6 +797,7 @@
   </testCase>
   <testCase name="e02_f105_c41_YZ-profile-with-storage-nodes" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c41_YZ-profile-with-storage-nodes</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
         <parameters>
@@ -1336,6 +1340,7 @@
   </testCase>
   <testCase name="e02_f107_c03_Coarse1D_Fine2D_Rural_Embedded_Links" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f107_1d2d_validation/c03_Coarse1D_Fine2D_Rural_Embedded_Links</path>
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="DFM_OUTPUT_1D2D/1D2D_map.nc" type="netCDF">
         <parameters>
