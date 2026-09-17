@@ -491,6 +491,117 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f004_c096_trachytopes_Vastila26" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c096_trachytopes_Vastila26</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="output/Case3.6_Low_hv_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_czs" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c111_flume_test" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c111_flume_test</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c112_baptist_153_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c112_baptist_153_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c113_baptist_154_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c113_baptist_154_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c114_vistala_155_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c114_vistala_155_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c115_jarvela_156_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c115_jarvela_156_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c122_baptist_153_sm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c122_baptist_153_sm</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c123_baptist_154_sm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c123_baptist_154_sm</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
   <testCase name="e02_f004_c132_time_dependent_friction" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c132_time_dependent_friction</path>
 
