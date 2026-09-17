@@ -1,4 +1,4 @@
-from junit_xml import TestCase
+from junit_xml import TestCase as JUnitTestCase
 
 from ci_tools.verschilanalyse.util.junit_exporter import JUnitExporter
 from tests.helpers import verschilanalyse as helper
@@ -13,7 +13,7 @@ class TestJUnitExporter:
             logs_url="https://foo.bar/report.zip",
             logs=logs,
         )
-        cases: list[TestCase] = suite.test_cases
+        cases: list[JUnitTestCase] = suite.test_cases
 
         assert suite.name == "my-test-suite"
         assert suite.url == "https://foo.bar/report.zip"
