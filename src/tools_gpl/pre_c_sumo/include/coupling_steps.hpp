@@ -28,6 +28,7 @@ namespace pre_c_sumo
     constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
     constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
     constexpr std::string_view densities_id = "sea_water_potential_density";
+    constexpr std::string_view flow_velocities_id = "flow_velocity_3d";
     constexpr std::string_view c01_id = "C01";
     constexpr std::string_view c02_id = "C02";
     constexpr std::string_view c03_id = "C03";
