@@ -79,7 +79,7 @@ contains
       call realloc(dsedy, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
 
       call realloc(thetavert, NUMCONST, keepExisting=KeepExisting, fill=0.0_dp)
-      !call realloc(wstracers, NUMCONST, keepExisting=KeepExisting, fill=0d0)
+      call realloc(iconstituent_to_fall_velocity_waq, NUMCONST, keepExisting=KeepExisting, fill=0)
       call realloc(wstracers, NUMCONST, keepExisting=.true., fill=0.0_dp)
 
       call realloc(const_names, NUMCONST, keepExisting=KeepExisting, fill='')
@@ -130,6 +130,8 @@ contains
       call realloc(itrac2const, numtracers, keepExisting=KeepExisting, fill=0)
       call realloc(ifrac2const, numfracs, keepExisting=KeepExisting, fill=0)
 
+! tracer mass limited
+      call realloc(maserrtra, numtracers, keepExisting=KeepExisting, fill=0.0_dp)
       if (jawaqproc > 0) then
 !     WAQ
          call realloc(isys2const, num_substances_total, keepExisting=.true., fill=0)

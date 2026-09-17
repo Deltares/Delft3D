@@ -763,14 +763,14 @@ contains
       call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
       call prop_get(md_ptr, 'geometry', 'stretchType', stretch_type, success)
-      
+
       if (layertype == LAYTP_Z) then
          if (.not. success) then
             stretch_type = STRETCH_UNI_OVER_EXP
          elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
             write (msgbuf, '(a,a,i0,a)'), &
-                'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
-                'Input stretchType = ', stretch_type,' is ignored.'
+               'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
+               'Input stretchType = ', stretch_type, ' is ignored.'
             call warn_flush()
             stretch_type = STRETCH_UNI_OVER_EXP
          end if
@@ -1227,6 +1227,9 @@ contains
       call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
 
+      call prop_get(md_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, success)
+      call prop_get(md_ptr, 'physics', 'upperLimitTracer', upperlimittra, success)
+
       call prop_get(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
       call prop_get(md_ptr, 'physics', 'Elder   ', Elder)
       call prop_get(md_ptr, 'physics', 'irov', irov)
@@ -1290,7 +1293,7 @@ contains
       end if
       if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
          call mess(LEVEL_ERROR, &
-            'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
+                   'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
       end if
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
@@ -1600,7 +1603,7 @@ contains
       end if
       if (strlyrfac <= 0.0_dp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Only streamLyrFac > 0.0 is allowed.')
-         istat=-1
+         istat = -1
          return
       end if
 
@@ -1630,7 +1633,7 @@ contains
       ! safety
       if (fwavpendep <= 0.0_dp) then
          fwavpendep = 0.0_dp
-         jawavebreakerturbulence=WAVE_BREAKER_TURB_OFF
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
          write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
          call warn_flush()
       end if
@@ -1646,9 +1649,9 @@ contains
 
       if (jawave == WAVE_NC_OFFLINE) then
          offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
-                                                                                jawavestreaming, jawavedelta, &
-                                                                                modind > 0 .and. ftauw > 0.0_dp, &
-                                                                                flow_without_waves, jawavebreakerturbulence)
+                                                                               jawavestreaming, jawavedelta, &
+                                                                               modind > 0 .and. ftauw > 0.0_dp, &
+                                                                               flow_without_waves, jawavebreakerturbulence)
       else
          offline_wave_input_requirements = 0
       end if
@@ -2397,7 +2400,8 @@ contains
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
-
+      call prop_get(md_ptr, 'processes', 'SedimentationTransportCoupling', waq_sediment_transport_coupling)
+      perform_waq_sediment_transport_coupling = waq_sediment_transport_coupling == 1
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
       ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0.0_dp) then
@@ -2494,7 +2498,7 @@ contains
             ierror, &
             prefix='While reading '''//trim(filename)//'''', &
             excluded_chapters=['model'] &
-         )
+            )
          if (ierror /= DFM_NOERR) then
             istat = ierror
          end if
@@ -3350,6 +3354,9 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
+      call prop_set(prop_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, 'Lower limit of cell centre tracer concentration after transport timestep. Default = -1.0d30 (effectively switched off)')
+      call prop_set(prop_ptr, 'physics', 'upperLimitTracer', upperlimittra, 'Upper limit of cell centre tracer concentration after transport timestep. Default = 1.0d30 (effectively switched off)')
+
       call prop_set(prop_ptr, 'physics', 'Smagorinsky', Smagorinsky, 'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'Elder', Elder, 'Elder factor in horizontal turbulence')
       call prop_set(prop_ptr, 'physics', 'irov', irov, '0=free slip, 1 = partial slip using wall_ks')
@@ -4002,6 +4009,7 @@ contains
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
+      call prop_set(prop_ptr, 'processes', 'SedimentationTransportCoupling', waq_sediment_transport_coupling, 'Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.')
 
       call datum(rundat)
       write (mout, '(a,a)') '# Generated on ', trim(rundat)
@@ -4371,7 +4379,7 @@ contains
    !!
    !! When user has not provided a particular keyword, always inform about the changed
    !! default. When user has provided a particular keyword, only inform if that value
-   !! is not the same as the current default. 
+   !! is not the same as the current default.
    subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
                                          keyword_is_specified, values_differ, quote_values)
 
