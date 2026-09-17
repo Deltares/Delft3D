@@ -54,7 +54,7 @@ contains
       use m_observations_data, only: mxls
       use unstruc_files, only: defaultFilename
       use m_sediment, only: stm_included
-      use m_transport, only: maserrsed
+      use m_transport, only: maserrsed, maserrtra
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
@@ -238,6 +238,8 @@ contains
             write (msgbuf, '(a,F25.10)') 'time erosed            (s)  :', gettimer(1, IEROSED)
             call msg_flush()
             write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1.0e6_dp
+            call msg_flush()
+            write (msgbuf, '(a,F25.3)') 'mass error from tracer limitation (10^6 kg)  :', maserrtra / 1.0e6_dp
             call msg_flush()
          end if
       end if

@@ -36,7 +36,7 @@ module m_extract_constituents
    public :: extract_constituents, print_extract_constituents_message
 
    integer, parameter :: MAX_NUMBER_OF_MESSAGES = 10 ! maximum number of warning messages
-   integer, dimension(6) :: number_of_printed_messages = 0
+   integer, dimension(8) :: number_of_printed_messages = 0
 
 contains
 
@@ -48,7 +48,7 @@ contains
          msgbuf = ' '
          call msg_flush()
          write (msgbuf, '(a)') &
-            'Salinity, temperature and/or suspended sediment concentration (SSC) were limited in some cells during the simulation.'
+            'Salinity, temperature, tracer and/or suspended sediment concentration (SSC) were limited in some cells during the simulation.'
          call msg_flush()
       end if
 
@@ -67,10 +67,10 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
       use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
-                            temperature_min
+                            temperature_min, upperlimittra, lowerlimittra
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
-      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
+      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, maserrtra, itra1, itran
 
       use timers, only: timon, timstop, timstrt
 
@@ -86,6 +86,8 @@ contains
       integer, parameter :: IDX_SAL_MAX = 4 ! index of salinity messages for max limits
       integer, parameter :: IDX_TEMP_MIN = 5 ! index of temperature messages for min limits
       integer, parameter :: IDX_TEMP_MAX = 6 ! index of temperature messages for max limits
+      integer, parameter :: IDX_TRA_MIN = 7 ! index of tracer messages for min limits
+      integer, parameter :: IDX_TRA_MAX = 8 ! index of tracer messages for max limits
 
       if (timon) then
          call timstrt("extract_constituents", ithndl)
@@ -121,6 +123,32 @@ contains
          if (jalogtransportsolverlimiting > 0) then
             call print_message(IDX_SSC_MIN, 'Negative SSC', cells_with_min_limit)
             call print_message(IDX_SSC_MAX, 'SSC overshoots', cells_with_max_limit, max_limit=upperlimitssc)
+         end if
+      end if
+
+      if (itra1 > 0) then
+         cells_with_max_limit = 0
+         cells_with_min_limit = 0
+         do k = 1, ndkx
+            do iconst = ITRA1, ITRAN
+               if (constituents(iconst, k) < lowerlimittra) then
+                  cells_with_min_limit = cells_with_min_limit + 1
+                  maserrtra = maserrtra + vol1(k) * (lowerlimittra - constituents(iconst, k))
+                  constituents(iconst, k) = lowerlimittra
+               end if
+
+               ! keep track of mass error because of concentration limitation
+               if (constituents(iconst, k) > upperlimittra) then
+                  cells_with_max_limit = cells_with_max_limit + 1
+                  maserrtra = maserrtra + vol1(k) * (constituents(iconst, k) - upperlimittra)
+                  constituents(iconst, k) = upperlimittra
+               end if
+            end do
+         end do
+
+         if (jalogtransportsolverlimiting > 0) then
+            call print_message(IDX_TRA_MIN, 'Negative tracer concentration', cells_with_min_limit, min_limit=lowerlimittra)
+            call print_message(IDX_TRA_MAX, 'Tracer concentration overshoots', cells_with_max_limit, max_limit=upperlimittra)
          end if
       end if
 
@@ -235,7 +263,7 @@ contains
 
    end subroutine extract_constituents
 
-   subroutine print_message(index, text, cells_with_limit, max_limit, minimum_salinity_value)
+   subroutine print_message(index, text, cells_with_limit, max_limit, min_limit, minimum_salinity_value)
       use messageHandling, only: msgbuf, msg_flush
       use precision, only: dp
 
@@ -243,12 +271,16 @@ contains
       character(len=*), intent(in) :: text !< text of the message to print
       integer, intent(in) :: cells_with_limit !< cells_with_limit
       real(kind=dp), optional, intent(in) :: max_limit !< optional max limit value for the message
+      real(kind=dp), optional, intent(in) :: min_limit !< optional min limit value for the message
       real(kind=dp), optional, intent(in) :: minimum_salinity_value !< optional minimum_salinity_value
 
       if (cells_with_limit > 0 .and. number_of_printed_messages(index) < MAX_NUMBER_OF_MESSAGES) then
          number_of_printed_messages(index) = number_of_printed_messages(index) + 1
          if (present(max_limit)) then
             write (msgbuf, *) text, ' encountered and limited to ', max_limit, ' in ', &
+               cells_with_limit, ' cell(s).'
+         else if (present(min_limit)) then
+            write (msgbuf, *) text, ' encountered and limited to ', min_limit, ' in ', &
                cells_with_limit, ' cell(s).'
          else
             write (msgbuf, *) text, ' encountered and limited in ', cells_with_limit, ' cell(s).'
