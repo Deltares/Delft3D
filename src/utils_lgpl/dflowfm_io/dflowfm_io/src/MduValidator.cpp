@@ -1,0 +1,159 @@
+#include <dflowfm_io/MduValidator.h>
+#include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/IssueReport.h>
+
+#include <ini/IniData.h>
+#include <ini/IniSection.h>
+#include <ini/IniProperty.h>
+
+namespace dflowfm_io
+{
+    IssueReport MduValidator::Validate(const ini::IniData& iniData, const MduSchema& schema)
+    {
+        IssueReport report;
+        ValidateRequired(iniData, schema, report);
+        ValidateUnsupported(iniData, schema, report);
+        ValidateStatus(iniData, schema, report);
+        return report;
+    }
+
+    void MduValidator::ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
+    {
+        for (const auto& sectionSchema : schema.Sections())
+        {
+            if (sectionSchema.status.type == StatusType::Obsolete)
+                continue;
+
+            if (!iniData.HasSection(sectionSchema.name))
+            {
+                if (sectionSchema.required) report.AddError("Required section [{}] is missing.", sectionSchema.name);
+
+                for (const auto& propertySchema : sectionSchema.properties)
+                    if (propertySchema.required)
+                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+
+                continue;
+            }
+
+            const ini::IniSection& section = iniData.GetSection(sectionSchema.name);
+            for (const auto& propertySchema : sectionSchema.properties)
+            {
+                if (!section.HasProperty(propertySchema.key))
+                {
+                    if (propertySchema.required)
+                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+                    else if (!propertySchema.default_value.empty())
+                        report.AddDebug("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
+                                        propertySchema.key, propertySchema.default_value);
+                    continue;
+                }
+
+                const ini::IniProperty& property = section.GetProperty(propertySchema.key);
+                if (!property.HasValue())
+                {
+                    if (propertySchema.required)
+                        report.AddError(property.GetLineNumber(), "Required property [{}].{} is specified without a value.",
+                                        sectionSchema.name, propertySchema.key);
+                    else if (!propertySchema.default_value.empty())
+                        report.AddInfo(property.GetLineNumber(), "Property [{}].{} is specified without a value. Default is used: \"{}\".",
+                                       sectionSchema.name, propertySchema.key, propertySchema.default_value);
+                }
+            }
+        }
+    }
+
+    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
+    {
+        for (const auto& section : iniData)
+        {
+            const auto* sectionSchema = schema.FindSection(section.GetName());
+            if (!sectionSchema)
+            {
+                report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
+                                  section.GetName());
+                continue;
+            }
+
+            if (sectionSchema->status.type == StatusType::Obsolete)
+                continue;
+
+            for (const auto& property : section)
+            {
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
+                if (!propertySchema)
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
+                                      section.GetName(), property.GetKey());
+            }
+        }
+    }
+
+    void MduValidator::ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
+    {
+        for (const auto& section : iniData)
+        {
+            const auto* sectionSchema = schema.FindSection(section.GetName());
+            if (!sectionSchema)
+                continue;
+
+            if (sectionSchema->status.type == StatusType::Obsolete)
+            {
+                report.AddError(section.GetLineNumber(), "Section [{}] is obsolete since {}. {}",
+                                section.GetName(), sectionSchema->status.since, sectionSchema->status.comment);
+            }
+
+            if (sectionSchema->status.type == StatusType::Deprecated)
+            {
+                report.AddWarning(section.GetLineNumber(), "Section [{}] is deprecated. {}",
+                                  section.GetName(), sectionSchema->status.comment);
+            }
+
+            for (const auto& property : section)
+            {
+                const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
+                if (!propertySchema)
+                    continue;
+
+                if (propertySchema->status.type == StatusType::Obsolete)
+                {
+                    report.AddError(property.GetLineNumber(), "Property [{}].{} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), propertySchema->status.since,
+                                    propertySchema->status.comment);
+                    continue;
+                }
+
+                if (propertySchema->status.type == StatusType::Deprecated &&
+                    sectionSchema->status.type != StatusType::Obsolete)
+                {
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), propertySchema->status.comment);
+                    continue;
+                }
+
+                if (propertySchema->value_type != ValueType::StringEnum && propertySchema->value_type != ValueType::IntEnum)
+                    continue;
+
+                if (!property.HasValue())
+                    continue;
+
+                const auto* enumValueSchema = schema.FindEnumValue(*propertySchema, property.GetValue());
+                if (!enumValueSchema)
+                    continue;
+
+                if (enumValueSchema->status.type == StatusType::Obsolete)
+                {
+                    report.AddError(property.GetLineNumber(), "Property [{}].{}={} is obsolete since {}. {}",
+                                    section.GetName(), property.GetKey(), property.GetValue(),
+                                    enumValueSchema->status.since, enumValueSchema->status.comment);
+                }
+                else if (enumValueSchema->status.type == StatusType::Deprecated &&
+                         sectionSchema->status.type != StatusType::Obsolete)
+                {
+                    report.AddWarning(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
+                                      section.GetName(), property.GetKey(), property.GetValue(),
+                                      enumValueSchema->status.comment);
+                }
+            }
+        }
+    }
+
+} // namespace dflowfm_io

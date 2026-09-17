@@ -1,0 +1,46 @@
+# Generate the MDU schema C++ source from mdu.json at build time.
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+set(MDU_SCHEMA_SCRIPT  ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_mdu_schema.py)
+set(MDU_SCHEMA_GENERATED ${CMAKE_CURRENT_BINARY_DIR}/generated/dflowfm_io/MduSchemaGenerated.h)
+
+add_custom_command(
+    OUTPUT  ${MDU_SCHEMA_GENERATED}
+    COMMAND ${Python3_EXECUTABLE} ${MDU_SCHEMA_SCRIPT} ${DFLOWFM_IO_MDU_JSON} ${MDU_SCHEMA_GENERATED}
+    DEPENDS ${MDU_SCHEMA_SCRIPT} ${DFLOWFM_IO_MDU_JSON}
+    COMMENT "Generating MduSchemaGenerated.h from mdu.json"
+    VERBATIM
+)
+
+set_source_files_properties(${MDU_SCHEMA_GENERATED} PROPERTIES GENERATED TRUE)
+
+add_library(dflowfm_io STATIC
+    include/dflowfm_io/IssueReport.h
+    include/dflowfm_io/MduConverter.h
+    include/dflowfm_io/MduData.h
+    include/dflowfm_io/MduDocument.h
+    include/dflowfm_io/MduSchema.h
+    ${MDU_SCHEMA_GENERATED}
+    include/dflowfm_io/MduValidator.h
+    include/dflowfm_io/StringUtils.h
+
+    src/IssueReport.cpp
+    src/MduConverter.cpp
+    src/MduDocument.cpp
+    src/MduSchema.cpp
+    src/MduValidator.cpp
+)
+
+target_link_libraries(dflowfm_io
+    PRIVATE dflowfm_ini_parser
+)
+
+target_include_directories(dflowfm_io
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
+)
+
+add_subdirectory(test)
+

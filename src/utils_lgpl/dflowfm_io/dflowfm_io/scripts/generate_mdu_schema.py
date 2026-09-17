@@ -1,0 +1,224 @@
+import argparse
+import json
+import os
+import sys
+
+# Maps the JSON "value_type" strings to the C++ ValueType enum names.
+VALUE_TYPE_MAP = {
+    "string": "String",
+    "int": "Int",
+    "float": "Float",
+    "intbool": "IntBool",
+    "path": "Path",
+    "enum": "StringEnum",
+    "intenum": "IntEnum",
+    "list[path]": "PathList",
+    "list[string]": "StringList",
+    "list[float]": "FloatList",
+    "datetime": "DateTime",
+}
+
+# Maps the JSON "format" strings to the C++ FormatType enum names.
+FORMAT_TYPE_MAP = {
+    "general": "General",
+    "fixed": "Fixed",
+    "scientific": "Scientific",
+    "date": "Date",
+    "datetime": "DateTime",
+}
+
+# Maps the JSON "status" strings to the C++ StatusType enum names.
+STATUS_TYPE_MAP = {
+    "GA": "Available",
+    "research": "Research",
+    "deprecated": "Deprecated",
+    "obsolete": "Obsolete",
+}
+
+# Template for the generated C++ source. Literal braces are doubled so the
+# string can be filled in with str.format(description=..., body=...).
+CPP_TEMPLATE = """\
+#include <dflowfm_io/MduSchema.h>
+
+// This file is generated from mdu.json. Manual edits will be lost.
+
+namespace dflowfm_io
+{{
+    /// @brief Builds an @ref MduSchema from the MDU specification.
+    inline MduSchema BuildMduSchema()
+    {{
+        return MduSchema {{
+            "{description}",
+            {{
+{body}
+            }}
+        }};
+    }}
+
+}} // namespace dflowfm_io
+"""
+
+
+def default_value_str(value):
+    """Produce the human-readable default value string stored in the schema."""
+    if isinstance(value, list):
+        return " ".join(str(v) for v in value)
+    return str(value)
+
+
+def get_enum_entries(prop):
+    """Return an ordered list of (value, status) tuples for an enum property."""
+    enum_values = prop.get("enum_values", {})
+    entries = []
+    for (key, entry) in enum_values.items():
+        status = entry.get("status", {}) if isinstance(entry, dict) else {}
+        entries.append((key, status))
+    return entries
+
+
+def render_status(status, indent):
+    """Render the Status block."""
+    inner = " " * (indent + 4)
+    status_type = STATUS_TYPE_MAP[status["value"]]
+    comment = status.get("comment", "")
+    since_release = status.get("since_release", "")
+    sub_width = len(".comment") if comment else len(".type")
+
+    def status_field(name, val):
+        return f"{inner}{name.ljust(sub_width)} = {val}"
+
+    status_lines = [status_field(".type", f"StatusType::{status_type}")]
+    if comment:
+        status_lines.append(status_field(".comment", f'"{comment}"'))
+    if since_release:
+        status_lines.append(status_field(".since", f'"{since_release}"'))
+    body = ",\n".join(status_lines)
+    return f"{{\n{body}\n{' ' * indent}}}"
+
+
+def render_enum_value(value, status, indent):
+    """Render a single EnumValueSchema block."""
+    pad = " " * indent
+    inner = " " * (indent + 4)
+    width = len(".status") if status else len(".value")
+
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
+
+    field_blocks = [field(".value", f'"{value}"')]
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}EnumValueSchema {{\n{body}\n{pad}}}"
+
+
+def render_property(prop, indent, default_float_format):
+    """Render a single PropertySchema block."""
+    pad = " " * indent
+    inner = " " * (indent + 4)
+    width = len(".default_value") if "default_value" in prop else len(".description")
+
+    required = bool(prop.get("validation", {}).get("is_required", False))
+    value_type = VALUE_TYPE_MAP[prop["value_type"]]
+    enum_entries = get_enum_entries(prop)
+    status = prop.get("status", {})
+
+    def field(name, val):
+        return f"{inner}{name.ljust(width)} = {val}"
+
+    field_blocks = [field(".key", f'"{prop["key"]}"')]
+    field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
+    if "default_value" in prop:
+        dvs = default_value_str(prop["default_value"])
+        field_blocks.append(field(".default_value", f'"{dvs}"'))
+
+    format_key = prop.get("format")
+    if format_key is None and prop["value_type"] in ("float", "list[float]"):
+        format_key = default_float_format
+    if format_key is not None:
+        format_type = FORMAT_TYPE_MAP[format_key]
+        field_blocks.append(field(".format", f"FormatType::{format_type}"))
+        
+    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
+
+    if required:
+        field_blocks.append(field(".required", "true"))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
+    if enum_entries:
+        enum_blocks = [render_enum_value(v, st, indent + 8) for v, st in enum_entries]
+        enum_body = ",\n".join(enum_blocks)
+        field_blocks.append(field(".enum_values", f"{{\n{enum_body}\n{inner}}}"))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}PropertySchema {{\n{body}\n{pad}}}"
+
+
+def render_section(section, indent, default_float_format):
+    """Render a single SectionSchema block."""
+    pad = " " * indent
+    inner = " " * (indent + 4)
+    properties = section.get("ini_properties", [])
+    status = section.get("status", {})
+
+    # A section is required when it contains at least one required property.
+    required = any(
+        p.get("validation", {}).get("is_required", False) for p in properties
+    )
+
+    width = len(".description")
+
+    def field(name, value):
+        return f"{inner}{name.ljust(width)} = {value}"
+
+    field_blocks = [field(".name", f'"{section["name"]}"')]
+    if required:
+        field_blocks.append(field(".required", "true"))
+    field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
+    if status:
+        field_blocks.append(field(".status", render_status(status, indent + 4)))
+
+    prop_blocks = [render_property(p, indent + 8, default_float_format) for p in properties]
+    props_body = ",\n".join(prop_blocks)
+    field_blocks.append(field(".properties", f"{{\n{props_body}\n{inner}}}"))
+
+    body = ",\n".join(field_blocks)
+    return f"{pad}SectionSchema {{\n{body}\n{pad}}}"
+
+
+def generate_schema_file(spec):
+    """Generate the full C++ source from the parsed JSON specification."""
+    sections = spec.get("ini_sections", [])
+    default_float_format = spec.get("default_float_format", "general")
+    section_blocks = [render_section(s, 16, default_float_format) for s in sections]
+
+    description = spec.get("description", "")
+    body = ",\n".join(section_blocks)
+
+    return CPP_TEMPLATE.format(description=description, body=body)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate the C++ MDU schema source from mdu.json.")
+    parser.add_argument("input", help="Path to the mdu.json specification.")
+    parser.add_argument("output", help="Path of the C++ source file to generate.")
+    args = parser.parse_args()
+
+    with open(args.input, "r", encoding="utf-8") as f:
+        spec = json.load(f)
+
+    source = generate_schema_file(spec)
+
+    output_dir = os.path.dirname(os.path.abspath(args.output))
+    os.makedirs(output_dir, exist_ok=True)
+
+    with open(args.output, "w", encoding="utf-8", newline="\n") as f:
+        f.write(source)
+
+    print(f"Generated {os.path.normpath(args.output)} from {os.path.normpath(args.input)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
