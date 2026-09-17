@@ -32,7 +32,6 @@ module m_trtrou
 ! functions and subroutines
 !
 use precision, only: fp
-use m_trachy, only: update_umag
 implicit none 
 
 private
@@ -83,15 +82,15 @@ integer, parameter :: VEGETATION_ITERATE_VELOCITY = 1 !< Iteratively evaluate ve
 
 contains
     
-subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
-                & cfrou     ,rouflo    ,linit     ,gdis_zet  , &
-                & huv       ,kcuv      ,sig       , &
-                & z0rou     ,jdir      ,waqol     ,gdtrachy  , & 
-                & umod      ,nmlb      ,nmub      ,nmlbc     , nmubc    , & 
-                & rhow      ,ag        ,vonkar    ,vicmol    , & 
-                & eps       ,dryflc    ,spatial_bedform      ,bedformD50,bedformD90, & 
-                & rksr      ,rksmr     ,rksd      ,error, & 
-                & assoc_dxx ,nxx       ,lsedtot   ,dxx       ,i50       ,i90,       &
+subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
+                & cfrou     ,rouflo     ,linit     ,gdis_zet  , &
+                & huv       ,kcuv       ,sig       , &
+                & z0rou     ,jdir       ,waqol     ,gdtrachy  , & 
+                & umod      ,update_umag,nmlb     ,nmub      ,nmlbc     , nmubc    , & 
+                & rhow      ,ag         ,vonkar    ,vicmol    , & 
+                & eps       ,dryflc     ,spatial_bedform      ,bedformD50,bedformD90, & 
+                & rksr      ,rksmr      ,rksd      ,error, & 
+                & assoc_dxx ,nxx        ,lsedtot   ,dxx       ,i50       ,i90,       &
                 & rhosol        )
               
 !!--description-----------------------------------------------------------------
@@ -160,6 +159,7 @@ subroutine trtrou(lundia    ,kmaxtrt      ,nmmax   , &
     integer                                                            , intent(in)  :: nmubc         !< end space index   (flow nodes)
     integer, dimension(nmlb:nmub)                                                    :: kcuv
     logical                                                            , intent(in)  :: linit
+    logical                                                            , intent(in)  :: update_umag !< Flag to indicate if the magnitude of the velocity should be updated
     real(fp), dimension(kmaxtrt)                                          , intent(in)  :: sig
     !real(fp), dimension(nmlb:nmub)                                     , intent(in)  :: gdis_dp  !(not used) 
     real(fp), dimension(nmlb:nmub)                                     , intent(in)  :: gdis_zet
