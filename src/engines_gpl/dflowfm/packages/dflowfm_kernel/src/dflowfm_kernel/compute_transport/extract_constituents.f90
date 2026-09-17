@@ -70,7 +70,7 @@ contains
                             temperature_min, upperlimittra, lowerlimittra
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
-      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, maserrtra, itra1, itran
+      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, maserrtra, itra1, itran, const_names
 
       use timers, only: timon, timstop, timstrt
 
@@ -129,8 +129,8 @@ contains
       if (itra1 > 0) then
          cells_with_max_limit = 0
          cells_with_min_limit = 0
-         do k = 1, ndkx
-            do iconst = ITRA1, ITRAN
+         do iconst = ITRA1, ITRAN
+            do k = 1, ndkx
                if (constituents(iconst, k) < lowerlimittra) then
                   cells_with_min_limit = cells_with_min_limit + 1
                   maserrtra = maserrtra + vol1(k) * (lowerlimittra - constituents(iconst, k))
@@ -144,12 +144,12 @@ contains
                   constituents(iconst, k) = upperlimittra
                end if
             end do
-         end do
 
-         if (jalogtransportsolverlimiting > 0) then
-            call print_message(IDX_TRA_MIN, 'Negative tracer concentration', cells_with_min_limit, min_limit=lowerlimittra)
-            call print_message(IDX_TRA_MAX, 'Tracer concentration overshoots', cells_with_max_limit, max_limit=upperlimittra)
-         end if
+            if (jalogtransportsolverlimiting > 0) then
+               call print_message(IDX_TRA_MIN, 'Negative tracer "' // trim(const_names(iconst)) // '" concentration', cells_with_min_limit, min_limit=lowerlimittra)
+               call print_message(IDX_TRA_MAX, 'Tracer "' // trim(const_names(iconst)) // '" concentration overshoots', cells_with_max_limit, max_limit=upperlimittra)
+            end if
+         end do
       end if
 
       if (temperature_model /= TEMPERATURE_MODEL_NONE) then
