@@ -8,7 +8,7 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
                                 Basic Windows configuration file: tb3_cfg_win32_hp.xml
                                 From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
                                 From hp to parallel: Use mpi as shell (in related program)
-                                                                         Overrule maxruntime when needed
+                                                                         
                                                                          Only cases that run in parallel mode
                                 -->
   <!-- Modification date: 2018-08-15-12:01-->								
@@ -86,7 +86,7 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
 			<location ref="dsctestbench-references" type="reference">
 				<from>.</from>
 			</location>
-			<maxRunTime>60.0</maxRunTime> <!-- seconds -->      <!-- seconds -->
+			
 		</testCase>
 	</defaultTestCases>
 	<testCases>
@@ -95,7 +95,7 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
 				<program ref="DFoundation">
 				</program>
 			</programs>
-			<maxRunTime>60.0</maxRunTime> <!-- seconds -->
+			
 			<checks>
 				<file name="Unit_test.fod" type="dseriesregression">
 					<parameters>

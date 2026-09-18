@@ -25,17 +25,15 @@
 #ifndef LINEAREQUATIONSOLVERS_H
 #define LINEAREQUATIONSOLVERS_H
 
-
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-void gj(int n, double** A, double* b, double* x);
-void gj(int n, double** Ab);
+        void gj(int n, double** A, double* b, double* x);
+        void gj(int n, double** Ab);
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif /* LINEAREQUATIONSOLVERS_H */
-

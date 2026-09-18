@@ -357,9 +357,9 @@ contains
       end if
 
       if (ARCH == 'linux') then
-         command = 'mkdir -p '//trim(sanitized_dir_name)
+         command = 'mkdir -p "'//trim(sanitized_dir_name)//'"'
       else if (ARCH == 'windows') then
-         command = 'mkdir '//trim(sanitized_dir_name)
+         command = 'mkdir "'//trim(sanitized_dir_name)//'"'
       else
          call err('makedir could not determine the system architecture "'//trim(ARCH)//'".')
       end if

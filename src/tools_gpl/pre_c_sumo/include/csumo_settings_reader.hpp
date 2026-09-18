@@ -1,0 +1,177 @@
+#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_SETTINGS_READER_HPP
+#define SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_SETTINGS_READER_HPP
+
+#include <expected>
+#include <filesystem>
+#include <optional>
+#include <pugixml.hpp>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "parsing_types.hpp"
+
+namespace pre_c_sumo
+{
+    /**
+     * @anchor pre_c_sumo_constituents_operator
+     * @brief Operator applied to constituent concentrations.
+     *
+     * Corresponds to the &lt;constituentsOperator&gt; element inside &lt;discharge&gt;.
+     * - Absolute: values are absolute concentrations.
+     * - Excess: values are excess (delta) concentrations relative to ambient.
+     */
+    enum class ConstituentsOperator
+    {
+        Absolute, ///< Absolute concentration values.
+        Excess,   ///< Excess (delta) concentration values.
+    };
+
+    /**
+     * @anchor pre_c_sumo_discharge
+     * @brief Discharge characteristics of a near-field diffuser.
+     *
+     * Corresponds to the &lt;discharge&gt; element inside &lt;data&gt;.
+     */
+    struct Discharge
+    {
+        double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;).
+        ConstituentsOperator
+            constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;).
+        std::vector<double>
+            constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;).
+    };
+
+    /**
+     * @anchor pre_c_sumo_diffuser_settings
+     * @brief Settings for a single near-field diffuser.
+     *
+     * Corresponds to one &lt;settings&gt; block in the COSUMO XML.
+     */
+    struct DiffuserSettings
+    {
+        // --- general section ---
+        std::optional<std::string> id;              ///< Diffuser identifier (&lt;ID&gt;, optional).
+        std::optional<std::string> sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;, optional).
+        std::optional<std::string> far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;, optional).
+
+        // --- data section ---
+        parsing_utils::Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;).
+        std::vector<parsing_utils::Point2D>
+            ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more).
+        std::optional<parsing_utils::Point2D> intake; ///< Intake location (&lt;XYintake&gt;, optional).
+        Discharge discharge;                          ///< Discharge characteristics (&lt;discharge&gt;).
+        double nozzle_diameter{};                     ///< Nozzle diameter [m] (&lt;D0&gt;).
+        double nozzle_elevation{};                    ///< Height above the bed [m] (&lt;H0&gt;).
+        double vertical_angle{};                      ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;).
+        double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;).
+        std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional).
+
+        // --- comm section ---
+        std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;).
+        std::filesystem::path ff_run_dir; ///< Far-field model run directory (&lt;FFrundir&gt;).
+
+        // --- raw XML ---
+        pugi::xml_node settings_xml_node; ///< Raw &lt;settings&gt; XML node from the parsed document.
+                                          ///< Valid while the owning CSumoSettingsReader is alive.
+                                          ///< Use pugi::xml_node::append_copy() to insert it into another document.
+
+        /**
+         * @anchor pre_c_sumo_diffuser_settings_ff2nf_filepath
+         * @brief Constructs the expected FF2NF file path for this diffuser.
+         * @param subgrid_model_nr Subgrid model number of this diffuser.
+         * @param current_time_seconds Current coupling time in seconds.
+         * @return Full FF2NF filepath for this diffuser.
+         */
+        [[nodiscard]] const std::filesystem::path ff2nfFilepath(int subgrid_model_nr,
+                                                                double current_time_seconds) const;
+
+        /**
+         * @anchor pre_c_sumo_diffuser_settings_nf2ff_filepath
+         * @brief Constructs the expected NF2FF file path for this diffuser.
+         * @param subgrid_model_nr Subgrid model number of this diffuser.
+         * @param current_time_seconds Current coupling time in seconds.
+         * @return Full NF2FF filepath for this diffuser.
+         */
+        [[nodiscard]] const std::filesystem::path nf2ffFilepath(int subgrid_model_nr,
+                                                                double current_time_seconds) const;
+    };
+
+    /**
+     * @anchor pre_c_sumo_csumo_settings_reader
+     * @brief Reads C-SUMO settings from a configuration XML file.
+     *
+     * Expected XML format:
+     * @include full_settings_example.xml
+     *
+     * Use @ref fromFile to construct from a path, or @ref fromString to construct
+     * directly from XML text for unit tests.
+     */
+    class CSumoSettingsReader
+    {
+    public:
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_from_file
+         * @brief Creates a reader by reading and parsing an XML file.
+         * @param csumo_config_file Path to the C-SUMO configuration XML file.
+         * @return Reader on success, or a @ref parsing_utils::ParseError describing the failure.
+         */
+        [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromFile(
+            const std::filesystem::path& csumo_config_file);
+
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_from_string
+         * @brief Creates a reader by parsing XML content from an in-memory string.
+         *
+         * This overload does not touch the filesystem and is useful in tests.
+         *
+         * @param xml Raw UTF-8 XML content.
+         * @return Reader on success, or a @ref parsing_utils::ParseError describing the failure.
+         */
+        [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromString(
+            std::string_view xml);
+
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_file_version
+         * @brief Returns the file format version from the XML document.
+         * @return File version string.
+         */
+        [[nodiscard]] std::string_view fileVersion() const;
+
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_diffusers
+         * @brief Returns all diffuser settings blocks read from the XML in document order.
+         *
+         * Each @ref DiffuserSettings also carries its raw @c settings_xml_node, which remains valid
+         * while this reader is alive.
+         * @return Read-only diffuser settings collection.
+         */
+        [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
+
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_ff2nf_filepaths
+         * @brief Constructs the expected FF2NF file paths for a given timestep.
+         * @param current_time_seconds Current time in seconds.
+         * @return Expected FF2NF output file paths.
+         */
+        [[nodiscard]] const std::vector<std::filesystem::path> ff2nfFilepaths(double current_time_seconds) const;
+
+        /**
+         * @anchor pre_c_sumo_csumo_settings_reader_nf2ff_filepaths
+         * @brief Constructs the expected NF2FF file paths for a given timestep.
+         * @param current_time_seconds Current time in seconds.
+         * @return Expected NF2FF input file paths.
+         */
+        [[nodiscard]] const std::vector<std::filesystem::path> nf2ffFilepaths(double current_time_seconds) const;
+
+    private:
+        explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers,
+                                     pugi::xml_document document);
+
+        std::string file_version_;
+        std::vector<DiffuserSettings> diffusers_;
+        pugi::xml_document document_;
+    };
+} // namespace pre_c_sumo
+
+#endif // SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_SETTINGS_READER_HPP

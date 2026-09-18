@@ -33,11 +33,12 @@ module m_wrimap
 contains
    subroutine wrimap(tim)
       use precision, only: dp
-      use m_flow, only: jamapbnd
+      use m_flow, only: map_write_settings
       use unstruc_netcdf
       use unstruc_model
       use unstruc_files, only: defaultFilename
       use m_fm_update_crosssections, only: fm_update_mor_width_mean_bedlevel
+      use m_unstruc_netcdf_data, only: flowgeom_map
       use m_flowgeom, only: ndx2d, ndxi
       use m_flowtimes, only: ti_split, time_split0, it_map, handle_extra
       use Timers
@@ -60,6 +61,15 @@ contains
       end if
 
       if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then ! NetCDF output
+         if (md_unc_conv == UNC_CONV_UGRID) then
+            if (.not. associated(flowgeom_map)) then
+               return
+            end if
+            if (flowgeom_map%ndx_out <= 0) then
+               return
+            end if
+         end if
+
          call timstrt('wrimap inq ncid', handle_extra(81))
          if (mapids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. mapids%id_tsp%idx_curtime == 0) .or. (md_unc_conv == UNC_CONV_CFOLD .and. it_map == 0))) then
             ierr = unc_close(mapids%ncid)
@@ -100,13 +110,13 @@ contains
                   end if
                end if
                jabndnd = 0
-               if (jamapbnd > 0) then
+               if (map_write_settings%bnd > 0) then
                   jabndnd = 1
                end if
                call unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             else
                jabndnd = 0
-               if (jamapbnd > 0) then
+               if (map_write_settings%bnd > 0) then
                   jabndnd = 1
                end if
                call unc_write_map_filepointer(mapids%ncid, tim, jabndnd) ! wrimap

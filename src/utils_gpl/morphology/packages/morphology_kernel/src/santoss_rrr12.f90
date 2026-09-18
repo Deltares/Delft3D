@@ -1,32 +1,38 @@
-subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+
+module m_santoss_rrr12
+   implicit none
+   private
+   public santoss_rrr12
+
+contains
+
+subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
 !!--description-----------------------------------------------------------------
 !
 !   The SANTOSS practical sand transport model, version 2.08  
@@ -36,13 +42,10 @@ subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
 !   Computation of parameterization of wave orbital motion
 !   by Ruessink et al. (2012)
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use sed_support_routines, only: ruessink_etal_2012
     use mathconsts, only: pi
-    implicit none
 !
 ! arguments
 !
@@ -102,3 +105,5 @@ subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
     ! Veen (2014), eq. (B.13)
     r_ab   = 0.0517_fp*bm**3 - 0.4095_fp*bm**2 + 1.0853_fp*bm - 0.0099_fp
 end subroutine santoss_rrr12
+
+end module m_santoss_rrr12

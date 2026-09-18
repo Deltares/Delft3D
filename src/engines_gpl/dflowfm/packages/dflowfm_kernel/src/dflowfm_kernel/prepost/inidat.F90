@@ -39,7 +39,9 @@ module m_inidat
 
    private
 
-   public :: inidat, loadfile, savefile
+   public :: inidat, loadfile, savefile, jaSkipCmdLineArgs
+
+   integer :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
 contains
 
@@ -78,7 +80,6 @@ contains
       integer :: k
       real(kind=dp) :: rk
       real(kind=dp) :: rmiss
-      integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
 
       !  1=CLS
       !  2=GRID/NET    1=RECHT   2=SPLINE

@@ -21,39 +21,38 @@
  * @date 2010
  */
 
-
 #pragma once
 
 #ifndef LINEAR_EQUATION_CONVERTER_H
-#define LINEAR_EQUATION_CONVERTER_H
+    #define LINEAR_EQUATION_CONVERTER_H
 
-#include "utilities/converter.h"
+    #include "utilities/converter.h"
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class linearEquationConverter : public converter
-{
-private:
-	double a;
-	double b;
+        class linearEquationConverter : public converter
+        {
+        private:
+            double a;
+            double b;
 
-public:
-	linearEquationConverter(double a, double b);
-	~linearEquationConverter(void);
+        public:
+            linearEquationConverter(double a, double b);
+            ~linearEquationConverter(void);
 
-	void checkProperty(converter::propertyEnum prop) {};
+            void checkProperty(converter::propertyEnum prop) {};
 
-	double convert(double xVal);
-	double convertDer(double xVal);
-	double reverseConvert(double yVal);
-	double reverseConvertDer(double yVal);
-	converter* getIntegrator();
-};
+            double convert(double xVal);
+            double convertDer(double xVal);
+            double reverseConvert(double yVal);
+            double reverseConvertDer(double yVal);
+            converter* getIntegrator();
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
-#endif //LINEAR_EQUATION_CONVERTER_H
+#endif // LINEAR_EQUATION_CONVERTER_H

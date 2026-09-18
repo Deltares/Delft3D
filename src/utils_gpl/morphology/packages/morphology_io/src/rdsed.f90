@@ -119,6 +119,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     character(256)   , dimension(:)    , pointer :: flstcg
     logical                            , pointer :: anymud
     logical                            , pointer :: bsskin
+    logical                            , pointer :: spatial_d50
     character(256)                     , pointer :: flsdia
     character(256)                     , pointer :: flsmdc
     character(256)                     , pointer :: flspmc
@@ -245,6 +246,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     flsdbd               => sedpar%flsdbd
     anymud               => sedpar%anymud
     bsskin               => sedpar%bsskin
+    spatial_d50          => sedpar%spatial_d50
     flsdia               => sedpar%flsdia
     flsmdc               => sedpar%flsmdc
     flspmc               => sedpar%flspmc
@@ -415,6 +417,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! check for mud fractions
     !
     anymud       = .false.
+    spatial_d50  = .false.
     nclayfrac    = 0
     nmudfrac     = 0
     flocsize     = -999
@@ -517,6 +520,10 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        iopsus = 0
        call prop_get(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
+       call prop_get(sed_ptr, 'SedimentOverall', 'diffusionCal', sedpar%seddif_cal)
+       sedpar%seddif_cal = max(sedpar%seddif_cal, 0.0_fp)
+       call prop_get(sed_ptr, 'SedimentOverall', 'diffusionScaling', sedpar%difparam)
+       sedpar%difparam = max(sedpar%difparam, 0.0_fp)
        !
        floc_str = 'none'
        call prop_get(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
@@ -982,6 +989,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                        call write_error(errmsg, unit=lundia)
                        return
                    endif
+                   spatial_d50 = .true.
                 else
                    call write_error('File "'//filename//'" for SedD50 not found', unit=lundia)
                    error = .true.
@@ -1689,6 +1697,14 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     endif
     txtput1 = 'Option Dss'
     write (lundia, '(2a,i12)') txtput1, ':', iopsus
+    if (sedpar%seddif_cal > 0.0_fp) then
+       txtput1 = 'Diffusion calibration'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%seddif_cal
+    endif
+    if (sedpar%difparam > 0.0_fp) then
+       txtput1 = 'Near-bed diffusion scaling'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%difparam
+    endif
     if (anymud) then
        if (flsmdc /= ' ' .or. comparereal(mdcuni,0.0_fp) /= 0) then
           errmsg = 'User defined mud content ignored: mud fraction simulated.'
@@ -1987,15 +2003,19 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
           ! sand or bedload.
           !
           txtput1 = '  sed. distribution'
-          if (nseddia(l) == 0) then
-             ! this is okay for fine fractions ...
-             if (sedtyp(l) >= sedpar%min_dxx_sedtyp) then
-                ! ... but not for coarser fractions that need diameter information
-                errmsg = 'Missing sediment diameter data'
-                call write_error(errmsg, unit=lundia)
-                error = .true.
-                return
-             endif
+          if (nseddia(l) == 0 .and. sedtyp(l) <= sedpar%max_mud_sedtyp) then
+             !
+             ! originally no D50 was specified for mud fractions
+             ! the code accepts this as backward compatibility
+             !
+          elseif (nseddia(l) == 0) then
+             !
+             ! error: no sediment diameter specified!
+             !
+             errmsg = 'Missing sediment diameter data'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
           elseif (nseddia(l) == 1) then
              !
              ! Just one sediment diameter
@@ -2272,23 +2292,27 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
              seddm(l) = seddm(l) / 100.0_fp
           endif
           !
-          ! convert percentages to fractions
-          !
-          do n = 1, nseddia(l)
-             logseddia(1,n,l) = logseddia(1,n,l) / 100.0_fp
-          enddo
-          !
-          txtput1 = '  SedD10'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd10(l)
-          txtput1 = '  SedD50'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd50(l)
-          txtput1 = '  SedDM'
-          write (lundia, '(2a,e12.4)') txtput1, ':', seddm(l)
-          txtput1 = '  SedD90'
-          write (lundia, '(2a,e12.4)') txtput1, ':', sedd90(l)
-       endif
+          if (nseddia(l)>0) then
+             !
+             ! convert percentages to fractions
+             !
+             do n = 1, nseddia(l)
+                logseddia(1,n,l) = logseddia(1,n,l) / 100.0_fp
+             enddo
+             !
+             txtput1 = '  SedD10'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd10(l)
+             txtput1 = '  SedD50'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd50(l)
+             txtput1 = '  SedDM'
+             write (lundia, '(2a,e12.4)') txtput1, ':', seddm(l)
+             txtput1 = '  SedD90'
+             write (lundia, '(2a,e12.4)') txtput1, ':', sedd90(l)
+          end if
+       end if
        txtput1 = '  Dry bed (bulk) density (CDRYB)'
        write (lundia, '(2a,e12.4)') txtput1, ':', cdryb(l)
+       
        if (flsdbd(l) /= ' ') then
           if (inisedunit(l) == 'kg/m2') then
              txtput1 = '  File IniCon'

@@ -66,6 +66,7 @@ contains
       use flocculation, only: get_tshear_tdiss
       use m_get_kbot_ktop
       use mathconsts, only: ee
+      use m_eqsettle, only: eqsettle
       !
       implicit none
       !
@@ -185,6 +186,7 @@ contains
          end if
          !
          ! loop over the interfaces in the vertical
+         ! NOTE: kmx==1 case is not handled yet
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
@@ -339,7 +341,7 @@ contains
                ws(kk, ll) = wsloc
             end do ! ll
          end do ! kk
-         if (kmx > 1) then
+         if (kmx > 1) then ! what about kmx==1
             do ll = 1, lsed
                ws(kb - 1, ll) = ws(kb, ll) ! to check
             end do ! ll

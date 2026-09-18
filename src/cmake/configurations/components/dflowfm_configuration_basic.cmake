@@ -73,21 +73,12 @@ if(NOT TARGET dhydrology_kernel)
 endif()
 
 # PreCICE
-if(NOT TARGET precice::precice)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice)
-endif()
+# precice::precice comes from the Conan package, see src/cmake/CMakeLists.txt.
 
 # precicef (preCICE fortran bindings)
 if (NOT TARGET precicef)
     add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
 endif()
-
-# petsc
-if(WIN32)
-    if(NOT TARGET petsc)
-        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
-    endif()
-endif(WIN32)
 
 # Dflowfm modules
 add_subdirectory(${checkout_src_root}/${dflowfm_kernel_module} dflowfm_kernel)
@@ -138,11 +129,6 @@ if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
 endif()
 
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
 # libsigwatch
 if(NOT TARGET libsigwatch)
     add_subdirectory(${checkout_src_root}/${libsigwatch_module} libsigwatch)
@@ -153,11 +139,7 @@ if(NOT TARGET FLAP)
     add_subdirectory(${checkout_src_root}/${FLAP_module} FLAP)
 endif()
 
-if(WIN32)
-   if (NOT TARGET gdal)
-      add_subdirectory(${checkout_src_root}/${gdal_module} gdal)
-   endif()
-endif(WIN32)
+
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -166,20 +148,6 @@ endif()
 if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
-
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
 
 # io_netcdf
 if(NOT TARGET io_netcdf)
@@ -257,4 +225,12 @@ if(NOT TARGET plugin_culvert)
 endif()
 if(NOT TARGET plugin_delftflow_traform)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_delftflow_traform plugin_delftflow_traform)
+endif()
+
+if(WIN32)
+    if(WITH_INTERACTER)
+        if(NOT TARGET interacter_utils)
+            add_subdirectory(${checkout_src_root}/${interacter_utils_module} interacter_utils)
+        endif()
+    endif()
 endif()

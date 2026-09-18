@@ -1,0 +1,4 @@
+# Tools like `rg` and `fd` don't process files that are in `.gitignore`.
+# This `.ignore` file makes `rg` and `fd` search through the test case data with a reverse match.
+# These tools give the `.ignore` file precedence over `.gitignore`.
+!*

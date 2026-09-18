@@ -74,6 +74,7 @@ module m_fm_erosed
    !     sedpar
    integer, pointer :: nmudfrac
    logical, dimension(:), pointer :: cmpupdfrac
+   logical, pointer :: spatial_d50
    real(fp), dimension(:), pointer :: rhosol
    real(fp), dimension(:), pointer :: cdryb
    real(fp), dimension(:, :, :), pointer :: logseddia
@@ -105,6 +106,8 @@ module m_fm_erosed
    integer, dimension(:, :), pointer :: floclist
    real(fp), pointer :: tbreakup
    real(fp), pointer :: tfloc
+   real(fp), pointer :: difparam
+   real(fp), pointer :: seddif_cal
 
    ! morpar
    real(fp), pointer :: thresh
@@ -205,6 +208,7 @@ module m_fm_erosed
    real(fp), dimension(:), pointer :: mudfrac_he
    real(fp), dimension(:), pointer :: sandfrac
    real(fp), dimension(:, :), pointer :: hidexp
+   real(fp), dimension(:), pointer :: poros
    real(fp), dimension(:), pointer :: rsdqlc
    real(fp), dimension(:, :), pointer :: sbcx
    real(fp), dimension(:, :), pointer :: sbcy
@@ -242,6 +246,8 @@ module m_fm_erosed
    real(fp), dimension(:, :), pointer :: srcmax
    real(fp), dimension(:), pointer :: taub
    real(fp), dimension(:, :), pointer :: taurat
+   real(fp), dimension(:), pointer :: tcrero_bed
+   real(fp), dimension(:), pointer :: eropar_bed
    real(fp), dimension(:), pointer :: ust2
    real(fp), dimension(:), pointer :: umod
    real(fp), dimension(:), pointer :: uuu
@@ -266,5 +272,8 @@ module m_fm_erosed
    logical, pointer :: neglectentrainment
    real(fp), dimension(:, :), pointer :: rca
    real(fp), dimension(:, :), pointer :: statqnt
+
+   ! morlyr
+   integer, pointer :: iconsolidate
 
 end module m_fm_erosed

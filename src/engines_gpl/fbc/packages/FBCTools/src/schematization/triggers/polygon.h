@@ -28,41 +28,41 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class polygon
-{
-public:
-	polygon(void) {};
-	polygon(int nEdges, std::vector<double>& x, std::vector<double>& y, double value);
-	~polygon(void) {};
+            class polygon
+            {
+            public:
+                polygon(void) {};
+                polygon(int nEdges, std::vector<double>& x, std::vector<double>& y, double value);
+                ~polygon(void) {};
 
-	bool contains(double tx, double ty);
-	double getNEdges() { return nEdges; };
-	double getValue() { return value; };
+                bool contains(double tx, double ty);
+                double getNEdges() { return nEdges; };
+                double getValue() { return value; };
 
-private:
-	int nEdges;
-	std::vector<double> x;
-	std::vector<double> y;
-    double value;
+            private:
+                int nEdges;
+                std::vector<double> x;
+                std::vector<double> y;
+                double value;
 
-	/**
-	 * Classifies the polygon specified by the constructor. Returns false if the polygon
-	 * is complex (has intersecting edges). Returns true if it is simple and convex.
-	 * Returns true if it is simple and concave.
-	 *
-	 * @returns False if the polygon is complex. True if the polygon is simple and 
-	 *			either convex or concave.
-	 **/
-	bool isSimple();
-};
+                /**
+                 * Classifies the polygon specified by the constructor. Returns false if the polygon
+                 * is complex (has intersecting edges). Returns true if it is simple and convex.
+                 * Returns true if it is simple and concave.
+                 *
+                 * @returns False if the polygon is complex. True if the polygon is simple and
+                 *			either convex or concave.
+                 **/
+                bool isSimple();
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* POLYGON_H */

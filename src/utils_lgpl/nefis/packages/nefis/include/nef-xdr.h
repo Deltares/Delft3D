@@ -31,10 +31,10 @@
 
 extern BInt4 nefis_errno;
 extern BInt4 nefis_errcnt;
-extern BChar error_text[LENGTH_ERROR_MESSAGE+1];
+extern BChar error_text[LENGTH_ERROR_MESSAGE + 1];
 
 #if DO_DEBUG
-extern BInt4 DBG_nefis_tree ( BInt4  , BText  );
+extern BInt4 DBG_nefis_tree(BInt4, BText);
 #endif
 
 #endif

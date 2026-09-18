@@ -44,7 +44,7 @@ module unstruc_netcdf_map_class
    use io_ugrid, only: ug_addglobalatts
    use netcdf
    use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_INFO, LEVEL_FATAL
-   use m_flowparameters, only: eps10, jaeulervel, jawave
+   use m_flowparameters, only: EPS10, jaeulervel, jawave
    use mathconsts, only: raddeg_hp
    use m_waveconst
 
@@ -344,7 +344,7 @@ contains
       end if
       call check_error(ierr, 'actual writing of class maps')
 
-      isLast = comparereal(tim, ti_classmape, eps10) /= -1
+      isLast = comparereal(tim, ti_classmape, EPS10) /= -1
 
       ! check if buffer must be written:
       need_flush = .false.

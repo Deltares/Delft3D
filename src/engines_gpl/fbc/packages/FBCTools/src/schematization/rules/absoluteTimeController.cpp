@@ -21,32 +21,28 @@
  * @date 2011
  */
 
-
-#include "absoluteTimeController.h" 
+#include "absoluteTimeController.h"
 #include <stdexcept>
 
 using namespace rtctools::schematization::rules;
 
-absoluteTimeController::absoluteTimeController(string id,
-							                   string name,
-							                   int iXIn,
-							                   int iYOut)
-	: rule(id, name)
+absoluteTimeController::absoluteTimeController(string id, string name, int iXIn, int iYOut) : rule(id, name)
 {
-	this->iXIn = iXIn;
-	this->iYOut = iYOut;
+    this->iXIn = iXIn;
+    this->iYOut = iYOut;
 }
 
-absoluteTimeController::~absoluteTimeController(void)
+absoluteTimeController::~absoluteTimeController(void) {}
+
+void absoluteTimeController::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
+    stateNew[iYOut] = stateNew[iXIn];
 }
 
-void absoluteTimeController::solve(double *stateOld, double *stateNew, long long t, double dt)
+void absoluteTimeController::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                                      double* dStateNew)
 {
-	stateNew[iYOut] = stateNew[iXIn];
-}
-
-void absoluteTimeController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
-{
-	throw runtime_error("void absoluteTimeController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew) not implemented");
+    throw runtime_error(
+        "void absoluteTimeController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double "
+        "*dStateOld, double *dStateNew) not implemented");
 }

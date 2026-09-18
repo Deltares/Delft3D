@@ -30,29 +30,28 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class standardTrigger : public trigger
-{
-private:
-	condition con;
-	bool yDefaultPresent;
-	bool yDefaultValue;
+            class standardTrigger : public trigger
+            {
+            private:
+                condition con;
+                bool yDefaultPresent;
+                bool yDefaultValue;
 
-public:
-	standardTrigger(string id, string name, 
-		condition con, bool yDefaultPresent, bool yDefaultValue,
-		int iYOut, int iTimeTrueOut, int iTimeFalseOut);
-	~standardTrigger(void);
+            public:
+                standardTrigger(string id, string name, condition con, bool yDefaultPresent, bool yDefaultValue,
+                                int iYOut, int iTimeTrueOut, int iTimeFalseOut);
+                ~standardTrigger(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
-#endif //STANDARD_TRIGGER_H
+#endif // STANDARD_TRIGGER_H

@@ -38,6 +38,14 @@ module m_fm_erosed_sub
    use m_fm_upwbed, only: fm_upwbed
    use m_fm_red_soursin, only: fm_red_soursin
    use m_waveconst
+   use m_compdiam, only: compdiam
+   use m_comphidexp, only: comphidexp
+   use m_compsandfrac, only: compsandfrac
+   use m_updmorfac, only: updmorfac
+   use m_soursin_2d, only: soursin_2d
+   use m_soursin_3d, only: soursin_3d
+   use m_eqtran, only: eqtran
+   use m_erosilt, only: erosilt
 
    implicit none
 
@@ -78,7 +86,7 @@ contains
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -100,7 +108,9 @@ contains
                              iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
                              dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
                              cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
-                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
+      use m_fm_erosed, only: difparam, seddif_cal
+      use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate, CONSOL_NONE
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -210,7 +220,6 @@ contains
       real(fp) :: vmean
       real(fp) :: z0rou
       real(fp) :: zvelb
-      real(fp) :: poros
       real(fp) :: wstau ! dummy for erosilt
       real(fp), dimension(:), allocatable :: evel ! erosion velocity [m/s]
       real(fp), dimension(0:kmax2d) :: dcww2d
@@ -242,7 +251,6 @@ contains
 
       integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
       integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
-      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -410,6 +418,7 @@ contains
          call getfrac(stmpar%morlyr, frac, anymud, mudcnt, &
             & mudfrac, 1, ndx)
       end if
+      call getbedprop(stmpar%morlyr, 1, ndx, poros, tcrero_bed, eropar_bed)
 
       ! 3D:
       ! Calculate cell centre velocity components and magnitude
@@ -469,7 +478,7 @@ contains
       !
       if (kmx > 0) then ! 3D
          deltas = 0.05_dp
-         maxdepfrac = 0.05
+         maxdepfrac = 0.05_dp
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
@@ -487,7 +496,7 @@ contains
             do k = kb, kt
                zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave /= NO_WAVES .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
@@ -585,11 +594,11 @@ contains
          call compdiam(frac, sedd50, sedd50, sedtyp, lsedtot, &
             & logsedsig, nseddia, logseddia, ndx, 1, &
             & ndx, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
-            & sedd50fld, dm, dg, dxx, dgsd)
+            & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
          !
          ! determine hiding & exposure factors
          !
-         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDEXP_ACTIVE_AND_COARSE_LAYER) then 
             !In this case, the hiding and exposure factors are computed based on the mean grain
             !size of the sediment in both the active layer (which is the top layer in the bed) and
             !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
@@ -601,7 +610,7 @@ contains
             call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                         & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
                         & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                        & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+                        & spatial_d50, sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
             call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
                            & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                            & mwwjhe    ,1, ndx)
@@ -619,7 +628,7 @@ contains
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-                         & max_mud_sedtyp, sandfrac, sedd50fld, &
+                         & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                          & 1, ndx)
       end if
       !
@@ -913,10 +922,12 @@ contains
          dll_reals(RP_VMEAN) = real(vmean, hp)
          dll_reals(RP_VELMN) = real(velm, hp)
          dll_reals(RP_USTAR) = real(ustarc, hp)
+         dll_reals(RP_POROS) = real(poros(nm), hp)
          dll_reals(RP_BLCHG) = real(dzbdt(nm), hp) ! for dilatancy
          dll_reals(RP_DZDX) = real(dzdx(nm), hp) ! for dilatancy
          dll_reals(RP_DZDY) = real(dzdy(nm), hp) ! for dilatancy
          dll_reals(RP_ZB) = real(bl(nm), hp)
+         dll_reals(RP_TAUCR) = real(tcrero_bed(nm), hp)
          !
          if (max_integers < MAX_IP) then
             write (errmsg, '(a)') 'fm_erosed::Insufficient space to pass integer values to transport routine.'
@@ -989,9 +1000,9 @@ contains
                   end if
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
-               thick0 = max(thicklc(kmaxsd) * h0, epshs)
-               thick1 = max(thicklc(kmaxsd) * h1, epshs)
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               thick0 = max(thicklc(kmaxsd) * h0, epshu)
+               thick1 = thicklc(kmaxsd) * h1
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
                           & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
@@ -999,7 +1010,7 @@ contains
                           & npar, localpar, max_integers, max_reals, &
                           & max_strings, dll_function(l), dll_handle(l), dll_integers, &
                           & dll_reals, dll_strings, iflufflyr, mfltot, &
-                          & fracf, maxslope, wetslope, &
+                          & fracf, tcrero_bed(nm) ,eropar_bed(nm), maxslope, wetslope, &
                           & error, wstau, sinktot, sourse(nm, l), sourfluff)
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
@@ -1062,7 +1073,7 @@ contains
             !
             tsd = -999.0_fp
             di50 = sedd50(l)
-            if (di50 < 0.0_fp) then
+            if (spatial_d50) then
                !  Space varying sedd50 specified in array sedd50fld:
                !  Recalculate dstar, tetacr and taucr for each nm,l - point
                di50 = sedd50fld(nm)
@@ -1111,11 +1122,9 @@ contains
             dll_reals(RP_DSS) = real(tdss, hp)
             dll_reals(RP_DSTAR) = real(dstar(l), hp)
             dll_reals(RP_SETVL) = real(twsk, hp) ! Settling velocity near bedlevel
-            !
-            ! Calculate bed porosity for dilatancy
-            !
-            poros = 1.0_dp - cdryb(l) / rhosol(l)
-            dll_reals(RP_POROS) = real(poros, hp)
+            if (iconsolidate == CONSOL_NONE) then
+               dll_reals(RP_POROS) = 1.0_hp - real(cdryb(l)/rhosol(l), hp)
+            endif
             !
             localpar(1) = ag
             localpar(2) = rhowat(kbed) ! rhow
@@ -1202,7 +1211,6 @@ contains
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
@@ -1212,15 +1220,20 @@ contains
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
+                  if (seddif_cal > 0.0_fp) then
+                     seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
+                  end if
+                  !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-
-                  difbot = 10.0_fp * ws(kmxsed(nm, l) - 1, l) * thick1
+                  if (difparam > 0.0_fp) then
+                     difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
                   do kk = kb - 1, kmxsed(nm, l) - 1
                      seddif(l, kk) = difbot
                   end do
+                  end if
                end if ! suspfrac
             else
                !

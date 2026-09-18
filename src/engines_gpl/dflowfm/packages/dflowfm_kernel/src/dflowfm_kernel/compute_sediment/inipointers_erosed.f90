@@ -70,7 +70,9 @@ contains
                               sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
-                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he
+                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50, &
+                              poros, tcrero_bed, eropar_bed, iconsolidate
+      use m_fm_erosed, only : difparam, seddif_cal
 
       if (.not. stm_included) then
          return
@@ -91,6 +93,7 @@ contains
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
       cmpupdfrac => stmpar%sedpar%cmpupdfrac
+      spatial_d50 => stmpar%sedpar%spatial_d50
       rhosol => stmpar%sedpar%rhosol
       cdryb => stmpar%sedpar%cdryb
       logseddia => stmpar%sedpar%logseddia
@@ -122,6 +125,8 @@ contains
       floclist => stmpar%sedpar%floclist
       tbreakup => stmpar%sedpar%tbreakup
       tfloc => stmpar%sedpar%tfloc
+      difparam => stmpar%sedpar%difparam
+      seddif_cal => stmpar%sedpar%seddif_cal
 
       ! morpar
       thresh => stmpar%morpar%thresh
@@ -237,6 +242,7 @@ contains
       mudfrac_he => sedtra%mudfrac_he
       sandfrac => sedtra%sandfrac
       hidexp => sedtra%hidexp
+      poros => sedtra%poros
       rsdqlc => sedtra%rsdqlc
       rsedeq => sedtra%rsedeq
       sbcx => sedtra%sbcx
@@ -275,6 +281,8 @@ contains
       srcmax => sedtra%srcmax
       taub => sedtra%taub
       taurat => sedtra%taurat
+      tcrero_bed => sedtra%tcrero_bed
+      eropar_bed => sedtra%eropar_bed
       ust2 => sedtra%ust2
       umod => sedtra%umod
       uuu => sedtra%uuu
@@ -283,6 +291,9 @@ contains
       zumod => sedtra%zumod
       rca => sedtra%rca
       statqnt => sedtra%statqnt
+
+      ! morlyr
+      iconsolidate => stmpar%morlyr%settings%iconsolidate
 
    end subroutine inipointers_erosed
 

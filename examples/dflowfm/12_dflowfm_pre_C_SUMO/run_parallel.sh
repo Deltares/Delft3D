@@ -1,0 +1,47 @@
+#!/bin/bash
+
+usePreCICE=1
+startFM=1
+startPreCSUMO=1
+NPROC=2
+installDir=build_fm-suite_debug/install
+
+bindir=$(readlink -f ../../../${installDir}/bin)
+libdir=$(readlink -f ../../../${installDir}/lib)
+export PATH=$bindir:$PATH
+export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+
+rm -rf fm/DFM_OUTPUT_FlowFM
+rm -rf fm/precice-exports
+rm -f fm/precice-profiling/*.txt
+rm -f cosumo/FF2NF/*.xml
+rm -f cosumo/csumo_bmi.dia
+rm -rf cosumo/precice-exports
+rm -f cosumo/precice-profiling/*.txt
+rm -f cosumo/precice_debug_output.txt
+rm -f csumo_to_dflowfm.nc
+rm -f precice_debug_output.txt
+rm -f precice-profiling/*.txt
+rm -rf precice-run
+
+if [ "$usePreCICE" = "1" ] ; then
+    if [ "$startPreCSUMO" = "1" ] ; then
+        cd cosumo
+        $bindir/preC-SUMO -c csumo_settings.xml -p ../precice_config.xml &
+        cd ..
+    else
+        echo "Please start preC-SUMO"
+    fi
+    if [ "$startFM" = "1" ] ; then
+        cd fm
+        # $bindir/dflowfm --partition:ndomains=$NPROC:icgsolver=6 FlowFM.mdu
+        # $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu linux_partition.pol
+        $bindir/dflowfm --partition:icgsolver=6 FlowFM.mdu windows_partition.pol
+        mpiexec -n $NPROC $bindir/dflowfm FlowFM.mdu --precice
+        cd ..
+    else
+        echo "Please start FlowFM"
+    fi
+else
+    echo "Error: Parallel DIMR is not supported."
+fi

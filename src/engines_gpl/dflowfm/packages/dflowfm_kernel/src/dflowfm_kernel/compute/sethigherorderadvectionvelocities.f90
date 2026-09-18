@@ -172,16 +172,16 @@ contains
                   ds2y = nod2liny(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2liny(LL, n12, ucx(k), ucy(k))
                end if
 
-!       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
+!       if (abs(ds2x)  > EPS10 .and. abs(ds1x) > EPS10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)  ! no cf, see belanger
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucxu(L)    =  ucxu(L)  + ds
 !           endif
 !       endif
 !
-!       if (abs(ds2y)  > eps10 .and. abs(ds1y) > eps10) then
+!       if (abs(ds2y)  > EPS10 .and. abs(ds1y) > EPS10) then
 !           ds =  cf*dslim(ds1y, ds2y, limtypmom)  ! no cf, see belanger
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucyu(L)    =  ucyu(L)  + ds
 !           endif
 !       endif
@@ -320,17 +320,17 @@ contains
                   !  ds1y_6 = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
                   ! END DEBUG
 
-!       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
+!       if (abs(ds2x)  > EPS10 .and. abs(ds1x) > EPS10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)
 !           ! BEGIN DEBUG
 !           !   ds_6 = cf*dslim(ds1x_6, ds2x, 6)
 !           ! END DEBUG
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucxu(L)    =  ucxu(L)  + ds
 !           endif
 !       endif
 !
-!       if (abs(ds2y)  > eps10 .and. abs(ds1y) > eps10) then
+!       if (abs(ds2y)  > EPS10 .and. abs(ds1y) > EPS10) then
 !           ds =  cf*dslim(ds1y, ds2y, limtypmom)
 !           ! BEGIN DEBUG
 !           !   ds_6 = cf*dslim(ds1y_6, ds2y, 6)
@@ -338,7 +338,7 @@ contains
 !           !       continue
 !           !    end if
 !           ! END DEBUG
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucyu(L)    =  ucyu(L)  + ds
 !           endif
 !       endif

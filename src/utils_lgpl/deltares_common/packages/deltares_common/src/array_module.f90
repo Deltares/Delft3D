@@ -163,18 +163,20 @@ contains
    !> Function to convert logical array to array of indices where elements are true
    pure function convert_mask_to_indices(mask) result(indices)
       logical, dimension(:), intent(in) :: mask !< Array to be converted
-
       integer, allocatable, dimension(:) :: indices !< Resulting indices where mask is true
 
-      integer :: i
-      integer, allocatable, dimension(:) :: temp_array
+      integer :: i, n
 
-      allocate(temp_array(size(mask)))
+      n = count(mask)
+      allocate(indices(n))
+      n = 0
       do i = 1, size(mask)
-         temp_array(i) = i
+         if (mask(i)) then
+            n = n + 1
+            indices(n) = i
+         end if
       end do
- 
-      indices = pack(temp_array, mask)
+
    end function convert_mask_to_indices
 
 end module array_module

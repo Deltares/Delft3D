@@ -137,7 +137,7 @@ contains
 
    subroutine xbeach_write_stats(tim)
       use precision, only: dp
-      use m_flowparameters, only: jawave, jaavgwavquant, eps10, jamombal
+      use m_flowparameters, only: jawave, jaavgwavquant, EPS10, jamombal
       use m_flowtimes, only: ti_wav, ti_wavs, ti_wave, tstop_user, time_wav
       use precision_basics
 
@@ -148,7 +148,7 @@ contains
 
       ierr = 1
       if ((jawave == WAVE_SURFBEAT) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
-         if (comparereal(tim, time_wav, eps10) >= 0) then
+         if (comparereal(tim, time_wav, EPS10) >= 0) then
             if (jamombal > 0) then
                call xbeach_mombalance()
             end if
@@ -159,7 +159,7 @@ contains
             else
                time_wav = tstop_user
             end if
-            if (comparereal(time_wav, ti_wave, eps10) == 1) then
+            if (comparereal(time_wav, ti_wave, EPS10) == 1) then
                time_wav = tstop_user
             end if
          end if

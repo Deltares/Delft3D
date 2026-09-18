@@ -1,47 +1,49 @@
-subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
-                      & max_mud_sedtyp, sandfrac, sedd50fld, &
-                      & nmlb, nmub )
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+
+module m_compsandfrac
+   implicit none
+   private
+   public compsandfrac
+
+contains
+
+subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
+                      & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
+                      & nmlb, nmub )
 !!--description-----------------------------------------------------------------
 !
 !  compsandfrac returns the total proportion of sand sized material on the bed
 !  surface (sandfrac). This is required in order to implement the Wilcock and
 !  Crowe sediment transport formula.
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module, only: dgravel
-    !
-    implicit none
+    use sediment_basics_module, only: dsand, dgravel
 !
 ! Call variables
 !
@@ -54,7 +56,8 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
     real(fp), dimension(nmlb:nmub, lsedtot) , intent(in)  :: frac           ! fractional composition of sediment
     real(fp), dimension(lsedtot)            , intent(in)  :: seddm          ! mean diameter of sediment fraction
     real(fp), dimension(nmlb:nmub)          , intent(out) :: sandfrac       ! sand fraction
-    real(fp), dimension(nmlb:nmub)          , intent(in)  :: sedd50fld      ! D50 field (in case of 1 sediment fraction)
+    logical                                 , intent(in)  :: spatial_d50    ! Flag to indicate whether the model uses spatially varying D50
+    real(fp), dimension(nmlb:nmub)          , intent(in)  :: sedd50fld      ! D50 field in case of spatial_d50
 !
 ! Local variables
 !
@@ -65,15 +68,19 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
 !
 !! executable statements -------------------------------------------------------
 !
-    if (lsedtot==1 .and. seddm(1) < 0.0_fp) then
+    if (spatial_d50) then
        ! Single size fraction
-       do nm = 1, nmmax
-          if (sedd50fld(nm) < dgravel) then
-             sandfrac(nm) = 1
-          else
-             sandfrac(nm) = 0
-          endif
-       enddo
+       if (sedtyp(1) > max_mud_sedtyp) then
+          do nm = 1, nmmax
+             if (sedd50fld(nm) >= dsand .and. sedd50fld(nm) < dgravel) then
+                sandfrac(nm) = 1.0_fp
+             else
+                sandfrac(nm) = 0.0_fp
+             endif
+          enddo
+       else
+          sandfrac(:) = 0.0_fp
+       endif
     else
        ! Multiple size fractions
        do nm = 1, nmmax
@@ -95,3 +102,5 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
        enddo
     endif
 end subroutine compsandfrac
+
+end module m_compsandfrac

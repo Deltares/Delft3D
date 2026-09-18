@@ -374,7 +374,6 @@ contains
       integer :: kt
       real(fp) :: qu
       real(fp) :: qv
-      real(fp) :: rhol
       real(fp) :: wght
       !
       if (nmorstatqnt == 0) then
@@ -414,16 +413,8 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_fp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(ll)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(ll)
-               end select
-               qu = qu + sbcx(k, ll) / rhol + sbwx(k, ll) / rhol
-               qv = qv + sbcy(k, ll) / rhol + sbwy(k, ll) / rhol
+               qu = qu + sbcx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sbwx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
+               qv = qv + sbcy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sbwy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
             end do
             call local_stats_vec(morstatflg(:, 3), k, qu, qv, wght)
          end if
@@ -432,16 +423,8 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedsus
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_fp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(ll)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(ll)
-               end select
-               qu = qu + sscx(k, ll) / rhol + sswx(k, ll) / rhol
-               qv = qv + sscy(k, ll) / rhol + sswy(k, ll) / rhol
+               qu = qu + sscx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sswx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
+               qv = qv + sscy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sswy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
             end do
             call local_stats_vec(morstatflg(:, 4), k, qu, qv, wght)
          end if
@@ -854,7 +837,7 @@ contains
                wghtfac = 1.0_dp
                work2 = 0.0_dp
                if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), eps10)
+                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), EPS10)
                end if
             end if
 

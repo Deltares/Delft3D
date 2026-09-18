@@ -48,11 +48,10 @@ contains
 
    subroutine flow_validatestate(iresult)
       use precision, only: dp
-      use m_missing, only: dmiss_pos
       use m_flow_validatestate_data
       use m_flow_externaloutput_direct, only: flow_externaloutput_direct
       use precision, only: dp
-      use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
+      use messagehandling, only: LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, warn_flush
       use m_flow
       use m_flowgeom
       use m_flowparameters
@@ -60,7 +59,7 @@ contains
       use m_transport
       use dfm_error
       use m_get_ucx_ucy_eul_mag
-      use m_missing, only: dmiss_neg
+      use m_missing, only: dmiss
 
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavg
@@ -145,14 +144,14 @@ contains
          ! at least done dnt > VALIDATESTATEWINDOWSIZE time steps, to prevent the initial
          ! spin-up period to cause unwanted simulation breaks.
          if (dnt >= VALIDATESTATEWINDOWSIZE_double .and. dtavg < dtavg_min_err) then
-            write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Comp. time step average below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
-            call mess(LEVEL_WARN, msgbuf)
+            write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Average computational time step below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
+            call mess(LEVEL_ERROR, msgbuf)
             iresult = DFM_INVALIDSTATE
          end if
       end if
 
       if (s01maxavg_min_err > 0.0_dp) then
-         s01maxavg_current = dmiss_neg
+         s01maxavg_current = dmiss
          do k = 1, ndx
             s1_s0 = abs(s1(k) - s0(k))
             if (s1_s0 > s01maxavg_current) then
@@ -199,8 +198,8 @@ contains
       u01_max_err = 0.0_dp ! max. velocity change: off
       umag_max_err = 0.0_dp ! max. velocity: off
       ssc_max_err = 0.0_dp
-      s01maxavg_min_err = 0.0_dp !< min. avg. water level change: off
-      dtavg_min_err = 0.0_dp !< smallest allowed timestep, otherwise break: off
+      s01maxavg_min_err = 0.0_dp ! min. avg. water level change: off
+      dtavg_min_err = 0.001_dp ! smallest allowed timestep, otherwise break: off
       s1_max_warn = 0.0_dp
       u1abs_max_warn = 0.0_dp
       umag_max_warn = 0.0_dp

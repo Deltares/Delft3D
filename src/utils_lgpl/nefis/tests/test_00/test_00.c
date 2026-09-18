@@ -35,208 +35,207 @@
 
 int main()
 {
-  BChar coding  ;
-  BChar error_string[LENGTH_ERROR_MESSAGE];
-  BChar rdwr    ;
-  BText dat_file;
-  BText def_file;
-  BInt4 error = 0;
-  BInt4 fd_nefis;
-  BText nef_version;
+    BChar coding;
+    BChar error_string[LENGTH_ERROR_MESSAGE];
+    BChar rdwr;
+    BText dat_file;
+    BText def_file;
+    BInt4 error = 0;
+    BInt4 fd_nefis;
+    BText nef_version;
 
-  error = Getnfv(&nef_version);
+    error = Getnfv(&nef_version);
 
-  dat_file = (BText) malloc ( sizeof(BChar) * (20+1) );
-  def_file = (BText) malloc ( sizeof(BChar) * (20+1) );
+    dat_file = (BText)malloc(sizeof(BChar) * (20 + 1));
+    def_file = (BText)malloc(sizeof(BChar) * (20 + 1));
 
-  printf(" -----------------------------------------------\n");
-  printf(" Version: %s\n", nef_version+4);
+    printf(" -----------------------------------------------\n");
+    printf(" Version: %s\n", nef_version + 4);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Test open/close some files w.r.t read and write\n");
+    printf(" -----------------------------------------------\n");
+    printf(" Test open/close some files w.r.t read and write\n");
 
-  coding = 'L';
+    coding = 'L';
 
-/*===========================================================================*/
-  rdwr = 'C';
-  strcpy(dat_file,"data_c.dat");
-  strcpy(def_file,"data_c.def");
+    /*===========================================================================*/
+    rdwr = 'C';
+    strcpy(dat_file, "data_c.dat");
+    strcpy(def_file, "data_c.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-/*===========================================================================*/
-  rdwr = 'U';
-  strcpy(dat_file,"data_u.dat");
-  strcpy(def_file,"data_u.def");
+    /*===========================================================================*/
+    rdwr = 'U';
+    strcpy(dat_file, "data_u.dat");
+    strcpy(def_file, "data_u.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  if (error == 0)
-  {
-    error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-    if ( error!=0 ) error = Neferr( 1, error_string);
-    error = Clsnef( &fd_nefis );
-    if ( error!=0 ) error = Neferr( 1, error_string);
-  }
+    if (error == 0)
+    {
+        error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+        if (error != 0) error = Neferr(1, error_string);
+        error = Clsnef(&fd_nefis);
+        if (error != 0) error = Neferr(1, error_string);
+    }
 
-/*===========================================================================*/
-  rdwr = 'R';
-  strcpy(dat_file,"data_r.dat");
-  strcpy(def_file,"data_r.def");
+    /*===========================================================================*/
+    rdwr = 'R';
+    strcpy(dat_file, "data_r.dat");
+    strcpy(def_file, "data_r.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  if (error == 0)
-  {
-    error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-    if ( error!=0 ) error = Neferr( 1, error_string);
-    error = Clsnef( &fd_nefis );
-    if ( error!=0 ) error = Neferr( 1, error_string);
-  }
+    if (error == 0)
+    {
+        error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+        if (error != 0) error = Neferr(1, error_string);
+        error = Clsnef(&fd_nefis);
+        if (error != 0) error = Neferr(1, error_string);
+    }
 
-/*===========================================================================*/
-  rdwr = 'C';
-  strcpy(dat_file,"data_c.dat");
-  strcpy(def_file,"data_c.def");
+    /*===========================================================================*/
+    rdwr = 'C';
+    strcpy(dat_file, "data_c.dat");
+    strcpy(def_file, "data_c.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  if (error == 0)
-  {
-    error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-    if ( error!=0 ) error = Neferr( 1, error_string);
-    error = Clsnef( &fd_nefis );
-    if ( error!=0 ) error = Neferr( 1, error_string);
-  }
+    if (error == 0)
+    {
+        error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+        if (error != 0) error = Neferr(1, error_string);
+        error = Clsnef(&fd_nefis);
+        if (error != 0) error = Neferr(1, error_string);
+    }
 
-/*===========================================================================*/
-  rdwr = 'U';
-  strcpy(dat_file,"data_u.dat");
-  strcpy(def_file,"data_u.def");
+    /*===========================================================================*/
+    rdwr = 'U';
+    strcpy(dat_file, "data_u.dat");
+    strcpy(def_file, "data_u.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  if (error == 0)
-  {
-    error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-    if ( error!=0 ) error = Neferr( 1, error_string);
-    error = Clsnef( &fd_nefis );
-    if ( error!=0 ) error = Neferr( 1, error_string);
-  }
+    if (error == 0)
+    {
+        error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+        if (error != 0) error = Neferr(1, error_string);
+        error = Clsnef(&fd_nefis);
+        if (error != 0) error = Neferr(1, error_string);
+    }
 
-/*===========================================================================*/
-  rdwr = 'R';
-  strcpy(dat_file,"data_c.dat");
-  strcpy(def_file,"data_c.def");
+    /*===========================================================================*/
+    rdwr = 'R';
+    strcpy(dat_file, "data_c.dat");
+    strcpy(def_file, "data_c.def");
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  if (error == 0)
-  {
-    error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-    if ( error!=0 ) error = Neferr( 1, error_string);
-    error = Clsnef( &fd_nefis );
-    if ( error!=0 ) error = Neferr( 1, error_string);
-  }
+    if (error == 0)
+    {
+        error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+        if (error != 0) error = Neferr(1, error_string);
+        error = Clsnef(&fd_nefis);
+        if (error != 0) error = Neferr(1, error_string);
+    }
 
+    /*===========================================================================*/
+    rdwr = 'C';
+    strcpy(dat_file, "data_c.daf");
+    strcpy(def_file, "data_c.daf");
 
-/*===========================================================================*/
-  rdwr = 'C';
-  strcpy(dat_file,"data_c.daf");
-  strcpy(def_file,"data_c.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    rdwr = 'U';
+    strcpy(dat_file, "data_u.daf");
+    strcpy(def_file, "data_u.daf");
 
-/*===========================================================================*/
-  rdwr = 'U';
-  strcpy(dat_file,"data_u.daf");
-  strcpy(def_file,"data_u.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    rdwr = 'R';
+    strcpy(dat_file, "data_r.daf");
+    strcpy(def_file, "data_r.daf");
 
-/*===========================================================================*/
-  rdwr = 'R';
-  strcpy(dat_file,"data_r.daf");
-  strcpy(def_file,"data_r.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    rdwr = 'C';
+    strcpy(dat_file, "data_c.daf");
+    strcpy(def_file, "data_c.daf");
 
-/*===========================================================================*/
-  rdwr = 'C';
-  strcpy(dat_file,"data_c.daf");
-  strcpy(def_file,"data_c.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    rdwr = 'U';
+    strcpy(dat_file, "data_u.daf");
+    strcpy(def_file, "data_u.daf");
 
-/*===========================================================================*/
-  rdwr = 'U';
-  strcpy(dat_file,"data_u.daf");
-  strcpy(def_file,"data_u.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    rdwr = 'R';
+    strcpy(dat_file, "data_u.daf");
+    strcpy(def_file, "data_u.daf");
 
-/*===========================================================================*/
-  rdwr = 'R';
-  strcpy(dat_file,"data_u.daf");
-  strcpy(def_file,"data_u.daf");
+    printf(" -----------------------------------------------\n");
+    printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
 
-  printf(" -----------------------------------------------\n");
-  printf(" Filenames: %c %s %s\n", rdwr, dat_file, def_file);
+    error = Crenef(&fd_nefis, dat_file, def_file, coding, rdwr);
+    if (error != 0) error = Neferr(1, error_string);
+    error = Clsnef(&fd_nefis);
+    if (error != 0) error = Neferr(1, error_string);
 
-  error = Crenef( &fd_nefis, dat_file, def_file, coding, rdwr);
-  if ( error!=0 ) error = Neferr( 1, error_string);
-  error = Clsnef( &fd_nefis );
-  if ( error!=0 ) error = Neferr( 1, error_string);
+    /*===========================================================================*/
+    error = Neferr(1, error_string);
 
-/*===========================================================================*/
-  error = Neferr( 1, error_string);
+    free((BData)dat_file);
+    free((BData)def_file);
+    free((BData)nef_version);
 
-  free ( (BData) dat_file );
-  free ( (BData) def_file );
-  free ( (BData) nef_version );
+    printf("\nEnd program\n\n");
 
-  printf("\nEnd program\n\n");
-
-  return 0;
+    return 0;
 }

@@ -37,7 +37,7 @@ module m_filter
 
 contains
 
-#include "blasfm.h"
+#include "blasfm.inc"
 
 !> initialize filter
    subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)

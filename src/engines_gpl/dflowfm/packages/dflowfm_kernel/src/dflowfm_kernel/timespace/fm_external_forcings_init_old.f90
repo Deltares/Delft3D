@@ -38,35 +38,37 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
-      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
-      use m_addsorsin, only: addsorsin_from_polyline_file
+      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr, md_mbafile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+      use m_mass_balance_area, only: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
+      use m_laterals, only: numlatsg, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: resolvepath, basename
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -78,9 +80,10 @@ contains
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
-      integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
+      integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
+      integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=256) :: varname
@@ -94,6 +97,7 @@ contains
       real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
+      integer, allocatable :: selected_nodes(:)
       real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
@@ -108,6 +112,10 @@ contains
       ydum = 1.0_dp
       kdum = 1
 
+      if (len_trim(md_mbafile) == 0) then
+         call initialize_mass_balance_area_arrays()
+      end if
+
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
 
@@ -116,6 +124,7 @@ contains
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
+            qid = quantity_name_config_file_to_internal_name(qid)
             call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
@@ -263,17 +272,13 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) then
-                     deallocate (Secchisp)
-                  end if
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+               if (.not. secchi_depth_is_spatially_varying) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  secchi_depth_is_spatially_varying = .true.
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 
@@ -296,12 +301,9 @@ contains
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-                  call prepare_lateral_mask(mask, ilattype)
-               case ('2d')
-                  ilattype = ILATTP_2D
-                  call prepare_lateral_mask(mask, ilattype)
+               case ('1d', '2d')
+                  spatial_location_type = parse_spatial_location_type(trim(qid(18:)))
+                  call construct_mask(mask, UNC_LOC_S, spatial_location_type)
                case default
                   mask(:) = 1
                end select
@@ -479,12 +481,12 @@ contains
 
             else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename)
+               call setinitialverticalprofilez(tem1, ndkx, filename)
                success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename)
+               call setinitialverticalprofilez(sa1, ndkx, filename)
                success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
@@ -545,7 +547,7 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename)
+                  call setinitialverticalprofilez(tt, ndkx, filename)
                   success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
@@ -839,8 +841,8 @@ contains
 
                if (jaspacevarcharn == 1) then
                   if (.not. allocated(ec_pwxwy_c)) then
-                     allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr)
-                     call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+                     call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+                     call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
                      ec_pwxwy_c = 0.0_dp
                   end if
                end if
@@ -862,9 +864,8 @@ contains
                   call aerr('ec_charnock(ndx)', ierr, ndx)
                   ec_charnock(:) = 0.0_dp
                end if
-               if (.not. allocated(wcharnock)) then
-                  allocate (wcharnock(lnx), stat=ierr)
-                  call aerr('wcharnock(lnx)', ierr, lnx)
+               if (.not. allocated(wcharnock%values)) then
+                  call realloc(wcharnock%values, lnx, keepexisting=.true., fill=wcharnock%scalar)
                end if
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
@@ -989,9 +990,6 @@ contains
                   air_temperature = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypA = .true.
-               end if
 
             else if (qid == 'airdensity') then
 
@@ -1014,9 +1012,6 @@ contains
                   relative_humidity = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypH = .true.
-               end if
 
             else if (qid == 'dewpoint') then
 
@@ -1025,11 +1020,7 @@ contains
                   call aerr('dew_point_temperature(ndx)', ierr, ndx)
                   dew_point_temperature = 0.0_dp
                end if
-
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypD = .true.
-               end if
 
             else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
 
@@ -1061,9 +1052,6 @@ contains
                   cloudiness = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypC = .true.
-               end if
 
             else if (qid == 'solarradiation') then
 
@@ -1074,7 +1062,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   solar_radiation_available = .true.
                end if
 
@@ -1087,7 +1074,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   net_solar_radiation_available = .true.
                end if
 
@@ -1099,7 +1085,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypL = .true.
                   long_wave_radiation_available = .true.
                end if
 
@@ -1123,18 +1108,8 @@ contains
 
                call ini_alloc_laterals()
 
-               select case (trim(qid(17:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               call prepare_lateral_mask(kclat, ilattype)
+               spatial_location_type = parse_spatial_location_type(trim(qid(17:)))
+               call construct_mask(kclat, UNC_LOC_S, spatial_location_type)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -1183,6 +1158,7 @@ contains
             else if (jaoldstr > 0 .and. qid == 'generalstructure') then
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
+               call remove_longculvert_flowlinks(numgen, kegen(ncgen + 1:numl))
                success = .true.
                write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
                call msg_flush()
@@ -1239,16 +1215,16 @@ contains
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
-               ! 1. Prepare source-sink location (will increment num_source_sink, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
+               ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
                call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
                   success = .true.
-                  num_source_sink_oldfile = num_source_sink_oldfile + 1
+                  source_sinks%num_oldfile = source_sinks%num_oldfile + 1
                end if
 
-               ! 2. Time series hookup is done below, once counting of all num_source_sink is done.
+               ! 2. Time series hookup is done below, once counting of all source_sinks%num_total is done.
 
             else if (qid == 'shiptxy') then
                kx = 2
@@ -1268,9 +1244,6 @@ contains
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
-                  if (.not. allocated(mbaname)) then
-                     allocate (mbaname(0))
-                  end if
                   imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
@@ -1278,26 +1251,28 @@ contains
                      imba = nomba
                      call realloc(mbaname, nomba, keepExisting=.true., fill=mbainputname)
                   end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., Fill=dmiss)
 
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  allocate (selected_nodes(ndxi))
+                  call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                                  LOCTP_POLYGON_FILE, filename)
 
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (mbadef(kk) /= -999) then
-                              ! warn that segment nn at xx, yy is nog mon area imba
-                           end if
-                           mbadef(kk) = imba
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mbadef(k) = imba
-                           end do
-                        end if
+                  do kk = 1, nselected
+                     node = selected_nodes(kk)
+                     if (mbadef(node) /= -999) then
+                        ! warn that segment nn at xx, yy is nog mon area imba
+                     end if
+
+                     mbadef(node) = imba
+                     call getkbotktop(node, kb, kt)
+
+                     do k = kb, kb + kmxn(node) - 1
+                        mbadef(k) = imba
                      end do
-                  end if
-                  deallocate (viuh)
+                  end do
+
+                  deallocate (selected_nodes)
+                  success = .true.
+
                else
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
@@ -1492,6 +1467,10 @@ contains
       end do
       call timstop(handle_extra(50)) ! extforcefile old
 
+      if (len_trim(md_mbafile) == 0) then
+         call finalize_mass_balance_area_arrays()
+      end if
+
       call init_misc(iresult)
 
    end subroutine init_old
@@ -1500,21 +1479,23 @@ contains
    module subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
+      use m_source_sink, only: source_sinks
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
       use m_transport, only: numconst
-      use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
+      use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateheight, idx_gateopeningwidth
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
-      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
-                            initialize_lateraldata, apply_transport
+      use m_laterals, only: numlatsg, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg, loglevel_StdOut
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1538,8 +1519,8 @@ contains
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
-      if (num_source_sink < 0) then
-         jahissourcesink = 0
+      if (source_sinks%num_total < 0) then
+         his_write_settings%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
 
@@ -1612,7 +1593,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -1681,7 +1662,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -1743,7 +1724,7 @@ contains
                numlatsg = numlatsg + 1
 
                L = index(filename, '.', back=.true.) - 1
-               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(1, :))
+               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(max(1, kmx), :))
                if (success) then
                   ! assign id derived from pol file
                   lat_ids(numlatsg) = filename(1:L)
@@ -1762,7 +1743,7 @@ contains
          if (allocated(kcgen)) then
             deallocate (kcgen)
          end if
-         kx = 3
+         kx = 4
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
          kcgen = 0.0_dp
@@ -1840,7 +1821,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = kx = 3
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -1861,10 +1842,11 @@ contains
          cgen_type(1:ncgensg) = ICGENTP_GENSTRU ! We only have true fully parameterized general structures from old ext file
 
          do n = 1, ncgensg
-            ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-            zcgen((n - 1) * 3 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
-            zcgen((n - 1) * 3 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
-            zcgen((n - 1) * 3 + 3) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
+            ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*4+1) is quickly need for updating bobs.)
+            zcgen((n - 1) * 4 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
+            zcgen((n - 1) * 4 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
+            zcgen((n - 1) * 4 + 3) = hulp(idx_gateheight, n) ! GateHeight
+            zcgen((n - 1) * 4 + 4) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
 
             call togeneral(n, hulp(:, n), L2cgensg(n) - L1cgensg(n) + 1, widths(L1cgensg(n):L2cgensg(n))) ! orgcode
          end do
@@ -1951,21 +1933,21 @@ contains
          end do
       end if
 
-      if (num_source_sink_oldfile > 0) then
-         if (num_source_sink_oldfile /= num_source_sink) then
+      if (source_sinks%num_oldfile > 0) then
+         if (source_sinks%num_oldfile /= source_sinks%num_total) then
             call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
          end if
          ja = 1
          rewind (mext)
          kx = numconst + 1
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
-         num_source_sink = 0
+         source_sinks%num_total = 0
          success = .true.
          do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
-               num_source_sink = num_source_sink + 1
+               source_sinks%num_total = source_sinks%num_total + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename, '.', back=.true.) - 1
                filename0 = filename(1:L)//'.tim'
@@ -1973,9 +1955,9 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*source_sinks%num_total-2), (3*source_sinks%num_total-1), and (3*source_sinks%num_total), respectively.
                   call clear_ec_message()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=num_source_sink)) then
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=source_sinks%num_total)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
                               //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()

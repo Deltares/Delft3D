@@ -38,7 +38,7 @@
 #define HAVE_STRUCT_TIMESPEC
 
 #if HAVE_CONFIG_H
-#   include "config.h"
+    #include "config.h"
 #endif
 
 #include "bmi.h" //For enum Level
@@ -46,72 +46,69 @@
 #include <cstdio>
 #include <pthread.h>
 #ifdef WIN32
-#include "Windows.h"
-#define STDCALL __stdcall
+    #include "Windows.h"
+    #define STDCALL __stdcall
 #else
-#define STDCALL
+    #define STDCALL
 #endif
 
 extern "C" {
-	typedef void(STDCALL * WriteCallback)(char* time, char* message, unsigned int level);
+typedef void(STDCALL* WriteCallback)(char* time, char* message, unsigned int level);
 }
 
-class Log {
-	
-
+class Log
+{
 public:
-	Log( FILE * output, Clock * clock, Level level = INFO, Level feedbackLevel = INFO );
+    Log(FILE* output, Clock* clock, Level level = INFO, Level feedbackLevel = INFO);
 
-	~Log( void );
+    ~Log(void);
 
-	Level GetLevel( void );
+    Level GetLevel(void);
 
-	void SetLevel( Level level );
+    void SetLevel(Level level);
 
-	Level GetFeedbackLevel( void );
+    Level GetFeedbackLevel(void);
 
-	void SetFeedbackLevel( Level feedbackLevel );
+    void SetFeedbackLevel(Level feedbackLevel);
 
-	void RegisterThread( const char * id );
+    void RegisterThread(const char* id);
 
-	void RenameThread( const char * id );
+    void RenameThread(const char* id);
 
-	void UnregisterThread( void );
+    void UnregisterThread(void);
 
-	const char * AddLeadingZero(int, int);
+    const char* AddLeadingZero(int, int);
 
-	bool Write(Level level, int rank, const char * format, ...);
+    bool Write(Level level, int rank, const char* format, ...);
 
-	void SetWriteCallBack( WriteCallback writeCallback );
+    void SetWriteCallBack(WriteCallback writeCallback);
 
-	void SetExternalLogger( BMILogger logger );
+    void SetExternalLogger(BMILogger logger);
 
-    void logLevelToString( int level, char ** levelString );
-
+    void logLevelToString(int level, char** levelString);
 
 private:
-	FILE *        output;
-	Clock *       clock;
-	Level         level;
-	Level         feedbackLevel;
+    FILE* output;
+    Clock* clock;
+    Level level;
+    Level feedbackLevel;
 
-	pthread_key_t thkey;      // contains key for thread-specific log data
-	WriteCallback writeCallback;
-	BMILogger        externalLogger;
-
+    pthread_key_t thkey; // contains key for thread-specific log data
+    WriteCallback writeCallback;
+    BMILogger externalLogger;
 
 public:
-	char *        redirectFile;
+    char* redirectFile;
 };
 
 #ifdef WIN32
-#   define DllExport   __declspec( dllexport )
-#  define strdup _strdup
+    #define DllExport __declspec(dllexport)
+    #define strdup _strdup
 #else
-#   define DllExport
+    #define DllExport
 #endif
 
 extern "C" {
-	DllExport void set_dimr_logger(Log *);
-	DllExport void set_logger_callback(WriteCallback);
+DllExport void set_dimr_logger(Log*);
+DllExport void set_logger_callback(WriteCallback);
 }

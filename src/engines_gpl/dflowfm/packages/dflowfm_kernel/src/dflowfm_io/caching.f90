@@ -252,7 +252,7 @@ contains
       ! Apparently there is no caching file, so return without further processing
       !
       if (ierr /= 0) then
-         call mess(LEVEL_INFO, 'No cache file available initially. Proceeding with normal initialization.')
+         call mess(LEVEL_WARN, 'No cache file available initially. Proceeding with normal initialization.')
          return
       end if
 

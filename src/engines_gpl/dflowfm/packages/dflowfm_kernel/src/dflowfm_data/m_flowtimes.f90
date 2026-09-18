@@ -247,10 +247,10 @@ contains
       ti_wav = 1200.0_dp !< wave avg'ing interval (s), 20 minutes okay default  JRE
       ti_wavs = 0.0_dp
       ti_wave = 0.0_dp
-      ti_map = 1200.0_dp !< map interval (s)
+      ti_map = 0.0_dp !< map interval (s)
       ti_maps = 0.0_dp !< Start map output (s)
       ti_mape = 0.0_dp !< End   map output (s)
-      ti_his = 120.0_dp !< history interval (s)
+      ti_his = 0.0_dp !< history interval (s)
       ti_hiss = 0.0_dp !< Start history output (s)
       ti_hise = 0.0_dp !< End   history output (s)
       ti_com = dt_user !< com interval (s)
@@ -263,7 +263,7 @@ contains
       ti_sts = 0.0_dp !< Start time-avg'd output sedtrails
       ti_ste = 0.0_dp !< End   time-avg'd output sedtrails
       ti_xls = 0.0_dp !< history interval (s) xls, (Default: off)
-      ti_rst = 24.0_dp * 3600.0_dp !< Restart interval (s)
+      ti_rst = 0.0_dp !< Restart interval (s)
       ti_rsts = 0.0_dp !< Start restart output (s)
       ti_rste = 0.0_dp !< End   restart output (s)
       ti_mba = 0.0_dp

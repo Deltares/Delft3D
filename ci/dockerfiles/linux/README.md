@@ -15,7 +15,7 @@ Using another container platform `podman` should also work.
   We are adjusting the code to use the updated Fortran API of the latest PETSc version.
 
 ## Buildtools container
-The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image. 
+The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image.
 It uses a 'base' almalinux 8 image copied from [dockerhub](https://hub.docker.com/_/almalinux) and  pushed to our own [Harbor registry](https://containers.deltares.nl/harbor/projects/21/repositories/almalinux/artifacts-tab).
 Outside Deltares, you may need to point to the original image; see the `BASE_IMAGE_URL` build argument.
 
@@ -29,14 +29,14 @@ These can also be installed using `dnf`, but unfortunately even the most recent 
 Some libraries that we want to compile from source code can't be built using the outdated versions of this software.
 
 ### Build arguments
-The dockerfile has two build arguments: 
+The dockerfile has two build arguments:
 - `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_containers/8-base:latest`)
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 
 The `BASE_IMAGE_URL` points to the repository where the base image is located.
 This URL can be set to `almalinux:8` when you would like to create a `buildtools` image based on the default Alma Linux 8 image available on DockerHub.
 
-Valid values for `INTEL_ONEAPI_VERSION` are `2023` and `2024`.
+Valid values for `INTEL_ONEAPI_VERSION` are `2023`, `2024`, `2025` and `2026`.
 This build argument allows you to choose which versions of the C, C++ and Fortran compilers you want to install in the `buildtools` image.
 
 ### Build
@@ -69,11 +69,7 @@ When building on Linux, some third party libraries are needed that are not vendo
 These include:
 
 - libuuid
-- HDF5
-- NetCDF (There are separate libraries for C and Fortran)
 - METIS
-- PROJ
-- GDAL
 - PETSc
 - ESMF
 - precice (Recently added; not yet used in the main branch)
@@ -101,7 +97,7 @@ The dockerfile has several build arguments:
 - `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
 
 The `INTEL_ONEAPI_VERSION` build argument is used to select the right `buildtools` image.
-Valid values are `2023` and `2024`.
+Valid values are `2023`, `2024`, `2025` and `2026`.
 
 The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile the Fortran libraries (there are just a few libraries for which this is relevant).
 Valid values are `ifort` and `ifx`.
@@ -130,7 +126,7 @@ sudo docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t local
 Note:
 - Passing the build arguments is not necessary if the default value is required.
 - In case you get an invalid tag message referring to `"localhost/third-party-libs:"` as invalid reference format, you may have lost the definition of `TAG`.
-  The value of `TAG` was set just before the building of the buildtools container. 
+  The value of `TAG` was set just before the building of the buildtools container.
 
 ### Push
 Optionally push the Docker container to a repository:

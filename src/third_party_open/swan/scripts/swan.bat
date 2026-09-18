@@ -6,7 +6,7 @@ if exist swan_bat.log del swan_bat.log
 @echo >>swan_bat.log
 
 set swanexec=%~dp0\swan_omp.exe
-set PATH=%~dp0\..\lib;%PATH%
+set PATH=%~dp0;%PATH%
 set PATH=%~dp0\..\share\;%PATH%
 
 rem

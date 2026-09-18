@@ -71,7 +71,7 @@ contains
             bi = 0.0_dp
          else if (L > Lnxi) then
             zu = 0.5_dp * (bob(1, L) + bob(2, L))
-            bi = (bz(k2) - zu) * dxi(L) / max(eps4, 1.0_dp - acL(L))
+            bi = (bz(k2) - zu) * dxi(L) / max(EPS4, 1.0_dp - acL(L))
          else
             bi = (bz(k2) - bz(k1)) * dxi(L)
          end if

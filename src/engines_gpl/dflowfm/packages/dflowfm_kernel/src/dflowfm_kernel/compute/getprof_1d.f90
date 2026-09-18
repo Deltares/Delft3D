@@ -45,6 +45,8 @@ contains
       use m_cross_helper, only: getconveyance, getcrossdischarge
       use m_flowtimes, only: time1, times_update_roughness
       use m_get_chezy, only: get_chezy
+      use m_roughness, only: getchezy
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel
@@ -74,7 +76,7 @@ contains
       hpr = hprL
 
       jacustombnd1d = 0
-      if (kcu(L) == -1 .and. allocated(bndWidth1D)) then
+      if (kcu(L) == LINK_1D_BOUNDARY .and. allocated(bndWidth1D)) then
          ibndsect = lnxbnd(L - lnxi)
          if (ibndsect > 0) then
             if (bndWidth1D(ibndsect) /= dmiss) then
@@ -122,7 +124,7 @@ contains
 
          return
 
-      else if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. (network%loaded .or. has_flow1d_cross_section(LL))) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
@@ -134,9 +136,6 @@ contains
             if (calcConv == 1) then
                u1L = u1(LL)
                q1L = q1(LL)
-               k1 = ln(1, LL)
-               k2 = ln(2, LL)
-               s1L = acl(L) * s1(k1) + (1.0_dp - acl(L)) * s1(k2)
                dpt = hu(L)
                cz = 0.0_dp
                if (network%rgs%timeseries_defined) then
@@ -144,7 +143,18 @@ contains
                else
                   factor = 1.0_dp
                end if
-               call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               if (abs(kcu(ll)) == 1) then
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
+                  s1L = acl(L) * s1(k1) + (1.0_dp - acl(L)) * s1(k2)
+                  call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               else ! 1D2Dlink
+                  frcn = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictionvaluepos(1) !>
+                  friction_type = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictiontypepos(1)
+                  cz = getchezy(friction_type, frcn, area / perim, dpt, u1(LL))
+                  cz_sub(1) = cz
+                  conv = cz_sub(1) * af_sub(1) * sqrt(af_sub(1) / perim_sub(1))
+               end if
 
                ! For sediment transport the discharge in the main channel is required:
                ! Qmain/ QT = Kmain/KT -> u_main = Kmain/KT * (AT/Amain)
@@ -168,7 +178,7 @@ contains
          return
       end if
 
-! No flow1d cross input, OR a 1d2d link. Proceed with conventional prof1D approach.
+! No flow1d cross input Proceed with conventional prof1D approach.
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
          ka = 0
          kb = 0 ! do not use profiles
@@ -291,4 +301,23 @@ contains
       end if
 
    end subroutine getprof_1D
+
+   !> Returns true if the given link has a flow1d cross section, so that the 1D flow solver may be used even if no network is loaded.
+   ! For now, the only links that can have this property are long culvert links.
+   function has_flow1d_cross_section(L) result(res)
+      use unstruc_channel_flow, only: network
+      use m_longculverts_data, only: newculverts
+      integer, intent(in) :: L
+      logical :: res
+
+      res = .false.
+      ! For now this check is only valid for long culverts. Once
+      if (associated(network%adm%line2cross) .and. newculverts) then
+         if (L > 0 .and. L <= size(network%adm%line2cross, 1)) then
+            res = (network%adm%line2cross(L, 2)%c1 > 0)
+         end if
+      end if
+
+   end function has_flow1d_cross_section
+
 end module m_get_prof_1D

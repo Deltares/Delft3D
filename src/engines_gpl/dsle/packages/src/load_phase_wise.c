@@ -20,8 +20,7 @@ CSV_DOUBLE_SETTER(phase_wise_row_t, flushing_discharge_low_tide);
 CSV_DOUBLE_SETTER(phase_wise_row_t, sill_height_lake);
 CSV_DOUBLE_SETTER(phase_wise_row_t, sill_height_sea);
 
-
-int init_phase_wise_timeseries_csv_context(csv_context_t* context) {
+int init_phase_wise_timeseries_csv_context(csv_context_t *context) {
   int status = init_csv_context(context);
 
   // Set up columns

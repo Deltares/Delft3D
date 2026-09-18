@@ -46,10 +46,9 @@ contains
 
    subroutine inireduce()
       use m_reduce
-      use m_flowparameters, only: Noderivedtypes
+      use m_flowparameters, only: Noderivedtypes, icgsolver, ipre
       use m_flowgeom
       use m_partitioninfo
-      use m_flowparameters, only: icgsolver, ipre
       use m_alloc
       use system_utils, only: ARCH
       use m_qnerror

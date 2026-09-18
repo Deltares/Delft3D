@@ -6,21 +6,6 @@ set(resource_path ${dflowfm_path}/res)
 
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Interacter
-if(WITH_INTERACTER)
-    message(CHECK_START "Looking for Interacter library (intmwi64.lib)")
-    find_library (lib_interacter intmwi64.lib
-              HINTS ENV INTERACTER_DIR
-                  PATHS "${checkout_src_root}/third_party/interacter/bin/win32/x64")
-
-    if(NOT lib_interacter)
-       message(CHECK_FAIL "not found")
-       message(SEND_ERROR "Required Interacter library is missing.")
-    else()
-       message(CHECK_PASS "found")
-    endif()
-endif()
-
 set(source ${dflowfm_cli_path}/net_main.F90)
 
 set(icon_file ${resource_path}/dflowfm_icon.rc)
@@ -28,42 +13,18 @@ set(rc_version_file ${dflowfm_path}/version/dflowfm_cli_version.rc)
 
 # Define the executable
 set(executable_name dflowfm-cli)
+add_rc_object_library(${executable_name} "${rc_version_file};${icon_file}" "${version_include_dir};${dflowfm_path}/version;${resource_path}")
 add_executable(${executable_name} ${source})
-
-# Add dependencies
-if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
-    target_link_libraries(${executable_name} PRIVATE
-         PkgConfig::PETSC
-         interacter_stub
-    )
-endif(UNIX)
-
-if(WIN32)
-    if(WITH_INTERACTER)
-        # Add lib_interacter before adding the other libraries. Sometimes it seems to make a difference
-        target_link_libraries(${executable_name} PRIVATE ${lib_interacter})
-    else()
-        target_link_libraries(${executable_name} PRIVATE interacter_stub)
-    endif()
-    target_link_libraries(${executable_name} PRIVATE
-                          petsc
-    )
-endif(WIN32)
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 target_link_libraries(${executable_name} PRIVATE
                       dflowfm_kernel
                       gridgeom
                       deltares_common
-                      netcdff
+                      netCDF::netcdff
 )
 
 if(UNIX)
-    message(STATUS "Setting target_compile_definitions in Unix")
-    target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
     set_target_properties(${executable_name} PROPERTIES OUTPUT_NAME dflowfm)
 endif(UNIX)
@@ -79,42 +40,17 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 if (WIN32)
-    target_link_libraries(${executable_name} PRIVATE netcdf)
     include_directories(${mpi_module_path}
                         ${version_include_dir}
     )
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-    )
-
-    target_link_libraries(${executable_name} PRIVATE
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-    )
-
-    message(STATUS "Setting target_compile_definitions in windows")
-    if(WITH_INTERACTER)
-        # Add HAVE_DISPLAY=1
-        target_compile_definitions(${executable_name} PRIVATE "WIN32;HAVE_MPI;HAVE_PETSC;HAVE_DISPLAY=1")
-    else()
-        target_compile_definitions(${executable_name} PRIVATE "WIN32;HAVE_MPI;HAVE_PETSC;HAVE_DISPLAY=0")
-    endif()
-
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 
-    target_sources(${executable_name} PRIVATE
-                   ${rc_version_file}
-                   ${icon_file}
-    )
 endif(WIN32)
 
 target_link_directories(${executable_name} PRIVATE
@@ -136,6 +72,7 @@ if (WIN32)
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
+install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 
 if(WIN32)
    if(WITH_INTERACTER)

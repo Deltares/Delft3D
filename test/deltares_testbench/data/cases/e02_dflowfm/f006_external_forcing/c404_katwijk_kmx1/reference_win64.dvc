@@ -1,0 +1,6 @@
+outs:
+- md5: f8c4a8ee8592f9778d684b7d3404fade.dir
+  size: 5568844
+  nfiles: 6
+  hash: md5
+  path: reference_win64

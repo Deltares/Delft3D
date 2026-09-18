@@ -1,3 +1,5 @@
+module m_fallve
+contains
 subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & kcs       ,kfs       ,u0        ,v0        , &
                 & wphy      ,r0        ,rtur0     ,ltur      ,thick     , &
@@ -52,6 +54,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     use morphology_data_module
     use flocculation, only: get_tshear_tdiss
     use globaldata
+    use m_eqsettle, only: eqsettle
     !
     implicit none
     !
@@ -449,19 +452,18 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              !
              if (stressStrainRelation) then
                  if (sedtyp(l) == SEDTYP_CLAY) then
-                    !wsloc = 0.0_fp
-                    call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                    call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
                                 & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
                                 & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
                  else
                     if (shearSettling) then
-                       call shearsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                       call shearsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
                                       & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
                                       & localpar    , gdp%gdtrapar%npar       , wsloc    , ifirst_settle  , error)
                     endif
                 endif
              else
-                call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
                             & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
                             & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
              endif
@@ -473,3 +475,5 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     enddo           ! nm
     deallocate (localpar, stat = istat)
 end subroutine fallve          
+
+end module m_fallve

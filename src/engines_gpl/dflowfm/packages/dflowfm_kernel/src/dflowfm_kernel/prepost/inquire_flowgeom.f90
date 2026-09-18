@@ -333,6 +333,7 @@ contains
       use m_flowgeom, only: xz, yz, ndx2D, ndxi
       use m_polygon, only: xpl, ypl, npl, increasepol
       use dfm_error
+      use m_tpoly, only: inwhichpolygon
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npol !< number of points in the polygon

@@ -34,25 +34,25 @@ using namespace rtctools::schematization;
 namespace rtctools
 {
 
-class rtcToolsSimulator
-{
-public:
-	rtcToolsSimulator() {};
-	rtcToolsSimulator(int iEnsemble, timeSeriesMatrixInterface* tsMatrix, schematisation *schema, 
-		double p, rtcRuntimeConfigSettings* runtimeSettings);
-	~rtcToolsSimulator(void) {};
+    class rtcToolsSimulator
+    {
+    public:
+        rtcToolsSimulator() {};
+        rtcToolsSimulator(int iEnsemble, timeSeriesMatrixInterface* tsMatrix, schematisation* schema, double p,
+                          rtcRuntimeConfigSettings* runtimeSettings);
+        ~rtcToolsSimulator(void) {};
 
-    double simulate(int iStart, int iEnd, double** JInc2DArray = (double**)0);
-	void simulate(int iStep);
-    void evaluateGradient(int iStart, int iEnd); 
+        double simulate(int iStart, int iEnd, double** JInc2DArray = (double**)0);
+        void simulate(int iStep);
+        void evaluateGradient(int iStart, int iEnd);
 
-private:
-	int iEnsemble;
-	double p;
-	timeSeriesMatrixInterface* tsMatrix;
-	schematisation* schema;
-	rtcRuntimeConfigSettings* runtimeSettings;
-};
+    private:
+        int iEnsemble;
+        double p;
+        timeSeriesMatrixInterface* tsMatrix;
+        schematisation* schema;
+        rtcRuntimeConfigSettings* runtimeSettings;
+    };
 
-}
-#endif //RTCTOOLS_SIMULATOR_H
+} // namespace rtctools
+#endif // RTCTOOLS_SIMULATOR_H

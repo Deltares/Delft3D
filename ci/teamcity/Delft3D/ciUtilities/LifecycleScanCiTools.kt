@@ -1,0 +1,61 @@
+package Delft3D.ciUtilities
+
+import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
+import Delft3D.template.*
+
+object LifecycleScanCiTools : BuildType({
+    id("LifecycleScanCiTools")
+    name = "Nexus IQ (Python CI tools)"
+    description = "SBOM and Nexus IQ scan of ci/python."
+    buildNumberPattern = "%build.vcs.number%"
+    
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    templates(
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
+    )
+
+    artifactRules = """
+            ci/python/syft-bom.json => sbom
+            ci/python/cdxgen-bom.json => sbom
+    """.trimIndent()
+
+    steps {
+        step {
+            id = "LifecycleSyftLinux"
+            type = "LifecycleSyftLinux"
+            param("scan_target", "ci/python")
+        }
+        step {
+            id = "LifecycleCdxgenLinux"
+            type = "LifecycleCdxgenLinux"
+            param("scan_target", "ci/python")
+        }
+        step {
+            id = "LifecycleNexusIqLinux"
+            type = "LifecycleNexusIqLinux"
+            param("nexus_iq_application_id", "delft3d-ci-tools")
+            param("nexus_iq_username", "%nexus_iq_username%")
+            param("nexus_iq_password", "%nexus_iq_password%")
+            param("scan_target", "ci/python")
+        }
+    }
+
+    if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
+        triggers {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 2
+                    minute = 30
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
+            }
+        }
+    }
+})

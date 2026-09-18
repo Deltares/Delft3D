@@ -40,34 +40,31 @@
 #ifndef MORFLOW_H
 #define MORFLOW_H
 
-
-#define CONTEXT_PAGESIZE    (32*1024)   // for share memory contexts (in KB)
-#define RUNID_LEN           256         // length of runid file name string for trisimtest
-
+#define CONTEXT_PAGESIZE (32 * 1024) // for share memory contexts (in KB)
+#define RUNID_LEN 256                // length of runid file name string for trisimtest
 
 //------------------------------------------------------------------------------
 //  Function names for FORTRAN-C interface.
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define TRISIMTEST FC_FUNC(trisimtest,TRISIMTEST)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define TRISIMTEST FC_FUNC(trisimtest, TRISIMTEST)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define TRISIMTEST TRISIMTEST
+    // WIN32
+    #define STDCALL /* nothing */
+    #define TRISIMTEST TRISIMTEST
 #endif
-
 
 //------------------------------------------------------------------------------
 //  Function declarations
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
-void    STDCALL TRISIMTEST(int * cId, int * fsm_flags);
+void STDCALL TRISIMTEST(int* cId, int* fsm_flags);
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif
 

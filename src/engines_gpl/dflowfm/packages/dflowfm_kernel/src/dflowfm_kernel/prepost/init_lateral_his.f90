@@ -44,11 +44,11 @@ contains
 
    subroutine init_lateral_his()
       use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
-      use m_flowparameters, only: jahislateral
+      use m_flowparameters, only: his_write_settings
       use m_alloc, only: realloc
 
       ! At the starting time of history output, initialize variables
-      if (jahislateral > 0 .and. numlatsg > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
          call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0.0_dp)
          call realloc(qplatCumPre, numlatsg, keepExisting=.false., fill=0.0_dp)
          call realloc(qplatAve, numlatsg, keepExisting=.false., fill=0.0_dp)

@@ -50,7 +50,8 @@ module m_dambreak_breach
              have_dambreaks_links, should_write_dambreaks, set_flow_areas_for_dambreaks, &
              indicate_links_that_contain_dambreaks, get_active_dambreak_index, &
              get_dambreak_names, retrieve_set_of_flowlinks_dambreak, &
-             update_counters_for_dambreaks, add_dambreak_signal
+             update_counters_for_dambreaks, add_dambreak_signal, &
+             remove_1d_links_from_dambreak_polygon_list
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
@@ -148,6 +149,11 @@ module m_dambreak_breach
          character(len=128), dimension(:), allocatable :: names !< the dambreak names
       end function get_dambreak_names
 
+      pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
+         integer, intent(inout) :: numgen !< number of flow links in kegen
+         integer, dimension(:), intent(inout) :: kegen !< array with the link indices
+      end subroutine remove_1d_links_from_dambreak_polygon_list
+
    end interface
 
    ! This type was moved to the module level to work around a linker issue with intel oneapi 2025.3.2 and the gfortran linker on linux.
@@ -156,7 +162,9 @@ module m_dambreak_breach
       integer :: algorithm = 0 !< algorithm for the dambreak breach growth
       integer :: breach_start_link = -1 !< index of the starting link in the breach growth
       integer :: index_structure = 0 !< index of the structure
-      integer :: ec_item = ec_undef_int !< item for EC module to get crest level and width from a tim file
+      integer :: ec_item_legacy = ec_undef_int !< Legacy item for EC module. Only legacy .tim based dambreaks receive an ec-item in
+                                               !< the reader to get crest level and width from a tim file.
+                                               !< Superseded by m_meteo::item_dambreak_*.
       integer :: number_of_links = 0 !< number of links in the dambreak
       integer :: link_map_offset = 0 !< offset of the local array in the global link array
       integer, dimension(:), allocatable :: link_indices !< link indices of the dambreak

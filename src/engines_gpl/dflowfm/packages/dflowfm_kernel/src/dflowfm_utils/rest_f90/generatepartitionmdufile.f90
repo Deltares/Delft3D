@@ -43,7 +43,7 @@ contains
    !> Generate *.mdu files for partitions from the main *.mdu file.
    subroutine generate_partition_mdu_file(filename_main, filename_partition)
       use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, &
-      md_netfile, md_partitionfile, md_1dfiles, md_convertlongculverts, mess, level_error
+      md_netfile, md_partitionfile, md_1dfiles, mess, level_error
       use string_module, only: strcmpi, str_lower
 
       ! Parameters

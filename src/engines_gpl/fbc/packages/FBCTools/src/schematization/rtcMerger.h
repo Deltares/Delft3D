@@ -33,36 +33,36 @@ using namespace rtctools::schematization::triggers;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace components
-{
+    namespace schematization
+    {
+        namespace components
+        {
 
-class rtcMerger : public trigger, public rule, public component
-{
-public:
-	enum modeEnum
-	{
-		DATAHIERARCHY,
-		SUM
-	};
+            class rtcMerger : public trigger, public rule, public component
+            {
+            public:
+                enum modeEnum
+                {
+                    DATAHIERARCHY,
+                    SUM
+                };
 
-private:
-	modeEnum mode;
-	int nXIn;
-	int *iXIn;
+            private:
+                modeEnum mode;
+                int nXIn;
+                int* iXIn;
 
-public:
-	rtcMerger(string id, string name,
-		      modeEnum mode, int nXIn, int *iXIn, int iYOut);
-	~rtcMerger(void);
+            public:
+                rtcMerger(string id, string name, modeEnum mode, int nXIn, int* iXIn, int iYOut);
+                ~rtcMerger(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld,
+                              double* objNew);
+            };
 
-} // end namespace components
-} // end namespace schematization
+        } // end namespace components
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* RTCMERGER_H */

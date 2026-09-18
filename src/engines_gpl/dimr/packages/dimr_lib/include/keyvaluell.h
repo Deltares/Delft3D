@@ -2,14 +2,16 @@
 
 #include <list>
 
-struct keyValueLL {
-	char * key;
-	char * val;
-	keyValueLL * nextkv;
+struct keyValueLL
+{
+    char* key;
+    char* val;
+    keyValueLL* nextkv;
 };
-struct keyValue {
-	char * key;
-	char * val;
+struct keyValue
+{
+    char* key;
+    char* val;
 };
 
-typedef list<keyValue>	keyValueList;
+typedef list<keyValue> keyValueList;

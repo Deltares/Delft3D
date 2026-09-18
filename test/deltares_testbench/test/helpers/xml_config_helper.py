@@ -31,7 +31,8 @@ def make_test_case_config_xml(
         dependency_elem = f'<dependency local_dir="{dependency.local_dir}"'
         if dependency.version is not None:
             dependency_elem += f' version="{dependency.version}"'
-        dependency_elem += f">{dependency.version}</dependency>"
+
+        dependency_elem += f">{dependency.cases_path}</dependency>"
     else:
         dependency_elem = ""
 

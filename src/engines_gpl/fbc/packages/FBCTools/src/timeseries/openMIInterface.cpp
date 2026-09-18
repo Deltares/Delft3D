@@ -21,9 +21,8 @@
  * @date 2010
  */
 
-
-#if _MSC_VER && _MSC_VER < 1900 
-#define snprintf sprintf_s
+#if _MSC_VER && _MSC_VER < 1900
+    #define snprintf sprintf_s
 #endif
 
 #include "openMIInterface.h"
@@ -33,31 +32,29 @@
 
 using namespace rtctools::timeseries;
 
-openMIInterface::openMIInterface()
+openMIInterface::openMIInterface() {}
+
+openMIInterface::openMIInterface(timeSeriesMatrixInterface* tsMatrix, vector<openMIExchangeItem> input,
+                                 vector<openMIExchangeItem> output)
+    : input(input), output(output), tsMatrix(tsMatrix)
 {
+    // diagnostics
+    char buffer[500];
+    snprintf(buffer, sizeof(buffer), "%d", input.size());
+    piDiagInterface::addLine(4, "time series model: number of input exchange items = " + string(buffer));
+    for (int i = 0; i < (int)input.size(); i++)
+    {
+        piDiagInterface::addLine(4, "time series model: " + input[i].toString());
+    }
+    snprintf(buffer, sizeof(buffer), "%d", output.size());
+    piDiagInterface::addLine(4, "time series model: number of output exchange items = " + string(buffer));
+    for (int i = 0; i < (int)output.size(); i++)
+    {
+        piDiagInterface::addLine(4, "time series model: " + output[i].toString());
+    }
 
-}
-
-openMIInterface::openMIInterface(timeSeriesMatrixInterface *tsMatrix, vector<openMIExchangeItem> input, vector<openMIExchangeItem> output)
-	: input(input)
-	, output(output)
-	, tsMatrix(tsMatrix)
-{
-	// diagnostics
-	char buffer[500];
-	snprintf(buffer, sizeof(buffer), "%d", input.size());
-	piDiagInterface::addLine(4, "time series model: number of input exchange items = " + string(buffer));
-	for (int i=0; i<(int)input.size(); i++) {
-		piDiagInterface::addLine(4, "time series model: " + input[i].toString());
-	}
-	snprintf(buffer, sizeof(buffer), "%d", output.size());
-	piDiagInterface::addLine(4, "time series model: number of output exchange items = " + string(buffer));
-	for (int i=0; i<(int)output.size(); i++) {
-		piDiagInterface::addLine(4, "time series model: " + output[i].toString());
-	}
-
-	// prepare for simulation
-	this->prepare();
+    // prepare for simulation
+    this->prepare();
 }
 
 int openMIInterface::getInputExchangeItemCount() { return (int)input.size(); }
@@ -70,47 +67,45 @@ openMIExchangeItem* openMIInterface::getOutputExchangeItem(int index) { return &
 
 void openMIInterface::prepare()
 {
-	piDiagInterface::addLine(4, "openMIInterface::prepare()");
+    piDiagInterface::addLine(4, "openMIInterface::prepare()");
 
-	iStep = 0;
-	dTime = tsMatrix->getStartTime();
+    iStep = 0;
+    dTime = tsMatrix->getStartTime();
 }
 
 long long openMIInterface::getCurrentTime()
 {
-	piDiagInterface::addLine(4, "openMIInterface::getCurrentTime()");
+    piDiagInterface::addLine(4, "openMIInterface::getCurrentTime()");
 
-	return dTime;
+    return dTime;
 }
 
-int openMIInterface::getCurrentTimeStep()
-{
-	return iStep;
-}
+int openMIInterface::getCurrentTimeStep() { return iStep; }
 
 double openMIInterface::getValue(int sIndex)
 {
-	//piDiagInterface::addLine(4, "openMIInterface::getValue(int sIndex)");
+    // piDiagInterface::addLine(4, "openMIInterface::getValue(int sIndex)");
 
-	return tsMatrix->getValue(iStep, sIndex);
+    return tsMatrix->getValue(iStep, sIndex);
 }
 
 void openMIInterface::setValue(int sIndex, double value, int timeStepCount /* =1, see header */)
 {
-	//piDiagInterface::addLine(4, "openMIInterface::setValue(int sIndex, double value, int timeStepCount=1)");
+    // piDiagInterface::addLine(4, "openMIInterface::setValue(int sIndex, double value, int timeStepCount=1)");
 
     if (timeStepCount == 1)
     {
-    	tsMatrix->setValue(iStep, sIndex, value);
-    	tsMatrix->setValue(iStep+1, sIndex, value);
+        tsMatrix->setValue(iStep, sIndex, value);
+        tsMatrix->setValue(iStep + 1, sIndex, value);
         // The last value will be overwritten in the next call,
         // but we set it in order to have it written in the timeseries output
     }
     else
     {
-	    for (int i=0; i<=timeStepCount; i++) {
-		    tsMatrix->setValue(iStep+i, sIndex, value);
-	    }
+        for (int i = 0; i <= timeStepCount; i++)
+        {
+            tsMatrix->setValue(iStep + i, sIndex, value);
+        }
         // The last value will be overwritten in the next call,
         // but we set it in order to have it written in the timeseries output
     }
@@ -118,9 +113,9 @@ void openMIInterface::setValue(int sIndex, double value, int timeStepCount /* =1
 
 int openMIInterface::performTimeStep()
 {
-	//piDiagInterface::addLine(4, "openMIInterface::performTimeStep()");
+    // piDiagInterface::addLine(4, "openMIInterface::performTimeStep()");
 
-	iStep++;
-	dTime += tsMatrix->getDT(iStep);
-	return iStep;
+    iStep++;
+    dTime += tsMatrix->getDT(iStep);
+    return iStep;
 }

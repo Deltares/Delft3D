@@ -143,7 +143,7 @@
   case("qplat")
      rank = 2
   case("qqlat")
-     rank = 3
+     rank = 2
   case("balat")
      rank = 1
   case("qplatCum")

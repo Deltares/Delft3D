@@ -10,8 +10,8 @@ import Delft3D.template.*
 import Trigger
 
 object LinuxRunAllContainerExamples : BuildType({
-    name = "Run all container examples (Matrix)"
-    description = "Run all container example cases for fm/ and all/ pull-requests using Docker and Apptainer."
+    name = "Container examples"
+    description = "Run container example cases with Docker and Apptainer."
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     templates(
@@ -19,7 +19,8 @@ object LinuxRunAllContainerExamples : BuildType({
         TemplateMergeRequest,
         TemplateDockerRegistry,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     vcs {

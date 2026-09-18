@@ -51,7 +51,7 @@ class FileProcessor:
             and stats_dict contains statistics from all converters
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
         except Exception as e:
             print(f"Error reading {file_path}: {e}")
@@ -84,7 +84,7 @@ class FileProcessor:
             all_issues.extend(issues)
 
             # Get stats if converter provides them (optional method)
-            if hasattr(converter, 'get_conversion_stats'):
+            if hasattr(converter, "get_conversion_stats"):
                 converter_stats = converter.get_conversion_stats(content)  # type: ignore
                 stats[converter.get_name()] = converter_stats
 
@@ -97,7 +97,9 @@ class FileProcessor:
                 print(f"{file_path}({issue.line_number}): error {issue.error_code}: {issue.message}")
 
             # Add a note about auto-fixing
-            print(f"{file_path}(1): note: Run 'python tools/deltares_fortran_styler/src/deltares_fortran_styler/fortran_styler.py \"{file_path}\"' to automatically fix these errors")
+            print(
+                f"{file_path}(1): note: Run 'python tools/deltares_fortran_styler/src/deltares_fortran_styler/fortran_styler.py \"{file_path}\"' to automatically fix these errors"
+            )
 
             return True, stats
 
@@ -116,7 +118,7 @@ class FileProcessor:
         # Apply each converter sequentially
         for converter in self.converters:
             # Get stats before conversion (optional method)
-            if hasattr(converter, 'get_conversion_stats'):
+            if hasattr(converter, "get_conversion_stats"):
                 converter_stats = converter.get_conversion_stats(content)  # type: ignore
                 if any(converter_stats.values()):  # Only store if there are conversions
                     stats[converter.get_name()] = converter_stats
@@ -133,7 +135,7 @@ class FileProcessor:
         # Only write if there were changes
         if any_changes:
             try:
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
                 # Report what was converted
@@ -153,13 +155,13 @@ class FileProcessor:
 
         for converter_name, converter_stats in stats.items():
             if converter_stats:
-                details = ', '.join(f"{count} {name}" for name, count in converter_stats.items() if count > 0)
+                details = ", ".join(f"{count} {name}" for name, count in converter_stats.items() if count > 0)
                 if details:
                     print(f"  [{converter_name}] {details}")
 
-    def process_directory(self, directory: Path,
-                         extensions: Optional[List[str]] = None,
-                         check_mode: bool = False) -> Tuple[int, int]:
+    def process_directory(
+        self, directory: Path, extensions: Optional[List[str]] = None, check_mode: bool = False
+    ) -> Tuple[int, int]:
         """
         Process all Fortran files in a directory recursively.
 
@@ -172,7 +174,7 @@ class FileProcessor:
             Tuple of (files_processed, files_with_issues_or_changes)
         """
         if extensions is None:
-            extensions = ['.f90', '.f95', '.f03', '.f08', '.F90', '.F95', '.F03', '.F08']
+            extensions = [".f90", ".f95", ".f03", ".f08", ".F90", ".F95", ".F03", ".F08"]
 
         files = self._get_fortran_files(directory, extensions)
 
@@ -231,7 +233,7 @@ class FileProcessor:
             return False
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 f.read()
             return True
         except PermissionError:

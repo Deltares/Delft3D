@@ -54,6 +54,7 @@ program agrhyd
     integer :: iend          ! end of file indicator
     character(len=256) :: input_file    ! base name of the input files
     logical :: exist_ini
+    logical :: exist_hyd
     logical :: exist_src
     character(len=256) :: name          ! base name of the output files
     integer :: output_start  ! output start time
@@ -121,6 +122,7 @@ program agrhyd
         read (*, '(a)') input_file
         write (*, *)
     end if
+
     if (input_file == ' ') then
         open (lunrep, file='agrhyd.rep', recl=132)
         call fill_in_date_time(rundat)
@@ -208,6 +210,15 @@ program agrhyd
 
     write (lunrep, *) 'input hydrodynamics      : ', trim(input_hyd%file_hyd%name)
     write (*, *) 'input hydrodynamics      : ', trim(input_hyd%file_hyd%name)
+
+    inquire (file=input_hyd%file_hyd%name, exist=exist_hyd)
+    if (.not. exist_hyd) then
+        write (lunrep, '(a,a)') ' error: hyd-file not found: ', trim(input_hyd%file_hyd%name)
+        write (*, '(a,a)') ' error: hyd-file not found: ', trim(input_hyd%file_hyd%name)
+
+        call stop_with_error()
+    end if
+
     call read_hyd(input_hyd)
 
     ! read hydrodynamic description file patches, and check if they are there

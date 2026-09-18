@@ -35,7 +35,7 @@ digraph dimr_diag {
   ];
 
   dimr_config -> dimr;
-  
+
   dimr->coupler;
   coupler->comp;
   coupler->comp;

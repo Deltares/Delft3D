@@ -22,6 +22,6 @@ target_include_directories(${library_name} PRIVATE ${version_include_dir})
 # Define how the files should be structured within Visual Studio
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )

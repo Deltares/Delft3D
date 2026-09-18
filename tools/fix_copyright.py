@@ -33,58 +33,34 @@ regex_patterns = [
     + str(year)
     + r")\d{4})(?P<after>\"\)\])",
     # CMake: set(CPACK_PACKAGE_VENDOR "Deltares 2026")
-    r"(?P<before>set\(CPACK_PACKAGE_VENDOR\s+\"Deltares\s+)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\"\))",
+    r"(?P<before>set\(CPACK_PACKAGE_VENDOR\s+\"Deltares\s+)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\"\))",
     # Stichting Deltares with year ranges: Copyright (C)  Stichting Deltares, 2011-2026.
-    r"(?P<before>Copyright\s*\(C\)\s*Stichting\s+Deltares,\s*\d{4}-)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\.)",
+    r"(?P<before>Copyright\s*\(C\)\s*Stichting\s+Deltares,\s*\d{4}-)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\.)",
     # Fortran comments: !!! (c) Deltares, 2026
-    r"(?P<before>!!!\s*\(c\)\s*Deltares,\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>)",
+    r"(?P<before>!!!\s*\(c\)\s*Deltares,\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>)",
     # Standard format: Copyright (C) 2026 Deltares
-    r"(?P<before>Copyright\s*\(C\)\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\s+Deltares)",
+    r"(?P<before>Copyright\s*\(C\)\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\s+Deltares)",
     # Year ranges ending with old year: 2011-2025, 2012-2025, etc.
     r"(?P<before>\d{4}-)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>.*Deltares)",
     # !    (c) Copyright 2026 Deltares
-    r"(?P<before>!\s*\(c\)\s*Copyright\s+)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\s+Deltares)",
+    r"(?P<before>!\s*\(c\)\s*Copyright\s+)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\s+Deltares)",
     # !  Copyright (C) 2026 Geert Prinsen  WL|Deltares
-    r"(?P<before>!\s*Copyright\s*\(C\)\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\s+.*Deltares)(?!.*\d{4})",
+    r"(?P<before>!\s*Copyright\s*\(C\)\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\s+.*Deltares)(?!.*\d{4})",
     # !     (C) 2026 Deltares
-    r"(?P<before>!\s*\(C\)\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\s+Deltares)",
+    r"(?P<before>!\s*\(C\)\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\s+Deltares)",
     # Shell script comments: # (c) Deltares, 2026
-    r"(?P<before>#\s*\(c\)\s*Deltares,\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>)",
+    r"(?P<before>#\s*\(c\)\s*Deltares,\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>)",
     # Copyright (C) 2007-2026 UNESCO-IHE, Deltares
-    r"(?P<before>Copyright\s*\(C\)\s*\d{4}-)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>.*Deltares)",
+    r"(?P<before>Copyright\s*\(C\)\s*\d{4}-)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>.*Deltares)",
     # Version files with year ranges: "Copyright (C) company, 2023-2026"
-    r"(?P<before>\"Copyright\s*\(C\)\s*[^\"]*[-,\s]+)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>\")",
+    r"(?P<before>\"Copyright\s*\(C\)\s*[^\"]*[-,\s]+)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>\")",
     # Fortran character parameter: "Copyright (C) "//company//", 2023-2026"
     r"(?P<before>\"Copyright\s*\(C\)\s*\"//[^/]+//\",\s*\d{4}-)(?P<year>(?!"
     + str(year)
     + r")\d{4})(?P<after>\")",  # Asterisk comments: *  Copyright (C) 2026, Deltares
-    r"(?P<before>\*\s*Copyright\s*\(C\)\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>[,\s]+.*Deltares)",
+    r"(?P<before>\*\s*Copyright\s*\(C\)\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>[,\s]+.*Deltares)",
     # Fortran write statements with copyright: '    Copyright (c) 2026              DELTARES        '
-    r"(?P<before>'[^']*Copyright\s*\(c\)\s*)(?P<year>(?!"
-    + str(year)
-    + r")\d{4})(?P<after>[^']*DELTARES[^']*')",
+    r"(?P<before>'[^']*Copyright\s*\(c\)\s*)(?P<year>(?!" + str(year) + r")\d{4})(?P<after>[^']*DELTARES[^']*')",
     # Rijkswaterstaat copyright: Copyright © 2026, Rijkswaterstaat, All Rights Reserved. (with or without ! prefix)
     r"(?P<before>(?:!\s*)?Copyright\s*©\s*)(?P<year>(?!"
     + str(year)
@@ -101,19 +77,13 @@ regex_to_search = [re.compile(pattern, re.IGNORECASE) for pattern in regex_patte
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="'\r%(levelname)s: %(message)s")
 
-file_list = [
-    f
-    for f in path.glob("**/*.*")
-    if not any(excluded in f.parts for excluded in exclude_dirs)
-]
+file_list = [f for f in path.glob("**/*.*") if not any(excluded in f.parts for excluded in exclude_dirs)]
 
 file_list.extend(
     [
         f
         for f in path.glob("**/*")
-        if f.is_file()
-        and "." not in f.name
-        and not any(excluded in f.parts for excluded in exclude_dirs)
+        if f.is_file() and "." not in f.name and not any(excluded in f.parts for excluded in exclude_dirs)
     ]
 )
 
@@ -146,6 +116,4 @@ for idx, file in enumerate(file_list, 1):
         break
 
 elapsed_time = time.time() - start_time
-print(
-    f"\nProcessing complete. Elapsed time: {elapsed_time:.2f} seconds, {change_count} files updated."
-)
+print(f"\nProcessing complete. Elapsed time: {elapsed_time:.2f} seconds, {change_count} files updated.")

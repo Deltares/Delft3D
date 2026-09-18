@@ -9,10 +9,10 @@ from .file_processor import FileProcessor
 from .fortran_styler import main
 
 __all__ = [
-    'FortranConverter',
-    'ConversionIssue',
-    'DoublePrecisionConverter',
-    'ArrayDelimiterConverter',
-    'FileProcessor',
-    'main',
+    "FortranConverter",
+    "ConversionIssue",
+    "DoublePrecisionConverter",
+    "ArrayDelimiterConverter",
+    "FileProcessor",
+    "main",
 ]

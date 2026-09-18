@@ -43,6 +43,8 @@ contains
    subroutine switchiadvnearlink(L)
       use m_flowgeom, only: ln, iadv_original_lateral_overflow, nd, iadv, iadv_general_structure, kcu
       use m_flow, only: iadvec, u0
+      use network_data, only: LINK_1D, LINK_2D
+      
       implicit none
       integer :: L, k1, k2, kk, LL, iadv1, iadv2
 
@@ -65,13 +67,13 @@ contains
 
       do kk = 1, nd(k1)%lnx
          LL = abs(nd(k1)%ln(kk))
-         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
+         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == LINK_1D .or. kcu(LL) == LINK_2D)) then ! Only for regular 1D or 2D.
             iadv(LL) = iadv1
          end if
       end do
       do kk = 1, nd(k2)%lnx
          LL = abs(nd(k2)%ln(kk))
-         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
+         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == LINK_1D .or. kcu(LL) == LINK_2D)) then ! Only for regular 1D or 2D.
             iadv(LL) = iadv2
          end if
       end do

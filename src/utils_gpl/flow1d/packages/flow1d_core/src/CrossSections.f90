@@ -978,7 +978,10 @@ contains
       tempset%count = crsCount
 
       maxBranchId = max(1, maxval(crs%cross(:)%branchId))
-      maxBranchOrder = max(1, maxval(brs%branch(:)%ordernumber) + 1)
+      maxbranchorder = 1
+      if (brs%count > 0) then
+         maxBranchOrder = maxval(brs%branch(:)%ordernumber) + 1
+      end if
       maxChainage = maxval(crs%cross(:)%chainage)
 
       ! Multiplication factors for sorting
@@ -1404,11 +1407,19 @@ contains
       type(t_CrossSection), pointer :: cross1 !< cross section
       type(t_CrossSection), pointer :: cross2 !< cross section
 
+      logical :: hysteresis_local(2) !< local copy of hysteresis since this is optional
+
       if (line2cross%c1 <= 0) then
          ! no cross section defined on branch, use default definition
          totalArea = default_width * dpt
          totalWidth = default_width
          return
+      end if
+
+      if (present(hysteresis)) then
+         hysteresis_local = hysteresis
+      else
+         hysteresis_local = .false.
       end if
 
       cross1 => cross(line2cross%c1)
@@ -1417,7 +1428,7 @@ contains
 
       if (cross1%crossIndx == cross2%crossIndx) then
          ! Same Cross-Section, no interpolation needed
-         call GetCSParsTotalCross(cross1, dpt, totalArea, totalWidth, calculationOption, hysteresis(1))
+         call GetCSParsTotalCross(cross1, dpt, totalArea, totalWidth, calculationOption, hysteresis_local(1))
       else
          select case (cross1%crosstype)
          case (CS_CIRCLE, CS_EGG)
@@ -1436,15 +1447,15 @@ contains
             crossi%groundFrictionType = cross1%groundFrictionType
             crossi%tabDef%diameter = (1.0d0 - f) * cross1%tabDef%diameter + f * cross2%tabDef%diameter
 
-            call GetCSParsTotalCross(crossi, dpt, totalArea, totalWidth, calculationOption, hysteresis(1))
+            call GetCSParsTotalCross(crossi, dpt, totalArea, totalWidth, calculationOption, hysteresis_local(1))
 
          case default ! Call GetCSParstotalCross twice and interpolate the results
             if (present(doSummerDike)) then
-               call GetCSParsTotalCross(cross1, dpt, totalArea1, totalWidth1, calculationOption, hysteresis(1), doSummerDike=doSummerDike)
-               call GetCSParsTotalCross(cross2, dpt, totalArea2, totalWidth2, calculationOption, hysteresis(2), doSummerDike=doSummerDike)
+               call GetCSParsTotalCross(cross1, dpt, totalArea1, totalWidth1, calculationOption, hysteresis_local(1), doSummerDike=doSummerDike)
+               call GetCSParsTotalCross(cross2, dpt, totalArea2, totalWidth2, calculationOption, hysteresis_local(2), doSummerDike=doSummerDike)
             else
-               call GetCSParsTotalCross(cross1, dpt, totalArea1, totalWidth1, calculationOption, hysteresis(1))
-               call GetCSParsTotalCross(cross2, dpt, totalArea2, totalWidth2, calculationOption, hysteresis(2))
+               call GetCSParsTotalCross(cross1, dpt, totalArea1, totalWidth1, calculationOption, hysteresis_local(1))
+               call GetCSParsTotalCross(cross2, dpt, totalArea2, totalWidth2, calculationOption, hysteresis_local(2))
             end if
 
             totalArea = (1.0d0 - f) * totalArea1 + f * totalArea2
@@ -1452,6 +1463,10 @@ contains
 
          end select
 
+      end if
+
+      if (present(hysteresis)) then
+         hysteresis = hysteresis_local
       end if
 
    end subroutine GetCSParsTotalInterpolate

@@ -1,0 +1,6 @@
+outs:
+- md5: c2cafe967760e3272982579fe75eac87.dir
+  size: 188331
+  nfiles: 24
+  hash: md5
+  path: reference_win64

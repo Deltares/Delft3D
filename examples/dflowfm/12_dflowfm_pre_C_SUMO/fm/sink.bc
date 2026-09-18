@@ -1,0 +1,24 @@
+# written by HYDROLIB-core 0.9.9
+
+[Forcing]
+name              = sink
+function          = timeseries
+timeInterpolation = linear
+quantity          = time
+unit              = MINUTES SINCE 2001-01-01 00:00:00
+quantity          = sourcesink_discharge
+unit              = m3/s
+0.0           -20.0
+9000000000.0  -20.0
+
+[Forcing]
+name              = sink
+function          = timeseries
+timeInterpolation = linear
+quantity          = time
+unit              = MINUTES SINCE 2001-01-01 00:00:00
+quantity          = sourcesink_temperatureDelta     
+unit              = 1e-3
+0.0           0.0
+9000000000.0  0.0
+

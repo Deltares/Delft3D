@@ -43,7 +43,7 @@ contains
    subroutine a1vol1tot()
       use precision, only: dp
       use m_flowgeom, only: ndxi, bare
-      use m_flow, only: a1tot, a1, vol1tot, vol1, interceptionmodel, dfm_hyd_intercept_layer, vol1icept, intercepths, jagrw, volgrw, volgrwini, eps10, volcur, idx_voltot, idx_stor, vol1ini
+      use m_flow, only: a1tot, a1, vol1tot, vol1, interceptionmodel, dfm_hyd_intercept_layer, vol1icept, intercepths, jagrw, volgrw, volgrwini, EPS10, volcur, idx_voltot, idx_stor, vol1ini
       use m_partitioninfo, only: jampi, idomain, my_rank, reduce_double_sum
       use m_flowtimes, only: time1, tstart_user
       use precision_basics, only: comparereal
@@ -88,7 +88,7 @@ contains
          end if
       end if
 
-      if (comparereal(time1, tstart_user, eps10) == 0) then
+      if (comparereal(time1, tstart_user, EPS10) == 0) then
          volcur(IDX_VOLTOT) = vol1tot
          volcur(IDX_STOR) = vol1tot
          vol1ini = vol1tot

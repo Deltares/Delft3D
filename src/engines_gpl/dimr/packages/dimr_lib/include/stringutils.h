@@ -33,24 +33,14 @@
 //  2 jun 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
-namespace String {
-    void
-    Chomp (
-        char * string
-        );
+namespace String
+{
+    void Chomp(char* string);
 
-    void
-    CollapseAllWhitespace (
-        char * string
-        );
+    void CollapseAllWhitespace(char* string);
 
-    void
-    Tidy (
-        char * string
-        );
+    void Tidy(char* string);
 
-    };
-
+}; // namespace String

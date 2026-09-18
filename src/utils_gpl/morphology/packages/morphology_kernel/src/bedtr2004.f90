@@ -1,3 +1,37 @@
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
+module m_bedtr2004
+   implicit none
+   private
+   public bedtr2004
+
+contains
+
 subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & tp        ,teta      ,uon       ,uoff      ,uwb       , &
                    & taucr     ,delm      ,ra        ,z0cur     ,fc1       , &
@@ -9,34 +43,6 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & pangle    ,fpco      ,susw      ,wave      ,eps       , &
                    & subiw     ,vcr       ,error     ,message   ,wform     , &
                    & r         ,phi_phase ,uwbih     )
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed load transport according to Van Rijn
@@ -49,14 +55,10 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 ! (order factor 2) for situations without waves
 ! Van Rijn (1993,2000)
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts
     use sediment_basics_module
-    !
-    implicit none
 !
 ! Arguments
 !
@@ -394,14 +396,18 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
              !
              ! k-layer contains aks (take part above)
              !
-             if (concin(k-1)<1.0e-6_fp .or. concin(k)<1.0e-6_fp) then
-                ceavg    = ceavg + concin(k)*(1.0_fp-dif_aks/thick(k))*thick(k)*h1
+             if (dif_upp <= thick(k)) then ! this must be true if k = 1 since aks < 3*deltas < h1
+                ! k-layer contains also 3*deltas (take part below)
+                ceavg = ceavg + concin(k)*(dif_upp-dif_aks)*h1
+                exit
+             elseif (concin(k-1)<1.0e-6_fp .or. concin(k)<1.0e-6_fp) then
+                ceavg    = ceavg + concin(k)*(thick(k)-dif_aks)*h1
              else
                 rpower   = log(concin(k-1)/concin(k)) / log(  (h1*(1.0_fp+sig(k  ))*(h1-h1*(1.0_fp+sig(k-1)))) &
                 &                                           / (h1*(1.0_fp+sig(k-1))*(h1-h1*(1.0_fp+sig(k  )))) )
                 z        = ((1.0_fp+sig(k)+0.5_fp*thick(k))*h1 + aks) / 2.0_fp
                 ceavgtmp = concin(k) * ((h1*(1.0_fp+sig(k))*(h1-z))/(z*(h1-h1*(1.0_fp+sig(k)))))**rpower
-                ceavg    = ceavg + ceavgtmp*(1.0_fp-dif_aks/thick(k))*thick(k)*h1
+                ceavg    = ceavg + ceavgtmp*(thick(k)-dif_aks)*h1
              endif
           elseif (dif_aks<=0.0_fp .and. dif_upp>=0.0_fp) then
              !
@@ -456,3 +462,5 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        qswv = 0.0_fp
     endif
 end subroutine bedtr2004
+
+end module m_bedtr2004

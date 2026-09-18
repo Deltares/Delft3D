@@ -114,7 +114,7 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, &
    integer :: year
    integer :: month
    integer :: day
-   integer, dimension(1) :: idummy ! Help array to read/write Nefis files
+   real(hp), dimension(1) :: idummy ! Help array to read/write Nefis files
    integer, external :: nc_def_var
    integer :: count_xymiss
    real(hp) :: dearthrad
@@ -359,9 +359,9 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, &
    ! put vars (time dependent)
    !
    if (prevtime) then
-      idummy(1) = wavedata%time%calctimtscale_prev * wavedata%time%tscale
+      idummy(1) = real(wavedata%time%calctimtscale_prev,hp) * wavedata%time%tscale
    else
-      idummy(1) = wavedata%time%calctimtscale * wavedata%time%tscale
+      idummy(1) = real(wavedata%time%calctimtscale,hp) * wavedata%time%tscale
    end if
 
    ierror = nf90_put_var(idfile, idvar_time, idummy(1), start=(/wavedata%output%count/)); call nc_check_err(ierror, "put_var time", filename)

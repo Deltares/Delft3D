@@ -278,7 +278,7 @@ contains
             return
          end if
       end if
-      
+
       success = .true.
 
    end function aggregate_ugrid_geometry
@@ -293,7 +293,6 @@ contains
       type(t_ug_meshgeom), intent(inout) :: output !< Aggregated layers and interfaces.
       integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
-      logical :: no_aggregation !< Is there no aggregation at all?
       logical :: to_2D !< Is there aggregation to 2D?
       logical :: top_to_bottom !< Are layers defined from top to bottom?
       integer :: i, old_layer, new_layer, increment !< Loop variable and increment variable.
@@ -301,15 +300,19 @@ contains
 
       ! Set defaults
       success = .false.
-      no_aggregation = .true.
       to_2D = .true.
 
       ! Check the validity of the layer mapping table
       ! Is the size equal to the number of layer ins the input?
-      if (size(layer_mapping_table) /= input%num_layers) then
-         write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
-         call mess(LEVEL_ERROR, trim(message))
-         return
+      if (input%num_layers /= -1) then
+         if (size(layer_mapping_table) /= input%num_layers) then
+            write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
+            call mess(LEVEL_ERROR, trim(message))
+            return
+         end if
+      else
+         write (message, *) 'WAQGEOM file is lacking layer information, relying on hyd-file.'
+         call mess(LEVEL_WARN, trim(message))
       end if
 
       ! Does it start with one?
@@ -333,9 +336,6 @@ contains
             call mess(LEVEL_ERROR, trim(message))
             return
          end if
-         if (increment == 0) then
-            no_aggregation = .false.
-         end if
          if (increment == 1) then
             to_2D = .false.
          end if
@@ -357,19 +357,12 @@ contains
          return
       end if
 
-      ! When there is no aggregation, just copy the input to the output and return.
-      if (no_aggregation) then
-         output = input
-         success = .true.
-         return
-      end if
-      
       ! The layer type always stays the same
       output%layertype = input%layertype
-      
+
       ! The new number of layers is equal to the last value in the layer mapping table.
       output%num_layers = layer_mapping_table(input%num_layers)
-      
+
       ! For z-sigma-layers, the new numtopsig is equal to the value in the layer mapping table of the old numtopsig.
       if (input%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          output%numtopsig = layer_mapping_table(input%numtopsig)
@@ -409,14 +402,14 @@ contains
       do i = 1, output%num_layers
          output%layer_zs(i) = (output%interface_zs(i) + output%interface_zs(i + 1)) / 2.0d0
       end do
-      
+
       ! Correct the last sigma layer in layer_zs in case of z-sigma-layers. We need this because the bottom interface of
       ! the last sigma-layer of -1.0 is not in interface_zs. It overlaps with the top interface of the first z-layer.
       if (output%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          if (top_to_bottom) then
             output%layer_zs(output%numtopsig) = (output%interface_zs(output%numtopsig) - 1.0d0) / 2.0d0
          else
-            output%layer_zs(output%num_layers - output%numtopsig + 1) = & 
+            output%layer_zs(output%num_layers - output%numtopsig + 1) = &
                (output%interface_zs(output%num_layers - output%numtopsig + 2) - 1.0d0) / 2.0d0
          end if
       end if

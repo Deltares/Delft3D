@@ -28,10 +28,8 @@
 // $HeadURL$
 
 #ifndef _CL_INCLUDED
-#   define _CL_INCLUDED
-    extern struct St_cel * CL_find_cell_in_tree (
-                                     struct St_cel *, const BText );
-    extern BVoid           CL_remove_cell_branche (struct St_cel *);
-    extern struct St_cel * CL_add_cell_to_tree (
-                                     struct St_cel *, const BText);
+#define _CL_INCLUDED
+extern struct St_cel* CL_find_cell_in_tree(struct St_cel*, const BText);
+extern BVoid CL_remove_cell_branche(struct St_cel*);
+extern struct St_cel* CL_add_cell_to_tree(struct St_cel*, const BText);
 #endif

@@ -1,6 +1,6 @@
 /*
   Copyright © 2026, Rijkswaterstaat, All Rights Reserved.
-  
+
   This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
   https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
 
@@ -16,43 +16,35 @@
 */
 #include "general.h"
 
+void* RobMalloc(long size) { return calloc(1, size); }
 
-void * RobMalloc ( long size )
+void* RobRealloc(void* p, long size) { return realloc(p, size); }
+
+char* RobCopyText(const char* text)
 {
-  return calloc ( 1, size );
-}
+    char* return_value = NULL;
 
-void * RobRealloc ( void * p, long size )
-{
-  return realloc ( p, size );
-}
-
-char * RobCopyText(const char * text)
-{
-  char * return_value = NULL;
-
-  if ( text != (char *) NULL )
-  {
-    return_value = RobMalloc (( strlen(text)+1) * sizeof(char));
-    if ( return_value != NULL )
+    if (text != (char*)NULL)
     {
-      (void)strcpy ( return_value, text );
+        return_value = RobMalloc((strlen(text) + 1) * sizeof(char));
+        if (return_value != NULL)
+        {
+            (void)strcpy(return_value, text);
+        }
     }
-  }
-  return return_value;
+    return return_value;
 }
 
-short RobStringCompare (const char * a, const char * b)
+short RobStringCompare(const char* a, const char* b)
 {
-  size_t i;
-  size_t j;
+    size_t i;
+    size_t j;
 
-  for ( i = strlen(a) ;  a[--i] == ' ' ; ) ;
-  for ( j = strlen(b) ;  b[--j] == ' ' ; ) ;
-  if ( j == i )
-  {
-    return (short)strncmp ( a, b, ++j );
-  }
-  return (short)1;
+    for (i = strlen(a); a[--i] == ' ';);
+    for (j = strlen(b); b[--j] == ' ';);
+    if (j == i)
+    {
+        return (short)strncmp(a, b, ++j);
+    }
+    return (short)1;
 }
-

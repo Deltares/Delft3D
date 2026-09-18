@@ -4,16 +4,23 @@
 import argparse
 import io
 import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import TextIO
 
 from dvc.repo import Repo
+from dvc.scm import NoSCM
 
 from tools.minio_dvc_migration.dvc_utils import find_dvc_root_in_parent_directories, push_dvc_files_to_remote
 from tools.minio_dvc_migration.s3_client import setup_minio_rewinder
 from tools.minio_dvc_migration.tc_xml_utils import load_teamcity_xml_files
 from tools.minio_dvc_migration.testcase_data import extract_testcase_data
-from tools.minio_dvc_migration.xml_file_with_testcase_data import XmlFileWithTestCaseData, filter_cases_to_migrate
+from tools.minio_dvc_migration.xml_file_with_testcase_data import (
+    XmlFileWithTestCaseData,
+    apply_dependency_version_map,
+    build_dependency_version_map,
+    filter_cases_to_migrate,
+)
 
 BASE_URL = "https://s3.deltares.nl"
 S3_BUCKET = "dsc-testbench"
@@ -59,6 +66,9 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--xmls", type=str, help="Comma-separated list of XML file paths to process (overrides CSV parsing)"
     )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Check if MinIO files exist without downloading or pushing to DVC"
+    )
     return parser.parse_args()
 
 
@@ -93,15 +103,104 @@ def extract_data_from_xml_files(xml_files: list[Path]) -> list[XmlFileWithTestCa
     return parsed_xmls
 
 
+def run_migration(xmls_to_migrate: list[XmlFileWithTestCaseData], dry_run: bool = False) -> None:
+    """Execute the migration workflow.
+
+    When dry_run is True, only checks MinIO for file existence without
+    downloading, adding to DVC, pushing, or rewriting XMLs.
+    """
+    rewinder = setup_minio_rewinder(BASE_URL)
+
+    # Always validate DVC repo and remote configuration
+    repo_root = find_dvc_root_in_parent_directories(Path(__file__).resolve())
+    print(f"Found DVC repo at: {repo_root}")
+
+    config_path = repo_root / ".dvc" / "config"
+    if not config_path.exists():
+        raise FileNotFoundError(f"DVC config not found: {config_path}")
+    config_text = config_path.read_text()
+    if 'remote "storage"' not in config_text:
+        raise ValueError("DVC remote 'storage' is not configured in .dvc/config")
+    print("DVC remote 'storage' is configured")
+
+    repo = Repo(str(repo_root), scm=NoSCM())
+    print("DVC repository initialized successfully")
+
+    if not dry_run:
+        version_map = build_dependency_version_map(xmls_to_migrate)
+        if version_map:
+            print(f"Dependency version conflicts detected; applying suffixes for {len(version_map)} entries")
+            apply_dependency_version_map(xmls_to_migrate, version_map)
+
+    total_found = 0
+    total_missing = 0
+    total_errors = 0
+    total_doc_moves = 0
+    total_skipped = 0
+    failed_xmls: list[str] = []
+
+    for i, xml_file in enumerate(xmls_to_migrate, start=1):
+        print(f"\n[{i}/{len(xmls_to_migrate)}] {xml_file.xml_file.name} ({len(xml_file.testcases)} testcases)")
+
+        if dry_run:
+            counts = xml_file.check_minio_presence(rewinder)
+            total_found += counts["found"]
+            total_missing += counts["missing"]
+            total_errors += counts["errors"]
+            total_doc_moves += counts["doc_moves"]
+        else:
+            try:
+                skipped = xml_file.verify_and_filter_testcases(rewinder)
+                total_skipped += len(skipped)
+                if not xml_file.testcases:
+                    print("  WARNING: All testcases missing on MinIO, skipping XML entirely")
+                    continue
+
+                xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
+                xml_file.move_testcases_doc_folder_to_parent()
+                dvc_files = []
+                dvc_files.extend(xml_file.add_to_dvc(repo=repo))
+                push_dvc_files_to_remote(repo, dvc_files)
+                xml_file.migrate_xml_to_dvc()
+            except Exception as e:
+                print(f"  WARNING: ERROR migrating {xml_file.xml_file.name}: {e}")
+                failed_xmls.append(xml_file.xml_file.name)
+
+    if dry_run:
+        print(f"\n{'=' * 60}")
+        print(f"Dry run summary: {total_found} found, {total_missing} missing, {total_errors} errors")
+        print(f"  Doc folder moves: {total_doc_moves}")
+        print(f"{'=' * 60}")
+    else:
+        print(f"\n{'=' * 60}")
+        print(f"Migration summary: {len(xmls_to_migrate)} XMLs processed")
+        if total_skipped:
+            print(f"  Skipped testcases (missing on MinIO): {total_skipped}")
+        if failed_xmls:
+            print(f"  Failed XMLs ({len(failed_xmls)}):")
+            for name in failed_xmls:
+                print(f"    - {name}")
+        print(f"{'=' * 60}")
+
+
+def _rotate_log_file(log_path: Path) -> None:
+    """Rotate existing log file using the same pattern as testbench (RotatingFileHandler)."""
+    if log_path.is_file():
+        handler = RotatingFileHandler(str(log_path), backupCount=10)
+        handler.doRollover()
+        handler.close()
+
+
 def main() -> None:
     """Execute main functionality for the minio to DVC migration tool."""
-    with open(LOG_FILE, "a", encoding="utf-8") as log_file:
+    _rotate_log_file(LOG_FILE)
+    with open(LOG_FILE, "w", encoding="utf-8") as log_file:
         original_stdout = sys.__stdout__ or sys.stdout
         sys.stdout = TeeStream(original_stdout, log_file)
         try:
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print("Migration started")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
 
             args = parse_arguments()
 
@@ -110,24 +209,9 @@ def main() -> None:
 
             xml_files_with_testcases_to_migrate = filter_cases_to_migrate(xml_files_with_all_testcases)
 
-            rewinder = setup_minio_rewinder(BASE_URL)
-
-            repo_root = find_dvc_root_in_parent_directories(Path(__file__).resolve())
-            print(f"Found existing DVC repo at: {repo_root}")
-            repo = Repo(str(repo_root))
-
-            for i, xml_file in enumerate(xml_files_with_testcases_to_migrate, start=1):
-                print(
-                    f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's"
-                )
-                xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
-                xml_file.move_testcases_doc_folder_to_parent()
-                dvc_files = []
-                dvc_files.extend(xml_file.add_to_dvc(repo=repo))
-                push_dvc_files_to_remote(repo, dvc_files)
-                xml_file.migrate_xml_to_dvc()
+            run_migration(xml_files_with_testcases_to_migrate, dry_run=args.dry_run)
         finally:
-            sys.stdout = sys.__stdout__
+            sys.stdout = original_stdout
 
 
 if __name__ == "__main__":

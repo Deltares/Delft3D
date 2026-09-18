@@ -57,6 +57,7 @@ contains
       use m_nod2linx, only: nod2linx, nod2linx_fast
       use m_nod2liny, only: nod2liny, nod2liny_fast
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL
       implicit none
 
       logical :: make2dh
@@ -70,7 +71,7 @@ contains
       ucyq = 0.0_dp ! zero arrays
 
       ! keep track of depth averaged flow velocity
-      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
+      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. map_write_settings%ucmag > 0 .or. map_write_settings%ucvec > 0))
 
       if (Perot_type /= NOT_DEFINED) then
          ucx = 0.0_dp
@@ -80,7 +81,7 @@ contains
 
             do i = 1, wetLink2D - 1
                L = onlyWetLinks(i)
-               if (kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+               if (kcu(L) /= LINK_1D2D_INTERNAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucx(k1) = ucx(k1) + wcx1(L) * u1(L)

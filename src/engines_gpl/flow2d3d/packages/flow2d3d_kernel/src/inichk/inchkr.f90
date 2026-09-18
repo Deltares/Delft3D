@@ -383,7 +383,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     logical                              , pointer :: flbcc
     logical                              , pointer :: fldis
     include 'tri-dyn.igd'
-    real(fp)      , dimension(:)         , pointer :: rhosol
     character(12)                        , pointer :: tkemod
     integer(pntrsize)                    , pointer :: clyint
     integer(pntrsize)                    , pointer :: sltint
@@ -758,7 +757,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     flbct               => gdp%gdtmpfil%flbct
     flbcc               => gdp%gdtmpfil%flbcc
     fldis               => gdp%gdtmpfil%fldis
-    rhosol              => gdp%gdsedpar%rhosol
     clyint              => gdp%gdr_i_ch%clyint
     sltint              => gdp%gdr_i_ch%sltint
     sndint              => gdp%gdr_i_ch%sndint
@@ -1028,7 +1026,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
             & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
             & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-            & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+            & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
     !
     ! Eddy viscosity and diffusivity
     !

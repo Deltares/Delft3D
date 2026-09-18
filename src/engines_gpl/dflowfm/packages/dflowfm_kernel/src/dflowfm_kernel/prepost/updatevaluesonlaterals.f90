@@ -48,7 +48,7 @@ contains
                             qLatRealCum, qplatAve, qplatCumPre, qLatRealAve, qLatRealCumPre
       use precision, only: dp, comparereal
       use m_alloc, only: realloc
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
 
       real(kind=dp), intent(in) :: tim1 !< Current (new) time
@@ -58,7 +58,7 @@ contains
       real(kind=dp), allocatable :: qLatRealCumTmp(:), qLatRealMPI(:)
 
       ! If current time has not reached the history output start time yet, do not update
-      if (comparereal(tim1, ti_hiss, eps10) < 0) then
+      if (comparereal(tim1, ti_hiss, EPS10) < 0) then
          return
       end if
 
@@ -80,7 +80,7 @@ contains
       end do
 
       ! At the starting time of history output, average discharge is 0, and skip the following computing
-      if (comparereal(tim1, ti_hiss, eps10) == 0) then
+      if (comparereal(tim1, ti_hiss, EPS10) == 0) then
          return
       end if
 
@@ -94,7 +94,7 @@ contains
       end do
 
       ! At the history output time, compute average discharge in the past His-interval
-      if (comparereal(tim1, time_his, eps10) == 0 .and. ti_his > 0) then
+      if (comparereal(tim1, time_his, EPS10) == 0 .and. ti_his > 0) then
          if (jampi == 1) then
             call realloc(qLatRealMPI, numlatsg, keepExisting=.false., fill=0.0_dp)
             call reduce_double_sum(numlatsg, qLatReal, qLatRealMPI)

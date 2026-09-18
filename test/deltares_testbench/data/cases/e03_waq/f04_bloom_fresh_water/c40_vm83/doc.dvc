@@ -1,0 +1,6 @@
+outs:
+- md5: d30bc860268150bf7577e46383f47bed.dir
+  size: 8839
+  nfiles: 4
+  hash: md5
+  path: doc

@@ -12,11 +12,12 @@ object Publish : BuildType({
         TemplateLinuxAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
-        TemplateFailureCondition
+        TemplateFailureCondition,
+        TemplateBuildConcurrency
     )
 
-    name = "Publish Container"
-    description = "Currently only used for publishing the container."
+    name = "Publish container"
+    description = "Retag and publish container images to Harbor."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
     allowExternalStatus = true

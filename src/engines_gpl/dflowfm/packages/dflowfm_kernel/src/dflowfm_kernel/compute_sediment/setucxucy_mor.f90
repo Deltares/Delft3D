@@ -56,6 +56,7 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
@@ -72,7 +73,7 @@ contains
 
       if (kmx < 1) then ! original 2D coding
          do L = 1, lnx1D
-            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= LINK_1D2D_INTERNAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                k1 = ln(1, L)
                k2 = ln(2, L)
                wcxu = wcx1(L) * u1_loc(L)

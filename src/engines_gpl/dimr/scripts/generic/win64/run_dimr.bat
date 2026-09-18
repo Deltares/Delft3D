@@ -81,7 +81,6 @@ set D3D_HOME=%scriptDir%..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
 set proc_def_dir=%sharedir%\delft3d
 
     rem
@@ -89,7 +88,7 @@ set proc_def_dir=%sharedir%\delft3d
     rem
 
     rem Run
-set PATH=%sharedir%;%libdir%;%exedir%
+set PATH=%sharedir%;%exedir%
 echo executing: "%exedir%\dimr.exe" %debugarg% %dimrConfigFile%
 "%exedir%\dimr.exe" %debugarg% %dimrConfigFile%
 

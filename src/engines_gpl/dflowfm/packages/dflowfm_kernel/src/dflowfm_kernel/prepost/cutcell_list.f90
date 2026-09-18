@@ -85,7 +85,10 @@ contains
 
       jastored = 0
 
-      inquire (FILE=md_cutcelllist, EXIST=JAWEL)
+      JAWEL = .false.
+      if (len_trim(md_cutcelllist) > 0) then
+         inquire (FILE=md_cutcelllist, EXIST=JAWEL)
+      end if
       NUMFIL = 0
       if (JAWEL) then
          call OLDFIL(MLIST, md_cutcelllist)
@@ -260,7 +263,7 @@ contains
       if (n12 == 5) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
          do Lf = 1, Lnx
-            if (kcu(Lf) /= 2) then
+            if (kcu(Lf) /= LINK_2D) then
                cycle
             end if
             L = abs(ln2lne(Lf))

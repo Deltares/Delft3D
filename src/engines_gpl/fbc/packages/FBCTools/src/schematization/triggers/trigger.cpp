@@ -27,89 +27,99 @@ using namespace rtctools::schematization::triggers;
 
 trigger::trigger(string id, string name, int iYOut, int iTimeTrueOut, int iTimeFalseOut) : element(id, name)
 {
-	nTrueComponent = 0;
-	trueComponent = 0;
-	nFalseComponent = 0;
-	falseComponent = 0;
+    nTrueComponent = 0;
+    trueComponent = 0;
+    nFalseComponent = 0;
+    falseComponent = 0;
 
-	this->iYOut = iYOut;
-	this->iTimeTrueOut = iTimeTrueOut;
-	this->iTimeFalseOut = iTimeFalseOut;
+    this->iYOut = iYOut;
+    this->iTimeTrueOut = iTimeTrueOut;
+    this->iTimeFalseOut = iTimeFalseOut;
 }
 
-void trigger::addTrueComponent(int n, element **c)
+void trigger::addTrueComponent(int n, element** c)
 {
-	nTrueComponent = n;
-	trueComponent = c;
+    nTrueComponent = n;
+    trueComponent = c;
 }
 
-void trigger::addFalseComponent(int n, element **c)
+void trigger::addFalseComponent(int n, element** c)
 {
-	nFalseComponent = n;
-	falseComponent = c;
+    nFalseComponent = n;
+    falseComponent = c;
 }
 
 void trigger::activate()
 {
-	for (int i=0; i<nTrueComponent; i++) {
-		trueComponent[i]->activate();
-	}
-	for (int i=0; i<nFalseComponent; i++) {
-		falseComponent[i]->activate();
-	}
+    for (int i = 0; i < nTrueComponent; i++)
+    {
+        trueComponent[i]->activate();
+    }
+    for (int i = 0; i < nFalseComponent; i++)
+    {
+        falseComponent[i]->activate();
+    }
 }
 
 void trigger::deactivate()
 {
-	for (int i=0; i<nTrueComponent; i++) {
-		trueComponent[i]->deactivate();
-	}
-	for (int i=0; i<nFalseComponent; i++) {
-		falseComponent[i]->deactivate();
-	}
+    for (int i = 0; i < nTrueComponent; i++)
+    {
+        trueComponent[i]->deactivate();
+    }
+    for (int i = 0; i < nFalseComponent; i++)
+    {
+        falseComponent[i]->deactivate();
+    }
 }
 
-void trigger::evaluateTimes(double *stateOld, double *stateNew, long long t, double dt)
+void trigger::evaluateTimes(double* stateOld, double* stateNew, long long t, double dt)
 {
-	double yNew = stateNew[iYOut];
+    double yNew = stateNew[iYOut];
 
-	if ((iTimeTrueOut>-1) && (yNew==1.0)) {
-		stateNew[iTimeTrueOut] = 0.0;
-		if (stateOld[iYOut]==1.0) {
-			double dtOld = stateOld[iTimeTrueOut]; 
-			if (t==t) stateNew[iTimeTrueOut] = dtOld + dt; 
-		}
-	}
+    if ((iTimeTrueOut > -1) && (yNew == 1.0))
+    {
+        stateNew[iTimeTrueOut] = 0.0;
+        if (stateOld[iYOut] == 1.0)
+        {
+            double dtOld = stateOld[iTimeTrueOut];
+            if (t == t) stateNew[iTimeTrueOut] = dtOld + dt;
+        }
+    }
 
-	if ((iTimeFalseOut>-1) && (yNew==0.0)) {
-		stateNew[iTimeFalseOut] = 0.0;
-		if (stateOld[iYOut]==0.0) {
-			double dtOld = stateOld[iTimeFalseOut]; 
-			if (t==t) stateNew[iTimeFalseOut] = dtOld + dt; 
-		}
-	}
+    if ((iTimeFalseOut > -1) && (yNew == 0.0))
+    {
+        stateNew[iTimeFalseOut] = 0.0;
+        if (stateOld[iYOut] == 0.0)
+        {
+            double dtOld = stateOld[iTimeFalseOut];
+            if (t == t) stateNew[iTimeFalseOut] = dtOld + dt;
+        }
+    }
 }
 
-void trigger::evaluateSubtriggers(double *stateOld, double *stateNew, long long t, double dt)
+void trigger::evaluateSubtriggers(double* stateOld, double* stateNew, long long t, double dt)
 {
-	double yNew = stateNew[iYOut];
+    double yNew = stateNew[iYOut];
 
-	// evaluate sub-triggers
-	if (yNew==yNew) {
-		if (yNew==1.0) {
-			for (int i=0; i<nTrueComponent; i++) {
-				trueComponent[i]->solve(stateOld, stateNew, t, dt);
-			}
-		} else if (yNew==0.0) {
-			for (int i=0; i<nFalseComponent; i++) {
-				falseComponent[i]->solve(stateOld, stateNew, t, dt);
-			}
-		}
-	}
+    // evaluate sub-triggers
+    if (yNew == yNew)
+    {
+        if (yNew == 1.0)
+        {
+            for (int i = 0; i < nTrueComponent; i++)
+            {
+                trueComponent[i]->solve(stateOld, stateNew, t, dt);
+            }
+        }
+        else if (yNew == 0.0)
+        {
+            for (int i = 0; i < nFalseComponent; i++)
+            {
+                falseComponent[i]->solve(stateOld, stateNew, t, dt);
+            }
+        }
+    }
 }
 
-double trigger::getStatus(double *state)
-{
-	return state[iYOut];
-}
-
+double trigger::getStatus(double* state) { return state[iYOut]; }

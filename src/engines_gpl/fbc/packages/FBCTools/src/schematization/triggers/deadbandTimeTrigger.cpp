@@ -27,72 +27,69 @@
 
 using namespace rtctools::schematization::rules;
 
-deadbandTimeTrigger::deadbandTimeTrigger(
-	string id,
-	string name,
-	int nStepUp,
-	int nStepDown,
-	int iXIn,
-	int iStepsUpOut,
-	int iStepsDownOut,
-	int iYOut,
-	int iTimeTrueOut,
-	int iTimeFalseOut) : trigger(id, name, iYOut, iTimeTrueOut, iTimeFalseOut), rule(id, name)
+deadbandTimeTrigger::deadbandTimeTrigger(string id, string name, int nStepUp, int nStepDown, int iXIn, int iStepsUpOut,
+                                         int iStepsDownOut, int iYOut, int iTimeTrueOut, int iTimeFalseOut)
+    : trigger(id, name, iYOut, iTimeTrueOut, iTimeFalseOut), rule(id, name)
 {
-	this->nStepUp = nStepUp;
-	this->nStepDown = nStepDown;
-	this->iXIn = iXIn;
-	this->iStepsUpOut = iStepsUpOut;
-	this->iStepsDownOut = iStepsDownOut;
+    this->nStepUp = nStepUp;
+    this->nStepDown = nStepDown;
+    this->iXIn = iXIn;
+    this->iStepsUpOut = iStepsUpOut;
+    this->iStepsDownOut = iStepsDownOut;
 }
 
-deadbandTimeTrigger::~deadbandTimeTrigger(void)
+deadbandTimeTrigger::~deadbandTimeTrigger(void) {}
+
+void deadbandTimeTrigger::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
+    double x = stateOld[iXIn];
+    double sU = stateOld[iStepsUpOut];
+    double sD = stateOld[iStepsDownOut];
+    double y = stateOld[iYOut];
+
+    // robust behaviour in case of incomplete inputs / outputs
+    if (y != y)
+    {
+        y = x;
+    }
+
+    // count the number of time steps with continuous up or down-crossing
+    if (x < y)
+    {
+        sU = 0;
+        sD++;
+    }
+    else if (x > y)
+    {
+        sU++;
+        sD = 0;
+    }
+    else
+    {
+        sU = 0;
+        sD = 0;
+    }
+
+    // adapt the output, if step threshold is exceeded
+    if ((sU > nStepUp) || (sD > nStepDown))
+    {
+        y = x;
+        sU = 0;
+        sD = 0;
+    }
+
+    // write new status
+    stateNew[iYOut] = y;
+    stateNew[iStepsUpOut] = sU;
+    stateNew[iStepsDownOut] = sD;
+
+    // evaluate true/false times and sub-triggers
+    evaluateTimes(stateOld, stateNew, t, dt);
+    evaluateSubtriggers(stateOld, stateNew, t, dt);
 }
 
-void deadbandTimeTrigger::solve(double *stateOld, double *stateNew, long long t, double dt)
+void deadbandTimeTrigger::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                                   double* dStateNew)
 {
-	double x = stateOld[iXIn];
-	double sU = stateOld[iStepsUpOut];
-	double sD = stateOld[iStepsDownOut];
-	double y = stateOld[iYOut];
-
-	// robust behaviour in case of incomplete inputs / outputs
-	if (y!=y) {
-		y = x;
-	}
-
-	// count the number of time steps with continuous up or down-crossing
-	if (x<y) {
-		sU = 0;
-	    sD++;
-	} else if (x>y) {
-	    sU++;
-	    sD = 0;
-	} else {
-	    sU = 0;
-	    sD = 0;
-	}
-
-	// adapt the output, if step threshold is exceeded
-	if ((sU>nStepUp) || (sD>nStepDown)) {
-		y = x;
-	    sU = 0;
-	    sD = 0;
-	}
-
-	// write new status
-	stateNew[iYOut] = y;
-	stateNew[iStepsUpOut] = sU;
-	stateNew[iStepsDownOut] = sD;
-
-	// evaluate true/false times and sub-triggers
-	evaluateTimes(stateOld, stateNew, t, dt);
-	evaluateSubtriggers(stateOld, stateNew, t, dt);
-}
-
-void deadbandTimeTrigger::solveDer(double* stateOld, double* stateNew, long long t, double dt,
-								   double* dStateOld, double* dStateNew)
-{
-	throw runtime_error("void deadbandTimeTrigger::solveDer(...) - error - not implemented");
+    throw runtime_error("void deadbandTimeTrigger::solveDer(...) - error - not implemented");
 }

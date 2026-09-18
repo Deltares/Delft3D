@@ -25,6 +25,7 @@ from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
 from src.suite.command_line_settings import CommandLineSettings
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
@@ -542,8 +543,6 @@ class XmlConfigParser:
         """Fill cases (including default)."""
         if "ref" not in element:
             test_case = TestCaseConfig()
-            if "maxRunTime" not in element:
-                raise XmlError("no maximum run time specified for " + test_case.name)
         else:
             test_case = copy.deepcopy(self.__get_case(str(element["ref"][0])))
             if test_case is None:
@@ -590,9 +589,9 @@ class XmlConfigParser:
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
-            for el in element["maxRunTime"]:
-                if "OverruleRefMaxRunTime" in el and str(el["OverruleRefMaxRunTime"][0]).lower() == "true":
-                    test_case.overrule_ref_max_run_time = True
+        else:
+            test_case.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
+
         for el in XmlConfigParser.__loop(element, "programs"):
             for program in XmlConfigParser.__loop(el, "program"):
                 program_instance = self.__fill_program(program, settings)

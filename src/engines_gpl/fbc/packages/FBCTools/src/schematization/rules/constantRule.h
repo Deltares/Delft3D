@@ -21,37 +21,37 @@
  * @date 2010
  */
 
-
 #pragma once
 #ifndef CONSTANTRULE_H
-#define CONSTANTRULE_H
+    #define CONSTANTRULE_H
 
-#include "rule.h"
+    #include "rule.h"
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class constantRule : public rule
-{
-private:
-    int yOut;
-    double constant;
+            class constantRule : public rule
+            {
+            private:
+                int yOut;
+                double constant;
 
-public:
-    constantRule(string id, string name, double constant, int yOut);
-    ~constantRule(void);
+            public:
+                constantRule(string id, string name, double constant, int yOut);
+                ~constantRule(void);
 
-    void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-        virtual int getIYOut() const override { return yOut; }
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+                virtual int getIYOut() const override { return yOut; }
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* CONSTANTRULE_H */

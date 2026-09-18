@@ -69,9 +69,10 @@ function(F90TWF2H INFILES OUTFILE)
 
     if(WIN32)
         find_program(POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
+        string(REPLACE ";" "," F2H_INFILES_PS "${F2H_INFILES}")
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
-            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]*', '' | Set-Content -Path ${F2H_OUTFILE} \" "
+            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES_PS} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]*', '' | Set-Content -Path ${F2H_OUTFILE} \" "
             DEPENDS ${F2H_INFILES}
             COMMENT "process ${F2H_INFILES}"
         )
@@ -210,12 +211,11 @@ add_dependencies(f90twi_gtest generate_assertions_gtest_f90)
 set_property(TARGET f90twi_gtest
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )
-set_target_properties(generate_assertions_gtest_f90 PROPERTIES FOLDER third_party_open/googletest)
+set_target_properties(generate_assertions_gtest_f90 PROPERTIES FOLDER third_party_open/f90tw)
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)
 set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
-target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest)
+target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest GTest::gtest)
 
 # make available the include and module paths
 set(f90tw_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "f90tw include directory")

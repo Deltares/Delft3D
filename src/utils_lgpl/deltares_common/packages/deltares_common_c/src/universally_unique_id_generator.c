@@ -5,9 +5,9 @@
 #include <stdio.h>
 
 #ifdef WIN32
-#include <windows.h>
+    #include <windows.h>
 #else
-#include <uuid/uuid.h>
+    #include <uuid/uuid.h>
 #endif
 
 /* getuuid --
@@ -16,27 +16,31 @@
    Arguments:
        guid_string   Character string of which the first 40 characters are used
 */
-void generate_uuid( unsigned char *guid_string ) {
+void generate_uuid(unsigned char* guid_string)
+{
     int i, j;
 
     unsigned char guid[16];
 
 #ifdef WIN32
-    CoCreateGuid( (GUID *)guid );
+    CoCreateGuid((GUID*)guid);
 #else
-    uuid_generate( guid );
+    uuid_generate(guid);
 #endif
 
-    for ( i = 0; i < 40; i ++ ) {
+    for (i = 0; i < 40; i++)
+    {
         guid_string[i] = '\0';
     }
 
     j = 0;
-    for ( i = 0; i < 16; i ++ ) {
-        sprintf( &guid_string[j], "%2.2x", guid[i]);
-        if ( i == 3 || i == 5 || i == 7 || i == 9 ) {
+    for (i = 0; i < 16; i++)
+    {
+        sprintf(&guid_string[j], "%2.2x", guid[i]);
+        if (i == 3 || i == 5 || i == 7 || i == 9)
+        {
             j += 1;
-            sprintf( &guid_string[j+1], "-" );
+            sprintf(&guid_string[j + 1], "-");
         }
         j += 2;
     }

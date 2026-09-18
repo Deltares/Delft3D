@@ -40,6 +40,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     use precision
     use properties
     use sediment_basics_module, only: TRA_ADVDIFF
+   use morphology_data_module, only: NPARDEF
     use m_rdmor
     use m_rdsed
     use m_rdtrafrm
@@ -49,10 +50,10 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     implicit none
     !
     type(globdat)             ,target        :: gdp
-    integer                   , parameter    :: NPARDEF = 20
     logical                   , pointer      :: lfbedfrm
     real(hp)                  , pointer      :: morft
     real(hp)                  , pointer      :: morft0
+   real(fp), pointer :: ag
 !
 ! Global variables
 !
@@ -99,6 +100,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     morft               => gdp%gdmorpar%morft
     morft0              => gdp%gdmorpar%morft0
     lfbedfrm            => gdp%gdbedformpar%lfbedfrm
+   ag => gdp%gdphysco%ag
     !    
     error = .false.
     !
@@ -180,7 +182,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call rdmor(lundia     ,error     ,filmor    ,lsec      ,lsedtot    , &
              & lsed       ,nmaxus     ,nto      ,lfbedfrm  , &
              & nambnd     ,gdp%gdinttim%julday  ,mor_ptr   ,gdp%gdsedpar, &
-             &gdp%gdmorpar,fwfacmor  ,gdp%gdmorlyr, gdp%griddim)
+               &gdp%gdmorpar, fwfacmor, gdp%gdmorlyr, gdp%griddim, ag)
     endif
     if (.not.error) then
     !
@@ -220,7 +222,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call setpardef(ipardef, rpardef, NPARDEF, -4, 5, gdp%gdmorpar%epspar)
     !
     call rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
-                & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
+                  & ipardef, rpardef, gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
                 & gdp%gdsedpar%sedtyp  ,filsed, gdp%gdsedpar%sedblock  , &
                 & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)

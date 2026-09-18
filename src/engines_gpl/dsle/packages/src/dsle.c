@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "config.h"
-#include "util.h"
 #include "dsle.h"
+#include "util.h"
 
 // The dsle_calculate loop can take advantage of shared values (e.g. a
 // reciprocal volume) between steps and the derivative parameters. Most
@@ -44,9 +44,9 @@ inline double TANH(const double x) {
 #endif
 
 #define ERROR_CODES(X)                                                                             \
-  X(DSLE_SUCCESS, "Success")                                                                        \
-  X(DSLE_SHIP_TOO_BIG, "The ship is too large for the lock")                                        \
-  X(DSLE_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                   \
+  X(DSLE_SUCCESS, "Success")                                                                       \
+  X(DSLE_SHIP_TOO_BIG, "The ship is too large for the lock")                                       \
+  X(DSLE_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                  \
   X(DSLE_ERR_SAL_LOCK_OUT_OF_BOUNDS, "The salinity of the lock exceeds that of the boundaries")
 
 #define ERROR_ENUM(ID, TEXT) ID,
@@ -215,6 +215,7 @@ static forceinline void step_phase_1(const dsle_param_t *p, const derived_parame
   results->volume_to_sea = 0.0;
   results->discharge_from_sea = 0.0;
   results->discharge_to_sea = 0.0;
+  results->volume_flush_passthrough = 0.0;
   results->salinity_to_sea = sal_lock_4;
 
   // Update state variables of the lock
@@ -391,7 +392,7 @@ static forceinline void step_phase_2(const dsle_param_t *p, const derived_parame
   results->discharge_to_sea = o->flushing_discharge;
   results->salinity_to_sea =
       (results->volume_to_sea > 0.0) ? mt_sea_2 / results->volume_to_sea : sal_lock_1;
-
+  results->volume_flush_passthrough = volume_flush_passthrough;
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock_2;
   state->salinity_lock = sal_lock_2;
@@ -622,6 +623,7 @@ static forceinline void step_phase_4(const dsle_param_t *p, const derived_parame
       (results->volume_to_sea > 0.0)
           ? (mt_sea_4 + results->volume_from_sea * p->salinity_sea) / results->volume_to_sea
           : sal_lock_3;
+  results->volume_flush_passthrough = volume_flush_passthrough;
 
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock_4;
@@ -630,8 +632,9 @@ static forceinline void step_phase_4(const dsle_param_t *p, const derived_parame
   state->volume_ship_in_lock = p->ship_volume_sea_to_lake;
 }
 
-static forceinline void step_flush_doors_closed(const dsle_param_t *p, const derived_parameters_t *o,
-                                                double t_flushing, dsle_phase_state_t *state,
+static forceinline void step_flush_doors_closed(const dsle_param_t *p,
+                                                const derived_parameters_t *o, double t_flushing,
+                                                dsle_phase_state_t *state,
                                                 dsle_phase_transports_t *results) {
   // Flushing with gates closed
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -699,12 +702,14 @@ static forceinline void step_flush_doors_closed(const dsle_param_t *p, const der
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock;
   state->salinity_lock = sal_lock;
+  results->volume_flush_passthrough = 0.0;
+
   // state->head_lock = state->head_lock;  /* Unchanged */
   // state->volume_ship_in_lock = state->ship_volume_lake_to_sea; /* Unchanged */
 }
 
 int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_t *state,
-                                      double sal_lock, double head_lock) {
+                                        double sal_lock, double head_lock) {
   state->salinity_lock = sal_lock;
   state->saltmass_lock = sal_lock * (p->lock_length * p->lock_width * (head_lock - p->lock_bottom));
   state->head_lock = head_lock;
@@ -713,8 +718,8 @@ int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -730,7 +735,7 @@ int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level, dsle_
 }
 
 int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
-                                  dsle_phase_state_t *state, dsle_phase_transports_t *results) {
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -749,8 +754,8 @@ int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
 }
 
 int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_flushing,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results) {
+                                               dsle_phase_state_t *state,
+                                               dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -765,8 +770,8 @@ int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_f
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -781,8 +786,8 @@ int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level, dsle_
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -801,7 +806,7 @@ int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea, ds
 }
 
 int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *results,
-                                 dsle_aux_results_t *aux_results) {
+                                   dsle_aux_results_t *aux_results) {
 
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -862,7 +867,9 @@ int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *result
       double disch_to_lake = vol_to_lake / o.t_cycle;
 
       double salt_load_lake = mt_lake / o.t_cycle;
-      double sal_to_lake = -1 * (mt_lake - vol_from_lake * p->salinity_lake) / vol_to_lake;
+      double sal_to_lake = (vol_to_lake > 0.0)
+                               ? -1 * (mt_lake - vol_from_lake * p->salinity_lake) / vol_to_lake
+                               : p->salinity_lake;
 
       // Sea side
       double mt_sea = tp1.mass_transport_sea + tp2.mass_transport_sea + tp3.mass_transport_sea +
@@ -877,7 +884,9 @@ int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *result
       double disch_to_sea = vol_to_sea / o.t_cycle;
 
       double salt_load_sea = mt_sea / o.t_cycle;
-      double sal_to_sea = (mt_sea + vol_from_sea * p->salinity_sea) / vol_to_sea;
+      double sal_to_sea = (vol_to_sea > 0.0)
+                              ? (mt_sea + vol_from_sea * p->salinity_sea) / vol_to_sea
+                              : p->salinity_sea;
 
       // Put the main results in the output stucture
       results->mass_transport_lake = mt_lake;

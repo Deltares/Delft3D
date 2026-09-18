@@ -21,119 +21,120 @@
  * @date 2010
  */
 
-
 #pragma once
 #ifndef PID_CONTROLLER_H
-#define PID_CONTROLLER_H
+    #define PID_CONTROLLER_H
 
-#include "rule.h"
+    #include "rule.h"
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class pidController : public rule
-{
-public:
-    /**
-     * @brief Constructor for pid controller with variable set point
-     *
-      * @param id id
-     * @param name name
-     * @param kp factor of proportional part
-     * @param ki factor of integral part
-     * @param kd factor of differential part
-     * @param kf factor of disturbance term
-     */
-    pidController(string id, string name, double p, double i, double d, double f,
-        double settingMin, double settingMax, double settingMaxSpeed,
-        int iXIn, int iSPIn, int iFIn, int iYOut, int iIOut, int iDOut);
-    pidController(string id, string name, double p, double i, double d, double f,
-        double settingMin, double settingMax, double settingMaxSpeed,
-        int iXIn, double SPIn, int iFIn, int iYOut, int iIOut, int iDOut);
-    ~pidController(void) {};
+            class pidController : public rule
+            {
+            public:
+                /**
+                 * @brief Constructor for pid controller with variable set point
+                 *
+                 * @param id id
+                 * @param name name
+                 * @param kp factor of proportional part
+                 * @param ki factor of integral part
+                 * @param kd factor of differential part
+                 * @param kf factor of disturbance term
+                 */
+                pidController(string id, string name, double p, double i, double d, double f, double settingMin,
+                              double settingMax, double settingMaxSpeed, int iXIn, int iSPIn, int iFIn, int iYOut,
+                              int iIOut, int iDOut);
+                pidController(string id, string name, double p, double i, double d, double f, double settingMin,
+                              double settingMax, double settingMaxSpeed, int iXIn, double SPIn, int iFIn, int iYOut,
+                              int iIOut, int iDOut);
+                ~pidController(void) {};
 
-    void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-        virtual int getIYOut() const override { return iYOut; }
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+                virtual int getIYOut() const override { return iYOut; }
 
-private:
-    /**
-     * @brief factor for proportional part
-     */
-    double kp;
+            private:
+                /**
+                 * @brief factor for proportional part
+                 */
+                double kp;
 
-    /**
-     * @brief factor for integral part
-     */
-    double ki;
+                /**
+                 * @brief factor for integral part
+                 */
+                double ki;
 
-    /**
-     * @brief factor for differential part
-     */
-    double kd;
+                /**
+                 * @brief factor for differential part
+                 */
+                double kd;
 
-    /**
-     * @brief factor for optional disturbance
-     */
-    double kf;
+                /**
+                 * @brief factor for optional disturbance
+                 */
+                double kf;
 
-    /**
-     * @brief minimum setting of actuator
-     */
-    double settingMin;
+                /**
+                 * @brief minimum setting of actuator
+                 */
+                double settingMin;
 
-    /**
-     * @brief maximum setting of actuator
-     */
-    double settingMax;
+                /**
+                 * @brief maximum setting of actuator
+                 */
+                double settingMax;
 
-    /**
-     * @brief maximum setting of actuator
-     */
-    double settingMaxSpeed;
+                /**
+                 * @brief maximum setting of actuator
+                 */
+                double settingMaxSpeed;
 
-    /**
-     * @brief index of time series with controlled variable
-     */
-    int iXIn;
+                /**
+                 * @brief index of time series with controlled variable
+                 */
+                int iXIn;
 
-    /**
-     * @brief index of time series with set point
-     */
-    int iSPIn;
+                /**
+                 * @brief index of time series with set point
+                 */
+                int iSPIn;
 
-    /**
-     * @brief constant set point
-     */
-    double SPIn;
+                /**
+                 * @brief constant set point
+                 */
+                double SPIn;
 
-    /**
-     * @brief index of time series with optional disturbance
-     */
-    int iFIn;
+                /**
+                 * @brief index of time series with optional disturbance
+                 */
+                int iFIn;
 
-    /**
-     * @brief index of time series with actuator output
-     */
-    int iYOut;
+                /**
+                 * @brief index of time series with actuator output
+                 */
+                int iYOut;
 
-    /**
-     * @brief index of time series with integral part
-     */
-    int iIOut;
+                /**
+                 * @brief index of time series with integral part
+                 */
+                int iIOut;
 
-    /**
-     * @brief index of time series with the last difference between controlled variable and set point for computing the differential part
-     */
-    int iDOut;
-};
+                /**
+                 * @brief index of time series with the last difference between controlled variable and set point for
+                 * computing the differential part
+                 */
+                int iDOut;
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // PID_CONTROLLER_H

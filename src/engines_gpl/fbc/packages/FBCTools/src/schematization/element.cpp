@@ -27,14 +27,12 @@ using namespace rtctools::schematization;
 
 element::element(string id, string name)
 {
-	this->id = string(id);
-	this->name = string(name);
-	this->active = true;
+    this->id = string(id);
+    this->name = string(name);
+    this->active = true;
 }
 
-element::~element(void)
-{
-}
+element::~element(void) {}
 
 string element::getID() { return id; }
 

@@ -21,46 +21,45 @@
  * @date 2010
  */
 
-
-#include "lookup2DTable.h" 
+#include "lookup2DTable.h"
 #include <stdexcept>
 
 using namespace rtctools;
 using namespace rtctools::schematization;
 
-lookup2DTable::lookup2DTable(string id,
-							 string name,
-							 lookup2DTableConverter *converter,
-							 int iXIn,
-							 int iYIn,
-							 int iZIn,
-							 int iZOut)
-	: component(id, name), rule(id, name)
+lookup2DTable::lookup2DTable(string id, string name, lookup2DTableConverter* converter, int iXIn, int iYIn, int iZIn,
+                             int iZOut)
+    : component(id, name), rule(id, name)
 {
-	this->converter = converter;
-	this->iXIn = iXIn;
-	this->iYIn = iYIn;
-	this->iZIn = iZIn;
-	this->iZOut = iZOut;
+    this->converter = converter;
+    this->iXIn = iXIn;
+    this->iYIn = iYIn;
+    this->iZIn = iZIn;
+    this->iZOut = iZOut;
 }
 
-void lookup2DTable::solve(double *stateOld, double *stateNew, long long t, double dt)
+void lookup2DTable::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-	double x = stateOld[iXIn];
-	double y = stateOld[iYIn];
-	double z = converter->convert(x, y);
+    double x = stateOld[iXIn];
+    double y = stateOld[iYIn];
+    double z = converter->convert(x, y);
 
-	if (iZIn>-1) {
-		double zEx = stateNew[iZIn];
-		if (zEx==zEx) {
-			z = zEx;
-		}
-	}
+    if (iZIn > -1)
+    {
+        double zEx = stateNew[iZIn];
+        if (zEx == zEx)
+        {
+            z = zEx;
+        }
+    }
 
-	stateNew[iZOut] = z;
+    stateNew[iZOut] = z;
 }
 
-void lookup2DTable::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
+void lookup2DTable::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                             double* dStateNew)
 {
-	throw runtime_error("void lookup2DTableRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew) not implemented");
+    throw runtime_error(
+        "void lookup2DTableRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double "
+        "*dStateOld, double *dStateNew) not implemented");
 }

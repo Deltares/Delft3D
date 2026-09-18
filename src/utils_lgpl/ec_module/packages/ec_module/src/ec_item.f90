@@ -530,7 +530,7 @@ module m_ec_item
                call set_ec_message("       Current EC-time: t= " // trim(strnum1) // ' seconds')
                call real2stringLeft(strnum1, '(f22.3)', item%sourceT0FieldPtr%timesteps-timesteps%mjd())
                call real2stringLeft(strnum2, '(f22.3)', (item%sourceT0FieldPtr%timesteps-timesteps%mjd())*86400)
-               call set_ec_message("Requested time preceeds current forcing EC-timelevel by " // trim(strnum1) // " days = " // trim(strnum2) // " seconds.")
+               call set_ec_message("Requested time precedes current forcing EC-timelevel by " // trim(strnum1) // " days = " // trim(strnum2) // " seconds.")
             else
                success = .true.
             endif
@@ -576,12 +576,6 @@ module m_ec_item
                            end if
                         end if
                         if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd()) /= -1) then
-                           if (item%quantityPtr%timeint == timeint_bfrom) then
-                              if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd(), 1.0D-7) == 0) then
-                                 ! Adjust the value in T0 field (the converter will only use the T0-field)s
-                                 item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
-                              end if
-                           end if
                            success = .true.
                            exit
                         end if

@@ -25,20 +25,18 @@
 
 using namespace rtctools::schematization::triggers;
 
-ruleReferenceTrigger::ruleReferenceTrigger(string id, string name, rule *r) : trigger(id, name, -1, -1, -1)
+ruleReferenceTrigger::ruleReferenceTrigger(string id, string name, rule* r) : trigger(id, name, -1, -1, -1)
 {
-	// reuse the first true component for reference to rule
-	this->nTrueComponent = 1;
-	this->trueComponent = new element*[1];
-	this->trueComponent[0] = r;
+    // reuse the first true component for reference to rule
+    this->nTrueComponent = 1;
+    this->trueComponent = new element*[1];
+    this->trueComponent[0] = r;
 }
 
-ruleReferenceTrigger::~ruleReferenceTrigger(void)
-{
-}
+ruleReferenceTrigger::~ruleReferenceTrigger(void) {}
 
-void ruleReferenceTrigger::solve(double *stateOld, double *stateNew, long long t, double dt)
+void ruleReferenceTrigger::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-	// activate rule, if trigger is called
-	this->trueComponent[0]->activate();
+    // activate rule, if trigger is called
+    this->trueComponent[0]->activate();
 }

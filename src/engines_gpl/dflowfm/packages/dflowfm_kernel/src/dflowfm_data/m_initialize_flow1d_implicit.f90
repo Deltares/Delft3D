@@ -735,10 +735,11 @@ contains
       use precision, only: dp
 
       use m_f1dimp
-      use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
+      use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim, xz, yz
       use m_flow, only: s0, s1, u1, v, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb, z0ucur
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
+      use bedcomposition_module, only: CONSOL_TERZAGHI
       use m_turbulence, only: rhowat
       use m_xbeach_data, only: ktb
       use m_bedform, only: bfmpar
@@ -770,6 +771,7 @@ contains
       real(kind=dp), allocatable, dimension(:, :) :: sedshort_o
       real(kind=dp), allocatable, dimension(:, :) :: svfrac_o
       real(kind=dp), allocatable, dimension(:, :) :: preload_o
+      real(kind=dp), allocatable, dimension(:, :) :: depos_time_o
 
       real(kind=dp), allocatable, dimension(:, :, :) :: msed_o
 
@@ -812,6 +814,8 @@ contains
       call reallocate_fill(rhowat, grd_fmmv_fmsv, ndx, ndx_mor)
       call reallocate_fill(ktb, grd_fmmv_fmsv, ndx, ndx_mor) !FM1DIMP2DO: It could be better to allocate the wave part with <ndx_mor>. To limit the mess it is now done here.
       call reallocate_fill(bl, grd_fmmv_fmsv, ndx, ndx_mor)
+      call reallocate_fill(xz, grd_fmmv_fmsv, ndx, ndx_mor)
+      call reallocate_fill(yz, grd_fmmv_fmsv, ndx, ndx_mor)
 !FM1DIMP2DO
 !The value of <bl> here is not correct, as it copies the value from the closest node.
 !However, this is not a big issue, as this value is only used for checking whether flow
@@ -884,11 +888,21 @@ contains
             allocate (svfrac_o(nlyr, ndx))
             svfrac_o = stmpar%morlyr%state%svfrac
 
-            if (allocated(preload_o)) then
-               deallocate (preload_o)
+            if (associated(stmpar%morlyr%state%preload)) then
+               if (allocated(preload_o)) then
+                  deallocate (preload_o)
+               end if
+               allocate (preload_o(nlyr, ndx))
+               preload_o = stmpar%morlyr%state%preload
             end if
-            allocate (preload_o(nlyr, ndx))
-            preload_o = stmpar%morlyr%state%preload
+
+            if (associated(stmpar%morlyr%state%depos_time)) then
+               if (allocated(depos_time_o)) then
+                  deallocate (depos_time_o)
+               end if
+               allocate (depos_time_o(nlyr, ndx))
+               depos_time_o = stmpar%morlyr%state%depos_time
+            end if
 
          end if !underlayer==2
 
@@ -970,7 +984,12 @@ contains
 
             call reallocate_fill_manual_2(stmpar%morlyr%state%thlyr, thlyr_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
             call reallocate_fill_manual_2(stmpar%morlyr%state%svfrac, svfrac_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
-            call reallocate_fill_manual_2(stmpar%morlyr%state%preload, preload_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            if (associated(stmpar%morlyr%state%preload)) then
+               call reallocate_fill_manual_2(stmpar%morlyr%state%preload, preload_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            endif
+            if (associated(stmpar%morlyr%state%depos_time)) then
+               call reallocate_fill_manual_2(stmpar%morlyr%state%depos_time, depos_time_o, grd_fmmv_fmsv, ndx, ndx_mor, nlyr)
+            endif
 
             call reallocate_fill_manual_3(stmpar%morlyr%state%msed, msed_o, grd_fmmv_fmsv, ndx, ndx_mor, lsedtot, nlyr)
 
@@ -1002,6 +1021,10 @@ contains
 
          if (allocated(preload_o)) then
             deallocate (preload_o)
+         end if
+
+         if (allocated(depos_time_o)) then
+            deallocate (depos_time_o)
          end if
 
       end if

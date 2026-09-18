@@ -28,6 +28,6 @@
 // $HeadURL$
 
 #ifndef _WR_INCLUDED
-#   define _WR_INCLUDED
-    extern BVoid WR_write_variables ( BText, BText, BText [] )  ;
+#define _WR_INCLUDED
+extern BVoid WR_write_variables(BText, BText, BText[]);
 #endif

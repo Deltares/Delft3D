@@ -41,13 +41,13 @@
 #include "esm.h"
 #include <stdlib.h>
 
-#if defined (HAVE_CONFIG_H)
-#include "config.h"
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
+#if defined(HAVE_CONFIG_H)
+    #include "config.h"
+    #ifdef HAVE_MALLOC_H
+        #include <malloc.h>
+    #endif
 #else
-#include <malloc.h>
+    #include <malloc.h>
 #endif
 
 #include <math.h>
@@ -58,184 +58,113 @@
 #include <string.h>
 #include <sys/types.h>
 
-
-#if (!defined (WIN32))
-#   include <sys/ipc.h>
-#   include <sys/shm.h>
-#   include <sys/sem.h>
-#   include <unistd.h>
+#if (!defined(WIN32))
+    #include <sys/ipc.h>
+    #include <sys/shm.h>
+    #include <sys/sem.h>
+    #include <unistd.h>
 #endif
 
 #ifndef SHM_R
-#define SHM_R      0440   /* defined on most systems, except cygwin */
+    #define SHM_R 0440 /* defined on most systems, except cygwin */
 #endif
 #ifndef SHM_W
-#define SHM_W      0220   /* defined on most systems, except cygwin */
+    #define SHM_W 0220 /* defined on most systems, except cygwin */
 #endif
 
-#if (defined (WIN32))
-#ifndef FALSE
-#  define FALSE 0
-#  define TRUE  1
-#endif
-#endif
-
-#if (defined (HAVE_CONFIG_H))
-#   if (! defined (SEM_A))
-#       define SEM_A    0200    /* alter permission */
-#   endif
-#   if (! defined (SEM_R))
-#       define SEM_R    0400    /* read permission */
-#   endif
+#if (defined(WIN32))
+    #ifndef FALSE
+        #define FALSE 0
+        #define TRUE 1
+    #endif
 #endif
 
-#if (defined (SUN_SPARC))
-    typedef char *      shmem_t;
+#if (defined(HAVE_CONFIG_H))
+    #if (!defined(SEM_A))
+        #define SEM_A 0200 /* alter permission */
+    #endif
+    #if (!defined(SEM_R))
+        #define SEM_R 0400 /* read permission */
+    #endif
+#endif
+
+#if (defined(SUN_SPARC))
+typedef char* shmem_t;
 #else
-    typedef void *      shmem_t;
+typedef void* shmem_t;
 #endif
-
 
 //------------------------------------------------------------------------------
 //    Global variables
 
-
 #ifdef ESM_MAIN
-#   define Extern
+    #define Extern
 #else
-#   define Extern extern
+    #define Extern extern
 #endif
-
 
 //  The following variables are static for the process using ESM and all
 //  its threads.  It records global information about ESM, such as the flags,
 //  which contexts are attached, etc.
 
-Extern int      Flags;                  // global flags (for before thread init)
-Extern int      InitFails;              // non-zero if ESM_Init fails early on
-Extern int      NumThreads;             // number of threads that have called ESM_Init
-Extern int      NumContexts;            // number of contexts we know about
-Extern char     Error [ESM_ERROR_LEN];  // error message of last failed operation
+Extern int Flags;                 // global flags (for before thread init)
+Extern int InitFails;             // non-zero if ESM_Init fails early on
+Extern int NumThreads;            // number of threads that have called ESM_Init
+Extern int NumContexts;           // number of contexts we know about
+Extern char Error[ESM_ERROR_LEN]; // error message of last failed operation
 
-Extern pthread_mutex_t  Mutex;          // mutual exclusion for global variables
-Extern pthread_key_t    Self;           // set to thread ID
+Extern pthread_mutex_t Mutex; // mutual exclusion for global variables
+Extern pthread_key_t Self;    // set to thread ID
 
-Extern struct esm_thread {
-    int     flags;                      // thread-specific flags
-    FILE *  tracefile;                  // descriptor for trace output
-    char    error [ESM_ERROR_LEN];      // error message of last failed operation
-    } Threads [ESM_MAX_THREADS];
+Extern struct esm_thread
+{
+    int flags;                 // thread-specific flags
+    FILE* tracefile;           // descriptor for trace output
+    char error[ESM_ERROR_LEN]; // error message of last failed operation
+} Threads[ESM_MAX_THREADS];
 
-Extern struct esm_context {
-    int     contextid;                  // context ID
-    void *  cd;                         // local addr of context descriptor
-    int     nattached;                  // number of mapped pages (shared only)
-    void *  pageaddr [ESM_MAX_PAGES];   // local address of mapped pages (shared only)
-    } Contexts [ESM_MAX_CONTEXTS];
-
+Extern struct esm_context
+{
+    int contextid;                 // context ID
+    void* cd;                      // local addr of context descriptor
+    int nattached;                 // number of mapped pages (shared only)
+    void* pageaddr[ESM_MAX_PAGES]; // local address of mapped pages (shared only)
+} Contexts[ESM_MAX_CONTEXTS];
 
 //------------------------------------------------------------------------------
 //  Utility macros
 
-#define max(a,b)    (((a) > (b)) ? (a) : (b))
-#define min(a,b)    (((a) < (b)) ? (a) : (b))
-
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
 //------------------------------------------------------------------------------
 //  Internal Functions
 
+static void InitProcess(void);
 
-static void
-InitProcess (
-    void
-    );
+void SetError(int thid, const char* message, ...);
 
-void
-SetError (
-    int     thid,
-    const char *  message,
-    ...
-    );
+void ClearError(int thid);
 
-void
-ClearError (
-    int     thid
-    );
+int ESM_Local_Create(int thid);
 
-int
-ESM_Local_Create (
-    int thid
-    );
+int ESM_Local_Delete(int thid, int ci, int contextid);
 
-int
-ESM_Local_Delete (
-    int thid,
-    int ci,
-    int contextid
-    );
+void* ESM_Local_Alloc(int thid, int ci, int contextid, const char* name, size_t size);
 
-void *
-ESM_Local_Alloc (
-    int thid,
-    int ci,
-    int contextid,
-    const char * name,
-    size_t size
-    );
+int ESM_Local_Free(int thid, int ci, int contextid, const char* name);
 
-int
-ESM_Local_Free (
-    int thid,
-    int ci,
-    int contextid,
-    const char * name
-    );
+int ESM_Local_ListRegions(int thid, int ci, int contextid, FILE* output);
 
-int
-ESM_Local_ListRegions (
-    int thid,
-    int ci,
-    int contextid,
-    FILE * output
-    );
+int ESM_Shared_Create(int thid, int pagesize);
 
-int
-ESM_Shared_Create (
-    int thid,
-    int pagesize
-    );
+int ESM_Shared_Delete(int thid, int ci, int contextid);
 
-int
-ESM_Shared_Delete (
-    int thid,
-    int ci,
-    int contextid
-    );
+void* ESM_Shared_Alloc(int thid, int ci, int contextid, const char* name, size_t size);
 
-void *
-ESM_Shared_Alloc (
-    int thid,
-    int ci,
-    int contextid,
-    const char * name,
-    size_t size
-    );
+int ESM_Shared_Free(int thid, int ci, int contextid, const char* name);
 
-int
-ESM_Shared_Free (
-    int thid,
-    int ci,
-    int contextid,
-    const char * name
-    );
-
-int
-ESM_Shared_ListRegions (
-    int thid,
-    int ci,
-    FILE * output
-    );
-
+int ESM_Shared_ListRegions(int thid, int ci, FILE* output);
 
 //------------------------------------------------------------------------------
 //  In order to simplify the implementation of the ESM_TRACE flag,
@@ -244,30 +173,28 @@ ESM_Shared_ListRegions (
 //  cluttering the code with overly nested if-then-else constructs.
 //  Sorry Edsgar.
 
-
-#define RETURN(V) { \
-    return_value = V; \
-    goto return_label; \
+#define RETURN(V)          \
+    {                      \
+        return_value = V;  \
+        goto return_label; \
     }
-
 
 //------------------------------------------------------------------------------
 //  Debugging Support
 
-
-#define ESM_DEBUG(X) { \
-    int flags = (thid < 0) ? Flags : Threads[thid].flags; \
-    if (flags & ESM_TRACE) { \
-        FILE * output = (thid < 0 || Threads[thid].tracefile == NULL) ? stdout : Threads[thid].tracefile; \
-        fprintf (output, "ESM Trace: "); \
-        fprintf X ; \
-        fputc ('\n', output); \
-        fflush (output); \
-        } \
+#define ESM_DEBUG(X)                                                                                         \
+    {                                                                                                        \
+        int flags = (thid < 0) ? Flags : Threads[thid].flags;                                                \
+        if (flags & ESM_TRACE)                                                                               \
+        {                                                                                                    \
+            FILE* output = (thid < 0 || Threads[thid].tracefile == NULL) ? stdout : Threads[thid].tracefile; \
+            fprintf(output, "ESM Trace: ");                                                                  \
+            fprintf X;                                                                                       \
+            fputc('\n', output);                                                                             \
+            fflush(output);                                                                                  \
+        }                                                                                                    \
     }
-
 
 //------------------------------------------------------------------------------
 
-#define WINDOWS_NOSM    "ESM shared memory not available on Microsoft Windows"
-
+#define WINDOWS_NOSM "ESM shared memory not available on Microsoft Windows"

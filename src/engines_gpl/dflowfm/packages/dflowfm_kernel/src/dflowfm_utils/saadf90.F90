@@ -36,7 +36,7 @@
 
 #define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
 
-#include "blasfm.h"
+#include "blasfm.inc"
 
 module GAMMAS
    use precision, only: dp
@@ -843,7 +843,7 @@ contains
             print *, 'Iterative solver was not given enough work space.'
             print *, 'The work space should at least have ', ipar(4), ' elements.'
          else if (ipar(1) == -3) then
-            print *, 'Iterative sovler is facing a break-down. a'
+            print *, 'Iterative solver is facing a break-down. a'
          else
             print *, 'Iterative solver terminated. code =', ipar(1)
          end if
@@ -960,7 +960,7 @@ contains
             print *, 'Iterative solver was not given enough work space.'
             print *, 'The work space should at least have ', ipar(4), ' elements.'
          else if (ipar(1) == -3) then
-            print *, 'Iterative sovler is facing a break-down. b'
+            print *, 'Iterative solver is facing a break-down. b'
          else
             print *, 'Iterative solver terminated. code =', ipar(1)
          end if

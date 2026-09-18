@@ -1,0 +1,44 @@
+BasedOnStyle: Google
+Standard: Latest
+
+# Indentation and tabs
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Macro's are indented if applicable
+IndentPPDirectives: BeforeHash
+
+# Line length
+ColumnLimit: 120
+
+# Prevent changes to the include order
+SortIncludes: false
+IncludeBlocks: Preserve
+
+# Namespace formatting
+NamespaceIndentation: All
+
+# Access modifier and case label indentation
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+
+# Custom brace wrapping
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+
+# Use one space before a comment
+SpacesBeforeTrailingComments: 1
+
+# Perform deterministic formatting
+DerivePointerAlignment: false
+

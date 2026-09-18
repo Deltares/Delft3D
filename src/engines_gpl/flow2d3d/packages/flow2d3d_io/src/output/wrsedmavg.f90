@@ -69,8 +69,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     integer                         , pointer :: celidt
     type (datagroup)                , pointer :: group6
     type (datagroup)                , pointer :: group7
-    real(fp)      , dimension(:)    , pointer :: rhosol
-    real(fp)      , dimension(:)    , pointer :: cdryb
     integer                         , pointer :: nmaxgl
     integer                         , pointer :: mmaxgl
     integer                         , pointer :: io_prec
@@ -148,8 +146,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     sus                 => gdp%gdmorpar%sus
     bed                 => gdp%gdmorpar%bed
     moroutput           => gdp%gdmorpar%moroutput
-    rhosol              => gdp%gdsedpar%rhosol
-    cdryb               => gdp%gdsedpar%cdryb
     mmaxgl              => gdp%gdparall%mmaxgl
     nmaxgl              => gdp%gdparall%nmaxgl
     io_prec             => gdp%gdpostpr%io_prec
@@ -245,18 +241,10 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           if ( dmorft > 0.0_hp ) then
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhodt = dmorfs
-                case (1)
-                   rhodt = cdryb(l)*dmorfs
-                case (2)
-                   rhodt = rhosol(l)*dmorfs
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbuuc(nm, l)/rhodt
+                      rbuff3(n, m, l) = sbuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -273,18 +261,10 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           if ( dmorft > 0.0_hp ) then
              rbuff3(:, :, :) = -999.0_fp
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhodt = dmorfs
-                case (1)
-                   rhodt = cdryb(l)*dmorfs
-                case (2)
-                   rhodt = rhosol(l)*dmorfs
-                end select
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbvvc(nm, l)/rhodt
+                      rbuff3(n, m, l) = sbvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -305,18 +285,10 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
              if ( dmorft > 0.0_hp ) then
                 rbuff3(:, :, :) = -999.0_fp
                 do l = 1, lsedtot
-                   select case(moroutput%transptype)
-                   case (0)
-                      rhodt = dmorfs
-                   case (1)
-                      rhodt = cdryb(l)*dmorfs
-                   case (2)
-                      rhodt = rhosol(l)*dmorfs
-                   end select
                    do m = 1, mmax
                       do n = 1, nmaxus
                          call n_and_m_to_nm(n, m, nm, gdp)
-                         rbuff3(n, m, l) = ssuuc(nm, l)/rhodt
+                         rbuff3(n, m, l) = ssuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                       enddo
                    enddo
                 enddo
@@ -333,18 +305,10 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
              if ( dmorft > 0.0_hp ) then
                 rbuff3(:, :, :) = -999.0_fp
                 do l = 1, lsedtot
-                   select case(moroutput%transptype)
-                   case (0)
-                      rhodt = dmorfs
-                   case (1)
-                      rhodt = cdryb(l)*dmorfs
-                   case (2)
-                      rhodt = rhosol(l)*dmorfs
-                   end select
                    do m = 1, mmax
                       do n = 1, nmaxus
                          call n_and_m_to_nm(n, m, nm, gdp)
-                         rbuff3(n, m, l) = ssvvc(nm, l)/rhodt
+                         rbuff3(n, m, l) = ssvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                       enddo
                    enddo
                 enddo

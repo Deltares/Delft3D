@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: context-mapside.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-mapside.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-mapside.h
+// $
 //------------------------------------------------------------------------------
 //  Class: D3dFlowContextMapSide
 //  DELFT3D-FLOW context functions for mapper side
@@ -36,14 +38,11 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
-
 #include "context.h"
-#include "context-flowside.h"  // FOR distributed by copy
+#include "context-flowside.h" // FOR distributed by copy
 #include "iterator.h"
-
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -52,10 +51,7 @@
 
 class D3dFlowContextMapSide : public D3dFlowContext
 {
-
-    public:
-
-
+public:
     //
     // PUBLIC FUNCTIONS
     //
@@ -64,31 +60,17 @@ class D3dFlowContextMapSide : public D3dFlowContext
 
     ~D3dFlowContextMapSide(void);
 
-    int Setup(
-        Iterator *  mapper,         // mapper process
-        Iterator *  flow,           // flow processes
-        MemType     aMemType,
-        EdgeType    aEdgeType,
-        int         mStart[NR_EQ],
-        int         nStart[NR_EQ],
-        int         mEnd[NR_EQ],
-        int         nEnd[NR_EQ]
-        );
+    int Setup(Iterator* mapper, // mapper process
+              Iterator* flow,   // flow processes
+              MemType aMemType, EdgeType aEdgeType, int mStart[NR_EQ], int nStart[NR_EQ], int mEnd[NR_EQ],
+              int nEnd[NR_EQ]);
 
-    void UpdateMapperToFlow  (UpdateHeader &updateHeader);
-    void UpdateMapperFromFlow(UpdateHeader &updateHeader);
+    void UpdateMapperToFlow(UpdateHeader& updateHeader);
+    void UpdateMapperFromFlow(UpdateHeader& updateHeader);
 
-    void SendBlobToFlow(
-        DDBlobID    blobID,
-        int         numBytes,
-        char      * bytes
-        );
+    void SendBlobToFlow(DDBlobID blobID, int numBytes, char* bytes);
 
-    int ReceiveBlobFromFlow(
-        DDBlobID    blobID,
-        int         numBytes,
-        char      * bytes
-        );
+    int ReceiveBlobFromFlow(DDBlobID blobID, int numBytes, char* bytes);
 
     //
     // Distributed Data Communication
@@ -101,5 +83,4 @@ class D3dFlowContextMapSide : public D3dFlowContext
     // Data allocation
     //
     void CreateMapperStrips(void);
-
 };

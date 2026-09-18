@@ -1,0 +1,6 @@
+outs:
+- md5: 9ea06cd92f3786121e97207419439faf.dir
+  size: 7604
+  nfiles: 4
+  hash: md5
+  path: doc

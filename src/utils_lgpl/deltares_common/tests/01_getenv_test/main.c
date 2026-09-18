@@ -35,34 +35,23 @@
  */
 
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define TEST_01 FC_FUNC(test_01,TEST_01)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define TEST_01 FC_FUNC(test_01, TEST_01)
 #else
-/* WIN32 */
-#   define STDCALL  /* nothing */
-#   define TEST_01 TEST_01
+    /* WIN32 */
+    #define STDCALL /* nothing */
+    #define TEST_01 TEST_01
 #endif
 
-
-#if defined (__cplusplus)
-    extern "C" {
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
-extern void STDCALL TEST_01 ( void );
+extern void STDCALL TEST_01(void);
 
-#if defined (__cplusplus)
-    }
+#if defined(__cplusplus)
+}
 #endif
 
-
-int
-main (
-    int     argc,
-    char *  argv[],
-    char *  envp[]
-    ) {
-
-    TEST_01 ();
-    }
-
+int main(int argc, char* argv[], char* envp[]) { TEST_01(); }

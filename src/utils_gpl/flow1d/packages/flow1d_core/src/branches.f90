@@ -281,6 +281,9 @@ contains
       integer ibr
       character(len=idlen), dimension(:), pointer :: ids
 
+      if (allocated(brs%hashlist%id_list)) then
+         deallocate (brs%hashlist%id_list)
+      end if
       allocate (brs%hashlist%id_list(brs%Count))
       brs%hashlist%id_count = brs%Count
       ids => brs%hashlist%id_list

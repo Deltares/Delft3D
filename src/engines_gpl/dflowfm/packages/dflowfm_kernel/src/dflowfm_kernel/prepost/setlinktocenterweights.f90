@@ -47,6 +47,7 @@ contains
       use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
+      use network_data, only: LINK_1D2D_INTERNAL
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
@@ -63,7 +64,7 @@ contains
 
       do L = 1, lnx
 
-         if (kcu(L) == 3) then
+         if (kcu(L) == LINK_1D2D_INTERNAL) then
             cycle ! no contribution from 1D2D internal links
          end if
 

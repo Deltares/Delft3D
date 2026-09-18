@@ -1,0 +1,4 @@
+sources:
+  "1.6-deltares.2":
+    url: "https://github.com/Deltares/Delft3D.git"
+    commit: "d7b0302b2dc2e9227220d7af966314fbfeb63a44"

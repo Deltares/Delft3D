@@ -44,13 +44,13 @@ contains
    subroutine updateValuesOnObservationStations()
       use m_fill_valobs, only: fill_valobs
       use m_flowtimes, only: time1
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_observations_data, only: IPNT_NUM, numobs, nummovobs, valobs, valobs_last_update_time
       use m_partitioninfo, only: jampi, reduce_valobs
       use m_timer, only: jatimer, IOUTPUTMPI, starttimer, stoptimer
       use precision_basics, only: comparereal
 
-      if (comparereal(time1, valobs_last_update_time, eps10) == 0) then
+      if (comparereal(time1, valobs_last_update_time, EPS10) == 0) then
          return
       end if
       valobs_last_update_time = time1

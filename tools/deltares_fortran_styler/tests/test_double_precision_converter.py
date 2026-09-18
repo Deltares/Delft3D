@@ -1,6 +1,8 @@
 """Tests for the double precision converter."""
+
 import pytest
 from deltares_fortran_styler.double_precision_converter import DoublePrecisionConverter
+
 
 class TestDoublePrecisionConverter:
     """Test suite for DoublePrecisionConverter."""
@@ -325,9 +327,9 @@ z = dble(x) + dble(y)"""
         stats = converter.get_conversion_stats(text)
 
         # Assert
-        assert stats['literals'] == 2, "Should count 2 literals"
-        assert stats['declarations'] == 1, "Should count 1 declaration"
-        assert stats['dble_calls'] == 2, "Should count 2 dble calls"
+        assert stats["literals"] == 2, "Should count 2 literals"
+        assert stats["declarations"] == 1, "Should count 1 declaration"
+        assert stats["dble_calls"] == 2, "Should count 2 dble calls"
 
     @pytest.mark.parametrize(
         ("input_text", "expected_output"),

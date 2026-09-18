@@ -40,26 +40,27 @@ contains
       use m_netw
       use unstruc_colors
       use m_set_col
+      use network_data, only: LINK_CLOSED, LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
       implicit none
       integer :: L, NCOL, NCL
       if (NCOL == 0) then ! ERASE
          NCL = 0
       else if (NCOL == 1) then ! 1 MEANS: DRAW IN KN3 PREDEFINED COLOUR
-         if (KN(3, L) == 0) then
+         if (KN(3, L) == LINK_CLOSED) then
             NCL = 31
-         else if (KN(3, L) == 1) then ! 1D
+         else if (KN(3, L) == LINK_1D) then ! 1D
             NCL = NCOLRG
-         else if (KN(3, L) == 2) then ! 2D
+         else if (KN(3, L) == LINK_2D) then ! 2D
             NCL = NCOLDN
-         else if (KN(3, L) == 3) then ! 1d2d internal
+         else if (KN(3, L) == LINK_1D2D_INTERNAL) then ! 1d2d internal
             NCL = NCOLNN
-         else if (KN(3, L) == 4) then ! 1d2d longitudinal
+         else if (KN(3, L) == LINK_1D2D_LONGITUDINAL) then ! 1d2d longitudinal
             NCL = NCOLRN
-         else if (KN(3, L) == 5) then ! 1d2d internal pipe streetinlet
+         else if (KN(3, L) == LINK_1D2D_STREETINLET) then ! 1d2d internal pipe streetinlet
             NCL = NCOLSP
-         else if (KN(3, L) == 6) then ! 1d mainbranch
+         else if (KN(3, L) == LINK_1D_MAINBRANCH) then ! 1d mainbranch
             NCL = KLSAM
-         else if (KN(3, L) == 7) then ! 1d2d internal pipe roofgutter
+         else if (KN(3, L) == LINK_1D2D_ROOF) then ! 1d2d internal pipe roofgutter
             NCL = NCOLSP + 5
          end if
       else

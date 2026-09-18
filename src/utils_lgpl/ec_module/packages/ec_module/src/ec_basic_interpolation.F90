@@ -794,7 +794,8 @@ contains
 
    !>    find triangle for interpolation with kdtree
    !>       will initialize kdtree and triangulation connectivity
-   subroutine findtri_kdtree(XP, YP, ZP, XS, YS, ZS, NS, NDIM, NRFIND, INTRI, JSLO, SLO, JATEK, jadum, ierror, ind, wf, dmiss, jsferic_input, jins, jasfer3D)
+   subroutine findtri_kdtree(XP, YP, ZP, XS, YS, ZS, NS, NDIM, NRFIND, INTRI, JSLO, SLO, JATEK, jadum, ierror, ind, wf, dmiss, jsferic, jins, jasfer3D)
+      use m_sferic, only: CARTESIAN
       implicit none
 
       real(kind=hp), intent(in) :: xp, yp !< node coordinates
@@ -832,9 +833,8 @@ contains
       real(kind=hp), external :: dcosphi
       real(kind=hp), intent(in) :: dmiss
       integer, intent(in) :: jins
-      integer, intent(in) :: jsferic_input
+      integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
-      integer :: jsferic
       real(kind=hp), parameter :: dfac = 1.000001d0 ! enlargement factor for pinpok3D
 
       ierror = 1
@@ -861,9 +861,6 @@ contains
          call aerr('LNtri(2,numedge)', ierr, 2 * numedge)
          LNtri = 0
 
-         !           dlaun is not spherical proof: set global jsferic for circumcenter
-         jsferic = 0
-
          do i = 1, numtri
             do ii = 1, 3
                !                 generate edge-triangle connectivity
@@ -884,19 +881,16 @@ contains
 
             !              compute triangle circumcenter
             if (jasfer3D == 1) then
-               call ave3D(3, xv, yv, xx(i), yy(i), jsferic_input, jasfer3D)
+               !jsferic = CARTESIAN, dlaun output is not spherical safe!
+               call ave3D(3, xv, yv, xx(i), yy(i), CARTESIAN, jasfer3D)
             else
                xx(i) = sum(xv(1:3)) / 3d0
                yy(i) = sum(yv(1:3)) / 3d0
             end if
          end do
 
-         !        restore jsferic
-         jsferic = jsferic_input
-
          call build_kdtree(treeglob, numtri, xx, yy, ierror, jsferic, dmiss)
 
-         !           deallocate
          deallocate (xx, yy)
 
          if (ierror /= 0) then
@@ -937,7 +931,7 @@ contains
 
 !        get a point in the cell
             if (jasfer3D == 1) then
-               call ave3D(3, xv, yv, xz, yz, jsferic, jasfer3D)
+               call ave3D(3, xv, yv, xz, yz, CARTESIAN, jasfer3D)
             else
                xz = sum(xv(1:3)) / 3d0
                yz = sum(yv(1:3)) / 3d0
@@ -960,10 +954,6 @@ contains
                NRFIND = i
                exit mainloop
             end if
-
-            !           dlaun is not spherical proof: set global jsferic
-            jsferic = 0
-
             !           proceed to next triangle, which is adjacent to the edge that is cut by the line from the current triangle to the query point
             inext = 0
 
@@ -982,9 +972,9 @@ contains
                k1 = edgeindx(1, iedge)
                k2 = edgeindx(2, iedge)
                if (jasfer3D == 0) then
-                  call CROSS(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
+                  call CROSS(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), JACROS, SL, SM, XCR, YCR, CRP, CARTESIAN, dmiss)
                else
-                  call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, jsferic_input, dmiss)
+                  call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, CARTESIAN, dmiss)
                end if
 
                !              use tolerance

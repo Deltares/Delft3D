@@ -62,16 +62,16 @@ contains
 !! (and files referenced therein).
 subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                & lundia, lsal, ltem, ltur, lsec, lfbedfrm, &
-               & julrefday, dtunit, nambnd, error)
+                  & julrefday, dtunit, nambnd, error, ag)
     use grid_dimens_module
     use sediment_basics_module, only: TRA_ADVDIFF
+      use morphology_data_module, only: NPARDEF
     use properties ! includes tree_structures
     use m_ini_noderel ! for node relation definitions
     !
     implicit none
     !
-    integer                   , parameter    :: NPARDEF = 20
-!
+
 ! Arguments
 !
     type(stmtype)               , intent(out) :: stm
@@ -89,6 +89,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     character(20) , dimension(:), intent(in)  :: nambnd
     character(*)                , intent(in)  :: dtunit
     logical                     , intent(out) :: error
+      real(fp), intent(in) :: ag
 !
 ! Local variables
 !
@@ -182,7 +183,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     ! 
     !  For 1D branches read the node relation definitions
     !
-    call ini_noderel(stm%nrd, stm%sedpar, stm%lsedtot)
+      call ini_noderel(lundia, stm%nrd, stm%sedpar, stm%lsedtot)
     !     
     ! Read morphology parameters
     !
@@ -194,7 +195,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     call rdmor  (lundia, error, filmor, lsec, stm%lsedtot, &
                & stm%lsedsus, nmaxus, nto, lfbedfrm, nambnd, julrefday, morfil_tree, &
                & stm%sedpar, stm%morpar, stm%fwfac, stm%morlyr, &
-               & griddim)
+                 & griddim, ag)
     if (error) return
     !
     ! Some other parameters are transport formula specific. Use the value
@@ -224,7 +225,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     call setpardef(ipardef, rpardef, NPARDEF, -4, 5, stm%morpar%epspar)
     !
     call rdtrafrm(lundia, error, filtrn, stm%lsedtot, &
-                & ipardef, rpardef, NPARDEF, stm%trapar, &
+                  & ipardef, rpardef, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
                 & stm%sedpar%sedtyp, filsed, stm%sedpar%sedblock, &
                 & griddim, julrefday, stm%sedpar%max_mud_sedtyp)

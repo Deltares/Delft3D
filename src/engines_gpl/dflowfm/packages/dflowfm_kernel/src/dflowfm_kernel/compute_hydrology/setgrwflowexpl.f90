@@ -97,7 +97,7 @@ contains
          do L = lnx1D + 1, Lnxi ! Horizontal Darcy flow in 2D only:
 
             !if (L =< Lnx1D) then
-            !   if (kcu(L) == 5) cycle                                       ! pipe type 1D2D connection
+            !   if (kcu(L) == LINK_1D2D_STREETINLET) cycle                                       ! pipe type 1D2D connection
             !   if ( prof1D(1,L) > 0 .and. prof1D(3,L) == 1) cycle           ! pipe profile
             !endif
 

@@ -27,32 +27,31 @@
 #include <string>
 #include <map>
 
-
 using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-/**
-  * @brief The class contains the time series and supplies interfaces to them.
-  */
-class stringContainer
-{
-	private:
-		map<string,string> container;
+        /**
+         * @brief The class contains the time series and supplies interfaces to them.
+         */
+        class stringContainer
+        {
+        private:
+            map<string, string> container;
 
-	public:
-		stringContainer();
-		~stringContainer() {};
+        public:
+            stringContainer();
+            ~stringContainer() {};
 
-		void addString(int a, int b, int c, string s);
-		void setString(int a, int b, int c, string s);
-		string getString(int a, int b, int c) const;
-};
+            void addString(int a, int b, int c, string s);
+            void setString(int a, int b, int c, string s);
+            string getString(int a, int b, int c) const;
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* STRINGCONTAINER_H */

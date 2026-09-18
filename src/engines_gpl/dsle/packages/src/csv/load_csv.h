@@ -5,8 +5,8 @@
 #ifndef CSV_H
 #  define CSV_H
 
-#  include <stdint.h>
 #  include <stddef.h>
+#  include <stdint.h>
 
 #  define CSV_OK (0)
 #  define CSV_ERROR (-1)
@@ -69,7 +69,6 @@ typedef struct s_csv_context {
   size_t num_columns;                            // Number of columns read from CSV (headers).
 } csv_context_t;
 
-
 int init_csv_context(csv_context_t *context);
 int def_csv_column(csv_context_t *context, char *label, csv_type_t value_type, csv_setter_t setter);
 int load_csv(csv_context_t *context, char *filepath);
@@ -79,7 +78,7 @@ int get_csv_row_data(csv_context_t *context, size_t row_index, void *struct_ptr)
 int get_csv_column_data(csv_context_t *context, char *label, void *array_ptr, size_t array_len);
 
 #  define CSV_SETTER(S, A, VA)                                                                     \
-    static int set_##A(void *ptr, csv_value_t value) {                                                    \
+    static int set_##A(void *ptr, csv_value_t value) {                                             \
       S *dataptr = (S *)ptr;                                                                       \
       dataptr->A = value.data.VA;                                                                  \
       return CSV_OK;                                                                               \

@@ -71,7 +71,7 @@ contains
       end do
 
       do ng = 1, ncgensg ! loop over general structures signals, sethu
-         zcdamn = zcgen(3 * (ng - 1) + 1) ! TODO: actually, the crest/sill_width should be included here: not all flow links may be open
+         zcdamn = zcgen(4 * (ng - 1) + 1) ! TODO: actually, the crest/sill_width should be included here: not all flow links may be open
          do n = L1cgensg(ng), L2cgensg(ng)
             k1 = kcgen(1, n)
             k2 = kcgen(2, n)

@@ -11,14 +11,15 @@ import Delft3D.ciUtilities.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
+    description = "Start pre-merge TestBench, unit tests, and container examples for pull requests."
 
     templates(
         TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     name = "Trigger"
@@ -31,12 +32,13 @@ object Trigger : BuildType({
     params {
         param("testbench_table", "ci/teamcity/Delft3D/vars/dimr_testbench_table.csv")
 
-        param("teamcity_user", "svc_dimr_trigger")
+        param("teamcity_user", DslContext.getParameter("teamcity_user"))
         password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
 
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
         param("product", "auto-select")
+        checkbox("copy_failed_cases", "false", description = "Copy failed Linux/Windows test cases to ZIP.", checked = "true", unchecked = "false")
     }
 
     steps {
@@ -84,6 +86,7 @@ object Trigger : BuildType({
                             <properties>
                                 <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_lnx64%"/>
+                                <property name="copy_failed_cases" value="%copy_failed_cases%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
@@ -120,6 +123,7 @@ object Trigger : BuildType({
                             <properties>
                                 <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_win64%"/>
+                                <property name="copy_failed_cases" value="%copy_failed_cases%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
@@ -270,42 +274,6 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
-
-        script {
-            name = "Start DVC diff report build"
-
-            conditions {
-                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                startsWith("teamcity.build.branch", "pull")
-            }
-
-            scriptContent = """
-                curl --fail --silent --show-error \
-                     -u %teamcity_user%:%teamcity_pass% \
-                     -X POST \
-                     -H "Content-Type: application/xml" \
-                     -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${DvcDiffComment.id}"/>
-                            <revisions>
-                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
-                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
-                                </revision>
-                            </revisions>
-                            <properties>
-                                <property name="product" value="%product%"/>
-                            </properties>
-                            <snapshot-dependencies>
-                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
-                            </snapshot-dependencies>
-                         </build>' \
-                     "%teamcity.serverUrl%/app/rest/buildQueue"
-                if (test $? -ne 0)
-                then
-                    echo Start dvc report through TC API failed.
-                    exit 1
-                fi
-            """.trimIndent()
-        }
     }
 
     if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
@@ -316,6 +284,9 @@ object Trigger : BuildType({
                 }
                 branchFilter = ""
                 triggerBuild = always()
+                buildParams {
+                    param("copy_failed_cases", "true")
+                }
                 param("revisionRuleBuildBranch", "<default>")
             }
             vcs {

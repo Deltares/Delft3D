@@ -47,7 +47,7 @@ contains
       use m_flow, only: hs, q1, au, kmx, hu, zws, lnkx, ndkx
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_flowparameters, only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
+      use m_flowparameters, only: jacstbnd, epshs, EPS10, flow_solver, FLOW_SOLVER_FM
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0
       use m_CrossSections, only: GetCSParsFlow
@@ -219,7 +219,7 @@ contains
                end do
             else ! 3D, max waterdepth
                do LL = 1, lnx
-                  if (abs(u1(LL)) < eps10) then
+                  if (abs(u1(LL)) < EPS10) then
                      cycle
                   end if
                   call getLbotLtop(LL, Lb, Lt)

@@ -46,6 +46,7 @@ contains
 
       use m_flowgeom, only: lnx, kcu, ln, ndx2d, dx, wu, lnxi, mx1dend, n1Dend, ndx1Db, ndx
       use precision, only: dp
+      use network_data, only: LINK_1D_BOUNDARY, LINK_1D2D_LONGITUDINAL, LINK_1D, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -60,7 +61,7 @@ contains
       real(kind=dp) :: hdx
 
       do L = 1, lnx ! for all 1d links, set area at neighbouring flow nodes to zero
-         if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (k1 > ndx2d) then
@@ -73,7 +74,7 @@ contains
       end do
 
       do L = 1, lnx ! for all 1d links, add half the flowlink length*width to the neighbouring flow nodes
-         if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then
             ! TODO: UNST-6592: consider excluding ghost links here and do an mpi_allreduce sum later
             hdx = 0.5_dp * dx(L)
             k1 = ln(1, L)

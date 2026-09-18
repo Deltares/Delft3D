@@ -14,3 +14,5 @@ target_link_libraries(${library_name} ${oss_dependencies})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/morphology)
+
+add_subdirectory(test)

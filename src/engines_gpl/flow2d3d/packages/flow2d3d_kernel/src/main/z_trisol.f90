@@ -65,6 +65,8 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use sync_flm
     use SyncRtcFlow
     use flow2d3d_timers
+    use m_fallve, only: fallve
+    use m_d3d4_flocculate, only: d3d4_flocculate
     !
     use globaldata
     !
@@ -482,7 +484,6 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: nrcmp
 
     integer                              , pointer :: rtcact
-    real(fp)      , dimension(:)         , pointer :: rhosol
     integer                              , pointer :: ifirst
     integer                              , pointer :: nubnd
     integer(pntrsize)                    , pointer :: ubnd
@@ -949,7 +950,6 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     tprofu              => gdp%gdr_i_ch%tprofu
     namcon              => gdp%gdr_i_ch%namcon
     rtcact              => gdp%gdrtc%rtcact
-    rhosol              => gdp%gdsedpar%rhosol
     ifirst              => gdp%gdtrisol%ifirst
     nubnd               => gdp%gdtrisol%nubnd
     ubnd                => gdp%gdtrisol%ubnd
@@ -1211,7 +1211,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
                   & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
                   & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-                  & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+                  & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
           call timer_stop(timer_dens, gdp)
           !
           ! z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
@@ -1825,9 +1825,9 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icx = nmaxddb
           icy = 1
           call timer_start(timer_bott3d, gdp)
-          call z_bott3d(nmmax     ,kmax      ,lsed      , &
-                      & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                      & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                      & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                      & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                       & d(dps)    ,r(gsqs)   ,r(guu)    , &
                       & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                       & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
@@ -2129,7 +2129,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
                   & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
                   & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-                  & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+                  & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
           call timer_stop(timer_dens, gdp)
           !
           ! Z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
@@ -2764,9 +2764,9 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icx = nmaxddb
           icy = 1
           call timer_start(timer_bott3d, gdp)
-          call z_bott3d(nmmax     ,kmax      ,lsed      , &
-                      & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                      & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                      & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                      & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                       & d(dps)    ,r(gsqs)   ,r(guu)    , &
                       & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                       & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &

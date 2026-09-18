@@ -12,9 +12,7 @@ if (UNIX)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
@@ -26,8 +24,7 @@ set(d_hydro_include ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Set include directories
 include_directories(${d_hydro_lib_include_path}
                     ${d_hydro_include}
-                    ${pthreads_path}
-                    ${expat_include_path})
+                    ${pthreads_path})
 
 # Gather source files
 file(GLOB header_files ${d_hydro_lib_include_path}/*.h)
@@ -45,6 +42,12 @@ endif(WIN32)
 if(UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_CONFIG_H")
 endif(UNIX)
+
+# `include/xmltree.h` has an `#include <expat.h>`. So `d_hydro_lib` exposes expat's public API.
+# This means `expat` must be linked as PUBLIC `d_hydro_lib`. Targets linking to `d_hydro_lib` will
+# then automatically link to `expat` and the include directories of `expat` are propagated as well.
+target_link_libraries(${library_name} PUBLIC expat::expat)
+
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 source_group(Include FILES  ${header_files})

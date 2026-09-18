@@ -12,6 +12,7 @@ LICENSE                 text
 *.md                    text diff=markdown
 *.csv                   text eol=crlf
 *.tab                   text
+*.drawio                text eol=lf
 # Serialisation:
 *.json                  text
 *.toml                  text
@@ -63,6 +64,11 @@ LICENSE                 text
 
 # Text files where line endings should be preserved
 *.patch    -text
+
+# Conan recipe files must have LF line endings on all platforms: all recipe and
+# exported source files are hashed into the recipe revision, so any line ending
+# difference between platforms would produce mismatched revisions and break lockfiles.
+conan/recipes/**        text eol=lf
 
 # Always check out windows specific files with CRLF
 *.bat                   text eol=crlf

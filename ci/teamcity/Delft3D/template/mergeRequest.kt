@@ -6,8 +6,8 @@ import Delft3D.step.*
 
 object TemplateMergeRequest : Template({
 
-    name = "Pull Request"
-    description = "Support running pipeline on pull requests."
+    name = "Pull request"
+    description = "Merge the target branch so the pipeline can run on a pull request."
 
     steps {
         mergeTargetBranch {}
@@ -20,7 +20,7 @@ object TemplateMergeRequest : Template({
                 authType = token {
                     token = "%github_deltares-service-account_access_token%"
                 }
-                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true
             }

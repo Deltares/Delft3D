@@ -101,11 +101,11 @@ class ComputedEtag(ETag):
 
         first_chunk = next(chunks, None)
         if first_chunk is None:
-            return hashlib.md5(b"").hexdigest()  # Empty file
+            return hashlib.md5(b"", usedforsecurity=False).hexdigest()  # Empty file
 
         if len(first_chunk) < part_size:
-            return hashlib.md5(first_chunk).hexdigest()  # Single part
+            return hashlib.md5(first_chunk, usedforsecurity=False).hexdigest()  # Single part
 
         chunks = itertools.chain(itertools.repeat(first_chunk, 1), chunks)
-        digests = list(hashlib.md5(chunk).digest() for chunk in chunks)
-        return hashlib.md5(b"".join(digests)).hexdigest() + f"-{len(digests)}"
+        digests = list(hashlib.md5(chunk, usedforsecurity=False).digest() for chunk in chunks)
+        return hashlib.md5(b"".join(digests), usedforsecurity=False).hexdigest() + f"-{len(digests)}"

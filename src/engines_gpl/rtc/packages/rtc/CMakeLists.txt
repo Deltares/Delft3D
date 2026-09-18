@@ -20,9 +20,10 @@ set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
 
 include_directories(${version_include_dir} ${rtc_version_header_path})
 
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${rtc_version_header_path}")
 add_executable(${executable_name} ${source_files}
-                                ${rc_version_file} 
                                 ${fortran_version_file})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 set_source_files_properties(
                     src/rtc_main.F90
@@ -50,7 +51,7 @@ set(oss_dependencies_general control_lib
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general})
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies}
     )
          
@@ -60,9 +61,9 @@ endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
+                        netCDF::netcdff)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 
@@ -71,4 +72,5 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/rtc)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
+install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 install(FILES ${default_files} DESTINATION share/rtc)

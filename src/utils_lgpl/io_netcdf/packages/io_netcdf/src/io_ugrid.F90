@@ -716,7 +716,7 @@ contains
 
 #ifdef HAVE_PROJ
       if (present(crs) .and. present(writeopts)) then
-         add_latlon = crs%epsg_code /= 4326 .and. iand(writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON
+         add_latlon = crs%epsg_code /= 4326 .and. iand(writeopts, UG_WRITE_LATLON) > 0
       else
          add_latlon = .false.
       end if
@@ -838,7 +838,7 @@ contains
 !! The mesh geometry is the required starting point for all variables/data defined ON that mesh.
 !! This function accepts the mesh geometry derived type as input, for the arrays-based function, see ug_write_mesh_arrays
 !! This only writes the mesh variables, not the actual data variables that are defined ON the mesh.
-   function ug_write_mesh_struct(ncid, meshids, networkids, crs, meshgeom, nnodeids, nbranchids, nnodelongnames, nbranchlongnames, nodeids, nodelongnames, network1dname) result(ierr)
+   function ug_write_mesh_struct(ncid, meshids, networkids, crs, meshgeom, nnodeids, nbranchids, nnodelongnames, nbranchlongnames, nodeids, nodelongnames, network1dname, writeopts) result(ierr)
       integer, intent(in) :: ncid !< NetCDF dataset id, should be already open and ready for writing.
       type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       type(t_ug_network), intent(inout) :: networkids !< Set of NetCDF-ids for all mesh geometry arrays.
@@ -849,6 +849,7 @@ contains
       character(len=ug_idsLen), optional, allocatable :: nnodeids(:), nbranchids(:), nodeids(:)
       character(len=ug_idsLongNamesLen), optional, allocatable :: nnodelongnames(:), nbranchlongnames(:), nodelongnames(:)
       character(len=*), optional :: network1dname
+      integer, optional, intent(in) :: writeopts !< integer option, currently only: UG_WRITE_LATLON
 
       ierr = ug_write_mesh_arrays(ncid, meshids, meshgeom%meshName, meshgeom%dim, UG_LOC_ALL2D, meshgeom%numNode, meshgeom%numEdge, meshgeom%numFace, meshgeom%maxNumFaceNodes, &
                                   meshgeom%edge_nodes, meshgeom%face_nodes, meshgeom%edge_faces, meshgeom%face_edges, meshgeom%face_links, meshgeom%nodex, meshgeom%nodey, & ! meshgeom%nodez, &
@@ -859,7 +860,7 @@ contains
                                   meshgeom%ngeopointx, meshgeom%ngeopointy, meshgeom%ngeometry, &
                                   meshgeom%nbranchorder, &
                                   nodeids, nodelongnames, meshgeom%nodebranchidx, meshgeom%nodeoffsets, meshgeom%edgebranchidx, meshgeom%edgeoffsets, &
-                                  zn=meshgeom%nodez, nsigma_opt=meshgeom%numtopsig)
+                                  zn=meshgeom%nodez, nsigma_opt=meshgeom%numtopsig, writeopts=writeopts)
 
    end function ug_write_mesh_struct
 
@@ -999,7 +1000,7 @@ contains
 
 #ifdef HAVE_PROJ
       if (present(writeopts)) then
-         add_latlon = crs%epsg_code /= 4326 .and. iand(writeopts, UG_WRITE_LATLON) == UG_WRITE_LATLON
+         add_latlon = crs%epsg_code /= 4326 .and. iand(writeopts, UG_WRITE_LATLON) > 0
       else
          add_latlon = .false.
       end if
@@ -1288,7 +1289,7 @@ contains
             end if
          end if
          ! always write edge nodes
-         if (meshids%varids(mid_edgenodes) /= -1) then
+         if (meshids%varids(mid_edgenodes) /= -1 .and. numedge > 0) then
             ierr = nf90_put_var(ncid, meshids%varids(mid_edgenodes), edge_nodes, count=(/2, numEdge/))
          end if
       end if
@@ -3967,6 +3968,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'node_id', prefix//'_node_id')
          ierr = nf90_def_var(ncid, prefix//'_node_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_node)/), meshids%varids(mid_node_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_node_ids), 'long_name', 'ID of mesh nodes')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_node_ids), 'cf_role', 'timeseries_id')
          !long_names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'node_long_name', prefix//'_node_long_name')
          ierr = nf90_def_var(ncid, prefix//'_node_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_node)/), meshids%varids(mid_node_longnames))
@@ -3976,6 +3978,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'edge_id', prefix//'_edge_id')
          ierr = nf90_def_var(ncid, prefix//'_edge_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_edge)/), meshids%varids(mid_edge_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_edge_ids), 'long_name', 'ID of mesh edges')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_edge_ids), 'cf_role', 'timeseries_id')
          !long names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'edge_long_name', prefix//'_edge_long_name')
          ierr = nf90_def_var(ncid, prefix//'_edge_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_edge)/), meshids%varids(mid_edge_longnames))
@@ -3985,6 +3988,7 @@ contains
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'face_id', prefix//'_face_id')
          ierr = nf90_def_var(ncid, prefix//'_face_id', nf90_char, (/meshids%dimids(mdim_idstring), meshids%dimids(mdim_face)/), meshids%varids(mid_face_ids))
          ierr = nf90_put_att(ncid, meshids%varids(mid_face_ids), 'long_name', 'ID of mesh faces')
+         ierr = nf90_put_att(ncid, meshids%varids(mid_face_ids), 'cf_role', 'timeseries_id')
          !long names
          ierr = nf90_put_att(ncid, meshids%varids(mid_meshtopo), 'face_long_name', prefix//'_face_long_name')
          ierr = nf90_def_var(ncid, prefix//'_face_long_name', nf90_char, (/meshids%dimids(mdim_longnamestring), meshids%dimids(mdim_face)/), meshids%varids(mid_face_longnames))

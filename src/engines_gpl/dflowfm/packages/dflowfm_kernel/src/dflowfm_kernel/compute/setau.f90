@@ -150,9 +150,9 @@ contains
       end do
 
       do ng = 1, ncgensg ! loop over generalstruc signals, sethu
-         zgaten = zcgen(3 * (ng - 1) + 2)
+         zgaten = zcgen(4 * (ng - 1) + 2)
          bupmin = 9.0e9_dp
-         ! wufac  = zcgen(3*(ng-1)+3)
+         ! wufac  = zcgen(4*(ng-1)+4)
          do n = L1cgensg(ng), L2cgensg(ng)
             LL = kcgen(3, n)
             if (hu(LL) > 0.0_dp) then
@@ -181,7 +181,7 @@ contains
             end if
          end do
          if (bupmin /= 9.0e9_dp) then
-            zcgen(3 * (ng - 1) + 2) = max(zcgen(3 * (ng - 1) + 2), bupmin)
+            zcgen(4 * (ng - 1) + 2) = max(zcgen(4 * (ng - 1) + 2), bupmin)
          end if
 
       end do

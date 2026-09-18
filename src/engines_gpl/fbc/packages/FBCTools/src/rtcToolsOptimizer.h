@@ -29,15 +29,15 @@
 namespace rtctools
 {
 
-/**
-  * @brief
-  */
-class rtcToolsOptimizer
-{
-	public:
-		virtual int optimize() = 0;
-		virtual void write(boost::filesystem::path filename) = 0;
-};
+    /**
+     * @brief
+     */
+    class rtcToolsOptimizer
+    {
+    public:
+        virtual int optimize() = 0;
+        virtual void write(boost::filesystem::path filename) = 0;
+    };
 
-}
-#endif //RTCTOOLSOPTIMIZER_H
+} // namespace rtctools
+#endif // RTCTOOLSOPTIMIZER_H

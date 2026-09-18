@@ -32,6 +32,7 @@ module initialize_conditions
     use m_attribute_array, only: change_attribute_array
     use m_array_manipulation, only: initialize_real_array, copy_real_array_elements, create_pointer_table
     use m_open_waq_files
+    use m_wet_dry_cells, only: get_minimum_volume
 
     private
     public :: initialize_all_conditions
@@ -79,6 +80,7 @@ contains
         integer(kind = int_wp), intent(inout) :: ierr          !< error count
 
         REAL(kind = real_wp) :: RDUMMY(1)
+        REAL(kind = real_wp) :: minimum_volume
         LOGICAL       LDUMMY, UPDATR
         CHARACTER(len = 200) FINAM
         INTEGER(kind = int_wp) :: SENDBUF(3)
@@ -86,7 +88,9 @@ contains
 
         INTEGER(kind = int_wp) :: IERRIO, new_lun
 
-        LOGICAL       propor
+        LOGICAL ::    masspm2
+        LOGICAL ::    initial_mass
+        LOGICAL ::    calculate_mass
         integer(kind = int_wp) :: ithandl = 0
 
         if (timon) call timstrt ("initialize_all_conditions", ithandl)
@@ -243,7 +247,8 @@ contains
                     j(ixpnt:), j(iknmr:), isegcol)
 
             ! initial conditions
-            propor = .false.
+            masspm2 = .false.
+            initial_mass = .false.
             call open_waq_files (file_unit_list(18), file_name_list(18), 18, 2, ierrd)
             ! look for the file type
             ig = scan (file_name_list(18), '.', back = .true.)
@@ -257,7 +262,9 @@ contains
                 if (ierrio /= 0) goto 50
                 !  at end of third line ...
                 if (finam(114:120) == 'mass/m2' .or. &
-                        finam(114:120) == 'MASS/M2') propor = .true.
+                        finam(114:120) == 'MASS/M2') masspm2 = .true.
+                if (finam(109:120) == 'initial_mass' .or. &
+                        finam(109:120) == 'INITIAL_MASS') initial_mass = .true.
                 ! should be nr. of substance
                 read (file_unit_list(18)) idummy
                 if (idummy /= num_substances_total) then
@@ -353,27 +360,46 @@ contains
 
             !         initial conditions coflowing substances
 
-            do cell_i = 0, nosss - 1
-                volume = a(ivol + cell_i)
-                do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
-                    a(imass + i1) = a(iconc + i1) * volume
+            if ( .not. initial_mass ) then
+                do cell_i = 0, nosss - 1
+                    volume = a(ivol + cell_i)
+                    do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
+                        a(imass + i1) = a(iconc + i1) * volume
+                    enddo
                 enddo
-            enddo
+            else
+                call get_minimum_volume( minimum_volume )
+                do cell_i = 0, nosss - 1
+                    volume = a(ivol + cell_i)
+                    do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
+                        a(imass + i1) = a(iconc + i1)
+                        a(iconc + i1) = a(iconc + i1) / merge( volume, minimum_volume, volume /= 0.0 )
+                    enddo
+                enddo
+            endif
 
             !         initial conditions passive substances
+            !         Note that for the passive substances the two
+            !         options mass/m2 given and not initial mass (i.e. concentration) given
+            !         have the same effect. The first has precedence, as it is more often used.
 
             if (num_substances_transported /= num_substances_total) then                         ! if there are bed-substances
+                calculate_mass = masspm2
+                if ( initial_mass ) then
+                    calculate_mass = .false.
+                endif
+
                 indx = index_in_array('SURF      ', buffer%create_strings_20_array(ipnam, num_spatial_parameters))
                 if (indx > 0) then                           ! and if SURF is found
                     call inact (nosss, num_substances_transported, num_substances_total, a(iconc:), a(imass:), &
-                            num_spatial_parameters, indx, a(iparm:), c(imnam + 113), propor, &
-                            .true.)
+                            num_spatial_parameters, indx, a(iparm:), c(imnam + 113), &
+                            calculate_mass, .true.)
                 else                                     ! routine inact is at end of this file !
                     indx = index_in_array('SURF      ', buffer%create_strings_20_array(isfna, num_spatial_time_fuctions))
                     if (indx > 0) then                        ! and if SURF is found
                         call inact (nosss, num_substances_transported, num_substances_total, a(iconc:), a(imass:), &
-                                num_spatial_time_fuctions, indx, a(isfun:), c(imnam + 113), propor, &
-                                .false.)
+                                num_spatial_time_fuctions, indx, a(isfun:), c(imnam + 113), &
+                                calculate_mass, .false.)
                     else
                         write (file_unit_list(19), '(a,a)')               & !   not found
                                 ' Error reading initial conditions: ', &

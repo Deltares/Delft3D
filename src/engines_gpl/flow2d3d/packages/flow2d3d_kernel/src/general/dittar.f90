@@ -41,6 +41,7 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    ,gdp)
     use globaldata
     use string_module
     use system_utils, only: exifil
+    use m_scannr, only: scannr
     !
     implicit none
     !

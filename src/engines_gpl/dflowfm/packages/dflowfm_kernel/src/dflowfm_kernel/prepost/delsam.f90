@@ -40,7 +40,7 @@ contains
 !>               -1: do not prompt for confirmation, deallocate arrays, do not make copy
    subroutine DELSAM(JACONFIRM) ! SPvdP: need promptless delsam in orthogonalisenet
       use precision, only: dp
-      use M_SAMPLES, only: nsmax, ns, xs, ys, zs, ipsam, savesam
+      use M_SAMPLES, only: nsmax, ns, xs, ys, zs, ipsam, savesam, mxsam, mysam
       use m_polygon, only: npl, xpl, ypl, zpl
       use m_missing, only: dmiss, jins
       use geometry_module, only: dbpinpol
@@ -68,6 +68,8 @@ contains
                deallocate (ipsam)
             end if
          end if
+         mxsam = 0
+         mysam = 0
          return
       end if
 
@@ -89,6 +91,8 @@ contains
             ipsam(i) = 0
          end do
          NS = 0
+         mxsam = 0
+         mysam = 0
          return
       end if
       ! Else: check in polygon

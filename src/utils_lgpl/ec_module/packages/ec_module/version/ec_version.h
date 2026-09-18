@@ -9,4 +9,3 @@
 #define REVISION_STR "0"
 
 #define VERSION_FULL MAJOR_STR "." MINOR_STR "." REVISION_STR "-" BUILD_NR
-

@@ -62,7 +62,6 @@ set dflow2d3ddir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 set rtcexedir=%D3D_HOME%\bin
 set rtcdefaultdir=%sharedir%\rtc\
-set libdir=%D3D_HOME%\lib
 
 
 if  %debugLevel% EQU 0 (
@@ -83,7 +82,7 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
+set PATH=%dflow2d3ddir%;%sharedir%
 echo executing in separate window: "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
               start "Delft3D-FLOW" "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 

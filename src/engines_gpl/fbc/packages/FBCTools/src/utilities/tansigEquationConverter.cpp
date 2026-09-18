@@ -28,44 +28,40 @@
 using namespace rtctools;
 using namespace rtctools::utilities;
 
-tansigEquationConverter::tansigEquationConverter()
-{
-}
+tansigEquationConverter::tansigEquationConverter() {}
 
-tansigEquationConverter::~tansigEquationConverter(void)
-{
-}
+tansigEquationConverter::~tansigEquationConverter(void) {}
 
 double tansigEquationConverter::convert(double x)
 {
-	double y = 2.0/(1.0+exp(-2.0*x))-1.0;
+    double y = 2.0 / (1.0 + exp(-2.0 * x)) - 1.0;
     return y;
 }
 
 double tansigEquationConverter::convertDer(double x)
 {
-	// derivative of y = 2.0/(1.0+exp(-2.0*x))-1.0;
-    double dy = 4.0*exp(-2.0*x)/pow(1.0+exp(-2.0*x),2.0);
+    // derivative of y = 2.0/(1.0+exp(-2.0*x))-1.0;
+    double dy = 4.0 * exp(-2.0 * x) / pow(1.0 + exp(-2.0 * x), 2.0);
     return dy;
 }
 
 double tansigEquationConverter::reverseConvert(double y)
 {
-    double x = -log(2.0/(y+1.0)-1.0)/2.0;
+    double x = -log(2.0 / (y + 1.0) - 1.0) / 2.0;
     return x;
 }
 
 double tansigEquationConverter::reverseConvertDer(double yVal)
 {
-	// TODO
+    // TODO
 
-	return 0.0;
+    return 0.0;
 }
 
 converter* tansigEquationConverter::getIntegrator()
 {
-	/**
-	 * @todo implement converter* sigmoidLogisticEquationConverter::getIntegrator()
-	 */
+    /**
+     * @todo implement converter* sigmoidLogisticEquationConverter::getIntegrator()
+     */
     return 0;
 }

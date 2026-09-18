@@ -1,0 +1,13 @@
+{
+    "name": "DIMR: {{TEST_CASE_NAME}}",
+    "type": "cppvsdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}\\install_{{BUILD_CONFIG}}\\bin\\dimr.exe",
+    "args": [
+        "{{DIMR_CONFIG_FILE}}"
+    ],
+    "cwd": "${workspaceFolder}\\test\\deltares_testbench\\data\\cases\\{{TEST_CASE_PATH}}\\input_work",
+    "stopAtEntry": false,
+    "console": "integratedTerminal",
+    "environment": []
+}

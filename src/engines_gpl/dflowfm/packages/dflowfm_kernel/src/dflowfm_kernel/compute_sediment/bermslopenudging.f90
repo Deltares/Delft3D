@@ -43,14 +43,16 @@ contains
       use m_fm_erosed, only: bermslopegamma, bermslopedepth, bermslopebed, bermslopesus, e_dzdn, e_dzdt, bermslopefac, bermslope, morfac, lsedtot, bed, has_bedload, e_sbcn, e_sbct, e_sbwn, e_sbwt, sus, lsed, e_ssn, e_sswn, e_sswt
       use m_waveconst, only: no_waves
       use m_flow, only: hu, epshu
-      use m_flowgeom, only: lnx, ln, wu_mor
+      use m_flowgeom, only: lnx, ln, wu_mor, snu, csu
       use m_flowparameters, only: jawave
+      use m_waves, only: phiwav
 
       logical, intent(out) :: error
 
       integer :: L, k1, k2
       integer :: lsd
       real(kind=dp) :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
+      real(kind=dp) :: cosw, sinw, coswu
 
       error = .true.
       !
@@ -108,7 +110,15 @@ contains
          ! Transports positive outgoing
          !
          slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1.0e-8_dp)
-         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1.0_dp)
+         if (jawave /= NO_WAVES) then
+            cosw = 0.5_dp * (cosd(phiwav(k1)) + cosd(phiwav(k2)))
+            sinw = 0.5_dp * (sind(phiwav(k1)) + sind(phiwav(k2)))
+            coswu = cosw * csu(L) + sinw * snu(L)
+            slpfac = bermslopefac * (-e_dzdn(L) + bermslope * coswu) / max(morfac, 1.0_dp)
+         else
+            ! we have no good substitute, so old approach
+            slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1.0_dp)
+         end if
          do lsd = 1, lsedtot
             !
             ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward

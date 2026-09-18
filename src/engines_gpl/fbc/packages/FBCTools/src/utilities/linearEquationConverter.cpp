@@ -21,15 +21,13 @@
  * @date 2010
  */
 
-
 #include "linearEquationConverter.h"
 
 #include <cmath>
 #include <algorithm>
 
-
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 
 using namespace rtctools;
@@ -37,28 +35,26 @@ using namespace rtctools::utilities;
 
 linearEquationConverter::linearEquationConverter(double a, double b)
 {
-	this->a = a;
-	this->b = b;
+    this->a = a;
+    this->b = b;
 }
 
-linearEquationConverter::~linearEquationConverter(void)
-{
-}
+linearEquationConverter::~linearEquationConverter(void) {}
 
 double linearEquationConverter::convert(double x)
 {
-	double y;
+    double y;
 
-	y = a*x+b;
+    y = a * x + b;
 
     return y;
 }
 
 double linearEquationConverter::convertDer(double x)
 {
-	double dy;
+    double dy;
 
-	// derivative of y = a*x+b;
+    // derivative of y = a*x+b;
     dy = a;
 
     return dy;
@@ -66,22 +62,22 @@ double linearEquationConverter::convertDer(double x)
 
 double linearEquationConverter::reverseConvert(double y)
 {
-	double x;
+    double x;
 
-    x = (y-b)/a;
+    x = (y - b) / a;
 
     return x;
 }
 
 double linearEquationConverter::reverseConvertDer(double yVal)
 {
-	// TODO
+    // TODO
 
-	return 0.0;
+    return 0.0;
 }
 
 converter* linearEquationConverter::getIntegrator()
 {
-	// TODO
+    // TODO
     return 0;
 }

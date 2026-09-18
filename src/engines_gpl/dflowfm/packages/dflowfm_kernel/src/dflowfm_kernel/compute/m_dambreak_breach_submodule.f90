@@ -334,9 +334,10 @@ contains
 
    !> Calculate breach growth using tables
    subroutine calculate_breach_growth_using_tables(dambreak, time, time_step)
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, ec_undef_int
       use m_flowtimes, only: irefdate, tunit, tzone
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      use unstruc_channel_flow, only: network
       import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
@@ -345,18 +346,29 @@ contains
 
       logical :: success !< success flag
 
-      if (time > dambreak%t0) then
-         !Time in the tim file is relative to start time t0
-         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item, irefdate, tzone, tunit, &
-                                                  time - dambreak%t0, dambreak%crest_level_and_width)
-         if (success) then
-            dambreak%crest_level = dambreak%crest_level_and_width(1)
-            dambreak%width = dambreak%crest_level_and_width(2)
-         else
-            write (msgbuf, '(3a)') 'Error retrieving crest level and width for dambreak "', trim(dambreak%name), &
-               '". Please check timeseries input file.'
-            call SetMessage(LEVEL_ERROR, msgbuf)
+      if (dambreak%ec_item_legacy /= ec_undef_int) then
+         ! Legacy .tim file with 3 columns: time, crest level, width
+         if (time > dambreak%t0) then
+            !Time in the tim file is relative to start time t0
+            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item_legacy, irefdate, tzone, tunit, &
+                                                     time - dambreak%t0, dambreak%crest_level_and_width)
+            if (success) then
+               dambreak%crest_level = dambreak%crest_level_and_width(1)
+               dambreak%width = dambreak%crest_level_and_width(2)
+            else
+               write (msgbuf, '(3a)') 'Error retrieving crest level and width for dambreak "', trim(dambreak%name), &
+                  '". Please check timeseries input file.'
+               call SetMessage(LEVEL_ERROR, msgbuf)
+            end if
          end if
+
+      else
+         ! Standard .bc file with separate data for crest level and width, already read in update_network_data().
+         ! NOTE: the %..._ini fields contain the actual data at the *current* time.
+         associate (dambreak_sts => network%sts%struct(dambreak%index_structure)%dambreak)
+            dambreak%crest_level = dambreak_sts%crest_level_ini
+            dambreak%width = dambreak_sts%breach_width_ini
+         end associate
       end if
 
       dambreak%breach_width_derivative = (dambreak%width - dambreak%breach_width) / time_step
@@ -1175,7 +1187,7 @@ contains
       use m_dambreak, only: BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_addtimespacerelation
       use messagehandling, only: msgbuf, err_flush
-      use timespace_parameters, only: UNIFORM, SPACEANDTIME
+      use timespace_parameters, only: UNIFORM, SPACEANDTIME, OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: filename !< the name of the time series file
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
@@ -1193,7 +1205,7 @@ contains
 
       if (index(trim(filename)//'|', '.tim|') > 0) then
          success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, filename, UNIFORM, &
-                                           SPACEANDTIME, 'O', targetIndex=1, tgt_item1=dambreak%ec_item)
+                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item_legacy)
          if (.not. success) then
             write (msgbuf, '(5a)') 'Cannot process a tim file for "', QID, '" for the dambreak "', trim(dambreak%name), '".'
             call err_flush()
@@ -1211,6 +1223,7 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use network_data, only: xk, yk
+      use network_data, only: LINK_1D2D_INTERNAL
 
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
       real(kind=dp), intent(in) :: start_location_x !< x coordinate of the breach start location
@@ -1252,7 +1265,7 @@ contains
       ! compute the normal projections of the start and endpoints of the flow links
       do k = 1, dambreak%number_of_links
          link = abs(dambreak%link_indices(k))
-         if (kcu(link) == 3) then ! 1d2d flow link
+         if (kcu(link) == LINK_1D2D_INTERNAL) then ! 1d2d flow link
             dambreak%link_effective_width(k) = wu(link)
          else
             point = lftopol(k + dambreak%link_map_offset)
@@ -1269,4 +1282,36 @@ contains
       end do
 
    end subroutine calculate_start_link_and_widths
+
+   !> Remove 1D links and 1D2D longitudinal links from the dambreak polygon list.
+   !! This function filters out flow links that are not suitable for dambreak calculations
+   !! by examining the flow link type (kcu). Only 2D flow links and 1D2D lateral links
+   !! are retained in the list.
+   !!
+   !! Flow link types filtered out:
+   !! - kcu = 1: 1D flow links
+   !! - kcu = 4: 1D2D longitudinal flow links
+   !!
+   !! The function compacts the kegen array by removing unwanted links and updates
+   !! numgen to reflect the new count of valid links.
+   pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
+      use m_flowgeom, only: kcu
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      integer, intent(inout) :: numgen !< number of flow links in kegen
+      integer, dimension(:), intent(inout) :: kegen !< array with the link indices
+      integer :: i, cell, numcells
+      numcells = 0
+      do i = 1, numgen
+         cell = abs(kegen(i))
+         ! remove 1d links and 1d2d longitudinal links from the dambreak polygon list.
+         select case (abs(kcu(cell)))
+         case(LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
+         case default
+            numcells = numcells + 1
+            kegen(numcells) = kegen(i)
+         end select
+      end do
+      numgen = numcells
+   end subroutine remove_1d_links_from_dambreak_polygon_list
+
 end submodule m_dambreak_breach_submodule

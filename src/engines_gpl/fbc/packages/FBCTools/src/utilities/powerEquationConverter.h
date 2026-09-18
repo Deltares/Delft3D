@@ -28,30 +28,30 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class powerEquationConverter : public converter
-{
-private:
-	double a;
-	double b;
-	double c;
+        class powerEquationConverter : public converter
+        {
+        private:
+            double a;
+            double b;
+            double c;
 
-public:
-	powerEquationConverter(double a, double b, double c);
-	~powerEquationConverter(void);
+        public:
+            powerEquationConverter(double a, double b, double c);
+            ~powerEquationConverter(void);
 
-	void checkProperty(converter::propertyEnum prop) {};
+            void checkProperty(converter::propertyEnum prop) {};
 
-	double convert(double xVal);
-	double convertDer(double xVal);
-	double reverseConvert(double yVal);
-	double reverseConvertDer(double yVal);
-	converter* getIntegrator();
-};
+            double convert(double xVal);
+            double convertDer(double xVal);
+            double reverseConvert(double yVal);
+            double reverseConvertDer(double yVal);
+            converter* getIntegrator();
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
-#endif //POWER_EQUATION_CONVERTER_H
+#endif // POWER_EQUATION_CONVERTER_H

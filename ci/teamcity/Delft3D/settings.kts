@@ -11,23 +11,25 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.07"
+version = "2026.1"
 
 project {
 
-    description = "contact: BlackOps (black-ops@deltares.nl)"
+    description = "Build, test, collect, and publish Delft3D. Contact: BlackOps (black-ops@deltares.nl)."
 
     params {
         param("delft3d-user", DslContext.getParameter("delft3d-user"))
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
 
         param("nexus_username", DslContext.getParameter("nexus_username"))
         password("nexus_password", DslContext.getParameter("nexus_password"))
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
-
+        param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
+        password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@internal-artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
@@ -42,27 +44,33 @@ project {
     template(TemplateFailureCondition)
     template(TemplateValidationDocumentation)
     template(TemplateFunctionalityDocumentation)
-    template(TemplateDownloadFromS3)
+    template(TemplateDownloadFromDVC)
     template(TemplateDockerRegistry)
+    template(TemplateBuildConcurrency)
 
     subProject {
         id("Linux")
         name = "Linux"
+        description = "Compile, unit tests, TestBench, and containers on Linux."
         subProject {
             id("BuildContainers")
-            name = "Build-environment Containers"
+            name = "Environment containers"
+            description = "Linux images used to compile and run CI Python."
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {
             id("SmokeTestsContainerH7")
-            name = "Smoke tests container on H7"
+            name = "H7 container smoke tests"
+            description = "Submit and collect container smoke tests on H7."
             buildType(LinuxSubmitH7ContainerSmokeTest)
             buildType(LinuxReceiveH7ContainerSmokeTest)
             buildTypesOrder = listOf(
@@ -70,6 +78,7 @@ project {
                 LinuxReceiveH7ContainerSmokeTest,
             )
         }        
+        buildType(LinuxConanPackages)
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
@@ -78,6 +87,7 @@ project {
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
+            LinuxConanPackages,
             LinuxBuild,
             LinuxBuild2D3DSP,
             LinuxCollect,
@@ -91,9 +101,12 @@ project {
     subProject {
         id("Windows")
         name = "Windows"
+        description = "Compile, unit tests, and TestBench on Windows."
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsCollectEnvironment)
+        buildType(WindowsConanPackages)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -101,8 +114,10 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
+            WindowsCollectEnvironment,
+            WindowsConanPackages,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
@@ -115,6 +130,7 @@ project {
     subProject {
         id("Documentation")
         name = "Documentation"
+        description = "Functionality and validation PDF reports."
 
         buildType(ValidationDocumentMatrix)
         buildType(FunctionalityDocumentMatrix)
@@ -128,19 +144,33 @@ project {
         id("CiUtilities")
         name = "CI utilities"
         description = """
-            Build and test the utilities used in the Delft3D TeamCity project.
+            Checks: Python CI tools, TestBench checks, Fortran styler, Shell checks.
+            Scans: Sigrid scan, Nexus IQ (product / TestBench / Python CI tools).
+            Delivery: copy DIMRset examples to the P-drive.
         """.trimIndent()
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
         buildType(TestFortranStyler)
-        buildType(CopyExamples)
-        buildType(SigCi)
         buildType(RunBashBatonUtilities)
-        buildType(DvcDiffComment)
+        buildType(SigCi)
+        buildType(LifecycleScanMain)
+        buildType(LifecycleScanTestBench)
+        buildType(LifecycleScanCiTools)
+        buildType(CopyExamples)
+        buildType(TestbenchTimeoutReport)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment
+            TestPythonCiTools,
+            TestBenchValidation,
+            TestFortranStyler,
+            RunBashBatonUtilities,
+            SigCi,
+            LifecycleScanMain,
+            LifecycleScanTestBench,
+            LifecycleScanCiTools,
+            CopyExamples,
+            TestbenchTimeoutReport,
         )
     }
 
@@ -170,21 +200,10 @@ project {
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
-            name = "Docker Registry Delft3d"
+            name = "Delft3D Docker registry"
             url = "https://containers.deltares.nl/"
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
-        }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
-                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
         }
         feature {
             type = "OAuthProvider"

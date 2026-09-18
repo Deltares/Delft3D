@@ -6,22 +6,22 @@
 typedef struct dimr_logger dimr_logger;
 struct dimr_logger
 {
-	const char        * workingDir;
-	const char        * outputFile;
-	netcdf_references * netcdfReferences;
+    const char* workingDir;
+    const char* outputFile;
+    netcdf_references* netcdfReferences;
 
-	// using std::string in entire dimr source code can simplify this function, 
-	// but also others
-	std::string GetLoggerFilename(const char * dimrWorkingDirectory, const char * dirSeparator)
-	{
-		char* loggerFileName = new char[MAXSTRING];
-		strcpy(loggerFileName, dimrWorkingDirectory);
-		strcat(loggerFileName, dirSeparator);
-		strcat(loggerFileName, workingDir);
-		strcat(loggerFileName, dirSeparator);
-		strcat(loggerFileName, outputFile);
-		std::string stringFileName(loggerFileName);
-		delete[] loggerFileName;
-		return stringFileName;
-	}
+    // using std::string in entire dimr source code can simplify this function,
+    // but also others
+    std::string GetLoggerFilename(const char* dimrWorkingDirectory, const char* dirSeparator)
+    {
+        char* loggerFileName = new char[MAXSTRING];
+        strcpy(loggerFileName, dimrWorkingDirectory);
+        strcat(loggerFileName, dirSeparator);
+        strcat(loggerFileName, workingDir);
+        strcat(loggerFileName, dirSeparator);
+        strcat(loggerFileName, outputFile);
+        std::string stringFileName(loggerFileName);
+        delete[] loggerFileName;
+        return stringFileName;
+    }
 };

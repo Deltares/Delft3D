@@ -45,6 +45,8 @@ contains
       use m_missing
       use geometry_module, only: getdx, getdy
       use gridoperations
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL
+      
       implicit none
 
       integer :: n, LL
@@ -141,7 +143,7 @@ contains
          L = linnrs(LL)
          La = abs(L)
 
-         if (kcu(La) /= 1 .and. kcu(La) /= 4) then
+         if (kcu(La) /= LINK_1D .and. kcu(La) /= LINK_1D2D_LONGITUDINAL) then
             cycle ! Only use real 1D links in the flow node contour, no 1d2d links
          end if
 

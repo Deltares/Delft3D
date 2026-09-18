@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: clock.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/clock.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/clock.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  Clock Class - DEFINITIONS
@@ -38,29 +40,26 @@
 
 #include <stdio.h>
 #if HAVE_CONFIG_H
-#   include <sys/time.h>
+    #include <sys/time.h>
 #else
-#   include <windows.h>
+    #include <windows.h>
 #endif
 
+class Clock
+{
+public:
+    Clock();
+    ~Clock();
 
-class Clock {
-    public:
-        Clock ();
-        ~Clock ();
+    typedef unsigned long long Timestamp;
 
-        typedef unsigned long long Timestamp;
+    char* Now(char*);        // current epoch time as string
+    Timestamp Epoch(void);   // current epoch time (in usec)
+    Timestamp Start(void);   // epoch time of clock start
+    Timestamp Elapsed(void); // elapsed time since start
+    void Set(Timestamp);     // set clock start to specific time
+    void Reset(void);        // reset clock start time to now
 
-        char *      Now     (char *);       // current epoch time as string
-        Timestamp   Epoch   (void);         // current epoch time (in usec)
-        Timestamp   Start   (void);         // epoch time of clock start
-        Timestamp   Elapsed (void);         // elapsed time since start
-        void        Set     (Timestamp);    // set clock start to specific time
-        void        Reset   (void);         // reset clock start time to now
-
-    private:
-        Timestamp   starttime;              // for timer
-
-    };
-
-
+private:
+    Timestamp starttime; // for timer
+};

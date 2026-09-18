@@ -19,8 +19,7 @@ if [%3] EQU [] (
 
 rem Set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%\..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
 rem set the map-file, hyd-file and number of layers
 set mapfile=%1

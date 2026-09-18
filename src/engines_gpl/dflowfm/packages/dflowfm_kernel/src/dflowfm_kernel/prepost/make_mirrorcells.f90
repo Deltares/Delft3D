@@ -46,6 +46,7 @@ contains
       use precision, only: dp
       use network_data, only: numL, kn, lne, xk, yk
       use m_is_1d_boundary_candidate, only: is_1d_boundary_candidate
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       integer, intent(in) :: Nx !< number of links
       real(kind=dp), dimension(Nx), intent(out) :: xe, ye !< inner cell center coordinates
@@ -71,7 +72,7 @@ contains
 !         continue
 !      end if
 
-         if (kn(3, L) == 2 .and. & ! 2D links
+         if (kn(3, L) == LINK_2D .and. & ! 2D links
              (lne(1, L) == 0 .and. lne(2, L) /= 0 .or. & ! boundary links
               lne(1, L) /= 0 .and. lne(2, L) == 0)) then
             ind = lne(1, L) + lne(2, L) ! i.e., the nonzero cell nr.
@@ -83,7 +84,7 @@ contains
             xyen(2, L) = yce2
             kce(L) = 1
             ke(L) = ind
-         else if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D links
+         else if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then ! 1D links
             k1 = k3
             k2 = k4
             if (is_1d_boundary_candidate(L, 1)) then
