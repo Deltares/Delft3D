@@ -120,6 +120,21 @@ TEST_GET_VAR(water_volume_to_lake, config.locks[0].to_lake_volumes.volumes)
 TEST_GET_VAR(water_volume_to_sea, config.locks[0].to_sea_volumes.volumes)
 TEST_GET_VAR(salinity_sea, config.locks[0].parameters3d.salinity_sea)
 TEST_GET_VAR(salinity_lake, config.locks[0].parameters3d.salinity_lake)
+TEST_GET_VAR(head_lake, &config.locks[0].parameters.head_lake)
+TEST_GET_VAR(head_sea, &config.locks[0].parameters.head_sea)
+TEST_GET_VAR(temperature_lake, &config.locks[0].parameters.temperature_lake)
+TEST_GET_VAR(temperature_sea, &config.locks[0].parameters.temperature_sea)
+
+static void test_get_var__qualified_scalar_boundary_conditions(void) {
+  test_get_var_parameterized("dsle_boundary_condition/test_sealock/head_lake",
+                             &config.locks[0].parameters.head_lake);
+  test_get_var_parameterized("dsle_boundary_condition/test_sealock/head_sea",
+                             &config.locks[0].parameters.head_sea);
+  test_get_var_parameterized("dsle_boundary_condition/test_sealock/temperature_lake",
+                             &config.locks[0].parameters.temperature_lake);
+  test_get_var_parameterized("dsle_boundary_condition/test_sealock/temperature_sea",
+                             &config.locks[0].parameters.temperature_sea);
+}
 
 static void test_get_var__unknown_var_name(void) {
   double *result;
@@ -333,6 +348,11 @@ int main(void) {
   RUN_TEST(test_get_var__water_volume_to_sea);
   RUN_TEST(test_get_var__salinity_sea);
   RUN_TEST(test_get_var__salinity_lake);
+  RUN_TEST(test_get_var__head_lake);
+  RUN_TEST(test_get_var__head_sea);
+  RUN_TEST(test_get_var__temperature_lake);
+  RUN_TEST(test_get_var__temperature_sea);
+  RUN_TEST(test_get_var__qualified_scalar_boundary_conditions);
   RUN_TEST(test_get_var__unknown_var_name);
 
   RUN_TEST(test_set_var__constituent_lake_named);

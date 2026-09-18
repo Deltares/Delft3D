@@ -42,6 +42,7 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
     use globaldata
     use string_module
     use system_utils, only: exifil
+    use m_scannr, only: scannr
     !
     implicit none
     !

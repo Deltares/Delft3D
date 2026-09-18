@@ -11,17 +11,17 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-    std::string csumoSettingsFileName;
-    std::string preciceConfigFileName;
+    std::string csumo_settings_file_name;
+    std::string precice_config_file_name;
 
     boost::program_options::options_description description("Options");
     // clang-format off
     description.add_options()
         ("help,h",
             "Show this help message")
-        ("csumo-settings-file,c", boost::program_options::value<std::string>(&csumoSettingsFileName)->required(),
+        ("csumo-settings-file,c", boost::program_options::value<std::string>(&csumo_settings_file_name)->required(),
             "Path and filename of C-SUMO settings xml file")
-        ("precice-config-file,p", boost::program_options::value<std::string>(&preciceConfigFileName)->default_value("precice_config.xml"),
+        ("precice-config-file,p", boost::program_options::value<std::string>(&precice_config_file_name)->default_value("precice_config.xml"),
             "Path and filename of preCICE adapter configuration file");
     // clang-format on 
 
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
     try
     {
-        return pre_c_sumo::run(csumoSettingsFileName, preciceConfigFileName);
+        return pre_c_sumo::run(csumo_settings_file_name, precice_config_file_name);
     }
     catch (const std::runtime_error& e)
     {

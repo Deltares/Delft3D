@@ -26,6 +26,11 @@ RUN $installer = 'C:\vs_Community.exe'; \
         if ($registeredPath -ne $installPath) { \
             throw ('Visual Studio registered at {0}, expected {1}' -f $registeredPath, $installPath) \
         } \
+        $installationVersion = & $vswhere -latest -products * -property installationVersion; \
+        if ($installationVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') { \
+            throw ('Visual Studio reported an invalid installation version: {0}' -f $installationVersion) \
+        } \
+        setx /M CMAKE_GENERATOR_INSTANCE ($installPath + ',version=' + $installationVersion); \
     } finally { \
         Remove-Item -Force $installer -ErrorAction SilentlyContinue \
     }

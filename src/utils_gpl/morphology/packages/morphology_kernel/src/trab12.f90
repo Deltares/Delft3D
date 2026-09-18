@@ -24,10 +24,11 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
 module m_trab12
    implicit none
+   private
+   public trab12
 
 contains
 
@@ -37,13 +38,9 @@ contains
                    & dir, d50, npar, par, sbotx, &
                    & sboty, ssusx, ssusy, ubot, vonkar, &
                    & ubot_from_com)
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use mathconsts
-      !
-      implicit none
 !
 ! Arguments
 !

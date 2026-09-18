@@ -73,9 +73,7 @@ if(NOT TARGET dhydrology_kernel)
 endif()
 
 # PreCICE
-if(NOT TARGET precice::precice)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice)
-endif()
+# precice::precice comes from the Conan package, see src/cmake/CMakeLists.txt.
 
 # precicef (preCICE fortran bindings)
 if (NOT TARGET precicef)

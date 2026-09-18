@@ -45,7 +45,7 @@ contains
 
    subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
       use precision, only: dp
-      use m_flow, only: kmxx, jafilter, u0, zws, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
+      use m_flow, only: kmxx, jafilter, u0, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
       use m_flowgeom, only: acl, ln, lnxi, iadv, yu, dxi, iadv_subgrid_weir, iadv_rajaratnam_weir, iadv_villemonte_weir, bob, teta
       use m_flowtimes, only: dti
       use m_waves, only: ustokes
@@ -53,7 +53,7 @@ contains
       use m_filter_data, only: ustar, itype
       implicit none
       integer :: Lb, Lt, kxL, LL
-      real(kind=dp) :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
+      real(kind=dp) :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1)
 
       integer :: L, k, k1, k2
       real(kind=dp) :: dzLw, vstress, adv, adv1, tt, ustv, st2, agp, dzurho
@@ -84,13 +84,6 @@ contains
       ac1 = acL(LL)
       ac2 = 1.0_dp - ac1
 
-      do L = Lb, 0 ! Lt
-         k = L - Lb + 1
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
-      end do
-
       jav3 = 0
       if (javau == 3) then
          jav3 = 1
@@ -113,6 +106,9 @@ contains
          ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 
          ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
+         
+         adv = 0.0_dp
+         adv1 = 0.0_dp
 
          if (jav3 == 1) then ! vertical advection upwind implicit
             if (womegu(k) > 0.0_dp) then
@@ -135,12 +131,10 @@ contains
 
             ! adv = 0d0 ; adv1 = 0d0   ! noslip test
 
-            !tt     = vstress/dzu(k+1) + adv1/dzv(k+1)
             tt = (vstress + adv1) / dzu(k + 1)
             b(k + 1) = b(k + 1) + tt
             a(k + 1) = a(k + 1) - tt
 
-            !tt     = vstress/dzu(k  ) + adv/dzv(k  )
             tt = (vstress + adv) / dzu(k)
             b(k) = b(k) + tt
             c(k) = c(k) - tt
@@ -249,7 +243,7 @@ contains
          end if
 
          if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flow_without_waves) then ! ustokes correction in vertical viscosity
-            ustv = vstress * (ustokes(L) - ustokes(L - 1))
+            ustv = vstress * (ustokes(L+1) - ustokes(L))
             d(k + 1) = d(k + 1) + ustv / dzu(k + 1)
             d(k) = d(k) - ustv / dzu(k)
          end if
@@ -258,13 +252,13 @@ contains
 
       agp = ag
       if (jahelmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
-         st2 = sin(dg2rd * yu(L))**2
+         st2 = sin(dg2rd * yu(LL))**2
          agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
       end if
       gdxi = agp * dxi(LL)
 
       if (jarhoxu >= 2) then
-         gdxi = gdxi * rhomean / rhou(L)
+         gdxi = gdxi * rhomean / rhou(L) ! top layer rho!
       end if
 
       k1 = ln(1, LL)

@@ -1,6 +1,6 @@
 subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & icx       ,icy       ,lstsci    ,lsts      ,lsal      , &
-                & ltem      ,lsed      ,saleqs    ,temeqs    ,rhosol    , &
+                & ltem      ,lsed      ,saleqs    ,temeqs    , &
                 & kcs       ,kfu       ,s0        ,dps       ,hu        , &
                 & thick     ,sig       ,guu       ,gvu       ,r0        , &
                 & dicuv     ,dpu       ,dpdksi    ,dsdksi    ,dtdksi    , &
@@ -82,6 +82,7 @@ subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp)               , pointer :: rhow
     real(fp)               , pointer :: ag
     integer                , pointer :: idensform
+    real(fp)     , dimension(:)          , pointer :: rhosol
 !
 ! Global variables
 !
@@ -121,7 +122,6 @@ subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r0     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                               , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                               , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lsed)                               , intent(in)  :: rhosol !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -178,6 +178,7 @@ subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     rhow      => gdp%gdphysco%rhow
     ag        => gdp%gdphysco%ag
     idensform => gdp%gdphysco%idensform
+    rhosol              => gdp%gdsedpar%rhosol
     !
     alph0 = 0.6980
     !

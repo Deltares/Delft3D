@@ -334,9 +334,10 @@ contains
 
    !> Calculate breach growth using tables
    subroutine calculate_breach_growth_using_tables(dambreak, time, time_step)
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, ec_undef_int
       use m_flowtimes, only: irefdate, tunit, tzone
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      use unstruc_channel_flow, only: network
       import t_dambreak
 
       class(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
@@ -345,18 +346,29 @@ contains
 
       logical :: success !< success flag
 
-      if (time > dambreak%t0) then
-         !Time in the tim file is relative to start time t0
-         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item, irefdate, tzone, tunit, &
-                                                  time - dambreak%t0, dambreak%crest_level_and_width)
-         if (success) then
-            dambreak%crest_level = dambreak%crest_level_and_width(1)
-            dambreak%width = dambreak%crest_level_and_width(2)
-         else
-            write (msgbuf, '(3a)') 'Error retrieving crest level and width for dambreak "', trim(dambreak%name), &
-               '". Please check timeseries input file.'
-            call SetMessage(LEVEL_ERROR, msgbuf)
+      if (dambreak%ec_item_legacy /= ec_undef_int) then
+         ! Legacy .tim file with 3 columns: time, crest level, width
+         if (time > dambreak%t0) then
+            !Time in the tim file is relative to start time t0
+            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreak%ec_item_legacy, irefdate, tzone, tunit, &
+                                                     time - dambreak%t0, dambreak%crest_level_and_width)
+            if (success) then
+               dambreak%crest_level = dambreak%crest_level_and_width(1)
+               dambreak%width = dambreak%crest_level_and_width(2)
+            else
+               write (msgbuf, '(3a)') 'Error retrieving crest level and width for dambreak "', trim(dambreak%name), &
+                  '". Please check timeseries input file.'
+               call SetMessage(LEVEL_ERROR, msgbuf)
+            end if
          end if
+
+      else
+         ! Standard .bc file with separate data for crest level and width, already read in update_network_data().
+         ! NOTE: the %..._ini fields contain the actual data at the *current* time.
+         associate (dambreak_sts => network%sts%struct(dambreak%index_structure)%dambreak)
+            dambreak%crest_level = dambreak_sts%crest_level_ini
+            dambreak%width = dambreak_sts%breach_width_ini
+         end associate
       end if
 
       dambreak%breach_width_derivative = (dambreak%width - dambreak%breach_width) / time_step
@@ -1193,7 +1205,7 @@ contains
 
       if (index(trim(filename)//'|', '.tim|') > 0) then
          success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, filename, UNIFORM, &
-                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item)
+                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item_legacy)
          if (.not. success) then
             write (msgbuf, '(5a)') 'Cannot process a tim file for "', QID, '" for the dambreak "', trim(dambreak%name), '".'
             call err_flush()

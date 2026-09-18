@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object SigCi : BuildType({
-    name = "Sig Ci"
+    id("SigCi")
+    name = "Sigrid scan"
+    description = "Upload Delft3D sources under src/ to Sigrid."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
@@ -56,9 +58,14 @@ object SigCi : BuildType({
 
     if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
         triggers {
-            vcs {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 3
+                    minute = 30
+                }
                 branchFilter = "+:<default>"
-                perCheckinTriggering = false
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
         }
     }
