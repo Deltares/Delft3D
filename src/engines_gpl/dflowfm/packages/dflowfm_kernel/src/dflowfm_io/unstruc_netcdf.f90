@@ -2148,7 +2148,7 @@ contains
                ierr = nf90_put_att(irstfile, id_thlyr, 'units', 'm')
             end if
 
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = nf90_def_var(irstfile, 'preload', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_preload)
                ierr = nf90_put_att(irstfile, id_preload, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                ierr = nf90_put_att(irstfile, id_preload, 'long_name', 'Historical largest load on layer of the bed in flow cell center')
@@ -3220,7 +3220,7 @@ contains
                ierr = nf90_put_var(irstfile, id_lyrfrac, frac(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
             ! preload
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
             ! porosity
@@ -4650,7 +4650,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, nc_precision, UNC_LOC_S, 'poros', '', 'Porosity of a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
-               if (stmpar%morpar%moroutput%preload) then
+               if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
@@ -5882,7 +5882,7 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, UNC_LOC_S, poros, locdim=2, jabndnd=jabndnd_)
             end if
             !
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
             end if
             !
@@ -12945,8 +12945,6 @@ contains
                      end if
                   end if
                end if
-
-               ! sedshort, preload, porosity, dpsed?
             end select
          end if
 
