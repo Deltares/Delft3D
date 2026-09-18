@@ -298,7 +298,7 @@ module morphology_data_module
       logical :: taub
       logical :: taurat
       logical :: tcrero
-      logical :: td
+      logical :: depos_time
       logical :: umod
       logical :: ustar
       logical :: uuuvvv
@@ -1823,7 +1823,7 @@ end subroutine clrsedpar
       moroutput%dpsed = yes
       moroutput%thlyr = yes
       moroutput%mudfrac = no
-      moroutput%td = no
+      moroutput%depos_time = no
       moroutput%orbvel = no
       moroutput%percentiles = no
       moroutput%poros = yes
