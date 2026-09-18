@@ -77,6 +77,7 @@ contains
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_rwin, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -503,7 +504,7 @@ contains
                elseif (stmpar%morlyr%settings%iunderlyr == 2) then
                   nlyrs = stmpar%morlyr%settings%nlyr
                   do l = 1, stmpar%lsedtot
-                     if (stmpar%morlyr%settings%iporosity == 0) then
+                     if (stmpar%morlyr%settings%iporosity == POROS_IN_DENSITY) then
                         dens = stmpar%sedpar%cdryb(l)
                      else
                         dens = stmpar%sedpar%rhosol(l)
@@ -518,7 +519,7 @@ contains
                      end do
                   end do
                   !
-                  if (stmpar%morlyr%settings%iporosity > 0) then
+                  if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                      poros = 1.0_dp - stmpar%morlyr%state%svfrac(:, k)
                   end if
                   !
