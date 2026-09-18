@@ -104,6 +104,30 @@ object LinuxBuild : BuildType({
             dockerPull = true
         }
         script {
+            name = "Build PETSc solver replay"
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /etc/bashrc
+                set -eo pipefail
+
+                python run_conan.py install --ci --build-type %build_type% --output-folder petsc_solver_replay/build
+                cmake -S petsc_solver_replay -B petsc_solver_replay/build \
+                    -DCMAKE_BUILD_TYPE=%build_type% \
+                    -DCMAKE_INSTALL_PREFIX="${'$'}PWD/install" \
+                    -DCMAKE_TOOLCHAIN_FILE="${'$'}PWD/petsc_solver_replay/build/conan/conan_toolchain.cmake"
+                cmake --build petsc_solver_replay/build --parallel
+                ctest --test-dir petsc_solver_replay/build --output-on-failure
+                cmake --install petsc_solver_replay/build
+            """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm --mount type=volume,source=delft3d-conan-cache,target=/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerPull = true
+        }
+        script {
             name = "Install"
             scriptContent = """
                 #!/usr/bin/env bash

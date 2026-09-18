@@ -23,7 +23,10 @@ add_executable(petsc-solver-replay src/main.cpp)
 set_property(TARGET petsc-solver-replay PROPERTY CXX_STANDARD 23)
 set_property(TARGET petsc-solver-replay PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET petsc-solver-replay PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET petsc-solver-replay PROPERTY INSTALL_RPATH "$ORIGIN/../lib")
 target_link_libraries(petsc-solver-replay PRIVATE PETSc::PETSc replay-mpi)
+
+install(TARGETS petsc-solver-replay RUNTIME DESTINATION bin)
 
 if(MSVC)
     target_compile_options(petsc-solver-replay PRIVATE /W4 /permissive- /Zc:preprocessor)
