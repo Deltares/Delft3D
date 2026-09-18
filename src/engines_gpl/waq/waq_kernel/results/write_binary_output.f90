@@ -77,7 +77,7 @@ contains
         if (ierr == 0) then
             do iseg = 1, num_cells
                 if (.not. btest(iknmrk(iseg), 0)) then
-                    outconc(:, iseg) = missing_value
+                    outconc(:, iseg) = 1.0
                 endif
             enddo
             write (map_file_unit) itime, (outconc(:, iseg), conc2(:, iseg), iseg = 1, num_cells)
@@ -90,7 +90,7 @@ contains
                 if (btest(iknmrk(iseg), 0)) then
                     write (map_file_unit) conc1(:, iseg), conc2(:, iseg)
                 else
-                    write (map_file_unit) (missing_value, k = 1, notot1), conc2(:, iseg)
+                    write (map_file_unit) (1.0, k = 1, notot1), conc2(:, iseg)
                 endif
             enddo
         endif
