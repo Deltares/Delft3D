@@ -67,6 +67,7 @@ module m_petsc
    Mat :: Amat ! PETSc-type matrix (will include dry nodes, set to zero)
    KSP :: Solver ! Solver for the equation Amat * sol = rhs
    logical :: isKSPCreated = .false. ! A flag to determine whether KSP is created
+   integer :: dump_sequence_number = 0 ! Sequence number for optional PETSc replay dumps
 
    PetscErrorCode, parameter :: PETSC_OK = 0
 end module m_petsc
@@ -589,6 +590,118 @@ contains
       end if
    end subroutine createPETSCPreconditioner
 
+   !> Return whether PETSc replay dumps were requested through the environment.
+   logical function isPETScReplayDumpEnabled()
+      character(len=1024) :: dump_prefix
+      integer :: environment_status
+
+      call get_environment_variable('DFLOWFM_PETSC_DUMP_PREFIX', dump_prefix, status=environment_status)
+      isPETScReplayDumpEnabled = environment_status == 0 .and. len_trim(dump_prefix) > 0
+   end function isPETScReplayDumpEnabled
+
+   !> Store one linear system and its partition metadata for standalone replay.
+   subroutine dumpPETScReplay(initial_solution)
+      use m_partitioninfo, only: iglobal, my_rank
+      use m_petsc, only: PETSC_OK, PETSC_COMM_WORLD, Amat, rhs, sol, numrows, rowtoelem, dump_sequence_number
+      use MessageHandling, only: mess, level_warn
+      use petscvecdef, only: tVec
+      use petscsysdef, only: tPetscViewer
+      use petsc, only: FILE_MODE_WRITE, PETSC_DECIDE, PetscViewerBinaryOpen, PetscViewerDestroy, &
+                       MatView, VecCreateMPIWithArray, VecAssemblyBegin, VecAssemblyEnd, VecDestroy, VecView
+
+      Vec, intent(in) :: initial_solution
+
+      integer, parameter :: singleton_blocks = 1
+      character(len=1024) :: dump_prefix
+      character(len=1100) :: dump_filename
+      real(kind=dp), dimension(:), allocatable :: global_node_id_values
+      real(kind=dp), dimension(:), allocatable :: owner_rank_values
+      Vec :: global_node_ids
+      Vec :: owner_ranks
+      PetscViewer :: viewer
+      PetscErrorCode :: ierr
+      PetscErrorCode :: cleanup_ierr
+      integer :: local_row
+      logical :: global_node_ids_created
+      logical :: owner_ranks_created
+      logical :: viewer_created
+
+      ierr = PETSC_OK
+      global_node_ids_created = .false.
+      owner_ranks_created = .false.
+      viewer_created = .false.
+      if (.not. isPETScReplayDumpEnabled()) then
+         return
+      end if
+      call get_environment_variable('DFLOWFM_PETSC_DUMP_PREFIX', dump_prefix)
+
+      dump_sequence_number = dump_sequence_number + 1
+      write (dump_filename, '(a,"_",i8.8,".bin")') trim(dump_prefix), dump_sequence_number
+
+      allocate (global_node_id_values(numrows))
+      allocate (owner_rank_values(numrows))
+      do local_row = 1, numrows
+         global_node_id_values(local_row) = real(iglobal(rowtoelem(local_row)), kind=dp)
+         owner_rank_values(local_row) = real(my_rank, kind=dp)
+      end do
+
+      call VecCreateMPIWithArray(PETSC_COMM_WORLD, singleton_blocks, numrows, PETSC_DECIDE, global_node_id_values, global_node_ids, ierr)
+      global_node_ids_created = ierr == PETSC_OK
+      if (ierr == PETSC_OK) then
+         call VecCreateMPIWithArray(PETSC_COMM_WORLD, singleton_blocks, numrows, PETSC_DECIDE, owner_rank_values, owner_ranks, ierr)
+         owner_ranks_created = ierr == PETSC_OK
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyBegin(global_node_ids, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyEnd(global_node_ids, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyBegin(owner_ranks, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyEnd(owner_ranks, ierr)
+      end if
+
+      if (ierr == PETSC_OK) then
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD, trim(dump_filename), FILE_MODE_WRITE, viewer, ierr)
+         viewer_created = ierr == PETSC_OK
+      end if
+      if (ierr == PETSC_OK) then
+         call MatView(Amat, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(rhs, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(initial_solution, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(sol, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(global_node_ids, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(owner_ranks, viewer, ierr)
+      end if
+      if (viewer_created) then
+         call PetscViewerDestroy(viewer, cleanup_ierr)
+      end if
+
+      if (global_node_ids_created) then
+         call VecDestroy(global_node_ids, cleanup_ierr)
+      end if
+      if (owner_ranks_created) then
+         call VecDestroy(owner_ranks, cleanup_ierr)
+      end if
+
+      if (ierr /= PETSC_OK .and. my_rank == 0) then
+         call mess(LEVEL_WARN, 'Unable to write PETSc replay dump: ', trim(dump_filename))
+      end if
+   end subroutine dumpPETScReplay
+
    !> Compose the global matrix and solver for PETSc.
    !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
    !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
@@ -675,7 +788,8 @@ contains
 
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, &
+      use petscvecdef, only: tVec
+      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, VecCopy, VecDestroy, VecDuplicate, &
                        eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
@@ -696,11 +810,16 @@ contains
 
       PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
+      Vec :: initial_solution
       character(len=100) :: message
       character(len=100) :: reason_string
+      logical :: dump_replay
+      logical :: initial_solution_created
 
       jasucces = 0
       ierr = PETSC_OK
+      dump_replay = isPETScReplayDumpEnabled()
+      initial_solution_created = .false.
 
       its = 0
 
@@ -749,10 +868,26 @@ contains
          call createPETSCPreconditioner()
       end if
 
+      if (dump_replay) then
+         call VecDuplicate(sol, initial_solution, ierr)
+         if (ierr /= PETSC_OK) then
+            go to 1234
+         end if
+         initial_solution_created = .true.
+         call VecCopy(sol, initial_solution, ierr)
+         if (ierr /= PETSC_OK) then
+            go to 1234
+         end if
+      end if
+
       ! solve system
       call KSPSolve(Solver, rhs, sol, ierr)
       if (ierr /= PETSC_OK) then
          go to 1234
+      end if
+
+      if (dump_replay) then
+         call dumpPETScReplay(initial_solution)
       end if
 
       call KSPGetConvergedReason(Solver, Reason, ierr)
@@ -804,6 +939,10 @@ contains
       end do
 
 1234  continue
+
+      if (initial_solution_created) then
+         call VecDestroy(initial_solution, ierr)
+      end if
 
       ! mark fail by setting number of iterations to -999
       if (jasucces /= 1) then
