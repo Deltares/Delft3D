@@ -1487,6 +1487,10 @@ contains
 
       process_space_real(ipoidefa + 1) = time
 
+      if (.not. allocated(mbadefdomain)) then ! todo make wq_proceesses_proces callable without mdadefdomain
+         allocate (mbadefdomain(ktx), source=-999)
+      end if
+
       call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol1(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &

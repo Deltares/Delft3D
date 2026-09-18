@@ -3,9 +3,19 @@
 
 #include <precice/precice.hpp>
 #include <vector>
+#include <string>
+#include <expected>
 
 namespace pre_c_sumo
 {
+    /**
+     * @brief Error returned when we entounted a runtime problem.
+     */
+    struct ConnectedSinkSourcesError
+    {
+        std::string message;
+    };
+
     /**
      * @brief Connected Sinks and Sources administration
      * This class collects the sinks and sources data that is sent through preCICE.
@@ -50,9 +60,10 @@ namespace pre_c_sumo
          * @param participant preCICE participant of the connection
          * @param mesh_name Provided mesh name
          * @param precice_ids Vertex ID's registered on the provided mesh.
+         * @return std::expected containing void on success or pre_C_sumo::ConnectedSinkSourcesError on failure;
          */
-        void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
-                              const std::vector<int>& precice_ids);
+        [[nodiscard]] std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> write_to_precice(
+            precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids);
 
         /**
          * @brief Read-only access to converted discharge values - used by unit test.

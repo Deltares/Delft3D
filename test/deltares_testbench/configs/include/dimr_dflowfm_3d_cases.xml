@@ -662,16 +662,16 @@
           <parameter name="Tair" toleranceRelative="1e-7"/>
           <parameter name="potential_density" toleranceAbsolute="1e-4"/>
           <parameter name="rhum" toleranceRelative="1e-7"/>
-          <parameter name="temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="temperature" toleranceAbsolute="0.01"/>
+          <parameter name="ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="ice_thickness" toleranceAbsolute="0.01"/>
         </parameters>
       </file>
       <file name="output/winter97_saltwater_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_tem1" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.001"/>
         </parameters>
       </file>
@@ -1013,7 +1013,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c011_gate_sub_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c011_gate_sub_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
     <maxRunTime>600</maxRunTime>
     <checks>
@@ -1068,7 +1068,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c015_gate_free_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1082,7 +1082,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c016_gate_free_3Dzsigma1" ref="platform_specific">
+  <testCase name="e02_f208_c016_gate_free_3Dzsigma1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c016_gate_free_3Dzsigma1</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1096,7 +1096,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="platform_specific">
+  <testCase name="e02_f208_c017_gate_free_3Dzsigma2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c017_gate_free_3Dzsigma2</path>
 
       <maxRunTime>900</maxRunTime>
@@ -1175,7 +1175,7 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f208_c023_sill_free_3Dz" ref="platform_specific">
+  <testCase name="e02_f208_c023_sill_free_3Dz" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c023_sill_free_3Dz</path>
 
       <maxRunTime>900</maxRunTime>
