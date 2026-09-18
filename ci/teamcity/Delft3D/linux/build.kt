@@ -113,11 +113,17 @@ object LinuxBuild : BuildType({
                 source /etc/bashrc
                 set -eo pipefail
 
-                python run_conan.py install --ci --build-type %build_type% --output-folder petsc_solver_replay/build
+                conan install petsc_solver_replay \
+                    --output-folder=petsc_solver_replay/build \
+                    --profile:all="${'$'}{CONAN_DEFAULT_PROFILE:-delft3d_alma8_intel_2024_v3}" \
+                    --settings:all build_type=Release \
+                    --settings:all "&:build_type=%build_type%" \
+                    --core-conf core.net.http:timeout=300 \
+                    --core-conf core:non_interactive=True
                 cmake -S petsc_solver_replay -B petsc_solver_replay/build \
                     -DCMAKE_BUILD_TYPE=%build_type% \
                     -DCMAKE_INSTALL_PREFIX="${'$'}PWD/install" \
-                    -DCMAKE_TOOLCHAIN_FILE="${'$'}PWD/petsc_solver_replay/build/conan/conan_toolchain.cmake"
+                    -DCMAKE_TOOLCHAIN_FILE=${'$'}PWD/petsc_solver_replay/build/conan/conan_toolchain.cmake
                 cmake --build petsc_solver_replay/build --parallel
                 ctest --test-dir petsc_solver_replay/build --output-on-failure
                 cmake --install petsc_solver_replay/build
