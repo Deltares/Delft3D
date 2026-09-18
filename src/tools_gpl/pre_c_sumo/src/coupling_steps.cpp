@@ -295,7 +295,7 @@ namespace pre_c_sumo
                     // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0, diffuser.constituents());
+                                                   source_z_top, discharge, 0.0, 0.0, {});
                 }
             }
 
@@ -375,7 +375,7 @@ namespace pre_c_sumo
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
                                                        -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0, diffuser.constituents());
+                                                       0.0, {});
                     }
                 }
             }
