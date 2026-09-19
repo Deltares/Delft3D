@@ -235,16 +235,6 @@ module m_partitioninfo
    real(kind=dp), allocatable :: reducebuf(:) !< work array for mpi-reduce
    integer :: nreducebuf !< size of work array 'reducebuf'
 
-!   for test solver:  Schwarz method with Robin-Robin coupling
-   integer :: nbndint ! number of interface links
-   integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
-   real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   real(kind=dp) :: stoptol = 1.0e-4_dp ! parameter of stopping criteria for subsolver of Schwarz method
-   real(kind=dp) :: sbeta = 10.0_dp ! beta value in Robin-Robin coupling for Schwarz iterations
-   real(kind=dp) :: prectol = 0.50e-2_dp ! tolerance for drop of preconditioner
-   integer :: jabicgstab = 1 !
-   integer :: Nsubiters = 1000
-
 !  1D global arrays that are stored during partitioning
    character(len=ug_idsLen), private, allocatable :: nodeids_g(:) !< backup for nodeids during partitioning
    character(len=ug_idsLongNamesLen), private, allocatable :: nodelongnames_g(:) !< backup for nodelongnames during partitioning
@@ -463,58 +453,24 @@ contains
    end subroutine generate_partitioning_from_pol
 
 !> set ghostlevel parameters
-   subroutine partition_setghost_params(icgsolver)
+   subroutine partition_setghost_params()
       implicit none
 
-      integer, intent(in) :: icgsolver !< solver type
+      numlay_cellbased = 4
+      numlay_nodebased = 3
 
-!     set overlap for Schwarz solver, if uninitialized (0)
-      if (icgsolver == 9 .or. icgsolver > 90) then
-         numlay_cellbased = 4
-         numlay_nodebased = 3
-         ighosttype_s = IGHOSTTYPE_NODEBASED
+      minghostlev_s = 1
+      maxghostlev_s = 1
 
-         if (icgsolver > 90) then
-            minghostlev_s = icgsolver - 90
-            maxghostlev_s = minghostlev_s
+      minghostlev_sall = 1
+      maxghostlev_sall = 5
 
-!           for Robin-Robin interface conditions
-            ighosttype_s = IGHOSTTYPE_NODEBASED
-            minghostlev_s = max(minghostlev_s - 1, 1)
-
-!            numlay_cellbased = max(numlay_cellbased,maxghostlev_s)
-            numlay_nodebased = max(numlay_nodebased, maxghostlev_s)
-         else
-            minghostlev_s = numlay_cellbased
-            maxghostlev_s = numlay_cellbased
-         end if
-
-         minghostlev_sall = 1
-         maxghostlev_sall = max(numlay_cellbased, numlay_nodebased) + 1
-
-         minghostlev_u = 1
-         maxghostlev_u = max(numlay_cellbased, numlay_nodebased) + 1
-      else
-         numlay_cellbased = 4
-         numlay_nodebased = 3
-
-         minghostlev_s = 1
-         maxghostlev_s = 1
-
-         minghostlev_sall = 1
-         maxghostlev_sall = 5
-
-         minghostlev_u = 1
-         maxghostlev_u = 5
-      end if
-
-      return
+      minghostlev_u = 1
+      maxghostlev_u = 5
    end subroutine partition_setghost_params
 
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
-      use m_flowparameters, only: icgsolver
-
       implicit none
 
       character(len=*), intent(in) :: md_ident
@@ -524,7 +480,7 @@ contains
       character(len=128) :: mesg
       ierror = 1
 
-      call partition_setghost_params(icgsolver)
+      call partition_setghost_params()
 
 !     the following subroutine will determine the number of domains and generate the domain numbering
       if (npartition_pol > 0) then
@@ -4187,10 +4143,6 @@ contains
       integer :: ierr
 #ifdef HAVE_PETSC
       call stoppetsc()
-#endif
-
-#ifdef HAVE_PARMS
-      call deallocparms()
 #endif
 
 #ifdef HAVE_MPI

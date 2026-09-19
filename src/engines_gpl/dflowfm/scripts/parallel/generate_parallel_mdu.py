@@ -9,7 +9,7 @@ arguments = argparse.ArgumentParser(
 arguments.add_argument("--mdu", nargs="?", help="input MDI file", required=True)
 arguments.add_argument("--count", nargs="?", help="number of subdomains", required=True)
 arguments.add_argument("--domains", nargs="?", help="partitioning (subdomains) POL file", required=True)
-arguments.add_argument("--icgsolver", nargs="?", help="Icgsolver, 6 = PETSc, 7 = GS", required=True)
+arguments.add_argument("--icgsolver", nargs="?", help="Icgsolver, 6 = PETSc", required=True)
 args = arguments.parse_args()
 
 cfg = MduParserKeepComments()

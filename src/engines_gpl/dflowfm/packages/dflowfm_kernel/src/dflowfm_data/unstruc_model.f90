@@ -181,12 +181,7 @@ contains
       !md_M               = 1024   !< size of x in Axpy
       !md_N               = 2048   !< size of y in Axpy
       !md_Nruns           = 10     !< number of test runs
-      !md_soltest         = 0      !< solver test (1) or not (0)
-      !md_CFL             = 0      !< wave-based Courant number (if > 0)
       !md_icgsolver       = 0      !< overwrite solver type (if > 0)
-      !md_maxmatvecs      = 0      !< maximum number of matrix-vector multiplications in Krylov (if > 0 )
-      !md_epscg           = 0      !< -10log(epscg) (if > 0), tolerance in (inner) Krylov iterations
-      !md_epsdiff         = 0      !< -10log(epsdiff) (if > 0), tolerance in (outer) Schwarz iterations
       !md_convnetcells    = 0      !< Convert _net.nc files with only netnodes/links into _net.nc files with netcell info.
       !md_findcells       = 0      !< If it is not zero, then the codes call findcells
       !md_pressakey       = 0      !< press a key (1) or not (0)
@@ -971,8 +966,16 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
+      if (icgsolver == 7) then
+         call mess(LEVEL_WARN, 'Icgsolver 7 is no longer supported; using Icgsolver 6 (PETSc).')
+         icgsolver = 6
+      else if (icgsolver == 8) then
+         call mess(LEVEL_ERROR, 'Icgsolver 8, the pARMS solver, is no longer supported.')
+      else if (icgsolver == 9 .or. icgsolver > 90) then
+         call mess(LEVEL_ERROR, 'Icgsolver 9 and values greater than 90 are no longer supported.')
+      end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
-      if (icgsolver == 7 .or. icgsolver == 6) then
+      if (icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
       end if
       call prop_get(md_ptr, 'numerics', 'jposhchk', jposhchk)
@@ -1059,16 +1062,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 
       call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_get(md_ptr, 'numerics', trim(iparmsnam(i)), iparms(i))
-         end do
-
-         do i = 1, NPARMS_DBL
-            call prop_get(md_ptr, 'numerics', trim(dparmsnam(i)), dparms(i))
-         end do
-      end if
 
       call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
       call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
@@ -2643,7 +2636,7 @@ contains
       character(len=20) :: rundat
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
-      integer :: i, ibuf, fww
+      integer :: ibuf, fww
       real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
@@ -3046,7 +3039,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Structurelayersactive', JaStructurelayersactive, '0=structure flow through all layers, 1=structure flow only through open layers ')
       end if
 
-      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
+      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc)')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
@@ -3182,15 +3175,6 @@ contains
       end if
       if (writeall .or. rhointerfaces /= BAROC_ORIGINAL) then
          call prop_set(prop_ptr, 'numerics', 'rhoInterfaces', rhointerfaces, 'Estimate rho at 3D layer interfaces for baroclinic pressure gradient method; -1 = original linear interpolation, 0 = improved linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
-      end if
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_set(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
-         end do
-         do i = 1, NPARMS_DBL
-            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0: parms-default')
-         end do
       end if
 
       if (writeall .or. (s01_max_err > 0.0_dp)) then
