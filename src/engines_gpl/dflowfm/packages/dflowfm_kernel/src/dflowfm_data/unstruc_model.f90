@@ -560,6 +560,8 @@ contains
       real(kind=dp) :: sumlaycof
       real(kind=dp), parameter :: tolSumLay = 1.0e-12_dp
       integer, parameter :: maxLayers = 300
+      character(len=*), parameter :: flow_ww_error_suffix = &
+         '" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.'
       integer :: major, minor
 
       istat = 0 ! Success
@@ -1661,35 +1663,35 @@ contains
       ! safety
       if (jawave > NO_WAVES .and. flow_without_waves) then
          if (has_3d_stokes_profile .and. jawaveStokes > NO_STOKES_DRIFT) then
-            call mess(LEVEL_ERROR, 'MDU setting "3Dstokesprofile" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            call mess(LEVEL_ERROR, 'MDU setting "'//'3Dstokesprofile'//flow_ww_error_suffix)
             istat = -1
             return
          else if (.not. has_3d_stokes_profile) then
             jawaveStokes = NO_STOKES_DRIFT
          end if
          if (has_3d_wave_streaming .and. jawavestreaming > WAVE_STREAMING_OFF) then
-            call mess(LEVEL_ERROR, 'MDU setting "3Dwavestreaming" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwavestreaming'//flow_ww_error_suffix)
             istat = -1
             return
          else if (.not. has_3d_wave_streaming) then
             jawavestreaming = WAVE_STREAMING_OFF
          end if
          if (has_3d_wave_boundary_layer .and. jawavedelta > WAVE_BOUNDARYLAYER_OFF) then
-            call mess(LEVEL_ERROR, 'MDU setting "3Dwaveboundarylayer" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwaveboundarylayer'//flow_ww_error_suffix)
             istat = -1
             return
          else if (.not. has_3d_wave_boundary_layer) then
             jawavedelta = WAVE_BOUNDARYLAYER_OFF
          end if
          if (has_3d_wave_forces .and. jawaveforces > WAVE_FORCES_OFF) then
-            call mess(LEVEL_ERROR, 'MDU setting "3Dwaveforces" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwaveforces'//flow_ww_error_suffix)
             istat = -1
             return
          else if (.not. has_3d_wave_forces) then
             jawaveforces = WAVE_FORCES_OFF
          end if
          if (has_3d_wave_breaker_turbulence .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-            call mess(LEVEL_ERROR, 'MDU setting "3Dwavebreakerturbulence" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwavebreakerturbulence'//flow_ww_error_suffix)
             istat = -1
             return
          else if (.not. has_3d_wave_breaker_turbulence) then
