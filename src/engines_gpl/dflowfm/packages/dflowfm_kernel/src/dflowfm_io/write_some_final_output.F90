@@ -241,9 +241,13 @@ contains
             call msg_flush()
          end if
          if (ITRA1 > 0) then
+            msgbuf = ' '
+            call msg_flush()
             do iconst = ITRA1, ITRAN
                i = iconst - ITRA1 + 1
-               write (msgbuf, '(a,F25.3)') 'mass error from tracer "' // trim(const_names(iconst)) // '" limitation (10^6 kg)  :', maserrtra(i) / 1.0e6_dp
+               write (msgbuf, '(a,ES15.6E3)') 'mass added from tracer "' // trim(const_names(iconst)) // '" due to minimum concentration limit   :', maserrtra(i, 1)
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'mass removed from tracer "' // trim(const_names(iconst)) // '" due to maximum concentration limit :', maserrtra(i, 2)
                call msg_flush()
             end do
          end if

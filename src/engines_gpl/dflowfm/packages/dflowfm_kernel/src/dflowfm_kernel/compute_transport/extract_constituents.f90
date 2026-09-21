@@ -74,7 +74,7 @@ contains
 
       use timers, only: timon, timstop, timstrt
 
-      integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
+      integer :: iconst, grain, j, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
       real(kind=dp) :: salinity ! salinity [psu]
@@ -127,27 +127,29 @@ contains
       end if
 
       if (itra1 > 0) then
-         cells_with_max_limit = 0
-         cells_with_min_limit = 0
          do iconst = ITRA1, ITRAN
-            do k = 1, ndkx
-               if (constituents(iconst, k) < lowerlimittra) then
-                  cells_with_min_limit = cells_with_min_limit + 1
-                  maserrtra = maserrtra + vol1(k) * (lowerlimittra - constituents(iconst, k))
-                  constituents(iconst, k) = lowerlimittra
-               end if
-
-               ! keep track of mass error because of concentration limitation
-               if (constituents(iconst, k) > upperlimittra) then
-                  cells_with_max_limit = cells_with_max_limit + 1
-                  maserrtra = maserrtra + vol1(k) * (constituents(iconst, k) - upperlimittra)
-                  constituents(iconst, k) = upperlimittra
-               end if
+            cells_with_max_limit = 0
+            cells_with_min_limit = 0
+            j = iconst - ITRA1 + 1
+            do kk = 1, ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  ! keep track of mass error(s) because of concentration limitation
+                  if (constituents(iconst, k) < lowerlimittra) then
+                     cells_with_min_limit = cells_with_min_limit + 1
+                     maserrtra(j, 1) = maserrtra(j, 1) + vol1(k) * (lowerlimittra - constituents(iconst, k))
+                     constituents(iconst, k) = lowerlimittra
+                  end if
+                  if (constituents(iconst, k) > upperlimittra) then
+                     cells_with_max_limit = cells_with_max_limit + 1
+                     maserrtra(j, 2) = maserrtra(j, 2) + vol1(k) * (constituents(iconst, k) - upperlimittra)
+                     constituents(iconst, k) = upperlimittra
+                  end if
+               end do
             end do
-
             if (jalogtransportsolverlimiting > 0) then
-               call print_message(IDX_TRA_MIN, 'Negative tracer "' // trim(const_names(iconst)) // '" concentration', cells_with_min_limit, min_limit=lowerlimittra)
-               call print_message(IDX_TRA_MAX, 'Tracer "' // trim(const_names(iconst)) // '" concentration overshoots', cells_with_max_limit, max_limit=upperlimittra)
+               call print_message(IDX_TRA_MIN, 'Tracer "' // trim(const_names(iconst)) // '" concentration below minimum', cells_with_min_limit, min_limit=lowerlimittra)
+               call print_message(IDX_TRA_MAX, 'Tracer "' // trim(const_names(iconst)) // '" concentration above maximum', cells_with_max_limit, max_limit=upperlimittra)
             end if
          end do
       end if
