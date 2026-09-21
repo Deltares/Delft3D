@@ -1968,7 +1968,7 @@ contains
             case (WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
                dependencies = '3Dwavebreakerturbulence or Waveforcing = 3'
             end select
-            call mess(LEVEL_ERROR, 'Missing  required offline wave quantity '''//quantity_name// &
+            call mess(LEVEL_ERROR, 'Missing required offline wave quantity '''//quantity_name// &
                       '''. Possible dependencies: '//trim(dependencies))
             missing_input = .true.
          end if
