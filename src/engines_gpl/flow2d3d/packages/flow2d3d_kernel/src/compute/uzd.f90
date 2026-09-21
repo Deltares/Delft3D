@@ -350,7 +350,6 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: wsumax
     real(fp)           :: www
     real(fp)           :: zz
-    real(fp)           :: janst
     character(20)      :: errtxt
     integer            :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
 !
@@ -577,9 +576,6 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              flowresist = 0.5*rttfu(nm, k)*umod
              corioforce = ff*fcorio(nm)*vvvc
              densforce  = - ag*(1. - icreep)/(gvu(nm)*rhow)*nbaroc*(sig(k)*rhou*(hr - hl) + (sumrho(nmu, k)*hr - sumrho(nm, k)*hl))
-             if (kfushr(nm,k)==1) then
-               janst=1
-             endif
              !
              ! limit barotropic and baroclinic pressure term in case of drying/flooding on steep slopes
              !

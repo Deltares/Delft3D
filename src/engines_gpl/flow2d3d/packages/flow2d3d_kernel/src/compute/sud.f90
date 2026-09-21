@@ -108,6 +108,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     logical                , pointer :: nfl
     logical                , pointer :: zmodel
     logical                , pointer :: wavcmp
+    logical                , pointer :: stressStrainRelation
 
     integer                    , pointer :: no_dis
     integer , dimension(:)     , pointer :: m_intake
@@ -302,6 +303,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     nfl         => gdp%gdprocs%nfl
     zmodel      => gdp%gdprocs%zmodel
     wavcmp      => gdp%gdprocs%wavcmp
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     
     no_dis      => gdp%gdnfl%no_dis
     disnf       => gdp%gdnfl%disnf
@@ -391,15 +393,17 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     ! INITIALISATION OF ITERATION OVER CONTINUITY EQUATION
     !
     call timer_start(timer_sud_rest, gdp)
-    do k = 1, kmax
-       do nm = 1, nmmax
-          if (kcs(nm) > 0) then
-             ! d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
-             ! implementation changed for Slurry3D
-             d0k(nm, k) = 0.0
-          endif
+    if (stressStrainRelation) then
+       d0k(:,:) = 0.0
+    else
+       do k = 1, kmax
+          do nm = 1, nmmax
+             if (kcs(nm) > 0) then
+                d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+             endif
+          enddo
        enddo
-    enddo
+    endif
     !
     ! IN LAYER 1 DUE TO PRECIPITATION/EVAPORATION
     !     FOR TIME DEPENDENT INPUT OR HEAT MODEL WITH SPECIAL REQUEST
@@ -537,9 +541,12 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
           endif
        enddo
     enddo
+    d0ksca = 0.0
     do k = 1, kmax
        do nm = 1, nmmax
-          d0ksca = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+          if (stressStrainRelation) then
+             d0ksca = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+          endif
           if (kcs(nm)==1) d0(nm) = d0(nm) + d0ksca + d0k(nm, k)
        enddo
     enddo
@@ -982,11 +989,14 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
        qzk = 0.0
        w1  = 0.0
        !
+       d0ksca = 0.0
        do k = 1, kmax
           do nm = 1, nmmax
              if (kcs(nm)==1) then
-                d0ksca    = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) &
-                          & + qyk(nm - icy, k)
+                if (stressStrainRelation) then
+                   d0ksca    = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) &
+                             & + qyk(nm - icy, k)
+                endif
                 w1(nm, k) = w1(nm, k - 1) + thick(k)*s1(nm)*hdti       &
                           & + (qxk(nm, k) - qxk(nm - icx, k)           &
                           & - d0k(nm, k) - d0ksca) / gsqs(nm)

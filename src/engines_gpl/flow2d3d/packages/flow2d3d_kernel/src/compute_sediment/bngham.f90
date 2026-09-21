@@ -141,7 +141,6 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     integer                             :: claycnt
     integer                             :: silcnt
     integer                             :: sandcnt
-    real(fp)                            :: janst
     real(fp)                            :: actcl
     real(fp)                            :: cl1
     real(fp)                            :: cl2
@@ -532,7 +531,6 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
 !jill            actyiei      = actyie(kd)*wlo + actyie(ku)*wup(ku)
 !jill            tyield(nm,k) = ayield*ssinyi*actyiei*solfri**powyie
                  tyield(nm,k) = ayield*ssinyi*solfri**powyie   ! solfri is different 
-                 janst = 1.0
 !jill            cfactyi      = cfacty(kd)*wlo + cfacty(ku)*wup(ku)
 !jill            cfty(nm,k)   = siinyi*ayield*cfactyi*cffrci**powyie
                  cfty(nm,k)   = ayield*siinyi*cffrci**powyie
