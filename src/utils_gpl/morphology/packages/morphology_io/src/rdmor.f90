@@ -41,7 +41,7 @@ contains
 subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                & lsed      ,nmaxus    ,nto       ,lfbedfrm  , &
                & nambnd    ,julday    ,mor_ptr   ,sedpar    ,morpar    , &
-               & fwfac     ,morlyr    ,griddim)
+               & fwfac     ,morlyr    ,griddim   ,ag)
 !!--declarations----------------------------------------------------------------
     use precision, only: fp
     use properties
@@ -79,6 +79,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     type(bedcomp_data)             , pointer     :: morlyr
     real(fp)                       , intent(out) :: fwfac
     type(griddimtype)   , target   , intent(in)  :: griddim
+    real(fp)                       , intent(in)  :: ag !< gravity acceleration (m/s^2)
 !
 ! Local variables
 !
@@ -303,12 +304,12 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & nmaxus    ,nto       ,lfbedfrm  , &
                  & nambnd    ,version   ,lsedtot   , sedpar%namsed    , &
                  & morpar    ,morlyr    ,sedpar    ,mor_ptr   , &
-                 & griddim   )
+                 & griddim   ,ag)
     if (error) return
     !
     if (morlyr%settings%iunderlyr == BED_LAYERED) then
        morpar%moroutput%poros = .false.
-       morpar%moroutput%td = .false.
+       morpar%moroutput%depos_time = .false.
        morpar%moroutput%preload = .false.
     end if
     !
@@ -939,7 +940,8 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     moroutput%thlyr = moroutput%dpsed
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
-    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
+    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%depos_time)
+    call prop_get(mor_ptr, 'Output', 'depositTime'                 , moroutput%depos_time)
     call prop_get(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
     !
