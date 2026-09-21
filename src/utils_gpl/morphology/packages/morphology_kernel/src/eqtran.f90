@@ -3,21 +3,6 @@
 !! The subroutine \em eqtran provides a standardized interface for calling
 !! any sediment transport in the library.
 
-subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
-                & frac, sigmol, dicww, lundia, taucr0, &
-                & rksrs, i2d3d, lsecfl, spirint, suspfrac, &
-                & tetacr, concin, &
-                & dzduu, dzdvv, ubot, tauadd, sus, &
-                & bed, susw, bedw, espir, wave, &
-                & scour, ubot_from_com, camax, eps, &
-                & iform, npar, par, numintpar, numrealpar, &
-                & numstrpar, dllfunc, dllhandle, intpar, realpar, &
-                & strpar, & !output:
-                & aks, caks, taurat, seddif, rsedeq, &
-                & kmaxsd, conc2d, sbcu, sbcv, sbwu, &
-                & sbwv, sswu, sswv, dss, caks_ss3d, &
-                & aks_ss3d, ust2, t_relax, error)
-
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -44,13 +29,29 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
-!!--description-----------------------------------------------------------------
-!
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
+
+module m_eqtran
+   implicit none
+   private
+   public eqtran
+
+contains
+
+subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
+                & frac, sigmol, dicww, lundia, taucr0, &
+                & rksrs, i2d3d, lsecfl, spirint, suspfrac, &
+                & tetacr, concin, &
+                & dzduu, dzdvv, ubot, tauadd, sus, &
+                & bed, susw, bedw, espir, wave, &
+                & scour, ubot_from_com, camax, eps, &
+                & iform, npar, par, numintpar, numrealpar, &
+                & numstrpar, dllfunc, dllhandle, intpar, realpar, &
+                & strpar, & !output:
+                & aks, caks, taurat, seddif, rsedeq, &
+                & kmaxsd, conc2d, sbcu, sbcv, sbwu, &
+                & sbwv, sswu, sswv, dss, caks_ss3d, &
+                & aks_ss3d, ust2, t_relax, error)
+
 !!--declarations----------------------------------------------------------------
    use precision
    use message_module, only: write_error
@@ -75,8 +76,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    use m_trab19, only: trab19
    use m_trab20, only: trab20
    use m_asmita, only: asmita
-   !
-   implicit none
+   use m_factor3d2d, only: factor3d2d
 !
 ! Arguments
 !
@@ -202,6 +202,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    real(fp) :: dzdx
    real(fp) :: dzdy
    real(fp) :: poros
+   real(fp) :: taucrb !< critical shear stress of bed material [N/m2]
    real(fp) :: ua
    real(fp) :: va
    real(fp) :: wsb
@@ -282,6 +283,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    dgsd = real(realpar(RP_DGSD), fp)
    sandfrac = real(realpar(RP_SNDFR), fp)
    zb = real(realpar(RP_ZB), fp)
+   taucrb = real(realpar(RP_TAUCR),fp)
    !
    cesus = 0.0_fp
    sbot = 0.0_fp
@@ -326,7 +328,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       ! Van Rijn 1993
       !
       call tram1(numrealpar, realpar, wave, npar, par, &
-               & num_layers_grid, bed, &
+               & num_layers_grid, bed, taucrb, &
                & tauadd, taucr0, aks, eps, camax, &
                & frac, sig, thick, ws, &
                & dicww, ltur, &
@@ -857,3 +859,5 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    end if
    dss = real(realpar(RP_DSS), fp)
 end subroutine eqtran
+
+end module m_eqtran

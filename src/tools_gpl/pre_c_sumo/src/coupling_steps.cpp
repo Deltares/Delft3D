@@ -32,8 +32,9 @@ namespace pre_c_sumo
             layers.emplace_back(FarFieldLayer{
                 // 3d.coordinates = (x1, y1, z1, x2, y2, z2, ...): skip "index_3d + i" points, then skip x and y
                 .z_coordinate = mesh_3d.coordinates[(index_3d + i) * 3 + 2],
-                .x_velocity = 0.0, // TODO: obtain from far-field data
-                .y_velocity = 0.0, // TODO: obtain from far-field data
+                // 3d.velocities = (vx1, vy1, vz1, vx2, vy2, vz2, ...): skip "index_3d + i" points, then get x and y
+                .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
+                .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
                 .constituents = {0.0, 0.0, 0.0}, // constituents, // TODO: obtain layered data from far-field
             });
@@ -50,14 +51,14 @@ namespace pre_c_sumo
         const std::string_view csumo_settings_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
-        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
+        auto expected_csumo_settings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
 
-        if (!expectedCsumoSettings.has_value())
+        if (!expected_csumo_settings.has_value())
         {
-            std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
-            return expectedCsumoSettings;
+            std::println(stderr, "Error parsing C-SUMO configuration: {}", expected_csumo_settings.error().message);
+            return expected_csumo_settings;
         }
-        auto csumo_settings = std::move(expectedCsumoSettings).value();
+        auto csumo_settings = std::move(expected_csumo_settings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return csumo_settings;
     }
@@ -191,61 +192,11 @@ namespace pre_c_sumo
         return nf2ff_readers;
     }
 
-    void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings)
-    {
-        for (const auto& diffuser : csumo_settings.diffusers())
-        {
-            std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
-        }
-    }
-
-    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks)
-    {
-        std::println("Sending dummy sources/sinks data to far-field...");
-        // TESTDATA: set sources_sinks data
-        sources_sinks.clearData();
-        // data:
-        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.000, 350.365, -5.0, -5.0,
-                              0.20E+02); // sink 2, source 1
-        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.500, 350.365, -5.0, -5.0,
-                              0.20E+02); // sink 2, source 2
-
-        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.000, 350.365, -5.0, -5.0,
-                              0.50E+01); // intake fraction to source 1
-        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.500, 350.365, -5.0, -5.0,
-                              0.50E+01);                                               // intake fraction to source 2
-        sources_sinks.addData(1500.6, 1000.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10E+02); // intake sink
-        participant.writeData("sources_sinks_nodes", "sinks_x", sources_sinks.precice_ids, sources_sinks.sinks_x);
-        participant.writeData("sources_sinks_nodes", "sinks_y", sources_sinks.precice_ids, sources_sinks.sinks_y);
-        participant.writeData("sources_sinks_nodes", "sinks_z_min", sources_sinks.precice_ids,
-                              sources_sinks.sinks_z_min);
-        participant.writeData("sources_sinks_nodes", "sinks_z_max", sources_sinks.precice_ids,
-                              sources_sinks.sinks_z_max);
-        participant.writeData("sources_sinks_nodes", "sources_x", sources_sinks.precice_ids, sources_sinks.sources_x);
-        participant.writeData("sources_sinks_nodes", "sources_y", sources_sinks.precice_ids, sources_sinks.sources_y);
-        participant.writeData("sources_sinks_nodes", "sources_z_min", sources_sinks.precice_ids,
-                              sources_sinks.sources_z_min);
-        participant.writeData("sources_sinks_nodes", "sources_z_max", sources_sinks.precice_ids,
-                              sources_sinks.sources_z_max);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks.precice_ids,
-                              sources_sinks.discharges);
-    }
-
-    /**
-     * @brief Convert NF2FF output into connected source/sink entries.
-     *
-     * For each diffuser this constructs sink-source pairs based on sinks after the first
-     * sink point, and optionally intake-related pairs when intake is configured.
-     *
-     * @param csumoSettings Parsed C-SUMO settings.
-     * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return Connected source/sink data ready to write via preCICE.
-     */
-    ConnectedSinkSources convertNFtoConnectedSinkSources(const CSumoSettingsReader& csumoSettings,
-                                                         const std::vector<NF2FFReader>& nf2ff_readers)
+    std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
+        const CSumoSettingsReader& csumo_settings, const std::vector<NF2FFReader>& nf2ff_readers)
     {
         ConnectedSinkSources connectedsinksources{};
-        const auto& diffuser_settings = csumoSettings.diffusers();
+        const auto& diffuser_settings = csumo_settings.diffusers();
 
         for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
@@ -283,8 +234,9 @@ namespace pre_c_sumo
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
                 if (delta_s < 0.0)
                 {
-                    throw std::runtime_error("Negative entrainment factor for sink " + std::to_string(sink_index) +
-                                             ": " + std::to_string(delta_s));
+                    return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
+                        "Negative entrainment factor for sink " + std::to_string(sink_index) + ": " +
+                        std::to_string(delta_s)});
                 }
                 const double source_flow_rate = diffuser.sourceFlowRate();
                 const auto& sink = sinks[sink_index];
@@ -304,7 +256,7 @@ namespace pre_c_sumo
                     // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_top, discharge, 0.0, 0.0, {});
                 }
             }
 
@@ -339,9 +291,9 @@ namespace pre_c_sumo
                     double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge,
-                                                   source_moment_magnitude_weighted, source_moment_direction);
+                    connectedsinksources.add_entry(
+                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
+                        discharge, source_moment_magnitude_weighted, source_moment_direction, diffuser.constituents());
                 }
             }
 
@@ -384,7 +336,7 @@ namespace pre_c_sumo
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
                                                        -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0);
+                                                       0.0, {});
                     }
                 }
             }
@@ -398,9 +350,6 @@ namespace pre_c_sumo
         // (Placeholder) logic to determine if the diffuser is modelled
         return diffuser.sources().size() > 1 || diffuser.sinks().size() == 0;
     }
-
-    // Do we still need this?
-    void processSourceLocations() { std::println("Processing source locations..."); }
 
     // Determine the flow nodes over which to distribute the diluted discharge:
     // Both sink and source point needed for direction connection line.

@@ -155,6 +155,8 @@ module m_observations_data
    integer :: IVAL_ICE_TEMPERATURE
    integer :: IVAL_SNOW_THICKNESS
    integer :: IVAL_SNOW_TEMPERATURE
+   integer :: IVAL_QH_AIR2ICE
+   integer :: IVAL_QH_ICE2WAT
 
    integer :: IVAL_RHOP
    integer :: IVAL_RHO
@@ -283,6 +285,8 @@ module m_observations_data
    integer :: IPNT_ICE_TEMPERATURE
    integer :: IPNT_SNOW_THICKNESS
    integer :: IPNT_SNOW_TEMPERATURE
+   integer :: IPNT_QH_AIR2ICE
+   integer :: IPNT_QH_ICE2WAT
 
    integer :: IPNT_NUM
    integer :: IPNT_RHOP

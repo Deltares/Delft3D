@@ -66,6 +66,7 @@ contains
       use flocculation, only: get_tshear_tdiss
       use m_get_kbot_ktop
       use mathconsts, only: ee
+      use m_eqsettle, only: eqsettle
       !
       implicit none
       !

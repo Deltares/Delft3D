@@ -1051,7 +1051,7 @@ end subroutine deallocstructure
       do i = 1, sts%numBridges
          associate(pstru => sts%struct(sts%bridgeIndices(i)))
             if (.not. pstru%bridge%useOwnCrossSection) then
-               L = pstru%linknumbers(1)
+               L = abs(pstru%linknumbers(1))
                pstru%bridge%bedLevel = max(bobs(1, L), bobs(2, L))
             end if
          end associate

@@ -13,7 +13,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include <format>
 
 #include "monadic_utils.hpp"
 #include "parsing_utils.hpp"

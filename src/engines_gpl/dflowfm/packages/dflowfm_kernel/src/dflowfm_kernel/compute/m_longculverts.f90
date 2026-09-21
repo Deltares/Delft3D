@@ -54,6 +54,7 @@ module m_longculverts
    public LongCulvertsToProfs
    public setFrictionForLongculverts
    public reduceFlowAreaAtLongculverts
+   public remove_longculvert_flowlinks
    public get_valve_relative_opening_c_loc
    public find1d2dculvertlinks
    public initialize_Long_Culverts
@@ -65,6 +66,50 @@ module m_longculverts
    end interface
    
 contains
+
+   !> Removes flow links administered by long culverts from a link list.
+   !! The list is compacted in place, preserving the orientation of retained links.
+   pure subroutine remove_longculvert_flowlinks(numlinks, links)
+      integer, intent(inout) :: numlinks !< Number of flow links in links.
+      integer, dimension(:), intent(inout) :: links !< Flow links to be filtered.
+
+      integer, allocatable :: longculvert_links(:)
+      integer, dimension(size(links)) :: filtered_links
+      integer :: i, j, k, num_longculvert_links
+
+      num_longculvert_links = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            num_longculvert_links = num_longculvert_links + count(longculverts(i)%flowlinks /= 0)
+         end if
+      end do
+
+      allocate (longculvert_links(num_longculvert_links))
+      k = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            do j = 1, size(longculverts(i)%flowlinks)
+               if (longculverts(i)%flowlinks(j) /= 0) then
+                  k = k + 1
+                  longculvert_links(k) = abs(longculverts(i)%flowlinks(j))
+               end if
+            end do
+         end if
+      end do
+
+      k = 0
+      do i = 1, numlinks
+         if (links(i) == 0 .or. .not. any(longculvert_links == abs(links(i)))) then
+            k = k + 1
+            filtered_links(k) = links(i)
+         end if
+      end do
+
+      if (k > 0) then
+         links(1:k) = filtered_links(1:k)
+      end if
+      numlinks = k
+   end subroutine remove_longculvert_flowlinks
 
    !> Sets ALL (scalar) variables in this module to their default values.
    !! For a reinit prior to flow computation, call reset_longculverts() instead.
@@ -865,47 +910,65 @@ contains
 
    !> Reconstruct the flow link orientation based on input polyline
    subroutine set_longculvert_flow_direction(ilongc)
-      use network_data, only: kn, xk, yk
+      use m_flowparameters, only: EPS10
+      use m_flowgeom, only: ln
+      use network_data, only: xzw, yzw
       use precision_basics, only: equal
 
       integer, intent(in) :: ilongc
-      integer :: L_net, netnode_1, netnode_2
-      logical :: netnode_1_is_LC_node_2, netnode_2_is_LC_node_2
+      integer :: L_flow, flownode_1, flownode_2, coordinate_index
+      logical :: flownode_1_is_coordinate_1, flownode_1_is_coordinate_2
+      logical :: flownode_2_is_coordinate_1, flownode_2_is_coordinate_2
 
+      if (.not. newculverts) then ! old long culverts cannot use coordinate matching, but also don't need direction detection
+         return
+      end if
+
+      ! todo: remove defensive guards and make sure our long culvert objcect is always in a valid state
       if (longculverts(ilongc)%numlinks <= 0) then
          return
       end if
-      if (.not. allocated(longculverts(ilongc)%flowlinks) .or. .not. allocated(longculverts(ilongc)%netlinks) .or. &
+      if (.not. allocated(longculverts(ilongc)%flowlinks) .or. &
           .not. allocated(longculverts(ilongc)%xcoords) .or. .not. allocated(longculverts(ilongc)%ycoords)) then
          return
       end if
-      if (size(longculverts(ilongc)%flowlinks) < 1 .or. size(longculverts(ilongc)%netlinks) < 1 .or. &
+      if (size(longculverts(ilongc)%flowlinks) < 1 .or. &
           size(longculverts(ilongc)%xcoords) < 2 .or. size(longculverts(ilongc)%ycoords) < 2) then
          return
       end if
 
-      L_net = longculverts(ilongc)%netlinks(1)
-      if (L_net <= 0 .or. L_net > size(kn, dim=2)) then
+      L_flow = abs(longculverts(ilongc)%flowlinks(1))
+      if (L_flow <= 0 .or. L_flow > size(ln, dim=2)) then
          return
       end if
 
-      netnode_1 = kn(1, L_net)
-      netnode_2 = kn(2, L_net)
-      if (netnode_1 <= 0 .or. netnode_2 <= 0) then
+      flownode_1 = ln(1, L_flow)
+      flownode_2 = ln(2, L_flow)
+      if (flownode_1 <= 0 .or. flownode_2 <= 0) then
          return
       end if
 
-      netnode_1_is_LC_node_2 = equal(xk(netnode_1), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_1), longculverts(ilongc)%ycoords(2))
-      netnode_2_is_LC_node_2 = equal(xk(netnode_2), longculverts(ilongc)%xcoords(2)) .and. equal(yk(netnode_2), longculverts(ilongc)%ycoords(2))
+      do coordinate_index = 1, size(longculverts(ilongc)%xcoords) - 1
+         flownode_1_is_coordinate_1 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_1_is_coordinate_2 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
+         flownode_2_is_coordinate_1 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_2_is_coordinate_2 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
 
-      if (netnode_1_is_LC_node_2 .and. .not. netnode_2_is_LC_node_2) then
-         longculverts(ilongc)%orientation = -1
-      else if (.not. netnode_1_is_LC_node_2 .and. netnode_2_is_LC_node_2) then
-         longculverts(ilongc)%orientation = 1
-      else ! neither or both match, which is an error
-         call mess(LEVEL_ERROR, 'Cannot match the second coordinate of long culvert '//trim(longculverts(ilongc)%id)// &
-                   ' to either endpoint of its first flow link;')
-      end if
+         if (flownode_1_is_coordinate_1 .and. flownode_2_is_coordinate_2) then
+            longculverts(ilongc)%orientation = 1
+            return
+         else if (flownode_2_is_coordinate_1 .and. flownode_1_is_coordinate_2) then
+            longculverts(ilongc)%orientation = -1
+            return
+         end if
+      end do
+
+      call mess(LEVEL_ERROR, 'Cannot match any coordinate pair of long culvert '//trim(longculverts(ilongc)%id)// &
+                ' to the endpoints of its first local flow link;')
    end subroutine set_longculvert_flow_direction
 
    !> Fill frcu and icrctyp for the corresponding flow link numbers of the long culverts
