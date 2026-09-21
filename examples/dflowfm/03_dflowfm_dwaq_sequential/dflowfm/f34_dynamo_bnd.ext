@@ -105,7 +105,7 @@ forcingFileType     = uniMagDir
 interpolationMethod = linearSpaceTime
 operand             = override
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM1    
 dataFile              = initialtracerIM1.xyz
 dataFileType          = sample              
@@ -117,34 +117,34 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM1    
 dataFile              = para1.pol           
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e+001      
+dataValue             = 1.0000000e+001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM1    
 dataFile              = para2.pol           
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e+001      
+dataValue             = 1.0000000e+001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM1    
 dataFile              = para3.pol           
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 2.0000000e+001      
+dataValue             = 2.0000000e+001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM2    
 dataFile              = initialtracerIM2.xyz
 dataFileType          = sample              
@@ -156,16 +156,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerIM2    
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 3.0000000e+000      
+dataValue             = 3.0000000e+000      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerOXY    
 dataFile              = initialtracerOXY.xyz
 dataFileType          = sample              
@@ -177,16 +177,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerOXY    
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 8.0000000e+000      
+dataValue             = 8.0000000e+000      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerNH4    
 dataFile              = initialtracerNH4.xyz
 dataFileType          = sample              
@@ -198,16 +198,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerNH4    
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 4.0000000e-001      
+dataValue             = 4.0000000e-001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerNO3    
 dataFile              = initialtracerNO3.xyz
 dataFileType          = sample              
@@ -219,16 +219,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerNO3    
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e-001      
+dataValue             = 1.0000000e-001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerPO4    
 dataFile              = initialtracerPO4.xyz
 dataFileType          = sample              
@@ -240,16 +240,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerPO4    
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 5.0000000e-002      
+dataValue             = 5.0000000e-002      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDiat   
 dataFile              = initialtracerDiat.xyz
 dataFileType          = sample              
@@ -261,16 +261,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDiat   
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e-001      
+dataValue             = 1.0000000e-001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerGreen  
 dataFile              = initialtracerGreen.xyz
 dataFileType          = sample              
@@ -282,16 +282,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerGreen  
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e-001      
+dataValue             = 1.0000000e-001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetC   
 dataFile              = initialtracerDetC.xyz
 dataFileType          = sample              
@@ -303,16 +303,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetC   
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e+000      
+dataValue             = 1.0000000e+000      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetN   
 dataFile              = initialtracerDetN.xyz
 dataFileType          = sample              
@@ -324,16 +324,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetN   
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e-001      
+dataValue             = 1.0000000e-001      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetP   
 dataFile              = initialtracerDetP.xyz
 dataFileType          = sample              
@@ -345,16 +345,16 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerDetP   
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 1.0000000e-002      
+dataValue             = 1.0000000e-002      
 
-[Initial]
+[Spatial]
 quantity              = initialtracerSi     
 dataFile              = initialtracerSi.xyz 
 dataFileType          = sample              
@@ -366,12 +366,11 @@ averagingNumMin       = 1
 averagingPercentile   = 0.0000000e+000      
 locationType          = 2d                  
 
-[Initial]
+[Spatial]
 quantity              = initialtracerSi     
 dataFile              = fullextent.pol      
 dataFileType          = polygon             
 interpolationMethod   = constant            
 operand               = override
 locationType          = 2d                  
-value                 = 4.2000000e+000      
-
+dataValue             = 4.2000000e+000      
