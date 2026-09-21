@@ -108,7 +108,6 @@ module m_ec_typedefs
       character(len=50) :: timeunit !< netcdf-convention time unit definition
       logical :: periodic = .false. !< should a timeseries be rewinded beyond the last entry ?
       integer :: timeint = timeint_lin !< Type of time interpolation
-      integer :: timeint !< Type of time interpolation
       integer :: vptyp !< Type of specification of vertical position
       real(hp), pointer :: vp(:) => null() !< vertical positions
       integer :: numlay = 1 !< number of vertical layers
