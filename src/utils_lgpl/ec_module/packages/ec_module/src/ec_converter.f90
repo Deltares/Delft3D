@@ -41,8 +41,8 @@ module m_ec_converter
    use m_ec_spatial_extrapolation
    use m_ec_utm_inverse
    use time_class
-   use string_module, only : strcmpi
-   use m_missing    , only: dmiss
+   use string_module, only: strcmpi
+   use m_missing, only: dmiss
    use, intrinsic :: ieee_arithmetic
 
    implicit none(type, external)
@@ -1194,6 +1194,7 @@ contains
       integer :: maxlay !< maximum number of layers (3D)
       integer :: from, thru !< contiguous range of indices in the target array
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
+      character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: error_message
       !
       integer, dimension(:), pointer :: targetMask
       success = .false.
@@ -1233,14 +1234,14 @@ contains
             end do
 
          end if
-         
+
       else
 
          ! ===== interpolation in time =====
          !
          ! Only interpolate if both T0 and T1 contain at least 1 valid value, else set valuesT to dmiss
-         if (all(valuesT0 == dmiss) .or.  all(valuesT1 == dmiss)) then
-             valuesT = dmiss
+         if (all(valuesT0 == dmiss) .or. all(valuesT1 == dmiss)) then
+            valuesT = dmiss
          else
             if (.not. connection%sourceItemsPtr(1)%ptr%quantityptr%constant) then
                select case (connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
@@ -1254,10 +1255,17 @@ contains
                case (timeint_bfrom)
                   a0 = 1.0_dp
                   a1 = 0.0_dp
+               case default
+                  write (error_message, '(a,i0,a,a,a)') &
+                     "ERROR: ec_converter::ecConverterUniform: Unsupported time interpolation type ", &
+                     connection%sourceItemsPtr(1)%ptr%quantityptr%timeint, " for quantity '", &
+                     trim(connection%sourceItemsPtr(1)%ptr%quantityptr%name), "'."
+                  call set_ec_message(error_message)
+                  return
                end select
                !
                do i = 1, size(valuesT0, dim=1)
-                  ! For fixed layers, surface layer(s) may exist for T0 but not for T1 (and vice versa) 
+                  ! For fixed layers, surface layer(s) may exist for T0 but not for T1 (and vice versa)
                   ! Avoid time interpolation between realistic value and dmiss
                   if (valuesT0(i) == dmiss .and. valuesT1(i) /= dmiss) then
                      valuesT0(i) = valuesT1(i)
@@ -1330,7 +1338,7 @@ contains
                   end if
 
                   call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
-               
+
                end do
 
                targetField%timesteps = timesteps
@@ -1463,7 +1471,7 @@ contains
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      
+
       ! Local variables
       logical :: status !< status of undefined values check
       integer :: j !< loop counter
@@ -1480,7 +1488,7 @@ contains
       real(dp) :: windYT !< wind y-component value at time t
       real(dp) :: magnitude !< wind magnitude at time t
       type(tEcField), pointer :: targetField !< Converter's result goes in here
-      
+
       success = .false.
       targetField => null()
 
@@ -1496,7 +1504,7 @@ contains
          targetnCoordinates = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
 
          call time_weight_factors(a0, a1, timesteps, t0, t1)
-         
+
          targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
          windXT0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
          windXT1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(1)
@@ -1566,7 +1574,7 @@ contains
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      
+
       ! Local variables
       logical :: status_u !< status of undefined values check for u
       logical :: status_v !< status of undefined values check for v
@@ -1586,7 +1594,7 @@ contains
       integer :: targetnCoordinates !< number of coordinates in the target Field
       real(dp) :: targetU !< new u value to be written to all target grid points
       real(dp) :: targetV !< new v value to be written to all target grid points
-      
+
       success = .false.
       u => null()
       v => null()
@@ -1679,7 +1687,7 @@ contains
       end do
 
       integral = sum(abs(zpos(ndxmin + 1:ndxmax) - zpos(ndxmin:ndxmax - 1)) &
-         * (val(ndxmin + 1:ndxmax) + val(ndxmin:ndxmax - 1)) * 0.5)
+                     * (val(ndxmin + 1:ndxmax) + val(ndxmin:ndxmax - 1)) * 0.5)
       dz = min(abs(zpos(ndxmin) - zmin), abs(zpos(ndxmin) - zmax))
 
       if (ndxmin > 1) then
@@ -1715,14 +1723,14 @@ contains
    !! meteo1 : polyint
    function ecConverterPolytim(connection, timesteps) result(success)
       use m_ec_elementset, only: ecElementSetGetAbsZ
-      use m_missing,       only: dmiss
+      use m_missing, only: dmiss
       use m_ec_message
 
       ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       logical :: status !< status of undefined values check
       integer :: i, k !< loop counters
@@ -1815,7 +1823,7 @@ contains
          ! zmax and zmin are absolute top and bottom at target point coordinates
          zmax => connection%targetItemsPtr(1)%ptr%elementSetPtr%zmax
          zmin => connection%targetItemsPtr(1)%ptr%elementSetPtr%zmin
-         
+
          ! The polytim FileReader's source Item is actually a target Item, containing the time-interpolated wind_magnitude from the subFileReaders.
          do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
             kL = connection%converterPtr%indexWeight%indices(1, i)
@@ -1826,16 +1834,16 @@ contains
             ! TK_Temp: Deal with one sided interpolation, set kL or kR to 0 if arr1D does not contain valid values
             ! TK_Temp: Left side
             if (kL > 0) then
-               kbeginL = vectormax * maxlay_src * (kL - 1) +  1! refers to source right column
-               kendL   = kbeginL + vectormax*maxlay_src - 1
+               kbeginL = vectormax * maxlay_src * (kL - 1) + 1 ! refers to source right column
+               kendL = kbeginL + vectormax * maxlay_src - 1
                if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == dmiss)) then
                   kL = 0
                end if
             end if
             ! TK_Temp: Right side
             if (kR > 0) then
-               kbeginR = vectormax * maxlay_src * (kR - 1) +  1! refers to source right column
-               kendR   = kbeginR + vectormax*maxlay_src -1
+               kbeginR = vectormax * maxlay_src * (kR - 1) + 1 ! refers to source right column
+               kendR = kbeginR + vectormax * maxlay_src - 1
                if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == dmiss)) then
                   kR = 0
                end if
@@ -1848,7 +1856,7 @@ contains
             if (kR == 0 .and. kL /= 0) then
                kR = kL
             end if
- 
+
             ! No left or right point, do nothing (hence boundary values remain unchanged)
             if (kL == 0 .and. kR == 0) then
                cycle
@@ -1861,7 +1869,7 @@ contains
                           associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z))) then ! target has a vertical coordinate
                   ! 2D subproviders
                   val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax) &
-                                   + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
+                                     + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
                   ! Write value
                   do k = 1, maxlay_tgt
                      from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
@@ -1871,7 +1879,7 @@ contains
                         connection%converterPtr%operandType, &
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
                         status &
-                     )
+                        )
 
                      if (.not. status) then
                         return
@@ -1881,7 +1889,7 @@ contains
                         connection%converterPtr%operandType, &
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
                         val(1:vectormax) &
-                     )
+                        )
                   end do
                else
                   ! 3D subproviders
@@ -1981,7 +1989,7 @@ contains
                            connection%converterPtr%operandType, &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            status &
-                        )
+                           )
 
                         if (.not. status) then
                            return
@@ -1991,7 +1999,7 @@ contains
                            connection%converterPtr%operandType, &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            val(1:vectormax) &
-                        )
+                           )
                      end do ! target layers
                   else
                      do k = kbegin, kend
@@ -2033,7 +2041,7 @@ contains
                            connection%converterPtr%operandType, &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            status &
-                        )
+                           )
 
                         if (.not. status) then
                            return
@@ -2043,7 +2051,7 @@ contains
                            connection%converterPtr%operandType, &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                            val(1:vectormax) &
-                        )
+                           )
                      end do ! target layers
                   end if ! are we averaging the source in the vertical direction ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
@@ -2063,7 +2071,7 @@ contains
 
       end select
 
-      if (allocated(sigma)) then 
+      if (allocated(sigma)) then
          deallocate (sigma)
       end if
       if (allocated(sigmaL)) then
@@ -2114,7 +2122,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
@@ -2134,19 +2142,19 @@ contains
       real(dp) :: a0, a1
       real(dp) :: t0, t1
       real(dp), dimension(4) :: wf_i !< helper containing indexWeight%weightFactors(1:4,i)
-      
+
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
       targetField => null()
       indexWeight => null()
       sourceElementSet => null()
-      
+
       if (connection%nSourceItems /= connection%nTargetItems) then
          call set_ec_message("ERROR: ec_converter::ecConverterCurvi: The number of source and target Items differ and should have been identical.")
          return
       end if
-      
+
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_spacetimeSaveWeightFactors)
@@ -2156,22 +2164,22 @@ contains
          n_points = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          n_cols = sourceElementSet%n_cols
          n_rows = sourceElementSet%n_rows
-         
+
          sourceT0Field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
          t0 = sourceT0Field%timesteps
          t1 = sourceT1Field%timesteps
          call time_weight_factors(a0, a1, timesteps, t0, t1)
-         
+
          ! TODO: Take care of the allocation of targetValues(n_point)
          do j = 1, connection%nSourceItems
-            
+
             sourceT0Field => connection%sourceItemsPtr(j)%ptr%sourceT0FieldPtr
             sourceT1Field => connection%sourceItemsPtr(j)%ptr%sourceT1FieldPtr
             sourceMissing = connection%sourceItemsPtr(j)%ptr%quantityPtr%fillvalue
             targetField => connection%targetItemsPtr(j)%ptr%targetFieldPtr
             targetValues => targetField%arr1dPtr
-            
+
             s2D_T0(1:n_cols, 1:n_rows) => sourceT0Field%arr1d
             s2D_T1(1:n_cols, 1:n_rows) => sourceT1Field%arr1d
 
@@ -2201,13 +2209,13 @@ contains
 
                         wf_i = indexWeight%weightFactors(1:4, i)
                         sourceValue = a0 * (wf_i(1) * s2D_T0(mp, np) + &
-                                          wf_i(2) * s2D_T0(mp + 1, np) + &
-                                          wf_i(3) * s2D_T0(mp + 1, np + 1) + &
-                                          wf_i(4) * s2D_T0(mp, np + 1)) &
-                                    + a1 * (wf_i(1) * s2D_T1(mp, np) + &
-                                          wf_i(2) * s2D_T1(mp + 1, np) + &
-                                          wf_i(3) * s2D_T1(mp + 1, np + 1) + &
-                                          wf_i(4) * s2D_T1(mp, np + 1))
+                                            wf_i(2) * s2D_T0(mp + 1, np) + &
+                                            wf_i(3) * s2D_T0(mp + 1, np + 1) + &
+                                            wf_i(4) * s2D_T0(mp, np + 1)) &
+                                      + a1 * (wf_i(1) * s2D_T1(mp, np) + &
+                                              wf_i(2) * s2D_T1(mp + 1, np) + &
+                                              wf_i(3) * s2D_T1(mp + 1, np + 1) + &
+                                              wf_i(4) * s2D_T1(mp, np + 1))
 
                         call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetValues(i)], status)
                         if (.not. status) then
@@ -2225,9 +2233,9 @@ contains
                   end if
                end if
             end do
-            
+
             targetField%timesteps = timesteps
-            
+
          end do
 
       case default
@@ -2250,7 +2258,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       logical :: status !< status of undefined values check
       real(dp) :: x01, y01, dx1, dy1 !< uniform grid parameters
@@ -2273,7 +2281,7 @@ contains
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       type(tEcMask), pointer :: srcmask
-      
+
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
@@ -2305,20 +2313,20 @@ contains
          grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
          sourceT0Field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
-         
+
          do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
             ! TODO : Calculate target value depending on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
             if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
-            
+
             y1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n) - y01) / dy1
             if (y1 < -0.5_dp .or. y1 > grid_width - 0.5_dp) cycle
-            
+
             i1 = int(x1 + 1)
             i1 = min(mx - 1, max(1, i1))
             di1 = x1 + 1 - i1
-            
+
             j1 = int(y1 + 1)
             j1 = min(grid_width - 1, max(1, j1))
             dj1 = y1 + 1 - j1
@@ -2328,7 +2336,7 @@ contains
             f(2) = (di1) * (1 - dj1)
             f(3) = (di1) * (dj1)
             f(4) = (1 - di1) * (dj1)
-            
+
             u(1) = sourceT0Field%arr1dPtr(i1 + mx * (j1 - 1))
             u(2) = sourceT0Field%arr1dPtr(i1 + 1 + mx * (j1 - 1))
             u(3) = sourceT0Field%arr1dPtr(i1 + 1 + mx * j1)
@@ -2363,7 +2371,7 @@ contains
             t1 = sourceT1Field%timesteps
 
             call time_weight_factors(a0, a1, timesteps, t0, t1)
-            
+
             rr = a0 * vv0 + a1 * vv1
 
             select case (connection%converterPtr%operandType)
@@ -2407,14 +2415,14 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       real(dp) :: x01, y01 !< uniform grid parameters
       real(dp) :: rr !< target u, v or p at timesteps=t
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       integer :: nSamples
-      
+
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
@@ -2465,7 +2473,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(kind=dp), pointer :: input !< input value to the lookup table (referenced by pointer
       logical :: success !< function status
-      
+
       ! Local variables
       integer :: j
       integer :: start_j
@@ -2473,9 +2481,9 @@ contains
       integer :: tgtndx
       real(kind=dp) :: sourceValue !< sourceValue to be applied to the targetValues
       logical :: status !< status of undefined values check
-      
+
       success = .false.
-      
+
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_passthrough)
@@ -2511,10 +2519,10 @@ contains
             end if
 
             call check_undefined_values_for_operand( &
-                  connection%converterPtr%operandType, &
-                  [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
-                  status &
-            )
+               connection%converterPtr%operandType, &
+               [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx)], &
+               status &
+               )
 
             if (.not. status) then
                return
@@ -2524,7 +2532,7 @@ contains
                connection%converterPtr%operandType, &
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx), &
                sourceValue &
-            )
+               )
 
          case default
 
@@ -2554,7 +2562,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       type(c_time), intent(in) :: timesteps !< time in mjd
       logical :: success !< function status
-      
+
       ! Local variables
       logical :: status !< status of undefined values check
       integer :: i, j !< loop counters
@@ -2568,7 +2576,7 @@ contains
       real(dp) :: magnitude !< magnitude [m]
       real(dp) :: phase !< phase at t=timesteps [rad]
       real(dp) :: deflection !< summed result of the Fourier component effects
-      
+
       success = .false.
       deflection = 0.0_dp
 
@@ -2622,7 +2630,7 @@ contains
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
             call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1)], status)
-            
+
             if (.not. status) then
                return
             end if
@@ -2641,7 +2649,7 @@ contains
                connection%converterPtr%operandType, &
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex), &
                deflection &
-            )
+               )
 
          case default
 
@@ -2669,7 +2677,7 @@ contains
       real(dp), intent(in) :: weight2 !< Value for weighing two variables: 'weight2' holds for var2
       real(dp), intent(in), optional :: dmissValue !< Value to return in case of missing data
       real(dp) :: cyclic_interpolation !< Result value after linear interpolation between var1 and var2 using weightvalue weight
-      
+
       ! Local variables
       real(dp) :: minangle
       real(dp) :: maxangle
@@ -2734,7 +2742,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       integer :: i
       real(dp) :: spwdphi !< angular increment: 2pi/#colums
@@ -2796,7 +2804,7 @@ contains
       earthrad = 6378137.0_dp
       n_rows = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
       n_cols = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_cols
-      
+
       ! Which quantities should be updated and in what target items ?
       twx = 0
       twy = 0
@@ -2823,8 +2831,8 @@ contains
       case default
 
          call set_ec_message("ERROR: ec_converter::ecConverterSpiderweb: '" &
-                           //trim(connection%targetItemsPtr(1)%ptr%quantityPtr%name) &
-                           //"' is not a known spiderweb quantity.")
+                             //trim(connection%targetItemsPtr(1)%ptr%quantityPtr%name) &
+                             //"' is not a known spiderweb quantity.")
          return
 
       end select
@@ -2844,7 +2852,7 @@ contains
       spwdphi = 360.0_dp / (n_cols - 1) ! 0 == 360 degrees, so -1
       spwdrad = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius / (n_rows - 1)
       spw_merge_frac = connection%sourceItemsPtr(1)%ptr%elementSetPtr%spw_merge_frac
-      
+
       ! Determine the (x,y) coordinate pair of the cyclone eye at t=timesteps.
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
@@ -2857,12 +2865,12 @@ contains
       yeye1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%y_spw_eye
       xeye = cyclic_interpolation(xeye0, xeye1, a0, a1) ! cyclic interpolation (spheric coord)
       yeye = cyclic_interpolation(yeye0, yeye1, a0, a1) ! cyclic inteprolation (spheric coord)
-      
-      do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-         xctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n),dp)
-         yctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n),dp)
 
-         if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'undefined' .and.  &
+      do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+         xctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n), dp)
+         yctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n), dp)
+
+         if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'undefined' .and. &
              trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%gridunit) == 'degree') then
             call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc, utm_success)
             if (.not. utm_success) return
@@ -3042,7 +3050,7 @@ contains
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       logical :: success !< function status
-      
+
       ! Local variables
       integer :: i, j, k, ipt !< loop counters
       integer :: i_weight_index
@@ -3211,7 +3219,7 @@ contains
          success = .true.
          return
       end if
-      
+
       do i = 1, connection%nSourceItems
 
          if (connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'eastward_wind') then
@@ -3231,7 +3239,7 @@ contains
             windyPtr => connection%SourceItemsPtr(i)%ptr
             has_y_wind = .true.
          end if
-         
+
          ! Check presence fields
          if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
             wavedirPtr => connection%SourceItemsPtr(i)%ptr
@@ -3268,7 +3276,7 @@ contains
          end if
 
       end do
-      
+
       if (has_x_wind .and. has_y_wind) then
          ! This should only be performed if the standard_name for the x-component was x_wind or grid_eastward_wind (and similar for the y-component)
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
@@ -3284,7 +3292,7 @@ contains
             end do
          end if
       end if
-      
+
       ! ===== interpolation =====
       select case (connection%converterPtr%interpolationType)
       case (interpolate_spacetimeSaveWeightFactors, extrapolate_spacetimeSaveWeightFactors, interpolate_nearest_neighbour)
@@ -3329,7 +3337,7 @@ contains
                   ! Loop over all source sample points and evaluate harmonic function
                   do ipt = 1, n_cols
                      amplitude = sourceT1Field%arr1d(ipt)
-                     phase0 = sourceItem%hframe%phases(ipt, 1)  ! Linear indexing: phases(point, 1)
+                     phase0 = sourceItem%hframe%phases(ipt, 1) ! Linear indexing: phases(point, 1)
 
                      if (comparereal(amplitude, sourceMissing, .true.) == 0 .or. &
                          comparereal(phase0, sourceMissing, .true.) == 0) then
@@ -3449,7 +3457,7 @@ contains
                   !
                   ! if we have wave direction, do the time interpolation here on the weighted fields
                   if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
-                     wdtemp = cyclic_interpolation( sourceT0Field%arr1d, sourceT1Field%arr1d, a0, a1, sourceMissing)
+                     wdtemp = cyclic_interpolation(sourceT0Field%arr1d, sourceT1Field%arr1d, a0, a1, sourceMissing)
                      wd2d = reshape(wdtemp, (/ncol, nrow/))
                   end if
                end if
@@ -3595,7 +3603,7 @@ contains
                                  sourceValue = a0 * (wb * val(1, 1) + wt * val(2, 1)) + a1 * (wb * val(1, 2) + wt * val(2, 2))
 
                                  call apply_operand(connection%converterPtr%operandType, targetValues(k), sourceValue)
-                                 
+
                               end if
                            end if
                         end do
@@ -3730,20 +3738,20 @@ contains
                               end if
 
                               sourceValue = a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j) + &
-                                                          a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1, j) + &
-                                                          a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2, j) + &
-                                                          a1 * sourcevals(2, 1, 1, 2) * indexWeight%weightFactors(2, j) + &
-                                                          a0 * sourcevals(2, 2, 1, 1) * indexWeight%weightFactors(3, j) + &
-                                                          a1 * sourcevals(2, 2, 1, 2) * indexWeight%weightFactors(3, j) + &
-                                                          a0 * sourcevals(1, 2, 1, 1) * indexWeight%weightFactors(4, j) + &
-                                                          a1 * sourcevals(1, 2, 1, 2) * indexWeight%weightFactors(4, j)
+                                            a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1, j) + &
+                                            a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2, j) + &
+                                            a1 * sourcevals(2, 1, 1, 2) * indexWeight%weightFactors(2, j) + &
+                                            a0 * sourcevals(2, 2, 1, 1) * indexWeight%weightFactors(3, j) + &
+                                            a1 * sourcevals(2, 2, 1, 2) * indexWeight%weightFactors(3, j) + &
+                                            a0 * sourcevals(1, 2, 1, 1) * indexWeight%weightFactors(4, j) + &
+                                            a1 * sourcevals(1, 2, 1, 2) * indexWeight%weightFactors(4, j)
 
                               call apply_operand(connection%converterPtr%operandType, targetValues(j), sourceValue)
 
                               if (allocated(x_extrapolate)) then
                                  x_extrapolate(j) = targetElementSet%x(j) ! x_extrapolate is a copy of the x with missing points marked by ec_undef_hp
                               end if
-                           
+
                            end if
                         end if
                      end if ! 2D or 3D sources
@@ -3822,7 +3830,7 @@ contains
                         connection%converterPtr%operandType, &
                         targetField%arr1dPtr(j), &
                         connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j) &
-                     )
+                        )
                   end do
 
                   targetField%timesteps = timesteps
@@ -3906,7 +3914,7 @@ contains
       ! Local variables
       type(tEcField), pointer :: fieldPtr
       integer :: itgt
-      
+
       success = .false.
 
       do itgt = 1, connection%nTargetItems
@@ -3940,12 +3948,12 @@ contains
       real(dp), intent(out) :: wL !< Relative weight of left nearest polyline point.
       integer, intent(out) :: kR !< Index of right nearest polyline point (with kcs==1!)
       real(dp), intent(out) :: wR !< Relative weight of right nearest polyline point.
-      
+
       ! Local variables
       integer :: k, km, JACROS
       real(dp) :: dis, disM, disL, disR
       real(dp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
-      
+
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
@@ -3956,7 +3964,7 @@ contains
       disL = 0.0_dp
       disR = 0.0_dp
       DEPS = 1.0e-3_dp
-      
+
       do k = 1, ns - 1
          crp = 0.0_dp
          call CROSS(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP)
@@ -3972,7 +3980,7 @@ contains
             end if
          end if
       end do
-      
+
       if (km > 0) then
          dis = dbdistance(xs(km), ys(km), xs(km + 1), ys(km + 1)) ! Length of this segment.
          ! Find nearest valid polyline point left of the intersection (i.e.: kcs(kL) == 1)
@@ -3998,7 +4006,7 @@ contains
             end if
          end do
       end if
-      
+
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
          wR = 1.0_dp - wL
@@ -4100,12 +4108,12 @@ contains
       ! Local variables
       real(dp) :: ddx, ddy, rr
       real(dp), parameter :: DMISS = -999_dp
-      
+
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then
          dbdistance = 0.0_dp
          return
       end if
-      
+
       ddx = x2 - x1
       ddy = y2 - y1
       rr = ddx * ddx + ddy * ddy
@@ -4495,7 +4503,7 @@ contains
       end if
 
       if (has_undefined_value) then
-         call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
+         call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"//ec_operand_enum_to_string(operand)//"' operation.")
          istat = .false.
       end if
 
