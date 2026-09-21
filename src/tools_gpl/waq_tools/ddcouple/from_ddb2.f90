@@ -129,7 +129,7 @@
          if ( .not. domain_hyd%tem_present ) hyd%tem_present = .false.
          if ( .not. domain_hyd%tau_present ) hyd%tau_present = .false.
          if ( .not. domain_hyd%vdf_present ) hyd%vdf_present = .false.
-         if ( .not. domain_hyd%vel_present ) hyd%vdf_present = .false.
+         if ( .not. domain_hyd%vel_present ) hyd%vel_present = .false.
 
          if ( n_mode ) then
             if ( parallel ) then
