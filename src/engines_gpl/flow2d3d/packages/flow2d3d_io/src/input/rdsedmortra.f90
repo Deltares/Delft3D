@@ -136,26 +136,31 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     !
     filslu = ' '
     call prop_get(gdp%mdfile_ptr, '*', 'Filslu', filslu)
-    !
-    ! Create slurry branch in input tree
-    !
-    call tree_create_node(gdp%input_tree, 'Slurry Input', slu_ptr )
-    call tree_put_data(slu_ptr, transfer(trim(filslu),node_value), 'STRING' )
-    !
-    ! Put slu-file in input tree
-    !
-    call prop_file('ini', trim(filslu), slu_ptr, istat)
-    if (istat /= 0) then
-       select case (istat)
-       case(1)
-          call write_error(FILE_NOT_FOUND//trim(filslu), unit=lundia)
-       case(3)
-          call write_error(PREMATURE_EOF//trim(filslu), unit=lundia)
-       case default
-          call write_error(FILE_READ_ERROR//trim(filslu), unit=lundia)
-       endselect
-       error = .true.
-       return
+    if (filslu /= ' ') then
+       !
+       ! Create slurry branch in input tree
+       !
+       call tree_create_node(gdp%input_tree, 'Slurry Input', slu_ptr )
+       call tree_put_data(slu_ptr, transfer(trim(filslu),node_value), 'STRING' )
+       !
+       ! Put slu-file in input tree
+       !
+       call prop_file('ini', trim(filslu), slu_ptr, istat)
+       if (istat /= 0) then
+          select case (istat)
+          case(1)
+             call write_error(FILE_NOT_FOUND//trim(filslu), unit=lundia)
+          case(3)
+             call write_error(PREMATURE_EOF//trim(filslu), unit=lundia)
+          case default
+             call write_error(FILE_READ_ERROR//trim(filslu), unit=lundia)
+          endselect
+          error = .true.
+          return
+       endif
+       gdp%gdsedpar%stressStrainRelation = .true.
+    else
+       gdp%gdsedpar%stressStrainRelation = .false.
     endif
     !
     ! Read data from that file

@@ -779,7 +779,7 @@ type sedpar_type
     !
     logical :: anymud     ! Flag to indicate whether a mud fraction is included in the simulation.
     logical :: bsskin     ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
-      logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
+    logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
     logical :: falflc               ! Flag to indicate whether the fall velocity is computed according to winterwerp 2004 or not
     logical :: eroschel             ! Flag to indicate whether the erosion parameters are computed following Winterwerp and van Kesteren 2004 or not
     logical :: cons_mud             ! Flag to indicate whether consolidation of mud should be taken following Winterwerp and van Kesteren 2004 or not

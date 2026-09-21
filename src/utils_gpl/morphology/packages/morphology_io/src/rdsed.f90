@@ -264,12 +264,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     !
     istat = 0
     !
-    ! Read flag stressStrainRelation first:
-    ! It influences the allocate statements
-    !
-    sedpar%stressStrainRelation = .false.
-    call prop_get(slu_ptr, 'Slurry', 'stressStrainRelation', sedpar%stressStrainRelation)
-    !
     if (.not. associated(sedpar%sedd50)) then
        !
        ! allocation of namsed, rhosol, sedtyp and tratyp have been allocated in count_sed routine
@@ -308,11 +302,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        if (istat==0) allocate (sedpar%namclay   (          max(1,lsed)), stat = istat)
        if (istat==0) allocate (sedpar%flocsize  (          max(1,lsed)), stat = istat)
-       !
-       if (sedpar%stressStrainRelation) then
-          if (istat==0) allocate (sedpar%phiclay   (nmlb:nmub            ,kmax), stat = istat)
-          if (istat==0) allocate (sedpar%phisand   (nmlb:nmub            ,kmax), stat = istat)
-       endif
        !
        ! Allocation of arrays rhocf and cfvic is after reading the value of parameter stressStrainRelation
        !
@@ -482,17 +471,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     sedpar%shearsettling = .false.
     sedpar%vmudToVicuv   = .false.
     sedpar%vicThresh     = 1.0e10_fp
-    !
-    ! Check version number of slu input file
-    !
-    versionstring = ' '
-    call prop_get(slu_ptr, 'SlurryFileInformation', 'FileVersion', versionstring)
-    if (versionstring /= '01.00') then
-       errmsg = 'Unexpected version number of Slurry file. Expecting "01.00"'
-       call write_error(errmsg, unit=lundia)
-       error = .true.
-       return
-    endif
     !
     ! Check version number of sed input file
     !
@@ -737,48 +715,68 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_cons'  , sedpar%flcnf_cons )
        endif
        !
-       ! Bingham model parameters
-       !
        if (sedpar%stressStrainRelation) then
-          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cvisco'   , sedpar%bin_cvisco  )
-          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cnvisco'  , sedpar%bin_cnvisco )
-          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cyield'   , sedpar%bin_cyield  )
-          call prop_get(sed_ptr, 'SedimentOverall', 'bin_abingh'   , sedpar%bin_abingh  )
-          call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_mix'  , sedpar%pow_bng_mix )
-          call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_silt' , sedpar%pow_bng_silt) 
-          call prop_get(sed_ptr, 'SedimentOverall', 'pow_rich_zaki' , sedpar%pow_rich_zaki)          
-          if (.not. sedpar%cons_mud) then
-             call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_cons'   , sedpar%flcnf_cons )
+          !
+          ! Check version number of slurry input file
+          !
+          versionstring = ' '
+          call prop_get(slu_ptr, 'SlurryFileInformation', 'FileVersion', versionstring)
+          if (versionstring /= '01.00') then
+             errmsg = 'Unexpected version number of Slurry file. Expecting "01.00"'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
           endif
-       endif
-       !
-       ! Erosion of interface?
-       !
-       call prop_get(sed_ptr, 'SedimentOverall', 'ero_intfc', sedpar%ero_intfc)
-       if (sedpar%ero_intfc) then
-          call prop_get(sed_ptr, 'SedimentOverall', 'nstress_intfc'   , sedpar%nstress_intfc  )
-          call prop_get(sed_ptr, 'SedimentOverall', 'erosk1_int'      , sedpar%erosk1_int     )
-          call prop_get(sed_ptr, 'SedimentOverall', 'erosk2_int'      , sedpar%erosk2_int     )
-          if (.not. sedpar%eroschel) then
-             call prop_get(sed_ptr, 'SedimentOverall', 'eroSns'       , sedpar%erosns         )
-             call prop_get(sed_ptr, 'SedimentOverall', 'eroSd50'      , sedpar%erosd50        )
+          !
+          ! Read flag stressStrainRelation first:
+          ! It influences the allocate statements
+          !
+          call prop_get(slu_ptr, 'Slurry', 'stressStrainRelation', sedpar%stressStrainRelation)
+          !
+          if (sedpar%stressStrainRelation) then
+             if (istat==0) allocate (sedpar%phiclay   (nmlb:nmub            ,kmax), stat = istat)
+             if (istat==0) allocate (sedpar%phisand   (nmlb:nmub            ,kmax), stat = istat)
           endif
-       endif
-       !
-       ! Some output parameters
-       !
-       allocate (sedpar%xmu   (nmlb:nmub,kmax), stat = istat)
-       allocate (sedpar%tyield(nmlb:nmub,kmax), stat = istat)
-       allocate (sedpar%taubh (nmlb:nmub,kmax), stat = istat)
-       xmu           => sedpar%xmu
-       tyield        => sedpar%tyield
-       taubh         => sedpar%taubh
-       xmu   (:,:) = -999.0
-       tyield(:,:) = -999.0
-       taubh (:,:) = -999.0
-       !
-       !
-       if (sedpar%stressStrainRelation) then
+          !
+          ! Bingham model parameters
+          !
+          if (sedpar%stressStrainRelation) then
+             call prop_get(sed_ptr, 'SedimentOverall', 'bin_cvisco'   , sedpar%bin_cvisco  )
+             call prop_get(sed_ptr, 'SedimentOverall', 'bin_cnvisco'  , sedpar%bin_cnvisco )
+             call prop_get(sed_ptr, 'SedimentOverall', 'bin_cyield'   , sedpar%bin_cyield  )
+             call prop_get(sed_ptr, 'SedimentOverall', 'bin_abingh'   , sedpar%bin_abingh  )
+             call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_mix'  , sedpar%pow_bng_mix )
+             call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_silt' , sedpar%pow_bng_silt) 
+             call prop_get(sed_ptr, 'SedimentOverall', 'pow_rich_zaki' , sedpar%pow_rich_zaki)          
+             if (.not. sedpar%cons_mud) then
+                call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_cons'   , sedpar%flcnf_cons )
+             endif
+          endif
+          !
+          ! Erosion of interface?
+          !
+          call prop_get(sed_ptr, 'SedimentOverall', 'ero_intfc', sedpar%ero_intfc)
+          if (sedpar%ero_intfc) then
+             call prop_get(sed_ptr, 'SedimentOverall', 'nstress_intfc'   , sedpar%nstress_intfc  )
+             call prop_get(sed_ptr, 'SedimentOverall', 'erosk1_int'      , sedpar%erosk1_int     )
+             call prop_get(sed_ptr, 'SedimentOverall', 'erosk2_int'      , sedpar%erosk2_int     )
+             if (.not. sedpar%eroschel) then
+                call prop_get(sed_ptr, 'SedimentOverall', 'eroSns'       , sedpar%erosns         )
+                call prop_get(sed_ptr, 'SedimentOverall', 'eroSd50'      , sedpar%erosd50        )
+             endif
+          endif
+          !
+          ! Some output parameters
+          !
+          allocate (sedpar%xmu   (nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%tyield(nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%taubh (nmlb:nmub,kmax), stat = istat)
+          xmu           => sedpar%xmu
+          tyield        => sedpar%tyield
+          taubh         => sedpar%taubh
+          xmu   (:,:) = -999.0
+          tyield(:,:) = -999.0
+          taubh (:,:) = -999.0
           !
           ! Slurry
           !

@@ -130,6 +130,8 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     !
     call tree_create  ( "Sediment input", sedfil_tree )
     call tree_create  ( "Morphology input", morfil_tree )
+    call tree_create  ( "Slurry input", slufil_tree )
+    stm%sedpar%stressStrainRelation = .false.
     !
     nmaxus = griddim%nmax
     nmlb   = griddim%nmlb
