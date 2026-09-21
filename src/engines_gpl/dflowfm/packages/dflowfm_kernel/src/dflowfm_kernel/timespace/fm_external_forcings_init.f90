@@ -822,7 +822,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -963,7 +963,7 @@ contains
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
@@ -1024,6 +1024,14 @@ contains
          return
       end if
 
+      if (input%is_static_field) then
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as an initial field from file '"// &
+                               trim(input%forcing_file)//"'.")
+      else
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as a time-dependent forcing from file '"// &
+                               trim(input%forcing_file)//"'.")
+      end if
+
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
                  forcing_file_type => input%forcing_file_type, &
@@ -1059,6 +1067,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+               target_data => target_array_3d(first_index, :)
+            end if
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
@@ -1071,7 +1082,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
+            write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
          end if
@@ -1084,7 +1095,7 @@ contains
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
-               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
             else ! normal spatial field
                block
@@ -1250,7 +1261,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')

@@ -238,7 +238,7 @@ end function get_proj_string_from_epsg
 
    !> Transforms the given coordinates from the given source coordinate system to the given destination coordinate system.
    ! This subroutine uses the proj library for coordinate transformations.
-   subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y)
+   subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y, success)
       use proj
       use iso_c_binding, only: c_char, c_null_char
 
@@ -250,6 +250,7 @@ end function get_proj_string_from_epsg
       real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_y           !< y coordinates to transform in degrees/meters.
       real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_x           !< transformed x coordinates in degrees/meters.
       real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_y           !< transformed y coordinates in degrees/meters.
+      logical, optional, intent(out) :: success !< Whether the transformation was successful.
 
       type(pj_object) :: coord_trans !< Proj coordinate transformation.
       character(kind=c_char, len=:), allocatable :: src_proj_c, dst_proj_c
@@ -263,12 +264,19 @@ end function get_proj_string_from_epsg
 
       if (proj_associated_pj(coord_trans)) then
          call transform(coord_trans, src_x, src_y, dst_x, dst_y)
+         if (present(success)) then
+            success = .true.
+         end if
       else
          dst_x = src_x
          dst_y = src_y
-         write (message, *) 'transform_coordinates: proj_create_crs_to_crs failed. len(src)=', &
-            len_trim(src_proj_string), ', len(dst)=', len_trim(dst_proj_string)
-         call mess(LEVEL_WARN, trim(message))
+         if (present(success)) then
+            success = .false.
+         else
+            write (message, *) 'transform_coordinates: proj_create_crs_to_crs failed. len(src)=', &
+               len_trim(src_proj_string), ', len(dst)=', len_trim(dst_proj_string)
+            call mess(LEVEL_WARN, trim(message))
+         end if
       end if
 
       coord_trans = proj_destroy(coord_trans)

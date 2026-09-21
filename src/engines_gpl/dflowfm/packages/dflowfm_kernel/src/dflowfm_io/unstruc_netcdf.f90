@@ -913,15 +913,23 @@ contains
 
 !> Creates or opens a NetCDF file for writing.
 !! The file is maintained in the open-file-list.
-   function unc_create(filename, cmode, ncid)
+   function unc_create(filename, cmode, ncid, overwrite_cmode)
       character(len=*), intent(in) :: filename !< Filename to be created
       integer, intent(in) :: cmode !< Creation mode, must be a valid NetCDF flags integer.
       integer, intent(out) :: ncid !< Resulting NetCDF data set id, undefined in case an error occurred.
+      logical, optional, intent(in) :: overwrite_cmode !< Flag indicating whether to overwrite existing cmode (or perform ior).
       integer :: unc_create !< Integer result status (nf90_noerr if successful).
 
       integer :: cmode_
-
-      cmode_ = ior(cmode, unc_cmode)
+      if (present(overwrite_cmode)) then
+         if (overwrite_cmode) then
+            cmode_ = cmode
+         else
+            cmode_ = ior(cmode, unc_cmode)
+         end if
+      else
+         cmode_ = ior(cmode, unc_cmode)
+      end if
 
       unc_create = nf90_create(filename, cmode_, ncid)
       if (unc_create == nf90_noerr) then
@@ -3781,7 +3789,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -4321,6 +4329,12 @@ contains
             if (ice_mapout%snow_temperature) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, nf90_double, UNC_LOC_S, 'snow_temperature', 'temperature_in_surface_snow', 'Temperature of the snow layer', 'K', jabndnd=jabndnd_)
             end if
+            if (ice_mapout%qh_air2ice) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, nf90_double, UNC_LOC_S, 'qh_air2ice', '', 'Heat flux from air to snow/ice cover', 'W m-2', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, nf90_double, UNC_LOC_S, 'qh_ice2wat', '', 'Heat flux from ice cover to water', 'W m-2', jabndnd=jabndnd_)
+            end if
          end if
 
          if (jawind > 0) then
@@ -4380,6 +4394,9 @@ contains
                end if
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
+               if (soiltempthick > 0.0_dp) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, nc_precision, UNC_LOC_S, 'tbed', '', 'Temperature of the bed', 'degC', jabndnd=jabndnd_)
+               end if
             end if
          end if
 
@@ -6103,6 +6120,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, UNC_LOC_S, snow_temperature, jabndnd=jabndnd_)
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, UNC_LOC_S, qh_air2ice, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, UNC_LOC_S, qh_ice2wat, jabndnd=jabndnd_)
+         end if
       end if
 
       ! Heat flux models
@@ -6127,6 +6150,9 @@ contains
             end if
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
+            if (soiltempthick > 0.0_dp) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, UNC_LOC_S, tbed, jabndnd=jabndnd_)
+            end if
          end if
       end if
 
@@ -6658,7 +6684,8 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
-                               ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+                               ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, &
+                               ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -6704,9 +6731,10 @@ contains
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
          id_q1main, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
-         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
+         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
          id_ice_s1, id_ice_zmax, id_ice_zmin, id_ice_area_fraction, id_ice_thickness, id_ice_pressure, id_ice_temperature, id_snow_thickness, id_snow_temperature, &
+         id_qh_air2ice, id_qh_ice2wat, &
          id_cwav, id_cgwav, id_sigmwav, &
          id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
          id_1d2d_edges, id_1d2d_zeta1d, id_1d2d_crest_level, id_1d2d_b_2di, id_1d2d_b_2dv, id_1d2d_d_2dv, id_1d2d_q_zeta, id_1d2d_q_lat, &
@@ -6858,6 +6886,9 @@ contains
                   end if
 
                   call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  if (soiltempthick > 0.0_dp) then
+                     call definencvar(imapfile, id_tbed(iid), nf90_double, idims, 'tbed', 'Temperature of the bed', 'degC', 'FlowElem_xcc FlowElem_ycc')
+                  end if
                end if
             end if
 
@@ -7979,6 +8010,12 @@ contains
             end if
             if (ice_mapout%snow_temperature) then
                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%qh_air2ice) then
+               call definencvar(imapfile, id_qh_air2ice(iid), nf90_double, idims, 'qh_air2ice', 'Heat flux from air to snow/ice cover', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               call definencvar(imapfile, id_qh_ice2wat(iid), nf90_double, idims, 'qh_ice2wat', 'Heat flux from ice cover to water', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
             end if
          end if
 
@@ -9435,6 +9472,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = nf90_put_var(imapfile, id_qh_air2ice(iid), qh_air2ice, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = nf90_put_var(imapfile, id_qh_ice2wat(iid), qh_ice2wat, [1, itim], [ndxndxi, 1])
+         end if
       end if
 
       if (map_write_settings%heatflux > 0) then ! Heat modelling only
@@ -9453,6 +9496,9 @@ contains
             end if
 
             ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
+            if (soiltempthick > 0.0_dp) then
+               ierr = nf90_put_var(imapfile, id_tbed(iid), tbed, [1, itim], [ndxndxi, 1])
+            end if
          end if
       end if
       call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
@@ -11290,6 +11336,7 @@ contains
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
       use dfm_error, only: dfm_noerr
+      use network_data, only: xk,yk
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
@@ -11298,28 +11345,38 @@ contains
       integer, intent(out) :: numl_read !< Number of new netlinks read from file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
+      logical :: success ! Flag to check if coordinate transformation is successful.
+      real(hp), dimension(1) :: lonn, latn ! Temporary arrays to receive test conversion.
+
       call readyy('Reading net data', 0.0_dp)
 
       call prepare_error('Could not read NetCDF file '''//trim(filename)//'''. Details follow:')
 
-      !
       ! Try and read as new UGRID NetCDF format
-      !
       call unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       if (ierr /= dfm_noerr) then
          ! No UGRID, but just try to use the 'old' format now.
          call unc_read_net_old(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       end if
-
-      if (ierr == dfm_noerr .and. crs%proj_string == ' ') then
+      if (ierr /= dfm_noerr) then
+         ! An error occurred while reading the net-file; no reason to continue.
+         return
+      end if
+      
+      ! File reading went fine, now check the coordinate system.
+      if (crs%proj_string == ' ') then
          ierr = detect_proj_string(crs)
-         if (ierr /= dfm_noerr) then
-            ierr = dfm_noerr
-            call mess(LEVEL_WARN, 'Unable to determine projection string for UGRID net file '''//trim(filename)//'''.')
-            if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
-               call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if projection string is unknown. Switched off.')
-               unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
-            end if
+         ierr = dfm_noerr ! don't stumble over proj string detection errors
+      end if
+
+      ! Check the coordinate transformation to lat/lon if requested.
+      if (iand(unc_writeopts, UG_WRITE_LATLON) /= 0) then
+         call transform_coordinates(crs%proj_string, WGS84_PROJ_STRING, xk(1:1), yk(1:1), lonn, latn, success)
+         if (.not. success) then
+            call mess(LEVEL_WARN, 'Unable to transform coordinates to WGS84; most likely the projection is not specified.')
+            call mess(LEVEL_WARN, 'NcWriteLatLon cannot be used if transformation fails. Switched off.')
+            unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LATLON))
+            crs%proj_string = ' ' ! set_model_boundingbox checks for empty proj string
          end if
       end if
    end subroutine unc_read_net

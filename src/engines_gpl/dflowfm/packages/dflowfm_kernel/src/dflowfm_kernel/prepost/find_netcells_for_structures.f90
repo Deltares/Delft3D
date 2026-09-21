@@ -122,7 +122,6 @@ contains
          if (.not.success) then
             call prop_get_alloc_string(str_ptr, '', 'locationfile', str_buf, success)
          end if
-
          if (success) then
             loc_spec_type = LOCTP_POLYLINE_FILE
             plifile = str_buf
