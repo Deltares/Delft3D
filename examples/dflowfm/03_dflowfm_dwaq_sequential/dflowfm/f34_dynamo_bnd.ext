@@ -202,3 +202,4 @@ targetMaskFile      = fullextent.pol     # Name of <*.pol> file to be used as ma
 interpolationMethod = constant           # Type of (spatial) interpolation.
 operand             = override           # How this data is combined with previous data for the same quantity (if any).
 dataValue           = 0.1                # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
+
