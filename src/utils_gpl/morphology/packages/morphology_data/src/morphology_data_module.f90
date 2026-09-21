@@ -237,6 +237,11 @@ module morphology_data_module
    integer, parameter, public :: HIDEXP_ACTIVE_AND_COARSE_LAYER = 1
 
 !
+! Fluff layer options
+!
+   integer, parameter, public :: BURFLUFF0_BY_USER = 1
+   integer, parameter, public :: BURFLUFF0_COMPUTED = 2
+!
 ! collection of morphology output options
 !
    type moroutputtype
@@ -1880,7 +1885,7 @@ end subroutine initmoroutput
 !! executable statements -------------------------------------------------------
 !
       flufflyr%iflufflyr = 0
-      flufflyr%iburtype  = 1 ! set to 2 in case of consolidation
+      flufflyr%iburtype  = BURFLUFF0_BY_USER ! set to BURFLUFF0_COMPUTED in case of consolidation
       flufflyr%cmfluff  = 40.0_fp
       flufflyr%kkfluff  = 8.0E-12_fp
       flufflyr%acalbur0 = 1.0_fp

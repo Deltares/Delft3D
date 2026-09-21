@@ -71,7 +71,7 @@ contains
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
                               dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50, &
-                              poros, tcrero_bed, eropar_bed, iconsolidate
+                              poros, tcrero_bed, eropar_bed, iconsolidate, depflxf, eroflxf
       use m_fm_erosed, only : difparam, seddif_cal
 
       if (.not. stm_included) then
@@ -167,6 +167,8 @@ contains
       iflufflyr => stmpar%morpar%flufflyr%iflufflyr
       depfac => stmpar%morpar%flufflyr%depfac
       mfluff => stmpar%morpar%flufflyr%mfluff
+      depflxf => stmpar%morpar%flufflyr%depflxf
+      eroflxf => stmpar%morpar%flufflyr%eroflxf
       alfabs => stmpar%morpar%alfabs
       alfabn => stmpar%morpar%alfabn
       wetslope => stmpar%morpar%wetslope

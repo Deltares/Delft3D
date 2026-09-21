@@ -146,6 +146,8 @@ module m_fm_erosed
    integer, pointer :: iflufflyr
    real(fp), dimension(:, :), pointer :: depfac
    real(fp), dimension(:, :), pointer :: mfluff
+   real(fp), dimension(:, :), pointer :: depflxf
+   real(fp), dimension(:, :), pointer :: eroflxf
    logical, pointer :: bedupd
    real(fp), pointer :: tmor
    real(fp), pointer :: tcmp

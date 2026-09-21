@@ -108,7 +108,7 @@ contains
                              iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
                              dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
                              cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
-                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50, depflxf, eroflxf
       use m_fm_erosed, only: difparam, seddif_cal
       use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate, CONSOL_NONE
       use m_fm_erosed, only: ndx => ndx_mor
@@ -363,6 +363,8 @@ contains
       if (iflufflyr > 0) then
          sinkf = 0.0_fp
          sourf = 0.0_fp
+         depflxf = 0.0_fp
+         eroflxf = 0.0_fp
       end if
       !
       ! Reset Sediment diffusion arrays for (l,nmk)

@@ -39,7 +39,7 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac,
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use morphology_data_module, only: fluffy_type
+    use morphology_data_module, only: fluffy_type, BURFLUFF0_BY_USER
     !
     integer                                 , intent(in)    :: lsed
     integer                                 , intent(in)    :: lsedtot
@@ -84,9 +84,9 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac,
           if (mfltot>0.0_fp) then
              do l = 1, lsed
                 fac          = mfluff(l,nm)/mfltot
-                if (iconsolidate == 1) then
+                if (flufflyr%iburtype == BURFLUFF0_BY_USER) then
                     bfluff0temp = flufflyr%acalbur0 *(rhosol(l)-rhowat2d(nm))/rhowat2d(nm) * flufflyr%kkfluff * flufflyr%cmfluff**2.0_fp/rhosol(l)
-                else
+                else ! BURFLUFF0_COMPUTED
                     bfluff0temp  = bfluff0(l,nm)
                 endif
                 dfluff       = min(fac*min(mfltot*bfluff1(l,nm), bfluff0temp)*dt,mfluff(l,nm))
