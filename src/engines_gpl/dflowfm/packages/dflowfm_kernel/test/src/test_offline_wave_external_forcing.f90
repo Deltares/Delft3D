@@ -264,7 +264,7 @@ contains
       iresult = DFM_NOERR
       call init_new(iresult)
 
-      call f90_expect_eq(iresult, DFM_NOERR, 'current-format external forcing initialization should succeed')
+      call f90_expect_eq(iresult, DFM_NOERR, 'current-format external forcing registration should succeed')
       call f90_expect_true(wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y), &
                            'ywaveforce must be required by the configured radiation-stress forcing')
       call f90_expect_false(wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_FORCE_Y), &

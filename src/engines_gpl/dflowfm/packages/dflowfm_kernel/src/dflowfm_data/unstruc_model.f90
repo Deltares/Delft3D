@@ -543,6 +543,8 @@ contains
 
       character(len=32) :: program
       logical :: success, ex, value_parsed
+      logical :: has_3d_stokes_profile, has_3d_wave_breaker_turbulence, has_3d_wave_streaming
+      logical :: has_3d_wave_boundary_layer, has_3d_wave_forces
       logical :: has_charnock_coefficient, has_air_viscous_momentum_coefficient
       character(len=1), dimension(1) :: dummychar
       logical :: dummylog
@@ -1612,20 +1614,41 @@ contains
          jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
       end if
 
-      call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
+      call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes, has_3d_stokes_profile) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
       if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. jawaveStokes > NO_STOKES_DRIFT) then
          write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
          call warn_flush()
       end if
 
-      call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
-      if (kmx <= 1) then
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
-      end if
-      call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
-      call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
-      call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
+      call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence, has_3d_wave_breaker_turbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming, has_3d_wave_streaming) ! Influence of wave streaming. 0: no, 1: added to adve
+      call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, has_3d_wave_boundary_layer) ! Boundary layer formulation. 1: Sana
+      call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces, has_3d_wave_forces) ! Diagnostic mode: apply wave forces (1) or not (0)
       call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+
+      if (.not. kmx > 0) then
+         if (has_3d_wave_breaker_turbulence .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwavebreakerturbulence" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_breaker_turbulence) then
+            jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+         end if
+         if (has_3d_wave_streaming .and. jawavestreaming > WAVE_STREAMING_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwavestreaming" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_streaming) then
+            jawavestreaming = WAVE_STREAMING_OFF
+         end if
+         if (has_3d_wave_boundary_layer .and. jawavedelta > WAVE_BOUNDARYLAYER_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwaveboundarylayer" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_boundary_layer) then
+            jawavedelta = WAVE_BOUNDARYLAYER_OFF
+         end if
+      end if
       !
       ! safety
       if (fwavpendep <= 0.0_dp) then
@@ -1637,10 +1660,41 @@ contains
       !
       ! safety
       if (jawave > NO_WAVES .and. flow_without_waves) then
-         jawaveStokes = NO_STOKES_DRIFT
-         jawaveforces = WAVE_FORCES_OFF
-         jawavestreaming = WAVE_STREAMING_OFF
-         jawavedelta = WAVE_BOUNDARYLAYER_OFF
+         if (has_3d_stokes_profile .and. jawaveStokes > NO_STOKES_DRIFT) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dstokesprofile" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            istat = -1
+            return
+         else if (.not. has_3d_stokes_profile) then
+            jawaveStokes = NO_STOKES_DRIFT
+         end if
+         if (has_3d_wave_streaming .and. jawavestreaming > WAVE_STREAMING_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwavestreaming" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_streaming) then
+            jawavestreaming = WAVE_STREAMING_OFF
+         end if
+         if (has_3d_wave_boundary_layer .and. jawavedelta > WAVE_BOUNDARYLAYER_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwaveboundarylayer" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_boundary_layer) then
+            jawavedelta = WAVE_BOUNDARYLAYER_OFF
+         end if
+         if (has_3d_wave_forces .and. jawaveforces > WAVE_FORCES_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwaveforces" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_forces) then
+            jawaveforces = WAVE_FORCES_OFF
+         end if
+         if (has_3d_wave_breaker_turbulence .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+            call mess(LEVEL_ERROR, 'MDU setting "3Dwavebreakerturbulence" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.')
+            istat = -1
+            return
+         else if (.not. has_3d_wave_breaker_turbulence) then
+            jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+         end if
          modind = 0
       end if
 
