@@ -100,277 +100,105 @@ forcingFile  = f34_NE_Green.bc
 
 [Spatial]
 quantity            = windxy
-forcingFile         = f34.wnd
-forcingFileType     = uniMagDir
+dataFile            = f34.wnd
+dataFileType        = uniMagDir
 interpolationMethod = linearSpaceTime
 operand             = override
 
 [Spatial]
-quantity              = initialtracerIM1    
-dataFile              = initialtracerIM1.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerIM1 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = para1.pol        # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 10.0             # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerIM1    
-dataFile              = para1.pol           
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e+001      
+quantity            = initialtracerIM1 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = para2.pol        # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 10.0             # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerIM1    
-dataFile              = para2.pol           
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e+001      
+quantity            = initialtracerIM1 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = para3.pol        # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 20.0             # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerIM1    
-dataFile              = para3.pol           
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 2.0000000e+001      
+quantity            = initialtracerIM2 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol   # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 3.0              # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerIM2    
-dataFile              = initialtracerIM2.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerNO3 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol   # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.1              # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerIM2    
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 3.0000000e+000      
+quantity            = initialtracerNH4 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol   # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.4              # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerOXY    
-dataFile              = initialtracerOXY.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerPO4 # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol   # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.05             # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerOXY    
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 8.0000000e+000      
+quantity            = initialtracerDetC # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol    # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant          # Type of (spatial) interpolation.
+operand             = override          # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 1.0               # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerNH4    
-dataFile              = initialtracerNH4.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerDetN # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol    # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant          # Type of (spatial) interpolation.
+operand             = override          # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.1               # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerNH4    
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 4.0000000e-001      
+quantity            = initialtracerDetP # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol    # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant          # Type of (spatial) interpolation.
+operand             = override          # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.01              # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerNO3    
-dataFile              = initialtracerNO3.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerSi # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol  # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant        # Type of (spatial) interpolation.
+operand             = override        # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 4.2             # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerNO3    
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e-001      
+quantity            = initialtracerOXY # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol   # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant         # Type of (spatial) interpolation.
+operand             = override         # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 8.0              # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerPO4    
-dataFile              = initialtracerPO4.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
+quantity            = initialtracerDiat # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol    # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant          # Type of (spatial) interpolation.
+operand             = override          # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.1               # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
 
 [Spatial]
-quantity              = initialtracerPO4    
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 5.0000000e-002      
-
-[Spatial]
-quantity              = initialtracerDiat   
-dataFile              = initialtracerDiat.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerDiat   
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e-001      
-
-[Spatial]
-quantity              = initialtracerGreen  
-dataFile              = initialtracerGreen.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerGreen  
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e-001      
-
-[Spatial]
-quantity              = initialtracerDetC   
-dataFile              = initialtracerDetC.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerDetC   
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e+000      
-
-[Spatial]
-quantity              = initialtracerDetN   
-dataFile              = initialtracerDetN.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerDetN   
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e-001      
-
-[Spatial]
-quantity              = initialtracerDetP   
-dataFile              = initialtracerDetP.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerDetP   
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 1.0000000e-002      
-
-[Spatial]
-quantity              = initialtracerSi     
-dataFile              = initialtracerSi.xyz 
-dataFileType          = sample              
-interpolationMethod   = averaging           
-operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d                  
-
-[Spatial]
-quantity              = initialtracerSi     
-dataFile              = fullextent.pol      
-dataFileType          = polygon             
-interpolationMethod   = constant            
-operand               = override
-locationType          = 2d                  
-dataValue             = 4.2000000e+000      
+quantity            = initialtracerGreen # Name of the quantity. See UM Section C.5.3
+targetMaskFile      = fullextent.pol     # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant           # Type of (spatial) interpolation.
+operand             = override           # How this data is combined with previous data for the same quantity (if any).
+dataValue           = 0.1                # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.
