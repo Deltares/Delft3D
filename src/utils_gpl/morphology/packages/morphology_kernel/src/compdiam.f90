@@ -1,8 +1,34 @@
+!----- GPL ---------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
 module m_compdiam
-
-private
-
-public compdiam
+   implicit none
+   private
+   public compdiam
 
 contains
 
@@ -10,48 +36,14 @@ contains
                   & logsedsig, nseddia, logseddia, nmmax, nmlb, &
                   & nmub, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
                   & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
-!----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!
-!
-!!--description-----------------------------------------------------------------
-!
-! Function: Determines the characteristic diameters of the sediment mixtures
-!           (mud fractions excluded)
-!
 !!--pseudo code and references--------------------------------------------------
 !
-! Calculate arithmetic mean diameter by a weighted average of the diameters
-! of the non-mud sediments. Divide by the total percentage of
-! non-mud sediments to exclude the mud fractions from the computation.
+! Calculate arithmetic mean diameter by a weighted average of the sediment
+! fractions that have a specified diameter.
 ! D_m = sum[f(i) * D_50(i)]
 !
-! Calculate geometric mean diameter by a weighted average of the
-! diameters of the non-mud sediments in log-space.
+! Calculate geometric mean diameter by a weighted average of the sediment
+! fractions that have a specified diameter in log-space.
 ! D_g = sum[D_50(i)^f(i)]
 !
 ! Calculate the Dxx diameter by scanning the cdf of all
@@ -64,8 +56,6 @@ contains
 !!--declarations----------------------------------------------------------------
     use precision
     use sediment_basics_module
-    !
-    implicit none
 !
 ! Arguments
 !
@@ -104,7 +94,7 @@ contains
     real(fp)                    :: dens
     real(fp)                    :: logdiam
     real(fp)                    :: logdprev
-    real(fp)                    :: fracnonmud
+    real(fp)                    :: fracdiam
     real(fp)                    :: fraccum
     real(fp)                    :: fracfac
     real(fp)                    :: fracreq
@@ -181,21 +171,21 @@ contains
           !
           ! Compute Dm and Dg values
           !
-          fracnonmud = 0.0_fp
+          fracdiam   = 0.0_fp
           dm(nm)     = 0.0_fp
           dg(nm)     = 1.0_fp
           dgsd(nm)   = 0.0_fp
           !
           do l = 1, lsedtot
              if (sedtyp(l) >= min_dxx_sedtyp) then
-                fracnonmud = fracnonmud + frac(nm,l)
+                fracdiam = fracdiam + frac(nm,l)
              endif
           enddo
-          if (fracnonmud > 0.0_fp) then
+          if (fracdiam > 0.0_fp) then
              do l = 1, lsedtot
                 if (sedtyp(l) >= min_dxx_sedtyp) then
-                   dm(nm)     = dm(nm) + (frac(nm,l) / fracnonmud) * seddm(l)
-                   dg(nm)     = dg(nm) * (sedd50(l)**(frac(nm,l)/fracnonmud))
+                   dm(nm)     = dm(nm) + (frac(nm,l) / fracdiam) * seddm(l)
+                   dg(nm)     = dg(nm) * (sedd50(l)**(frac(nm,l)/fracdiam))
                 endif
              enddo
              !
@@ -207,7 +197,7 @@ contains
              !
              do l = 1, lsedtot
                 if ((sedtyp(l) >= min_dxx_sedtyp) .and. (comparereal(frac(nm,l),0.0_fp) == 1)) then
-                   dgsd(nm) = dgsd(nm) + (frac(nm,l)/fracnonmud)*(log(sedd50(l))-log(dg(nm)))**2
+                   dgsd(nm) = dgsd(nm) + (frac(nm,l)/fracdiam)*(log(sedd50(l))-log(dg(nm)))**2
                 endif
              enddo
              dgsd(nm) = exp(sqrt(dgsd(nm)))
@@ -247,8 +237,8 @@ contains
                 s = stage(l)
                 if (s<nseddia(l)) then
                    if (s>0) then
-                      if (fracnonmud > 0.0_fp) then
-                         fracfac = frac(nm,l) / fracnonmud
+                      if (fracdiam > 0.0_fp) then
+                         fracfac = frac(nm,l) / fracdiam
                       else
                          fracfac = 1.0_fp
                       endif
@@ -265,8 +255,8 @@ contains
              !
              ! Check if we have not reached the end of the composition, due to
              ! some numerical roundoff errors we might not have determined the
-             ! diameter of fractions equal (or close) to 100%. Finish them off
-             ! now! (This may also happen if we have only mud fractions in the
+             ! diameter of fractions equal (or close) to 100%. Finish them now!
+             ! (This may also happen if we have only mud fractions in the
              ! simulation.)
              !
              if (ltrigger < 0) then

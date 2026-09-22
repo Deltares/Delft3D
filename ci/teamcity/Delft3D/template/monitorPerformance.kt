@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 object TemplateMonitorPerformance : Template({
 
-    name = "Monitor Performance"
-    description = "Record system performance statistics during build."
+    name = "Monitor performance"
+    description = "Record agent performance during the build."
 
     features {
         perfmon {

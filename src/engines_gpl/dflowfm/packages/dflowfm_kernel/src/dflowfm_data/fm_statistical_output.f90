@@ -1674,6 +1674,14 @@ contains
                              'Wrihis_snow_temperature', 'snow_temperature', 'snow temperature', 'temperature_in_surface_snow', &
                              'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_QH_AIR2ICE, &
+                             'Wrihis_heatflux_air_to_ice', 'qh_air2ice', 'Heat flux from air to ice', '', &
+                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from air to ice to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_QH_ICE2WAT, &
+                             'Wrihis_heatflux_ice_to_water', 'qh_ice2wat', 'Heat flux from ice to water', '', &
+                             'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write heat flux from ice to water to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
 
       ! Sediment model
       call add_output_config(config_set_his, IDX_HIS_SED, &
@@ -2369,6 +2377,7 @@ contains
       use m_dambreak_breach, only: n_db_signals
       use m_waveconst
       use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use bedcomposition_module, only: POROS_IN_DENSITY
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2913,6 +2922,12 @@ contains
             if (IPNT_SNOW_TEMPERATURE > 0) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SNOW_TEMPERATURE), valobs(:, IPNT_SNOW_TEMPERATURE))
             end if
+            if (IPNT_QH_AIR2ICE > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QH_AIR2ICE), valobs(:, IPNT_QH_AIR2ICE))
+            end if
+            if (IPNT_QH_ICE2WAT > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QH_ICE2WAT), valobs(:, IPNT_QH_ICE2WAT))
+            end if
          end if
 
          ! Sediment model
@@ -2995,7 +3010,7 @@ contains
                temp_pointer(1:ntot * nlyrs) => valobs(:, IPNT_THLYR:IPNT_THLYR + (nlyrs - 1))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_THLYR), temp_pointer)
 
-               if (stmpar%morlyr%settings%iporosity > 0) then
+               if (stmpar%morlyr%settings%iporosity /= POROS_IN_DENSITY) then
                   temp_pointer(1:ntot * nlyrs) => valobs(:, IPNT_POROS:IPNT_POROS + (nlyrs - 1))
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POROS), temp_pointer)
                end if

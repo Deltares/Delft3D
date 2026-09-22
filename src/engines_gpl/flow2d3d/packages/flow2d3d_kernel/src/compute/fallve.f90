@@ -53,6 +53,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     use morphology_data_module
     use flocculation, only: get_tshear_tdiss
     use globaldata
+    use m_eqsettle, only: eqsettle
     !
     implicit none
     !
@@ -376,7 +377,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_strings(WS_SP_RUNID) = gdp%runid
              dll_strings(WS_SP_USRFL) = dll_usrfil(l)
              !
-             call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings, &
+             call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings, &
                          & dll_integers, dll_reals, dll_strings, lundia, iform_settle(l),  &
                          & localpar, gdp%gdtrapar%npar, wsloc, error)
              if (error) call d3stop(1, gdp)

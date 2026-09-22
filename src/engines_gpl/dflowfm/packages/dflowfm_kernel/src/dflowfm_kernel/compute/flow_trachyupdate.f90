@@ -233,7 +233,7 @@ contains
                   & cftrt, rouflo, linit, dx_trt, &
                   & hu_trt, kcu_trt, sig,            &
                   & z0rou, 1, waqol, trachy_fl, &
-                  & umag, 1, numl, 1, ndx, & ! first entry in row r(u1) should be gdp%gderosed%umod !!WO-temp
+                  & umag, update_umag, 1, numl, 1, ndx, & ! first entry in row r(u1) should be gdp%gderosed%umod !!WO-temp
                   & rhomean, ag, vonkar, viskin, & ! ~z0 used for what?   ~viskin instead of vicmol (Delft3D)
                   & EPS8, epshs, spatial_bedform, bedformD50, bedformD90, &
                   & rksr, rksmr, rksd, error,  &
@@ -244,7 +244,7 @@ contains
                  & cftrt, rouflo, linit, dx_trt, &
                  & hu_trt, kcu_trt, sig, &
                  & z0rou, 1, waqol, trachy_fl, &
-                 & umag, 1, numl, 1, ndx, &
+                 & umag, update_umag, 1, numl, 1, ndx, &
                  & rhomean, ag, vonkar, viskin, &
                  & EPS8, epshs, spatial_bedform, bedformD50, bedformD90, &
                  & rksr, rksmr, rksd, error,  &

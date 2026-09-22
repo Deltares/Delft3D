@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object LifecycleScanTestBench : BuildType({
-    name = "Lifecycle Scan TestBench"
+    id("LifecycleScanTestBench")
+    name = "Nexus IQ (TestBench)"
+    description = "SBOM and Nexus IQ scan of TestBench."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {

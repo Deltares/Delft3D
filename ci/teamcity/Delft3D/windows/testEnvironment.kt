@@ -10,7 +10,7 @@ import Delft3D.step.*
 
 object WindowsTestEnvironment : BuildType({
 
-    description = "Test-environment container image to test our Delf3D software in."
+    description = "Image used to test Delft3D on Windows."
 
     templates(
         TemplateMergeRequest,
@@ -20,7 +20,7 @@ object WindowsTestEnvironment : BuildType({
         TemplateBuildConcurrency
     )
 
-    name = "Delft3D test environment container"
+    name = "Test environment"
     buildNumberPattern = "%build.vcs.number%"
 
     params {

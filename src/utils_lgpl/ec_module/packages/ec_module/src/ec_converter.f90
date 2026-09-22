@@ -1194,6 +1194,7 @@ contains
       integer :: maxlay !< maximum number of layers (3D)
       integer :: from, thru !< contiguous range of indices in the target array
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
+      character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: error_message
       !
       integer, dimension(:), pointer :: targetMask
       success = .false.
@@ -1254,6 +1255,13 @@ contains
                case (timeint_bfrom)
                   a0 = 1.0_dp
                   a1 = 0.0_dp
+               case default
+                  write (error_message, '(a,i0,a,a,a)') &
+                     "ERROR: ec_converter::ecConverterUniform: Unsupported time interpolation type ", &
+                     connection%sourceItemsPtr(1)%ptr%quantityptr%timeint, " for quantity '", &
+                     trim(connection%sourceItemsPtr(1)%ptr%quantityptr%name), "'."
+                  call set_ec_message(error_message)
+                  return
                end select
                !
                do i = 1, size(valuesT0, dim=1)
@@ -2811,7 +2819,7 @@ contains
          twx = 1
          twy = 2
          twp = 3
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          twp = 1
       case ('windx')
          twx = 1
