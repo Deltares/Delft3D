@@ -63,7 +63,6 @@ module m_turbulence
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
    real(kind=dp) :: buoflu(kmxx)
    real(kind=dp) :: bruva(kmxx)
-   real(kind=dp) :: tkepro(0:kmxx) ! vertical production t
 
    real(kind=dp) :: ak(0:kmxx) ! local arrays, (0:
    real(kind=dp) :: bk(0:kmxx)

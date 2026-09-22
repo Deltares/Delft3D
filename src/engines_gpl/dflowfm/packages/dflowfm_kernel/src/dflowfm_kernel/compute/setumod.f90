@@ -440,9 +440,7 @@ contains
                         end if
                      end if
                      vicL = vicL + vicc
-                     if (javiuplus3D > 0) then
-                        vicL = vicL + vicwwu(L)
-                     end if
+                     vicL = vicL + vicwwu(L) ! add vertical eddy viscosity to horizontal eddy viscosity
                      if (nshiptxy > 0) then
                         if (vicuship /= 0.0_dp) then
                            vicL = vicL + vicushp(LL)
