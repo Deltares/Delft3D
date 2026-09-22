@@ -81,12 +81,20 @@ end subroutine test_invalidate_observation_cache
 !
 !==============================================================================
 subroutine test_bmi_set_s1_invalidates_observation_cache
-    use bmi, only: set_1d_double_at_index
     use iso_c_binding, only: c_char, c_double, c_int, c_null_char
     use m_flow, only: s1
     use m_missing, only: dmiss
     use m_observations_data, only: valobs_last_update_time
     use precision_basics, only: comparereal
+
+    interface
+       subroutine set_1d_double_at_index(c_var_name, index, value) bind(C, name="set_1d_double_at_index")
+          use iso_c_binding, only: c_char, c_double, c_int
+          character(kind=c_char), intent(in) :: c_var_name(*)
+          integer(c_int), value, intent(in) :: index
+          real(c_double), value, intent(in) :: value
+       end subroutine set_1d_double_at_index
+    end interface
 
     character(kind=c_char), dimension(3) :: var_name
 
