@@ -75,7 +75,10 @@ subroutine test_invalidate_observation_cache
 
     call invalidate_observation_cache()
 
-    call assert_true(comparereal(valobs_last_update_time, dmiss) == 0, 'Observation cache timestamp was not invalidated')
+    call assert_true( &
+        comparereal(valobs_last_update_time, dmiss) == 0, &
+        'Observation cache timestamp was not invalidated' &
+    )
 end subroutine test_invalidate_observation_cache
 !
 !
@@ -109,7 +112,10 @@ subroutine test_bmi_set_s1_invalidates_observation_cache
     call set_1d_double_at_index(var_name, 0_c_int, 7.5_c_double)
 
     call assert_true(comparereal(s1(1), 7.5_dp) == 0, 'BMI setter did not update s1')
-    call assert_true(comparereal(valobs_last_update_time, dmiss) == 0, 'BMI setter did not invalidate observation cache')
+    call assert_true( &
+        comparereal(valobs_last_update_time, dmiss) == 0, &
+        'BMI setter did not invalidate observation cache' &
+    )
 
     deallocate(s1)
 end subroutine test_bmi_set_s1_invalidates_observation_cache
