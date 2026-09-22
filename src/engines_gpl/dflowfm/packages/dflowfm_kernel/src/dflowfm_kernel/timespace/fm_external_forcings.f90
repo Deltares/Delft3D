@@ -1958,6 +1958,21 @@ contains
 
    end subroutine validate_offline_wave_input_providers
 
+!> Validate that sensible and latent heat flux are either both supplied or both absent.
+   subroutine validate_heat_flux_input_providers(iresult)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_wind, only: sensible_heat_flux_available, latent_heat_flux_available
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      integer, intent(inout) :: iresult
+
+      if (sensible_heat_flux_available .neqv. latent_heat_flux_available) then
+         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be ' // &
+                   'provided together or both be omitted; only one of them was found in the external forcings.')
+         iresult = DFM_WRONGINPUT
+      end if
+   end subroutine validate_heat_flux_input_providers
+
 !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)
       use dfm_error, only: DFM_NOERR
@@ -2771,6 +2786,7 @@ contains
       call finalize_1dfield_global_values()
       call finalize_offline_wave_input_requirements()
       call validate_offline_wave_input_providers(ierr)
+      call validate_heat_flux_input_providers(ierr)
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
