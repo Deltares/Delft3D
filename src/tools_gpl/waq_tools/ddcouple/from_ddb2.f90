@@ -124,7 +124,6 @@
             i_wasteload = hyd%wasteload_coll%add(wasteload)
          enddo
 
-
          if ( .not. domain_hyd%sal_present ) hyd%sal_present = .false.
          if ( .not. domain_hyd%tem_present ) hyd%tem_present = .false.
          if ( .not. domain_hyd%tau_present ) hyd%tau_present = .false.
