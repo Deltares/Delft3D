@@ -658,62 +658,62 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
              if (ierror/=0) goto 9999
           endif
           !
-          ! Store vicmud,dudz,dvdz in defined stations
-          !
-          vicmud_sta = -999.0_fp
-          do ii = 1, nostat
-          m = mnstat(1, ii)
-          if (m<0) cycle
-          n = mnstat(2, ii)
-          if (n<0) cycle
-             do k = 0, kmax
-                if (zmodel) then
-                   if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
-                      vicmud_sta(ii, k) = vicmud(n, m, k)
-                   endif
-                else
-                   vicmud_sta(ii, k) = vicmud(n, m, k)
-                endif
-             enddo
-          enddo
-
-          dudz_sta = -999.0_fp
-          do ii = 1, nostat
-          m = mnstat(1, ii)
-          if (m<0) cycle
-          n = mnstat(2, ii)
-          if (n<0) cycle
-             do k = 0, kmax
-                if (zmodel) then
-                   if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
-                      dudz_sta(ii, k) = dudz(n, m, k)
-                   endif
-                else
-                   dudz_sta(ii, k) = dudz(n, m, k)
-                endif
-             enddo
-          enddo
-
-          dvdz_sta = -999.0_fp
-          do ii = 1, nostat
-          m = mnstat(1, ii)
-          if (m<0) cycle
-          n = mnstat(2, ii)
-          if (n<0) cycle
-             do k = 0, kmax
-                if (zmodel) then
-                   if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
-                      dvdz_sta(ii, k) = dvdz(n, m, k)
-                   endif
-                else
-                   dvdz_sta(ii, k) = dvdz(n, m, k)
-                endif
-             enddo
-          enddo
-          !
           ! Carrier Fluid parameters
           !
           if (stressStrainRelation) then
+             !
+             ! Store vicmud,dudz,dvdz in defined stations
+             !
+             vicmud_sta = -999.0_fp
+             do ii = 1, nostat
+                m = mnstat(1, ii)
+                if (m<0) cycle
+                n = mnstat(2, ii)
+                if (n<0) cycle
+                do k = 0, kmax
+                   if (zmodel) then
+                      if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
+                         vicmud_sta(ii, k) = vicmud(n, m, k)
+                      endif
+                   else
+                      vicmud_sta(ii, k) = vicmud(n, m, k)
+                   endif
+                enddo
+             enddo
+             
+             dudz_sta = -999.0_fp
+             do ii = 1, nostat
+                m = mnstat(1, ii)
+                if (m<0) cycle
+                n = mnstat(2, ii)
+                if (n<0) cycle
+                do k = 0, kmax
+                   if (zmodel) then
+                      if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
+                         dudz_sta(ii, k) = dudz(n, m, k)
+                      endif
+                   else
+                      dudz_sta(ii, k) = dudz(n, m, k)
+                   endif
+                enddo
+             enddo
+             
+             dvdz_sta = -999.0_fp
+             do ii = 1, nostat
+                m = mnstat(1, ii)
+                if (m<0) cycle
+                n = mnstat(2, ii)
+                if (n<0) cycle
+                do k = 0, kmax
+                   if (zmodel) then
+                      if (k>=(kfsmin(n, m)-1) .and. k<=kfsmax(n, m)) then
+                         dvdz_sta(ii, k) = dvdz(n, m, k)
+                      endif
+                   else
+                      dvdz_sta(ii, k) = dvdz(n, m, k)
+                   endif
+                enddo
+             enddo
              !
              ! element ' vicmud'
              !

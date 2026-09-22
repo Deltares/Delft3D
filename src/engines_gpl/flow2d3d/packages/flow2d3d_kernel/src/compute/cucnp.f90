@@ -631,20 +631,20 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           !
           ! Slurry
           !
-          if (stressStrainRelation) then
-             if (vicmud(nm,kmax) > victhresh) then
-                irobed = 0
-             else
-                irobed = 1
-             endif
-          else
-            irobed = 1
-          endif
-          if (irobed == 0) then
-              bdmwrp = 0.0_fp
-          else
+          !if (stressStrainRelation) then
+          !   if (vicmud(nm,kmax) > victhresh) then
+          !      irobed = 0
+          !   else
+          !      irobed = 1
+          !   endif
+          !else
+          !  irobed = 1
+          !endif
+          !if (irobed == 0) then
+          !    bdmwrp = 0.0_fp
+          !else
              bdmwrp = h0i*taubpu(nm)/thick(kmax)
-          endif
+          !endif
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -829,27 +829,22 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 cnurh = h0i * h0i
                 !
-                ! vicd calculation 
+                ! viz1 calculation 
                 ! restriction is moved from TURCLO to here
-                ! defined at lower interface
                 !
-                ! In points with mud: no slip at the bed!
-                !
-                vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
+                viz1  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
                       & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp)  &
                       &               + redvic(vicww(nmu, kdo), gdp)) ! &
                       ! & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
                 !
-                ! vicu calculation 
+                ! viz1 calculation 
                 ! restriction is moved from TURCLO to here
-                ! defined at upper interface
                 !
-                ! For slurry:
-                if (k==kmax .and. irobed==0) then 
-                   kfw = 0
-                endif
+                !if (k==kmax .and. irobed==0) then 
+                !   kfw = 0
+                !endif
                 !
-                vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
+                viz2 = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp)  &
                      &               + redvic(vicww(nmu, k), gdp)) ! &
                      ! & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
@@ -858,24 +853,24 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 ! vicd = min(vicd, 100.0_fp)
                 ! vicu = min(vicu, 100.0_fp)
                 !
-                ddza = 2.0 * cnurh * vicd / (tsg1*thick(k))
-                ddzc = 2.0 * cnurh * vicu / (tsg2*thick(k))
+                ddza = 2.0 * cnurh * viz1 / (tsg1*thick(k))
+                ddzc = 2.0 * cnurh * viz2 / (tsg2*thick(k))
                 !
                 ddza = iada * ddza
                 ddzc = iadc * ddzc
                 !
-                if (k==kmax .and. irobed==0) then
-                   !
-                   ! No slip at the bed.
-                   ! Implicitly at the bed for no-slip condition
-                   ! change 25 april 2014
-                   !
-                   !  ddzb = -h0i*(3.*vicu + vicd)/(2.*thick(kmax))
-                   ddzb = -ddza-h0i*(2.*vicu )/(thick(kmax))                   
-                   ddzc = 0.0
-                else
+                !if (k==kmax .and. irobed==0) then
+                !   !
+                !   ! No slip at the bed.
+                !   ! Implicitly at the bed for no-slip condition
+                !   ! change 25 april 2014
+                !   !
+                !   !  ddzb = -h0i*(3.*vicu + vicd)/(2.*thick(kmax))
+                !   ddzb = -ddza-h0i*(2.*vicu )/(thick(kmax))                   
+                !   ddzc = 0.0
+                !else
                    ddzb = -ddza - ddzc
-                endif
+                !endif
                 !
                 ! substitution in coefficients
                 !
