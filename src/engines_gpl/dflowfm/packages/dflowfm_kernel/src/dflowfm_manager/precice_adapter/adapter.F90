@@ -572,7 +572,7 @@ contains
          !    D-Flow FM will handle it correctly
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
-         call source_sinks%resize(source_sinks%num_total)
+         call source_sinks%realloc(source_sinks%num_total)
          write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
          source_sinks%indices(source_sinks%num_total, 1) = sink_cell
          source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)

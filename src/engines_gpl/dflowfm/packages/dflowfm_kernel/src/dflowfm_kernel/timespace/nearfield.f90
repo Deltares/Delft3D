@@ -672,7 +672,7 @@ contains
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call source_sinks%resize(source_sinks%num_total)
+            call source_sinks%realloc(source_sinks%num_total)
             !
             ! Name
             write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
@@ -773,7 +773,7 @@ contains
          end if
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          source_sinks%num_total = source_sinks%num_total + 1
-         call source_sinks%resize(source_sinks%num_total)
+         call source_sinks%realloc(source_sinks%num_total)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -866,7 +866,7 @@ contains
          end if
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          source_sinks%num_total = source_sinks%num_total + 1
-         call source_sinks%resize(source_sinks%num_total)
+         call source_sinks%realloc(source_sinks%num_total)
          !
          ! Name
          write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake

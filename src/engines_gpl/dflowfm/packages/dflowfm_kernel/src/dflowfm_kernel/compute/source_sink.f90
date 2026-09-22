@@ -92,8 +92,8 @@ module m_source_sink
 
       procedure :: initialize => initialize_source_sinks
       procedure :: dealloc => dealloc_source_sinks
-      procedure :: resize => resize_source_sinks
-      procedure :: resize_xy => resize_xy_source_sinks
+      procedure :: realloc => realloc_source_sinks
+      procedure, private :: realloc_xy => realloc_xy_source_sinks
 
    end type SourceSinks
 
@@ -265,18 +265,18 @@ contains
 
    end subroutine initialize_source_sinks
 
-   !> Resizes the SourceSinks object to new size, keeping existing values.
-   subroutine resize_source_sinks(self, new_size)
+   !> Reallocates the SourceSinks object arrays to new size, keeping existing values.
+   subroutine realloc_source_sinks(self, new_size)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_size
 
       if (new_size > size(self%name)) then
-         ! Resize global source/sink arrays.
+         ! Reallocate global source/sink arrays.
          call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
 
-         ! Resize all source/sink arrays.
+         ! Reallocate all source/sink arrays.
          call realloc(self%name, new_size, keepExisting=.true., fill='')
          call realloc(self%x, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
          call realloc(self%y, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
@@ -302,10 +302,10 @@ contains
          call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
       end if
 
-   end subroutine resize_source_sinks
+   end subroutine realloc_source_sinks
 
-   !> Resizes the x and y arrays of the SourceSinks object to fit new_max_polyline_points, keeping existing values if possible.
-   subroutine resize_xy_source_sinks(self, new_max_polyline_points)
+   !> Reallocates the x and y arrays of the SourceSinks object to fit new_max_polyline_points, keeping existing values if possible.
+   subroutine realloc_xy_source_sinks(self, new_max_polyline_points)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_max_polyline_points
@@ -313,11 +313,11 @@ contains
       ! Update max_polyline_points to new value if larger than current value.
       self%max_polyline_points = max(self%max_polyline_points, new_max_polyline_points)
 
-      ! Resize x and y arrays to fit new max_polyline_points.
+      ! Reallocate x and y arrays to fit new max_polyline_points.
       call realloc(self%x, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
       call realloc(self%y, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
 
-   end subroutine resize_xy_source_sinks
+   end subroutine realloc_xy_source_sinks
 
    ! Source/sink subroutines.
    ! ====================================================================================================
@@ -449,12 +449,12 @@ contains
       
       ! If the number of source/sinks exceeds the current array size, double the array size.
       if (source_sinks%num_total > size(source_sinks%name)) then
-         call source_sinks%resize((source_sinks%num_total - 1) * 2)
+         call source_sinks%realloc((source_sinks%num_total - 1) * 2)
       end if
 
-      ! If the number of points in the polyline exceeds the current max_polyline_points, resize the arrays to fit the new number of points.
+      ! If the number of points in the polyline exceeds the current max_polyline_points, reallocate the arrays to fit the new number of points.
       if (num_points > source_sinks%max_polyline_points) then
-         call source_sinks%resize_xy(num_points)
+         call source_sinks%realloc_xy(num_points)
       end if
 
       ! Set the coordinates of the source/sink, only the first 2 points of the polyline file are actually used.
