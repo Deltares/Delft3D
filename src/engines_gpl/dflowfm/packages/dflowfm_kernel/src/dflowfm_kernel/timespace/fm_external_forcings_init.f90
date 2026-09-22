@@ -1764,7 +1764,7 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: setsorsin, source_sinks
+      use m_source_sink, only: source_sinks
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx

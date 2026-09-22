@@ -42,8 +42,6 @@ module m_source_sink
    public :: source_sinks
    public :: source_sink_all_discharges
 
-   public :: setsorsin
-
    ! Type containing all source/sink data.
    type :: SourceSinks
 
@@ -95,6 +93,7 @@ module m_source_sink
 
       procedure :: add => add_source_sink
       procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
+      procedure :: set => set_source_sink
 
    end type SourceSinks
 
@@ -332,7 +331,7 @@ contains
       use system_utils, only: split_filename
 
       ! Parameters
-      class(SourceSinks), intent(inout) :: self
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
       character(len=*), intent(in) :: polyline_file !< Name of the polyline file, either with x,y values only (*.pli), or including z-values (*.pliz).
       character(len=*), optional, intent(in) :: name !< Name of the source-sink. When not present, name is based on the polyline filename instead.
       real(kind=dp), dimension(:), optional, intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
@@ -421,7 +420,7 @@ contains
       use m_find_flownode, only: find_nearest_flownodes
 
       ! Parameters
-      class(SourceSinks), intent(inout) :: self
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
       character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
@@ -574,12 +573,16 @@ contains
    end subroutine add_source_sink
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
-   subroutine setsorsin()
+   subroutine set_source_sink(self)
       use m_flow, only: kmx, zws, vol1, qin, epshs
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi, reduce_srsn
 
+      ! Arguments
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
+
+      ! Local variables
       integer :: n
       integer :: kk
       integer :: k
@@ -595,27 +598,27 @@ contains
       real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
-      do n = 1, source_sinks%num_total
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
-         source_sinks%discharge(n) = source_sink_all_discharges(1, n)
+      do n = 1, self%num_total
+         kk = self%indices(n, 1) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
+         kk2 = self%indices(n, 4) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
+         self%discharge(n) = source_sink_all_discharges(1, n)
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
-               if (source_sinks%z_bottom(n, 1) == dmiss) then
+               if (self%z_bottom(n, 1) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > source_sinks%z_bottom(n, 1) .or. k == kt) then
+                     if (zws(k) > self%z_bottom(n, 1) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (source_sinks%z_top(n, 1) == dmiss) then
+                  if (self%z_top(n, 1) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > source_sinks%z_top(n, 1) .or. ku == kt) then
+                        if (zws(ku) > self%z_top(n, 1) .or. ku == kt) then
                            exit
                         end if
                      end do
@@ -626,11 +629,11 @@ contains
                kt = kk
                ku = kk ! in 2D, volume cell nr = pressure cell nr
             end if
-            source_sinks%indices(n, 2) = k ! store kb of src
-            source_sinks%indices(n, 3) = ku !
-            if (source_sinks%discharge(n) > 0) then ! Reduce if flux pos
+            self%indices(n, 2) = k ! store kb of src
+            self%indices(n, 3) = ku !
+            if (self%discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
+               do k = self%indices(n, 2), self%indices(n, 3)
                   source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
@@ -647,20 +650,20 @@ contains
          if (kk2 > 0) then ! TO point
             if (kmx > 0) then
                call getkbotktop(kk2, kb, kt)
-               if (source_sinks%z_bottom(n, 2) == dmiss) then
+               if (self%z_bottom(n, 2) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > source_sinks%z_bottom(n, 2) .or. k == kt) then
+                     if (zws(k) > self%z_bottom(n, 2) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (source_sinks%z_top(n, 2) == dmiss) then
+                  if (self%z_top(n, 2) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > source_sinks%z_top(n, 2) .or. ku == kt) then
+                        if (zws(ku) > self%z_top(n, 2) .or. ku == kt) then
                            exit
                         end if
                      end do
@@ -671,11 +674,11 @@ contains
                kt = kk2
                ku = kk2 ! in 2D, volume cell nr = pressure cell nr
             end if
-            source_sinks%indices(n, 5) = k
-            source_sinks%indices(n, 6) = ku
-            if (source_sinks%discharge(n) < 0) then ! Reduce if flux neg
+            self%indices(n, 5) = k
+            self%indices(n, 6) = ku
+            if (self%discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
+               do k = self%indices(n, 5), self%indices(n, 6)
                   source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
@@ -693,60 +696,60 @@ contains
 
       if (jampi > 0) then
          numvals = 2 * (1 + numconst)
-         call reduce_srsn(numvals, source_sinks%num_total, source_sink_reduction)
+         call reduce_srsn(numvals, self%num_total, source_sink_reduction)
       end if
 
-      do n = 1, source_sinks%num_total
-         source_sinks%discharge(n) = source_sink_all_discharges(1, n)
+      do n = 1, self%num_total
+         self%discharge(n) = source_sink_all_discharges(1, n)
          do L = 1, numconst
-            source_sinks%constituents(n, L) = source_sink_all_discharges(L + 1, n)
+            self%constituents(n, L) = source_sink_all_discharges(L + 1, n)
          end do
 
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr
-         qsrck = source_sinks%discharge(n)
+         kk = self%indices(n, 1) ! 2D pressure cell nr
+         qsrck = self%discharge(n)
          if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
             if (FRAC * source_sink_reduction(1, n) / dts < abs(qsrck)) then
                qsrck = FRAC * source_sink_reduction(1, n) / dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(source_sinks%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(self%name(n))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr
+         kk2 = self%indices(n, 4) ! 2D pressure cell nr
          if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
             if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts < abs(qsrck)) then
                qsrck = -FRAC * source_sink_reduction(1 + numconst + 1, n) / dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(source_sinks%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(self%name(n))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         source_sinks%discharge(n) = qsrck
+         self%discharge(n) = qsrck
 
          if (kk * kk2 /= 0) then ! Coupled stuff
             if (qsrck > 0) then ! FROM k to k2
                do L = 1, numconst
-                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + L, n)
+                  self%constituents(n, L) = self%constituents(n, L) + source_sink_reduction(1 + L, n)
                end do
             else if (qsrck < 0) then ! FROM k2 to k
                do L = 1, numconst
-                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + numconst + 1 + L, n)
+                  self%constituents(n, L) = self%constituents(n, L) + source_sink_reduction(1 + numconst + 1 + L, n)
                end do
             end if
          end if
 
          if (kk > 0) then ! FROM Point
-            qsrckk = source_sinks%discharge(n)
+            qsrckk = self%discharge(n)
             qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
+            do k = self%indices(n, 2), self%indices(n, 3)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 3)) - zws(source_sinks%indices(n, 2) - 1)
+                  dzss = zws(self%indices(n, 3)) - zws(self%indices(n, 2) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sinks%indices(n, 3) - source_sinks%indices(n, 2) + 1)
+                     qsrck = qsrckk / (self%indices(n, 3) - self%indices(n, 2) + 1)
                   end if
                   qin(k) = qin(k) - qsrck
                end if
@@ -754,15 +757,15 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            qsrckk = source_sinks%discharge(n)
+            qsrckk = self%discharge(n)
             qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
+            do k = self%indices(n, 5), self%indices(n, 6)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 6)) - zws(source_sinks%indices(n, 5) - 1)
+                  dzss = zws(self%indices(n, 6)) - zws(self%indices(n, 5) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sinks%indices(n, 6) - source_sinks%indices(n, 5) + 1)
+                     qsrck = qsrckk / (self%indices(n, 6) - self%indices(n, 5) + 1)
                   end if
                   qin(k) = qin(k) + qsrck
                end if
@@ -771,6 +774,6 @@ contains
 
       end do
 
-   end subroutine setsorsin
+   end subroutine set_source_sink
 
 end module m_source_sink

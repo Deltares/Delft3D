@@ -35,7 +35,7 @@
 !! Should be called at the end of each computational timestep. In the waq-output, the cumulative values should be divided
 !! by ti_waq, as the cumulative values are multiplied by each timestep dts (necessary because of non-constant timestep).
 !!
-!! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
+!! The code uses similar ways to distribute discharges over layers as the calling subroutine source_sinks%set. Changes in the
 !! calling subroutine should also be taken over in this routine!
 module m_update_waq_lateral_fluxes
 
