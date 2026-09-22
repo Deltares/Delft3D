@@ -1,0 +1,15 @@
+**TO DO**
+- Consider a formatting setting in mdu.json to control the formatting of floating point values (6.3000e-04 VS 0.00063).
+- Consider a formatting setting in mdu.json to control the formatting of floating point values (yyyymmdd vs yyyymmddhhmmss).
+- Do we want automatic padding with between values and comments?
+- Talk to Mostafa about python api design
+- Support typed enums in dflowfm_io for custom validation rules (currently enums are converted to ints)
+- Support nullable types; mainly required for datetime properties
+- Better error handling; support more error codes in the C api
+- Allow for creating new MDU data from scratch; currently MDU properties cannot be set if no MDU file is loaded first
+- Support getting/setting unknown MDU properties; to be treated as string values
+- Add 'interval' data type to the mdu.json for interval properties
+- Require additional metadata in mdu.json for code generation of a typed data model?
+  -- several property keys start with a number
+  -- many enum values are not suited for generating typed enums
+  -- property captions (GUI)
