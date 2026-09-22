@@ -2612,8 +2612,21 @@ contains
 !==============================================================================
    subroutine write_swan_input(sr, itide, calccount, inest, xymiss, wavedata)
       use precision_basics
+      use iso_c_binding, only: c_char, c_int, c_null_char
       !
       implicit none
+      !
+      interface
+         !> Renders a test inja template, implemented in inja_test.cpp.
+         function inja_render_test(template_text, name, result, result_size) result(c_nchars) bind(C, name="inja_render_test")
+            import :: c_char, c_int
+            character(kind=c_char), dimension(*), intent(in) :: template_text !< NUL-terminated inja template
+            character(kind=c_char), dimension(*), intent(in) :: name          !< NUL-terminated value of template variable "name"
+            character(kind=c_char), dimension(*), intent(inout) :: result     !< Receives the NUL-terminated rendered text
+            integer(kind=c_int), value, intent(in) :: result_size             !< Size of result in characters
+            integer(kind=c_int) :: c_nchars                                   !< Number of characters written, or -1 on failure
+         end function inja_render_test
+      end interface
       !
       integer :: itide
       integer :: inest
@@ -2625,9 +2638,20 @@ contains
       type(swan_type) :: sr
       type(wave_data_type) :: wavedata
       !
+      integer(kind=c_int) :: nchars
+      character(kind=c_char), dimension(256) :: inja_result
+      !
       curlif = sr%dom(inest)%curlif(1:37)
       wvel = sr%wvel(itide)
       wdir = sr%wdir(itide)
+      !
+      nchars = inja_render_test("Hello {{ name }} from inja!"//c_null_char, "SWAN"//c_null_char, &
+                              & inja_result, int(size(inja_result), c_int))
+      if (nchars > 0) then
+         write (*, '(a)') 'inja test: '//transfer(inja_result(1:nchars), repeat(' ', nchars))
+      else
+         write (*, '(a)') 'inja test: rendering failed'
+      end if
       !
       if (sr%inputtemplatefile /= '') then
          call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
