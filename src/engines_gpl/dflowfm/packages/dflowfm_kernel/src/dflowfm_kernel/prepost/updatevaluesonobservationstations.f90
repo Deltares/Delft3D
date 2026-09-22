@@ -41,6 +41,7 @@ module m_updatevaluesonobservationstations
 
 contains
 
+   !> Invalidates cached observation-station values so they are recalculated on the next access.
    subroutine invalidate_observation_cache()
       use m_missing, only: dmiss
       use m_observations_data, only: valobs_last_update_time
