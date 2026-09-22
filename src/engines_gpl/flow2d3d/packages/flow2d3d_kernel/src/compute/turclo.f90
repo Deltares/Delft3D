@@ -198,7 +198,6 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              dicww(nm, k) = dicoww
           enddo
        enddo
-       if (.false.) then ! check if this explains the failing test bench cases
        do k = 1, kmax - 1
           kup = k + 1
           tsg = 0.5*(thick(k) + thick(kup))
@@ -219,7 +218,6 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              endif
           enddo
        enddo
-       endif
     else
        !=======================================================================
        !

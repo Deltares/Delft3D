@@ -327,25 +327,14 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
           endif
           !
           if (stressStrainRelation) then
-             !rhocfint = (tka*rhocf(nm,kbe) +  tkb*rhocf(nm,kab)) / tkt
-             !cfvicint = (tka*cfvic(nm,kbe) +  tkb*cfvic(nm,kab)) / tkt
-             !
              ! Only use data from the cell below (downwind approach)
              rhocfint = rhocf(nm,kbe)
              cfvicint = cfvic(nm,kbe)
-          else
-             rhocfint = -999.0_fp
-             cfvicint = -999.0_fp
-          endif
-          !
-          if (stressStrainRelation) then
-             !phiclayint = (tka*phiclay(nm,kbe) +  tkb*phiclay(nm,kab)) / tkt
-             !phisandint = (tka*phisand(nm,kbe) +  tkb*phisand(nm,kab)) / tkt
-             !
-             ! Downwind:
              phiclayint = phiclay(nm,kbe)
              phisandint = phisand(nm,kbe)
           else
+             rhocfint = -999.0_fp
+             cfvicint = -999.0_fp
              phiclayint = -999.0_fp
              phisandint = -999.0_fp
           endif

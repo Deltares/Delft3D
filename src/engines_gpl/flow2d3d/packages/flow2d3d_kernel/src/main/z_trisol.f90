@@ -207,7 +207,6 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: bedupd
     logical                              , pointer :: eqmbcsand
     logical                              , pointer :: eqmbcmud
-    integer              , dimension(:)  , pointer :: sedtyp
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: alpha
     integer(pntrsize)                    , pointer :: areau
@@ -978,7 +977,6 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     eqmbcsand           => gdp%gdmorpar%eqmbcsand
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
     iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
-    sedtyp              => gdp%gdsedpar%sedtyp
     ubot                => gdp%gdr_i_ch%ubot
     clyint              => gdp%gdr_i_ch%clyint
     sltint              => gdp%gdr_i_ch%sltint
@@ -1727,7 +1725,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(wrkb8)  ,r(wrkb13) ,r(wrkb14) ,r(wrkb18) ,r(dzu1)   , &
                     & r(dzv1)   ,r(wrkc1)  ,r(wrkc2)  ,r(wrkc3)  ,r(wrkc4)  , &
                     & r(dzs1)   ,r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) , &
-                    & r(guu)    ,r(gvv)    ,r(bruvai) ,sedtyp    ,r(seddif) , &
+                    & r(guu)    ,r(gvv)    ,r(bruvai) ,r(seddif) , &
                     & r(ws)     ,lsed      ,lsal      ,ltem      ,eqmbcsand , &
                     & eqmbcmud  ,lsts      ,r(s1)     ,d(dps)    ,gdp       )
           !
@@ -2530,7 +2528,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(wrkb8)  ,r(wrkb13) ,r(wrkb14) ,r(wrkb18) ,r(dzv1)   , &
                     & r(dzu1)   ,r(wrkc1)  ,r(wrkc2)  ,r(wrkc3)  ,r(wrkc4)  , &
                     & r(dzs1)   ,r(areav)  ,r(areau)  ,r(volum0) ,r(volum1) , &
-                    & r(gvv)    ,r(guu)    ,r(bruvai) ,sedtyp    ,r(seddif) , &
+                    & r(gvv)    ,r(guu)    ,r(bruvai) ,r(seddif) , &
                     & r(ws)     ,lsed      ,lsal      ,ltem      ,eqmbcsand , &
                     & eqmbcmud  ,lsts      ,r(s1)     ,d(dps)    ,gdp       )
           !

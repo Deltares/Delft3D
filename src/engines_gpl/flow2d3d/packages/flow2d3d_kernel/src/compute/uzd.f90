@@ -294,7 +294,6 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: bdmwrp
     real(fp)           :: bdmwrs
     real(fp)           :: bi
-    real(fp)           :: cbot
     real(fp)           :: cnurh
     real(fp)           :: corioforce
     real(fp)           :: dpsmax
@@ -677,8 +676,11 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
           else
             irobed = 1
           endif
-          cbot   = taubpu(nm) * real(irobed,fp)
-          bdmwrp = h0i*cbot/thick(kmax)
+          if (irobed == 0) then
+             bdmwrp = 0.0_fp
+          else
+             bdmwrp = h0i*taubpu(nm)/thick(kmax)
+          endif
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -999,8 +1001,8 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp) &
-                     &               + redvic(vicww(nmu, k), gdp)) &
-                     & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
+                     &               + redvic(vicww(nmu, k), gdp)) ! &
+                     ! & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
                 !
                 ! upper bound for VICD and VICU
                 vicd = min(vicd, 100.0_fp)
@@ -1019,7 +1021,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                    ! change 25 april 2014
                    !
                    !
-                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))                   
+                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))
                    ddzc = 0.0
                 else
                    ddzb  = -ddza - ddzc

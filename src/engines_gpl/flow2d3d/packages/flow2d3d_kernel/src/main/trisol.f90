@@ -550,7 +550,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     real(fp)                             , pointer :: windft
     integer                              , pointer :: nprocs
     integer      , dimension(:)          , pointer :: nread
-    integer      , dimension(:)          , pointer :: sedtyp
     real(fp)     , dimension(:)          , pointer :: rcousr
     character(20), dimension(:)          , pointer :: procs
     logical                              , pointer :: dryrun
@@ -1104,7 +1103,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nprocs              => gdp%gdusrpar%nprocs
     nread               => gdp%gdusrpar%nread
     nprptr              => gdp%gdusrpar%nprptr
-    sedtyp              => gdp%gdsedpar%sedtyp
     rcousr              => gdp%gdusrpar%rcousr
     procs               => gdp%gdusrpar%procs
     dryrun              => gdp%gdtmpfil%dryrun
@@ -2052,7 +2050,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
                  & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
-                 & sedtyp    ,r(thick)  ,r(sig)    ,r(dicuv)  , &
+                 & r(thick)  ,r(sig)    ,r(dicuv)  , &
                  & r(vicww)  ,r(dsdksi) ,r(dsdeta) ,r(dtdksi) ,r(dtdeta) , &
                  & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
                  & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  , &
@@ -3149,7 +3147,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
                  & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
-                 & sedtyp    ,r(thick)  ,r(sig)    ,r(dicuv)  , &
+                 & r(thick)  ,r(sig)    ,r(dicuv)  , &
                  & r(vicww)  ,r(dsdksi) ,r(dsdeta) ,r(dtdksi) ,r(dtdeta) , &
                  & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
                  & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  , &

@@ -186,7 +186,6 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     logical                              , pointer :: bedupd
     logical                              , pointer :: eqmbcsand
     logical                              , pointer :: eqmbcmud
-    integer              , dimension(:)  , pointer :: sedtyp
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: alpha
     integer(pntrsize)                    , pointer :: areau
@@ -940,7 +939,6 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     eqmbcsand           => gdp%gdmorpar%eqmbcsand
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
     iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
-    sedtyp              => gdp%gdsedpar%sedtyp
     clyint              => gdp%gdr_i_ch%clyint
     sltint              => gdp%gdr_i_ch%sltint
     sndint              => gdp%gdr_i_ch%sndint
@@ -1777,7 +1775,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
                     & r(wrkb8)  ,r(wrkb13) ,r(wrkb14) ,r(wrkb18) ,r(dzu1)   , &
                     & r(dzv1)   ,r(wrkc1)  ,r(wrkc2)  ,r(wrkc3)  ,r(wrkc4)  , &
                     & r(dzs1)   ,r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) , &
-                    & r(guu)    ,r(gvv)    ,r(bruvai) ,sedtyp    ,r(seddif) , &
+                    & r(guu)    ,r(gvv)    ,r(bruvai) ,r(seddif) , &
                     & r(ws)     ,lsed      ,lsal      ,ltem      ,eqmbcsand , &
                     & eqmbcmud  ,lsts      ,r(s1)     ,d(dps)    ,gdp       )    
           call z_difuflux(stage  ,lundia ,kmax      ,nmmax     ,nmmaxj    , &

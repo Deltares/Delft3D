@@ -266,7 +266,6 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: bdmwrp
     real(fp)                   :: bdmwrs
     real(fp)                   :: bi
-    real(fp)                   :: cbot
     real(fp)                   :: corioforce
     real(fp)                   :: cnurh
     real(fp)                   :: ddza
@@ -641,8 +640,11 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           else
             irobed = 1
           endif
-          cbot   = taubpu(nm) * real(irobed,fp)
-          bdmwrp = h0i*cbot/thick(kmax)
+          if (irobed == 0) then
+              bdmwrp = 0.0_fp
+          else
+             bdmwrp = h0i*taubpu(nm)/thick(kmax)
+          endif
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -835,8 +837,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
                       & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp)  &
-                      &               + redvic(vicww(nmu, kdo), gdp)) &
-                      & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
+                      &               + redvic(vicww(nmu, kdo), gdp)) ! &
+                      ! & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
                 !
                 ! vicu calculation 
                 ! restriction is moved from TURCLO to here
@@ -849,12 +851,12 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp)  &
-                     &               + redvic(vicww(nmu, k), gdp)) &
-                     & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
+                     &               + redvic(vicww(nmu, k), gdp)) ! &
+                     ! & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
                 !
                 ! upper bound for VICD and VICU
-                vicd = min(vicd, 100.0_fp)
-                vicu = min(vicu, 100.0_fp)
+                ! vicd = min(vicd, 100.0_fp)
+                ! vicu = min(vicu, 100.0_fp)
                 !
                 ddza = 2.0 * cnurh * vicd / (tsg1*thick(k))
                 ddzc = 2.0 * cnurh * vicu / (tsg2*thick(k))
