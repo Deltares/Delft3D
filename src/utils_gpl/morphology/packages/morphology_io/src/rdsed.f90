@@ -1559,6 +1559,8 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     integer                                                :: lundia  !< Unit number of diagnostic file
     logical                                  , intent(in)  :: cmpupd  !< Indicates whether main flag for bed composition updating is switched on
     logical                                  , intent(out) :: error   !< Flag=TRUE if an error is encountered
+    real(fp), intent(in) :: rhow !< water density [kg/m3]
+    real(fp), intent(in) :: ag !< acceleration of gravity [m/s2]
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
 !
@@ -1630,8 +1632,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     character(12)             :: txtput2
     character(100)            :: txtput3
     character(256)            :: errmsg
-    real(fp), intent(in) :: rhow
-    real(fp), intent(in) :: ag
 !
 !! executable statements -------------------------------------------------------
 !

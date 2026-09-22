@@ -109,13 +109,11 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     integer, dimension(2,NPARDEF)            :: ipardef
     real(fp), dimension(NPARDEF)             :: rpardef
     real(fp)                                 :: rhow_dummy    ! To be specified correctly
-    real(fp)                                 :: ag_dummy      ! To be specified correctly
 !
 !! executable statements -------------------------------------------------------
 !
     error = .false.
     rhow_dummy = -999.0_fp
-    ag_dummy   = -999.0_fp
     !
     allocate(stm%sedpar , stat = istat)
     allocate(stm%morpar , stat = istat)
@@ -248,7 +246,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     ! Echo sediment and transport parameters
     !
     call echosed(lundia, error, stm%lsedsus, stm%lsedtot, &
-               & stm%morpar%iopsus, rhow_dummy, ag_dummy, stm%sedpar, stm%trapar, stm%morpar%cmpupd)
+               & stm%morpar%iopsus, rhow_dummy, real(ag,fp), stm%sedpar, stm%trapar, stm%morpar%cmpupd)
     if (error) return
     !
     ! Echo morphology parameters
