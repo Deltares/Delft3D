@@ -178,7 +178,7 @@ contains
       use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
 
       character(len=*), intent(in) :: forcing_file_type !< Most forcing file types uniquely determine time-dependence.
-      integer, intent(in) :: method !< arcinfo time-dependence is determind by method (currently)
+      integer, intent(in) :: method !< arcinfo time-dependence is determined by method (currently)
       character(len=*), intent(in), optional :: quantity !< datavalue time-dependence is determined by quantity, not file type.
       logical :: is_static
 
