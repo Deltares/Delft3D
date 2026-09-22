@@ -293,7 +293,7 @@ contains
                                 IF ((iniVB1 / maxVB1) < 0.99) THEN
                                     ageVB1 = hlfAgeVB1 + LOG((minVB1 - maxVB1) / (iniVB1 - maxVB1) - 1) / sfVB1
                                 ELSE
-                                    WRITE (ILUMON, *) 'WARNING : Vegtype ', vbtype, ' init biom .ge. Max: ', iniVB1 * dmcfVB1 / 100, '>=', maxVB1 * dmcfVB1 / 100
+                                    WRITE (ILUMON, *) 'WARNING : Vegtype ', vbtype, ' init biom >= Max: ', iniVB1 * dmcfVB1 / 100, '>=', maxVB1 * dmcfVB1 / 100
                                     !                           age representing 99% of initial mass
                                     ageVB1 = hlfAgeVB1 + LOG((minVB1 - maxVB1) / ((0.99 - 1) * maxVB1) - 1) / sfVB1
                                 ENDIF
