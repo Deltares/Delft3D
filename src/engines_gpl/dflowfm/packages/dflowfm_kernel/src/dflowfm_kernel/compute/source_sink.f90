@@ -42,8 +42,6 @@ module m_source_sink
    public :: source_sinks
    public :: source_sink_all_discharges
 
-   public :: addsorsin_from_polyline_file
-   public :: addsorsin
    public :: setsorsin
 
    ! Type containing all source/sink data.
@@ -94,6 +92,9 @@ module m_source_sink
       procedure :: dealloc => dealloc_source_sinks
       procedure :: realloc => realloc_source_sinks
       procedure, private :: realloc_xy => realloc_xy_source_sinks
+
+      procedure :: add => add_source_sink
+      procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
 
    end type SourceSinks
 
@@ -323,14 +324,15 @@ contains
    ! ====================================================================================================
 
    !> Add a source(-sink) to the model based on geometry given in a polyline file.
-   !! This subroutine is a wrapper around addsorsin, mainly taking care of reading the polyline file.
-   subroutine addsorsin_from_polyline_file(polyline_file, name, z_source, z_sink, area, ierr)
+   !! This subroutine is a wrapper around source_sinks%add, mainly taking care of reading the polyline file.
+   subroutine add_source_sink_from_polyline_file(self, polyline_file, name, z_source, z_sink, area, ierr)
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
       use system_utils, only: split_filename
 
       ! Parameters
+      class(SourceSinks), intent(inout) :: self
       character(len=*), intent(in) :: polyline_file !< Name of the polyline file, either with x,y values only (*.pli), or including z-values (*.pliz).
       character(len=*), optional, intent(in) :: name !< Name of the source-sink. When not present, name is based on the polyline filename instead.
       real(kind=dp), dimension(:), optional, intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
@@ -401,24 +403,25 @@ contains
          call split_filename(polyline_file, path, name_, ext)
       end if
 
-      ! Initialize source_sinks if not already done.
-      if (.not. allocated(source_sinks%name)) then
-         call source_sinks%initialize(1)
+      ! Initialize self (source_sinks) if not already done.
+      if (.not. allocated(self%name)) then
+         call self%initialize(1)
       end if
 
       ! Add the source/sink to the model based on prepared polyline data.
-      call addsorsin(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
+      call self%add(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
 
-   end subroutine addsorsin_from_polyline_file
+   end subroutine add_source_sink_from_polyline_file
 
    !> Add a source-sink to the model.
-   subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
+   subroutine add_source_sink(self, name, x_points, y_points, z_source, z_sink, area, ierr)
       use m_GlobalParameters, only: INDTP_ALL
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
       use m_find_flownode, only: find_nearest_flownodes
 
       ! Parameters
+      class(SourceSinks), intent(inout) :: self
       character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
@@ -445,33 +448,33 @@ contains
       end if
 
       ! Increment source/sink counter.
-      source_sinks%num_total = source_sinks%num_total + 1
+      self%num_total = self%num_total + 1
       
       ! If the number of source/sinks exceeds the current array size, double the array size.
-      if (source_sinks%num_total > size(source_sinks%name)) then
-         call source_sinks%realloc((source_sinks%num_total - 1) * 2)
+      if (self%num_total > size(self%name)) then
+         call self%realloc((self%num_total - 1) * 2)
       end if
 
       ! If the number of points in the polyline exceeds the current max_polyline_points, reallocate the arrays to fit the new number of points.
-      if (num_points > source_sinks%max_polyline_points) then
-         call source_sinks%realloc_xy(num_points)
+      if (num_points > self%max_polyline_points) then
+         call self%realloc_xy(num_points)
       end if
 
       ! Set the coordinates of the source/sink, only the first 2 points of the polyline file are actually used.
-      source_sinks%x(source_sinks%num_total, 1:num_points) = x_points(1:num_points)
-      source_sinks%y(source_sinks%num_total, 1:num_points) = y_points(1:num_points)
-      source_sinks%max_xy_points(source_sinks%num_total) = num_points
+      self%x(self%num_total, 1:num_points) = x_points(1:num_points)
+      self%y(self%num_total, 1:num_points) = y_points(1:num_points)
+      self%max_xy_points(self%num_total) = num_points
       kk = 0
       kk2 = 0
 
       ! Set source/sink name.
-      source_sinks%name(source_sinks%num_total) = name
+      self%name(self%num_total) = name
 
       tmpname(1) = name//' source'
       jakdtree = 0
       kdum(1) = 0
-      if (source_sinks%x(source_sinks%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+      if (self%x(self%num_total, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
          kk2 = kdum(1)
       end if
 
@@ -484,18 +487,18 @@ contains
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         source_sinks%area(source_sinks%num_total) = 0.0_dp
+         self%area(self%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
          tmpname = name//' sink'
          kdum(1) = 0
-         if (source_sinks%x(source_sinks%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         if (self%x(self%num_total, 1) /= dmiss) then
+            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
             kk = kdum(1)
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
-            source_sinks%area(source_sinks%num_total) = area
+            self%area(self%num_total) = area
          end if
       end if
 
@@ -503,32 +506,42 @@ contains
          write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
-         goto 8888
+         return
       end if
 
-      source_sinks%indices(source_sinks%num_total, 1) = kk
-      source_sinks%z_bottom(source_sinks%num_total, 1) = z_sink(1)
-      source_sinks%z_top(source_sinks%num_total, 1) = z_sink(1)
+      self%indices(self%num_total, 1) = kk
+      self%z_bottom(self%num_total, 1) = z_sink(1)
+      self%z_top(self%num_total, 1) = z_sink(1)
 
-      source_sinks%indices(source_sinks%num_total, 4) = kk2
-      source_sinks%z_bottom(source_sinks%num_total, 2) = z_source(1)
-      source_sinks%z_top(source_sinks%num_total, 2) = z_source(1)
+      self%indices(self%num_total, 4) = kk2
+      self%z_bottom(self%num_total, 2) = z_source(1)
+      self%z_top(self%num_total, 2) = z_source(1)
 
       if (kk > 0) then
          if (z_sink(2) /= dmiss) then
-            source_sinks%z_top(source_sinks%num_total, 1) = z_sink(2)
+            self%z_top(self%num_total, 1) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 2), source_sinks%y(source_sinks%num_total, 2), source_sinks%discharge_cosine(source_sinks%num_total, 1), source_sinks%discharge_sine(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), jsferic, jasfer3D, dxymis)
+            call normalin( &
+               self%x(self%num_total, 1), &
+               self%y(self%num_total, 1), &
+               self%x(self%num_total, 2), &
+               self%y(self%num_total, 2), &
+               self%discharge_cosine(self%num_total, 1), &
+               self%discharge_sine(self%num_total, 1), &
+               self%x(self%num_total, 1), &
+               self%y(self%num_total, 1), &
+               jsferic, jasfer3D, dxymis &
+            )
          end if
 
-         do i = 1, source_sinks%num_total - 1
-            if (source_sinks%indices(i, 1) /= 0 .and. kk == source_sinks%indices(i, 1)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with FROM point of ', trim(source_sinks%name(i))
+         do i = 1, self%num_total - 1
+            if (self%indices(i, 1) /= 0 .and. kk == self%indices(i, 1)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(i))
                call warn_flush()
-            else if (source_sinks%indices(i, 4) /= 0 .and. kk == source_sinks%indices(i, 4)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with TO   point of ', trim(source_sinks%name(i))
+            else if (self%indices(i, 4) /= 0 .and. kk == self%indices(i, 4)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(i))
                call warn_flush()
             end if
          end do
@@ -537,20 +550,28 @@ contains
 
       if (kk2 > 0) then
          if (z_source(2) /= dmiss) then
-            source_sinks%z_top(source_sinks%num_total, 2) = z_source(2)
+            self%z_top(self%num_total, 2) = z_source(2)
          end if
          
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, num_points - 1), source_sinks%y(source_sinks%num_total, num_points - 1), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), source_sinks%discharge_cosine(source_sinks%num_total, 2), source_sinks%discharge_sine(source_sinks%num_total, 2), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), jsferic, jasfer3D, dxymis)
+            call normalin( &
+               self%x(self%num_total, num_points - 1), &
+               self%y(self%num_total, num_points - 1), &
+               self%x(self%num_total, num_points), &
+               self%y(self%num_total, num_points), &
+               self%discharge_cosine(self%num_total, 2), &
+               self%discharge_sine(self%num_total, 2), &
+               self%x(self%num_total, num_points), &
+               self%y(self%num_total, num_points), &
+               jsferic, jasfer3D, dxymis &
+            )
          end if
       end if
 
       ierr = DFM_NOERR
 
-8888  continue
-
-   end subroutine addsorsin
+   end subroutine add_source_sink
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
