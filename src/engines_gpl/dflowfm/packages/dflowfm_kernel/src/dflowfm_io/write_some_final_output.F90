@@ -54,7 +54,7 @@ contains
       use m_observations_data, only: mxls
       use unstruc_files, only: defaultFilename
       use m_sediment, only: stm_included
-      use m_transport, only: maserrsed
+      use m_transport, only: maserrsed, maserrtra, ITRA1, ITRAN, const_names
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
@@ -65,7 +65,7 @@ contains
 
       implicit none
 
-      integer :: k, i
+      integer :: k, i, iconst
       real(kind=dp) :: frac, tot, dtav
       real(kind=dp) :: f
       real(kind=dp) :: tstop
@@ -239,6 +239,30 @@ contains
             call msg_flush()
             write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1.0e6_dp
             call msg_flush()
+         end if
+         if (ITRA1 > 0) then
+            if (lowerlimittra >= -1.0e30_dp) then
+               msgbuf = ' '
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'lowerLimitTracer is set to: ', lowerlimittra
+               call msg_flush()
+               do iconst = ITRA1, ITRAN
+                  i = iconst - ITRA1 + 1
+                     write (msgbuf, '(a,ES15.6E3)') 'mass added to "' // trim(const_names(iconst)) // '" due to lowerLimitTracer :', maserrtra(i, 1)
+                     call msg_flush()
+               end do
+            end if
+            if (upperlimittra <= 1.0e30_dp) then
+               msgbuf = ' '
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'upperLimitTracer is set to: ', upperlimittra
+               call msg_flush()
+               do iconst = ITRA1, ITRAN
+                  i = iconst - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass removed from "' // trim(const_names(iconst)) // '" due to upperLimitTracer :', maserrtra(i, 2)
+                  call msg_flush()
+               end do
+            end if
          end if
       end if
 

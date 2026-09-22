@@ -201,6 +201,7 @@ contains
       end if
 
       if (itra1 > 0) then
+         maserrtra = 0.0_dp ! initialise mass error counter
          do i = itra1, itran
             itrace = i - itra1 + 1
 
