@@ -47,7 +47,7 @@ module bmi
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
    use m_flow_init_usertimestep, only: flow_init_usertimestep
    use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
-   use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
+   use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations, invalidate_observation_cache
    use m_resetfullflowmodel, only: resetfullflowmodel
    use m_partition_write_domains, only: partition_write_domains
    use m_land_change_callback, only: land_change_callback
@@ -1469,6 +1469,7 @@ contains
 
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+      call invalidate_observation_cache()
       no_warning_unused_variable(x_0d_char_ptr)
       no_warning_unused_variable(x_3d_int_ptr)
       no_warning_unused_variable(x_0d_float_ptr)
@@ -1777,6 +1778,7 @@ contains
 
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+      call invalidate_observation_cache()
 
       call c_f_pointer(xptr, x_1d_double_ptr, [c_count(1)])
 
@@ -1878,6 +1880,7 @@ contains
    subroutine on_land_change() bind(C, name="on_land_change")
 !DEC$ ATTRIBUTES DLLEXPORT :: on_land_change
       implicit none
+      call invalidate_observation_cache()
       call land_change_callback()
    end subroutine on_land_change
 
@@ -1886,6 +1889,8 @@ contains
       implicit none
       integer(c_int), intent(in) :: c_node_index
       real(c_double), intent(in) :: c_new_zk
+
+      call invalidate_observation_cache()
 
       call update_land_nodes(c_node_index, c_new_zk)
    end subroutine update_land
@@ -1928,6 +1933,7 @@ contains
       ! The fortran name of the attribute name
       character(len=MAXSTRLEN) :: feat_name
 
+      call invalidate_observation_cache()
       iresult = DFM_NOERR
       thdh = 1000d0
 
@@ -2592,6 +2598,7 @@ contains
       var_name = char_array_to_string(c_var_name)
       item_name = char_array_to_string(c_item_name)
       field_name = char_array_to_string(c_field_name)
+      call invalidate_observation_cache()
       ! Debugging printing only: guess that it's a scalar double value, for now.
       call c_f_pointer(xptr, x_0d_double_ptr)
       write (msgbuf, '(6a,f20.6,a)', iostat=iostat) 'set_compound_field for ', trim(var_name), '(', trim(item_name), ')::', trim(field_name), ', will be set to value = ', x_0d_double_ptr, '.'
@@ -3158,6 +3165,7 @@ contains
       integer(c_int) :: size1(1)
 
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+      call invalidate_observation_cache()
 
       select case (var_name)
       case ("s1")
