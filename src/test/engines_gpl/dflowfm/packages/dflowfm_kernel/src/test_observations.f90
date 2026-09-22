@@ -57,9 +57,24 @@ contains
 !
 !==============================================================================
 subroutine tests_observations
+    call test( test_invalidate_observation_cache, 'Tests invalidation of cached observation-station values' )
     call test( test_read_obs_points, 'Tests the reading of observation points' )
     !call test( test_read_snapped_obs_points, 'Tests the reading of snapped observation points' )
 end subroutine tests_observations
+!
+!
+!==============================================================================
+subroutine test_invalidate_observation_cache
+    use m_missing, only: dmiss
+    use m_observations_data, only: valobs_last_update_time
+    use m_updatevaluesonobservationstations, only: invalidate_observation_cache
+
+    valobs_last_update_time = 123.0_dp
+
+    call invalidate_observation_cache()
+
+    call assert_true(valobs_last_update_time == dmiss, 'Observation cache timestamp was not invalidated')
+end subroutine test_invalidate_observation_cache
 !
 !
 !==============================================================================
