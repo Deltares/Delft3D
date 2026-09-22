@@ -37,6 +37,7 @@ target_link_libraries(${executable_name} PRIVATE
     waq_utils_f
     interacter_stub
     dflowfm_kernel
+    dflowfm_dll
 )
 
 if(UNIX)
