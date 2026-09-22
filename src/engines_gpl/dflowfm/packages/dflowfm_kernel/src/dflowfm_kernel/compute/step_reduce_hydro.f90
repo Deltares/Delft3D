@@ -110,6 +110,8 @@ contains
 !-----------------------------------------------------------------------------------------------
          hs = max(hs, 0.0_dp)
          call furu() ! staat in s0
+         ! call mess(LEVEL_WARN, fu, "fu(after-furu)", lnx)
+
 
          if (itstep /= 4) then ! implicit time-step
 
@@ -124,7 +126,9 @@ contains
 
                call s1ini()
                call pack_matrix()
-
+               if (jampi == 1) then
+                  call update_ghosts(ITYPE_Sall3D, 1, Ndkx, qin, ierror)
+               end if
                !-----------------------------------------------------------------------------------------------
 
                nonlincont: do ! entry point for non-linear continuity interation
@@ -147,6 +151,7 @@ contains
                   ! endif
 
 !    synchronise all water-levels
+                  ! call mess(LEVEL_WARN, s1, "s1(pre-gather)", ndx)
                   if (jampi == 1) then
                      if (jatimer == 1) then
                         call starttimer(IUPDSALL)
@@ -157,6 +162,7 @@ contains
                         call stoptimer(IUPDSALL)
                      end if
                   end if
+                  ! call mess(LEVEL_WARN, s1, "s1(post-gather)", ndx)
 
                   if (firstnniteration .and. nonlin1D >= 3) then
                      ! At first try only check for positive water depths only
