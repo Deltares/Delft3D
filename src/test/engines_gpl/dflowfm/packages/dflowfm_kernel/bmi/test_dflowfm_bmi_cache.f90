@@ -5,7 +5,7 @@
 !! as published by the Free Software Foundation.
 
 program test_dflowfm_bmi_cache
-   use iso_c_binding, only: c_char, c_double, c_f_pointer, c_int, c_loc, c_null_char, c_ptr, c_null_ptr
+   use iso_c_binding, only: c_associated, c_char, c_double, c_f_pointer, c_int, c_loc, c_null_char, c_ptr, c_null_ptr
    implicit none
 
    integer, parameter :: maxstrlen = 1024
