@@ -463,7 +463,8 @@ module m_flowparameters
 
    integer :: jbasqbnddownwindhs !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-   integer :: max_iterations_vertical_forester !< Maximum number of iterations for vertical forester, used for all constituents
+   integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester filter for salinity
+   integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester filter for temperature
 
    real(kind=dp) :: salmax !< filter if sal > maxsal
 
@@ -982,8 +983,9 @@ contains
 
       jbasqbnddownwindhs = 0 !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-      ! Vertical Forester filter is turned off by default (value 0)
-      max_iterations_vertical_forester = 0
+      ! Vertical Forester filter is turned off by default for salinity and temperature (value 0)
+      max_iterations_vertical_forester_sal = 0
+      max_iterations_vertical_forester_tem = 0
 
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()

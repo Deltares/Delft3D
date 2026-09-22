@@ -24,15 +24,13 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!-------------------------------------------------------------------------------
+
 module m_dredge_initialize
-    private
+   implicit none
+   private
+   public dredge_initialize
     
-    public dredge_initialize
-    
-    contains
+   contains
 
 subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
 !!--declarations----------------------------------------------------------------
@@ -40,8 +38,6 @@ subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
     use m_alloc
     use message_module, only: write_error
     use dredge_data_module
-        
-    implicit none
 !
 ! Global variables
 !

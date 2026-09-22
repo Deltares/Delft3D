@@ -131,6 +131,9 @@ def run_cmake_configure(
         cmd += ["-T", "fortran=ifx", "-A", "x64"]
         if vs_year and vs_year in VS_GENERATORS:
             cmd += ["-G", VS_GENERATORS[vs_year]]
+            generator_instance = os.environ.get("CMAKE_GENERATOR_INSTANCE")
+            if generator_instance:
+                cmd.append(f"-DCMAKE_GENERATOR_INSTANCE:STRING={generator_instance}")
     else:
         # On Linux, single-config generator; pass build type directly
         cmd += [f"-DCMAKE_BUILD_TYPE={build_type}"]
