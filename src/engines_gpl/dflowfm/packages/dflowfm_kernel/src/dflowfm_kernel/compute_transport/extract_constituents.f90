@@ -126,9 +126,8 @@ contains
          end if
       end if
 
-      if (itra1 > 0) then
+      if (itra1 > 0 .and. lowerlimittra >= -1.0e30_dp) then
          do iconst = ITRA1, ITRAN
-            cells_with_max_limit = 0
             cells_with_min_limit = 0
             j = iconst - ITRA1 + 1
             do kk = 1, ndxi
@@ -140,6 +139,22 @@ contains
                      maserrtra(j, 1) = maserrtra(j, 1) + vol1(k) * (lowerlimittra - constituents(iconst, k))
                      constituents(iconst, k) = lowerlimittra
                   end if
+               end do
+            end do
+            if (jalogtransportsolverlimiting > 0) then
+               call print_message(IDX_TRA_MIN, '"' // trim(const_names(iconst)) // '" concentration below minimum', cells_with_min_limit, min_limit=lowerlimittra)
+            end if
+         end do
+      end if
+
+      if (itra1 > 0 .and. upperlimittra <= 1.0e30_dp) then
+         do iconst = ITRA1, ITRAN
+            cells_with_max_limit = 0
+            j = iconst - ITRA1 + 1
+            do kk = 1, ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  ! keep track of mass error(s) because of concentration limitation
                   if (constituents(iconst, k) > upperlimittra) then
                      cells_with_max_limit = cells_with_max_limit + 1
                      maserrtra(j, 2) = maserrtra(j, 2) + vol1(k) * (constituents(iconst, k) - upperlimittra)
@@ -148,8 +163,7 @@ contains
                end do
             end do
             if (jalogtransportsolverlimiting > 0) then
-               call print_message(IDX_TRA_MIN, 'Tracer "' // trim(const_names(iconst)) // '" concentration below minimum', cells_with_min_limit, min_limit=lowerlimittra)
-               call print_message(IDX_TRA_MAX, 'Tracer "' // trim(const_names(iconst)) // '" concentration above maximum', cells_with_max_limit, max_limit=upperlimittra)
+               call print_message(IDX_TRA_MAX, '"' // trim(const_names(iconst)) // '" concentration above maximum', cells_with_max_limit, max_limit=upperlimittra)
             end if
          end do
       end if

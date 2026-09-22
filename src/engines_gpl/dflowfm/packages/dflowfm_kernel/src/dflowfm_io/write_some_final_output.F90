@@ -241,15 +241,28 @@ contains
             call msg_flush()
          end if
          if (ITRA1 > 0) then
-            msgbuf = ' '
-            call msg_flush()
-            do iconst = ITRA1, ITRAN
-               i = iconst - ITRA1 + 1
-               write (msgbuf, '(a,ES15.6E3)') 'mass added from tracer "' // trim(const_names(iconst)) // '" due to minimum concentration limit   :', maserrtra(i, 1)
+            if (lowerlimittra >= -1.0e30_dp) then
+               msgbuf = ' '
                call msg_flush()
-               write (msgbuf, '(a,ES15.6E3)') 'mass removed from tracer "' // trim(const_names(iconst)) // '" due to maximum concentration limit :', maserrtra(i, 2)
+               write (msgbuf, '(a,ES15.6E3)') 'lowerLimitTracer is set to: ', lowerlimittra
                call msg_flush()
-            end do
+               do iconst = ITRA1, ITRAN
+                  i = iconst - ITRA1 + 1
+                     write (msgbuf, '(a,ES15.6E3)') 'mass added to "' // trim(const_names(iconst)) // '" due to lowerLimitTracer :', maserrtra(i, 1)
+                     call msg_flush()
+               end do
+            end if
+            if (upperlimittra <= 1.0e30_dp) then
+               msgbuf = ' '
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'upperLimitTracer is set to: ', upperlimittra
+               call msg_flush()
+               do iconst = ITRA1, ITRAN
+                  i = iconst - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass removed from "' // trim(const_names(iconst)) // '" due to upperLimitTracer :', maserrtra(i, 2)
+                  call msg_flush()
+               end do
+            end if
          end if
       end if
 

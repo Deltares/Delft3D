@@ -183,8 +183,8 @@ contains
       droot = 0.5_dp
       dstem = 0.5_dp
       frcu_no_vegetation = 2.3e-2_dp
-      lowerlimittra = -1.0e30_dp
-      upperlimittra = 1.0e30_dp
+      lowerlimittra = -1.0e31_dp
+      upperlimittra = 1.0e31_dp
    end subroutine default_physcoef
 
    !> Calculates derived coefficients.

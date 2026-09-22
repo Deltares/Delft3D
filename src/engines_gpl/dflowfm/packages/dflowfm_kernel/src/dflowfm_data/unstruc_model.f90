@@ -3353,8 +3353,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
-      call prop_set(prop_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, 'Lower limit of cell centre tracer concentration after transport timestep. Default = -1.0d30 (effectively switched off)')
-      call prop_set(prop_ptr, 'physics', 'upperLimitTracer', upperlimittra, 'Upper limit of cell centre tracer concentration after transport timestep. Default = 1.0d30 (effectively switched off)')
+      call prop_set(prop_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, 'Lower limit of cell centre tracer concentration after transport timestep. Default = -1.0d31 (switched off)')
+      call prop_set(prop_ptr, 'physics', 'upperLimitTracer', upperlimittra, 'Upper limit of cell centre tracer concentration after transport timestep. Default = 1.0d31 (switched off)')
 
       call prop_set(prop_ptr, 'physics', 'Smagorinsky', Smagorinsky, 'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'Elder', Elder, 'Elder factor in horizontal turbulence')
