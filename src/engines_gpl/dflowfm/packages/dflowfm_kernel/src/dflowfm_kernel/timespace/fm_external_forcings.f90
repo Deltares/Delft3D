@@ -43,12 +43,14 @@ module fm_external_forcings
    private
 
    public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
-      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
+      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements, update_time_dependent_spatial_fields, &
+      reset_time_dependent_spatial_field_items, finalize_time_dependent_spatial_field_items
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
-   character(len=max_registered_item_id), allocatable :: registered_items(:)
+   character(len=max_registered_item_id), dimension(:), allocatable :: registered_items
    integer :: num_registered_items = 0
+   integer, dimension(:), allocatable :: time_dependent_spatial_field_items
 
    interface
       module subroutine set_external_forcings_boundaries(time, iresult)
@@ -63,6 +65,13 @@ module fm_external_forcings
          logical, intent(in) :: initialization !< initialization phase
          integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
       end subroutine set_external_forcings
+   end interface
+
+   interface
+      module function update_time_dependent_spatial_fields(time_in_seconds) result(success)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+         logical :: success !< .true. when all registered spatial fields were updated successfully.
+      end function update_time_dependent_spatial_fields
    end interface
 
    interface
@@ -1648,9 +1657,117 @@ contains
 
    end subroutine register_quantity_pli_combination
 
+   subroutine reset_time_dependent_spatial_field_items()
+      if (allocated(time_dependent_spatial_field_items)) then
+         deallocate (time_dependent_spatial_field_items)
+      end if
+   end subroutine reset_time_dependent_spatial_field_items
+
+   !> Remove spatial EC items that cannot be updated generically.
+   subroutine finalize_time_dependent_spatial_field_items()
+      use m_fm_icecover, only: ja_icecover, ICECOVER_EXT
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, air_water_interaction_model, &
+                                  AIR_WATER_INTERACTION_MODEL_MOST, ja_friction_coefficient_time_dependent, janudge, jawave
+      use m_subsidence, only: jasubsupl
+      use m_wind, only: jawind, jarain, ja_airdensity, ja_computed_airdensity, air_pressure_available
+      use m_meteo, only: item_air_density, item_atmosphericpressure, item_air_temperature, item_dew_point_temperature, &
+                         item_relative_humidity, item_solar_radiation, item_cloudiness, item_long_wave_radiation, &
+                         item_sensible_heat_flux, item_latent_heat_flux, item_frcu, item_nudge_temperature, &
+                         item_windx, item_windy, item_windxy_x, item_stressx, item_stressy, item_stressxy_x, item_apwxwy_p, &
+                         item_charnock, item_pseudo_air_pressure, item_water_level_correction, &
+                         item_hac_humidity, item_hacs_relative_humidity, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, &
+                         item_sea_ice_area_fraction, item_sea_ice_thickness, item_rainfall, item_rainfall_rate, &
+                         item_subsiduplift, item_hrms, item_tp, item_dir, item_fx, item_fy, item_distot, item_dissurf, item_diswcap
+
+      if (ja_airdensity > 0) then
+         call remove_time_dependent_spatial_field_item(item_air_density)
+      end if
+
+      if (jawind == 1 .or. air_pressure_available) then
+         call remove_time_dependent_spatial_field_item(item_windx)
+         call remove_time_dependent_spatial_field_item(item_windy)
+         call remove_time_dependent_spatial_field_item(item_windxy_x)
+         call remove_time_dependent_spatial_field_item(item_stressx)
+         call remove_time_dependent_spatial_field_item(item_stressy)
+         call remove_time_dependent_spatial_field_item(item_stressxy_x)
+         call remove_time_dependent_spatial_field_item(item_apwxwy_p)
+         call remove_time_dependent_spatial_field_item(item_charnock)
+         call remove_time_dependent_spatial_field_item(item_atmosphericpressure)
+         call remove_time_dependent_spatial_field_item(item_pseudo_air_pressure)
+         call remove_time_dependent_spatial_field_item(item_water_level_correction)
+      end if
+
+      if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         call remove_time_dependent_spatial_field_item(item_atmosphericpressure)
+         call remove_time_dependent_spatial_field_item(item_air_temperature)
+         call remove_time_dependent_spatial_field_item(item_dew_point_temperature)
+         call remove_time_dependent_spatial_field_item(item_hac_humidity)
+         call remove_time_dependent_spatial_field_item(item_hacs_relative_humidity)
+         call remove_time_dependent_spatial_field_item(item_dac_dew_point_temperature)
+         call remove_time_dependent_spatial_field_item(item_dacs_dew_point_temperature)
+      end if
+
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         call remove_time_dependent_spatial_field_item(item_relative_humidity)
+         call remove_time_dependent_spatial_field_item(item_air_temperature)
+         call remove_time_dependent_spatial_field_item(item_solar_radiation)
+         call remove_time_dependent_spatial_field_item(item_cloudiness)
+         call remove_time_dependent_spatial_field_item(item_long_wave_radiation)
+         call remove_time_dependent_spatial_field_item(item_sensible_heat_flux)
+         call remove_time_dependent_spatial_field_item(item_latent_heat_flux)
+         call remove_time_dependent_spatial_field_item(item_dew_point_temperature)
+         call remove_time_dependent_spatial_field_item(item_hac_humidity)
+         call remove_time_dependent_spatial_field_item(item_hacs_relative_humidity)
+         call remove_time_dependent_spatial_field_item(item_dac_dew_point_temperature)
+         call remove_time_dependent_spatial_field_item(item_dacs_dew_point_temperature)
+      end if
+
+      if (ja_friction_coefficient_time_dependent > 0) then
+         call remove_time_dependent_spatial_field_item(item_frcu)
+      end if
+      if (associated(ja_icecover)) then
+         if (ja_icecover == ICECOVER_EXT) then
+            call remove_time_dependent_spatial_field_item(item_sea_ice_area_fraction)
+            call remove_time_dependent_spatial_field_item(item_sea_ice_thickness)
+         end if
+      end if
+      if (jarain > 0) then
+         call remove_time_dependent_spatial_field_item(item_rainfall)
+         call remove_time_dependent_spatial_field_item(item_rainfall_rate)
+      end if
+      if (janudge > 0) then
+         call remove_time_dependent_spatial_field_item(item_nudge_temperature)
+      end if
+      if (jasubsupl > 0) then
+         call remove_time_dependent_spatial_field_item(item_subsiduplift)
+      end if
+      if (jawave == WAVE_NC_OFFLINE) then
+         call remove_time_dependent_spatial_field_item(item_hrms)
+         call remove_time_dependent_spatial_field_item(item_tp)
+         call remove_time_dependent_spatial_field_item(item_dir)
+         call remove_time_dependent_spatial_field_item(item_fx)
+         call remove_time_dependent_spatial_field_item(item_fy)
+         call remove_time_dependent_spatial_field_item(item_distot)
+         call remove_time_dependent_spatial_field_item(item_dissurf)
+         call remove_time_dependent_spatial_field_item(item_diswcap)
+      end if
+   end subroutine finalize_time_dependent_spatial_field_items
+
+   subroutine remove_time_dependent_spatial_field_item(ec_item)
+      use m_ec_parameters, only: ec_undef_int
+
+      integer, intent(in) :: ec_item
+
+      if (.not. allocated(time_dependent_spatial_field_items) .or. ec_item == ec_undef_int) return
+      time_dependent_spatial_field_items = pack(time_dependent_spatial_field_items, &
+                                                time_dependent_spatial_field_items /= ec_item)
+   end subroutine remove_time_dependent_spatial_field_item
+
    subroutine init_registered_items()
       implicit none
       num_registered_items = 0
+
+      call reset_time_dependent_spatial_field_items()
 
       max_ext_bnd_items = 64 ! Default start size.
       if (allocated(registered_items)) then
@@ -2771,6 +2888,7 @@ contains
       call finalize_1dfield_global_values()
       call finalize_offline_wave_input_requirements()
       call validate_offline_wave_input_providers(ierr)
+      call finalize_time_dependent_spatial_field_items()
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
