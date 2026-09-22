@@ -58,6 +58,7 @@ contains
 !==============================================================================
 subroutine tests_observations
     call test( test_invalidate_observation_cache, 'Tests invalidation of cached observation-station values' )
+    call test( test_bmi_set_s1_invalidates_observation_cache, 'Tests BMI s1 setter invalidates observation cache' )
     call test( test_read_obs_points, 'Tests the reading of observation points' )
     !call test( test_read_snapped_obs_points, 'Tests the reading of snapped observation points' )
 end subroutine tests_observations
@@ -68,13 +69,42 @@ subroutine test_invalidate_observation_cache
     use m_missing, only: dmiss
     use m_observations_data, only: valobs_last_update_time
     use m_updatevaluesonobservationstations, only: invalidate_observation_cache
+    use precision_basics, only: comparereal
 
     valobs_last_update_time = 123.0_dp
 
     call invalidate_observation_cache()
 
-    call assert_true(valobs_last_update_time == dmiss, 'Observation cache timestamp was not invalidated')
+    call assert_true(comparereal(valobs_last_update_time, dmiss) == 0, 'Observation cache timestamp was not invalidated')
 end subroutine test_invalidate_observation_cache
+!
+!
+!==============================================================================
+subroutine test_bmi_set_s1_invalidates_observation_cache
+    use bmi, only: set_1d_double_at_index
+    use iso_c_binding, only: c_char, c_double, c_int, c_null_char
+    use m_flow, only: s1
+    use m_missing, only: dmiss
+    use m_observations_data, only: valobs_last_update_time
+    use precision_basics, only: comparereal
+
+    character(kind=c_char), dimension(3) :: var_name
+
+    if (allocated(s1)) then
+       deallocate(s1)
+    end if
+    allocate(s1(1))
+    s1(1) = 1.0_dp
+    valobs_last_update_time = 123.0_dp
+
+    var_name = [character(kind=c_char) :: 's', '1', c_null_char]
+    call set_1d_double_at_index(var_name, 0_c_int, 7.5_c_double)
+
+    call assert_true(comparereal(s1(1), 7.5_dp) == 0, 'BMI setter did not update s1')
+    call assert_true(comparereal(valobs_last_update_time, dmiss) == 0, 'BMI setter did not invalidate observation cache')
+
+    deallocate(s1)
+end subroutine test_bmi_set_s1_invalidates_observation_cache
 !
 !
 !==============================================================================
