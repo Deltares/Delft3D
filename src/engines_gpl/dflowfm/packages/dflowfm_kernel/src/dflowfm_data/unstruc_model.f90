@@ -1285,7 +1285,7 @@ contains
       call prop_get(md_ptr, 'physics', 'salinityDependentFreezingPoint', use_salinity_freezing_point)
       if (use_salinity_freezing_point .and. temperature_min >= 0.0_dp) then
          write (msgbuf, '(a,g0,a)') 'salinityDependentFreezingPoint is set to true, but Tempmin = ', temperature_min, &
-            ' is not below 0 degrees Celsius. This may lead to incorrect results.'
+            ' is not below 0 degrees Celsius. Set tempMin to a value below the freezing point of the highest expected salinity.'
          call mess(LEVEL_ERROR, msgbuf)
       end if
       if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
