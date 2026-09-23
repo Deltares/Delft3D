@@ -2636,7 +2636,7 @@ contains
       wdir = sr%wdir(itide)
       !
       if (sr%inputtemplatefile /= '') then
-         call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
+         ! call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
          call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
       else
          call write_swan_inp(wavedata, calccount, &
@@ -2675,6 +2675,7 @@ contains
 
       type(c_ptr) :: context
       integer(c_int) :: status
+      character(16) :: count_text
 
       context = inja_create_context()
 
@@ -2683,8 +2684,11 @@ contains
       tendc = datetime_to_string(wavedata%time%refdate, wavedata%time%calctimtscale * real(wavedata%time%tscale, hp))
       status = inja_add_string(context, "TSTOP"//c_null_char, tendc//c_null_char)
 
-      tmp_name = trim(filnam)//".inj"
-      status = inja_render_file(context, trim(tmp_name)//c_null_char, "INPUT.inj"//c_null_char)
+      write(count_text, '(i0)') calccount
+      status = inja_add_string(context, "COUNT"//c_null_char, trim(count_text)//c_null_char)
+
+      ! tmp_name = trim(filnam)//".inj"
+      status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
 
       call inja_destroy_context(context)
 
