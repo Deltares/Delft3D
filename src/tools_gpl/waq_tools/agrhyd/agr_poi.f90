@@ -21,13 +21,15 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine agr_poi( ipnt  , noq_o , noq1_o  , noq2_o, noq3_o, & 
-                         ip_o  , noq_n , noq1_n  , noq2_n, noq3_n, & 
+      module m_agr_poi
+      contains
+      subroutine agr_poi( ipnt  , noq_o , noq1_o  , noq2_o, noq3_o, &
+                         ip_o  , noq_n , noq1_n  , noq2_n, noq3_n, &
                          ip_n  , ipnt_q, ipnt_b  )
 
       implicit none
 
-      integer           :: ipnt(*)        ! aggregation pointer
+      integer           :: ipnt(:)        ! aggregation pointer
       integer           :: noq_o          !
       integer           :: noq1_o
       integer           :: noq2_o
@@ -75,18 +77,22 @@
       iq1selectno = 0
       do iq = 1, noq_o
          ip1 = ip_o(1,iq)
+         ip2 = ip_o(2,iq)
 
-         if ( ip1 .gt. 0 ) then
+         if ( ip1 > 0 ) then
             ip1 = ipnt(ip1)
-            ip2 = ip_o(2,iq)
-            if ( ip2 .gt. 0 ) then
-               ip2 = ipnt(ip2)
-            end if
-            if ( ip2 .eq. 0 .or. ip2 .eq. ip1) then
-               ip1 = 0
-            end if
-         elseif ( ip1 .lt. 0 ) then
+         elseif ( ip1 < 0 ) then
             ip1 = -ipnt_b(-ip1)
+         endif
+
+         if ( ip2 > 0 ) then
+            ip2 = ipnt(ip2)
+         elseif ( ip2 > 0 ) then
+            ip2 = -ipnt_b(-ip2)
+         endif
+
+         if ( ip1 == 0 .and. ip2 == 0 ) then
+            cycle
          endif
 
          if ( ip1 /= 0 ) then
@@ -104,18 +110,22 @@
 
       do iq = 1, noq_o
          ip1 = ip_o(1,iq)
+         ip2 = ip_o(2,iq)
 
-         if ( ip1 .gt. 0 ) then
+         if ( ip1 > 0 ) then
             ip1 = ipnt(ip1)
-            ip2 = ip_o(2,iq)
-            if ( ip2 .gt. 0 ) then
-               ip2 = ipnt(ip2)
-            end if
-            if ( ip2 .eq. 0 .or. ip2 .eq. ip1) then
-               ip1 = 0
-            end if
-         elseif ( ip1 .lt. 0 ) then
+         elseif ( ip1 < 0 ) then
             ip1 = -ipnt_b(-ip1)
+         endif
+
+         if ( ip2 > 0 ) then
+            ip2 = ipnt(ip2)
+         elseif ( ip2 > 0 ) then
+            ip2 = -ipnt_b(-ip2)
+         endif
+
+         if ( ip1 == 0 .and. ip2 == 0 ) then
+            cycle
          endif
 
          if ( ip1 /= 0 ) then
@@ -161,7 +171,7 @@
          ! if ip1 equals ip2 then the exchange is not used anymore, keep the negative pointers in the horizontal
          ! but not from negative to negative this will interfere with ddcouple
 
-         if ( ( ip1 .ne. ip2 .and. .not. ( ip1 .eq. 0 .or. ip2 .eq. 0 )  .and. .not. (ip1 .lt. 0 .and. ip2 .lt. 0)) .or. & 
+         if ( ( ip1 .ne. ip2 .and. .not. ( ip1 .eq. 0 .or. ip2 .eq. 0 )  .and. .not. (ip1 .lt. 0 .and. ip2 .lt. 0)) .or. &
              ( (ip1 .lt. 0 .or. ip2 .lt. 0) .and. iq .le. noq1_o+noq2_o .and. .not. (ip1 .lt. 0 .and. ip2 .lt. 0)) ) then
 
             ! see if new exchange is unique
@@ -344,4 +354,5 @@
       enddo
 
       return
-      end
+      end subroutine agr_poi
+      end module m_agr_poi

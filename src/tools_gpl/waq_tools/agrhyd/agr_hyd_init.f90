@@ -32,6 +32,7 @@
       use m_logger_helper, only : write_error_message, stop_with_error
       use m_hydmod
       use m_aggregate_waqgeom
+      use m_agr_poi
       use m_alloc, only : realloc
       use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
 
