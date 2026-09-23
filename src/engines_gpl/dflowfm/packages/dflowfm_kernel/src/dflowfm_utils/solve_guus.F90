@@ -596,8 +596,6 @@ contains
 !      do *not* use Saad solver when nocg < 3
             call conjugategradient(s1, ndx, ipre) ! ipre = 0,1,2  ! no omp
          end if
-      else if (icgsolver == 5) then
-!    call conjugategradientSAAD_global(s1,ndx,nocgiter)
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
          call conjugategradientPETSC(s1, ndx, nocgiter, 1, ipre) ! 1:always compute preconditioner
@@ -1826,7 +1824,7 @@ contains
       call mess(LEVEL_INFO, 'nogauss , nocg : ', nogauss, nocg)
       call readyy('ini Gauss/CG', -1.0_dp)
 
-      if (icgsolver == 4 .or. icgsolver == 44 .or. icgsolver == 5) then
+      if (icgsolver == 4 .or. icgsolver == 44) then
          call inisaad(epscg, maxmatvecs, 1.0_dp) ! 1d0: with MILU preconditioner
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
