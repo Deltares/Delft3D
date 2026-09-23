@@ -75,7 +75,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     real(fp)        , dimension(:,:)   , pointer :: cfvic
     real(fp)        , dimension(:,:)   , pointer :: phiclay
     real(fp)        , dimension(:,:)   , pointer :: phisand
-    real(fp)                           , pointer :: Shearsettle_w_opt
+    integer                            , pointer :: Shearsettle_w_opt
     real(fp)                           , pointer :: phisim
     integer            , dimension(:)  , pointer :: sedtyp
     !

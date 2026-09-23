@@ -102,7 +102,7 @@ subroutine z_dif_ws(j         ,nmmaxj    ,nmmax     ,kmax      ,lsal      , &
                 else
                    kfd = 0
                 endif
-                kd = max(k-1,1)
+                kd = k - 1
                 cckl(nm, k, ll) = cckl(nm, k, ll) - gsqs(nm)*ws(nm, k,  l) * kfd
                 bbkl(nm, k, ll) = bbkl(nm, k, ll) + gsqs(nm)*ws(nm, kd, l) * kft
              enddo

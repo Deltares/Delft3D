@@ -81,7 +81,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
-    integer                            , pointer :: rheo
+    integer                            , pointer :: rheologymodel
     real(fp)         , dimension(:)    , pointer :: tpsnumber
     real(fp)         , dimension(:)    , pointer :: rhosol
     real(fp)         , dimension(:,:,:), pointer :: logseddia
@@ -204,7 +204,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !
     csoil                => sedpar%csoil
     mdcuni               => sedpar%mdcuni
-    rheo                 => sedpar%rheologymodel
+    rheologymodel        => sedpar%rheologymodel
     kssilt               => sedpar%kssilt
     kssand               => sedpar%kssand
     sc_cmf1              => sedpar%sc_cmf1
@@ -802,27 +802,28 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           cfty  (:,:) = -999.0
           cftau (:,:) = -999.0
           !
-          ! Shearsettling: default: not set (rheo=-1)
+          ! Shearsettling
           !
           sedpar%SluSettParam1 = 1.0_fp
           call prop_get(slu_ptr, 'Slurry', 'SluSettParam1', sedpar%SluSettParam1)
           sedpar%SluSettParam2 = 2.0_fp
           call prop_get(slu_ptr, 'Slurry', 'SluSettParam2', sedpar%SluSettParam2)
-          sedpar%Shearsettle_w_opt = 1.0_fp  !% Arno's formula 1, Han's formula 2;
+          sedpar%Shearsettle_w_opt = 1  !% Arno's formula 1, Han's formula 2;
           call prop_get(slu_ptr, 'Slurry', 'Shearsettle_w_opt', sedpar%Shearsettle_w_opt)
           !
-          ! Rheology: default: not set (rheo=-1)
+          ! Rheology
           !
           rec = 'dummy'
+          rheologymodel = RHEOLOGY_DEFAULT
           call prop_get(slu_ptr, 'Slurry', 'rheology', rec)
           call str_lower(rec)
           if (rec /= 'dummy') then
              if (rec == 'winterwerp_kranenburg') then
-                rheo = RHEOLOGY_WINTERWERP_KRANENBURG
+                rheologymodel = RHEOLOGY_WINTERWERP_KRANENBURG
              elseif (rec == 'jacobs_vankesteren') then
-                rheo = RHEOLOGY_JACOBS_VANKESTEREN
+                rheologymodel = RHEOLOGY_JACOBS_VANKESTEREN
              elseif (rec == 'thomas') then
-                rheo = RHEOLOGY_THOMAS
+                rheologymodel = RHEOLOGY_THOMAS
              else
                 errmsg = 'Value of keyword "rheology" must be equal to "Winterwerp_Kranenburg", "Jacobs_vanKesteren" or "Thomas"'
                 call write_error(errmsg, unit=lundia)
@@ -831,9 +832,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              endif
           endif
           !
-          ! Rheo= Winterwerp_Kranenburg: Read related parameters
+          ! rheologymodel= Winterwerp_Kranenburg: Read related parameters
           !
-          if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+          if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
              sedpar%rheo_phisim = 0.6_fp
              call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'phisim', sedpar%rheo_phisim)
              sedpar%rheo_ayield = 729884.0_fp
@@ -852,9 +853,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'shrco', sedpar%rheo_shrco)
           endif
           !
-          ! Rheo= Jacobs_vanKesteren: Read related parameters
+          ! rheologymodel= Jacobs_vanKesteren: Read related parameters
           !
-          if (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+          if (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
              sedpar%rheo_phisim = 0.6_fp
              call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'phisim', sedpar%rheo_phisim)
              sedpar%rheo_ayield = 4.167_fp
@@ -873,9 +874,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'shrco', sedpar%rheo_shrco)
           endif
           !
-          ! Rheo= Thomas: Read related parameters
+          ! rheologymodel= Thomas: Read related parameters
           !
-          if (rheo == RHEOLOGY_THOMAS) then
+          if (rheologymodel == RHEOLOGY_THOMAS) then
              sedpar%rheo_phisim = 0.6_fp
              call prop_get(slu_ptr, 'Thomas', 'phisim', sedpar%rheo_phisim)
              sedpar%rheo_ayield = 7.45E5_fp
@@ -2434,12 +2435,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
           write (lundia, '(3a)') txtput1, ':  ', trim(sedpar%flnrd(l))
        endif
     enddo
-    if (sedpar%shearsettling) then
-       write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
-    endif
-    if (sedpar%shearsettling) then
-       write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
-    endif
     if (sedpar%shearsettling) then
        write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
     endif

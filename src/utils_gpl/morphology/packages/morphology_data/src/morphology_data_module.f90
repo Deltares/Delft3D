@@ -702,8 +702,7 @@ type sedpar_type
     !
     real(fp) :: SluSettParam1 !  coefficient used to compute hindered settling in slurry
     real(fp) :: SluSettParam2 !  coefficient used to compute hindered settling in slurry
-    real(fp) :: Shearsettle_w_opt !  coefficient used to choose the correct option
-
+/
     !
     ! reals
     !
@@ -718,7 +717,8 @@ type sedpar_type
     integer  :: max_mud_sedtyp !  largest sediment type associated with mud
     integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
     integer  :: rheologymodel    ! Enumerated values: Winterwerp_Kranenburg, Jacobs_vanKesteren, Thomas
-    !
+    integer :: Shearsettle_w_opt !  coefficient used to choose the correct option
+   !
     ! pointers
     !
     type(tree_data)     , dimension(:), pointer :: sedblock => null()  !  Pointer to array of data block per fraction in .sed file (version 2)
@@ -1438,8 +1438,9 @@ subroutine nullsedpar(sedpar)
     !
     sedpar%anymud    = .false.
     sedpar%bsskin    = .false.
-      sedpar%spatial_d50 = .false.
-    sedpar%rheologymodel = -1
+    sedpar%spatial_d50 = .false.
+    sedpar%rheologymodel = RHEOLOGY_DEFAULT
+    sedpar%Shearsettle_w_opt = 0
     !
     sedpar%flsdia   = ' '
     sedpar%flsmdc   = ' '
@@ -1483,7 +1484,6 @@ subroutine nullsedpar(sedpar)
     sedpar%vicThresh     = 0.0_fp
     sedpar%SluSettParam1 = 0.0_fp
     sedpar%SluSettParam2 = 0.0_fp
-    sedpar%Shearsettle_w_opt = 0.0_fp
     !
     sedpar%rheo_phisim   = 0.0_fp
     sedpar%rheo_ayield   = 0.0_fp

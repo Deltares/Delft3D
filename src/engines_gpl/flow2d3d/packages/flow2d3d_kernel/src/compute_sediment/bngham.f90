@@ -62,7 +62,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     integer                           , pointer :: lundia
-    integer                           , pointer :: rheo
+    integer                           , pointer :: rheologymodel
     integer         , dimension(:)    , pointer :: sedtyp
     real(fp)                          , pointer :: bin_abingh
     real(fp)                          , pointer :: bin_cnvisco
@@ -133,6 +133,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     integer                             :: k0
     integer                             :: ku
     integer                             :: kd
+    integer                             :: lst
     integer                             :: nm
     integer                             :: nmd
     integer                             :: ndm
@@ -218,7 +219,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
 !! executable statements -------------------------------------------------------
 !
     lundia              => gdp%gdinout%lundia
-    rheo                => gdp%gdsedpar%rheologymodel
+    rheologymodel       => gdp%gdsedpar%rheologymodel
     sedtyp              => gdp%gdsedpar%sedtyp
     bin_abingh          => gdp%gdsedpar%bin_abingh
     bin_cnvisco         => gdp%gdsedpar%bin_cnvisco
@@ -251,10 +252,6 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     phisand             => gdp%gdsedpar%phisand
     SluSettParam1       => gdp%gdsedpar%SluSettParam1
     SluSettParam2       => gdp%gdsedpar%SluSettParam2
-
-
-
-
     !
     allocate(rhoint  (0:kmax), stat=istat)
     allocate(zkcs    (1:kmax), stat=istat)
@@ -275,6 +272,8 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     allocate(cfacty  (0:kmax), stat=istat)
     allocate(cfactv  (0:kmax), stat=istat)
     !
+    lst = max(gdp%d%lsal,gdp%d%ltem)
+    !
     ! Carrier fluid is based on water and non-cohesive sediments:
     ! Use arrays rhocf and cfvic
     ! See Jill::unesco and Jill::cflvic
@@ -287,17 +286,17 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
     cfvic = 0.0_fp
     clyint = 0.0_fp
     !
-    if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+    if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
        powyie = 2.0_fp / (3.0_fp-frcdim)
        powvic = 2.0_fp * (powa+1.0_fp) / 3.0_fp
        powshr = ((powa+1.0_fp)*(3.0_fp-frcdim)) / 3.0_fp
        cl1    = 1.0_fp/3.0_fp
-    elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+    elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
        powyie = gdp%gdsedpar%rheo_powyie
        powvic = gdp%gdsedpar%rheo_powvic
        cl1    = 1.0_fp/3.0_fp
 !jill  actcl  = 0.38_fp
-    elseif (rheo == RHEOLOGY_THOMAS) then
+    elseif (rheologymodel == RHEOLOGY_THOMAS) then
        powyie = gdp%gdsedpar%rheo_powyie
 !jill  powvic = gdp%gdsedpar%rheo_powvic       not used in this option
        !
@@ -366,15 +365,15 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               rhoint(kmax) = rho(nm,kmax)
               do ised = 1, lsed
                  if (sedtyp(ised) == SEDTYP_SAND) then
-                    sndint(nm) = sndint(nm) + r1(nm,kmax,ised)
+                    sndint(nm) = sndint(nm) + r1(nm,kmax,lst+ised)
                  endif
                  if (sedtyp(ised) == SEDTYP_CLAY) then
-                    clyint(nm) = clyint(nm) + r1(nm,kmax,ised)
+                    clyint(nm) = clyint(nm) + r1(nm,kmax,lst+ised)
                     !
                     ! Contribution of this clay constituent to the density of the carrier fluid
                     !
-                    rhocf(nm,k) = rhocf(nm,k) + r1(nm,kmax,ised) * (1.0_fp - rhowat(nm,kmax)/rhosol(ised))
-                    !rhocf(nm,k) = rhocf(nm,k) + r1(nm,kmax,ised) * (1.0_fp - rhowat(nm,kmax)/rhosol_clay)
+                    rhocf(nm,k) = rhocf(nm,k) + r1(nm,kmax,lst+ised) * (1.0_fp - rhowat(nm,kmax)/rhosol(ised))
+                    !rhocf(nm,k) = rhocf(nm,k) + r1(nm,kmax,lst+ised) * (1.0_fp - rhowat(nm,kmax)/rhosol_clay)
                  endif
               enddo
               ! based on no slip condition at the bed
@@ -389,15 +388,15 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               sndint(nm) = 0.0_fp
               do ised = 1, lsed
                  if (sedtyp(ised) == SEDTYP_SAND) then
-                    sndint(nm) = sndint(nm) + wlo*r1(nm,k,ised) + wup(k)*r1(nm,ku,ised)
+                    sndint(nm) = sndint(nm) + wlo*r1(nm,k,lst+ised) + wup(k)*r1(nm,ku,lst+ised)
                  endif
                  if (sedtyp(ised) == SEDTYP_CLAY) then
-                    clyint(nm) = clyint(nm) + wlo*r1(nm,k,ised) + wup(k)*r1(nm,ku,ised)
+                    clyint(nm) = clyint(nm) + wlo*r1(nm,k,lst+ised) + wup(k)*r1(nm,ku,lst+ised)
                     !
                     ! Contribution of this clay constituent to the density of the carrier fluid
                     !
-                    rhocf(nm,k) = rhocf(nm,k) + (wlo*r1(nm,k,ised)+wup(k)*r1(nm,ku,ised)) * (1.0_fp - rhowat(nm,k)/rhosol(ised))
-                    !rhocf(nm,k) = rhocf(nm,k) + (wlo*r1(nm,k,ised)+wup(k)*r1(nm,ku,ised)) * (1.0_fp - rhowat(nm,k)/rhosol_clay)
+                    rhocf(nm,k) = rhocf(nm,k) + (wlo*r1(nm,k,lst+ised)+wup(k)*r1(nm,ku,lst+ised)) * (1.0_fp - rhowat(nm,k)/rhosol(ised))
+                    !rhocf(nm,k) = rhocf(nm,k) + (wlo*r1(nm,k,lst+ised)+wup(k)*r1(nm,ku,lst+ised)) * (1.0_fp - rhowat(nm,k)/rhosol_clay)
                  endif
               enddo
               !
@@ -411,7 +410,10 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               rhoint(k)   = wlo*rho(nm,k) + wup(k)*rho(nm,ku)
            endif
            !
-           if ( clyint(nm) <= eps_fp) exit  ! if clay concentration close to zero, exit from the loop.
+           ! copilot flags the following exit as leaving the upper-layer rheology undefined, but
+           ! we're working from k = 1,kmax so from surface to bed (sigma) and it could stop
+           ! too early ... what should clyint, sltint (not computed at all), and sndint be?
+           ! if ( clyint(nm) <= eps_fp) exit  ! if clay concentration close to zero, exit from the loop.
            clyint(nm)   = max (0.0_fp,clyint(nm))
            sltint(nm)   = max (0.0_fp,sltint(nm))
            sndint(nm)   = max (0.0_fp,sndint(nm))
@@ -434,7 +436,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               phisol(k) = phisol(k) + phiclay(nm,k)
            endif
            !
-           !if (rheo /= RHEOLOGY_WINTERWERP_KRANENBURG) then
+           !if (rheologymodel /= RHEOLOGY_WINTERWERP_KRANENBURG) then
            !   !
            !   ! CHECK ON VOLCON 
            !   !ss
@@ -454,7 +456,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
         enddo !k-loop
         !
         do k = 1, kmax
-           if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+           if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
               solfrac(k) = phiclay(nm,k) / (1.0_fp-volcon(k))
               !
               ! Linear concentration sand        
@@ -470,7 +472,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               cffrc(k)  = phiclay(nm,k)
               siinfy(k) = 1.0_fp
               siinfv(k) = 1.0_fp
-           elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+           elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
               ! next line differs from RHEOLOGY_WINTERWERP_KRANENBURG
               solfrac(k) = (1.0_fp-phisol(k)) / phiclay(nm,k)
               !
@@ -496,7 +498,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               siinfv(k) = 1.0_fp
 !jill         cfacty(k) = (rhowat(nm,k)/(actcl*rhosol_clay))**powyie
 !jill         cfactv(k) = (rhowat(nm,k)/(actcl*rhosol_clay))**powvic
-           elseif (rheo == RHEOLOGY_THOMAS) then
+           elseif (rheologymodel == RHEOLOGY_THOMAS) then
               safrc(k) = phisand(nm,k) / phisol(k)
            endif
         enddo !k-loop
@@ -509,7 +511,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
            solfri = solfrac(kd)*wlo + solfrac(ku)*wup(ku)
            ssinyi = ssinfy (kd)*wlo + ssinfy (ku)*wup(ku)
            ssinvi = ssinfv (kd)*wlo + ssinfv (ku)*wup(ku)
-           if (rheo == RHEOLOGY_THOMAS) then
+           if (rheologymodel == RHEOLOGY_THOMAS) then
               cfsafi       = cfsafr (   kd)*wlo + cfsafr (   ku)*wup(ku)
               safri        = safrc  (   kd)*wlo + safrc  (   ku)*wup(ku)
               phicli       = phiclay(nm,kd)*wlo + phiclay(nm,ku)*wup(ku)
@@ -524,10 +526,10 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               !
               cffrci = cffrc   (kd)*wlo + cffrc   (ku)*wup(ku)
               siinyi = siinfy  (kd)*wlo + siinfy  (ku)*wup(ku)
-              if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+              if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
                  tyield(nm,k) = ayield*ssinyi*solfri**powyie  ! solfri is different
                  cfty(nm,k)   = ayield*siinyi*cffrci**powyie
-              elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+              elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
 !jill            actyiei      = actyie(kd)*wlo + actyie(ku)*wup(ku)
 !jill            tyield(nm,k) = ayield*ssinyi*actyiei*solfri**powyie
                  tyield(nm,k) = ayield*ssinyi*solfri**powyie   ! solfri is different 
@@ -546,19 +548,19 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
            part2=0.5*(dvdz(nm,k)+dvdz(ndm,k))
            shear = sqrt(part1**2+part2**2) 
            if (shear < 1.0e-10_fp) then
-              if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+              if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
                  vicmud(nm,k) = 1.0e4_fp
                  xmuwat       = ssinvi * watmu 
                  xmusol       = ssinvi * avic * (solfri**powvic) * (shear**(-powshr))
                  xmu(nm,k)    = xmuwat + xmusol
                  taubh(nm,k)  = tyield(nm,k) 
-              elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+              elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
                  vicmud(nm,k) = 1.0e4_fp
                  xmuwat       = ssinvi * watmu
                  xmusol       = ssinvi * avic * (solfri**powvic)
                  xmu(nm,k)    = xmuwat + xmusol
                  taubh(nm,k)  = tyield(nm,k) 
-              elseif (rheo == RHEOLOGY_THOMAS) then
+              elseif (rheologymodel == RHEOLOGY_THOMAS) then
                  vicmud(nm,k) = 1.0e4_fp
                  xmu1       = ((cfsafi*phicli)/(1.0_fp-phicli)) / (1.0_fp+((phicli)/(1.0_fp-phicli)))
                  xmu2       = 1.0_fp - xmu1*(1.0_fp/(visck*phisim))
@@ -567,14 +569,14 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               endif
               cfvic (nm,k) = 1.0e4_fp
            else
-              if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+              if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
                  xmuwat       = ssinvi * watmu 
                  xmusol       = ssinvi * avic * (solfri**powvic) * (shear**(-powshr))
                  xmu(nm,k)    = xmuwat + xmusol
                  taubh(nm,k)  = tyield(nm,k) * (1-exp(-shrco*shear)) + xmu(nm,k)* shear      
                  vicmud(nm,k) = taubh(nm,k) / shear      
                  vicmud(nm,k) = vicmud(nm,k) / rhoint(k)
-              elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+              elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
                  xmuwat       = ssinvi * watmu
 !jill            xmusol       = ssinvi * avic * actvii * (solfri**powvic)
                  xmusol       = ssinvi * avic * (solfri**powvic)
@@ -582,7 +584,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
                  taubh(nm,k)  = tyield(nm,k) * (1-exp(-shrco*shear)) + xmu(nm,k)*shear
                  vicmud(nm,k) = taubh(nm,k) / shear      
                  vicmud(nm,k) = vicmud(nm,k) / rhoint(k)
-              elseif (rheo == RHEOLOGY_THOMAS) then
+              elseif (rheologymodel == RHEOLOGY_THOMAS) then
                  xmu1         = ((safri*phisoi)/(1.0_fp-phisoi)) / (1.0_fp+((phisoi)/(1.0_fp-phisoi)))
                  xmu2         = 1.0_fp - xmu1*(1.0_fp/(visck*phisim))
                  xmu3         = (xmu2)**(-2.5_fp)  
@@ -591,16 +593,16 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
                  vicmud(nm,k) = taubh(nm,k) / shear      
                  vicmud(nm,k) = vicmud(nm,k) / rhoint(k)
               endif
-              if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+              if (rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
                  cfmuwa     = siinvi * watmu 
                  cfmuso     = siinvi * avic * (cffrci**powvic) * (shear**(-powshr))
                  cfmu(nm,k) = cfmuwa + cfmuso
-              elseif (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+              elseif (rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
                  cfmuwa     = siinvi * watmu  
 !jill            cfmuso     = siinvi * avic * cfactvi * (cffrci**powvic) * shear
                  cfmuso     = siinvi * avic * (cffrci**powvic) ! viscosity solid total sediment
                  cfmu(nm,k) = cfmuwa + cfmuso
-              elseif (rheo == RHEOLOGY_THOMAS) then
+              elseif (rheologymodel == RHEOLOGY_THOMAS) then
                  xmu1       = ((cfsafi*phicli)/(1.0_fp-phicli)) / (1.0_fp+((phicli)/(1.0_fp-phicli)))
                  xmu2       = 1.0_fp - xmu1*(1.0_fp/(visck*phisim))
                  xmu3       = (xmu2)**(-2.5_fp)
@@ -626,7 +628,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
               !write (lundia,*) 'yyy',volcon(k),silint,rhosol(1)
               !write (lundia,*) 'yyy',rho(nm,k),rho(nm,k+1),rho(nm+icx,k),rho(nm+icx,k+1)
               !write (lundia,*) 'zzz',rhocf(nm,k),phisand(nm,k),phiclay(nm,k)
-              !write (lundia,*) 'zzz2',r1(nm,k,1),r1(nm,k,2),r1(nm+icx,k,1),r1(nm+icx,k,2)
+              !write (lundia,*) 'zzz2',r1(nm,k,lst+1),r1(nm,k,lst+2),r1(nm+icx,k,lst+1),r1(nm+icx,k,lst+2)
               
               call d3stop(1, gdp)
            endif
