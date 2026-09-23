@@ -290,10 +290,13 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
           !
           ! Input parameters are passed via dll_reals/integers/strings-arrays
           !
-          ! Shear calculation is copied from subroutine turclo
-          dudzint  = 0.5_fp * (dudz(nm,kbe) + dudz(nm,kab))
-          dvdzint  = 0.5_fp * (dvdz(nm,kbe) + dvdz(nm,kab))
-          shearint = sqrt(dudzint**2 + dvdzint**2)
+          if (stressStrainRelation) then
+             dudzint  = 0.5_fp * (dudz(nm,kbe) + dudz(nm,kab))
+             dvdzint  = 0.5_fp * (dvdz(nm,kbe) + dvdz(nm,kab))
+             shearint = sqrt(dudzint**2 + dvdzint**2)
+          else
+             shearint = -999.0_fp
+          endif
           !
           if (lsal > 0) then
              salint = max(0.0_fp, (tka*r0(nm, kbe, lsal) + tkb*r0(nm, kab, lsal)  ) / tkt )
@@ -377,6 +380,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 error = .true.
                 return
              endif
+             dll_reals(:) = -999.0_hp
              dll_reals(WS_RP_TIME ) = real(timsec ,hp)
              dll_reals(WS_RP_ULOC ) = real(u      ,hp)
              dll_reals(WS_RP_VLOC ) = real(v      ,hp)
@@ -411,11 +415,13 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_reals(WS_RP_PHISA) = real(phisandint ,hp)
              dll_reals(WS_RP_SHR  ) = real(shearint   ,hp)
              !
-             dll_reals(WS_RP_CLYINT) = real(clyint(nm) ,hp)
-             dll_reals(WS_RP_SLTINT) = real(sltint(nm) ,hp)
-             dll_reals(WS_RP_SNDINT) = real(sndint(nm) ,hp)
-             dll_reals(WS_RP_FOROPT) = real(Shearsettle_w_opt ,hp)
-             dll_reals(WS_RP_PHISIM) = real(phisim ,hp)
+             if (stressStrainRelation) then
+                dll_reals(WS_RP_CLYINT) = real(clyint(nm) ,hp)
+                dll_reals(WS_RP_SLTINT) = real(sltint(nm) ,hp)
+                dll_reals(WS_RP_SNDINT) = real(sndint(nm) ,hp)
+                dll_reals(WS_RP_FOROPT) = real(Shearsettle_w_opt ,hp)
+                dll_reals(WS_RP_PHISIM) = real(phisim ,hp)
+             endif
              !
              if (max_integers < WS_MAX_IP) then
                 write(errmsg,'(a,a,a)') 'Insufficient space to pass integer values to settling routine.'

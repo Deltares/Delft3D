@@ -1081,20 +1081,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
               & gdp       )
     !
-    ! The velocities from previous half timestep are corrected for
-    ! mass flux and temporary set in WRKB3 (UEUL) and WRKB4
-    ! (VEUL) these are used in TURCLO
-    !
-    icx = nmaxddb
-    icy = 1
-    call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
-             & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumx0) , &
-             & i(kfumin) ,i(kfvmx0) ,i(kfvmin) ,r(dzu0)   ,r(dzv0)   , &
-             & r(u0)     ,r(wrkb3)  ,r(v0)     ,r(wrkb4)  , &
-             & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
-             & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
-             & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
-    !
     ! DENS  : compute densities for the first time
     !
     ifirst_dens = 1
@@ -1103,19 +1089,25 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
             & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
             & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
     !
-    ! Eddy viscosity and diffusivity
-    !
-    icx = nmaxddb
-    icy = 1
-    call turclo(jstart    ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
-              & icx       ,icy       ,tkemod    , &
-              & i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    ,r(s0)     , &
-              & d(dps)    ,r(hu)     ,r(hv)     ,r(u0)     ,r(v0)     , &
-              & r(rtur0)  ,r(thick)  ,r(sig)    ,r(rho)    ,r(vicuv)  , &
-              & r(vicww)  ,r(dicuv)  ,r(dicww)  ,r(windsu) ,r(windsv) , &
-              & r(z0urou) ,r(z0vrou) ,r(bruvai) ,r(rich)   ,r(dudz)   , &
-              & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
     if (stressStrainRelation) then
+       ! The slurry calculation needs the initial velocity gradients.
+       icx = nmaxddb
+       icy = 1
+       call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
+                & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumx0) , &
+                & i(kfumin) ,i(kfvmx0) ,i(kfvmin) ,r(dzu0)   ,r(dzv0)   , &
+                & r(u0)     ,r(wrkb3)  ,r(v0)     ,r(wrkb4)  , &
+                & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
+                & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
+                & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
+       call turclo(jstart    ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
+                 & icx       ,icy       ,tkemod    , &
+                 & i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    ,r(s0)     , &
+                 & d(dps)    ,r(hu)     ,r(hv)     ,r(u0)     ,r(v0)     , &
+                 & r(rtur0)  ,r(thick)  ,r(sig)    ,r(rho)    ,r(vicuv)  , &
+                 & r(vicww)  ,r(dicuv)  ,r(dicww)  ,r(windsu) ,r(windsv) , &
+                 & r(z0urou) ,r(z0vrou) ,r(bruvai) ,r(rich)   ,r(dudz)   , &
+                 & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
        call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
                  & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
                  & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
