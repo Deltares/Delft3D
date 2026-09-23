@@ -1432,7 +1432,8 @@ contains
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new, set_external_forcings
       use m_flowgeom, only: ndx2D
-      use m_meteo, only: ja_airdensity, ja_computed_airdensity
+      use m_meteo, only: ja_airdensity, ja_computed_airdensity, item_air_density
+      use m_ec_parameters, only: ec_undef_int
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
       use m_unstruc_model_data, only: extfile_new_list
@@ -1482,6 +1483,7 @@ contains
 
       call f90_expect_eq(iresult, DFM_NOERR, 'combined static airdensity fields should initialize')
       call f90_expect_eq(ja_airdensity, 1, 'airdensity should be enabled after initialization')
+      call f90_expect_eq(item_air_density, ec_undef_int, 'static airdensity should not retain a runtime EC item')
       call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
                            'the later sample field should override the datavalue during initialization')
 

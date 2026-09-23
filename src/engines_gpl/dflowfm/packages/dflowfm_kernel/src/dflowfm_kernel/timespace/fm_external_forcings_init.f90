@@ -1096,6 +1096,7 @@ contains
       target_data => null()
       target_data_integer => null()
       target_array_3d => null()
+      mapped_item1 => null()
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
@@ -1248,6 +1249,9 @@ contains
                      deallocate (target_data)
                   end if
                end block
+            end if
+            if (res .and. associated(mapped_item1)) then
+               mapped_item1 = ec_undef_int
             end if
          else
             select case (trim(str_tolower(forcing_file_type)))
