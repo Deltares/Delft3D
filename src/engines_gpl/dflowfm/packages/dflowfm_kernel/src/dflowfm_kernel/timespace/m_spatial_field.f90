@@ -215,7 +215,7 @@ contains
       else
          method = get_default_method_for_file_type(forcing_file_type)
       end if
-      if (method /= -1) then
+      if (method /= METHOD_UNKNOWN) then
          call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
       end if
    end function select_spatial_field_method

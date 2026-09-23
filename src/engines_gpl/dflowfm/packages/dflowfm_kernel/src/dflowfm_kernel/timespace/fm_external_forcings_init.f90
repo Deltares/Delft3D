@@ -272,7 +272,7 @@ contains
       use tree_data_types, only: tree_data, tree_data_ptr
       use tree_structures, only: tree_get_name, tree_num_nodes
 
-      type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs
+      type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
 
       type(tree_data), pointer :: bnd_ptr
       type(tree_data), pointer :: block_ptr
@@ -307,7 +307,9 @@ contains
                cycle
             end if
             input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
-            if (input%method == -1) cycle
+            if (input%method == METHOD_UNKNOWN) then
+               cycle
+            end if
 
             if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
                call register_time_dependent_spatial_quantity(input%quantity)
