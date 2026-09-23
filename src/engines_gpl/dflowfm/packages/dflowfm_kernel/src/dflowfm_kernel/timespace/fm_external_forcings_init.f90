@@ -271,6 +271,7 @@ contains
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data, tree_data_ptr
       use tree_structures, only: tree_get_name, tree_num_nodes
+      use timespace_parameters, only: METHOD_UNKNOWN
 
       type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
 
@@ -952,6 +953,9 @@ contains
       if (is_static_field) then
          call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
       else
+         ! target data must be null to avoid binding the pointer to the wrong array.
+         ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
+         ! fm_ext_force_name_to_ec_item
          target_data => null()
       end if
       call setzcs()
@@ -961,12 +965,11 @@ contains
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-      if (is_static_field) then
+      if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
          res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                tunit, tstart_user, target_data)
-      else
-         ec_item = ec_undef_int
+                                                        tunit, tstart_user, target_data)
       end if
+
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -1099,10 +1102,10 @@ contains
 
       if (input%is_static_field) then
          call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as an initial field from file '"// &
-                               trim(input%forcing_file)//"'.")
+                   trim(input%forcing_file)//"'.")
       else
          call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as a time-dependent forcing from file '"// &
-                               trim(input%forcing_file)//"'.")
+                   trim(input%forcing_file)//"'.")
       end if
 
       associate (quantity => input%quantity, &

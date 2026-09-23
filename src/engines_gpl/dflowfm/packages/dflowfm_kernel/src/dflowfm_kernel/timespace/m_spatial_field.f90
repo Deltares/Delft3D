@@ -203,6 +203,7 @@ contains
    function select_spatial_field_method(forcing_file_type, interpolation_method, is_extrapolation_allowed) result(method)
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation
+      use timespace_parameters, only: METHOD_UNKNOWN
 
       character(len=*), intent(in) :: forcing_file_type !< File type used to select the default method and apply fallbacks.
       character(len=*), intent(in) :: interpolation_method !< Explicit interpolation method, or empty to use the file type default.
