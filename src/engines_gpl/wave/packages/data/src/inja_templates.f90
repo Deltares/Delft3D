@@ -7,7 +7,6 @@ module inja_templates
    public :: inja_add_string
    public :: inja_destroy_context
    public :: inja_render_file
-   public :: inja_render_test
 
    interface
       !> Creates an empty persistent context for inja template rendering.
@@ -40,14 +39,5 @@ module inja_templates
          integer(c_int) :: status !< Zero on success, or -1 on failure
       end function inja_render_file
 
-      !> Renders template text using the name value and copies it to result.
-      function inja_render_test(template_text, name, result, result_size) result(nchars) bind(C, name="inja_render_test")
-         import :: c_char, c_int
-         character(kind=c_char), dimension(*), intent(in) :: template_text !< NUL-terminated inja template
-         character(kind=c_char), dimension(*), intent(in) :: name !< NUL-terminated value of template variable name
-         character(kind=c_char), dimension(*), intent(inout) :: result !< Receives the NUL-terminated rendered text
-         integer(c_int), value, intent(in) :: result_size !< Size of result in characters
-         integer(c_int) :: nchars !< Number of characters written, or -1 on failure
-      end function inja_render_test
    end interface
 end module inja_templates

@@ -2635,14 +2635,6 @@ contains
       wvel = sr%wvel(itide)
       wdir = sr%wdir(itide)
       !
-      nchars = inja_render_test("Hello {{ name }} from inja!"//c_null_char, "SWAN"//c_null_char, &
-                              & inja_result, int(size(inja_result), c_int))
-      if (nchars > 0) then
-         write (*, '(a)') 'inja test: '//transfer(inja_result(1:nchars), repeat(' ', nchars))
-      else
-         write (*, '(a)') 'inja test: rendering failed'
-      end if
-      !
       if (sr%inputtemplatefile /= '') then
          call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
          call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)

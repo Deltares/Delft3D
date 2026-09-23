@@ -13,6 +13,7 @@ set(src_path src)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
+list(APPEND source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_templates.f90)
 set(cxx_source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_test.cpp)
 
 # Define library
