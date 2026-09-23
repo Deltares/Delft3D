@@ -445,23 +445,23 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_strings(WS_SP_RUNID) = gdp%runid
              dll_strings(WS_SP_USRFL) = dll_usrfil(l)
              !
-             !if (stressStrainRelation) then
-             !    if (sedtyp(l) == SEDTYP_CLAY) then
-             !       call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
-             !                   & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
-             !                   & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
-             !    else
-             !       if (shearSettling) then
-             !          call shearsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
-             !                         & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
-             !                         & localpar    , gdp%gdtrapar%npar       , wsloc    , ifirst_settle  , error)
-             !       endif
-             !   endif
-             !else
+             if (stressStrainRelation) then
+                 if (sedtyp(l) == SEDTYP_CLAY) then
+                    call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
+                                & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
+                                & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
+                 else
+                    if (shearSettling) then
+                       call shearsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
+                                      & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
+                                      & localpar    , gdp%gdtrapar%npar       , wsloc    , ifirst_settle  , error)
+                    endif
+                endif
+             else
                 call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings    , &
                             & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
                             & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
-             !endif
+             endif
              if (error) call d3stop(1, gdp)
              !
              ws(nm, k, l) = wsloc

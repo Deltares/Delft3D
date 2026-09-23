@@ -268,7 +268,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     logical       :: error   ! Flag for detection of closure error in mass-balance
     real(hp)      :: bi
     real(hp)      :: fac
-    !real(fp)      :: d0ksca
+    real(fp)      :: d0ksca
     real(fp)      :: epsomb
     real(fp)      :: hdti
     real(fp)      :: hnm
@@ -393,17 +393,17 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     ! INITIALISATION OF ITERATION OVER CONTINUITY EQUATION
     !
     call timer_start(timer_sud_rest, gdp)
-    !if (stressStrainRelation) then
-    !   d0k(:,:) = 0.0
-    !else
-    do k = 1, kmax
-       do nm = 1, nmmax
-          if (kcs(nm) > 0) then
-             d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
-          endif
+    if (stressStrainRelation) then
+       d0k(:,:) = 0.0
+    else
+       do k = 1, kmax
+          do nm = 1, nmmax
+             if (kcs(nm) > 0) then
+                d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+             endif
+          enddo
        enddo
-    enddo
-    !endif
+    endif
     !
     ! IN LAYER 1 DUE TO PRECIPITATION/EVAPORATION
     !     FOR TIME DEPENDENT INPUT OR HEAT MODEL WITH SPECIAL REQUEST
@@ -541,7 +541,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
           endif
        enddo
     enddo
-    !d0ksca = 0.0
+    d0ksca = 0.0
     do k = 1, kmax
        do nm = 1, nmmax
           !if (stressStrainRelation) then
@@ -989,7 +989,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
        qzk = 0.0
        w1  = 0.0
        !
-       !d0ksca = 0.0
+       d0ksca = 0.0
        do k = 1, kmax
           do nm = 1, nmmax
              if (kcs(nm)==1) then

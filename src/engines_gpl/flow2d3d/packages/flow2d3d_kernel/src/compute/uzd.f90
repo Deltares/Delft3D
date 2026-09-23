@@ -342,8 +342,6 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: vicd
     real(fp)           :: vicmax
     real(fp)           :: vicu
-    real(fp)           :: viz1
-    real(fp)           :: viz2
     real(fp)           :: vvv
     real(fp)           :: vvvc   ! Tangential velocity component used in Coriolis term
     real(fp)           :: wsbodyul ! local, modified wsbodyu
@@ -669,20 +667,20 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
           !
           ! Slurry
           !
-          !if (stressStrainRelation) then
-          !   if (vicmud(nm,kmax) > vicThresh) then
-          !      irobed = 0
-          !   else
-          !      irobed = 1
-          !   endif
-          !else
-          !  irobed = 1
-          !endif
-          !if (irobed == 0) then
-          !   bdmwrp = 0.0_fp
-          !else
+          if (stressStrainRelation) then
+             if (vicmud(nm,kmax) > vicThresh) then
+                irobed = 0
+             else
+                irobed = 1
+             endif
+          else
+            irobed = 1
+          endif
+          if (irobed == 0) then
+             bdmwrp = 0.0_fp
+          else
              bdmwrp = h0i*taubpu(nm)/thick(kmax)
-          !endif
+          endif
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -869,17 +867,17 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 !     (2*VIH*(D2U/DX2 + D2U/DY2) - OPERATOR SPLITTING IS USED )
                 !     VISCOSITY TERM HERE IS APPLIED ONLY IN THIS HALF TIMESTEP
                 !
-                !if (stressStrainRelation) then
-                !    !
-                !    ! limit the addition of vicmud based on the horizontal size of the cell
-                !    ! compare with chkvic
-                !    vicmax = 1.0/(guv(nm)*guv(nm)) + 1.0/(gvu(nm)*gvu(nm))
-                !    vicmax = 0.9 / (4.0*hdt*vicmax)
-                !    vih    = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm) + 2.0*Max(vicmud(nm,k),vicmud(nmu,k))
-                !    vih    = min (vih, vicmax)
-                !else
+                if (stressStrainRelation) then
+                    !
+                    ! limit the addition of vicmud based on the horizontal size of the cell
+                    ! compare with chkvic
+                    vicmax = 1.0/(guv(nm)*guv(nm)) + 1.0/(gvu(nm)*gvu(nm))
+                    vicmax = 0.9 / (4.0*hdt*vicmax)
+                    vih    = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm) + 2.0*Max(vicmud(nm,k),vicmud(nmu,k))
+                    vih    = min (vih, vicmax)
+                else
                     vih = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm)
-                !endif
+                endif
                 termc  = 2.*vih/(gksid*gksiu)*idifc
                 termux = vih/(gksiu*gksi)*idifc
                 termdx = vih/(gksid*gksi)*idifc
@@ -981,48 +979,53 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 endif
                 cnurh = h0i * h0i
                 !
-                ! viz1 calculation
+                ! vicd calculation
                 ! restriction is moved from TURCLO to here
+                ! defined at lower interface
                 !
-                viz1  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
+                ! In points with mud (how to determine?), we assume no slip at the bed!
+                !
+                vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
                       & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp) &
                       &               + redvic(vicww(nmu, kdo), gdp)) ! &
                       ! & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
                 !
-                ! viz1 calculation
+                ! vicu calculation
                 ! restriction is moved from TURCLO to here
+                ! defined at upper interface
                 !
-                !if (k==kmax .and. irobed==0) then 
-                !   kfw = 0
-                !endif
+                ! For slurry:
+                if (k==kmax .and. irobed==0) then 
+                   kfw = 0
+                endif
                 !
-                viz2 = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
+                vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp) &
                      &               + redvic(vicww(nmu, k), gdp)) ! &
                      ! & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
                 !
                 ! upper bound for VICD and VICU
-                ! vicd = min(vicd, 100.0_fp)
-                ! vicu = min(vicu, 100.0_fp)
+                vicd = min(vicd, 100.0_fp)
+                vicu = min(vicu, 100.0_fp)
                 !
-                ddza  = 2.0 * cnurh * viz1 / (tsg1*thick(k))
-                ddzc  = 2.0 * cnurh * viz2 / (tsg2*thick(k))
+                ddza  = 2.0 * cnurh * vicd / (tsg1*thick(k))
+                ddzc  = 2.0 * cnurh * vicu / (tsg2*thick(k))
                 ddza  =  iada * ddza
                 ddzc  =  iadc * ddzc
                 !
-                !if (k==kmax .and. irobed==0) then
-                !   !
-                !   ! No slip at the bed.
-                !   ! Implicitly at the bed for no-slip condition
-                !   !
-                !   ! change 25 april 2014
-                !   !
-                !   !
-                !   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))
-                !   ddzc = 0.0
-                !else
+                if (k==kmax .and. irobed==0) then
+                   !
+                   ! No slip at the bed.
+                   ! Implicitly at the bed for no-slip condition
+                   !
+                   ! change 25 april 2014
+                   !
+                   !
+                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))
+                   ddzc = 0.0
+                else
                    ddzb  = -ddza - ddzc
-                !endif
+                endif
                 !
                 aak(nm, k) = aak(nm, k) - ddza
                 bbk(nm, k) = bbk(nm, k) - ddzb
