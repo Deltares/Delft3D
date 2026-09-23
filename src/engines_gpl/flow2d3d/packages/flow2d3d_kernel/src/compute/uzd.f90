@@ -987,8 +987,8 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
                       & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp) &
-                      &               + redvic(vicww(nmu, kdo), gdp)) ! &
-                      ! & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
+                      &               + redvic(vicww(nmu, kdo), gdp)) &
+                      & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
                 !
                 ! vicu calculation
                 ! restriction is moved from TURCLO to here
@@ -1001,8 +1001,8 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp) &
-                     &               + redvic(vicww(nmu, k), gdp)) ! &
-                     ! & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
+                     &               + redvic(vicww(nmu, k), gdp)) &
+                     & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
                 !
                 ! upper bound for VICD and VICU
                 vicd = min(vicd, 100.0_fp)
@@ -1021,7 +1021,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                    ! change 25 april 2014
                    !
                    !
-                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))
+                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))                   
                    ddzc = 0.0
                 else
                    ddzb  = -ddza - ddzc

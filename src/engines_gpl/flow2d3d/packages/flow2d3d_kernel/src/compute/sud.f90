@@ -544,10 +544,10 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     d0ksca = 0.0
     do k = 1, kmax
        do nm = 1, nmmax
-          !if (stressStrainRelation) then
-          !   d0ksca = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
-          !endif
-          if (kcs(nm)==1) d0(nm) = d0(nm) + d0k(nm, k) ! + d0ksca
+          if (stressStrainRelation) then
+             d0ksca = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+          endif
+          if (kcs(nm)==1) d0(nm) = d0(nm) + d0ksca + d0k(nm, k)
        enddo
     enddo
     call timer_stop(timer_sud_rest, gdp)
@@ -993,13 +993,13 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
        do k = 1, kmax
           do nm = 1, nmmax
              if (kcs(nm)==1) then
-                !if (stressStrainRelation) then
-                !   d0ksca    = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) &
-                !             & + qyk(nm - icy, k)
-                !endif
+                if (stressStrainRelation) then
+                   d0ksca    = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) &
+                             & + qyk(nm - icy, k)
+                endif
                 w1(nm, k) = w1(nm, k - 1) + thick(k)*s1(nm)*hdti       &
                           & + (qxk(nm, k) - qxk(nm - icx, k)           &
-                          & - d0k(nm, k)) / gsqs(nm) ! -d0ksca
+                          & - d0k(nm, k) - d0ksca) / gsqs(nm)
                 qzk(nm, k) = w1(nm, k)*gsqs(nm)
              endif
           enddo
