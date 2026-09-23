@@ -702,7 +702,6 @@ type sedpar_type
     !
     real(fp) :: SluSettParam1 !  coefficient used to compute hindered settling in slurry
     real(fp) :: SluSettParam2 !  coefficient used to compute hindered settling in slurry
-/
     !
     ! reals
     !
