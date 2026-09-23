@@ -435,11 +435,11 @@ contains
    end function file_extension_conflicts_with_type
 
    !> Helper routine to avoid cyclic dependencies
-   subroutine allocate_time_dependent_spatial_quantities(max_num_quantities)
-      integer, intent(in) :: max_num_quantities !< Maximum number of quantities to register.
+   subroutine allocate_time_dependent_spatial_quantities(size)
+      integer, intent(in) :: size !< Maximum number of quantities to register.
 
       call deallocate_time_dependent_spatial_quantities()
-      allocate (time_dependent_spatial_quantities(max(1, max_num_quantities)))
+      allocate (time_dependent_spatial_quantities(size))
       time_dependent_spatial_quantities = ''
    end subroutine allocate_time_dependent_spatial_quantities
 
