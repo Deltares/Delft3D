@@ -21,15 +21,6 @@ void inja_destroy_context(inja_context* context);
 int inja_render_file(inja_context* context, const char* template_file,
 					 const char* dest_file);
 
-/// Test hook that renders an inja template, callable from Fortran/C.
-///
-/// The template text and the value of the template variable `name` are passed
-/// in as NUL-terminated strings. The rendered text is copied into `result`,
-/// truncated to `result_size` - 1 characters and NUL-terminated.
-///
-/// Returns the number of characters written to `result`, or -1 on failure.
-int inja_render_test(const char* template_text, const char* name, char* result, int result_size);
-
 #ifdef __cplusplus
 }
 #endif
