@@ -93,7 +93,7 @@ module m_source_sink
 
       procedure :: add => add_source_sink
       procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
-      procedure :: set => set_source_sink
+      procedure :: update_discharges => update_source_sink_discharges
 
    end type SourceSinks
 
@@ -430,13 +430,13 @@ contains
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
       ! Local variables
-      integer :: kk
-      integer :: kk2
+      integer :: n_sink !< Flowcell index of sink
+      integer :: n_source !< Flowcell index of source
       integer :: i
       integer :: jakdtree
-      integer :: num_points
-      integer, dimension(1) :: kdum
-      character(len=IdLen), dimension(1) :: tmpname
+      integer :: num_points !< Number of points in the polyline representing the source/sink.
+      integer, dimension(1) :: n_dummy !< Dummy flowcell index for readout
+      character(len=IdLen), dimension(1) :: tmp_name !< Temporary name for the source/sink
 
       ierr = DFM_WRONGINPUT
 
@@ -463,24 +463,24 @@ contains
       self%x(self%num_total, 1:num_points) = x_points(1:num_points)
       self%y(self%num_total, 1:num_points) = y_points(1:num_points)
       self%max_xy_points(self%num_total) = num_points
-      kk = 0
-      kk2 = 0
+      n_sink = 0
+      n_source = 0
 
       ! Set source/sink name.
       self%name(self%num_total) = name
 
-      tmpname(1) = name//' source'
+      tmp_name(1) = name//' source'
       jakdtree = 0
-      kdum(1) = 0
+      n_dummy(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
-         kk2 = kdum(1)
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), tmp_name(1), n_dummy(1), jakdtree, -1, INDTP_ALL)
+         n_source = n_dummy(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
       if (num_points == 1) then
 
-         kk = 0 ! Only keep the source-side (kk2), and disable momentum discharge
+         n_sink = 0 ! Only keep the source-side (n_source), and disable momentum discharge
          if (area /= dmiss .and. area /= 0.0_dp) then
             ! User specified an area for momentum discharge, but that does not apply to POINT sources.
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
@@ -489,34 +489,34 @@ contains
          self%area(self%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
-         tmpname = name//' sink'
-         kdum(1) = 0
+         tmp_name = name//' sink'
+         n_dummy(1) = 0
          if (self%x(self%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
-            kk = kdum(1)
+            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), tmp_name(1), n_dummy(1), jakdtree, -1, INDTP_ALL)
+            n_sink = n_dummy(1)
          end if
 
-         if (kk /= 0 .or. kk2 /= 0) then
+         if (n_sink /= 0 .or. n_source /= 0) then
             self%area(self%num_total) = area
          end if
       end if
 
-      if (kk == 0 .and. kk2 == 0) then
+      if (n_sink == 0 .and. n_source == 0) then
          write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
          return
       end if
 
-      self%indices(self%num_total, 1) = kk
+      self%indices(self%num_total, 1) = n_sink
       self%z_bottom(self%num_total, 1) = z_sink(1)
       self%z_top(self%num_total, 1) = z_sink(1)
 
-      self%indices(self%num_total, 4) = kk2
+      self%indices(self%num_total, 4) = n_source
       self%z_bottom(self%num_total, 2) = z_source(1)
       self%z_top(self%num_total, 2) = z_source(1)
 
-      if (kk > 0) then
+      if (n_sink > 0) then
          if (z_sink(2) /= dmiss) then
             self%z_top(self%num_total, 1) = z_sink(2)
          end if
@@ -536,10 +536,10 @@ contains
          end if
 
          do i = 1, self%num_total - 1
-            if (self%indices(i, 1) /= 0 .and. kk == self%indices(i, 1)) then
+            if (self%indices(i, 1) /= 0 .and. n_sink == self%indices(i, 1)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(i))
                call warn_flush()
-            else if (self%indices(i, 4) /= 0 .and. kk == self%indices(i, 4)) then
+            else if (self%indices(i, 4) /= 0 .and. n_sink == self%indices(i, 4)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(i))
                call warn_flush()
             end if
@@ -547,7 +547,7 @@ contains
 
       end if
 
-      if (kk2 > 0) then
+      if (n_source > 0) then
          if (z_source(2) /= dmiss) then
             self%z_top(self%num_total, 2) = z_source(2)
          end if
@@ -573,7 +573,7 @@ contains
    end subroutine add_source_sink
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
-   subroutine set_source_sink(self)
+   subroutine update_source_sink_discharges(self)
       use m_flow, only: kmx, zws, vol1, qin, epshs
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
@@ -774,6 +774,6 @@ contains
 
       end do
 
-   end subroutine set_source_sink
+   end subroutine update_source_sink_discharges
 
 end module m_source_sink
