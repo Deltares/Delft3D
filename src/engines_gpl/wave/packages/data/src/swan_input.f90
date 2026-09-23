@@ -2645,6 +2645,7 @@ contains
       !
       if (sr%inputtemplatefile /= '') then
          call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
+         call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
       else
          call write_swan_inp(wavedata, calccount, &
                       & itide, sr%nttide, inest, sr%nnest, sr%swuvt, &
@@ -2663,6 +2664,40 @@ contains
       !
 
    end subroutine write_swan_input
+
+   subroutine update_swan_inp_injs(filnam, itide, nttide, calccount, inest, sr, wavedata)
+      use inja_templates
+      use, intrinsic :: iso_c_binding, only: c_int, c_null_char, c_ptr
+
+      integer, intent(in) :: calccount
+      integer, intent(in) :: itide
+      integer, intent(in) :: nttide
+      character(*), intent(in) :: filnam
+      type(swan_type) :: sr
+      type(wave_data_type) :: wavedata
+      integer, intent(in) :: inest
+      character(15) :: tbegc
+      character(15) :: tendc
+      character(15), external :: datetime_to_string
+      character(256) :: tmp_name
+
+      type(c_ptr) :: context
+      integer(c_int) :: status
+
+      context = inja_create_context()
+
+      tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
+      status = inja_add_string(context, "TSTART"//c_null_char, tbegc//c_null_char)
+      tendc = datetime_to_string(wavedata%time%refdate, wavedata%time%calctimtscale * real(wavedata%time%tscale, hp))
+      status = inja_add_string(context, "TSTOP"//c_null_char, tendc//c_null_char)
+
+      tmp_name = trim(filnam)//".inj"
+      status = inja_render_file(context, trim(tmp_name)//c_null_char, "INPUT.inj"//c_null_char)
+
+      call inja_destroy_context(context)
+
+
+   end subroutine update_swan_inp_injs
 !
 !
 !==============================================================================
