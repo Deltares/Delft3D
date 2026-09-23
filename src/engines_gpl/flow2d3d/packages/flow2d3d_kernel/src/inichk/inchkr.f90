@@ -1006,49 +1006,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
        if (error) goto 9999
     endif
     !
-    ! The velocities from previous half timestep are corrected for
-    ! mass flux and temporary set in WRKB3 (UEUL) and WRKB4
-    ! (VEUL) these are used in TURCLO
-    !
-    icx = nmaxddb
-    icy = 1
-    call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
-             & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumx0) , &
-             & i(kfumin) ,i(kfvmx0) ,i(kfvmin) ,r(dzu0)   ,r(dzv0)   , &
-             & r(u0)     ,r(wrkb3)  ,r(v0)     ,r(wrkb4)  , &
-             & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
-             & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
-             & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
-    !
-    ! DENS  : compute densities for the first time
-    !
-    ifirst_dens = 1
-    call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
-            & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
-            & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-            & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
-    !
-    ! Eddy viscosity and diffusivity
-    !
-    icx = nmaxddb
-    icy = 1
-    call turclo(jstart    ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
-              & icx       ,icy       ,tkemod    , &
-              & i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    ,r(s0)     , &
-              & d(dps)    ,r(hu)     ,r(hv)     ,r(u0)     ,r(v0)     , &
-              & r(rtur0)  ,r(thick)  ,r(sig)    ,r(rho)    ,r(vicuv)  , &
-              & r(vicww)  ,r(dicuv)  ,r(dicww)  ,r(windsu) ,r(windsv) , &
-              & r(z0urou) ,r(z0vrou) ,r(bruvai) ,r(rich)   ,r(dudz)   , &
-              & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
-    if (stressStrainRelation) then
-       call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
-                 & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
-                 & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
-                 & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
-                 & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
-                 & r(sndint) ,gdp       )       
-    endif
-    !
     ! Convert the coordinates of the fixed gate using DPU/DPV as reference
     ! Initialise the porosity factor POROSU/V (== 1). Initialisation
     ! of porosity may not be skipped (later initialisation maybe moved to
@@ -1123,6 +1080,49 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & r(ewabr0) ,r(ewabr1) , &
               & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
               & gdp       )
+    !
+    ! The velocities from previous half timestep are corrected for
+    ! mass flux and temporary set in WRKB3 (UEUL) and WRKB4
+    ! (VEUL) these are used in TURCLO
+    !
+    icx = nmaxddb
+    icy = 1
+    call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
+             & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumx0) , &
+             & i(kfumin) ,i(kfvmx0) ,i(kfvmin) ,r(dzu0)   ,r(dzv0)   , &
+             & r(u0)     ,r(wrkb3)  ,r(v0)     ,r(wrkb4)  , &
+             & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
+             & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
+             & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
+    !
+    ! DENS  : compute densities for the first time
+    !
+    ifirst_dens = 1
+    call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
+            & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
+            & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
+            & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
+    !
+    ! Eddy viscosity and diffusivity
+    !
+    icx = nmaxddb
+    icy = 1
+    call turclo(jstart    ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
+              & icx       ,icy       ,tkemod    , &
+              & i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    ,r(s0)     , &
+              & d(dps)    ,r(hu)     ,r(hv)     ,r(u0)     ,r(v0)     , &
+              & r(rtur0)  ,r(thick)  ,r(sig)    ,r(rho)    ,r(vicuv)  , &
+              & r(vicww)  ,r(dicuv)  ,r(dicww)  ,r(windsu) ,r(windsv) , &
+              & r(z0urou) ,r(z0vrou) ,r(bruvai) ,r(rich)   ,r(dudz)   , &
+              & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
+    if (stressStrainRelation) then
+       call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                 & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                 & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                 & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                 & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                 & r(sndint) ,gdp       )       
+    endif
     !
     ! Z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
     !
