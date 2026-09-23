@@ -50,7 +50,7 @@ contains
       use m_flow_geominit, only: flow_geominit
       use m_cellmask_from_polygon_set, only: t_netcell_set
       use precice_adapter
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: SourceSinks, source_sinks, source_sink_all_discharges
       use m_alloc, only: realloc
       use m_resetfullflowmodel, only: resetfullflowmodel
 
@@ -62,7 +62,7 @@ contains
 
       ! Setup grid
       call disable_timers_logging_and_mpi()
-      call source_sinks%dealloc()
+      source_sinks = SourceSinks()
       call source_sinks%initialize(1)
       grid_helper = t_grid_helper()
       call grid_helper%make_square_grid( &
