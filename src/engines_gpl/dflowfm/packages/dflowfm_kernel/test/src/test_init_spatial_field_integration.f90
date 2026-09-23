@@ -1425,6 +1425,79 @@ contains
    end subroutine test_datavalue_with_static_input_is_applied_once
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airdensity_datavalue_with_static_input_is_applied_once, test_airdensity_datavalue_with_static_input_is_applied_once,
+   !> A static airdensity datavalue must not be reapplied during runtime updates
+   !! after a later static field has replaced it.
+   subroutine test_airdensity_datavalue_with_static_input_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flowgeom, only: ndx2D
+      use m_meteo, only: ja_airdensity, ja_computed_airdensity
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use m_wind, only: air_density
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_airdensity.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_airdensity.ext'
+      integer :: ierr, iresult
+
+      call create_file(SAMPLE_FILE, ['-1.0 -1.0  1.0', &
+                                     ' 1.0 -1.0  1.0', &
+                                     ' 0.0  1.0  1.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = airdensity', &
+                                  '    dataValue       = 1.2', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity            = airdensity', &
+                                  '    forcingFile         = '//SAMPLE_FILE, &
+                                  '    forcingFileType     = sample', &
+                                  '    interpolationMethod = triangulation', &
+                                  '    operand             = override'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_airdensity = 0
+      ja_computed_airdensity = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'combined static airdensity fields should initialize')
+      call f90_expect_eq(ja_airdensity, 1, 'airdensity should be enabled after initialization')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the later sample field should override the datavalue during initialization')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'external forcing update should succeed')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the runtime update should not reapply the static datavalue')
+
+      ja_airdensity = 0
+      ndx2D = 0
+      if (allocated(air_density)) deallocate (air_density)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
    !> A static datavalue base must be reapplied before each dynamic multiplication,
    !! rather than multiplying the previously updated target value cumulatively.
