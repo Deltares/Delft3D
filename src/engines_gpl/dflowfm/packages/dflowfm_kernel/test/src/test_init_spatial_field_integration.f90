@@ -1498,6 +1498,50 @@ contains
    end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_windxy_multiple_targets_reports_error, test_static_windxy_multiple_targets_reports_error,
+   subroutine test_static_windxy_multiple_targets_reports_error() bind(C)
+      use m_flowgeom, only: lnx, xu, yu
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_unsupported_static_windxy.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_unsupported_static_windxy.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_file(SAMPLE_FILE, ['0.0 0.0 1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = windxy', &
+                       '    forcingFile         = '//SAMPLE_FILE, &
+                       '    forcingFileType     = sample', &
+                       '    interpolationMethod = triangulation'])
+
+      call setup_minimal_grid()
+      lnx = 1
+      allocate (xu(lnx), yu(lnx))
+      xu = 0.0_dp
+      yu = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'a static field with multiple mapped targets must fail initialization')
+
+      lnx = 0
+      deallocate (xu, yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_static_windxy_multiple_targets_reports_error
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
    !> A static datavalue base must be reapplied before each dynamic multiplication,
    !! rather than multiplying the previously updated target value cumulatively.

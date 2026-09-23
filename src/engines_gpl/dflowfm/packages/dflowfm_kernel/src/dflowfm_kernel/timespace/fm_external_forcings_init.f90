@@ -937,7 +937,7 @@ contains
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
@@ -1042,7 +1042,7 @@ contains
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
       use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE
@@ -1084,6 +1084,9 @@ contains
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
+      integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
+      logical :: mapped
       integer :: oper_backup
 
       target_layer = ''
@@ -1189,8 +1192,26 @@ contains
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
+                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  !TODO: resolve functions should always find a target array for single target quantities.
+                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
+                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                     if (mapped) then
+                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                              trim(file_name)//''': multiple target arrays are not supported.'
+                           call err_flush()
+                           res = .false.
+                           return
+                        end if
+                        if (associated(mapped_item1) .and. associated(mapped_data1)) then
+                           target_data => mapped_data1
+                        end if
+                     end if
+                  end if
 
-                  if (filetype == DATAVALUE .and. associated(target_data)) then
+                  if (filetype == DATAVALUE) then
                      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                    method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                      if (res) then
@@ -1204,6 +1225,12 @@ contains
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
                      res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+                  else
+                     write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' with forcingFileType '''// &
+                        trim(forcing_file_type)//''' from file '''//trim(file_name)//''': no target array is available.'
+                     call err_flush()
+                     res = .false.
+                     return
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
