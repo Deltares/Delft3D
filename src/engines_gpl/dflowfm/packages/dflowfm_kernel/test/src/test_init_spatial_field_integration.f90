@@ -1349,13 +1349,16 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_datavalue_with_static_input_is_applied_once, test_datavalue_with_static_input_is_applied_once,
    subroutine test_datavalue_with_static_input_is_applied_once() bind(C)
       use dfm_error, only: DFM_NOERR
-      use fm_external_forcings, only: init_new
+      use fm_external_forcings, only: init_new, set_external_forcings
       use m_flow, only: frcu
       use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
       use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
       use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
 
       character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_friction.xyz'
       character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_friction.ext'
@@ -1377,6 +1380,9 @@ contains
                                   '    interpolationMethod = triangulation', &
                                   '    operand             = override'])
 
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
       call setup_minimal_grid()
       ndx2D = 0
       lnx = 1
@@ -1389,6 +1395,7 @@ contains
       tstart_user = 0.0_dp
       ja_friction_coefficient_time_dependent = 0
       threshold_abort = LEVEL_FATAL
+      call timini()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
       extfile_new_list = [EXT_FILE]
@@ -1400,7 +1407,12 @@ contains
       call f90_expect_eq(ja_friction_coefficient_time_dependent, 0, &
                          'datavalue should remain static when all other inputs are static')
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
-                           'the later sample field should override the one-shot datavalue')
+                           'the later sample field should override the datavalue')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
+                  'the first update should not reapply the static datavalue')
 
       ndx2D = 0
       lnx = 0
@@ -1408,8 +1420,105 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
+   !> A static datavalue base must be reapplied before each dynamic multiplication,
+   !! rather than multiplying the previously updated target value cumulatively.
+   subroutine test_static_datavalue_dynamic_multiply_resets_base() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flow, only: frcu
+      use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: BC_FILE = 'test_dynamic_friction_multiplier.bc'
+      character(len=*), parameter :: EXT_FILE = 'test_static_friction_base.ext'
+      integer :: ierr, iresult
+
+      call create_file(BC_FILE, [ &
+                       '[General]', &
+                       '    fileVersion           = 1.01', &
+                       '    fileType              = boundConds', &
+                       '', &
+                       '[forcing]', &
+                       '    name                  = global', &
+                       '    function              = timeseries', &
+                       '    timeInterpolation     = linear', &
+                       '    quantity              = time', &
+                       '    unit                  = seconds since 2000-01-01 00:00:00', &
+                       '    quantity              = frictioncoefficient', &
+                       '    unit                  = 1', &
+                       '    0     2.0', &
+                       '    60    3.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    dataValue       = 1.0', &
+                       '    operand         = override', &
+                       '', &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    forcingFile     = '//BC_FILE, &
+                       '    forcingFileType = bcascii', &
+                       '    operand         = multiply'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      lnx = 1
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_friction_coefficient_time_dependent = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'initialization should succeed')
+      call f90_expect_eq(ja_friction_coefficient_time_dependent, 1, &
+                         'friction coefficient should be marked as time dependent')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 2.0_dp, 1.0e-6_dp, &
+                           'the base should be multiplied by the first time-varying value')
+
+      call set_external_forcings(60.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'second external forcing update should succeed')
+      call f90_expect_near(frcu(1), 3.0_dp, 1.0e-6_dp, &
+                           'the second multiplier should apply to the reinitialized base, not the previous result')
+
+      ja_friction_coefficient_time_dependent = 0
+      ndx2D = 0
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_static_datavalue_dynamic_multiply_resets_base
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterdepth_derives_s1, test_initialwaterdepth_derives_s1,
