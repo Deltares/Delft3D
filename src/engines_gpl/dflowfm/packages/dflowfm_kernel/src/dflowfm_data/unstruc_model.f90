@@ -1227,8 +1227,11 @@ contains
       call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
 
-      call prop_get(md_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, success)
-      call prop_get(md_ptr, 'physics', 'upperLimitTracer', upperlimittra, success)
+      call prop_get(md_ptr, 'physics', 'lowerLimitTracer', lowerlimittra)
+      call prop_get(md_ptr, 'physics', 'upperLimitTracer', upperlimittra)
+      if (lowerlimittra >= upperlimittra) then
+         call mess(LEVEL_ERROR, 'In [physics] upperLimitTracer must be greater than lowerLimitTracer')
+      end if
 
       call prop_get(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
       call prop_get(md_ptr, 'physics', 'Elder   ', Elder)
