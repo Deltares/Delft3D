@@ -76,7 +76,7 @@ contains
       end if
 
       if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
-         heatsrc = 0.0_dp ! just prior to asource_sinks%update_discharges that may add to heatsrc
+         heatsrc = 0.0_dp ! just prior to source_sinks%update_discharges that may add to heatsrc
       else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
       end if
@@ -270,7 +270,7 @@ contains
          end if
 
          if (source_sinks%num_total > 0) then
-            call asource_sinks%update_discharges() ! add sources and sinks
+            call source_sinks%update_discharges() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
