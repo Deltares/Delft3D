@@ -31,6 +31,9 @@ module m_atmospheric_stability
    public :: t_options
    public :: t_scales
    public :: t_fluxes
+   public :: atm_stability_options
+   public :: default_atmospheric_stability
+   public :: initialize_atmospheric_stability
    public :: compute_scales_and_fluxes
    public :: get_wind_stress
    public :: get_latent_heat_flux
@@ -104,7 +107,37 @@ module m_atmospheric_stability
    type(t_scales), dimension(:), allocatable :: scaling_parameters !< Array of scaling parameters
    type(t_fluxes), dimension(:), allocatable :: fluxes !< Array of fluxes
 
+   type(t_options), save :: atm_stability_options !< Time-independent MOST options, set once at initialization.
+
 contains
+
+   !> Resets the module to its compile-time default state.
+   subroutine default_atmospheric_stability()
+      atm_stability_options = t_options()
+   end subroutine default_atmospheric_stability
+
+   !> Sets the time-independent MOST parameters once, to be called at the start of a simulation.
+   subroutine initialize_atmospheric_stability(include_stability, include_free_convection, &
+                                                sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+                                                alpha_m, alpha_h, alpha_q)
+      logical, intent(in) :: include_stability !< Enable stability-aware similarity corrections.
+      logical, intent(in) :: include_free_convection !< Enable free-convection velocity scale.
+      real(kind=dp), intent(in) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
+      real(kind=dp), intent(in) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
+      real(kind=dp), intent(in) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
+      real(kind=dp), intent(in) :: alpha_m !< Air viscous momentum coefficient [-]
+      real(kind=dp), intent(in) :: alpha_h !< Air viscous heat coefficient [-]
+      real(kind=dp), intent(in) :: alpha_q !< Air viscous moisture coefficient [-]
+
+      atm_stability_options%include_stability = include_stability
+      atm_stability_options%include_free_convection = include_free_convection
+      atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
+      atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
+      atm_stability_options%sensor_height_humidity = sensor_height_humidity
+      atm_stability_options%alpha_m = alpha_m
+      atm_stability_options%alpha_h = alpha_h
+      atm_stability_options%alpha_q = alpha_q
+   end subroutine initialize_atmospheric_stability
 
    !> Compute turbulence scaling parameters for a point value.
    pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
