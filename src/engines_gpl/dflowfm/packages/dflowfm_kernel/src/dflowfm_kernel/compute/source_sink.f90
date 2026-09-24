@@ -355,13 +355,13 @@ contains
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
       ! Local variables
+      integer :: i !< Source/sink index
       integer :: n_sink !< Flowcell index of sink
       integer :: n_source !< Flowcell index of source
-      integer :: i
       integer :: jakdtree
       integer :: num_points !< Number of points in the polyline representing the source/sink.
       integer, dimension(1) :: n_dummy !< Dummy flowcell index for readout
-      character(len=IdLen), dimension(1) :: tmp_name !< Temporary name for the source/sink
+      character(len=IdLen), dimension(1) :: tmp_name !< Temporary name of the source/sink
 
       ierr = DFM_WRONGINPUT
 
@@ -508,110 +508,117 @@ contains
       class(SourceSinks), intent(inout) :: self !< Source/sink object instance
 
       ! Local variables
-      integer :: n
-      integer :: kk
-      integer :: k
-      integer :: kb
-      integer :: kt
-      integer :: kk2
-      integer :: ku
+      integer :: i !< Source/sink index
+      integer :: i_const !< Constituent index
+      integer :: k !< Layer index
+      integer :: k_bottom !< Bottom layer index
+      integer :: k_top !< Top layer index
+      integer :: ku !< Upper layer index
+      integer :: n_sink !< Flowcell index of sink
+      integer :: n_source !< Flowcell index of source
       integer :: numvals
-      integer :: L
-      real(kind=dp) :: qsrck
-      real(kind=dp) :: qsrckk
-      real(kind=dp) :: dzss
+      real(kind=dp) :: flowcell_discharge !< Source/sink discharge of the (whole) flowcell
+      real(kind=dp) :: layer_discharge !< Source/sink discharge of a layer
+      real(kind=dp) :: flowcell_height !< Vertical height of the flowcell
       real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
-      do n = 1, self%num_total
-         kk = self%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
-         kk2 = self%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
-         self%discharge(n) = source_sink_all_discharges(1, n)
-         if (kk > 0) then ! FROM point
+
+      do i = 1, self%num_total
+
+         n_sink = self%indices(i, FLOWCELL_SINK) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
+         n_source = self%indices(i, FLOWCELL_SOURCE) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
+         self%discharge(i) = source_sink_all_discharges(1, i)
+
+         if (n_sink > 0) then ! FROM point
             if (kmx > 0) then
-               call getkbotktop(kk, kb, kt)
-               if (self%z_bottom(n, SINK_SIDE) == dmiss) then
-                  k = kb
-                  ku = kt
+               call getkbotktop(n_sink, k_bottom, k_top)
+               if (self%z_bottom(i, SINK_SIDE) == dmiss) then
+                  k = k_bottom
+                  ku = k_top
                else
-                  do k = kb, kt
-                     if (zws(k) > self%z_bottom(n, SINK_SIDE) .or. k == kt) then
+                  do k = k_bottom, k_top
+                     if (zws(k) > self%z_bottom(i, SINK_SIDE) .or. k == k_top) then
                         exit
                      end if
                   end do
-                  if (self%z_top(n, SINK_SIDE) == dmiss) then
+                  if (self%z_top(i, SINK_SIDE) == dmiss) then
                      ku = k
                   else
-                     do ku = kb, kt
-                        if (zws(ku) > self%z_top(n, SINK_SIDE) .or. ku == kt) then
+                     do ku = k_bottom, k_top
+                        if (zws(ku) > self%z_top(i, SINK_SIDE) .or. ku == k_top) then
                            exit
                         end if
                      end do
                   end if
                end if
             else
-               k = kk
-               kt = kk
-               ku = kk ! in 2D, volume cell nr = pressure cell nr
+               k = n_sink
+               k_top = n_sink
+               ku = n_sink ! in 2D, volume cell nr = pressure cell nr
             end if
-            self%indices(n, BOTTOM_LAYER_SINK) = k ! store kb of src
-            self%indices(n, TOP_LAYER_SINK) = ku !
-            if (self%discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = self%indices(n, BOTTOM_LAYER_SINK), self%indices(n, TOP_LAYER_SINK)
-                  source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
-                  do L = 1, numconst
-                     source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
+            self%indices(i, BOTTOM_LAYER_SINK) = k ! store k_bottom of src
+            self%indices(i, TOP_LAYER_SINK) = ku !
+
+            if (self%discharge(i) > 0) then ! Reduce if flux pos
+
+               do k = self%indices(i, BOTTOM_LAYER_SINK), self%indices(i, TOP_LAYER_SINK)
+                  source_sink_reduction(1, i) = source_sink_reduction(1, i) + vol1(k)
+                  do i_const = 1, numconst
+                     source_sink_reduction(1 + i_const, i) = source_sink_reduction(1 + i_const, i) + constituents(i_const, k) * vol1(k)
                   end do
                end do
-               if (source_sink_reduction(1, n) > 0.0_dp) then
-                  do L = 1, numconst
-                     source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) / source_sink_reduction(1, n)
+               if (source_sink_reduction(1, i) > 0.0_dp) then
+                  do i_const = 1, numconst
+                     source_sink_reduction(1 + i_const, i) = source_sink_reduction(1 + i_const, i) / source_sink_reduction(1, i)
                   end do
                end if
             end if
          end if
 
-         if (kk2 > 0) then ! TO point
+         if (n_source > 0) then ! TO point
             if (kmx > 0) then
-               call getkbotktop(kk2, kb, kt)
-               if (self%z_bottom(n, SOURCE_SIDE) == dmiss) then
-                  k = kb
-                  ku = kt
+               call getkbotktop(n_source, k_bottom, k_top)
+               if (self%z_bottom(i, SOURCE_SIDE) == dmiss) then
+                  k = k_bottom
+                  ku = k_top
                else
-                  do k = kb, kt
-                     if (zws(k) > self%z_bottom(n, SOURCE_SIDE) .or. k == kt) then
+                  do k = k_bottom, k_top
+                     if (zws(k) > self%z_bottom(i, SOURCE_SIDE) .or. k == k_top) then
                         exit
                      end if
                   end do
-                  if (self%z_top(n, SOURCE_SIDE) == dmiss) then
+                  if (self%z_top(i, SOURCE_SIDE) == dmiss) then
                      ku = k
                   else
-                     do ku = kb, kt
-                        if (zws(ku) > self%z_top(n, SOURCE_SIDE) .or. ku == kt) then
+                     do ku = k_bottom, k_top
+                        if (zws(ku) > self%z_top(i, SOURCE_SIDE) .or. ku == k_top) then
                            exit
                         end if
                      end do
                   end if
                end if
             else
-               k = kk2
-               kt = kk2
-               ku = kk2 ! in 2D, volume cell nr = pressure cell nr
+               k = n_source
+               k_top = n_source
+               ku = n_source ! in 2D, volume cell nr = pressure cell nr
             end if
-            self%indices(n, BOTTOM_LAYER_SOURCE) = k
-            self%indices(n, TOP_LAYER_SOURCE) = ku
-            if (self%discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = self%indices(n, BOTTOM_LAYER_SOURCE), self%indices(n, TOP_LAYER_SOURCE)
-                  source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
-                  do L = 1, numconst
-                     source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
+            self%indices(i, BOTTOM_LAYER_SOURCE) = k
+            self%indices(i, TOP_LAYER_SOURCE) = ku
+
+            if (self%discharge(i) < 0) then ! Reduce if flux neg
+
+               do k = self%indices(i, BOTTOM_LAYER_SOURCE), self%indices(i, TOP_LAYER_SOURCE)
+                  source_sink_reduction(1 + numconst + 1, i) = source_sink_reduction(1 + numconst + 1, i) + vol1(k)
+                  do i_const = 1, numconst
+                     source_sink_reduction(1 + numconst + 1 + i_const, i) = source_sink_reduction(1 + numconst + 1 + i_const, i) + constituents(i_const, k) * vol1(k)
                   end do
                end do
-               if (source_sink_reduction(1 + numconst + 1, n) > 0.0_dp) then
-                  do L = 1, numconst
-                     source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) / source_sink_reduction(1 + numconst + 1, n)
+               if (source_sink_reduction(1 + numconst + 1, i) > 0.0_dp) then
+                  do i_const = 1, numconst
+                     source_sink_reduction(1 + numconst + 1 + i_const, i) = source_sink_reduction(1 + numconst + 1 + i_const, i) / source_sink_reduction(1 + numconst + 1, i)
                   end do
                end if
             end if
@@ -624,75 +631,75 @@ contains
          call reduce_srsn(numvals, self%num_total, source_sink_reduction)
       end if
 
-      do n = 1, self%num_total
-         self%discharge(n) = source_sink_all_discharges(1, n)
-         do L = 1, numconst
-            self%constituents(n, L) = source_sink_all_discharges(L + 1, n)
+      do i = 1, self%num_total
+         self%discharge(i) = source_sink_all_discharges(1, i)
+         do i_const = 1, numconst
+            self%constituents(i, i_const) = source_sink_all_discharges(i_const + 1, i)
          end do
 
-         kk = self%indices(n, 1) ! 2D pressure cell nr
-         qsrck = self%discharge(n)
-         if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
-            if (FRAC * source_sink_reduction(1, n) / dts < abs(qsrck)) then
-               qsrck = FRAC * source_sink_reduction(1, n) / dts
+         n_sink = self%indices(i, FLOWCELL_SINK) ! 2D pressure cell nr
+         flowcell_discharge = self%discharge(i)
+         if (n_sink /= 0 .and. flowcell_discharge > 0) then ! Extract FROM 1
+            if (FRAC * source_sink_reduction(1, i) / dts < abs(flowcell_discharge)) then
+               flowcell_discharge = FRAC * source_sink_reduction(1, i) / dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(self%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(self%name(i))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         kk2 = self%indices(n, 4) ! 2D pressure cell nr
-         if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
-            if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts < abs(qsrck)) then
-               qsrck = -FRAC * source_sink_reduction(1 + numconst + 1, n) / dts
+         n_source = self%indices(i, FLOWCELL_SOURCE) ! 2D pressure cell nr
+         if (n_source /= 0 .and. flowcell_discharge < 0) then ! Extract From 2
+            if (FRAC * source_sink_reduction(1 + numconst + 1, i) / dts < abs(flowcell_discharge)) then
+               flowcell_discharge = -FRAC * source_sink_reduction(1 + numconst + 1, i) / dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(self%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(self%name(i))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         self%discharge(n) = qsrck
+         self%discharge(i) = flowcell_discharge
 
-         if (kk * kk2 /= 0) then ! Coupled stuff
-            if (qsrck > 0) then ! FROM k to k2
-               do L = 1, numconst
-                  self%constituents(n, L) = self%constituents(n, L) + source_sink_reduction(1 + L, n)
+         if (n_sink * n_source /= 0) then ! Coupled stuff
+            if (flowcell_discharge > 0) then ! FROM k to k2
+               do i_const = 1, numconst
+                  self%constituents(i, i_const) = self%constituents(i, i_const) + source_sink_reduction(1 + i_const, i)
                end do
-            else if (qsrck < 0) then ! FROM k2 to k
-               do L = 1, numconst
-                  self%constituents(n, L) = self%constituents(n, L) + source_sink_reduction(1 + numconst + 1 + L, n)
+            else if (flowcell_discharge < 0) then ! FROM k2 to k
+               do i_const = 1, numconst
+                  self%constituents(i, i_const) = self%constituents(i, i_const) + source_sink_reduction(1 + numconst + 1 + i_const, i)
                end do
             end if
          end if
 
-         if (kk > 0) then ! FROM Point
-            qsrckk = self%discharge(n)
-            qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            do k = self%indices(n, BOTTOM_LAYER_SINK), self%indices(n, TOP_LAYER_SINK)
+         if (n_sink > 0) then ! FROM Point
+            layer_discharge = self%discharge(i)
+            qin(n_sink) = qin(n_sink) - layer_discharge ! add to 2D pressure cell nr
+            do k = self%indices(i, BOTTOM_LAYER_SINK), self%indices(i, TOP_LAYER_SINK)
                if (kmx > 0) then
-                  dzss = zws(self%indices(n, TOP_LAYER_SINK)) - zws(self%indices(n, BOTTOM_LAYER_SINK) - 1)
-                  if (dzss > epshs) then
-                     qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
+                  flowcell_height = zws(self%indices(i, TOP_LAYER_SINK)) - zws(self%indices(i, BOTTOM_LAYER_SINK) - 1)
+                  if (flowcell_height > epshs) then
+                     flowcell_discharge = layer_discharge * (zws(k) - zws(k - 1)) / flowcell_height
                   else
-                     qsrck = qsrckk / (self%indices(n, TOP_LAYER_SINK) - self%indices(n, BOTTOM_LAYER_SINK) + 1)
+                     flowcell_discharge = layer_discharge / (self%indices(i, TOP_LAYER_SINK) - self%indices(i, BOTTOM_LAYER_SINK) + 1)
                   end if
-                  qin(k) = qin(k) - qsrck
+                  qin(k) = qin(k) - flowcell_discharge
                end if
             end do
          end if
 
-         if (kk2 > 0) then ! TO Point
-            qsrckk = self%discharge(n)
-            qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            do k = self%indices(n, BOTTOM_LAYER_SOURCE), self%indices(n, TOP_LAYER_SOURCE)
+         if (n_source > 0) then ! TO Point
+            layer_discharge = self%discharge(i)
+            qin(n_source) = qin(n_source) + layer_discharge ! add to 2D pressure cell nr
+            do k = self%indices(i, BOTTOM_LAYER_SOURCE), self%indices(i, TOP_LAYER_SOURCE)
                if (kmx > 0) then
-                  dzss = zws(self%indices(n, TOP_LAYER_SOURCE)) - zws(self%indices(n, BOTTOM_LAYER_SOURCE) - 1)
-                  if (dzss > epshs) then
-                     qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
+                  flowcell_height = zws(self%indices(i, TOP_LAYER_SOURCE)) - zws(self%indices(i, BOTTOM_LAYER_SOURCE) - 1)
+                  if (flowcell_height > epshs) then
+                     flowcell_discharge = layer_discharge * (zws(k) - zws(k - 1)) / flowcell_height
                   else
-                     qsrck = qsrckk / (self%indices(n, TOP_LAYER_SOURCE) - self%indices(n, BOTTOM_LAYER_SOURCE) + 1)
+                     flowcell_discharge = layer_discharge / (self%indices(i, TOP_LAYER_SOURCE) - self%indices(i, BOTTOM_LAYER_SOURCE) + 1)
                   end if
-                  qin(k) = qin(k) + qsrck
+                  qin(k) = qin(k) + flowcell_discharge
                end if
             end do
          end if
