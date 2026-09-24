@@ -67,6 +67,7 @@ module m_petsc
    Mat :: Amat ! PETSc-type matrix (will include dry nodes, set to zero)
    KSP :: Solver ! Solver for the equation Amat * sol = rhs
    logical :: isKSPCreated = .false. ! A flag to determine whether KSP is created
+   integer :: solves_since_preconditioner_rebuild = 0
    integer :: dump_sequence_number = 0 ! Sequence number for optional PETSc replay dumps
 
    PetscErrorCode, parameter :: PETSC_OK = 0
@@ -524,7 +525,6 @@ contains
 
       jasucces = 0
 
-      ! Ensure preconditioner will be recomputed with new matrix values
       call KSPSetReusePreconditioner(Solver, PETSC_FALSE, ierr)
       if (ierr /= PETSC_OK) then
          goto 1234
@@ -599,27 +599,25 @@ contains
       isPETScReplayDumpEnabled = environment_status == 0 .and. len_trim(dump_prefix) > 0
    end function isPETScReplayDumpEnabled
 
-   !> Store one linear system and its partition metadata for standalone replay.
-   subroutine dumpPETScReplay(initial_solution)
+   !> Store the partition metadata shared by all PETSc replay systems.
+   subroutine dumpPETScReplayMetadata(dump_prefix, ierr)
       use m_partitioninfo, only: iglobal, my_rank
-      use m_petsc, only: PETSC_OK, PETSC_COMM_WORLD, Amat, rhs, sol, numrows, rowtoelem, dump_sequence_number
-      use MessageHandling, only: mess, level_warn
+      use m_petsc, only: PETSC_OK, PETSC_COMM_WORLD, numrows, rowtoelem
       use petscvecdef, only: tVec
       use petscsysdef, only: tPetscViewer
       use petsc, only: FILE_MODE_WRITE, PETSC_DECIDE, PetscViewerBinaryOpen, PetscViewerDestroy, &
-                       MatView, VecCreateMPIWithArray, VecAssemblyBegin, VecAssemblyEnd, VecDestroy, VecView
+                       VecCreateMPIWithArray, VecAssemblyBegin, VecAssemblyEnd, VecDestroy, VecView
 
-      Vec, intent(in) :: initial_solution
+      character(len=*), intent(in) :: dump_prefix !< Prefix for the replay dump files.
+      PetscErrorCode, intent(out) :: ierr !< PETSc error code.
 
       integer, parameter :: singleton_blocks = 1
-      character(len=1024) :: dump_prefix
       character(len=1100) :: dump_filename
       real(kind=dp), dimension(:), allocatable :: global_node_id_values
       real(kind=dp), dimension(:), allocatable :: owner_rank_values
       Vec :: global_node_ids
       Vec :: owner_ranks
       PetscViewer :: viewer
-      PetscErrorCode :: ierr
       PetscErrorCode :: cleanup_ierr
       integer :: local_row
       logical :: global_node_ids_created
@@ -630,14 +628,6 @@ contains
       global_node_ids_created = .false.
       owner_ranks_created = .false.
       viewer_created = .false.
-      if (.not. isPETScReplayDumpEnabled()) then
-         return
-      end if
-      call get_environment_variable('DFLOWFM_PETSC_DUMP_PREFIX', dump_prefix)
-
-      dump_sequence_number = dump_sequence_number + 1
-      write (dump_filename, '(a,"_",i8.8,".bin")') trim(dump_prefix), dump_sequence_number
-
       allocate (global_node_id_values(numrows))
       allocate (owner_rank_values(numrows))
       do local_row = 1, numrows
@@ -665,23 +655,22 @@ contains
       end if
 
       if (ierr == PETSC_OK) then
+         write (dump_filename, '(a,"_global_node_ids.bin")') trim(dump_prefix)
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD, trim(dump_filename), FILE_MODE_WRITE, viewer, ierr)
          viewer_created = ierr == PETSC_OK
       end if
       if (ierr == PETSC_OK) then
-         call MatView(Amat, viewer, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         call VecView(rhs, viewer, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         call VecView(initial_solution, viewer, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         call VecView(sol, viewer, ierr)
-      end if
-      if (ierr == PETSC_OK) then
          call VecView(global_node_ids, viewer, ierr)
+      end if
+      if (viewer_created) then
+         call PetscViewerDestroy(viewer, cleanup_ierr)
+         viewer_created = .false.
+      end if
+
+      if (ierr == PETSC_OK) then
+         write (dump_filename, '(a,"_owner_ranks.bin")') trim(dump_prefix)
+         call PetscViewerBinaryOpen(PETSC_COMM_WORLD, trim(dump_filename), FILE_MODE_WRITE, viewer, ierr)
+         viewer_created = ierr == PETSC_OK
       end if
       if (ierr == PETSC_OK) then
          call VecView(owner_ranks, viewer, ierr)
@@ -695,6 +684,62 @@ contains
       end if
       if (owner_ranks_created) then
          call VecDestroy(owner_ranks, cleanup_ierr)
+      end if
+   end subroutine dumpPETScReplayMetadata
+
+   !> Store one linear system for standalone replay.
+   subroutine dumpPETScReplay(initial_solution)
+      use m_partitioninfo, only: my_rank
+      use m_petsc, only: PETSC_OK, PETSC_COMM_WORLD, Amat, rhs, sol, dump_sequence_number
+      use MessageHandling, only: mess, level_warn
+      use petscvecdef, only: tVec
+      use petscsysdef, only: tPetscViewer
+      use petsc, only: FILE_MODE_WRITE, PetscViewerBinaryOpen, PetscViewerDestroy, MatView, VecView
+
+      Vec, intent(in) :: initial_solution
+
+      character(len=1024) :: dump_prefix
+      character(len=1100) :: dump_filename
+      PetscViewer :: viewer
+      PetscErrorCode :: ierr
+      PetscErrorCode :: cleanup_ierr
+      logical :: viewer_created
+
+      ierr = PETSC_OK
+      viewer_created = .false.
+      if (.not. isPETScReplayDumpEnabled()) then
+         return
+      end if
+      call get_environment_variable('DFLOWFM_PETSC_DUMP_PREFIX', dump_prefix)
+
+      dump_sequence_number = dump_sequence_number + 1
+      if (dump_sequence_number == 1) then
+         call dumpPETScReplayMetadata(trim(dump_prefix), ierr)
+      end if
+      if (ierr /= PETSC_OK) then
+         if (my_rank == 0) then
+            call mess(LEVEL_WARN, 'Unable to write PETSc replay metadata for prefix: ', trim(dump_prefix))
+         end if
+         return
+      end if
+
+      write (dump_filename, '(a,"_",i8.8,".bin")') trim(dump_prefix), dump_sequence_number
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD, trim(dump_filename), FILE_MODE_WRITE, viewer, ierr)
+      viewer_created = ierr == PETSC_OK
+      if (ierr == PETSC_OK) then
+         call MatView(Amat, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(rhs, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(initial_solution, viewer, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecView(sol, viewer, ierr)
+      end if
+      if (viewer_created) then
+         call PetscViewerDestroy(viewer, cleanup_ierr)
       end if
 
       if (ierr /= PETSC_OK .and. my_rank == 0) then
@@ -710,7 +755,7 @@ contains
       use m_reduce, only: dp
       use m_flowparameters, only: petsc_krylov_solver
       use m_partitioninfo, only: ndomains
-      use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
+      use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated, solves_since_preconditioner_rebuild
 
       integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
@@ -759,6 +804,7 @@ contains
       if (ierr == PETSC_OK) then
          call KSPCreate(PETSC_COMM_WORLD, Solver, ierr)
          isKSPCreated = .true.
+         solves_since_preconditioner_rebuild = 0
       end if
       if (ierr == PETSC_OK) then
          call KSPSetOperators(Solver, Amat, Amat, ierr)
@@ -790,14 +836,14 @@ contains
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond)
       use petscvecdef, only: tVec
       use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, VecCopy, VecDestroy, VecDuplicate, &
-                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
+                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY, KSPSetReusePreconditioner, PETSC_TRUE
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
-      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat
+      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat, solves_since_preconditioner_rebuild
       use MessageHandling, only: mess, level_info, level_warn, level_error, level_debug
       use m_flowgeom, only: kfs
       use m_flowtimes, only: dts ! for logging
-      use m_flowparameters, only: jalogsolverconvergence
+      use m_flowparameters, only: jalogsolverconvergence, petsc_preconditioner_rebuild_interval
 
       integer, intent(in) :: ndx
       real(kind=dp), dimension(ndx), intent(inout) :: s1
@@ -864,8 +910,17 @@ contains
       end if
 
       if (jacompprecond == 1) then
-         ! compute preconditioner
-         call createPETSCPreconditioner()
+         if (solves_since_preconditioner_rebuild == 0 .or. &
+             (petsc_preconditioner_rebuild_interval > 0 .and. &
+              solves_since_preconditioner_rebuild >= petsc_preconditioner_rebuild_interval)) then
+            call createPETSCPreconditioner()
+            solves_since_preconditioner_rebuild = 0
+         else
+            call KSPSetReusePreconditioner(Solver, PETSC_TRUE, ierr)
+            if (ierr /= PETSC_OK) then
+               go to 1234
+            end if
+         end if
       end if
 
       if (dump_replay) then
@@ -893,6 +948,11 @@ contains
       call KSPGetConvergedReason(Solver, Reason, ierr)
       if (ierr /= PETSC_OK) then
          go to 1234
+      end if
+      if (Reason%v >= 0 .and. jacompprecond == 1) then
+         solves_since_preconditioner_rebuild = solves_since_preconditioner_rebuild + 1
+      else if (Reason%v < 0) then
+         solves_since_preconditioner_rebuild = 0
       end if
 
       ! check for convergence

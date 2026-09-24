@@ -973,6 +973,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
       call prop_get(md_ptr, 'numerics', 'PETScKrylovSolver', petsc_krylov_solver)
       call prop_get(md_ptr, 'numerics', 'PETScPreconditioner', petsc_preconditioner)
+      call prop_get(md_ptr, 'numerics', 'PETScPreconditionerRebuildInterval', petsc_preconditioner_rebuild_interval)
+      if (petsc_preconditioner_rebuild_interval < 0) then
+         call mess(LEVEL_ERROR, 'PETScPreconditionerRebuildInterval must be nonnegative.')
+      end if
       call str_lower(petsc_krylov_solver)
       call str_lower(petsc_preconditioner)
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
@@ -3056,6 +3060,9 @@ contains
       end if
       if (writeall .or. trim(petsc_preconditioner) /= 'default') then
          call prop_set(prop_ptr, 'numerics', 'PETScPreconditioner', petsc_preconditioner, 'PETSc PC type (for example jacobi, asm, gamg, or none; asm_icc selects ASM with overlap 2 and ICC subdomain solves)')
+      end if
+      if (writeall .or. petsc_preconditioner_rebuild_interval /= 1) then
+         call prop_set(prop_ptr, 'numerics', 'PETScPreconditionerRebuildInterval', petsc_preconditioner_rebuild_interval, 'Number of PETSc solves between preconditioner rebuilds (1: every solve, 0: never rebuild)')
       end if
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then

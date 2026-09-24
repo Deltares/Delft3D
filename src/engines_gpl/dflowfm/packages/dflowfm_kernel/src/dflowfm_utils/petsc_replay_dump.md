@@ -19,15 +19,22 @@ Each file is a collective PETSc binary stream written with
 2. `Vec`: right-hand side (`b`).
 3. `Vec`: initial solution passed to `KSPSolve` (`x_initial`).
 4. `Vec`: solution returned by `KSPSolve` (`x_reference`).
-5. `Vec`: one-based D-Flow FM global node/cell number (`global_node_id`) for
-   every equation row.
-6. `Vec`: zero-based MPI rank (`owner_rank`) that owned every equation row
-   in the recorded run.
 
-A replay program must call `MatLoad` once and `VecLoad` five times in that
+A replay program must call `MatLoad` once and `VecLoad` three times in that
 order. PETSc can load the matrix and vectors with a different MPI process
-count. The final two vectors preserve the original partition independently of
-the partition PETSc chooses while loading.
+count.
+
+The following immutable metadata is written once per dump prefix:
+
+- `<prefix>_global_node_ids.bin`: one `Vec` containing the one-based D-Flow FM
+   global node/cell number for every equation row.
+- `<prefix>_owner_ranks.bin`: one `Vec` containing the zero-based MPI rank that
+   owned every equation row in the recorded run.
+
+These companion files preserve the original row identity and partition without
+duplicating them in every numbered solve file. The solver replay can use the
+pair from another FM run as a replacement node-owner map, joining by global node
+ID to redistribute the systems for that run's MPI partition.
 
 Compare a replay result against `x_reference`, preferably using both an
 absolute norm and a relative norm. Solver settings are deliberately not stored

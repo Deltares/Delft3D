@@ -1,5 +1,7 @@
 #include <petscksp.h>
 
+#include <string>
+
 namespace {
 
 PetscErrorCode AssembleVector(Vec vector) {
@@ -9,12 +11,24 @@ PetscErrorCode AssembleVector(Vec vector) {
     PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode WriteVector(const char* path, Vec vector) {
+    PetscFunctionBeginUser;
+    PetscViewer viewer = nullptr;
+    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, path, FILE_MODE_WRITE, &viewer));
+    PetscCall(VecView(vector, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+    PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode CreateTestDump() {
     PetscFunctionBeginUser;
 
     char output_file[PETSC_MAX_PATH_LEN] = {};
+    char metadata_prefix[PETSC_MAX_PATH_LEN] = {};
     PetscBool output_was_set = PETSC_FALSE;
+    PetscBool metadata_prefix_was_set = PETSC_FALSE;
     PetscCall(PetscOptionsGetString(nullptr, nullptr, "-output_file", output_file, sizeof(output_file), &output_was_set));
+    PetscCall(PetscOptionsGetString(nullptr, nullptr, "-metadata_prefix", metadata_prefix, sizeof(metadata_prefix), &metadata_prefix_was_set));
     PetscCheck(output_was_set, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Specify -output_file <path>");
 
     Mat matrix = nullptr;
@@ -66,13 +80,17 @@ PetscErrorCode CreateTestDump() {
     PetscCall(AssembleVector(owner_ranks));
     PetscCall(MatMult(matrix, reference_solution, right_hand_side));
 
+    if (metadata_prefix_was_set) {
+        const std::string prefix(metadata_prefix);
+        PetscCall(WriteVector((prefix + "_global_node_ids.bin").c_str(), global_node_ids));
+        PetscCall(WriteVector((prefix + "_owner_ranks.bin").c_str(), owner_ranks));
+    }
+
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, output_file, FILE_MODE_WRITE, &viewer));
     PetscCall(MatView(matrix, viewer));
     PetscCall(VecView(right_hand_side, viewer));
     PetscCall(VecView(initial_solution, viewer));
     PetscCall(VecView(reference_solution, viewer));
-    PetscCall(VecView(global_node_ids, viewer));
-    PetscCall(VecView(owner_ranks, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
 
     PetscCall(VecDestroy(&owner_ranks));

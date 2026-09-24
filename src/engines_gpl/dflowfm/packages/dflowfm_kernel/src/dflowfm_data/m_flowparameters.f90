@@ -373,6 +373,7 @@ module m_flowparameters
    integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
    character(len=64) :: petsc_krylov_solver !< PETSc KSP type, for example cg or pipecg
    character(len=64) :: petsc_preconditioner !< PETSc PC type, or default
+   integer :: petsc_preconditioner_rebuild_interval !< Completed PETSc solves between preconditioner rebuilds (0: never rebuild)
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
@@ -956,6 +957,7 @@ contains
       ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
       petsc_krylov_solver = 'cg'
       petsc_preconditioner = 'default'
+      petsc_preconditioner_rebuild_interval = 1
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
       hwetbed = 0.2_dp ! for case wetbed

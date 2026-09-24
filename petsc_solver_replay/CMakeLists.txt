@@ -27,6 +27,16 @@ set_property(TARGET petsc-solver-replay PROPERTY INSTALL_RPATH "$ORIGIN/../lib")
 target_link_libraries(petsc-solver-replay PRIVATE PETSc::PETSc replay-mpi)
 
 install(TARGETS petsc-solver-replay RUNTIME DESTINATION bin)
+foreach(config IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER "${config}" config_upper)
+    if(TARGET CONAN_LIB::petsc_libpetsc_${config_upper})
+        install(IMPORTED_RUNTIME_ARTIFACTS CONAN_LIB::petsc_libpetsc_${config_upper}
+            CONFIGURATIONS ${config}
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+        )
+    endif()
+endforeach()
 
 if(MSVC)
     target_compile_options(petsc-solver-replay PRIVATE /W4 /permissive- /Zc:preprocessor)
@@ -47,20 +57,31 @@ if(BUILD_TESTING)
 
     set(test_dump_1 "${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test_00000001.bin")
     set(test_dump_2 "${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test_00000002.bin")
+    if(WIN32)
+        set(replay_mpiexec "$ENV{ONEAPI_ROOT}/mpi/latest/bin/mpiexec.exe")
+    else()
+        set(replay_mpiexec "${MPIEXEC_EXECUTABLE}")
+    endif()
+    if(EXISTS "${replay_mpiexec}")
+        set(create_metadata_dump_command ${replay_mpiexec} -n 2 $<TARGET_FILE:petsc-replay-create-test-dump>)
+    else()
+        set(create_metadata_dump_command petsc-replay-create-test-dump)
+    endif()
     add_test(
         NAME petsc-replay-create-test-dump-1
-        COMMAND petsc-replay-create-test-dump -output_file ${test_dump_1}
+        COMMAND ${create_metadata_dump_command}
+            -output_file ${test_dump_1}
+            -metadata_prefix ${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test
     )
     add_test(
         NAME petsc-replay-create-test-dump-2
         COMMAND petsc-replay-create-test-dump -output_file ${test_dump_2}
     )
+    set_tests_properties(petsc-replay-create-test-dump-2 PROPERTIES DEPENDS petsc-replay-create-test-dump-1)
     add_test(
         NAME petsc-solver-replay-smoke
         COMMAND petsc-solver-replay
                 -replay_file ${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test
-                -replay_warmup 0
-                -replay_repetitions 1
                 -replay_rebuild_preconditioner 0
                 -replay_fail_on_reference_error true
                 -replay_reference_rtol 1e-12
@@ -72,6 +93,32 @@ if(BUILD_TESTING)
             DEPENDS "petsc-replay-create-test-dump-1;petsc-replay-create-test-dump-2"
             PASS_REGULAR_EXPRESSION "Replaying 2 recorded linear solve\\(s\\)"
     )
+
+    if(EXISTS "${replay_mpiexec}")
+        add_test(
+            NAME petsc-solver-replay-repartition
+            COMMAND ${replay_mpiexec} -n 2 $<TARGET_FILE:petsc-solver-replay>
+                    -replay_file ${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test
+                    -replay_node_owners ${CMAKE_CURRENT_BINARY_DIR}/petsc_replay_test_owner_ranks.bin
+                    -replay_fail_on_reference_error true
+                    -replay_reference_rtol 1e-12
+                    -pc_type jacobi
+        )
+        set_tests_properties(
+            petsc-solver-replay-repartition
+            PROPERTIES
+                DEPENDS "petsc-replay-create-test-dump-1;petsc-replay-create-test-dump-2"
+                PASS_REGULAR_EXPRESSION "maximum relative reference error:"
+        )
+        if(WIN32)
+            set_property(
+                TEST petsc-solver-replay-repartition
+                PROPERTY ENVIRONMENT_MODIFICATION
+                    "PATH=path_list_prepend:$<$<CONFIG:Debug>:${petsc_BIN_DIRS_DEBUG}>$<$<CONFIG:Release>:${petsc_BIN_DIRS_RELEASE}>"
+                    "PATH=path_list_prepend:$ENV{ONEAPI_ROOT}/mpi/latest/bin"
+            )
+        endif()
+    endif()
     if(WIN32)
         set_property(
             TEST petsc-replay-create-test-dump-1 petsc-replay-create-test-dump-2 petsc-solver-replay-smoke
