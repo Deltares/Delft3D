@@ -109,18 +109,6 @@ contains
    ! SourceSinks type-bound procedures.
    ! ====================================================================================================
 
-   !> Resets the source/sink administration to its default state.
-   subroutine default_source_sinks(self)
-      class(SourceSinks), intent(inout) :: self
-
-      self%num_total = 0
-      self%num_normal = 0
-      self%num_oldfile = 0
-      self%num_nearfield = 0
-      self%max_polyline_points = 2
-      self%add_k_to_turkin = .false.
-   end subroutine default_source_sinks
-
    !> Allocates and initializes the SourceSinks attributes to size.
    subroutine initialize_source_sinks(self, size)
       ! Parameters
