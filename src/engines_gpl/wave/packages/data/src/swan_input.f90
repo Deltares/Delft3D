@@ -2659,7 +2659,7 @@ contains
 
    subroutine update_swan_inp_injs(filnam, itide, nttide, calccount, inest, sr, wavedata)
       use inja_templates
-      use, intrinsic :: iso_c_binding, only: c_int, c_null_char, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_char, c_int, c_null_char, c_ptr
 
       integer, intent(in) :: calccount
       integer, intent(in) :: itide
@@ -2675,7 +2675,9 @@ contains
 
       type(c_ptr) :: context
       integer(c_int) :: status
+      integer(c_int) :: error_length
       character(256) :: tm_text
+      character(kind=c_char), dimension(512) :: error_text
 
       context = inja_create_context()
 
@@ -2699,6 +2701,14 @@ contains
       status = inja_add_string(context, "HOTFILE_LINE"//c_null_char, trim(tm_text)//c_null_char)
       ! tmp_name = trim(filnam)//".inj"
       status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
+      if (status /= 0) then
+         error_length = inja_get_last_error(context, error_text, int(size(error_text), c_int))
+         if (error_length > 0) then
+            write (*, '(a)') 'inja template error: '//transfer(error_text(1:error_length), repeat(' ', error_length))
+         else
+            write (*, '(a)') 'inja template rendering failed'
+         end if
+      end if
 
       call inja_destroy_context(context)
 

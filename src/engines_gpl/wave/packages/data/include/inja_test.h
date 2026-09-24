@@ -21,6 +21,10 @@ void inja_destroy_context(inja_context* context);
 int inja_render_file(inja_context* context, const char* template_file,
 					 const char* dest_file);
 
+/// Copies the context's last error message to result and NUL-terminates it.
+/// Returns the number of characters copied, or -1 for invalid arguments.
+int inja_get_last_error(const inja_context* context, char* result, int result_size);
+
 #ifdef __cplusplus
 }
 #endif

@@ -7,6 +7,7 @@ module inja_templates
    public :: inja_add_string
    public :: inja_destroy_context
    public :: inja_render_file
+   public :: inja_get_last_error
 
    interface
       !> Creates an empty persistent context for inja template rendering.
@@ -38,6 +39,15 @@ module inja_templates
          character(kind=c_char), dimension(*), intent(in) :: dest_file !< NUL-terminated destination path
          integer(c_int) :: status !< Zero on success, or -1 on failure
       end function inja_render_file
+
+      !> Copies the last error message recorded for an inja context.
+      function inja_get_last_error(context, result, result_size) result(nchars) bind(C, name="inja_get_last_error")
+         import :: c_char, c_int, c_ptr
+         type(c_ptr), value, intent(in) :: context !< Opaque inja context
+         character(kind=c_char), dimension(*), intent(inout) :: result !< Receives the NUL-terminated error message
+         integer(c_int), value, intent(in) :: result_size !< Size of result in characters
+         integer(c_int) :: nchars !< Number of characters copied, or -1 on failure
+      end function inja_get_last_error
 
    end interface
 end module inja_templates

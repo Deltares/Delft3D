@@ -52,7 +52,19 @@ nlohmann::json pad_int_callback(inja::Arguments& args)
 
 struct inja_context {
     nlohmann::json data;
+    std::string last_error;
 };
+
+namespace {
+
+void set_error(inja_context* context, const std::string& message)
+{
+    if (context != nullptr) {
+        context->last_error = message;
+    }
+}
+
+} // namespace
 
 inja_context* inja_create_context(void)
 {
@@ -66,13 +78,16 @@ inja_context* inja_create_context(void)
 int inja_add_string(inja_context* context, const char* key, const char* value)
 {
     if (context == nullptr || key == nullptr || value == nullptr) {
+        set_error(context, "Context, key, and value must not be null.");
         return -1;
     }
 
     try {
         context->data[key] = value;
+        context->last_error.clear();
         return 0;
-    } catch (const std::exception&) {
+    } catch (const std::exception& exception) {
+        set_error(context, exception.what());
         return -1;
     }
 }
@@ -86,12 +101,14 @@ int inja_render_file(inja_context* context, const char* template_file,
                      const char* dest_file)
 {
     if (context == nullptr || template_file == nullptr || dest_file == nullptr) {
+        set_error(context, "Context, template file, and destination file must not be null.");
         return -1;
     }
 
     try {
         std::ifstream input(template_file, std::ios::binary);
         if (!input) {
+            set_error(context, std::string("Unable to open template file: ") + template_file);
             return -1;
         }
 
@@ -106,12 +123,32 @@ int inja_render_file(inja_context* context, const char* template_file,
 
         std::ofstream output(dest_file, std::ios::binary);
         if (!output) {
+            set_error(context, std::string("Unable to open destination file: ") + dest_file);
             return -1;
         }
 
         output.write(rendered.data(), static_cast<std::streamsize>(rendered.size()));
-        return output.good() ? 0 : -1;
-    } catch (const std::exception&) {
+        if (!output.good()) {
+            set_error(context, std::string("Unable to write destination file: ") + dest_file);
+            return -1;
+        }
+
+        context->last_error.clear();
+        return 0;
+    } catch (const std::exception& exception) {
+        set_error(context, std::string("Unable to render template file ") + template_file + ": " + exception.what());
         return -1;
     }
+}
+
+int inja_get_last_error(const inja_context* context, char* result, int result_size)
+{
+    if (context == nullptr || result == nullptr || result_size <= 0) {
+        return -1;
+    }
+
+    const std::size_t count = std::min(context->last_error.size(), static_cast<std::size_t>(result_size - 1));
+    std::memcpy(result, context->last_error.data(), count);
+    result[count] = '\0';
+    return static_cast<int>(count);
 }
