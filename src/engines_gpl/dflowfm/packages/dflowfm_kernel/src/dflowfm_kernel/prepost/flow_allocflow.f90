@@ -290,7 +290,10 @@ contains
                dzm = (zmx - zbt) / mxlayz
             else
                dzm = dztop
-               mxlayz = (zmx - zbt) / dzm
+               mxlayz = floor((zmx - zbt) / dzm)
+               ! TK_Temp: Add one layer to acoount for bed layer if lowest interface not coincides with xxx*dzm
+               if (modulo(zmx - zbt,dzm) > 0.0_dp) mxlayz = mxlayz + 1
+               
                if (numtopsig > 0 .and. janumtopsiguniform == 1) then
                   mxlayz = max(mxlayz, numtopsig)
                end if
