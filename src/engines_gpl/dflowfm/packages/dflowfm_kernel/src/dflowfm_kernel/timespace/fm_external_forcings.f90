@@ -1895,7 +1895,7 @@ contains
          call init_old(iresult)
       end if
       if (iresult == DFM_NOERR) then
-         call finalize()
+         call finalize(iresult)
       end if
 
    end function flow_initexternalforcings
@@ -1914,13 +1914,15 @@ contains
 !> Validate all external-forcing providers required by the active offline wave configuration.
    subroutine validate_offline_wave_input_providers(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
-      use m_flowparameters, only: jawave, waveforcing
+      use m_flowparameters, only: jawave
       use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
       use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(inout) :: iresult
 
       logical :: missing_input
+      character(len=*), parameter :: wave_kinematics_dependencies = &
+         '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
 
       if (jawave /= WAVE_NC_OFFLINE) then
          return
@@ -1947,11 +1949,27 @@ contains
       subroutine report_missing_input(quantity_flag, quantity_name)
          integer, intent(in) :: quantity_flag
          character(len=*), intent(in) :: quantity_name
+         character(len=256) :: dependencies
 
          if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
              .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
-            call mess(LEVEL_ERROR, 'Missing offline wave quantity '''//quantity_name// &
-                      ''' required by the active Wavemodelnr = 7 configuration with Waveforcing =', waveforcing)
+            select case (quantity_flag)
+            case (WAVE_INPUT_SIGNIFICANT_HEIGHT)
+               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, '// &
+                              '3Dwavebreakerturbulence, or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_PERIOD)
+               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_DIRECTION)
+               dependencies = trim(wave_kinematics_dependencies)//', or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y)
+               dependencies = 'Waveforcing = 1 or 3'
+            case (WAVE_INPUT_DISSIPATION_TOTAL)
+               dependencies = 'Waveforcing = 2'
+            case (WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+               dependencies = '3Dwavebreakerturbulence or Waveforcing = 3'
+            end select
+            call mess(LEVEL_ERROR, 'Missing required offline wave quantity '''//quantity_name// &
+                      '''. Possible dependencies: '//trim(dependencies))
             missing_input = .true.
          end if
       end subroutine report_missing_input
@@ -2733,7 +2751,7 @@ contains
    end subroutine finalize_source_sinks
 
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
-   subroutine finalize()
+   subroutine finalize(iresult)
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
       use m_storage, only: t_storage, get_surface
@@ -2756,6 +2774,7 @@ contains
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
+      integer, intent(inout) :: iresult
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
@@ -2770,7 +2789,7 @@ contains
 
       call finalize_1dfield_global_values()
       call finalize_offline_wave_input_requirements()
-      call validate_offline_wave_input_providers(ierr)
+      call validate_offline_wave_input_providers(iresult)
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then

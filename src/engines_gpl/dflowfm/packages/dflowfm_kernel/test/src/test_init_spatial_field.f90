@@ -602,10 +602,10 @@ contains
                            "FlowWithoutWaves still requires wave height")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
                            "FlowWithoutWaves still requires wave period")
-      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
-                           "FlowWithoutWaves with breaker turbulence requires surface-breaking dissipation")
-      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
-                           "FlowWithoutWaves with breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                   "FlowWithoutWaves does not use surface-breaking dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                   "FlowWithoutWaves does not use white-capping dissipation")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
                             "FlowWithoutWaves with breaker turbulence does not require wave direction")
    end subroutine test_offline_wave_requirements_breaker_turbulence
