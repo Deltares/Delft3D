@@ -34,7 +34,7 @@ module m_nearfield
    use iso_c_binding
    use precision
    use MessageHandling
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
    use m_transport
 
    implicit none(type, external)
@@ -678,20 +678,20 @@ contains
             write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
-            source_sinks%indices(source_sinks%num_total, 1) = nf_sink_n(idif, isink)
-            source_sinks%z_bottom(source_sinks%num_total, 1) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
-            source_sinks%z_top(source_sinks%num_total, 1) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
+            source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = nf_sink_n(idif, isink)
+            source_sinks%z_bottom(source_sinks%num_total, SINK_SIDE) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
+            source_sinks%z_top(source_sinks%num_total, SINK_SIDE) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
-            source_sinks%indices(source_sinks%num_total, 4) = nf_sour_n(idif, isour)
+            source_sinks%indices(source_sinks%num_total, FLOWCELL_SOURCE) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
-               source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-               source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+               source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+               source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
             else
                !
                ! Do not use NF_IH, but just NF_IZ
-               source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
-               source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
+               source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, isour, NF_IZ)
+               source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, isour, NF_IZ)
             end if
             call check_mixed_source_sink(source_sinks%num_total)
             !
@@ -784,20 +784,20 @@ contains
          write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
-         source_sinks%indices(source_sinks%num_total, 1) = 0
-         source_sinks%z_bottom(source_sinks%num_total, 1) = 0.0_hp
-         source_sinks%z_top(source_sinks%num_total, 1) = 0.0_hp
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = 0
+         source_sinks%z_bottom(source_sinks%num_total, SINK_SIDE) = 0.0_hp
+         source_sinks%z_top(source_sinks%num_total, SINK_SIDE) = 0.0_hp
          !
          ! Source
-         source_sinks%indices(source_sinks%num_total, 4) = nf_sour_n(idif, isour)
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SOURCE) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
-            source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-            source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+            source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+            source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
          else
             !
             ! Do not use NF_IH, but just NF_IZ
-            source_sinks%z_bottom(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
-            source_sinks%z_top(source_sinks%num_total, 2) = -nf_sour(idif, isour, NF_IZ)
+            source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, isour, NF_IZ)
+            source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = -nf_sour(idif, isour, NF_IZ)
          end if
          call check_mixed_source_sink(source_sinks%num_total)
          !
@@ -839,8 +839,8 @@ contains
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east
-         source_sinks%discharge_cosine(source_sinks%num_total, 2) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
-         source_sinks%discharge_sine(source_sinks%num_total, 2) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
    end subroutine dischargeToSrc
 !
@@ -872,14 +872,14 @@ contains
          write (source_sinks%name(source_sinks%num_total), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
-         source_sinks%indices(source_sinks%num_total, 1) = nf_intake_n(idif, iintake)
-         source_sinks%z_bottom(source_sinks%num_total, 1) = nf_intake_z(idif, iintake)
-         source_sinks%z_top(source_sinks%num_total, 1) = nf_intake_z(idif, iintake)
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = nf_intake_n(idif, iintake)
+         source_sinks%z_bottom(source_sinks%num_total, SINK_SIDE) = nf_intake_z(idif, iintake)
+         source_sinks%z_top(source_sinks%num_total, SINK_SIDE) = nf_intake_z(idif, iintake)
          !
          ! Source
-         source_sinks%indices(source_sinks%num_total, 4) = 0
-         source_sinks%z_bottom(source_sinks%num_total, 2) = 0.0_hp
-         source_sinks%z_top(source_sinks%num_total, 2) = 0.0_hp
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SOURCE) = 0
+         source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = 0.0_hp
+         source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = 0.0_hp
          !
          call check_mixed_source_sink(source_sinks%num_total)
          !
@@ -947,8 +947,8 @@ contains
                source_sinks%area(i) = 0.0_hp
             else
                source_sinks%area(i) = source_sinks%discharge(i) / umag
-               source_sinks%discharge_cosine(i, 2) = ucx(nk) / umag
-               source_sinks%discharge_sine(i, 2) = ucy(nk) / umag
+               source_sinks%discharge_cosine(i, SOURCE_SIDE) = ucx(nk) / umag
+               source_sinks%discharge_sine(i, SOURCE_SIDE) = ucy(nk) / umag
             end if
          end do
       end do
@@ -972,26 +972,26 @@ contains
          !
          ! Check if new sink coincides with an already existing source
          ! Horizontally:
-         if (source_sinks%indices(num_source_sink, 1) == source_sinks%indices(i, 4) .and. source_sinks%indices(num_source_sink, 1) /= 0) then
+         if (source_sinks%indices(num_source_sink, FLOWCELL_SINK) == source_sinks%indices(i, FLOWCELL_SOURCE) .and. source_sinks%indices(num_source_sink, FLOWCELL_SINK) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (source_sinks%z_top(num_source_sink, 1) > source_sinks%z_bottom(i, 2) .and. source_sinks%z_top(i, 2) > source_sinks%z_bottom(num_source_sink, 1)) then
+            if (source_sinks%z_top(num_source_sink, SINK_SIDE) > source_sinks%z_bottom(i, SOURCE_SIDE) .and. source_sinks%z_top(i, SOURCE_SIDE) > source_sinks%z_bottom(num_source_sink, SINK_SIDE)) then
                write (message, '(5a,i0)') "The sink location of '", trim(source_sinks%name(num_source_sink)), &
                                       & "' coincides with the source location of '", trim(source_sinks%name(i)), &
-                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, 1)
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, FLOWCELL_SINK)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if
          !
          ! Check if new source coincides with an already existing sink
          ! Horizontally:
-         if (source_sinks%indices(num_source_sink, 4) == source_sinks%indices(i, 1) .and. source_sinks%indices(num_source_sink, 4) /= 0) then
+         if (source_sinks%indices(num_source_sink, FLOWCELL_SOURCE) == source_sinks%indices(i, FLOWCELL_SINK) .and. source_sinks%indices(num_source_sink, FLOWCELL_SOURCE) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (source_sinks%z_top(num_source_sink, 2) > source_sinks%z_bottom(i, 1) .and. source_sinks%z_top(i, 1) > source_sinks%z_bottom(num_source_sink, 2)) then
+            if (source_sinks%z_top(num_source_sink, SOURCE_SIDE) > source_sinks%z_bottom(i, SINK_SIDE) .and. source_sinks%z_top(i, SINK_SIDE) > source_sinks%z_bottom(num_source_sink, SOURCE_SIDE)) then
                write (message, '(5a,i0)') "The source location of '", trim(source_sinks%name(num_source_sink)), &
                                       & "' coincides with the sink location of '", trim(source_sinks%name(i)), &
-                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, 4)
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, FLOWCELL_SOURCE)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if

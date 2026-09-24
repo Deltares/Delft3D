@@ -3804,7 +3804,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
       use m_unstruc_netcdf_data, only: flowgeom_map
@@ -6580,16 +6580,16 @@ contains
          do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
-            n = source_sinks%indices(isrc, 1)
+            n = source_sinks%indices(isrc, FLOWCELL_SINK)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SINK_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SINK_SIDE)) then
                      nktop = nk
                   end if
                end do
@@ -6599,16 +6599,16 @@ contains
             end if
             !
             ! Sources
-            n = source_sinks%indices(isrc, 4)
+            n = source_sinks%indices(isrc, FLOWCELL_SOURCE)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SOURCE_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SOURCE_SIDE)) then
                      nktop = nk
                   end if
                end do

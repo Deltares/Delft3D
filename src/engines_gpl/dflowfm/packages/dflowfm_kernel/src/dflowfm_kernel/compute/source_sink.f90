@@ -40,6 +40,10 @@ module m_source_sink
    private
 
    public :: SourceSinks
+
+   public :: SINK_SIDE, SOURCE_SIDE
+   public :: FLOWCELL_SINK, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
+
    public :: source_sinks
    public :: source_sink_all_discharges
 
@@ -96,6 +100,18 @@ module m_source_sink
       procedure :: update_discharges => update_source_sink_discharges
 
    end type SourceSinks
+
+   ! Enums for the SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+   integer, parameter :: SINK_SIDE = 1 !< Sink side identifier for SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+   integer, parameter :: SOURCE_SIDE = 2 !< Source side identifier for SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+
+   ! Enums for the SourceSinks%indices array
+   integer, parameter :: FLOWCELL_SINK = 1 !< Flowcell identifier of sink in SourceSinks%indices array
+   integer, parameter :: BOTTOM_LAYER_SINK = 2 !< Bottom layer identifier of sink in SourceSinks%indices array
+   integer, parameter :: TOP_LAYER_SINK = 3 !< Top layer identifier of sink in SourceSinks%indices array
+   integer, parameter :: FLOWCELL_SOURCE = 4 !< Flowcell identifier of source in SourceSinks%indices array
+   integer, parameter :: BOTTOM_LAYER_SOURCE = 5 !< Bottom layer identifier of source in SourceSinks%indices array
+   integer, parameter :: TOP_LAYER_SOURCE = 6 !< Top layer identifier of source in SourceSinks%indices array
 
    ! Object containing all source/sink data.
    type(SourceSinks), target :: source_sinks
@@ -417,17 +433,17 @@ contains
          return
       end if
 
-      self%indices(self%num_total, 1) = n_sink
-      self%z_bottom(self%num_total, 1) = z_sink(1)
-      self%z_top(self%num_total, 1) = z_sink(1)
+      self%indices(self%num_total, FLOWCELL_SINK) = n_sink
+      self%z_bottom(self%num_total, SINK_SIDE) = z_sink(1)
+      self%z_top(self%num_total, SINK_SIDE) = z_sink(1)
 
-      self%indices(self%num_total, 4) = n_source
-      self%z_bottom(self%num_total, 2) = z_source(1)
-      self%z_top(self%num_total, 2) = z_source(1)
+      self%indices(self%num_total, FLOWCELL_SOURCE) = n_source
+      self%z_bottom(self%num_total, SOURCE_SIDE) = z_source(1)
+      self%z_top(self%num_total, SOURCE_SIDE) = z_source(1)
 
       if (n_sink > 0) then
          if (z_sink(2) /= dmiss) then
-            self%z_top(self%num_total, 1) = z_sink(2)
+            self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
@@ -436,8 +452,8 @@ contains
                self%y(self%num_total, 1), &
                self%x(self%num_total, 2), &
                self%y(self%num_total, 2), &
-               self%discharge_cosine(self%num_total, 1), &
-               self%discharge_sine(self%num_total, 1), &
+               self%discharge_cosine(self%num_total, SINK_SIDE), &
+               self%discharge_sine(self%num_total, SINK_SIDE), &
                self%x(self%num_total, 1), &
                self%y(self%num_total, 1), &
                jsferic, jasfer3D, dxymis &
@@ -445,10 +461,10 @@ contains
          end if
 
          do i = 1, self%num_total - 1
-            if (self%indices(i, 1) /= 0 .and. n_sink == self%indices(i, 1)) then
+            if (self%indices(i, FLOWCELL_SINK) /= 0 .and. n_sink == self%indices(i, FLOWCELL_SINK)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(i))
                call warn_flush()
-            else if (self%indices(i, 4) /= 0 .and. n_sink == self%indices(i, 4)) then
+            else if (self%indices(i, FLOWCELL_SOURCE) /= 0 .and. n_sink == self%indices(i, FLOWCELL_SOURCE)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(i))
                call warn_flush()
             end if
@@ -458,7 +474,7 @@ contains
 
       if (n_source > 0) then
          if (z_source(2) /= dmiss) then
-            self%z_top(self%num_total, 2) = z_source(2)
+            self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
          
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
@@ -468,8 +484,8 @@ contains
                self%y(self%num_total, num_points - 1), &
                self%x(self%num_total, num_points), &
                self%y(self%num_total, num_points), &
-               self%discharge_cosine(self%num_total, 2), &
-               self%discharge_sine(self%num_total, 2), &
+               self%discharge_cosine(self%num_total, SOURCE_SIDE), &
+               self%discharge_sine(self%num_total, SOURCE_SIDE), &
                self%x(self%num_total, num_points), &
                self%y(self%num_total, num_points), &
                jsferic, jasfer3D, dxymis &
@@ -508,26 +524,26 @@ contains
 
       source_sink_reduction = 0.0_dp
       do n = 1, self%num_total
-         kk = self%indices(n, 1) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
-         kk2 = self%indices(n, 4) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
+         kk = self%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
+         kk2 = self%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
          self%discharge(n) = source_sink_all_discharges(1, n)
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
-               if (self%z_bottom(n, 1) == dmiss) then
+               if (self%z_bottom(n, SINK_SIDE) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > self%z_bottom(n, 1) .or. k == kt) then
+                     if (zws(k) > self%z_bottom(n, SINK_SIDE) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (self%z_top(n, 1) == dmiss) then
+                  if (self%z_top(n, SINK_SIDE) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > self%z_top(n, 1) .or. ku == kt) then
+                        if (zws(ku) > self%z_top(n, SINK_SIDE) .or. ku == kt) then
                            exit
                         end if
                      end do
@@ -538,11 +554,11 @@ contains
                kt = kk
                ku = kk ! in 2D, volume cell nr = pressure cell nr
             end if
-            self%indices(n, 2) = k ! store kb of src
-            self%indices(n, 3) = ku !
+            self%indices(n, BOTTOM_LAYER_SINK) = k ! store kb of src
+            self%indices(n, TOP_LAYER_SINK) = ku !
             if (self%discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = self%indices(n, 2), self%indices(n, 3)
+               do k = self%indices(n, BOTTOM_LAYER_SINK), self%indices(n, TOP_LAYER_SINK)
                   source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
@@ -559,20 +575,20 @@ contains
          if (kk2 > 0) then ! TO point
             if (kmx > 0) then
                call getkbotktop(kk2, kb, kt)
-               if (self%z_bottom(n, 2) == dmiss) then
+               if (self%z_bottom(n, SOURCE_SIDE) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > self%z_bottom(n, 2) .or. k == kt) then
+                     if (zws(k) > self%z_bottom(n, SOURCE_SIDE) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (self%z_top(n, 2) == dmiss) then
+                  if (self%z_top(n, SOURCE_SIDE) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > self%z_top(n, 2) .or. ku == kt) then
+                        if (zws(ku) > self%z_top(n, SOURCE_SIDE) .or. ku == kt) then
                            exit
                         end if
                      end do
@@ -583,11 +599,11 @@ contains
                kt = kk2
                ku = kk2 ! in 2D, volume cell nr = pressure cell nr
             end if
-            self%indices(n, 5) = k
-            self%indices(n, 6) = ku
+            self%indices(n, BOTTOM_LAYER_SOURCE) = k
+            self%indices(n, TOP_LAYER_SOURCE) = ku
             if (self%discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = self%indices(n, 5), self%indices(n, 6)
+               do k = self%indices(n, BOTTOM_LAYER_SOURCE), self%indices(n, TOP_LAYER_SOURCE)
                   source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
@@ -652,13 +668,13 @@ contains
          if (kk > 0) then ! FROM Point
             qsrckk = self%discharge(n)
             qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            do k = self%indices(n, 2), self%indices(n, 3)
+            do k = self%indices(n, BOTTOM_LAYER_SINK), self%indices(n, TOP_LAYER_SINK)
                if (kmx > 0) then
-                  dzss = zws(self%indices(n, 3)) - zws(self%indices(n, 2) - 1)
+                  dzss = zws(self%indices(n, TOP_LAYER_SINK)) - zws(self%indices(n, BOTTOM_LAYER_SINK) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (self%indices(n, 3) - self%indices(n, 2) + 1)
+                     qsrck = qsrckk / (self%indices(n, TOP_LAYER_SINK) - self%indices(n, BOTTOM_LAYER_SINK) + 1)
                   end if
                   qin(k) = qin(k) - qsrck
                end if
@@ -668,13 +684,13 @@ contains
          if (kk2 > 0) then ! TO Point
             qsrckk = self%discharge(n)
             qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            do k = self%indices(n, 5), self%indices(n, 6)
+            do k = self%indices(n, BOTTOM_LAYER_SOURCE), self%indices(n, TOP_LAYER_SOURCE)
                if (kmx > 0) then
-                  dzss = zws(self%indices(n, 6)) - zws(self%indices(n, 5) - 1)
+                  dzss = zws(self%indices(n, TOP_LAYER_SOURCE)) - zws(self%indices(n, BOTTOM_LAYER_SOURCE) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (self%indices(n, 6) - self%indices(n, 5) + 1)
+                     qsrck = qsrckk / (self%indices(n, TOP_LAYER_SOURCE) - self%indices(n, BOTTOM_LAYER_SOURCE) + 1)
                   end if
                   qin(k) = qin(k) + qsrck
                end if

@@ -7,7 +7,7 @@
 !! It also contains utilities to publish model quantities to preCICE meshes.
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
    use precision, only: dp
    use precision_basics, only: comparereal
    use mathconsts, only: degrad
@@ -574,20 +574,23 @@ contains
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          call source_sinks%realloc(source_sinks%num_total)
          write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
-         source_sinks%indices(source_sinks%num_total, 1) = sink_cell
-         source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
-         source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
-         source_sinks%indices(source_sinks%num_total, 4) = source_cell
-         source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
-         source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
+
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = sink_cell
+         source_sinks%z_bottom(source_sinks%num_total, SINK_SIDE) = self%sinks_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, SINK_SIDE) = self%sinks_z_max(i)
+
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SOURCE) = source_cell
+         source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = self%sources_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = self%sources_z_max(i)
+
          source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
          if (comparereal(self%sources_momentum_magnitude_weighted(i), 0.0_dp) == 0) then
-            source_sinks%discharge_cosine(source_sinks%num_total,2) = 0.0_dp
-            source_sinks%discharge_sine(source_sinks%num_total,2) = 0.0_dp
+            source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = 0.0_dp
+            source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = 0.0_dp
             source_sinks%area(source_sinks%num_total) = 0.0_dp
          else
-            source_sinks%discharge_cosine(source_sinks%num_total,2) = cos(degrad * (90.0_dp - self%sources_momentum_direction(i)))
-            source_sinks%discharge_sine(source_sinks%num_total,2) = sin(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = cos(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = sin(degrad * (90.0_dp - self%sources_momentum_direction(i)))
             ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
