@@ -87,7 +87,7 @@ contains
                 poc1, poc2, poc3, poc4, chlorp, diep1, diep2, &
                 corchl, c_det, c_gl1, c_gl2, helhum, tau, angle, &
                 detcdm, gloeir, detric, extio, extp_d, d_1
-        integer(kind = int_wp) ::  sw_uitz, sw_uit3, dosecc
+        integer(kind = int_wp) ::  sw_uitz, sw_uit3, dosecc, swspec, i
 
         real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
         real(kind = dp), dimension(num_spectrum) :: Spectrum
@@ -99,14 +99,14 @@ contains
         swspec = 0
 
         do i = 1,num_spectrum
-            DaylightPlanck(i) = pmsa(ipoint(num_basic+i))
+            DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
         end do
 
         do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
                 !
-                sw_uitz = process_space_real(ip(11))
-                if (nint(sw_uitz) == 0) then
+                sw_uitz = nint( process_space_real(ip(11)) )
+                if (sw_uitz == 0) then
                     !
                     !  calculate secchi depth without uitzicht
                     !
@@ -151,7 +151,7 @@ contains
                     call uit_zi(diep1, diep2, angle, c_gl1, c_gl2, &
                             c_det, helhum, tau, corchl, chlorp, &
                             detric, gloeir, ah_380, secch, d_1, &
-                            extio, extp_d, .dosecc, Spectrum, swspec, sw_uit3 )
+                            extio, extp_d, dosecc, Spectrum, swspec, sw_uit3 )
 
                 endif
 

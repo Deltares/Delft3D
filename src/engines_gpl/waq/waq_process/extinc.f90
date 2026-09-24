@@ -48,16 +48,17 @@ contains
         !!  Now there are two (LinearExt en UITZICHT).
 
         use m_uitzicht_spectrum
+        use m_dhnolay
 
         implicit none
         !
 
         integer, parameter :: num_basic  = 41
-        integer, parameter :: num_pmsa   = num_basic + num_spectrum
-        integer, parameter :: num_offset = num_pmsa  - 18
+        integer, parameter :: num_process_space_real   = num_basic + num_spectrum
+        integer, parameter :: num_offset = num_process_space_real  - 18
 
         real(kind = real_wp) :: process_space_real  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(num_pmsa), increm(num_pmsa), num_cells, noflux, &
+        integer(kind = int_wp) :: ipoint(num_process_space_real), increm(num_process_space_real), num_cells, noflux, &
                 iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declaration
@@ -103,22 +104,29 @@ contains
         real(kind = dp) :: apoc2   !  i specific extintion poc2                [1/m/(g/m3)]
         real(kind = dp) :: apoc3   !  i specific extintion poc3                [1/m/(g/m3)]
         real(kind = dp) :: apoc4   !  i specific extintion poc4                [1/m/(g/m3)]
-        !
-        real(kind = dp) :: chlorp, detric, gloeir, ah_380
-        real(kind = dp) :: secchi, d_1, extp_d, extdet, extgl, exthum
-        integer(kind = int_wp) :: iflux, iseg
-        !
-        integer(kind = int_wp) :: ipnt(num_pmsa)
-        integer(kind = int_wp) :: nr_mes
-        save     nr_mes
-        data     nr_mes / 0 /
+
+        real(kind = dp) :: chlorp, detric, gloeir, ah_380, chlorophyl
+        real(kind = dp) :: secchi, d_1, extp_d, extdet, extgl, exthum, exth2o, extchl, extdoc2, dummy
+        real(kind = dp) :: depth, localdepth, sechor1, sechor2, ext_last, sechor1_last, sechor2_last
+        real(kind = dp) :: secver, secvermax, zthreshold
+        integer(kind = int_wp) :: iflux, iseg, nosegl, nosegw, nolay, ihseg, i, ilay, ikmrk1, sw_uit3
+
+
+        integer(kind = int_wp) :: ipnt(num_process_space_real)
+        integer(kind = int_wp), save :: nr_mes = 0
+
+        real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+        real(kind = dp), dimension(num_spectrum) :: SpectrumTop, SpectrumBot
 
         ipnt = ipoint
         iflux = 0
 
-        sw_uit    = nint(pmsa(ipnt(13)))
+        sw_uit    = nint(process_space_real(ipnt(13)))
 
         if ( sw_uit == 0 ) then
+
+            exth2o = -999.0
+            extchl = -999.0
 
             do iseg = 1, num_cells
 
@@ -169,11 +177,11 @@ contains
                     process_space_real(ipnt(num_offset+4)) = extdoc
                     process_space_real(ipnt(num_offset+5)) = extalg
                     process_space_real(ipnt(num_offset+6)) = extsal
-                    process_space_real(ipnt(num_offset+7)) = exth20
+                    process_space_real(ipnt(num_offset+7)) = exth2o
                     process_space_real(ipnt(num_offset+8)) = extchl
                     process_space_real(ipnt(num_offset+9)) = d_1
 
-                    do i = num_offset+10,num_pmsa
+                    do i = num_offset+10,num_process_space_real
                         process_space_real(ipnt(i)) = -999.0
                     enddo
                 endif
@@ -182,13 +190,13 @@ contains
                 ipnt = ipnt + increm
             enddo
 
-        ELSE
+        else
 
-            AM: Is dit echt nodig? Kunnen we het spectrum niet gewoon uit de module halen?
+            !! AM: Is dit echt nodig? Kunnen we het spectrum niet gewoon uit de module halen?
 
 
             do i = 1,num_spectrum
-                DaylightPlanck(i) = pmsa(ipoint(num_basic+i))
+                DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
             end do
 
             call dhnolay(nolay)
@@ -198,7 +206,7 @@ contains
                 SpectrumTop = DaylightPlanck
                 SpectrumBot = DaylightPlanck
 
-                localdepth = pmsa(ipoint(35)+(ihseg+(nolay-1)*nosegl-1)*increm(35))
+                localdepth = process_space_real(ipoint(35)+(ihseg+(nolay-1)*nosegl-1)*increm(35))
                 secvermax  = localdepth
 
                 ! Loop over the column starting with this segment (MJ: improement: use columns module from JvB)
@@ -275,7 +283,7 @@ contains
                             !  Total extinction coefficient of Chlfa (algae)
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
-                                      c_det , helhum, tau   , corchl, 0.0,            &
+                                      c_det , helhum, tau   , corchl, 0.0_dp,         &
                                       detric, gloeir, ah_380, dummy, dummy,           &
                                       extchl, extp_d, 0     , spectrumtop,0,sw_uit3)
                             extchl= ext - extchl
@@ -285,7 +293,7 @@ contains
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
-                                      0.0   , gloeir, ah_380, dummy, dummy,           &
+                                      0.0_dp, gloeir, ah_380, dummy, dummy,           &
                                       extdet, extp_d, 0     , spectrumtop,0,sw_uit3)
                             extdet = ext - extdet
 
@@ -294,7 +302,7 @@ contains
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
-                                      detric, 0.0   , ah_380, dummy, dummy,           &
+                                      detric, 0.0_dp, ah_380, dummy, dummy,           &
                                       extgl , extp_d, 0     , spectrumtop,0,sw_uit3)
                             extgl  = ext - extgl
 
@@ -303,7 +311,7 @@ contains
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
-                                      detric, gloeir, 0.0   , dummy, dummy,           &
+                                      detric, gloeir, 0.0_dp, dummy, dummy,           &
                                       extdoc, extp_d, 0     , spectrumtop,0,sw_uit3)
                             extdoc = ext - extdoc
 
@@ -311,16 +319,16 @@ contains
                             !  Pure wate extinction  - not used, research only
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
-                                     c_det , helhum, tau   , corchl, 0.0,             &
-                                     0.0, 0.0, 0.0   ,dummy, d_1   ,                  &
+                                     c_det , helhum, tau   , corchl, 0.0_dp,          &
+                                     0.0_dp, 0.0_dp, 0.0_dp, dummy,  d_1   ,          &
                                      exth2o, extp_d  ,0    , spectrumtop,0,sw_uit3)
 
                             !
                             !  AH380 & water extinction / if linear same as EXTHUM - not used researh only
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
-                                      c_det , helhum, tau   , corchl, 0.0,            &
-                                      0.0, 0.0, ah_380, dummy, dummy,                 &
+                                      c_det ,  helhum, tau   , corchl, 0.0_dp,        &
+                                      0.0_dp,  0.0_dp, ah_380, dummy,  dummy,         &
                                       extdoc2, extp_d ,0     , spectrumtop,0,sw_uit3)
 
                             extdoc2 = extdoc2 - exth2o
@@ -367,7 +375,7 @@ contains
                     process_space_real(ipnt(num_offset+4)) = extdoc
                     process_space_real(ipnt(num_offset+5)) = extalg
                     process_space_real(ipnt(num_offset+6)) = extsal
-                    process_space_real(ipnt(num_offset+7)) = exth20
+                    process_space_real(ipnt(num_offset+7)) = exth2o
                     process_space_real(ipnt(num_offset+8)) = extchl
                     process_space_real(ipnt(num_offset+9)) = d_1
 
@@ -380,10 +388,9 @@ contains
                     process_space_real(ipnt(num_offset+15)) = sechor1
                     process_space_real(ipnt(num_offset+16)) = sechor2
                     process_space_real(ipnt(num_offset+17)) = secver
-
-                endif
+                enddo
             enddo
-        end do
+        endif
 
     contains
     subroutine local_values
@@ -424,11 +431,11 @@ contains
         poc3 = process_space_real(ipnt(34))
         poc4 = process_space_real(ipnt(35))
 
-        depth      = pmsa(ipnt(36))
-        localdepth = pmsa(ipnt(37))
-        sw_uit3    = pmsa(ipnt(38))
-        zthreshold = pmsa(ipnt(39))
-        chlorophyl = max(pmsa(ipnt(40)),0.0)
+        depth      = process_space_real(ipnt(36))
+        localdepth = process_space_real(ipnt(37))
+        sw_uit3    = process_space_real(ipnt(38))
+        zthreshold = process_space_real(ipnt(39))
+        chlorophyl = max(process_space_real(ipnt(40)),0.0)
 
     end subroutine local_values
 

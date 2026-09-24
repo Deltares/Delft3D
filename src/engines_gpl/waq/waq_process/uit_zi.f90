@@ -24,6 +24,8 @@
 module m_uitzicht_spectrum
     use m_waq_precision
 
+    implicit none
+
     !***********************************************************************
     !     spectrale gegevens van 400 tot 700 nm met stappen van 5 nm
     !***********************************************************************
@@ -106,8 +108,7 @@ contains
 subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         c_det, helhum, tau, corchl, chloro, &
         detrit, gloeir, ah_380, secchi, d_1, &
-        extpar, extp_d, dosecc, spectrum, swspec,
-     &                    swkd)
+        extpar, extp_d, dosecc, spectrum, swspec, swkd)
     !>\file
     !>       transparency due to chlorophyll, detritus, inorganics and humic accids
 
@@ -202,8 +203,13 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
             secchi, som_c, som_d1, som_d2, som_h, &
             tau, zw_stf
     real(kind = dp) :: spectrum(:)
+
+    real(kind = dp) :: m0, m1, m2, m3, m4, m5, cc, anglepi, sextdiep1, sextdiep2
+
     integer(kind = int_wp) :: i_550, lambda, teller
-    integer(kind = int_wp) :: dosecc, swkd
+    integer(kind = int_wp) :: dosecc, swspec, swkd
+
+    real(kind = dp), parameter :: pi = 3.141592653589793_dp
 
     c_mu = cos (angle * 0.0174533)
 
@@ -268,7 +274,7 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         !   6: nechad and ruddick 2010
         !   7: nechad and ruddick 2010 reduced
         !
-        select ( swkd ) then
+        select case ( swkd )
             case( 1 ) ! Buiteveld z1%
                ext_ki = 1.0 / c_mu * sqrt ( a**2 + (0.425 * c_mu - 0.19) * a * b)
 
@@ -317,9 +323,9 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
 
         sextdiep1 = spectrum(teller) * exp ( -ext_ki * diep1)
 
-        som_d1 = som_d1 + max(sextdiep1,1.e-30)
+        som_d1 = som_d1 + max(sextdiep1,1.e-30_dp)
         sextdiep2 = spectrum ( teller) * exp ( -ext_ki * diep2)
-        som_d2 = som_d2 + max(sextdiep2,1.e-30)
+        som_d2 = som_d2 + max(sextdiep2,1.e-30_dp)
 
 
         if ( dosecc >= 1 ) then
