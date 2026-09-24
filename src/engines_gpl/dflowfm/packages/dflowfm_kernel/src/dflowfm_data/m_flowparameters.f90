@@ -505,7 +505,7 @@ module m_flowparameters
       integer :: velvec = 1 !< Write velocity vectors to his file, 0: no, 1: yes
       integer :: ww = 0 !< Write upward velocity to his file, 0: no, 1: yes
       integer :: sed = 1 !< Write sediment transport to his file, 0: no, 1: yes
-      integer :: zcor = 1 !< Write the vertical coordinate to his file, 0: no, 1: yes
+      integer :: zcor = 0 !< Write the vertical coordinate to his file, 0: no, 1: yes
       integer :: wav = 1 !< Write wave data to his file, 0: no, 1: yes
       integer :: lateral = 1 !< Write lateral data to his file, 0: no, 1: yes
       integer :: taucurrent = 1 !< Write bed shear stress to his file, 0: no, 1: yes

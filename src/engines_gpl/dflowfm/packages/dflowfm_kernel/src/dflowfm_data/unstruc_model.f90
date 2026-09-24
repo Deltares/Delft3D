@@ -1994,10 +1994,8 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', his_write_settings%ww, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', his_write_settings%sed, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', his_write_settings%zcor, success)
-      if (.not. success .and. kmx == 0) then
-         ! for 2D we don't write zLayers by default. However zlayers are important for nesting where you can nest 2d=>3d models
-         ! since his_write_settings%zcor is by default 1,this will make by default his_write_settings%zcor=0 if kmx=0 .and. his_write_settings%zcor=1 if kmx > 0
-         his_write_settings%zcor = 0
+      if (.not. success .and. kmx > 0) then ! By default writing of vertical coordinates is enabled for 3D simulations
+         his_write_settings%zcor = 1
       end if
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', his_write_settings%lateral, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', his_write_settings%taucurrent, success)
