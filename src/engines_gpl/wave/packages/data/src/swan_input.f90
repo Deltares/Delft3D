@@ -2675,7 +2675,7 @@ contains
 
       type(c_ptr) :: context
       integer(c_int) :: status
-      character(16) :: tm_text
+      character(256) :: tm_text
 
       context = inja_create_context()
 
@@ -2690,6 +2690,13 @@ contains
       write(tm_text, '(i0)') inest
       status = inja_add_string(context, "INEST"//c_null_char, trim(tm_text)//c_null_char)
 
+      call create_hotstart_line(inest, tmp_name, tm_text, sr)
+      status = inja_add_string(context, "HOTSTART_FILE"//c_null_char, trim(tmp_name)//c_null_char)
+      status = inja_add_string(context, "HOTSTART_LINE"//c_null_char, trim(tm_text)//c_null_char)
+
+      call create_hotfile_line(tmp_name, inest, tm_text, sr, wavedata)
+      status = inja_add_string(context, "HOTFILE_FILE"//c_null_char, trim(tmp_name)//c_null_char)
+      status = inja_add_string(context, "HOTFILE_LINE"//c_null_char, trim(tm_text)//c_null_char)
       ! tmp_name = trim(filnam)//".inj"
       status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
 
