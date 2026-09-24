@@ -262,7 +262,7 @@ contains
    subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs,intobs)
       
       use m_observations_data      , only: xobs, yobs, numobs, nummovobs, kobs, namobs  
-      use m_flowgeom               , only: xz, yz, ndx2d
+      use m_flowgeom               , only: xz, yz, ndx2d ! ,ndx
       use m_missing                , only: dmiss
       use m_sferic                 , only: jsferic, jasfer3D
       use fm_external_forcings_data, only: transformcoef
@@ -297,11 +297,20 @@ contains
       call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
             
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
-                                 jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
+                                jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       
+      ! TK, triangulation over all points, including boundary points, hopefully resolves partitioning problem, discuss with Arthur !!
+      ! call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx), yz(1:ndx), dummyZ, ndx2d, dmiss, jsferic, 1   , &
+      !                           jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
+      !
        do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
+         
+         ! TK avoid interpolatirom from other partion!
+         if (kobs(i) <= 0) neighbour_nodes_obs(:,i) = 0
+         
+         ! No interpolation possible
          if (intobs(i) == 1 .and. neighbour_nodes_obs(1,i) == 0 .and. kobs(i) > 0) then
             write (msgbuf, '(a,i0,a,a,a)') 'No interpolation possible for support point from boundary pli. Observation station nr:', i, ' (', trim(namobs(i)), '). Taking nearest support point with valid signals.'
             call msg_flush()
