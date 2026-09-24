@@ -1143,8 +1143,11 @@ contains
          flow_solver = FLOW_SOLVER_FM
       case ('implicit1d')
          flow_solver = FLOW_SOLVER_SRE
+       case ('frozen2d')
+          flow_solver = FLOW_SOLVER_FROZEN_2D
       case default
-         call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
+          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)// &
+                    ''' . Select `generic1d2d3d`, `implicit1d` or `frozen2d`.')
       end select
 
       call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)

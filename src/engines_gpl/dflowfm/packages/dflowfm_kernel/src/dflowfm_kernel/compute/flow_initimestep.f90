@@ -53,6 +53,7 @@ contains
 
    subroutine flow_initimestep(jazws0, set_hu, use_u1, iresult)
       use precision, only: dp
+      use m_u1q1, only: update_frozen_2d_velocity
       use m_bathyupdate, only: bathyupdate
       use m_advecdriver, only: advecdriver
       use timers
@@ -87,6 +88,12 @@ contains
       iresult = DFM_GENERICERROR
 
       call timstrt('Initialise timestep', handle_inistep)
+
+      if (flow_solver == FLOW_SOLVER_FROZEN_2D .and. (kmx /= 0 .or. ndxi /= ndx2d)) then
+         call mess(LEVEL_ERROR, 'Frozen 2D flow is only supported for 2D models without 1D cells.')
+         call timstop(handle_inistep)
+         return
+      end if
 
       if (jazws0 == 0) then
          s0 = s1 ! progress water levels
@@ -146,6 +153,14 @@ contains
 
       call setau() ! set au and cfuhi for conveyance after limited h upwind at u points
       call timstop(handle_extra(39)) ! End huau
+
+      if (flow_solver == FLOW_SOLVER_FROZEN_2D .and. jazws0 == 0) then
+         call update_frozen_2d_velocity(iresult)
+         if (iresult /= DFM_NOERR) then
+            call timstop(handle_inistep)
+            return
+         end if
+      end if
 
       call timstrt('Setumod     ', handle_extra(43)) ! Start setumod
       call setumod(jazws0) ! set cell center velocities, should be here as prior to 2012 orso
