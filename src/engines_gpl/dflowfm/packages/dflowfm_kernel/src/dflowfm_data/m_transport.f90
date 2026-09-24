@@ -122,6 +122,7 @@ module m_transport
 
    real(kind=dp) :: dsum
    real(kind=dp) :: maserrsed !< cumulative sediment mass error because of volume truncation in shallow areas
+   real(kind=dp), dimension(:,:), allocatable :: maserrtra !< cumulative mass error per tracer
 
    real(kind=dp), dimension(:), allocatable :: u1sed
    real(kind=dp), dimension(:), allocatable :: q1sed
