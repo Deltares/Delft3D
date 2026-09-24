@@ -406,11 +406,12 @@ module m_flowparameters
 
    integer :: jaZerozbndinflowadvection = 0 !< set zero advection velocity on inflow at z boundaries 0=no, 1=yes
 
-   integer :: flow_solver !< 1=stepreduce, 2=1d implicit, 3=frozen 2d flow from restart
+   integer :: flow_solver !< 1=stepreduce, 2=1d implicit, 3=frozen 1d/2d flow from restart
    character(len=28) :: md_flow_solver = 'generic1d2d3d'
    integer, parameter :: FLOW_SOLVER_FM = 1
    integer, parameter :: FLOW_SOLVER_SRE = 2
-   integer, parameter :: FLOW_SOLVER_FROZEN_2D = 3
+   integer, parameter :: FLOW_SOLVER_FROZEN_1D2D = 3
+   integer, parameter :: FLOW_SOLVER_FROZEN_2D = FLOW_SOLVER_FROZEN_1D2D
 
    integer :: jatransportautotimestepdiff = 0 ! Auto Timestep in Transport module, 0 = limitation of diffusion, but no limitation of time-step due to diffusion, 1 = no limitation of diffusion, but limitation of time step due to diffusion, 2: no limitation of diffusion and no limitation of time step due to diffusion
 

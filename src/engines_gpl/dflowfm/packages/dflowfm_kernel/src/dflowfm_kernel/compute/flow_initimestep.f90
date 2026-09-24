@@ -53,7 +53,7 @@ contains
 
    subroutine flow_initimestep(jazws0, set_hu, use_u1, iresult)
       use precision, only: dp
-      use m_u1q1, only: update_frozen_2d_velocity
+      use m_u1q1, only: update_frozen_1d2d_velocity
       use m_bathyupdate, only: bathyupdate
       use m_advecdriver, only: advecdriver
       use timers
@@ -89,8 +89,8 @@ contains
 
       call timstrt('Initialise timestep', handle_inistep)
 
-      if (flow_solver == FLOW_SOLVER_FROZEN_2D .and. (kmx /= 0 .or. ndxi /= ndx2d)) then
-         call mess(LEVEL_ERROR, 'Frozen 2D flow is only supported for 2D models without 1D cells.')
+      if (flow_solver == FLOW_SOLVER_FROZEN_1D2D .and. kmx /= 0) then
+         call mess(LEVEL_ERROR, 'Frozen 1D/2D flow is not supported for 3D models.')
          call timstop(handle_inistep)
          return
       end if
@@ -154,8 +154,8 @@ contains
       call setau() ! set au and cfuhi for conveyance after limited h upwind at u points
       call timstop(handle_extra(39)) ! End huau
 
-      if (flow_solver == FLOW_SOLVER_FROZEN_2D .and. jazws0 == 0) then
-         call update_frozen_2d_velocity(iresult)
+      if (flow_solver == FLOW_SOLVER_FROZEN_1D2D .and. jazws0 == 0) then
+         call update_frozen_1d2d_velocity(iresult)
          if (iresult /= DFM_NOERR) then
             call timstop(handle_inistep)
             return

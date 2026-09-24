@@ -879,7 +879,7 @@ contains
 
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
    subroutine load_restart_file(file_exist, error)
-      use m_flowparameters, only: jased, Perot_type, NOT_DEFINED, flow_solver, FLOW_SOLVER_FROZEN_2D
+      use m_flowparameters, only: jased, Perot_type, NOT_DEFINED, flow_solver, FLOW_SOLVER_FROZEN_1D2D
       use m_flow, only: hs, s1, ucxyq_read_rst
       use m_flowgeom, only: bl
       use m_sediment, only: stm_included
@@ -905,22 +905,22 @@ contains
 
       file_exist = .false.
 
-      if (flow_solver == FLOW_SOLVER_FROZEN_2D) then
+      if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
          if (len_trim(md_restartfile) == 0) then
-            call mess(LEVEL_ERROR, 'Frozen 2D flow requires a NetCDF restart file containing q1.')
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
             error = DFM_GENERICERROR
             return
          end if
          status = nf90_open(md_restartfile, nf90_nowrite, ncid)
          if (status /= nf90_noerr) then
-            call mess(LEVEL_ERROR, 'Frozen 2D flow requires a NetCDF restart file containing q1.')
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
             error = DFM_GENERICERROR
             return
          end if
          status = nf90_inq_varid(ncid, 'q1', varid)
          jw = nf90_close(ncid)
          if (status /= nf90_noerr .or. jw /= nf90_noerr) then
-            call mess(LEVEL_ERROR, 'Frozen 2D flow requires a NetCDF restart file containing q1.')
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
             error = DFM_GENERICERROR
             return
          end if
