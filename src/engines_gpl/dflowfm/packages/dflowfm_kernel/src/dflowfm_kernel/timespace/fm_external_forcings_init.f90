@@ -1591,7 +1591,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
-      use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1650,7 +1650,7 @@ contains
       call prop_get(block_ptr, '', 'area', area, is_read)
 
       ! Create the actual source/sink based on the parsed data
-      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
+      call source_sinks%add(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
@@ -1724,7 +1724,6 @@ contains
    !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens_in_extfile(bnd_ptr, base_dir, file_name, i_bubblescreen, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
-      use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
@@ -1879,7 +1878,7 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
+      use m_source_sink, only: source_sinks
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
@@ -1915,7 +1914,7 @@ contains
 
             n_cells = bubblescreen%num_flowcells
             bubblescreen_cells = bubblescreen%flowcell_indices
-            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            ! we need the global number of bubblescreen cells, source_sinks%add must be called on every partition
             if (jampi == 1) then
                bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                n_cells = size(bubblescreen_cells)
@@ -1950,11 +1949,11 @@ contains
                write (srcid, '(A,I0)') trim(bubblescreen%id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
-               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               call source_sinks%add(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
                   bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
-                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by source_sinks%add
                end if
             end do
 

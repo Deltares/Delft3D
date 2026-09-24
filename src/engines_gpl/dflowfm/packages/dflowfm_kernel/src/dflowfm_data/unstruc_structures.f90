@@ -1073,7 +1073,7 @@ contains
 
    !> Fills in the geometry arrays of source/sinks taking into account the parallel domain decomposition.
    subroutine fill_geometry_source_sinks()
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_flowgeom, only: xz, yz
       use m_alloc
       use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max
@@ -1101,8 +1101,8 @@ contains
       localGeomYSourceSink = -huge(1.0_dp)
       do i = 1, source_sinks%num_total
          if (source_sinks%is_normal(i)) then
-            k1 = source_sinks%indices(i, 1)
-            k2 = source_sinks%indices(i, 4)
+            k1 = source_sinks%indices(i, FLOWCELL_SINK)
+            k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
             nNodes = 0
             if (k1 > 0) then
                nNodes = nNodes + 1
