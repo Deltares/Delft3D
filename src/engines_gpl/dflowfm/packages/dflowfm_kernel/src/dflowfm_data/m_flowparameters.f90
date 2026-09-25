@@ -412,6 +412,15 @@ module m_flowparameters
    integer, parameter :: FLOW_SOLVER_SRE = 2
    integer, parameter :: FLOW_SOLVER_FROZEN_1D2D = 3
    integer, parameter :: FLOW_SOLVER_FROZEN_2D = FLOW_SOLVER_FROZEN_1D2D
+   integer, parameter :: FLOW_SOLVER_SEQUENCE = 4
+   type :: solver_period
+      real(kind=dp) :: tstart
+      integer :: solver = FLOW_SOLVER_FROZEN_1D2D
+      character(len=255) :: restart_file = ' '
+      character(len=20) :: restart_date_time = ' '
+   end type solver_period
+   type(solver_period), allocatable :: solver_sequence(:)
+   integer :: solver_period_index = 0
 
    integer :: jatransportautotimestepdiff = 0 ! Auto Timestep in Transport module, 0 = limitation of diffusion, but no limitation of time-step due to diffusion, 1 = no limitation of diffusion, but limitation of time step due to diffusion, 2: no limitation of diffusion and no limitation of time step due to diffusion
 
