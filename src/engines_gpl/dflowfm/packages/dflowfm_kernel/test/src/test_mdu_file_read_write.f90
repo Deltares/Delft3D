@@ -33,7 +33,7 @@ contains
    !> Tests if a mdu file can succesfully be read, written, and re-read. Also checks if the obsfile and crsfile is unchanged after read-write-read cycle
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
-      use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile
+      use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile, md_extfile
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -41,6 +41,7 @@ contains
 
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
+      character(len=1024) :: tm_md_extfile
       character(len=256) :: output_file
       integer :: ierr
 
@@ -59,6 +60,7 @@ contains
 
       tm_md_obsfile = md_obsfile
       tm_md_crsfile = md_crsfile
+      tm_md_extfile = md_extfile
 
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
 
@@ -71,6 +73,7 @@ contains
 
       call F90_EXPECT_STREQ(trim(md_obsfile)//c_null_char, trim(tm_md_obsfile)//c_null_char, 'Difference in md_obsfile after read-write-read cycle.')
       call F90_EXPECT_STREQ(trim(md_crsfile)//c_null_char, trim(tm_md_crsfile)//c_null_char, 'Difference in md_crsfile after read-write-read cycle.')
+      call F90_EXPECT_STREQ(trim(md_extfile)//c_null_char, trim(tm_md_extfile)//c_null_char, 'Difference in md_extfile after read-write-read cycle.')
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
 
    end subroutine test_mdu_read_write_read
@@ -78,7 +81,7 @@ contains
 
    !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_mdu_fileversion_model, test_mdu_fileversion_model,
    subroutine test_mdu_fileversion_model() bind(C)
-      use unstruc_model, only: readMDUFile
+      use unstruc_model, only: readMDUFile, md_extfile
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -97,13 +100,14 @@ contains
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
 
       call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading old MDU file version with [model] block.')
+      call F90_EXPECT_STREQ(trim(md_extfile)//c_null_char, 'FlowFM_bnd.ext'//c_null_char, 'ExtForceFileNew alias was not read.')
 
    end subroutine test_mdu_fileversion_model
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_mdu_fileversion_general, test_mdu_fileversion_general,
    subroutine test_mdu_fileversion_general() bind(C)
-      use unstruc_model, only: readMDUFile
+      use unstruc_model, only: readMDUFile, md_extfile
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -122,6 +126,7 @@ contains
       call F90_ASSERT_TRUE(CHANGEDIRQQ(".."), '')
 
       call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.')
+      call F90_EXPECT_STREQ(trim(md_extfile)//c_null_char, 'FlowFM_bnd.ext'//c_null_char, 'ExtForceFile was not read.')
 
    end subroutine test_mdu_fileversion_general
    !$f90tw)

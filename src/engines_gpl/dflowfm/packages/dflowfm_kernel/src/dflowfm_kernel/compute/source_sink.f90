@@ -52,7 +52,6 @@ module m_source_sink
       ! Source/sink counters.
       integer :: num_total = 0 !< [-] Total number of source/sinks in the model.
       integer :: num_normal = 0 !< [-] Number of normal source/sinks, i.e. excluding bubblescreens.
-      integer :: num_oldfile = 0 !< [-] Number of source/sinks in old extforce file.
       integer :: num_nearfield = 0 !< [-] Number of source/sinks added for near field.
       integer :: max_polyline_points = 2 !< [-] Maximum number of points in source_sinks%x, source_sinks%y over all sources/sinks. Used for array dimensions.
 
@@ -115,7 +114,6 @@ contains
 
       self%num_total = 0
       self%num_normal = 0
-      self%num_oldfile = 0
       self%num_nearfield = 0
       self%max_polyline_points = 2
       self%add_k_to_turkin = .false.
@@ -234,7 +232,6 @@ contains
       ! Initialize all source/sink attributes.
       self%num_total = 0
       self%num_normal = 0
-      self%num_oldfile = 0
       self%num_nearfield = 0
       self%max_polyline_points = 2
 

@@ -40,9 +40,6 @@ module m_mass_balance_area
 
    public :: read_and_initialize_mass_balance_area
 
-   ! These are only public to support the deprecated old extfile mass balance area. Can be removed when support for the old extfile is removed.
-   public :: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
-
 contains
 
    !> Reads and initializes the user-specified mass balance areas
