@@ -72,7 +72,7 @@ contains
       use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
       use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx, zoomshift
-      use m_flow, only: kmx, jasal, iturbulencemodel
+      use m_flow, only: kmx, jasal, iturbulencemodel, TURBULENCE_MODEL_KEPS
       use unstruc_api
       use dfm_error
       use m_helpnow
@@ -506,7 +506,7 @@ contains
          call DROPzout(-1)
          key = 3
 
-      else if (kmx > 0 .and. iturbulencemodel == 3 .and. KEY == 75 + 32) then ! k for kinetic + 0.01
+      else if (kmx > 0 .and. iturbulencemodel == TURBULENCE_MODEL_KEPS .and. KEY == 75 + 32) then ! k for kinetic + 0.01
 
          call DROPk(XP, YP)
          key = 3
