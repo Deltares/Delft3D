@@ -107,7 +107,7 @@ contains
       md_shipdeffile = ' '
       md_inifieldfile = ' '
       md_restartfile = ' '
-      md_extfile_new = ' '
+      md_extfile = ' '
       call realloc(extfile_new_list, 0)
       md_structurefile = ' '
       md_structurefile_dir = ' '
@@ -545,6 +545,7 @@ contains
       character(len=1), dimension(1) :: dummychar
       logical :: dummylog
       character(len=1000) :: charbuf = ' '
+      character(len=max_prop_length) :: md_extfile_new_alias
       character(len=255) :: tmpstr, fnam, bnam
       real(kind=dp), allocatable :: tmpdouble(:)
       integer :: ibuf, ifil
@@ -1795,14 +1796,19 @@ contains
       call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
 
 ! External forcings
-      call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+      md_extfile_new_alias = ' '
+      call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
+      call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new_alias, success)
+      if (len_trim(md_extfile) == 0) then
+         md_extfile = md_extfile_new_alias
+      end if
 
       if (allocated(extfile_new_list)) then
          deallocate (extfile_new_list)
       end if
 
-      if (len_trim(md_extfile_new) > 0) then
-         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+      if (len_trim(md_extfile) > 0) then
+         call strsplit(md_extfile, 1, extfile_new_list, 1)
       end if
 
       if (.not. allocated(extfile_new_list)) then
@@ -1810,7 +1816,7 @@ contains
          allocate (extfile_new_list(0))
       end if
 
-      ! IniFieldFile is treated entirely by ExtForceFileNew code (during deprecation phase)
+      ! IniFieldFile is treated entirely by ExtForceFile code (during deprecation phase)
       if (len_trim(md_inifieldfile) > 0) then
          call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
          extfile_new_list(size(extfile_new_list)) = md_inifieldfile
@@ -3732,7 +3738,7 @@ contains
       call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
 
 ! External forcings
-      call prop_set(prop_ptr, 'external forcing', 'ExtForceFileNew', trim(md_extfile_new), 'New format for external forcings file *.ext, link with bc-format boundary conditions specification')
+   call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'New format for external forcings file *.ext, link with bc-format boundary conditions specification')
       if (writeall .or. jarain > 0) then
          call prop_set(prop_ptr, 'external forcing', 'Rainfall', jarain, 'Include rainfall, (0=no, 1=yes)')
       end if

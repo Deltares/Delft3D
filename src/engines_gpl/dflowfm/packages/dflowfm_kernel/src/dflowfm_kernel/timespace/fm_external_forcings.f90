@@ -1812,7 +1812,6 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
-      use m_sobekdfm, only: nbnd1d2d, init_1d2d_boundary_points
 
       integer :: iresult
 
@@ -1821,9 +1820,6 @@ contains
          call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
-         if (nbnd1d2d > 0) then
-            call init_1d2d_boundary_points()
-         end if
          call finalize()
       end if
 
@@ -1887,7 +1883,7 @@ contains
 
    end subroutine validate_offline_wave_input_providers
 
-!> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
+!> Prepare all arrays that are necessary for external forcings. Only called as part of flow_initexternalforcings.
    subroutine setup(iresult)
       use dfm_error, only: DFM_NOERR
       use m_transport, only: const_names

@@ -99,7 +99,7 @@ module m_unstruc_model_data
 
    character(len=max_prop_length) :: md_restartfile = ' ' !< File containing map-files to restart a computation          (e.g., *_map.nc), input only, NOT used for storing the names of output restart files.
 
-   character(len=max_prop_length) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
+   character(len=max_prop_length) :: md_extfile = ' ' !< New-format external forcing specification file (e.g., *.ext)
    character(len=max_prop_length), dimension(:), allocatable :: extfile_new_list !< List of external forcing specification files new style (bct format), (e.g., *.ext)
 
    character(len=max_prop_length) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)

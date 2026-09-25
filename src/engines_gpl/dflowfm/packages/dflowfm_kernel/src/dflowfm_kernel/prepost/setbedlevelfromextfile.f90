@@ -73,7 +73,7 @@ contains
 ! character(len=1)   :: operand
 ! real(kind=dp)   :: transformcoef(25) !< Transform coefficients a+b*x
 
-      type(tree_data), pointer :: provider_tree_ptr !< tree of provider blocks from an IniFieldFile or ExtForceFileNew
+      type(tree_data), pointer :: provider_tree_ptr !< tree of provider blocks from an IniFieldFile or ExtForceFile
       type(tree_data), pointer :: node_ptr
       integer :: istat
       integer :: num_items_in_file
@@ -106,7 +106,7 @@ contains
          mx = numk
       end select
 
-      if (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0) then
+      if (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile) > 0) then
          ! 0.a Prepare masks for 1D/2D distinctions
          kc_size_store = size(kc)
          allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx)))
@@ -148,7 +148,7 @@ contains
             if (ibathyfiletype == 2) then
                ext_file_name = trim(md_inifieldfile)
             else
-               ext_file_name = trim(md_extfile_new)
+               ext_file_name = trim(md_extfile)
             end if
             if (len_trim(ext_file_name) == 0) then
                cycle
