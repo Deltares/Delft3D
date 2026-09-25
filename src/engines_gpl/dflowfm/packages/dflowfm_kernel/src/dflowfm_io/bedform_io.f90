@@ -471,11 +471,7 @@ contains
          end if
       end if
       !
-      if (.not. lfbedfrm) then
-         goto 8888
-      end if
-      !
-      ! Allocation of memory for other arrays
+      if (lfbedfrm) then
       !
       istat = 0
       if (istat == 0) then
@@ -810,9 +806,9 @@ contains
       !txtput1 = 'Dune roughness height predictor'
       !write (mdia, '(a,a,a)') txtput1, ': ', txtput2
       !
-8888  continue
+      end if
       !
-      ! Take care of jump
+      ! Set the default predictor label when bedforms are disabled.
       if (.not. lfbedfrm .and. bdfrpt == 0) then
          txtput2 = 'Van Rijn (2007)'
       end if
@@ -874,11 +870,9 @@ contains
          write (mdia, '(a,a,e20.4)') txtput1, ':', kdpar(2)
       end select
       !
-      ! if Bdf keyword turned out to be NO, skip remainder
+      ! Read initial dune values only when bedforms are enabled.
       !
-      if (.not. lfbedfrm) then
-         goto 9999
-      end if
+      if (lfbedfrm) then
       !
       !---------------------------
       ! Reading initial dune height/dune length
@@ -931,8 +925,8 @@ contains
          dunelength = 0.0_fp
          write (mdia, '(a,a,e20.4)') txtput1, ':', 0.0_fp
       end if
+      end if
       !
-9999  continue
       write (mdia, '(a)') '*** End of bedform input'
       write (mdia, *)
       !
