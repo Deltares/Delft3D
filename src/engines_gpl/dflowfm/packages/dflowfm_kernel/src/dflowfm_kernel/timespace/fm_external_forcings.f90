@@ -94,18 +94,6 @@ module fm_external_forcings
       end function init_spatial_fields
    end interface
 
-   interface
-      module subroutine init_old(iresult)
-         integer, intent(inout) :: iresult
-      end subroutine init_old
-   end interface
-
-   interface
-      module subroutine init_misc(iresult)
-         integer, intent(inout) :: iresult
-      end subroutine init_misc
-   end interface
-
    abstract interface
       subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
          integer, intent(in) :: number_of_links !< number of links
@@ -182,6 +170,7 @@ contains
       if (allocated(ec_pwxwy_c) .or. allocated(ec_charnock)) then
          wcharnock%values = 0.0_dp
       end if
+
       call initialize_array_with_zero(ec_pwxwy_x)
       call initialize_array_with_zero(ec_pwxwy_y)
 
@@ -535,46 +524,20 @@ contains
       use m_filez, only: oldfil, doclose
       use messagehandling, only: msgbuf, msg_flush, err_flush
 
-      character(len=256) :: filename
-      integer :: filetype
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
       integer :: i_ext !< index of external forcing file
       logical :: jawel
-      integer :: ja_ext_force
       logical :: ext_force_bnd_used
-      integer :: ierr, method
-      real(kind=dp) :: return_time
+      integer :: ierr
       integer :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
       integer :: nx
       integer :: ierror
       integer :: num_bc_ini_blocks
-      character(len=64) :: varname
 
       jatimespace = 1
 
-      return_time = 0
-      ja_ext_force = 0
       ext_force_bnd_used = .false.
-
-      if (len(trim(md_extfile)) > 0) then
-         inquire (file=trim(md_extfile), exist=jawel)
-         if (jawel) then
-            if (mext /= 0) then
-               ! Close first, if left open after prior flow_geominit().
-               ! NOTE: AvD: this if-check relies on the fact that mext is *not* set to 0 in default_fm_external_forcing_data(), when reinitializing an already initialized model.
-               call doclose(mext)
-            end if
-
-            call oldfil(mext, md_extfile)
-            call split_filename(md_extfile, md_extfile_dir, filename) ! Remember base dir for this ext file
-            ja_ext_force = 1
-         else
-            call qnerror('External forcing file '''//trim(md_extfile)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile), ''' not found.'
-            call err_flush()
-         end if
-      end if
 
       do i_ext = 1, size(extfile_new_list)
          if (len(trim(extfile_new_list(i_ext))) > 0) then
@@ -727,34 +690,8 @@ contains
          end do
       end if
 
-      do while (ja_ext_force == 1) ! read legacy format *.ext file
-
-         call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja_ext_force, varname)
-         call resolvePath(filename, md_extfile_dir)
-
-         if (num_bc_ini_blocks > 0 .and. qid(len_trim(qid) - 2:len_trim(qid)) == 'bnd') then
-            write (msgbuf, '(a)') 'Boundaries in BOTH external forcing and bound.ext.force file is not allowed'
-            call msg_flush()
-            call qnerror('Boundaries in two files: ', trim(md_extfile_new), ' and '//trim(md_extfile))
-            ja_ext_force = 0
-         end if
-
-         if (ja_ext_force == 1) then
-
-            jatimespace = 1 ! module is to be used
-
-            call processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, 1.0_dp, transformcoef)
-
-         end if
-
-      end do
-
       deallocate (kce)
       deallocate (ke)
-
-      if (mext /= 0) then
-         rewind (mext) ! prepare input file
-      end if
       numbnp = nbndz + nbndu + nbnd1d2d ! nr of boundary points =
 
    end subroutine findexternalboundarypoints
@@ -1278,15 +1215,6 @@ contains
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
-         end if
-
-      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
-         call get_tracername(qid, tracnam, qidnam)
-         tracunit = " "
-         call add_bndtracer(tracnam, tracunit, itrac, janew)
-
-         if (janew == 1) then
-            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
@@ -1884,6 +1812,7 @@ contains
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
+      use m_sobekdfm, only: nbnd1d2d, init_1d2d_boundary_points
 
       integer :: iresult
 
@@ -1892,9 +1821,9 @@ contains
          call init_new(iresult)
       end if
       if (iresult == DFM_NOERR) then
-         call init_old(iresult)
-      end if
-      if (iresult == DFM_NOERR) then
+         if (nbnd1d2d > 0) then
+            call init_1d2d_boundary_points()
+         end if
          call finalize()
       end if
 
@@ -2749,7 +2678,6 @@ contains
       use m_get_kbot_ktop
       use m_get_prof_1D
       use mathconsts, only: pi
-      use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: t_netcell_set
@@ -2777,12 +2705,8 @@ contains
          deallocate (frculin)
       end if
 
-      if (allocated(kez)) then ! mext > 0 .or. len_trim(md_extfile_new) > 0) then
+      if (allocated(kez)) then
          deallocate (kez, keu, kes, ketm, kesd, ket, keuxy, ken, ke1d2d, keg, ked, kep, kedb, keklep, kevalv, kegs, kegen, itpez, itpenz, itpeu, itpenu, kew, ketr)
-      end if
-
-      if (mext /= 0) then
-         call doclose(mext) ! close ext file
       end if
 
       if (allocated(kdz)) then

@@ -107,9 +107,7 @@ contains
       md_shipdeffile = ' '
       md_inifieldfile = ' '
       md_restartfile = ' '
-      md_extfile = ' '
       md_extfile_new = ' '
-      md_extfile_dir = ' '
       call realloc(extfile_new_list, 0)
       md_structurefile = ' '
       md_structurefile_dir = ' '
@@ -1797,7 +1795,6 @@ contains
       call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
 
 ! External forcings
-      call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
 
       if (allocated(extfile_new_list)) then
@@ -2424,7 +2421,7 @@ contains
             ti_mba = md_dt_waqbal
          end if
       end if
-      if (ti_mba > 0.0_dp .and. len_trim(md_mbafile) == 0 .and. len_trim(md_extfile) == 0) then
+      if (ti_mba > 0.0_dp .and. len_trim(md_mbafile) == 0) then
          call mess(LEVEL_WARN, 'MbaInterval is positive, but no MbaFile was specified. Mass balance area output has been disabled.')
          ti_mba = 0.0_dp
       end if
@@ -3735,7 +3732,6 @@ contains
       call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
 
 ! External forcings
-      call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification')
       call prop_set(prop_ptr, 'external forcing', 'ExtForceFileNew', trim(md_extfile_new), 'New format for external forcings file *.ext, link with bc-format boundary conditions specification')
       if (writeall .or. jarain > 0) then
          call prop_set(prop_ptr, 'external forcing', 'Rainfall', jarain, 'Include rainfall, (0=no, 1=yes)')

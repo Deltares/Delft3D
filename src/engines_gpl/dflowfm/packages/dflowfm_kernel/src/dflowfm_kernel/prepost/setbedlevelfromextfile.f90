@@ -51,20 +51,18 @@ contains
       use m_netw !  only : xk, yk, zk
       use m_missing
       use system_utils, only: split_filename
-      use unstruc_files, only: resolvePath
       use string_module, only: strcmpi, str_tolower
       use properties, only: prop_get
       use dfm_error
       use unstruc_netcdf
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID, parse_spatial_location_type
-      use m_delpol
       use m_timespaceinitialfield_mpi
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, averaging_params_to_transformcoef
       use tree_structures, only: tree_create, tree_destroy, tree_num_nodes, tree_get_name
       use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       logical :: bl_set_from_zkuni = .false.
-      integer :: ja, method, iprimpos
+      integer :: method, iprimpos
       integer :: k, L, k1, k2, mx
       integer, allocatable :: kcc(:), kc1D(:), kc2D(:)
       integer :: ibathyfiletype
@@ -108,7 +106,7 @@ contains
          mx = numk
       end select
 
-      if (mext /= 0 .or. len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0) then
+      if (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0) then
          ! 0.a Prepare masks for 1D/2D distinctions
          kc_size_store = size(kc)
          allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx)))
@@ -145,111 +143,76 @@ contains
             kc2D(1:ndx2D) = 1
          end if
 
-         ! Loop across the three supported file types (old *.ext, *.ini, new *.ext).
-         ! The formats have different ways of iterating over providers:
-         !
-         !   old *.ext: READPROVIDER reads the next provider from the open,
-         !              sequential file and returns JA=0 at end-of-file;
-         !   *.ini/new *.ext: the file is parsed into a tree and I indexes its
-         !                     nodes from 1 through NUM_ITEMS_IN_FILE.
-         !
-         ! PROVIDER_AVAILABLE adapts these two mechanisms to one common loop.
-         ! It means "there is a provider to process"; for the old format it
-         ! mirrors JA, while for the tree-based formats it is true while there
-         ! are nodes left to inspect. 
-         bft: do ibathyfiletype = 1, 3
-            if (ibathyfiletype == 1) then
-               provider_available = mext /= 0
-               call split_filename(md_extfile, basedir, fnam) ! Remember base dir of *.ext file, to resolve all refenced files below w.r.t. that base dir.
-               if (provider_available) then
-                  rewind (mext)
-                  ja = 1
-               end if
+         ! Loop across the ini and new external-forcing files.
+         bft: do ibathyfiletype = 2, 3
+            if (ibathyfiletype == 2) then
+               ext_file_name = trim(md_inifieldfile)
             else
-               if (ibathyfiletype == 2) then
-                  ext_file_name = trim(md_inifieldfile)
-               else
-                  ext_file_name = trim(md_extfile_new)
-               end if
-               if (len_trim(ext_file_name) == 0) then
-                  cycle
-               end if
-
-               call tree_create(ext_file_name, provider_tree_ptr)
-               call prop_file('ini', ext_file_name, provider_tree_ptr, istat)
-               if (istat /= 0) then
-                  call tree_destroy(provider_tree_ptr)
-                  cycle
-               end if
-
-               call split_filename(ext_file_name, basedir, fnam)
-               num_items_in_file = tree_num_nodes(provider_tree_ptr)
-               i = 1
-               provider_available = num_items_in_file > 0
+               ext_file_name = trim(md_extfile_new)
+            end if
+            if (len_trim(ext_file_name) == 0) then
+               cycle
             end if
 
-            ! Loop through the current file until the end, parsing all bedlevel providers.
-            ! It is a while loop because we want to share one loop for both old and new ext, which have different ways of iterating over providers.
-            ! Either continue until ja=0 (old ext) or until i > num_items_in_file (new ext/ini).
-            do while (provider_available)
-               if (ibathyfiletype == 1) then ! read old *.ext file
-                  call delpol()
-                  call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
-                  ! JA=0 means that READPROVIDER found no further QUANTITY block and end of file is reached.
-                  provider_available = ja == 1
-                  if (provider_available) then
-                     call resolvePath(filename, basedir) ! oldext needs manual resolvepath
-                  end if
-               else if (ibathyfiletype == 2 .or. ibathyfiletype == 3) then ! read *.ini or new *.ext file with spatial field parser.
-                  if (i > num_items_in_file) then ! we are done with all nodes in the tree
-                     provider_available = .false.
-                     exit
-                  end if
-                  node_ptr => provider_tree_ptr%child_nodes(i)%node_ptr
-                  groupname = trim(tree_get_name(node_ptr))
-                  i = i + 1
-                  select case (str_tolower(groupname))
-                  case ('spatial', 'meteo', 'parameter', 'initial')
-                     ! supported
-                  case default
-                     cycle
-                  end select
+            call tree_create(ext_file_name, provider_tree_ptr)
+            call prop_file('ini', ext_file_name, provider_tree_ptr, istat)
+            if (istat /= 0) then
+               call tree_destroy(provider_tree_ptr)
+               cycle
+            end if
 
-                  input = read_spatial_field_block(node_ptr)
-                  parse_ok = validate_spatial_field_input(input, ext_file_name, groupname, basedir)
-                  if (.not. parse_ok) then
-                     cycle
-                  end if
-                  qid = input%quantity
-                  filename = input%forcing_file
-                  filetype = input%filetype
-                  method = input%method
-                  operand = input%oper
-                  varname = input%variable_name
-                  transformcoef = -999.0_dp
-                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
-                  call prop_get(node_ptr, '', 'value', transformcoef(1))
-                  iLocType = parse_spatial_location_type(trim(input%location_type))
-                  if (iLocType == SPATIAL_LOCATION_INVALID) then
-                     iLocType = SPATIAL_LOCATION_ALL
-                  end if
+            call split_filename(ext_file_name, basedir, fnam)
+            num_items_in_file = tree_num_nodes(provider_tree_ptr)
+            i = 1
+            provider_available = num_items_in_file > 0
+
+            ! Loop through the current file until the end, parsing all bedlevel providers.
+            do while (provider_available)
+               if (i > num_items_in_file) then
+                  provider_available = .false.
+                  exit
+               end if
+               node_ptr => provider_tree_ptr%child_nodes(i)%node_ptr
+               groupname = trim(tree_get_name(node_ptr))
+               i = i + 1
+               select case (str_tolower(groupname))
+               case ('spatial', 'meteo', 'parameter', 'initial')
+                  ! supported
+               case default
+                  cycle
+               end select
+
+               input = read_spatial_field_block(node_ptr)
+               parse_ok = validate_spatial_field_input(input, ext_file_name, groupname, basedir)
+               if (.not. parse_ok) then
+                  cycle
+               end if
+               qid = input%quantity
+               filename = input%forcing_file
+               filetype = input%filetype
+               method = input%method
+               operand = input%oper
+               varname = input%variable_name
+               transformcoef = -999.0_dp
+               call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+               call prop_get(node_ptr, '', 'value', transformcoef(1))
+               iLocType = parse_spatial_location_type(trim(input%location_type))
+               if (iLocType == SPATIAL_LOCATION_INVALID) then
+                  iLocType = SPATIAL_LOCATION_ALL
                end if
 
                ! Initialize bedlevel based on the provider just read, common initialization for all three file types.
                if (provider_available) then
-                  if (index(qid, 'bedlevel') > 0 .and. ibathyfiletype == 1 .and. (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile_new) > 0)) then
-                     call mess(LEVEL_WARN, 'Bed level info should be defined in ExtForceFileNew.')
-                  end if
                   success = .true.
-                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype /= 1 .and. iLocType == SPATIAL_LOCATION_1D)) then
+                  if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_1D)) then
                      call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//'''.')
                      kc(1:mx) = kc1D
                      success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc)
                   else if (strcmpi(qid, 'bedlevel', 8)) then
-                     if ((strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 1) .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype /= 1 .and. iLocType == SPATIAL_LOCATION_ALL)) then
+                     if (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_ALL) then
                         call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//'''.')
                         kc(1:mx) = kcc
-                     else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype /= 1 .and. iLocType == SPATIAL_LOCATION_2D)) then
+                     else if (strcmpi(qid, 'bedlevel2D') .or. (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_2D)) then
                         call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 2D bedlevel from file '''//trim(filename)//'''.')
                         kc(1:mx) = kc2D
                      end if
@@ -267,16 +230,9 @@ contains
                   end if
                end if
 
-            end do ! ja==1 provider loop
-            if (ibathyfiletype /= 1) then
-               call tree_destroy(provider_tree_ptr)
-            end if
-         end do bft ! ibathyfiletype=1,2,3
-
-         ! Clean up *.ext file
-         if (mext /= 0) then
-            rewind (mext)
-         end if
+            end do
+            call tree_destroy(provider_tree_ptr)
+         end do bft
 
          ! Interpreted values for debugging.
          if (md_exportnet_bedlevel == 1) then
