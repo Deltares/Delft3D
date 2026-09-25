@@ -82,6 +82,7 @@ module m_flow_flowinit
    logical, parameter :: INITIALIZATION_PHASE = .true.
 
    public :: flow_flowinit
+   public :: load_restart_file
 
 contains
 
@@ -92,6 +93,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_flowtimes
+      use m_flowparameters, only: md_flow_solver, solver_sequence, solver_period_index, FLOW_SOLVER_FM
       use m_sferic
       use unstruc_model, only: md_netfile, md_input_specific, md_restartfile, md_obsfile
       use m_reduce, only: nodtot, lintot
@@ -136,6 +138,12 @@ contains
          error = DFM_MODELNOTINITIALIZED
       end if
       if (is_error_at_any_processor(error)) then
+         return
+      end if
+
+      if (md_flow_solver == 'sequence' .and. (kmx /= 0 .or. ndx2d == 0 .or. ndxi == ndx2d)) then
+         call mess(LEVEL_ERROR, 'FlowSolver=sequence is only supported for 1D/2D models.')
+         error = DFM_GENERICERROR
          return
       end if
 
@@ -244,7 +252,10 @@ contains
 
       call remember_initial_water_levels_at_water_level_boundaries()
       call make_volume_tables()
-      call load_restart_file(jawelrestart, error)
+      jawelrestart = .false.
+      if (md_flow_solver /= 'sequence' .or. len_trim(md_restartfile) > 0) then
+         call load_restart_file(jawelrestart, error)
+      end if
       if (is_error_at_any_processor(error)) then
          call qnerror('Error occurs when reading the restart file.', ' ', ' ')
          return
@@ -254,6 +265,14 @@ contains
       end if
 
       call flow_setstarttime() ! the flow time0 and time1 are managed by flow
+      if (md_flow_solver == 'sequence') then
+         if (solver_sequence(solver_period_index)%solver == FLOW_SOLVER_FM) then
+            call mess(LEVEL_INFO, 'Solver sequence: starting period 1 with generic1d2d3d.')
+         else
+            call mess(LEVEL_INFO, 'Solver sequence: starting period 1 with frozen1d2d.')
+         end if
+         if (jawelrestart) call mess(LEVEL_INFO, 'Solver sequence: read restart file '//trim(md_restartfile))
+      end if
       ! this is the only function that a user can use to influence the flow times
       ! TSTART MAY BE OVERWRITTEN IN REARST
 
@@ -879,7 +898,7 @@ contains
 
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
    subroutine load_restart_file(file_exist, error)
-      use m_flowparameters, only: jased, Perot_type, NOT_DEFINED
+      use m_flowparameters, only: jased, Perot_type, NOT_DEFINED, flow_solver, FLOW_SOLVER_FROZEN_1D2D
       use m_flow, only: hs, s1, ucxyq_read_rst
       use m_flowgeom, only: bl
       use m_sediment, only: stm_included
@@ -890,6 +909,8 @@ contains
       use m_set_bobs
       use m_flow_obsinit
       use m_filez, only: oldfil
+      use netcdf, only: nf90_open, nf90_nowrite, nf90_inq_varid, nf90_close, nf90_noerr
+      use MessageHandling, only: mess, LEVEL_ERROR
 
       implicit none
 
@@ -899,18 +920,43 @@ contains
       character(len=255) :: rstfile
       integer :: mrst
       integer :: jw
+      integer :: ncid, varid, status
 
       file_exist = .false.
+      error = DFM_NOERR
+
+      if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
+         if (len_trim(md_restartfile) == 0) then
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a restart file.')
+            error = DFM_GENERICERROR
+            return
+         end if
+         status = nf90_open(md_restartfile, nf90_nowrite, ncid)
+         if (status /= nf90_noerr) then
+            call mess(LEVEL_ERROR, 'Unable to open restart file: '//trim(md_restartfile))
+            error = DFM_GENERICERROR
+            return
+         end if
+         status = nf90_inq_varid(ncid, 'q1', varid)
+         jw = nf90_close(ncid)
+         if (status /= nf90_noerr .or. jw /= nf90_noerr) then
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
+            error = DFM_GENERICERROR
+            return
+         end if
+      end if
 
       if (len_trim(md_restartfile) > 0) then
          ! Restart from *.rst:
          if (index(md_restartfile, '.rst') > 0 .or. index(md_restartfile, '.RST') > 0) then
+            rstfile = md_restartfile
             inquire (FILE=rstfile, EXIST=file_exist)
             if (file_exist) then
                call oldfil(mrst, rstfile)
                call rearst(mrst, jw)
                file_exist = (jw == ON)
             end if
+            if (.not. file_exist) error = DFM_GENERICERROR
          else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
             call read_restart_from_map(md_restartfile, error)
             if (jased > OFF .and. stm_included) then

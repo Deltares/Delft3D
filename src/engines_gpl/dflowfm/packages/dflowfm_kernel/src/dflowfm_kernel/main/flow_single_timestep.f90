@@ -50,6 +50,8 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
+      use m_flowparameters, only: solver_sequence, solver_period_index, FLOW_SOLVER_FM
+      use messagehandling, only: mess, LEVEL_INFO
       use unstruc_netcdf
       use m_xbeach_netcdf
       use m_timer
@@ -58,8 +60,28 @@ contains
 
       integer :: key
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+      character(len=128) :: switch_message
 
       iresult = DFM_GENERICERROR
+
+      if (allocated(solver_sequence)) then
+         if (solver_period_index < size(solver_sequence)) then
+            if (time0 + 1.0e-8_dp >= solver_sequence(solver_period_index + 1)%tstart) then
+               solver_period_index = solver_period_index + 1
+               flow_solver = solver_sequence(solver_period_index)%solver
+               if (flow_solver == FLOW_SOLVER_FM) then
+                  write(switch_message, '(a,i0,a)') 'Solver sequence: starting period ', solver_period_index, ' with generic1d2d3d.'
+               else
+                  write(switch_message, '(a,i0,a)') 'Solver sequence: starting period ', solver_period_index, ' with frozen1d2d.'
+               end if
+               call mess(LEVEL_INFO, trim(switch_message))
+               if (len_trim(solver_sequence(solver_period_index)%restart_file) > 0) then
+                  call load_sequence_restart(iresult)
+                  if (iresult /= DFM_NOERR) return
+               end if
+            end if
+         end if
+      end if
 
 !V: At this moment we are at time <t>. When using the regular solver (i.e., <flow_solver>=1),
 !the time step is advanced in <flow_run_single_timestep>. This means that the boundary conditions
@@ -105,5 +127,40 @@ contains
 888   continue
       ! Error
    end subroutine flow_single_timestep
+
+   subroutine load_sequence_restart(iresult)
+      use m_flow_flowinit, only: load_restart_file
+      use m_flowparameters, only: solver_sequence, solver_period_index
+      use m_flowtimes, only: restart_date_time, time0, time1, time_user
+      use unstruc_model, only: md_restartfile
+      use messagehandling, only: mess, LEVEL_INFO, LEVEL_ERROR
+      use dfm_error, only: DFM_NOERR, DFM_GENERICERROR
+
+      integer, intent(out) :: iresult
+      character(len=len(md_restartfile)) :: original_file
+      character(len=len(restart_date_time)) :: original_date_time
+      real(kind=dp) :: saved_time0, saved_time1, saved_time_user
+      logical :: file_exist
+
+      original_file = md_restartfile
+      original_date_time = restart_date_time
+      saved_time0 = time0
+      saved_time1 = time1
+      saved_time_user = time_user
+      md_restartfile = solver_sequence(solver_period_index)%restart_file
+      restart_date_time = solver_sequence(solver_period_index)%restart_date_time
+      call load_restart_file(file_exist, iresult)
+      md_restartfile = original_file
+      restart_date_time = original_date_time
+      time0 = saved_time0
+      time1 = saved_time1
+      time_user = saved_time_user
+      if (iresult /= DFM_NOERR .or. .not. file_exist) then
+         call mess(LEVEL_ERROR, 'Solver sequence: failed to read restart file.')
+         iresult = DFM_GENERICERROR
+      else
+         call mess(LEVEL_INFO, 'Solver sequence: read restart file '//trim(solver_sequence(solver_period_index)%restart_file))
+      end if
+   end subroutine load_sequence_restart
 
 end module m_flow_single_timestep

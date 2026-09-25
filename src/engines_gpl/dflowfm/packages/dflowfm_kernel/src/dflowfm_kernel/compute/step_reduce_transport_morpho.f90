@@ -99,13 +99,16 @@ contains
       if (flow_solver == FLOW_SOLVER_FM) then
          call u1q1() ! the vertical flux qw depends on new sigma => after set_kbot_ktop
          call compute_q_total_1d2d()
+       else if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
+          call u1q1(frozen_1d2d=.true.)
+          call compute_q_total_1d2d()
       end if
 
       !if ( jacheckmonitor.eq.1 ) then
       !   call comp_checkmonitor()
       !end if
 
-      if (itstep == 4) then ! explicit time-step
+       if (itstep == 4 .and. flow_solver /= FLOW_SOLVER_FROZEN_1D2D) then ! explicit time-step
          call update_s_explicit()
       end if
       hs = s1 - bl
@@ -163,7 +166,7 @@ contains
 
       if ((jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
          call setbobs() ! adjust administration - This option only works for ibedlevtyp = 1, otherwise original bed level [bl] is overwritten to original value
-         if (jasubsupl > 0) then
+          if (jasubsupl > 0 .and. flow_solver /= FLOW_SOLVER_FROZEN_1D2D) then
             call subsupl_update_s1()
          end if
          call volsur() ! update volumes 2d

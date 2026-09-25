@@ -1956,7 +1956,7 @@ contains
       use m_flow, only: s0, s1, hs
       use m_flowgeom, only: ndx, bl
       use m_fm_erosed, only: blchg
-      use m_flowparameters, only: epshs
+      use m_flowparameters, only: epshs, flow_solver, FLOW_SOLVER_FROZEN_1D2D
 
       implicit none
 
@@ -1969,6 +1969,10 @@ contains
    !!
    !! Execute
    !!
+
+      if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
+         return
+      end if
 
       do nm = 1, ndx
          ! note: if kcs(nm)=0 then blchg(nm)=0.0
