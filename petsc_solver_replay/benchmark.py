@@ -92,11 +92,12 @@ class SummaryRow(TypedDict):
 SOLVER_CONFIGURATIONS: list[SolverConfiguration] = [
     {"name": "CG + block Jacobi", "options": ["-ksp_type", "cg", "-pc_type", "bjacobi"]},
     {"name": "CG + point Jacobi", "options": ["-ksp_type", "cg", "-pc_type", "jacobi"]},
+    {"name": "CG + GAMG", "options": ["-ksp_type", "cg", "-pc_type", "gamg"]},
     *[
         subdomain_factor_configuration(
             f"CG + block ICC({level})", "cg", "bjacobi", "icc", factor_levels=level
         )
-        for level in (1, 2, 3)
+        for level in (0, 1, 2, 3)
     ],
     *[
         subdomain_factor_configuration(
