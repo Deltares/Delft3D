@@ -193,6 +193,10 @@ contains
       call msg_flush()
       write (msgbuf, '(a,F25.10)') 'time totalsolve        (s)  :', t(3, itotalsol)
       call msg_flush()
+      write (msgbuf, '(a,F25.10)') 'time PETSc PC setup    (s)  :', t(3, IPETSCPCSETUP)
+      call msg_flush()
+      write (msgbuf, '(a,F25.10)') 'time PETSc KSP solve   (s)  :', t(3, IPETSCKSPSOLVE)
+      call msg_flush()
 
       write (msgbuf, '(a,F25.10)') 'time setexternalforc.  (s)  :', tim_get_wallclock(handle_ext)
       call msg_flush()

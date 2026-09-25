@@ -386,6 +386,9 @@ def build_command(arguments: argparse.Namespace, options: list[str]) -> list[str
             str(arguments.replay_file.resolve()),
             "-replay_rebuild_preconditioner",
             str(arguments.rebuild_preconditioner),
+            "-ksp_rtol", "1e-14",
+            "-ksp_atol", "1e-14",
+            "-ksp_max_it", "4000",
         ]
     )
     if arguments.node_owners:

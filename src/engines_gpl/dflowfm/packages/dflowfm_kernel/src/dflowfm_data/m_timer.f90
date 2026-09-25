@@ -34,7 +34,7 @@ module m_timer
    use precision, only: dp
    implicit none
    integer, parameter :: jatimer = 1 !< time parallel solver (1) or not (0)
-   integer, parameter :: NUMT = 29 !< number of timings
+   integer, parameter :: NUMT = 31 !< number of timings
    real(kind=dp), dimension(3, NUMT) :: t !< wall-clock timings, (1,:): start, (2,:): end, (3,:): sum
    real(kind=dp), dimension(3, NUMT) :: tcpu !< CPU        timings, (1,:): start, (2,:): end, (3,:): sum
    integer, dimension(NUMT) :: itstat !< timer status, 0: not timing (stopped), 1: timing (started)
@@ -71,6 +71,8 @@ module m_timer
    integer, parameter :: IFILT_COPYBACK = 27
    integer, parameter :: IFILT_OTHER = 28
    integer, parameter :: IEROSED = 29
+   integer, parameter :: IPETSCPCSETUP = 30
+   integer, parameter :: IPETSCKSPSOLVE = 31
 
    character(len=10), dimension(numt), parameter :: tnams = [character(len=10) :: &
                                                              'reduce', &
@@ -101,7 +103,9 @@ module m_timer
                                                              'filter_mat', &
                                                              'filter_cpb', &
                                                              'filter_oth', &
-                                                             'erosed']
+                                                             'erosed', &
+                                                             'petsc_pc', &
+                                                             'petsc_ksp']
 contains
 
 !> initialize timers

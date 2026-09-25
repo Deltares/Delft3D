@@ -46,7 +46,7 @@ contains
       use mpi
 #endif
       use precision, only: dp
-      use m_timer, only: numt, t, tcpu, numcgits, tnams, numtsteps
+      use m_timer, only: numt, t, tcpu, numcgits, tnams, numtsteps, IPETSCPCSETUP, IPETSCKSPSOLVE
       use m_partitioninfo, only: jampi, ndomains, my_rank, DFM_COMM_DFMWORLD
 
       character(len=*), intent(in) :: FNAM !< file name
@@ -60,8 +60,8 @@ contains
       integer, parameter :: ISTRLEN = 20
       integer :: MFILE
 
-      integer, parameter :: Ntvarlist = 13
-      integer, dimension(Ntvarlist), parameter :: itvarlist = [1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+      integer, parameter :: Ntvarlist = 15
+      integer, dimension(Ntvarlist), parameter :: itvarlist = [1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, IPETSCPCSETUP, IPETSCKSPSOLVE]
 
       real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
       integer :: itsol_max

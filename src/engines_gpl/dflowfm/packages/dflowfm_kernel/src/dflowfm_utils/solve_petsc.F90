@@ -844,6 +844,7 @@ contains
       use m_flowgeom, only: kfs
       use m_flowtimes, only: dts ! for logging
       use m_flowparameters, only: jalogsolverconvergence, petsc_preconditioner_rebuild_interval
+      use m_timer, only: jatimer, starttimer, stoptimer, IPETSCPCSETUP, IPETSCKSPSOLVE
 
       integer, intent(in) :: ndx
       real(kind=dp), dimension(ndx), intent(inout) :: s1
@@ -913,7 +914,9 @@ contains
          if (solves_since_preconditioner_rebuild == 0 .or. &
              (petsc_preconditioner_rebuild_interval > 0 .and. &
               solves_since_preconditioner_rebuild >= petsc_preconditioner_rebuild_interval)) then
-            call createPETSCPreconditioner()
+                  if (jatimer == 1) call starttimer(IPETSCPCSETUP)
+                  call createPETSCPreconditioner()
+                  if (jatimer == 1) call stoptimer(IPETSCPCSETUP)
             solves_since_preconditioner_rebuild = 0
          else
             call KSPSetReusePreconditioner(Solver, PETSC_TRUE, ierr)
@@ -936,7 +939,9 @@ contains
       end if
 
       ! solve system
+      if (jatimer == 1) call starttimer(IPETSCKSPSOLVE)
       call KSPSolve(Solver, rhs, sol, ierr)
+      if (jatimer == 1) call stoptimer(IPETSCKSPSOLVE)
       if (ierr /= PETSC_OK) then
          go to 1234
       end if
