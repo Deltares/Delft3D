@@ -51,7 +51,7 @@ contains
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        vicwws, kmxx, tur_time_int_factor, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, lnxi
@@ -271,7 +271,7 @@ contains
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(turkin0, turkinws)
+                  call apply_horizontal_coupling(LL, turkin0, turkinws, dtiL)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
@@ -569,7 +569,7 @@ contains
                ! Dirichlet condition on bed ; teta method:
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(tureps0, turepsws)
+                  call apply_horizontal_coupling(LL, tureps0, turepsws, dtiL)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
@@ -828,26 +828,7 @@ contains
       call links_to_centers(vicwws, vicwwu)
       if (jarichardsononoutput > 0) then
          call links_to_centers(richs, rich)
-      end if
-
-   contains
-
-      !> Lax-inspired time integration method to couple turbulence quantities horizontally
-      !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
-      subroutine apply_horizontal_coupling(tur_link, tur_node)
-         real(kind=dp), dimension(:) :: tur_link, tur_node
-         ! Apply horizontal coupling of turkin/tureps with care:
-         ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
-         do L = Lb, Lt - 1
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
-               if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
-               end if
-            end if
-         end do
-      end subroutine apply_horizontal_coupling
+      end if     
 
    end subroutine update_verticalprofiles
 
@@ -900,6 +881,43 @@ contains
       end if
    end subroutine calculate_drhodz
 
+   !> Lax-inspired time integration method to couple turbulence quantities horizontally
+   !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
+   subroutine apply_horizontal_coupling(flow_link, tur_link, tur_node, dtiL)
+      use m_flow, only: lbot, ltop, zws, tur_time_int_factor, tur_time_int_method
+      use m_flowgeom, only: ln
+      use m_flowparameters, only: EPS20
+      use m_turbulence, only: dk, TURB_LAX_ALL
+
+      ! Arguments
+      integer :: flow_link !< Flow link to apply horizontal coupling for
+      real(kind=dp), dimension(:) :: tur_link
+      real(kind=dp), dimension(:) :: tur_node
+      real(kind=dp) :: dtiL
+
+      ! Local variables
+      integer :: l !< Loop index over vertical flow link layers
+      integer :: k1 !< Vertical layer index for linked cell 1
+      integer :: k2 !< Vertical layer index for linked cell 2
+      integer :: l_bottom !< Bottom flow link layer index
+      integer :: l_top !< Top flow link layer index
+
+      l_bottom = lbot(flow_link)
+      l_top = ltop(flow_link)
+
+      ! Apply horizontal coupling of turkin/tureps with care:
+      ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
+      do l = l_bottom, l_top - 1
+         k1 = ln(1, l)
+         k2 = ln(2, l)
+         if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
+            if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+               dk(l - l_bottom + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(l) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
+            end if
+         end if
+      end do
+   end subroutine apply_horizontal_coupling
+
    !> Calculate the vertical omega velocity for a given flow link
    subroutine calculate_womegu(womegu, flow_link)
       use m_flow, only: lbot, ltop, u1, qw, a1
@@ -910,15 +928,15 @@ contains
       integer, intent(in) :: flow_link !< Flow link to compute womegu for
 
       ! Local variables
-      integer :: l !< Loop index for vertical flow link layers
-      integer :: k !< Loop index for vertical layer interfaces
+      integer :: l !< Loop index over vertical flow link layers
+      integer :: k !< Loop index over vertical layer interfaces
 
       real(kind=dp) :: ac1 !< Left dx fraction for linked cell 1
       real(kind=dp) :: ac2 !< Left dx fraction for linked cell 2
       integer :: n1 !< Flow cell index for linked cell 1   
       integer :: n2 !< Flow cell index for linked cell 2
-      integer :: l_bottom !< Bottom link index
-      integer :: l_top !< Top link index
+      integer :: l_bottom !< Bottom flow link layer index
+      integer :: l_top !< Top flow link layer index
       integer :: k1 !< Vertical layer interface index for linked cell 1
       integer :: k2 !< Vertical layer interface index for linked cell 2
 
