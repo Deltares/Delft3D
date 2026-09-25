@@ -1383,7 +1383,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, &
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
                         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
                         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
@@ -1795,7 +1795,7 @@ contains
             ierr = nf90_put_att(irstfile, id_fvcoro, 'units', 'm s-2')
          end if
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! Definition and attributes of vertical eddy viscosity vicwwu
             ierr = nf90_def_var(irstfile, 'vicwwu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_vicwwu)
             ierr = nf90_put_att(irstfile, id_vicwwu, 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -1815,11 +1815,11 @@ contains
             ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
             ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_tureps1, '_FillValue', dmiss)
-            if (iturbulencemodel == 3) then
+            if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                ierr = nf90_put_att(irstfile, id_tureps1, 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent energy dissipation')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 'm2 s-3')
-            else if (iturbulencemodel == 4) then
+            else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                !ierr = nf90_put_att(irstfile, id_tureps1,  'standard_name', '')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent time scale')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 's-1')
@@ -2901,7 +2901,7 @@ contains
          ! write averaged u1
          ierr = nf90_put_var(irstfile, id_unorma, u1(1:lnx), start=[1, itim], count=[lnx, 1])
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! write vertical eddy viscosity vicwwu
             work0 = dmiss
             do LL = 1, lnx
@@ -4402,15 +4402,15 @@ contains
 
          ! Turbulence.
          if (map_write_settings%tur > 0 .and. kmx > 0) then
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, nc_precision, UNC_LOC_W, 'difwws_total', 'eddy_diffusivity', 'total vertical eddy diffusivity of salinity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
-               if (iturbulencemodel == 3) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
-               else if (iturbulencemodel == 4) then
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', '', 'turbulent time scale', 's-1', jabndnd=jabndnd_)
                end if
             end if
@@ -5398,7 +5398,7 @@ contains
 
       ! Turbulence.
       if (map_write_settings%tur > 0 .and. kmx > 0) then
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             vicwwu_total = 0.0_dp
             vicwws_total = 0.0_dp
             do LL = 1, lnx
@@ -7302,7 +7302,7 @@ contains
             end if
 
             if (map_write_settings%tur > 0 .and. kmx > 0) then
-               if (iturbulencemodel >= 3) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                   ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turkin1(iid))
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
@@ -7338,11 +7338,11 @@ contains
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), '_FillValue', dmiss)
 
-                  if (iturbulencemodel == 3) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent energy dissipation')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 'm2 s-3')
-                  else if (iturbulencemodel == 4) then
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent time scale')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 's-1')
                   end if
@@ -8219,7 +8219,7 @@ contains
             if (apply_thermobaricity) then
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
             end if
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
                ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
                ierr = nf90_inq_varid(imapfile, 'vicwwu', id_vicwwu(iid))
@@ -8748,7 +8748,7 @@ contains
                end if
             end if
 
-            if (map_write_settings%tur > 0 .and. iturbulencemodel >= 3) then
+            if (map_write_settings%tur > 0 .and. any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                do LL = 1, lnx
                   work0(:, LL) = dmiss ! For proper fill values in z-model runs.
                   call getLbotLtopmax(LL, Lb, Ltx)
@@ -12460,7 +12460,7 @@ contains
          call readyy('Reading map data', 0.75_dp)
 
          ! turbulence variables
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! vicwwu
             ierr = get_var_and_shift(imapfile, 'vicwwu', vicwwu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)

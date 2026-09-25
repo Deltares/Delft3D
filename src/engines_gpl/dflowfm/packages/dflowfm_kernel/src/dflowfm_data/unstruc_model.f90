@@ -1214,7 +1214,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
-      if (iturbulencemodel == 4) then ! k-tau
+      if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
          call prop_get(md_ptr, 'physics', 'TAUMin', eps_min)
       else
          call prop_get(md_ptr, 'physics', 'EPSMin', eps_min)
@@ -3339,9 +3339,9 @@ contains
             call prop_set(prop_ptr, 'physics', 'TKEMin', tke_min, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if
          if (writeall .or. (comparereal(eps_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
-            if (iturbulencemodel /= 4) then
+            if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                call prop_set(prop_ptr, 'physics', 'EPSMin', eps_min, 'Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model')
-            else
+            else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                call prop_set(prop_ptr, 'physics', 'TAUMin', eps_min, 'Minimum turbulent time scale (TAU) value in k-tau turbulence model')
             end if
          end if

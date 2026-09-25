@@ -2714,15 +2714,15 @@ contains
          end if
          if (model_is_3D()) then
             if (his_write_settings%tur > 0) then
-               if (iturbulencemodel >= 3) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKIN:IPNT_TKIN + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
                end if
-               if (iturbulencemodel == 3) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
                end if
-               if (iturbulencemodel >= 2) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS_TOTAL:IPNT_VICWWS_TOTAL + kmx)
@@ -2734,7 +2734,7 @@ contains
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
                end if
-               if (iturbulencemodel == 4) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAU), temp_pointer)
                end if
