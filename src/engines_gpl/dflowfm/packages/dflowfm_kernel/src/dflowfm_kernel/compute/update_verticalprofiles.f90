@@ -901,6 +901,7 @@ contains
       end if
    end subroutine calculate_drhodz
 
+   !> Calculate the vertical omega velocity for a given flow link
    subroutine calculate_womegu(womegu, flow_link)
       use m_flow, only: lbot, ltop, u1, qw, a1
       use m_flowgeom, only: acL, ln, ndxi
