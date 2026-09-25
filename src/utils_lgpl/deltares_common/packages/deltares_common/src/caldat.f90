@@ -34,7 +34,13 @@ contains
 
    subroutine caldat(julian, mm, id, iyyy)
 
-   integer :: julian, mm, id, iyyy
+   ! Arguments
+   integer :: julian
+   integer :: mm
+   integer :: id
+   integer :: iyyy
+
+   ! Local variables
    integer :: jalpha, ja, jb, jc, jd, je
    integer, parameter :: IGREG = 2299161
 
