@@ -28,7 +28,6 @@
 !-------------------------------------------------------------------------------
 
 module m_caldat
-
    implicit none(type, external)
 
 contains
