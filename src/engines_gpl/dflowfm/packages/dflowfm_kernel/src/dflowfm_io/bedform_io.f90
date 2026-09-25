@@ -445,7 +445,7 @@ contains
       write (mdia, '(a)') '*** Start of bedform input'
       !
       if (.not. lfbedfrm) then
-         write (mdia, '(a)') 'Bedform height predictor not active in present simulation.'
+         write (mdia, '(a)') 'Bedform predictor not active in present simulation.'
       end if
       !
       if (.not. stm_included) then
@@ -533,7 +533,6 @@ contains
       cdpar = 0.0_fp
       !-----------------------------------------------------
       !
-      !write (mdia, '(a)') '*** Start of bedform input'
       !
       ! If BdfMor then the morphological time scale is used for bedform adaptation.
       ! By default the hydrodynamic time scale is used for bedform adaptation.
