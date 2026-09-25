@@ -150,7 +150,6 @@ RestartFile       =
 RestartDateTime   = 20190313
 
 [external forcing]
-ExtForceFile      = test.ext
 ExtForceFileNew   = FlowFM_bnd.ext
 
 [trachytopes]
