@@ -46,7 +46,7 @@ contains
    subroutine update_verticalprofiles()
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
-      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
+      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
@@ -54,7 +54,7 @@ contains
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
       use m_source_sink, only: source_sinks
-      use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
+      use m_flowgeom, only: lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
       use m_flowtimes, only: dtprev, t_spinup_turb_log_prof, time1, tstart_tlfsmo_user
@@ -859,7 +859,6 @@ contains
       use m_density_parameters, only: apply_thermobaricity
       use m_density, only: density_at_cell_given_pressure
       use m_turbulence, only: rho
-      use precision, only: dp
 
       real(kind=dp), dimension(:), intent(in) :: zws !< z levels  (m) of interfaces (w-points) at cell centres (s-points)
       real(kind=dp), dimension(:), intent(out) :: drhodz !< Vertical density gradient (in horizontal cell centers)
