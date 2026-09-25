@@ -64,8 +64,8 @@ contains
       logical :: bl_set_from_zkuni = .false.
       integer :: method, iprimpos
       integer :: k, L, k1, k2, mx
+      integer :: i_ext
       integer, allocatable :: kcc(:), kc1D(:), kc2D(:)
-      integer :: ibathyfiletype
       integer :: kc_size_store
 
       character(len=256) :: filename
@@ -106,7 +106,7 @@ contains
          mx = numk
       end select
 
-      if (len_trim(md_inifieldfile) > 0 .or. len_trim(md_extfile) > 0) then
+      if (size(extfile_new_list) > 0) then
          ! 0.a Prepare masks for 1D/2D distinctions
          kc_size_store = size(kc)
          allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx)))
@@ -143,13 +143,9 @@ contains
             kc2D(1:ndx2D) = 1
          end if
 
-         ! Loop across the ini and new external-forcing files.
-         bft: do ibathyfiletype = 2, 3
-            if (ibathyfiletype == 2) then
-               ext_file_name = trim(md_inifieldfile)
-            else
-               ext_file_name = trim(md_extfile)
-            end if
+         ! IniFieldFile is appended to extfile_new_list, so process all inputs uniformly.
+         do i_ext = 1, size(extfile_new_list)
+            ext_file_name = trim(extfile_new_list(i_ext))
             if (len_trim(ext_file_name) == 0) then
                cycle
             end if
@@ -201,7 +197,6 @@ contains
                   iLocType = SPATIAL_LOCATION_ALL
                end if
 
-               ! Initialize bedlevel based on the provider just read, common initialization for all three file types.
                if (provider_available) then
                   success = .true.
                   if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. iLocType == SPATIAL_LOCATION_1D)) then
@@ -229,10 +224,9 @@ contains
                      call mess(LEVEL_FATAL, 'Error reading '//trim(qid)//' from '//trim(filename)//'.')
                   end if
                end if
-
             end do
             call tree_destroy(provider_tree_ptr)
-         end do bft
+         end do
 
          ! Interpreted values for debugging.
          if (md_exportnet_bedlevel == 1) then
