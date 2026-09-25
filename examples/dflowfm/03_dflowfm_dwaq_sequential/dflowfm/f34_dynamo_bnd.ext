@@ -106,16 +106,16 @@ interpolationMethod = linearSpaceTime
 operand             = override   
 
 [Spatial]
-quantity              = initialtracerIM1    
+quantity              = initialtracerIM1
 dataFile              = initialtracerIM1.xyz
-dataFileType          = sample              
-interpolationMethod   = averaging           
+dataFileType          = sample
+interpolationMethod   = averaging
 operand               = override
-averagingType         = nearestNb           
-averagingRelSize      = 1.0000000e+000      
-averagingNumMin       = 1                   
-averagingPercentile   = 0.0000000e+000      
-locationType          = 2d  
+averagingType         = nearestNb
+averagingRelSize      = 1.0000000e+000
+averagingNumMin       = 1
+averagingPercentile   = 0.0000000e+000
+locationType          = 2d
 
 [Spatial]
 quantity            = initialtracerIM1 # Name of the quantity. See UM Section C.5.3
