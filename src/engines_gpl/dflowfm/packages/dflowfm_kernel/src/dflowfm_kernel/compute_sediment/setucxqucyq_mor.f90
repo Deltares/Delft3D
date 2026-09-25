@@ -47,7 +47,7 @@ contains
       use m_flow, only: hs, q1, au, kmx, hu, zws, lnkx, ndkx
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_flowparameters, only: jacstbnd, epshs, EPS10, flow_solver, FLOW_SOLVER_FM
+      use m_flowparameters, only: jacstbnd, epshs, EPS10, flow_solver, FLOW_SOLVER_SRE
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0
       use m_CrossSections, only: GetCSParsFlow
@@ -90,7 +90,7 @@ contains
       ! FM solver
       !------------------------------------------
 
-      if (flow_solver == FLOW_SOLVER_FM) then !FM solver
+      if (flow_solver /= FLOW_SOLVER_SRE) then ! FM or frozen1d2d solver
 
          ! we define the node as the begin/end point of the first link connected to it
          if (stmpar%morpar%mornum%pure1d) then

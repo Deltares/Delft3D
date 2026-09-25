@@ -50,7 +50,7 @@ contains
       use precision, only: dp
       use m_tekcflmx
       use m_partitioninfo
-      use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE
+      use m_flowparameters, only: jawave, flow_solver, FLOW_SOLVER_SRE, FLOW_SOLVER_FM
       use m_xbeach_data, only: swave, instat
       use m_flowtimes
       use m_flow, only: kkcflmx
@@ -66,7 +66,11 @@ contains
       integer :: jareduced
 
       ! compute CFL-based maximum time step and limiting flownode/time step, per subomdain
-      call setdtorg(jareduced) ! 7.1 2031
+      if (flow_solver == FLOW_SOLVER_FM) then
+          call setdtorg(jareduced) ! 7.1 2031
+      else
+         dts = dt_max
+      end if
 
       ! morphological timestep reduction
       if (stm_included .and. jamorcfl > 0) then
@@ -165,6 +169,7 @@ contains
       if (jaGUI == 1) then
          call tekcflmx()
       end if
+
 
    end subroutine setdt
 

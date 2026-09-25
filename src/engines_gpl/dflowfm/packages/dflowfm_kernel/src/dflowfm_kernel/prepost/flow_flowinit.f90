@@ -907,13 +907,13 @@ contains
 
       if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
          if (len_trim(md_restartfile) == 0) then
-            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
+            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a restart file.')
             error = DFM_GENERICERROR
             return
          end if
          status = nf90_open(md_restartfile, nf90_nowrite, ncid)
          if (status /= nf90_noerr) then
-            call mess(LEVEL_ERROR, 'Frozen 1D/2D flow requires a NetCDF restart file containing q1.')
+            call mess(LEVEL_ERROR, 'Unable to open restart file: '//trim(md_restartfile))
             error = DFM_GENERICERROR
             return
          end if
