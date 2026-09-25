@@ -28,27 +28,36 @@
 !-------------------------------------------------------------------------------
 
 module m_date_time_from_ref_date
-   implicit none
+   implicit none(type, external)
+
    private
 
    public :: date_time_from_ref_date
-   integer, parameter, public :: ref_date_len = 8
+
+   integer, parameter, public :: REF_DATE_LEN = 8
 
 contains
+
    !> Calculate absolute date time values, given a time in seconds since ref_date.
    !! \see seconds_to_datetimestring
    subroutine date_time_from_ref_date(time_since_ref, ref_date, year, month, day, hour, minute, second)
       use m_julday
+      use m_caldat
       use precision, only: dp
+      use iso_fortran_env, only: int64
+
+      ! Arguments
       real(kind=dp), intent(in) :: time_since_ref !< Time in seconds since ref_date
-      character(len=ref_date_len), intent(in) :: ref_date !< Reference date
+      character(len=REF_DATE_LEN), intent(in) :: ref_date !< Reference date
       integer, intent(out) :: year, month, day, hour, minute, second !< Actual date, split up in year/month, etc.
 
-      integer :: ref_julian_day, ref_year, ref_month, ref_day, days_since_ref, hours_since_ref, minutes_since_ref, seconds_since_ref
+      ! Local variables
+      integer :: ref_julian_day, ref_year, ref_month, ref_day
+      integer(kind=int64) :: days_since_ref, hours_since_ref, minutes_since_ref, seconds_since_ref
 
       ! Round to seconds/integer to avoid precision issues and ensure datestamps like 20240828_003000 instead of 20240828_002960.
       ! 59.7 seconds is simply rounded to a full minute.
-      seconds_since_ref = nint(time_since_ref)
+      seconds_since_ref = nint(time_since_ref, kind=int64)
 
       read (ref_date(1:4), *) ref_year
       read (ref_date(5:6), *) ref_month
@@ -59,7 +68,8 @@ contains
       hours_since_ref = minutes_since_ref / 60
       days_since_ref = hours_since_ref / 24
 
-      call caldat(ref_julian_day + days_since_ref, month, day, year)
+      ! caldat expects a default-kind integer.
+      call caldat(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), month, day, year)
 
       hour = mod(hours_since_ref, 24)
       minute = mod(minutes_since_ref, 60)

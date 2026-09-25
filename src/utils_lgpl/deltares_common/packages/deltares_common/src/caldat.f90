@@ -27,30 +27,50 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
+module m_caldat
+   implicit none(type, external)
 
- subroutine caldat(julian,mm,id,iyyy)
- implicit none
- integer :: julian,mm,id,iyyy
- integer :: igreg
- parameter (igreg=2299161)
- integer :: jalpha, ja, jb, jc, jd, je
- if(julian >= igreg)then
-   jalpha=int(((julian-1867216)-0.25)/36524.25)
-   ja=julian+1+jalpha-int(0.25*jalpha)
- else
-   ja=julian
- endif
- jb=ja+1524
- jc=int(6680.+((jb-2439870)-122.1)/365.25)
- jd=365*jc+int(0.25*jc)
- je=int((jb-jd)/30.6001)
- id=jb-jd-int(30.6001*je)
- mm=je-1
- if(mm > 12)mm=mm-12
- iyyy=jc-4715
- if(mm > 2)iyyy=iyyy-1
- if(iyyy <= 0)iyyy=iyyy-1
- return
- end subroutine caldat
+contains
+
+   subroutine caldat(julian, mm, id, iyyy)
+
+   ! Arguments
+   integer :: julian
+   integer :: mm
+   integer :: id
+   integer :: iyyy
+
+   ! Local variables
+   integer :: jalpha, ja, jb, jc, jd, je
+   integer, parameter :: IGREG = 2299161
+
+   if (julian >= IGREG) then
+      jalpha = int(((julian - 1867216) - 0.25) / 36524.25)
+      ja = julian + 1 + jalpha - int(0.25 * jalpha)
+   else
+      ja = julian
+   end if
+
+   jb = ja + 1524
+   jc = int(6680. + ((jb - 2439870) - 122.1) / 365.25)
+   jd = 365 * jc + int(0.25 * jc)
+   je = int((jb - jd) / 30.6001)
+   id = jb - jd - int(30.6001 * je)
+   mm = je - 1
+
+   if (mm > 12) then
+      mm = mm - 12
+   end if
+
+   iyyy = jc - 4715
+
+   if (mm > 2) then
+      iyyy = iyyy - 1
+   end if
+
+   if (iyyy <= 0) then 
+      iyyy = iyyy - 1
+   end if
+
+   end subroutine caldat
+end module m_caldat
