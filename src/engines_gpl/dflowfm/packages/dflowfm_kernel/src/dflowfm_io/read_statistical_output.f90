@@ -153,6 +153,8 @@ contains
       character(*), optional, intent(in) :: alternative_key !< Old alternative key name that can still be used
 
       character(len=255) :: value_string
+      character(len=255) :: dummy_string
+      logical :: dummy_success
 
       call prop_get(tree, chapter, key, value_string, success)
       if (.not. success .and. present(alternative_key)) then
@@ -162,6 +164,9 @@ contains
          value = merge(1, 0, is_output_requested_in_value_string(value_string))
       else if (value /= 0) then
          call prop_set(tree, chapter, key, value, '')
+         ! Re-read the just-written value to mark this node as visited, so it is not
+         ! later flagged as an unused/unknown keyword (it was not in the user's input).
+         call prop_get(tree, chapter, key, dummy_string, dummy_success)
       end if
    end subroutine read_output_parameter_toggle
 end module m_read_statistical_output
