@@ -2612,8 +2612,11 @@ contains
 !==============================================================================
    subroutine write_swan_input(sr, itide, calccount, inest, xymiss, wavedata)
       use precision_basics
+      use iso_c_binding, only: c_char, c_int, c_null_char
+      use inja_templates
       !
       implicit none
+      
       !
       integer :: itide
       integer :: inest
@@ -2625,12 +2628,16 @@ contains
       type(swan_type) :: sr
       type(wave_data_type) :: wavedata
       !
+      integer(kind=c_int) :: nchars
+      character(kind=c_char), dimension(256) :: inja_result
+      !
       curlif = sr%dom(inest)%curlif(1:37)
       wvel = sr%wvel(itide)
       wdir = sr%wdir(itide)
       !
       if (sr%inputtemplatefile /= '') then
-         call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
+         ! call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
+         call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
       else
          call write_swan_inp(wavedata, calccount, &
                       & itide, sr%nttide, inest, sr%nnest, sr%swuvt, &
@@ -2649,6 +2656,64 @@ contains
       !
 
    end subroutine write_swan_input
+
+   subroutine update_swan_inp_injs(filnam, itide, nttide, calccount, inest, sr, wavedata)
+      use inja_templates
+      use, intrinsic :: iso_c_binding, only: c_char, c_int, c_null_char, c_ptr
+
+      integer, intent(in) :: calccount
+      integer, intent(in) :: itide
+      integer, intent(in) :: nttide
+      character(*), intent(in) :: filnam
+      type(swan_type) :: sr
+      type(wave_data_type) :: wavedata
+      integer, intent(in) :: inest
+      character(15) :: tbegc
+      character(15) :: tendc
+      character(15), external :: datetime_to_string
+      character(256) :: tmp_name
+
+      type(c_ptr) :: context
+      integer(c_int) :: status
+      integer(c_int) :: error_length
+      character(256) :: tm_text
+      character(kind=c_char), dimension(512) :: error_text
+
+      context = inja_create_context()
+
+      tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
+      status = inja_add_string(context, "TSTART"//c_null_char, tbegc//c_null_char)
+      tendc = datetime_to_string(wavedata%time%refdate, wavedata%time%calctimtscale * real(wavedata%time%tscale, hp))
+      status = inja_add_string(context, "TSTOP"//c_null_char, tendc//c_null_char)
+
+      write(tm_text, '(i0)') calccount
+      status = inja_add_string(context, "COUNT"//c_null_char, trim(tm_text)//c_null_char)
+
+      write(tm_text, '(i0)') inest
+      status = inja_add_string(context, "INEST"//c_null_char, trim(tm_text)//c_null_char)
+
+      call create_hotstart_line(inest, tmp_name, tm_text, sr)
+      status = inja_add_string(context, "HOTSTART_FILE"//c_null_char, trim(tmp_name)//c_null_char)
+      status = inja_add_string(context, "HOTSTART_LINE"//c_null_char, trim(tm_text)//c_null_char)
+
+      call create_hotfile_line(tmp_name, inest, tm_text, sr, wavedata)
+      status = inja_add_string(context, "HOTFILE_FILE"//c_null_char, trim(tmp_name)//c_null_char)
+      status = inja_add_string(context, "HOTFILE_LINE"//c_null_char, trim(tm_text)//c_null_char)
+      ! tmp_name = trim(filnam)//".inj"
+      status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
+      if (status /= 0) then
+         error_length = inja_get_last_error(context, error_text, int(size(error_text), c_int))
+         if (error_length > 0) then
+            write (*, '(a)') 'inja template error: '//transfer(error_text(1:error_length), repeat(' ', error_length))
+         else
+            write (*, '(a)') 'inja template rendering failed'
+         end if
+      end if
+
+      call inja_destroy_context(context)
+
+
+   end subroutine update_swan_inp_injs
 !
 !
 !==============================================================================
