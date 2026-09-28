@@ -31,7 +31,7 @@ module m_uitzicht_spectrum
     !***********************************************************************
     !
     private
-    public :: num_spectrum, uit_zi
+    public :: num_spectrum, uit_zi, planck
 
     integer, parameter :: num_spectrum = 61
     !

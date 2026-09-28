@@ -150,6 +150,18 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Extinc_VLG","ExtVlODS  ",   4,"x",1
 "Extinc_VLG","ExtVlPhyt ",   5,"x",1
 "Extinc_VLG","ExtVlFresh",   6,"x",1
+"Extinc_VLG","ExtVlH2O  ",   7,"x",1
+"Extinc_VLG","ExtVlChlfa",   8,"x",1
+"Extinc_VLG","Eu10Dep550",   9,"x",1
+"Extinc_VLG","VL_Red_720",  10,"x",1
+"Extinc_VLG","VL_Ora_620",  11,"x",1
+"Extinc_VLG","VL_Yel_550",  12,"x",1
+"Extinc_VLG","VL_Gre_510",  13,"x",1
+"Extinc_VLG","VL_Blu_460",  14,"x",1
+"Extinc_VLG","VL_Vio_390",  15,"x",1
+"Extinc_VLG","SecchiH   ",  16,"x",1
+"Extinc_VLG","SecchiH2  ",  17,"x",1
+"Extinc_VLG","SecchiV   ",  18,"x",1
 "CalcRad   ","Rad       ",   1,"x",1
 "CalcRad   ","RadBot    ",   2,"x",1
 "CalcRad   ","atten     ",   3," ",1

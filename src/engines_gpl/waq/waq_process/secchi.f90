@@ -70,10 +70,15 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         !
-        use m_uitzicht_spectrum
+        use m_uitzicht_spectrum, DayLightPlanck => planck
 
-        integer, parameter :: num_basic = 23
-        integer, parameter :: num_pmsa = num_basic + num_spectrum
+        integer, parameter :: num_pmsa_input  = 23
+        integer, parameter :: num_pmsa_output = 1
+
+        ! Note: see remarks about the spectrum in extinc.f90
+        ! integer, parameter :: num_pmsa = num_basic + num_spectrum
+
+        integer, parameter :: num_pmsa = num_pmsa_input + num_pmsa_output
 
         real(kind = real_wp)   :: process_space_real  (*), fl    (*)
         integer(kind = int_wp) :: ipoint(num_pmsa), increm(num_pmsa)
@@ -89,7 +94,9 @@ contains
                 detcdm, gloeir, detric, extio, extp_d, d_1
         integer(kind = int_wp) ::  sw_uitz, sw_uit3, dosecc, swspec, i
 
-        real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+        ! Note: see extinc.f90
+        ! real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+
         real(kind = dp), dimension(num_spectrum) :: Spectrum
 
         ip = ipoint
@@ -98,9 +105,10 @@ contains
         dosecc = 0 ! Detail concerning the "representative" depth
         swspec = 0
 
-        do i = 1,num_spectrum
-            DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
-        end do
+        ! Note: see extinc.f90
+        ! do i = 1,num_spectrum
+        !     DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
+        ! end do
 
         do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
@@ -155,7 +163,7 @@ contains
 
                 endif
 
-                process_space_real(ip(23)) = secch
+                process_space_real(ip(24)) = secch
 
             endif
 

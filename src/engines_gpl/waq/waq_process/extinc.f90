@@ -47,15 +47,20 @@ contains
         !!  Nieuwe lichtmodellen leiden tot uitbreiding van EXINC interface???
         !!  Now there are two (LinearExt en UITZICHT).
 
-        use m_uitzicht_spectrum
+        !   For the renaming: see the remark below
+
+        use m_uitzicht_spectrum, DayLightPlanck => planck
         use m_dhnolay
 
         implicit none
-        !
 
-        integer, parameter :: num_basic  = 41
-        integer, parameter :: num_process_space_real   = num_basic + num_spectrum
-        integer, parameter :: num_offset = num_process_space_real  - 18
+        ! Note: see the remark below - we do not hold the spectrum in the process coefficients
+        ! integer, parameter :: num_process_space_real   = num_basic + num_spectrum
+
+        integer, parameter :: num_process_input        = 40
+        integer, parameter :: num_process_output       = 18
+        integer, parameter :: num_process_space_real   = num_process_input + num_process_output
+        integer, parameter :: num_offset = num_process_input
 
         real(kind = real_wp) :: process_space_real  (*), fl    (*)
         integer(kind = int_wp) :: ipoint(num_process_space_real), increm(num_process_space_real), num_cells, noflux, &
@@ -115,13 +120,15 @@ contains
         integer(kind = int_wp) :: ipnt(num_process_space_real)
         integer(kind = int_wp), save :: nr_mes = 0
 
-        real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+        ! See the remark below
+        ! real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
+
         real(kind = dp), dimension(num_spectrum) :: SpectrumTop, SpectrumBot
 
         ipnt = ipoint
         iflux = 0
 
-        sw_uit    = nint(process_space_real(ipnt(13)))
+        sw_uit = nint(process_space_real(ipnt(15)))
 
         if ( sw_uit == 0 ) then
 
@@ -192,12 +199,20 @@ contains
 
         else
 
-            !! AM: Is dit echt nodig? Kunnen we het spectrum niet gewoon uit de module halen?
-
-
-            do i = 1,num_spectrum
-                DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
-            end do
+            ! Note (AM, dd. 25 september 2026):
+            ! The original extension to UIT_ZICHT used the process coefficients (process_space_real)
+            ! to allow the user to specify the spectral distribution themselves.
+            ! This resulted in 61 extra process coefficients. While this gives flexibility, it is
+            ! also a burden. For now I have commented this out and rely instead on the "standard"
+            ! distribution.
+            !
+            ! As a consequence we can simply use the planck array from the module.
+            ! The renaming makes sure we do not have to change much to the code if we decide to
+            ! do it in another way.
+            !
+            ! do i = 1,num_spectrum
+            !    DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
+            ! end do
 
             call dhnolay(nolay)
             nosegl = num_cells / nolay
@@ -215,6 +230,8 @@ contains
 
                     if (btest(iknmrk(iseg), 0)) then
                         ipnt = ipoint + (iseg-1) * increm
+
+                        call local_values
 
                         !
                         !  calculate extinction coefficients - with UITZICHT
@@ -257,6 +274,8 @@ contains
                                      c_det , helhum, tau   , corchl, chlorophyl,     &
                                      detric, gloeir, ah_380, sechor1, d_1   ,        &
                                      ext   , extp_d, 1     , spectrumbot,1,sw_uit3)
+
+
 
                         !  Repeated with different secchi calculation method
                         call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,         &
@@ -316,22 +335,27 @@ contains
                             extdoc = ext - extdoc
 
                             !
+                            !  NOTE AM: Since these steps are marked as "research only",
+                            !  I have commented them out. The associated output appears in the
+                            !  original configuration, but it was not saved in the
+                            !  output array.
+                            !
                             !  Pure wate extinction  - not used, research only
                             !
-                            call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
-                                     c_det , helhum, tau   , corchl, 0.0_dp,          &
-                                     0.0_dp, 0.0_dp, 0.0_dp, dummy,  d_1   ,          &
-                                     exth2o, extp_d  ,0    , spectrumtop,0,sw_uit3)
+                            !call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
+                            !         c_det , helhum, tau   , corchl, 0.0_dp,          &
+                            !         0.0_dp, 0.0_dp, 0.0_dp, dummy,  d_1   ,          &
+                            !         exth2o, extp_d  ,0    , spectrumtop,0,sw_uit3)
 
                             !
-                            !  AH380 & water extinction / if linear same as EXTHUM - not used researh only
+                            !  AH380 & water extinction / if linear same as EXTHUM - not used research only
                             !
-                            call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
-                                      c_det ,  helhum, tau   , corchl, 0.0_dp,        &
-                                      0.0_dp,  0.0_dp, ah_380, dummy,  dummy,         &
-                                      extdoc2, extp_d ,0     , spectrumtop,0,sw_uit3)
-
-                            extdoc2 = extdoc2 - exth2o
+                            !call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
+                            !          c_det ,  helhum, tau   , corchl, 0.0_dp,        &
+                            !          0.0_dp,  0.0_dp, ah_380, dummy,  dummy,         &
+                            !          extdoc2, extp_d ,0     , spectrumtop,0,sw_uit3)
+                            !
+                            !extdoc2 = extdoc2 - exth2o
 
                         else
                             ext = ext_last
@@ -345,7 +369,7 @@ contains
                         SpectrumTop = SpectrumBot
 
                         !
-                        !  Determnine the column sechhi depth (named SECVer) from evaluation of
+                        !  Determine the column sechhi depth (named SECVer) from evaluation of
                         !  horizontal zicht diepte per segment (SECHor)
                         !  Secchi depth cannot exceed local depth!
                         !  Secchi depth column is limited by smallest SECHor of the above segments
@@ -381,13 +405,13 @@ contains
 
                     process_space_real(ipnt(num_offset+10)) = spectrumbot(61) !700
                     process_space_real(ipnt(num_offset+11)) = spectrumbot(45) !620
-                    process_space_real(ipnt(num_offset+11)) = spectrumbot(31) !550
-                    process_space_real(ipnt(num_offset+12)) = spectrumbot(23) !510
-                    process_space_real(ipnt(num_offset+13)) = spectrumbot(13) !460
-                    process_space_real(ipnt(num_offset+14)) = spectrumbot(1 ) !400
-                    process_space_real(ipnt(num_offset+15)) = sechor1
-                    process_space_real(ipnt(num_offset+16)) = sechor2
-                    process_space_real(ipnt(num_offset+17)) = secver
+                    process_space_real(ipnt(num_offset+12)) = spectrumbot(31) !550
+                    process_space_real(ipnt(num_offset+13)) = spectrumbot(23) !510
+                    process_space_real(ipnt(num_offset+14)) = spectrumbot(13) !460
+                    process_space_real(ipnt(num_offset+15)) = spectrumbot(1 ) !400
+                    process_space_real(ipnt(num_offset+16)) = sechor1
+                    process_space_real(ipnt(num_offset+17)) = sechor2
+                    process_space_real(ipnt(num_offset+18)) = secver
                 enddo
             enddo
         endif
