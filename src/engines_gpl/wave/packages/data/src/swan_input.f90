@@ -2678,6 +2678,8 @@ contains
       integer(c_int) :: error_length
       character(256) :: tm_text
       character(kind=c_char), dimension(512) :: error_text
+      real(hp) :: run_end
+      real(hp) :: run_start
 
       context = inja_create_context()
 
@@ -2699,6 +2701,19 @@ contains
       call create_hotfile_line(tmp_name, inest, tm_text, sr, wavedata)
       status = inja_add_string(context, "HOTFILE_FILE"//c_null_char, trim(tmp_name)//c_null_char)
       status = inja_add_string(context, "HOTFILE_LINE"//c_null_char, trim(tm_text)//c_null_char)
+      !boundary spectrum cache
+      ! Boundary spectrum cache window:
+      ! - stationary/quasi-stationary: current time only
+      ! - non-stationary: full COMPUTE NONSTAT interval until tendc
+      run_start = wavedata%time%timsec
+      if (sr%modsim == 3) then
+         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+      else
+         run_end = run_start
+      end if
+      call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, tm_text)
+      status = inja_add_string(context, "CACHED_SPEC_FILE"//c_null_char, trim(tm_text)//c_null_char)
+
       ! tmp_name = trim(filnam)//".inj"
       status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
       if (status /= 0) then
