@@ -12491,7 +12491,6 @@ contains
          end if
       else
          ! Read squ and sqi, optional: only from rst file, so no error check
-         write(*,*) 495, sqi(495), squ(495), '<- before'
          ierr = get_var_and_shift(imapfile, 'squ', squ, tmpvar1, UNC_LOC_W, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                   um%inode_own, um%inode_merge)
          ierr = get_var_and_shift(imapfile, 'sqi', sqi, tmpvar1, UNC_LOC_W, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &

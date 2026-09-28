@@ -130,6 +130,10 @@ contains
 
    subroutine load_sequence_restart(iresult)
       use m_flow_flowinit, only: load_restart_file
+      use m_volsur, only: volsur
+      use m_a1vol1tot, only: a1vol1tot
+      use m_flow, only: s1, s00, hs, vol0, vol1, vol0tot, vol1tot, a0tot, a1tot
+      use m_flowgeom, only: bl
       use m_flowparameters, only: solver_sequence, solver_period_index, jarstignorebl, rst_ignore_bedcomp
       use m_flowtimes, only: restart_date_time, time0, time1, time_user
       use unstruc_model, only: md_restartfile
@@ -167,6 +171,14 @@ contains
          call mess(LEVEL_ERROR, 'Solver sequence: failed to read restart file.')
          iresult = DFM_GENERICERROR
       else
+         s1(:) = max(bl(:), s1(:))
+         s00(:) = s1(:)
+         hs(:) = s1(:) - bl(:)
+         call volsur()
+         call a1vol1tot()
+         vol0(:) = vol1(:)
+         vol0tot = vol1tot
+         a0tot = a1tot
          call mess(LEVEL_INFO, 'Solver sequence: read restart file '//trim(solver_sequence(solver_period_index)%restart_file))
       end if
    end subroutine load_sequence_restart
