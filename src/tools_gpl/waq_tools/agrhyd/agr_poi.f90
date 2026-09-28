@@ -87,11 +87,17 @@
 
          if ( ip2 > 0 ) then
             ip2 = ipnt(ip2)
-         elseif ( ip2 > 0 ) then
+         elseif ( ip2 < 0 ) then
             ip2 = -ipnt_b(-ip2)
          endif
 
-         if ( ip1 == 0 .and. ip2 == 0 ) then
+         !
+         ! Remove exchanges to/from an inactive cell or from a cell to itself.
+         ! Retain exchanges with open boundaries though to make sure that each layer
+         ! has the same (!) number of exchanges (this is required by the GUI and with
+         ! z-layers open boundaries may be adjacent to shallow areas).
+         !
+         if ( (ip1 == 0 .and. ip2 > 0) .or. (ip1 > 0 .and. ip2 == 0).or. (ip1 == ip2) ) then
             cycle
          endif
 
@@ -120,11 +126,11 @@
 
          if ( ip2 > 0 ) then
             ip2 = ipnt(ip2)
-         elseif ( ip2 > 0 ) then
+         elseif ( ip2 < 0 ) then
             ip2 = -ipnt_b(-ip2)
          endif
 
-         if ( ip1 == 0 .and. ip2 == 0 ) then
+         if ( (ip1 == 0 .and. ip2 > 0) .or. (ip1 > 0 .and. ip2 == 0).or. (ip1 == ip2) ) then
             cycle
          endif
 
@@ -226,7 +232,7 @@
 
       enddo
 
-      ! Redo the hash table, now that the duplicates have been removed
+      ! Redo the "lookup" table, now that the duplicates have been removed
 
       deallocate( iq1select )
 
