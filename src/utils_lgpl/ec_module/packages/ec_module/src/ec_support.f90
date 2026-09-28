@@ -321,7 +321,7 @@ contains
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
       character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
       
-      character(len=len(qid)) :: qid_lower !< Lowercased quantityid, e.g., 'waqfunctionradsurf'.
+      character(len=len(quantityName)) :: qid_lower !< Lowercased quantityid, e.g., 'waqfunctionradsurf'.
 
       qid_lower = str_tolower(trim(quantityName))
       
