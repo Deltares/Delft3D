@@ -1821,6 +1821,7 @@ contains
          if (len_trim(solver_sequence(1)%restart_file) > 0) then
             md_restartfile = solver_sequence(1)%restart_file
             restart_date_time = solver_sequence(1)%restart_date_time
+            jarstignorebl = merge(1, 0, solver_sequence(1)%ignore_bl)
          end if
       end if
 
@@ -2608,6 +2609,7 @@ contains
          end select
          call prop_get(block, 'RestartFile', solver_sequence(period)%restart_file)
          call prop_get(block, 'RestartDateTime', solver_sequence(period)%restart_date_time)
+         call prop_get(block, 'RstIgnoreBl', solver_sequence(period)%ignore_bl)
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
              len_trim(solver_sequence(period)%restart_file) == 0) exit
       end do

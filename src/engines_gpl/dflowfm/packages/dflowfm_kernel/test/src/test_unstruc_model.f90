@@ -41,7 +41,7 @@ contains
         open(newunit=unit, file=filename, status='replace')
         write(unit, '(a)') '[General]', 'fileType = solverSequence', 'fileVersion = 1.0', &
             '[Period]', 'tStart = 0', '[Period]', 'tStart = 1', 'flowSolver = generic1d2d3d', &
-            'RestartFile = state_map.nc', 'RestartDateTime = 20250101010000', &
+            'RestartFile = state_map.nc', 'RestartDateTime = 20250101010000', 'RstIgnoreBl = 0', &
             '[Period]', 'tStart = 2', 'flowSolver = frozen1d2d'
         close(unit)
 
@@ -55,6 +55,9 @@ contains
             call F90_EXPECT_EQ(solver_sequence(3)%solver, FLOW_SOLVER_FROZEN_1D2D)
             call F90_EXPECT_TRUE(trim(solver_sequence(2)%restart_file) == 'state_map.nc')
             call F90_EXPECT_TRUE(trim(solver_sequence(2)%restart_date_time) == '20250101010000')
+            call F90_EXPECT_TRUE(solver_sequence(1)%ignore_bl)
+            call F90_EXPECT_FALSE(solver_sequence(2)%ignore_bl)
+            call F90_EXPECT_TRUE(solver_sequence(3)%ignore_bl)
             deallocate(solver_sequence)
         end if
         open(newunit=unit, file=filename, status='old')
