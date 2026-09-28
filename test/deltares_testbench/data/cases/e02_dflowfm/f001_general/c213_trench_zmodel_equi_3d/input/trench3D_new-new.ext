@@ -1,0 +1,12 @@
+# written by HYDROLIB-core 1.0.0b1
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = t02.pli
+forcingFile  = t02.bc
+
+[Boundary]
+quantity     = dischargebnd
+locationFile = t01.pli
+forcingFile  = t01.bc
+

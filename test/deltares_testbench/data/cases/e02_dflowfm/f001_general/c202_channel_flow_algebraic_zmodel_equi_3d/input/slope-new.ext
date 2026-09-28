@@ -1,0 +1,16 @@
+# written by HYDROLIB-core 0.8.1
+
+[General]
+fileVersion = 2.01
+fileType    = extForce
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = leftslope.pli
+forcingFile  = leftslope.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = rightslope.pli
+forcingFile  = rightslope.bc
+

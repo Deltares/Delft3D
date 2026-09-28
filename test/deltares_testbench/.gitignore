@@ -4,6 +4,8 @@
 !/data/**/
 !/data/**/*.dvc
 !/data/cases/.ignore
+!/data/cases/**/.gitignore
+!/data/cases/**/.dvcignore
 
 # python virtual environment and caches
 .venv
