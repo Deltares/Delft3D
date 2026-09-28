@@ -417,9 +417,9 @@ contains
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
             case default
-               if (index(quantityName, 'waqsegmentfunction') == 1) then
+               if (index(quantityName, 'waqsegmentfunction') == 1 .or. index(quantityName, 'waqSegmentFunction') == 1) then
                   success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else if (index(quantityName, 'initialtracer') == 1) then
+               else if (index(quantityName, 'initialtracer') == 1 .or. index(quantityName, 'initialTracer') == 1) then
                   success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                else
                   call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
