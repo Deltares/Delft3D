@@ -2699,8 +2699,8 @@ contains
       status = inja_add_string(context, "HOTSTART_LINE"//c_null_char, trim(tm_text)//c_null_char)
 
       call create_hotfile_line(tmp_name, inest, tm_text, sr, wavedata)
-      status = inja_add_string(context, "HOTFILE_FILE"//c_null_char, trim(tmp_name)//c_null_char)
-      status = inja_add_string(context, "HOTFILE_LINE"//c_null_char, trim(tm_text)//c_null_char)
+      status = inja_add_string(context, "HOTSAVE_FILE"//c_null_char, trim(tmp_name)//c_null_char)
+      status = inja_add_string(context, "HOTSAVE_LINE"//c_null_char, trim(tm_text)//c_null_char)
       !boundary spectrum cache
       ! Boundary spectrum cache window:
       ! - stationary/quasi-stationary: current time only
