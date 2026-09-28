@@ -1921,8 +1921,6 @@ contains
       integer, intent(inout) :: iresult
 
       logical :: missing_input
-      character(len=*), parameter :: wave_kinematics_dependencies = &
-         '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
 
       if (jawave /= WAVE_NC_OFFLINE) then
          return
@@ -1950,6 +1948,7 @@ contains
          integer, intent(in) :: quantity_flag
          character(len=*), intent(in) :: quantity_name
          character(len=256) :: dependencies
+         character(len=*), parameter :: wave_kinematics_dependencies = '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
 
          if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
              .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
