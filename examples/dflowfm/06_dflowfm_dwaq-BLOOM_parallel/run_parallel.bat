@@ -19,7 +19,7 @@ set NPROC=3
 
 rem Partitioning
 cd dflowfm
-call "%dimrset_bin:"=%\run_dflowfm.bat" "--partition:ndomains=%NPROC%:icgsolver=6" f34_BLOOM.mdu
+call "..\%dimrset_bin:"=%\run_dflowfm.bat" "--partition:ndomains=%NPROC%:icgsolver=6" f34_BLOOM.mdu
 cd ..
 
 rem Computation. Assumption: dimr_config.xml matches NPROC
