@@ -11,12 +11,9 @@ import java.io.File
 
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
-    name = "TestBench validation"
+    name = "TestBench checks"
     buildNumberPattern = "%build.vcs.number%"
-    description = """
-        Runs the TestBench validation. 
-        This includes the pytest test-suite, the formatter check, the linter and the type checker.
-    """.trimIndent()
+    description = "pytest and ruff for test/deltares_testbench."
 
     // The name `coverage.zip` for the pytest coverage report should not be changed.
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.

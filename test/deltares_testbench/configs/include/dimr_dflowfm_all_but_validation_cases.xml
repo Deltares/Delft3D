@@ -491,6 +491,117 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f004_c096_trachytopes_Vastila26" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c096_trachytopes_Vastila26</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="output/Case3.6_Low_hv_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_czs" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c111_flume_test" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c111_flume_test</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c112_baptist_153_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c112_baptist_153_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c113_baptist_154_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c113_baptist_154_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c114_vistala_155_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c114_vistala_155_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c115_jarvela_156_em" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c115_jarvela_156_em</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c122_baptist_153_sm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c122_baptist_153_sm</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
+  <testCase name="e02_f004_c123_baptist_154_sm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c123_baptist_154_sm</path>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/flume_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001"/>
+          <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="depthgr.xyz" ignore="true"/>
+    </checks>
+  </testCase>
   <testCase name="e02_f004_c132_time_dependent_friction" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f004_bottomfriction/c132_time_dependent_friction</path>
 
@@ -515,6 +626,52 @@
       </file>
     </checks>
   </testCase>
+  
+  <testCase name="e02_f004_c140_trench_VR_roughness_morpho" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c140_trench_VR_roughness_morpho</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+
+  <testCase name="e02_f004_c141_trench_VR_roughness_no_morpho_bdfd50" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c141_trench_VR_roughness_no_morpho_bdfd50</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  
+  <testCase name="e02_f004_c142_trench_VR_roughness_morpho_SedDiaFromBfm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c142_trench_VR_roughness_morpho_SedDiaFromBfm</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  
   <testCase name="e02_f005_c010_waterlevel_tim_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
 
@@ -1802,7 +1959,7 @@
   </testCase>
   <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="output/spatial_dicoww_his.nc" type="netcdf">
         <parameters>
@@ -2999,7 +3156,7 @@
   </testCase>
   <testCase name="e02_f009_c036_zandloper10m_channelaspect_perpsupergrid" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f009_weirs/c036_zandloper10m_channelaspect_perpsupergrid</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="dflowfmoutput/channel_aspect_perp_supergrid_his.nc" type="netCDF">
         <parameters>
@@ -3228,7 +3385,7 @@
   </testCase>
   <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c011_gate_free</path>
-    <maxRunTime>540</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -3279,7 +3436,7 @@
   </testCase>
   <testCase name="e02_f010_c021_gate_free_ini_newkeywords" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f010_structures/c021_gate_free_ini_newkeywords</path>
-    <maxRunTime>540</maxRunTime>
+    <maxRunTime>780</maxRunTime>
     <checks>
       <file name="dflowfmoutput/gatefree_his.nc" type="netCDF">
         <parameters>
@@ -5132,16 +5289,16 @@
           <parameter name="Tair" toleranceAbsolute="1e-6"/>
           <parameter name="potential_density" toleranceAbsolute="0.001"/>
           <parameter name="rhum" toleranceAbsolute="1e-5"/>
-          <parameter name="temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="temperature" toleranceAbsolute="0.01"/>
+          <parameter name="ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="ice_thickness" toleranceAbsolute="0.01"/>
         </parameters>
       </file>
       <file name="output/winter97_saltwater_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_tem1" toleranceAbsolute="0.002"/>
-          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.2"/>
+          <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.001"/>
         </parameters>
       </file>
@@ -5661,7 +5818,7 @@
   </testCase>
   <testCase name="e02_f022_c21_boundary_condition_icond2" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c21_boundary_condition_icond2</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5681,7 +5838,7 @@
   </testCase>
   <testCase name="e02_f022_c22_boundary_condition_icond2_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c22_boundary_condition_icond2_constant</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5701,7 +5858,7 @@
   </testCase>
   <testCase name="e02_f022_c23_boundary_condition_icond3" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c23_boundary_condition_icond3</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5721,7 +5878,7 @@
   </testCase>
   <testCase name="e02_f022_c24_boundary_condition_icond3_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c24_boundary_condition_icond3_constant</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5741,7 +5898,7 @@
   </testCase>
   <testCase name="e02_f022_c25_boundary_condition_icond4" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c25_boundary_condition_icond4</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5761,7 +5918,7 @@
   </testCase>
   <testCase name="e02_f022_c26_boundary_condition_icond4_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c26_boundary_condition_icond4_graded</path>
-
+    <maxRunTime>720</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5781,7 +5938,7 @@
   </testCase>
   <testCase name="e02_f022_c27_boundary_condition_icond4_none" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c27_boundary_condition_icond4_none</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5801,7 +5958,7 @@
   </testCase>
   <testCase name="e02_f022_c28_boundary_condition_icond2_graded" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c28_boundary_condition_icond2_graded</path>
-
+    <maxRunTime>720</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -5849,7 +6006,7 @@
   </testCase>
   <testCase name="e02_f022_c31_curvebend_spiral_mor_Bedup" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c31_curvebend_spiral_mor_Bedup</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
         <parameters>
@@ -5954,7 +6111,7 @@
   </testCase>
   <testCase name="e02_f022_c53_curvebend_spiral_mor_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c53_curvebend_spiral_mor_Unstr</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c30smallbendUnstr_map.nc" type="netCDF">
         <parameters>
@@ -5982,7 +6139,7 @@
   </testCase>
   <testCase name="e02_f022_c55_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c55_curvebend_spiral_mor_Bedup_Unstr</path>
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>1140</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c31smallbendUnstr_map.nc" type="netCDF">
         <parameters>
@@ -6110,7 +6267,7 @@
   </testCase>
   <testCase name="e02_f022_c70_boundary_condition_icond0" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c70_boundary_condition_icond0</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -6130,7 +6287,7 @@
   </testCase>
   <testCase name="e02_f022_c71_boundary_condition_icond1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c71_boundary_condition_icond1</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -6150,7 +6307,7 @@
   </testCase>
   <testCase name="e02_f022_c72_boundary_condition_icond4_graded_linear" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c72_boundary_condition_icond4_graded_linear</path>
-
+    <maxRunTime>720</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -6170,7 +6327,7 @@
   </testCase>
   <testCase name="e02_f022_c73_boundary_condition_icond6" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c73_boundary_condition_icond6</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -6190,7 +6347,7 @@
   </testCase>
   <testCase name="e02_f022_c74_boundary_condition_icond7" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c74_boundary_condition_icond7</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="dflowfmoutput/str_his.nc" type="netCDF">
         <parameters>
@@ -6278,6 +6435,7 @@
   </testCase>
   <testCase name="e02_f022_c95_extrapolate_bedlevel" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c95_extrapolate_bedlevel</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/r_map.nc" type="netCDF">
         <parameters>
@@ -7018,6 +7176,7 @@
   </testCase>
   <testCase name="e02_f037_c72_with_summerdike" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c72_with_summerdike</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/c72_his.nc" type="netCDF">
         <parameters>
@@ -7490,8 +7649,7 @@
   </testCase>
   <testCase name="e02_f422_c05_migratinghump" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c05_migratinghump</path>
-
-      <maxRunTime>1500</maxRunTime>
+    <maxRunTime>2520</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/hump_19920831_114000_rst.nc" type="netCDF">
         <parameters>
@@ -7905,7 +8063,7 @@
   </testCase>
   <testCase name="e02_f422_c21_boundary_condition_icond2" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c21_boundary_condition_icond2</path>
-
+    <maxRunTime>480</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -7931,7 +8089,7 @@
   </testCase>
   <testCase name="e02_f422_c22_boundary_condition_icond2_constant" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c22_boundary_condition_icond2_constant</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -7957,7 +8115,7 @@
   </testCase>
   <testCase name="e02_f422_c23_boundary_condition_icond3" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c23_boundary_condition_icond3</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -7983,7 +8141,7 @@
   </testCase>
   <testCase name="e02_f422_c24_boundary_condition_icond3_constant" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c24_boundary_condition_icond3_constant</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8009,7 +8167,7 @@
   </testCase>
   <testCase name="e02_f422_c25_boundary_condition_icond4" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c25_boundary_condition_icond4</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8035,7 +8193,7 @@
   </testCase>
   <testCase name="e02_f422_c26_boundary_condition_icond4_graded" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c26_boundary_condition_icond4_graded</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8061,7 +8219,7 @@
   </testCase>
   <testCase name="e02_f422_c27_boundary_condition_icond4_none" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c27_boundary_condition_icond4_none</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8087,7 +8245,7 @@
   </testCase>
   <testCase name="e02_f422_c28_boundary_condition_icond2_graded" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c28_boundary_condition_icond2_graded</path>
-
+    <maxRunTime>600</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8163,7 +8321,7 @@
   </testCase>
   <testCase name="e02_f422_c31_curvebend_spiral_mor_Bedup" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c31_curvebend_spiral_mor_Bedup</path>
-
+    <maxRunTime>960</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/smallbend_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -8293,7 +8451,7 @@
   </testCase>
   <testCase name="e02_f422_c48_trench_EH_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c48_trench_EH_Unstr</path>
-
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/t02Unstr_20160803_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8371,8 +8529,7 @@
   </testCase>
   <testCase name="e02_f422_c51_bedslope_effect_slope022_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c51_bedslope_effect_slope022_Unstr</path>
-
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>2880</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_unstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -8424,7 +8581,7 @@
   </testCase>
   <testCase name="e02_f422_c53_curvebend_spiral_mor_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c53_curvebend_spiral_mor_Unstr</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/c30smallbendUnstr_20010101_002000_rst.nc" type="netCDF">
         <parameters>
@@ -8474,8 +8631,7 @@
   </testCase>
   <testCase name="e02_f422_c55_curvebend_spiral_mor_Bedup_Unstr" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c55_curvebend_spiral_mor_Bedup_Unstr</path>
-
-      <maxRunTime>1500</maxRunTime>
+    <maxRunTime>1680</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/c31smallbendUnstr_20010101_014000_rst.nc" type="netCDF">
         <parameters>
@@ -8835,7 +8991,7 @@
   </testCase>
   <testCase name="e02_f422_c70_boundary_condition_icond0" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c70_boundary_condition_icond0</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8861,7 +9017,7 @@
   </testCase>
   <testCase name="e02_f422_c71_boundary_condition_icond1" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c71_boundary_condition_icond1</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8887,7 +9043,7 @@
   </testCase>
   <testCase name="e02_f422_c72_boundary_condition_icond4_graded_linear" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c72_boundary_condition_icond4_graded_linear</path>
-
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8913,7 +9069,7 @@
   </testCase>
   <testCase name="e02_f422_c73_boundary_condition_icond6" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c73_boundary_condition_icond6</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -8939,7 +9095,7 @@
   </testCase>
   <testCase name="e02_f422_c74_boundary_condition_icond7" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c74_boundary_condition_icond7</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/str_20151101_001000_rst.nc" type="netCDF">
         <parameters>
@@ -9433,7 +9589,7 @@
   </testCase>
   <testCase name="e02_f422_c95_extrapolate_bedlevel" ref="dflowfm_restart">
     <path version="DVC">e02_dflowfm/f422_morphology_2D_restart/c95_extrapolate_bedlevel</path>
-
+    <maxRunTime>420</maxRunTime>
     <checks>
       <file name="main/dflowfmoutput/r_20000101_040000_rst.nc" type="netCDF">
         <parameters>

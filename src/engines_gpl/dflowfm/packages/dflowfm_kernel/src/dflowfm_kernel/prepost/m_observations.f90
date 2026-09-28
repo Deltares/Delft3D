@@ -586,6 +586,8 @@ contains
       IVAL_ICE_TEMPERATURE = conditional_next_index(hisout%ice_temperature, i)
       IVAL_SNOW_THICKNESS = conditional_next_index(hisout%snow_thickness, i)
       IVAL_SNOW_TEMPERATURE = conditional_next_index(hisout%snow_temperature, i)
+      IVAL_QH_AIR2ICE = conditional_next_index(hisout%qh_air2ice, i)
+      IVAL_QH_ICE2WAT = conditional_next_index(hisout%qh_ice2wat, i)
    end subroutine set_value_indices_for_ice
 
    !> increment the current index and returns it
@@ -629,6 +631,8 @@ contains
       IPNT_ICE_TEMPERATURE = conditional_ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
       IPNT_SNOW_THICKNESS = conditional_ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
       IPNT_SNOW_TEMPERATURE = conditional_ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+      IPNT_QH_AIR2ICE = conditional_ivalpoint(IVAL_QH_AIR2ICE, kmx, nlyrs)
+      IPNT_QH_ICE2WAT = conditional_ivalpoint(IVAL_QH_ICE2WAT, kmx, nlyrs)
    end subroutine set_valobs_pointers_for_ice
 
    !> retrieve pointer of variable in valobs work array

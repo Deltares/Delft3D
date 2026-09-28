@@ -176,6 +176,7 @@
   </testCase>
   <testCase name="e02_f029_c400_bubblescreen_box_model" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c400_bubblescreen_box_model</path>
+    <maxRunTime>1020</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
         <arguments>
@@ -218,6 +219,7 @@
   </testCase>
   <testCase name="e02_f029_c401_bubblescreen_nieuwe_meer" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c401_bubblescreen_nieuwe_meer</path>
+    <maxRunTime>1020</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
         <arguments>

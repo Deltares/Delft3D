@@ -14,7 +14,7 @@ import CsvProcessor
 
 object LinuxTest : BuildType({
 
-    description = "Run TestBench.py within the Docker container on a list of testbench XML files."
+    description = "Run TestBench in the test container."
 
     templates(
         TemplateLinuxAgent,

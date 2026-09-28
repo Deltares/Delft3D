@@ -56,7 +56,7 @@ contains
       use m_flowtimes, only: dts
       use m_transport, only: constituents, itemp, isalt
       use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, &
-                               snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
+                               snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover, freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
       use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, sensible_heat_flux_available, latent_heat_flux_available, relativewind, air_temperature, wx, wy, &
@@ -88,6 +88,8 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
+      real(kind=dp) :: t_freeze !< freezing point, which depends on salinity concentration (degrees)
+      real(kind=dp), parameter :: FREEZING_MARGIN = 0.1_dp
       integer :: cell_index_3D, k_bot, k_top, k2, L, LL, j, j2, ncols
       
       if (ja_icecover /= ICECOVER_NONE) then
@@ -246,20 +248,30 @@ contains
 
             else
                heatsrc0(n) = heatsrc0(n) + solar_radiation_flux * ice_free_area_fraction
+               diffuse_attenuation_coefficient_in_cell(1) = diffuse_attenuation_coefficient(1)
+               if (secchi_depth_is_spatially_varying) then
+                  diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / POOLE_ATKINS_PARAMETER
+               end if
+               ratio = hs(n) / diffuse_attenuation_coefficient_in_cell(1)
+               if (ratio > 4.0_dp) then
+                  explo = 0.0_dp
+               else
+                  explo = exp(-ratio)
+               end if
             end if
 
          end if
 
-         if (kmx > 0 .and. soiltempthick > 0.0_dp) then
+         if (soiltempthick > 0.0_dp) then
             if (solar_radiation_flux > 0.0_dp) then
-               solar_radiation_soil_heat_flux = net_solar_radiation_in_cell * explo
+               solar_radiation_soil_heat_flux = net_solar_radiation_in_cell * explo * ice_free_area_fraction
             else
                solar_radiation_soil_heat_flux = 0.0_dp
             end if
             soil_water_heat_transfer_coefficient = 1.0_dp / (0.5_dp * soiltempthick) ! thermalcond sand = 0.15 -> 4 for dry -> saturated, [weighted_sums/mK]
             bottom_water_temperature = constituents(itemp, k_bot)
             soil_to_water_heat_flux = soil_water_heat_transfer_coefficient * (bottom_water_temperature - tbed(n))
-            heatsrc0(k_bot) = heatsrc0(k_bot) - heat_capacity_water_cell_area * soil_to_water_heat_flux * ice_free_area_fraction
+            heatsrc0(k_bot) = heatsrc0(k_bot) - heat_capacity_water_cell_area * soil_to_water_heat_flux
             rdtsdz = rcpi * dts / soiltempthick
             tbed(n) = (tbed(n) + rdtsdz * (solar_radiation_soil_heat_flux + soil_water_heat_transfer_coefficient * bottom_water_temperature)) / (1.0_dp + soil_water_heat_transfer_coefficient * rdtsdz)
          end if
@@ -354,32 +366,38 @@ contains
 
          ! In case of ice preprocessing of ice quantities
          if (ja_icecover == ICECOVER_SEMTNER) then
-            if (ice_thickness(n) > MIN_ICE_SNOW_THICKNESS .or. (water_temperature_in_cell < 0.1_fp .and. air_temperature(n) < 0.0_fp)) then
+            !
+            ! Compute freezing point
+            ! 
+            if (isalt > 0) then
+               if (kmx == 0) then
+                  salinity = constituents(isalt, n)
+               else
+                  salinity = constituents(isalt, k_top)
+               end if
+            else
+               salinity = backgroundsalinity
+            end if
+            t_freeze = freezing_temperature(salinity)
 
+            qh_air2ice(n) = 0.0_fp
+            qh_ice2wat(n) = 0.0_fp
+            if (ice_thickness(n) > 0.0_fp .or. (water_temperature_in_cell < t_freeze + FREEZING_MARGIN .and. air_temperature(n) < 0.0_dp)) then
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW
                qlong_ice = EMMISIVITY_FACTOR * stf * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity)) * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
 
                qh_air2ice(n) = net_solar_radiation_in_cell + total_heat_flux
 
-               if (isalt > 0) then
-                  if (kmx == 0) then
-                     salinity = constituents(isalt, n)
-                  else
-                     salinity = constituents(isalt, k_top)
-                  end if
-               else
-                  salinity = backgroundsalinity
-               end if
                call preprocess_icecover(n, Qlong_ice, water_temperature_in_cell, salinity, wind_speed_in_cell)
             end if
 
             if (ice_thickness(n) > MIN_ICE_SNOW_THICKNESS) then
-               ! recompute heatsrc0 because of presence of ice
+               ! add under-ice water/ice heat exchange over ice-covered fraction
                if (kmx > 0) then
-                  heatsrc0(k_top) = qh_ice2wat(n) * ice_free_area_fraction
+                  heatsrc0(k_top) = heatsrc0(k_top) + qh_ice2wat(n) * heat_capacity_water_cell_area * ice_area_fraction(n)
                else
-                  heatsrc0(n) = qh_ice2wat(n) * ice_free_area_fraction
+                  heatsrc0(n) = heatsrc0(n) + qh_ice2wat(n) * heat_capacity_water_cell_area * ice_area_fraction(n)
                end if
             end if
          end if

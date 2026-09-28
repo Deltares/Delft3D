@@ -496,8 +496,7 @@ class TestComparisonRunner:
             assert f.read() == "new"
         assert not fs.exists(f"{expected_work_path}/old.txt")
 
-    def test_create_dvc_work_copies_skipped_when_input_download_skipped(self, fs: FakeFilesystem) -> None:
-        # Arrange: H7 receive already has results in input_work, plus a pristine input checkout.
+    def test_create_dvc_work_copies_from_input_when_input_download_skipped(self, fs: FakeFilesystem) -> None:
         settings = TestBenchSettings()
         settings.command_line_settings.skip_download = [PathType.INPUT]
         logger = MagicMock(spec=ConsoleLogger)
@@ -516,9 +515,8 @@ class TestComparisonRunner:
         # Act
         runner._TestSetRunner__create_dvc_work_copies([config])
 
-        # Assert: existing work copy (H7 output) is left intact.
-        assert fs.exists(f"{work_path}/h7_result.txt")
-        assert not fs.exists(f"{work_path}/fresh.txt")
+        assert fs.exists(f"{work_path}/fresh.txt")
+        assert not fs.exists(f"{work_path}/h7_result.txt")
 
     def test_create_dvc_work_copies_from_input_when_not_skipped(self, fs: FakeFilesystem) -> None:
         settings = TestBenchSettings()

@@ -1,46 +1,62 @@
-# Set up clang-format C++ Formatting
-We use clang-format for automatically formatting C++ source files.
-Clang-format will automatically use the src/tools_gpl/pre_c_sumo/.clang-format file for its settings.
-Your editor should be set-up to use clang-format when saving the document.
+\page pre_c_sumo_readme Doxygen setup
 
-## VSCode
-Ensure that the Microsoft C/C++ extension is installed. This ships with clang-format as the default formatter.
-To enable format on save, go to settings (Click on File -> Preferences -> Settings or use the Ctrl+, keyboard shortcut).
-Choose whether you would like to set it for the User (global) or for the Workspace (this project) by clicking on the proper tab.
-Then, go to Text Editor -> Formatting, and tick 'Format On Save.'
+# Doxygen setup
 
-## Visual Studio 2022
-In the Visual Studio Installer, click 'Modify' and check that 'Desktop development with C++' is checked and installed.
-(The optional 'C++ Clang tools for Windows' does not need to be installed).
-Open Visual Studio, and under Tools -> Options -> Text Editor -> Code Cleanup, check 'Run Code Cleanup profile on Save.'
-Then click on 'Configure Code Cleanup', select the profile that was listed earlier, and add 'Format Document (C++)' to it
-by clicking it and using the up arrow. The other options may be removed by clicking the down arrow.
-Then, clang-format will be called upon save.
+This directory contains the documentation sources for preC-SUMO, including the Doxygen pages, diagrams, and supporting files used to explain the runtime flow and configuration.
 
-# Set up clang-tidy static analysis (optional)
-We use clang-tidy to get live feedback while you code in your IDE.
-Clang-tidy will automatically use the src/tools_gpl/pre_c_sumo/.clang-tidy file for its settings.
-Your editor should be set-up to use run clang-tidy in its language server for providing annotations.
+## Doxygen setup and generation
 
-## VSCode
-You can either use the Microsoft C/C++ extension (slow) or the clangd extension (fast) as the language server for C++.
-Clangd will use precompiled and cached files, and compile headers separate from source files,
-so feedback is much faster.
-### clangd extension (recommended)
-Install the clangd extension. It should prompt you to install clangd, confirm that.
-Turn off the intellisense option from the C/C++ extension:
-Go to settings (Click on File -> Preferences -> Settings or use the Ctrl+, keyboard shortcut),
-and in the User or Workspace settings, go to Extensions -> C/C++ -> IntelliSense -> C_Cpp: Intelli Sense Engine and set it to 'disabled.'
-Then, got to Extensions -> clangd -> Arguments, click 'Add Item' and add '--clang-tidy' (without the quotes).
-Further, under Extensions -> clangd -> Fallback Flags, add '-std=c++23' (without the quotes).
-### C/C++ extension
-Go to settings, Extensions -> C/C++ -> Code Analysis and find C_Cpp > Code Analysis > Clang Tidy and set it to 'enabled.'
-Then, go to Extensions -> C/C++ -> IntelliSense and find C_Cpp > Default: Cpp Standard and choose 'c++23.'
-This is much slower than clangd, because it does not cache any of its reading.
+Install the following software tools:
 
-## Visual Studio 2022
-In Visual Studio, clang-tidy can be turned on per project.
-Go to the C++ project (preC-SUMO) in the solution explorer, right click and go to Properties,
-or click on the project and go to Project -> Properties.
-Then, find Code Analysis -> General -> Enable Clang Tidy and set it to 'Yes.'
-It will automatically use the settings from the Visual Studio solution, and also find the project headers.
+- Doxygen 1.13.2 (installed in `C:\Program Files\doxygen`, by default)
+- DrawIO v26.2.15 (installed from the Microsoft Store)
+- Graphviz 12.2.1 (installed in `C:\Program Files\Graphviz`, by default)
+
+The project documentation layout is:
+
+- `docs/source/` — contains the Doxygen source pages, such as the main page and additional `.dox` files
+- `docs/<project>-doxyfile.dxg` — the Doxygen configuration for the project
+- `docs/source/<project>-mainpage.dox` — the project main page
+- `docs/include/` — contains Graphviz `.dot` files, images, and other media used by the documentation
+- `docs/header/` — contains project-specific logos or header graphics
+- `docs/result_doc/` — generated Doxygen output; this is not part of git
+
+The main files used for this module are:
+
+- `src/tools_gpl/pre_c_sumo/docs/source/prec-SUMO-mainpage.dox` — high-level overview and navigation page
+- `src/tools_gpl/pre_c_sumo/docs/include/preC_SUMO_Core_Workflow.dot` — top-level workflow diagram
+- `src/tools_gpl/pre_c_sumo/docs/include/preC_SUMO_Swimlanes.dot` — detailed runtime swimlane diagram
+- `src/tools_gpl/pre_c_sumo/docs/preC-SUMO-doxyfile.dxg` — Doxygen configuration used to generate the docs
+
+### Generate the documentation
+
+#### Option 1: Doxygen GUI
+
+1. Start Doxygen.
+2. Open the configuration file:
+   `src/tools_gpl/pre_c_sumo/docs/preC-SUMO-doxyfile.dxg`
+3. Click Run to generate the documentation.
+4. Open the generated result in:
+   `src/tools_gpl/pre_c_sumo/docs/result_doc/html`
+
+#### Option 2: PowerShell command line
+
+```powershell
+& "C:\Program Files\doxygen\bin\doxygen.exe" "C:\checkouts\Delft3D\src\tools_gpl\pre_c_sumo\docs\preC-SUMO-doxyfile.dxg"
+```
+
+This reads the project Doxygen configuration and writes the generated output to the `result_doc` folder.
+
+For the official Doxygen user guide, see: https://www.doxygen.nl/manual/starting.html
+
+## Recommended reading path
+
+- Start with the main page in `docs/source/prec-SUMO-mainpage.dox` for the high-level story.
+- Use the core workflow diagram to understand the end-to-end runtime sequence.
+- Use the detailed swimlane diagram when you need the operational call flow and timing details.
+- Refresh the generated HTML after changing diagrams or Doxygen pages.
+
+## Related documentation
+
+- [clang-format and clang-tidy setup](include/clang-format-and-tidy.md) — editor configuration for formatting and static analysis
+- [development guidelines](include/guidelines.md) — project conventions and coding expectations

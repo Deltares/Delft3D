@@ -8,7 +8,7 @@ import java.io.File
 
 object ReportVerschilanalyse: BuildType({
     name = "Report"
-    description = "Report verschilanalyse outcome and send email."
+    description = "Report verschilanalyse results and send email."
     maxRunningBuilds = 1
 
     artifactRules = """

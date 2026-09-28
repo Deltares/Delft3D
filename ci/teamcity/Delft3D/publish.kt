@@ -16,8 +16,8 @@ object Publish : BuildType({
         TemplateBuildConcurrency
     )
 
-    name = "Publish Container"
-    description = "Retag and publish container images to Harbor after all previous steps are successful."
+    name = "Publish container"
+    description = "Retag and publish container images to Harbor."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
     allowExternalStatus = true
