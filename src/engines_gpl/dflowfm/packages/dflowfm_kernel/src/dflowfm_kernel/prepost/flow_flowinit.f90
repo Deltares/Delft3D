@@ -141,7 +141,7 @@ contains
          return
       end if
 
-      if (md_flow_solver == 'sequence' .and. (kmx /= 0 .or. ndx2d == 0 .or. ndxi == ndx2d)) then
+      if (md_flow_solver == 'sequence' .and. kmx /= 0) then
          call mess(LEVEL_ERROR, 'FlowSolver=sequence is only supported for 1D/2D models.')
          error = DFM_GENERICERROR
          return
