@@ -419,6 +419,7 @@ module m_flowparameters
       character(len=255) :: restart_file = ' '
       character(len=20) :: restart_date_time = ' '
       logical :: ignore_bl = .true.
+      logical :: ignore_bedcomp = .true.
    end type solver_period
    type(solver_period), allocatable :: solver_sequence(:)
    integer :: solver_period_index = 0
@@ -630,6 +631,7 @@ module m_flowparameters
 
    ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
+   logical :: rst_ignore_bedcomp !< Ignore bed composition on restart file (default: false).
 
    ! Write partition domain file
    integer :: japartdomain !< Write a separate netcdf file for partition domain info., 0: no, 1: yes
@@ -1015,6 +1017,7 @@ contains
       write_surface_data_to_map_file = .false.
 
       jarstignorebl = 0
+      rst_ignore_bedcomp = .false.
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek

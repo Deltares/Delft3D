@@ -34,6 +34,7 @@ contains
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
       use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile
+      use m_flowparameters, only: rst_ignore_bedcomp
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -62,12 +63,15 @@ contains
 
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
 
+      call F90_EXPECT_FALSE(rst_ignore_bedcomp)
+      rst_ignore_bedcomp = .true.
       call writeMDUFile(output_file, ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
 
       call resetFullFlowModel()
       call readMDUFile('test_output.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
+      call F90_EXPECT_TRUE(rst_ignore_bedcomp)
 
       call F90_EXPECT_STREQ(trim(md_obsfile)//c_null_char, trim(tm_md_obsfile)//c_null_char, 'Difference in md_obsfile after read-write-read cycle.')
       call F90_EXPECT_STREQ(trim(md_crsfile)//c_null_char, trim(tm_md_crsfile)//c_null_char, 'Difference in md_crsfile after read-write-read cycle.')

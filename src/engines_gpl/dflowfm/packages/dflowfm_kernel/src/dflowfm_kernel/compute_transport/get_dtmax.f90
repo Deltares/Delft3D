@@ -117,6 +117,7 @@ contains
 
             if (jalimitdtdiff == 0) then
                if (squ(k) > EPS10) then
+                  if (k==495) write(*,*) k, vol1(k), squ(k)
                   dtmax(k) = min(dtmax(k), cflmx * vol1(k) / squ(k))
                end if
             else

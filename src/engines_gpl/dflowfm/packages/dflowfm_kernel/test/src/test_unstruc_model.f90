@@ -42,6 +42,7 @@ contains
         write(unit, '(a)') '[General]', 'fileType = solverSequence', 'fileVersion = 1.0', &
             '[Period]', 'tStart = 0', '[Period]', 'tStart = 1', 'flowSolver = generic1d2d3d', &
             'RestartFile = state_map.nc', 'RestartDateTime = 20250101010000', 'RstIgnoreBl = 0', &
+            'RstIgnoreBedComp = 0', &
             '[Period]', 'tStart = 2', 'flowSolver = frozen1d2d'
         close(unit)
 
@@ -58,6 +59,9 @@ contains
             call F90_EXPECT_TRUE(solver_sequence(1)%ignore_bl)
             call F90_EXPECT_FALSE(solver_sequence(2)%ignore_bl)
             call F90_EXPECT_TRUE(solver_sequence(3)%ignore_bl)
+            call F90_EXPECT_TRUE(solver_sequence(1)%ignore_bedcomp)
+            call F90_EXPECT_FALSE(solver_sequence(2)%ignore_bedcomp)
+            call F90_EXPECT_TRUE(solver_sequence(3)%ignore_bedcomp)
             deallocate(solver_sequence)
         end if
         open(newunit=unit, file=filename, status='old')

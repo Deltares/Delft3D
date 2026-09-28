@@ -12491,6 +12491,7 @@ contains
          end if
       else
          ! Read squ and sqi, optional: only from rst file, so no error check
+         write(*,*) 495, sqi(495), squ(495), '<- before'
          ierr = get_var_and_shift(imapfile, 'squ', squ, tmpvar1, UNC_LOC_W, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                   um%inode_own, um%inode_merge)
          ierr = get_var_and_shift(imapfile, 'sqi', sqi, tmpvar1, UNC_LOC_W, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
@@ -12706,15 +12707,15 @@ contains
          if (jarstignorebl == 0) then
             ierr = get_var_and_shift(imapfile, 'mor_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                      um%inode_own, um%inode_merge)
+            
+            ! morphological time
+            ierr = nf90_inq_varid(imapfile, 'morft', id_morft)
+            ierr = nf90_get_var(imapfile, id_morft, stmpar%morpar%morft0, start=[it_read])
+            stmpar%morpar%morft = stmpar%morpar%morft0
          end if
 
-         ! morphological time
-         ierr = nf90_inq_varid(imapfile, 'morft', id_morft)
-         ierr = nf90_get_var(imapfile, id_morft, stmpar%morpar%morft0, start=[it_read])
-         stmpar%morpar%morft = stmpar%morpar%morft0
-
          ! mfluff
-         if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0 .and. sedsus_read == stmpar%lsedsus) then
+         if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0 .and. sedsus_read == stmpar%lsedsus .and. .not. rst_ignore_bedcomp) then
             ierr = nf90_inq_varid(imapfile, 'mfluff', id_mfluff)
             if (ierr == nf90_noerr) then
                if (allocated(tmpvar)) then
@@ -12741,7 +12742,7 @@ contains
          end if
 
          ! Bed composition
-         if (stmpar%morlyr%settings%iunderlyr > 0 .and. nlyr_read == stmpar%morlyr%settings%nlyr) then
+         if (stmpar%morlyr%settings%iunderlyr > 0 .and. nlyr_read == stmpar%morlyr%settings%nlyr .and. .not. rst_ignore_bedcomp) then
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
                ! bodsed
@@ -12992,6 +12993,7 @@ contains
                end if
             end if
          end if
+         
          ! Update the D50 based on the info in the restart file
          call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
       end if

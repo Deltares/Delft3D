@@ -130,7 +130,7 @@ contains
 
    subroutine load_sequence_restart(iresult)
       use m_flow_flowinit, only: load_restart_file
-      use m_flowparameters, only: solver_sequence, solver_period_index, jarstignorebl
+      use m_flowparameters, only: solver_sequence, solver_period_index, jarstignorebl, rst_ignore_bedcomp
       use m_flowtimes, only: restart_date_time, time0, time1, time_user
       use unstruc_model, only: md_restartfile
       use messagehandling, only: mess, LEVEL_INFO, LEVEL_ERROR
@@ -140,22 +140,26 @@ contains
       character(len=len(md_restartfile)) :: original_file
       character(len=len(restart_date_time)) :: original_date_time
       integer :: original_ignore_bl
+      logical :: original_ignore_bedcomp
       real(kind=dp) :: saved_time0, saved_time1, saved_time_user
       logical :: file_exist
 
       original_file = md_restartfile
       original_date_time = restart_date_time
       original_ignore_bl = jarstignorebl
+      original_ignore_bedcomp = rst_ignore_bedcomp
       saved_time0 = time0
       saved_time1 = time1
       saved_time_user = time_user
       md_restartfile = solver_sequence(solver_period_index)%restart_file
       restart_date_time = solver_sequence(solver_period_index)%restart_date_time
       jarstignorebl = merge(1, 0, solver_sequence(solver_period_index)%ignore_bl)
+      rst_ignore_bedcomp = solver_sequence(solver_period_index)%ignore_bedcomp
       call load_restart_file(file_exist, iresult)
       md_restartfile = original_file
       restart_date_time = original_date_time
       jarstignorebl = original_ignore_bl
+      rst_ignore_bedcomp = original_ignore_bedcomp
       time0 = saved_time0
       time1 = saved_time1
       time_user = saved_time_user

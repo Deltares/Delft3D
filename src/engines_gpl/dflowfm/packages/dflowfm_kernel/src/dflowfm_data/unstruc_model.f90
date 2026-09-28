@@ -1813,6 +1813,7 @@ contains
       call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
       call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
       call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
+      call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp, success)
       if (md_flow_solver == 'sequence') then
          call read_solver_sequence(sequence_file, istat)
          if (istat /= DFM_NOERR) return
@@ -1822,6 +1823,7 @@ contains
             md_restartfile = solver_sequence(1)%restart_file
             restart_date_time = solver_sequence(1)%restart_date_time
             jarstignorebl = merge(1, 0, solver_sequence(1)%ignore_bl)
+            rst_ignore_bedcomp = solver_sequence(1)%ignore_bedcomp
          end if
       end if
 
@@ -2610,6 +2612,7 @@ contains
          call prop_get(block, 'RestartFile', solver_sequence(period)%restart_file)
          call prop_get(block, 'RestartDateTime', solver_sequence(period)%restart_date_time)
          call prop_get(block, 'RstIgnoreBl', solver_sequence(period)%ignore_bl)
+         call prop_get(block, 'RstIgnoreBedComp', solver_sequence(period)%ignore_bedcomp)
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
              len_trim(solver_sequence(period)%restart_file) == 0) exit
       end do
@@ -3849,6 +3852,7 @@ contains
       call prop_set(prop_ptr, 'restart', 'RestartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
       call prop_set(prop_ptr, 'restart', 'RestartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
       call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
+      call prop_set(prop_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp, 'Ignore bed composition from restart (false=no (default), true=yes)')
 
 ! External forcings
       call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification')
