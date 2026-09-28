@@ -123,7 +123,8 @@ contains
          open (newunit=minp0, file=fildep, form=fmttmp, status='old', iostat=ios)
          if (ios /= 0) then
             write (*, *) 'Error opening file:', trim(fildep)
-            success = .false.
+            if (present(errmsg)) errmsg = 'Error opening file:'//trim(fildep)
+            error = .true.
             return
          end if
          success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
@@ -279,10 +280,11 @@ contains
          ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
          !
          ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
-         open (newunit=minp0, file=fildep, form=fmttmp, status='old')
+         open (newunit=minp0, file=fildep, form=fmttmp, status='old', iostat=ios)
          if (ios /= 0) then
             write (*, *) 'Error opening file:', trim(fildep)
-            success = .false.
+            if (present(errmsg)) errmsg = 'Error opening file:'//trim(fildep)
+            error = .true.
             return
          end if
          success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
