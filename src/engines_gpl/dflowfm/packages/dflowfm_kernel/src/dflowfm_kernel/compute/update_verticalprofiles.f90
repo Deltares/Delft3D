@@ -450,6 +450,11 @@ contains
                   call calculate_womegu(womegu, LL)
 
                   if (javakeps >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
+                     ac1 = acL(LL)
+                     ac2 = 1.0_dp - ac1
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
+
                      arLL = ac1 * a1(n1) + ac2 * a1(n2)
                      do L = Lb, Lt - 1
                         k = L - Lb + 1
@@ -720,9 +725,11 @@ contains
 
                      if (javakeps == 3) then ! tureps
                         if (q1(L) + q1(L + 1) > 0) then
+                           n1 = ln(1, LL)
                            kup = ln(1, L)
                            arLL = a1(n1)
                         else
+                           n2 = ln(2, LL)
                            kup = ln(2, L)
                            arLL = a1(n2)
                         end if
@@ -730,6 +737,8 @@ contains
                         dk(k) = dk(k) + eqcu(kup) * volki
                         bk(k) = bk(k) + sqcu(kup) * volki
                      else if (javakeps == 4) then ! tureps
+                        ac1 = acL(LL)
+                        ac2 = 1.0_dp - ac1
                         k1 = ln(1, L)
                         k2 = ln(2, L)
                         volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
