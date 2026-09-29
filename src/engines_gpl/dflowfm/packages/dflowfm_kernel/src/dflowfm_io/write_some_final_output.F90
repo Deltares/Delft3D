@@ -54,7 +54,7 @@ contains
       use m_observations_data, only: mxls
       use unstruc_files, only: defaultFilename
       use m_sediment, only: stm_included
-      use m_transport, only: maserrsed, maserrtra, ITRA1, ITRAN, const_names
+      use m_transport, only: maserrsed, tracer_limiter_mass_error, ITRA1, ITRAN, const_names
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
@@ -65,7 +65,7 @@ contains
 
       implicit none
 
-      integer :: k, i, iconst
+      integer :: k, i, constituent_index, tracer_index
       real(kind=dp) :: frac, tot, dtav
       real(kind=dp) :: f
       real(kind=dp) :: tstop
@@ -241,25 +241,25 @@ contains
             call msg_flush()
          end if
          if (ITRA1 > 0) then
-            if (lowerlimittra >= -1.0e30_dp) then
+            if (tracer_concentration_min_set) then
                msgbuf = ' '
                call msg_flush()
-               write (msgbuf, '(a,ES15.6E3)') 'lowerLimitTracer is set to: ', lowerlimittra
+               write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMin is set to: ', tracer_concentration_min
                call msg_flush()
-               do iconst = ITRA1, ITRAN
-                  i = iconst - ITRA1 + 1
-                     write (msgbuf, '(a,ES15.6E3)') 'mass added to "' // trim(const_names(iconst)) // '" due to lowerLimitTracer :', maserrtra(i, 1)
-                     call msg_flush()
+               do constituent_index = ITRA1, ITRAN
+                  tracer_index = constituent_index - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass added to "'//trim(const_names(constituent_index))//'" due to minimum tracer concentration limitation:', tracer_limiter_mass_error(tracer_index, 1)
+                  call msg_flush()
                end do
             end if
-            if (upperlimittra <= 1.0e30_dp) then
+            if (tracer_concentration_max_set) then
                msgbuf = ' '
                call msg_flush()
-               write (msgbuf, '(a,ES15.6E3)') 'upperLimitTracer is set to: ', upperlimittra
+               write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMax is set to: ', tracer_concentration_max
                call msg_flush()
-               do iconst = ITRA1, ITRAN
-                  i = iconst - ITRA1 + 1
-                  write (msgbuf, '(a,ES15.6E3)') 'mass removed from "' // trim(const_names(iconst)) // '" due to upperLimitTracer :', maserrtra(i, 2)
+               do constituent_index = ITRA1, ITRAN
+                  tracer_index = constituent_index - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass removed from "'//trim(const_names(constituent_index))//'" due to maximum tracer concentration limitation:', tracer_limiter_mass_error(tracer_index, 2)
                   call msg_flush()
                end do
             end if

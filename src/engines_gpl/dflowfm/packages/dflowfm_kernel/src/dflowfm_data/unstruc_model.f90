@@ -537,6 +537,8 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
       use m_array_or_scalar, only: realloc
+      use precision_basics, only: equal
+
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -1227,10 +1229,12 @@ contains
       call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
 
-      call prop_get(md_ptr, 'physics', 'lowerLimitTracer', lowerlimittra)
-      call prop_get(md_ptr, 'physics', 'upperLimitTracer', upperlimittra)
-      if (lowerlimittra >= upperlimittra) then
-         call mess(LEVEL_ERROR, 'In [physics] upperLimitTracer must be greater than lowerLimitTracer')
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min)
+      tracer_concentration_min_set = .not. equal(tracer_concentration_min, -huge(1.0_dp))
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max)
+      tracer_concentration_max_set = .not. equal(tracer_concentration_max, huge(1.0_dp))
+      if (tracer_concentration_min >= tracer_concentration_max) then
+         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
       end if
 
       call prop_get(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
@@ -3414,8 +3418,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
-      call prop_set(prop_ptr, 'physics', 'lowerLimitTracer', lowerlimittra, 'Lower limit of cell centre tracer concentration after transport timestep. Default = -1.0d31 (switched off)')
-      call prop_set(prop_ptr, 'physics', 'upperLimitTracer', upperlimittra, 'Upper limit of cell centre tracer concentration after transport timestep. Default = 1.0d31 (switched off)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep. Default: no limit)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep. Default: no limit)')
 
       call prop_set(prop_ptr, 'physics', 'Smagorinsky', Smagorinsky, 'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'Elder', Elder, 'Elder factor in horizontal turbulence')
