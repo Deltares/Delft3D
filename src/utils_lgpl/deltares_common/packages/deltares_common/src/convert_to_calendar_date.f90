@@ -35,13 +35,13 @@ module m_convert_to_calender_date
 contains
 
    !> Convert a Julian day number to a calendar date (year, month, day).
-   subroutine convert_julian_day_number_to_calender_date(julian_day_number, month, day, year)
+   subroutine convert_julian_day_number_to_calender_date(julian_day_number, year, month, day)
 
    ! Arguments
    integer, intent(in) :: julian_day_number !< Integer julian_day_number day number (days since 4713 BC)
+   integer, intent(out) :: year !< Converted year
    integer, intent(out) :: month !< Converted month of the year
    integer, intent(out) :: day !< Converted day of the month
-   integer, intent(out) :: year !< Converted year
 
    ! Local variables
    integer :: alpha

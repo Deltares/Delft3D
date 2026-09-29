@@ -69,7 +69,7 @@ contains
       days_since_ref = hours_since_ref / 24
 
       ! caldat expects a default-kind integer.
-      call convert_julian_day_number_to_calender_date(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), month, day, year)
+      call convert_julian_day_number_to_calender_date(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), year, month, day)
 
       hour = mod(hours_since_ref, 24_int64)
       minute = mod(minutes_since_ref, 60_int64)
