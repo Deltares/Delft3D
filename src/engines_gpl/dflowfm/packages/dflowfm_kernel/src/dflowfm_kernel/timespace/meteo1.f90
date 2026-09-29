@@ -3333,20 +3333,20 @@ contains
       !   ! return?
       !end if
 
-      if (filetype == arcinfo) then
+      if (filetype == ARCINFO .or. filetype == GEOTIFF) then
 
-         ! Remap method triangulation to bilinear for ArcInfo files.
+         ! Remap method triangulation to bilinear for raster data files.
          if (local_method == METHOD_TRIANGULATION) then
             local_method = METHOD_BILINEAR
-            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
+            msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for raster data. &
                      Method has been set to bilinear interpolation instead.'
             call warn_flush()
          end if
 
       else if (local_method == METHOD_BILINEAR) then
 
-         ! If method is bilinear, but filetype is not ArcInfo, raise error.
-         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         ! If method is bilinear, but filetype is not raster data, raise error.
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for raster data filetypes (ArcInfo and GeoTIFF).'
          call err_flush()
          return
 
