@@ -24,6 +24,16 @@ object StartVerschilanalyse : BuildType({
             finishBuildTrigger {
                 buildType = '${PinAndTag.id}'
                 successfulOnly = true
+                // The default branch is triggered on scheduled weekly build chain runs
+                //   and is automatically compared to the latest release candidate.
+                // Release branches should not run on scheduled weekly runs because 
+                //   we don't want to do automatic comparisons to the latest release candidate.
+                // When we have to do special VA tool runs, we should not use 
+                //   this scheduled trigger. 
+                branchFilter = """
+                    +:<default>
+                    -:all/release/*
+                """.trimIndent()
             }
         }
     }   
