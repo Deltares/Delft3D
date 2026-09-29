@@ -41,15 +41,20 @@ contains
    !> Calculate absolute date time values, given a time in seconds since ref_date.
    !! \see seconds_to_datetimestring
    subroutine date_time_from_ref_date(time_since_ref, ref_date, year, month, day, hour, minute, second)
-      use m_julday
-      use m_convert_to_calender_date
+      use m_julday, only: julday
+      use m_convert_to_calender_date, only: convert_julian_day_number_to_calender_date
       use precision, only: dp
       use iso_fortran_env, only: int64
 
       ! Arguments
       real(kind=dp), intent(in) :: time_since_ref !< Time in seconds since ref_date
       character(len=REF_DATE_LEN), intent(in) :: ref_date !< Reference date
-      integer, intent(out) :: year, month, day, hour, minute, second !< Actual date, split up in year/month, etc.
+      integer, intent(out) :: year !< Actual year
+      integer, intent(out) :: month !< Actual month
+      integer, intent(out) :: day !< Actual day
+      integer, intent(out) :: hour !< Actual hour
+      integer, intent(out) :: minute !< Actual minute
+      integer, intent(out) :: second !< Actual second
 
       ! Local variables
       integer :: ref_julian_day, ref_year, ref_month, ref_day
