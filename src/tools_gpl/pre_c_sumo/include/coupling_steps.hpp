@@ -147,16 +147,6 @@ namespace pre_c_sumo
                                                   double current_time_seconds);
 
     /**
-     * @anchor pre_c_sumo_convert_nf_to_sources_sinks
-     * @brief Convert NF data to sources and sinks to be communicated via preCICE.
-     *
-     * Uses the data referenced in `csumo_settings` to perform the conversion.
-     *
-     * @param csumo_settings Expected C-SUMO settings or a parse error.
-     */
-    void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings);
-
-    /**
      * @anchor pre_c_sumo_convert_nf_to_connected_sink_sources
      * @brief Convert NF2FF near-field output into connected source/sink entries for the FM adapter.
      *
@@ -210,32 +200,12 @@ namespace pre_c_sumo
     convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumo_settings,
                                     const std::vector<NF2FFReader>& nf2ff_readers);
     /**
-     * @anchor pre_c_sumo_send_sources_sinks_to_ff
-     * @brief Send computed sources/sinks to the farfield model.
-     *
-     * Sends the converted sources and sinks to the farfield component.
-     * The demo implementation logs an informational message.
-     *
-     * @param participant Active preCICE participant used to write the exchange data.
-     * @param sources_sinks Source and sink exchange data prepared for the far-field send.
-     */
-    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
-
-    /**
      * @anchor pre_c_sumo_is_diffuser_modelled
      * @brief Query whether the diffuser is modelled explicitly.
      *
      * @return true if the diffuser is modelled, false otherwise.
      */
     bool isDiffuserModelled(const NF2FFReader& diffuser);
-
-    /**
-     * @anchor pre_c_sumo_process_source_locations
-     * @brief Process explicit source locations from NF data.
-     *
-     * Converts NF source information into the format required by the farfield component.
-     */
-    void processSourceLocations();
 
     /**
      * @anchor pre_c_sumo_create_diffuser_model
