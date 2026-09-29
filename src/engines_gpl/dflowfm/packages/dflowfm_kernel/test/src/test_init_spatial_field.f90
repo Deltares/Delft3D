@@ -2,7 +2,7 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
-   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, NCFLOW, JUSTUPDATE
+   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, NCFLOW, JUSTUPDATE
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -115,6 +115,24 @@ contains
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             'validation should reject triangle interpolation for bcascii files')
    end subroutine test_validate_incompatible_mapped_ec_pair
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_field1d_ignores_method_compatibility, test_validate_field1d_ignores_method_compatibility,
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_field1d_method_compatibility, test_validate_field1d_method_compatibility,
+   subroutine test_validate_field1d_method_compatibility() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.ini', forcing_file_type='1dfield', interpolation_method='averaging')
+
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'field1d should accept averaging interpolation')
+      call f90_expect_eq(input%method, METHOD_AVERAGING, 'the field1d averaging method should be parsed')
+
+      call make_test_input(input, forcing_file='dummy.ini', forcing_file_type='1dfield', interpolation_method='constant')
+      threshold_abort = LEVEL_FATAL
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'field1d should reject methods outside its supported method list')
+   end subroutine test_validate_field1d_method_compatibility
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_dflowfm_map_file_type, test_validate_dflowfm_map_file_type,

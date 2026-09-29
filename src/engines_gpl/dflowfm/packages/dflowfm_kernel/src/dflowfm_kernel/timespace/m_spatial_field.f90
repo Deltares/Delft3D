@@ -310,7 +310,7 @@ contains
             call err_flush()
             return
          end if
-   
+
          if (file_extension_conflicts_with_type(input%forcing_file, input%filetype, valid_extensions)) then
             write (msgbuf, '(11a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
@@ -365,7 +365,6 @@ contains
       end if
       input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
 
-      
       if (input%filetype == DATAVALUE .or. .not. input%is_static_field) then
          is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
       else
@@ -409,7 +408,7 @@ contains
       case (ARCINFO)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
       case (FIELD1D)
-         is_valid = method == JUSTUPDATE
+         is_valid = any(method == [JUSTUPDATE, METHOD_AVERAGING])
       case default
          is_valid = .false.
       end select
@@ -454,7 +453,7 @@ contains
       use m_string_utils, only: join_strings
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
-                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
+                                      SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
       character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
       integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
       character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
