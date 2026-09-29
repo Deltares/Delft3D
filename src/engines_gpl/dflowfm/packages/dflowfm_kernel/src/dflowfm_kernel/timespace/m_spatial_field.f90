@@ -372,8 +372,9 @@ contains
       end if
 
       if (.not. is_valid_method_filetype) then
-         write (msgbuf, '(a,a,a,a,a,i0,a,a,a)') 'Invalid method/filetype combination in file ''', trimmed_file_name, ''': [', &
-            trimmed_group_name, ']. Method ', input%method, ' is not supported for dataFileType ''', trim(input%forcing_file_type), '''.'
+         write (msgbuf, '(9a)') 'Invalid method/filetype combination in file ''', trimmed_file_name, ''': [', &
+            trimmed_group_name, ']. interpolationMethod ''', trim(input%interpolation_method), &
+            ''' is not supported for dataFileType ''', trim(input%forcing_file_type), '''.'
          call err_flush()
          return
       end if
