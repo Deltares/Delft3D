@@ -24,11 +24,6 @@ object StartVerschilanalyse : BuildType({
             finishBuildTrigger {
                 buildType = "Delft3D_Publish"
                 successfulOnly = true
-		branchFilter = """
-		    +:<default>
-		    +:main
-		    +:all/release/*
-		""".trimIndent()
             }
         }
     }   
