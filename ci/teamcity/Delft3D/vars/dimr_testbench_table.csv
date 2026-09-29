@@ -26,8 +26,8 @@ fm drtc restart,dimr/dimr_dflowfm_drtc_restart_lnx64.xml,TRUE,FALSE,TRUE,FALSE,T
 fm drtc restart,dimr/dimr_dflowfm_drtc_restart_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm drtc tutorials,dimr/dimr_dflowfm_drtc_tutorials_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm drtc tutorials,dimr/dimr_dflowfm_drtc_tutorials_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Is not used/maintained and fails.
-fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Is not used/maintained and fails.
+fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr/dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves parallel,dimr/dimr_dflowfm_dwaves_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves parallel,dimr/dimr_dflowfm_dwaves_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
