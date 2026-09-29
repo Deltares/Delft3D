@@ -107,7 +107,7 @@ module m_atmospheric_stability
    type(t_scales), dimension(:), allocatable :: scaling_parameters !< Array of scaling parameters
    type(t_fluxes), dimension(:), allocatable :: fluxes !< Array of fluxes
 
-   type(t_options), save :: atm_stability_options !< Time-independent MOST options, set once at initialization.
+   type(t_options) :: atm_stability_options !< Time-independent MOST options, set once at initialization.
 
 contains
 
