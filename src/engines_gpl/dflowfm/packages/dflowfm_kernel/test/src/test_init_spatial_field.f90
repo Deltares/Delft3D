@@ -81,6 +81,42 @@ contains
    end subroutine test_validate_unrecognized_interpolation_method
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_incompatible_static_method_filetype, test_validate_incompatible_static_method_filetype,
+   subroutine test_validate_incompatible_static_method_filetype() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.xyz', forcing_file_type='sample', interpolation_method='constant')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'validation should reject constant interpolation for sample files')
+   end subroutine test_validate_incompatible_static_method_filetype
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unsupported_ec_method_filetype, test_validate_unsupported_ec_method_filetype,
+   subroutine test_validate_unsupported_ec_method_filetype() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='averaging')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'validation should reject methods unsupported by EC for time-dependent files')
+   end subroutine test_validate_unsupported_ec_method_filetype
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_incompatible_mapped_ec_pair, test_validate_incompatible_mapped_ec_pair,
+   subroutine test_validate_incompatible_mapped_ec_pair() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='triangulation')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'validation should reject triangle interpolation for bcascii files')
+   end subroutine test_validate_incompatible_mapped_ec_pair
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_dflowfm_map_file_type, test_validate_dflowfm_map_file_type,
    subroutine test_validate_dflowfm_map_file_type() bind(C)
       type(t_spatial_field_input) :: input
@@ -157,12 +193,15 @@ contains
          '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
          '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
+      character(len=16), parameter :: methods(11) = [character(len=16) :: &
+         '', 'linearSpaceTime', 'linearSpaceTime', 'linearSpaceTime', 'triangulation', 'linearSpaceTime', &
+         'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', 'linearSpaceTime']
       type(t_spatial_field_input) :: input
       integer :: i
 
       do i = 1, size(file_types)
          call make_test_input(input, forcing_file='dummy'//trim(extensions(i)), forcing_file_type=trim(file_types(i)), &
-                              interpolation_method='linearSpaceTime')
+                              interpolation_method=trim(methods(i)))
          call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
       end do

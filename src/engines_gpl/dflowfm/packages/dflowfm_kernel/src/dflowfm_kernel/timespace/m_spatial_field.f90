@@ -244,6 +244,7 @@ contains
       ! Local variables
       logical :: is_successful
       logical :: has_interpolation_method
+      logical :: is_valid_method_filetype
       logical :: target_mask_file_exists
       character(len=:), allocatable :: trimmed_file_name
       character(len=:), allocatable :: trimmed_group_name
@@ -364,6 +365,20 @@ contains
       end if
       input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
 
+      
+      if (input%filetype == DATAVALUE .or. .not. input%is_static_field) then
+         is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
+      else
+         is_valid_method_filetype = is_valid_timespaceinitialfield_method_filetype(input%method, input%filetype)
+      end if
+
+      if (.not. is_valid_method_filetype) then
+         write (msgbuf, '(a,a,a,a,a,i0,a,a,a)') 'Invalid method/filetype combination in file ''', trimmed_file_name, ''': [', &
+            trimmed_group_name, ']. Method ', input%method, ' is not supported for dataFileType ''', trim(input%forcing_file_type), '''.'
+         call err_flush()
+         return
+      end if
+
       select case (trim(input%quantity))
       case ('qext')
          if (jaQext == 0) then
@@ -377,6 +392,62 @@ contains
       is_successful = .true.
 
    end function validate_spatial_field_input
+
+   function is_valid_timespaceinitialfield_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
+                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE
+
+      integer, intent(in) :: method
+      integer, intent(in) :: filetype
+      logical :: is_valid
+
+      select case (method)
+      case (METHOD_CONSTANT)
+         is_valid = filetype == INSIDE_POLYGON
+      case (METHOD_TRIANGULATION, METHOD_AVERAGING)
+         is_valid = any(filetype == [TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW])
+      case (METHOD_BILINEAR)
+         is_valid = filetype == ARCINFO
+      case (JUSTUPDATE)
+         is_valid = filetype == FIELD1D
+      case default
+         is_valid = .false.
+      end select
+   end function is_valid_timespaceinitialfield_method_filetype
+
+   function is_valid_ec_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, &
+                                      TRIANGULATION, METHOD_TRIANGULATION, NCGRID, BCASCII, DATAVALUE, JUSTUPDATE, SPACEANDTIME, SPACEFIRST, &
+                                      WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR, METHOD_BILINEAR
+
+      integer, intent(in) :: method
+      integer, intent(in) :: filetype
+      logical :: is_valid
+
+      is_valid = .false.
+      if (filetype == FILE_TYPE_UNKNOWN) then
+         return
+      end if
+
+      select case (filetype)
+      case (UNIFORM, BCASCII)
+         is_valid = any(method == [JUSTUPDATE, SPACEANDTIME, METHOD_BILINEAR])
+      case (UNIMAGDIR)
+         is_valid = method == SPACEANDTIME
+      case (ARCINFO)
+         is_valid = any(method == [SPACEANDTIME, SPACEFIRST, METHOD_BILINEAR])
+      case (SPIDERWEB)
+         is_valid = method == WEIGHTFACTORS
+      case (CURVI)
+         is_valid = method == WEIGHTFACTORS
+      case (TRIANGULATION)
+         is_valid = method == METHOD_TRIANGULATION
+      case (NCGRID)
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR, METHOD_BILINEAR])
+      case (DATAVALUE)
+         is_valid = method == JUSTUPDATE
+      end select
+   end function is_valid_ec_method_filetype
 
    !> Checks whether a forcing file extension is compatible with its file type.
    function file_extension_conflicts_with_type(forcing_file, file_type, valid_extensions) result(conflicts)
