@@ -38,7 +38,7 @@ contains
    subroutine convert_julian_day_number_to_calender_date(julian_day_number, year, month, day)
 
    ! Arguments
-   integer, intent(in) :: julian_day_number !< Integer julian_day_number day number (days since 4713 BC)
+   integer, intent(in) :: julian_day_number !< Integer Julian day number (days since 4713 BC)
    integer, intent(out) :: year !< Converted year
    integer, intent(out) :: month !< Converted month of the year
    integer, intent(out) :: day !< Converted day of the month
