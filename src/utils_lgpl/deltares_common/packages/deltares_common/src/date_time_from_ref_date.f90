@@ -42,7 +42,7 @@ contains
    !! \see seconds_to_datetimestring
    subroutine date_time_from_ref_date(time_since_ref, ref_date, year, month, day, hour, minute, second)
       use m_julday, only: julday
-      use m_convert_to_calender_date, only: convert_julian_day_number_to_calender_date
+      use m_convert_to_calendar_date, only: convert_julian_day_number_to_calendar_date
       use precision, only: dp
       use iso_fortran_env, only: int64
 
@@ -57,8 +57,8 @@ contains
       integer, intent(out) :: second !< Actual second
 
       ! Local variables
-      integer :: ref_julian_day, ref_year, ref_month, ref_day
-      integer(kind=int64) :: days_since_ref, hours_since_ref, minutes_since_ref, seconds_since_ref
+      integer :: ref_julian_day, ref_year, ref_month, ref_day, days_since_ref
+      integer(kind=int64) :: hours_since_ref, minutes_since_ref, seconds_since_ref
 
       ! Round to seconds/integer to avoid precision issues and ensure datestamps like 20240828_003000 instead of 20240828_002960.
       ! 59.7 seconds is simply rounded to a full minute.
@@ -74,7 +74,7 @@ contains
       days_since_ref = hours_since_ref / 24
 
       ! caldat expects a default-kind integer.
-      call convert_julian_day_number_to_calender_date(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), year, month, day)
+      call convert_julian_day_number_to_calendar_date(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), year, month, day)
 
       hour = mod(hours_since_ref, 24_int64)
       minute = mod(minutes_since_ref, 60_int64)

@@ -27,7 +27,7 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-module m_convert_to_calender_date
+module m_convert_to_calendar_date
    use precision, only: dp
 
    implicit none(type, external)
@@ -35,7 +35,7 @@ module m_convert_to_calender_date
 contains
 
    !> Convert a Julian day number to a calendar date (year, month, day).
-   subroutine convert_julian_day_number_to_calender_date(julian_day_number, year, month, day)
+   subroutine convert_julian_day_number_to_calendar_date(julian_day_number, year, month, day)
 
    ! Arguments
    integer, intent(in) :: julian_day_number !< Integer Julian day number (days since 4713 BC)
@@ -82,5 +82,5 @@ contains
       year = year - 1
    end if
 
-   end subroutine convert_julian_day_number_to_calender_date
-end module m_convert_to_calender_date
+   end subroutine convert_julian_day_number_to_calendar_date
+end module m_convert_to_calendar_date
