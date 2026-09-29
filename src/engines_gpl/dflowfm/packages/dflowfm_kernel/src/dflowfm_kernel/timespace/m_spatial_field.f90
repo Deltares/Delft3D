@@ -393,13 +393,14 @@ contains
 
    end function validate_spatial_field_input
 
+   !> Determines whether a method is accepted for a static forcing file type.
    function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
-                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE
+                       INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
 
-      integer, intent(in) :: method
-      integer, intent(in) :: filetype
-      logical :: is_valid
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
 
       select case (filetype)
       case (INSIDE_POLYGON)
@@ -409,20 +410,22 @@ contains
       case (ARCINFO)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
       case (FIELD1D)
-         is_valid = any(method == [JUSTUPDATE, METHOD_AVERAGING])
+         is_valid = method == JUSTUPDATE
       case default
          is_valid = .false.
       end select
    end function is_valid_static_field_method_filetype
 
+   !> Determines whether a method is accepted for an EC-backed forcing file type.
+   !! Method and file type are FM enumeration values derived from the input strings.
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
-      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, &
-                                      TRIANGULATION, METHOD_TRIANGULATION, NCGRID, BCASCII, DATAVALUE, JUSTUPDATE, SPACEANDTIME, SPACEFIRST, &
-                                      WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR, METHOD_BILINEAR
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
+                       METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
+                       NEAREST_NEIGHBOUR, METHOD_BILINEAR
 
-      integer, intent(in) :: method
-      integer, intent(in) :: filetype
-      logical :: is_valid
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
 
       is_valid = .false.
       if (filetype == FILE_TYPE_UNKNOWN) then
@@ -431,21 +434,19 @@ contains
 
       select case (filetype)
       case (UNIFORM, BCASCII)
-         is_valid = any(method == [JUSTUPDATE, SPACEANDTIME, METHOD_BILINEAR])
+         is_valid = any(method == [SPACEANDTIME, METHOD_BILINEAR])
       case (UNIMAGDIR)
          is_valid = method == SPACEANDTIME
       case (ARCINFO)
-         is_valid = any(method == [SPACEANDTIME, SPACEFIRST, METHOD_BILINEAR])
+         is_valid = method == SPACEANDTIME
       case (SPIDERWEB)
-         is_valid = method == WEIGHTFACTORS
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION])
       case (CURVI)
          is_valid = method == WEIGHTFACTORS
-      case (TRIANGULATION)
-         is_valid = method == METHOD_TRIANGULATION
       case (NCGRID)
          is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR, METHOD_BILINEAR])
       case (DATAVALUE)
-         is_valid = method == JUSTUPDATE
+         is_valid = method == METHOD_CONSTANT
       end select
    end function is_valid_ec_method_filetype
 

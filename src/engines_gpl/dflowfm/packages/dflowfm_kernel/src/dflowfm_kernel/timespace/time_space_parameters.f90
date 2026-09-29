@@ -244,8 +244,10 @@ contains
          method = METHOD_CONSTANT
       case ('1dfield')
          method = JUSTUPDATE
+      case ('spiderweb')
+         method = WEIGHTFACTORS
       case ('datavalue')
-         method = JUSTUPDATE
+         method = METHOD_CONSTANT
       case default
          method = METHOD_UNKNOWN
       end select
