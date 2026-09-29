@@ -2,7 +2,7 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
-   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, NCFLOW
+   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, NCFLOW, JUSTUPDATE
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -204,6 +204,9 @@ contains
                               interpolation_method=trim(methods(i)))
          call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
+         if (i == 1) then
+            call f90_expect_eq(input%method, JUSTUPDATE, 'field1d should default to justupdate')
+         end if
       end do
    end subroutine test_validate_supported_file_type_extensions
    !$f90tw)

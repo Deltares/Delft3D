@@ -401,15 +401,15 @@ contains
       integer, intent(in) :: filetype
       logical :: is_valid
 
-      select case (method)
-      case (METHOD_CONSTANT)
-         is_valid = filetype == INSIDE_POLYGON
-      case (METHOD_TRIANGULATION, METHOD_AVERAGING)
-         is_valid = any(filetype == [TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW])
-      case (METHOD_BILINEAR)
-         is_valid = filetype == ARCINFO
-      case (JUSTUPDATE)
-         is_valid = filetype == FIELD1D
+      select case (filetype)
+      case (INSIDE_POLYGON)
+         is_valid = method == METHOD_CONSTANT
+      case (TRIANGULATION, GEOTIFF, NCFLOW)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
+      case (ARCINFO)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
+      case (FIELD1D)
+         is_valid = method == JUSTUPDATE
       case default
          is_valid = .false.
       end select
