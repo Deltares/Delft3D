@@ -368,7 +368,7 @@ contains
       if (input%filetype == DATAVALUE .or. .not. input%is_static_field) then
          is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
       else
-         is_valid_method_filetype = is_valid_timespaceinitialfield_method_filetype(input%method, input%filetype)
+         is_valid_method_filetype = is_valid_static_field_method_filetype(input%method, input%filetype)
       end if
 
       if (.not. is_valid_method_filetype) then
@@ -393,7 +393,7 @@ contains
 
    end function validate_spatial_field_input
 
-   function is_valid_timespaceinitialfield_method_filetype(method, filetype) result(is_valid)
+   function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
                                       INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE
 
@@ -413,7 +413,7 @@ contains
       case default
          is_valid = .false.
       end select
-   end function is_valid_timespaceinitialfield_method_filetype
+   end function is_valid_static_field_method_filetype
 
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, &
