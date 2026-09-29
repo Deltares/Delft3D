@@ -26,6 +26,7 @@ class swanRecipe(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+        self.folders.generators = os.path.join(self.folders.build, "conan", "generators")
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
@@ -71,4 +72,4 @@ class swanRecipe(ConanFile):
         self.cpp_info.set_property("cmake_target_name", "SWAN::SWAN")
         self.cpp_info.includedirs = ["include"]
         self.cpp_info.libs = ["swan"]
-        self.cpp_info.requires = ["netcdf::netcdf", "netCDF::netcdff", "hdf5::hdf5"]
+        self.cpp_info.requires = ["netcdf::netcdf", "netcdf-fortran::netcdf-fortran", "hdf5::hdf5"]
