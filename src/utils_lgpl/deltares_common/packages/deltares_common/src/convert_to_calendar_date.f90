@@ -27,50 +27,60 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-module m_caldat
+module m_convert_to_calender_date
+   use precision, only: dp
+
    implicit none(type, external)
 
 contains
 
-   subroutine caldat(julian, mm, id, iyyy)
+   !> Convert a Julian day number to a calendar date (year, month, day).
+   subroutine convert_julian_day_number_to_calender_date(julian_day_number, month, day, year)
 
    ! Arguments
-   integer :: julian
-   integer :: mm
-   integer :: id
-   integer :: iyyy
+   integer, intent(in) :: julian_day_number !< Integer julian_day_number day number (days since 4713 BC)
+   integer, intent(out) :: month !< Converted month of the year
+   integer, intent(out) :: day !< Converted day of the month
+   integer, intent(out) :: year !< Converted year
 
    ! Local variables
-   integer :: jalpha, ja, jb, jc, jd, je
-   integer, parameter :: IGREG = 2299161
+   integer :: alpha
+   integer :: a
+   integer :: b
+   integer :: c
+   integer :: d
+   integer :: e
+   integer, parameter :: GREGORIAN_CALENDAR_REFORM_DATE = 2299161 !< Gregorian calendar reform date (October 15, 1582)
 
-   if (julian >= IGREG) then
-      jalpha = int(((julian - 1867216) - 0.25) / 36524.25)
-      ja = julian + 1 + jalpha - int(0.25 * jalpha)
+   if (julian_day_number >= GREGORIAN_CALENDAR_REFORM_DATE) then
+      alpha = int(((julian_day_number - 1867216) - 0.25) / 36524.25)
+      a = julian_day_number + 1 + alpha - int(0.25 * alpha)
    else
-      ja = julian
+      a = julian_day_number
    end if
 
-   jb = ja + 1524
-   jc = int(6680. + ((jb - 2439870) - 122.1) / 365.25)
-   jd = 365 * jc + int(0.25 * jc)
-   je = int((jb - jd) / 30.6001)
-   id = jb - jd - int(30.6001 * je)
-   mm = je - 1
+   ! Convert Julian day number to calendar date using an unknown algorithm
+   b = a + 1524
+   c = int(6680.0_dp + ((b - 2439870) - 122.1_dp) / 365.25_dp)
+   d = 365 * c + int(0.25_dp * c)
+   e = int((b - d) / 30.6001_dp)
+   day = b - d - int(30.6001_dp * e)
+   month = e - 1
 
-   if (mm > 12) then
-      mm = mm - 12
+   if (month > 12) then
+      month = month - 12
    end if
 
-   iyyy = jc - 4715
+   year = c - 4715
 
-   if (mm > 2) then
-      iyyy = iyyy - 1
+   if (month > 2) then
+      year = year - 1
    end if
 
-   if (iyyy <= 0) then 
-      iyyy = iyyy - 1
+   ! Correction for years before the common era (BC)
+   if (year <= 0) then 
+      year = year - 1
    end if
 
-   end subroutine caldat
-end module m_caldat
+   end subroutine convert_julian_day_number_to_calender_date
+end module m_convert_to_calender_date

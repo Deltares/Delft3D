@@ -42,7 +42,7 @@ contains
    !! \see seconds_to_datetimestring
    subroutine date_time_from_ref_date(time_since_ref, ref_date, year, month, day, hour, minute, second)
       use m_julday
-      use m_caldat
+      use m_convert_to_calender_date
       use precision, only: dp
       use iso_fortran_env, only: int64
 
@@ -69,11 +69,11 @@ contains
       days_since_ref = hours_since_ref / 24
 
       ! caldat expects a default-kind integer.
-      call caldat(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), month, day, year)
+      call convert_julian_day_number_to_calender_date(ref_julian_day + int(days_since_ref, kind=kind(ref_julian_day)), month, day, year)
 
-      hour = mod(hours_since_ref, 24)
-      minute = mod(minutes_since_ref, 60)
-      second = mod(seconds_since_ref, 60)
+      hour = mod(hours_since_ref, 24_int64)
+      minute = mod(minutes_since_ref, 60_int64)
+      second = mod(seconds_since_ref, 60_int64)
 
    end subroutine date_time_from_ref_date
 end module m_date_time_from_ref_date
