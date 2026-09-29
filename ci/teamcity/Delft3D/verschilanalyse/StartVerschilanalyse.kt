@@ -22,7 +22,7 @@ object StartVerschilanalyse : BuildType({
     if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
         triggers {
             finishBuildTrigger {
-                buildType = "Delft3D_Publish"
+                buildType = "PinAndTag"
                 successfulOnly = true
             }
         }
