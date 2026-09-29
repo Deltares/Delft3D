@@ -230,6 +230,12 @@ contains
       select case (str_tolower(trim(string)))
       case ('bcascii')
          method = SPACEANDTIME
+      case ('unimagdir')
+         method = SPACEANDTIME
+      case ('curvigrid')
+         method = WEIGHTFACTORS
+      case ('geotiff')
+         method = METHOD_TRIANGULATION
       case ('map')
          method = METHOD_TRIANGULATION
       case ('netcdf')

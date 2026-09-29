@@ -3,7 +3,7 @@ module test_init_spatial_field
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
-                                  WEIGHTFACTORS_EXTRAPOLATION, NCFLOW, JUSTUPDATE
+                                  WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -210,8 +210,8 @@ contains
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
          '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
       character(len=16), parameter :: methods(11) = [character(len=16) :: &
-         '', 'linearSpaceTime', 'linearSpaceTime', 'linearSpaceTime', 'triangulation', 'linearSpaceTime', &
-         'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', 'linearSpaceTime']
+         '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
+         'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
       type(t_spatial_field_input) :: input
       integer :: i
 
@@ -222,6 +222,12 @@ contains
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
          if (i == 1) then
             call f90_expect_eq(input%method, JUSTUPDATE, 'field1d should default to justupdate')
+         else if (i == 4) then
+            call f90_expect_eq(input%method, WEIGHTFACTORS, 'curvigrid should default to weightfactors')
+         else if (i == 5) then
+            call f90_expect_eq(input%method, METHOD_TRIANGULATION, 'geotiff should default to triangulation')
+         else if (i == 11) then
+            call f90_expect_eq(input%method, SPACEANDTIME, 'unimagdir should default to spaceandtime')
          end if
       end do
    end subroutine test_validate_supported_file_type_extensions
