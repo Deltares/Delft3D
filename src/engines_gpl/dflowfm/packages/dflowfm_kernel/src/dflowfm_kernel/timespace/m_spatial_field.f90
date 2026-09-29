@@ -405,9 +405,9 @@ contains
       select case (filetype)
       case (INSIDE_POLYGON)
          is_valid = method == METHOD_CONSTANT
-      case (TRIANGULATION, GEOTIFF, NCFLOW)
+      case (TRIANGULATION, NCFLOW)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
-      case (ARCINFO)
+      case (ARCINFO, GEOTIFF)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
       case (FIELD1D)
          is_valid = method == JUSTUPDATE
