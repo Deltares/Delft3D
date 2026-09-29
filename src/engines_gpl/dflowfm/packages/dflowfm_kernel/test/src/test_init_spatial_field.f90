@@ -68,69 +68,100 @@ contains
       end if
    end subroutine make_test_input
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unrecognized_interpolation_method, test_validate_unrecognized_interpolation_method,
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_unknown_interpolation_method_string, test_validate_rejects_unknown_interpolation_method_string,
    !> An unrecognized interpolationMethod= string leaves method at -1 and must fail.
    !! This branch is never exercised by integration tests because they always use
    !! valid file types with known method strings.
-   subroutine test_validate_unrecognized_interpolation_method() bind(C)
+   subroutine test_validate_rejects_unknown_interpolation_method_string() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
       call make_test_input(input, interpolation_method='this_method_does_not_exist')
       threshold_abort = LEVEL_FATAL
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
-   end subroutine test_validate_unrecognized_interpolation_method
+   end subroutine test_validate_rejects_unknown_interpolation_method_string
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_incompatible_static_method_filetype, test_validate_incompatible_static_method_filetype,
-   subroutine test_validate_incompatible_static_method_filetype() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_constant_method_for_sample_file, test_validate_rejects_constant_method_for_sample_file,
+   subroutine test_validate_rejects_constant_method_for_sample_file() bind(C)
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.xyz', forcing_file_type='sample', interpolation_method='constant')
       threshold_abort = LEVEL_FATAL
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            'validation should reject constant interpolation for sample files')
-   end subroutine test_validate_incompatible_static_method_filetype
+                            'sample files should reject constant interpolation')
+   end subroutine test_validate_rejects_constant_method_for_sample_file
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unsupported_ec_method_filetype, test_validate_unsupported_ec_method_filetype,
-   subroutine test_validate_unsupported_ec_method_filetype() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_averaging_method_for_bcascii, test_validate_rejects_averaging_method_for_bcascii,
+   subroutine test_validate_rejects_averaging_method_for_bcascii() bind(C)
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='averaging')
       threshold_abort = LEVEL_FATAL
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            'validation should reject methods unsupported by EC for time-dependent files')
-   end subroutine test_validate_unsupported_ec_method_filetype
+                            'bcascii files should reject averaging interpolation')
+   end subroutine test_validate_rejects_averaging_method_for_bcascii
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_incompatible_mapped_ec_pair, test_validate_incompatible_mapped_ec_pair,
-   subroutine test_validate_incompatible_mapped_ec_pair() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_triangulation_method_for_bcascii, test_validate_rejects_triangulation_method_for_bcascii,
+   subroutine test_validate_rejects_triangulation_method_for_bcascii() bind(C)
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='triangulation')
       threshold_abort = LEVEL_FATAL
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            'validation should reject triangle interpolation for bcascii files')
-   end subroutine test_validate_incompatible_mapped_ec_pair
+                            'bcascii files should reject triangulation interpolation')
+   end subroutine test_validate_rejects_triangulation_method_for_bcascii
    !$f90tw)
 
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_spiderweb_method_agnostic, test_validate_spiderweb_method_agnostic,
-   !> A method ignored by the spiderweb converter should not be rejected by validation.
-   subroutine test_validate_spiderweb_method_agnostic() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_defaults_to_weightfactors, test_validate_spiderweb_defaults_to_weightfactors,
+   subroutine test_validate_spiderweb_defaults_to_weightfactors() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb')
+
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                           'spiderweb should use its default when interpolationMethod is omitted')
+      call f90_expect_eq(input%method, WEIGHTFACTORS, 'spiderweb should default to weightfactors')
+   end subroutine test_validate_spiderweb_defaults_to_weightfactors
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_accepts_linearspacetime_extrapolation, test_validate_spiderweb_accepts_linearspacetime_extrapolation,
+   subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation() bind(C)
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb', &
                            interpolation_method='linearSpaceTime', is_extrapolation_allowed=.true.)
 
       call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                           'spiderweb should accept methods ignored by its converter')
-      call f90_expect_eq(input%method, WEIGHTFACTORS_EXTRAPOLATION, 'spiderweb extrapolation method should be parsed')
-   end subroutine test_validate_spiderweb_method_agnostic
+                           'spiderweb should accept linearSpaceTime with extrapolation enabled')
+      call f90_expect_eq(input%method, WEIGHTFACTORS_EXTRAPOLATION, &
+                         'linearSpaceTime with extrapolation should select weightfactors_extrapolation')
+   end subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_rejects_constant_method, test_validate_spiderweb_rejects_constant_method,
+   subroutine test_validate_spiderweb_rejects_constant_method() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb', interpolation_method='constant')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'spiderweb should reject constant interpolation because its default is weightfactors')
+   end subroutine test_validate_spiderweb_rejects_constant_method
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_dflowfm_map_file_type, test_validate_dflowfm_map_file_type,
@@ -203,8 +234,9 @@ contains
    end subroutine test_validate_file_type_extension_mismatch
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_supported_file_type_extensions, test_validate_supported_file_type_extensions,
-   subroutine test_validate_supported_file_type_extensions() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_supported_extensions_select_effective_methods, test_validate_supported_extensions_select_effective_methods,
+   subroutine test_validate_supported_extensions_select_effective_methods() bind(C)
       character(len=16), parameter :: file_types(11) = [character(len=16) :: &
          '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
@@ -212,6 +244,9 @@ contains
       character(len=16), parameter :: methods(11) = [character(len=16) :: &
          '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
          'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
+      integer, parameter :: expected_methods(11) = [JUSTUPDATE, SPACEANDTIME, SPACEANDTIME, WEIGHTFACTORS, &
+                                                     METHOD_TRIANGULATION, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
+                                                     WEIGHTFACTORS, SPACEANDTIME, SPACEANDTIME]
       type(t_spatial_field_input) :: input
       integer :: i
 
@@ -220,17 +255,9 @@ contains
                               interpolation_method=trim(methods(i)))
          call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
-         if (i == 1) then
-            call f90_expect_eq(input%method, JUSTUPDATE, 'field1d should default to justupdate')
-         else if (i == 4) then
-            call f90_expect_eq(input%method, WEIGHTFACTORS, 'curvigrid should default to weightfactors')
-         else if (i == 5) then
-            call f90_expect_eq(input%method, METHOD_TRIANGULATION, 'geotiff should default to triangulation')
-         else if (i == 11) then
-            call f90_expect_eq(input%method, SPACEANDTIME, 'unimagdir should default to spaceandtime')
-         end if
+         call f90_expect_eq(input%method, expected_methods(i), trim(file_types(i))//' should select the expected effective method')
       end do
-   end subroutine test_validate_supported_file_type_extensions
+   end subroutine test_validate_supported_extensions_select_effective_methods
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unknown_file_extension, test_validate_unknown_file_extension,
@@ -292,8 +319,8 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field,
-   !$f90tw test_validate_data_value_with_datavalue_type_succeeds, test_validate_data_value_with_datavalue_type_succeeds,
-   subroutine test_validate_data_value_with_datavalue_type_succeeds() bind(C)
+   !$f90tw test_validate_datavalue_type_accepts_constant_method, test_validate_datavalue_type_accepts_constant_method,
+   subroutine test_validate_datavalue_type_accepts_constant_method() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
 
@@ -305,7 +332,7 @@ contains
       call f90_expect_true(success, "dataValue may explicitly use dataFileType=datavalue")
       call f90_expect_eq(input%filetype, DATAVALUE)
       call f90_expect_eq(input%method, METHOD_CONSTANT, 'dataValue should accept constant interpolation')
-   end subroutine test_validate_data_value_with_datavalue_type_succeeds
+   end subroutine test_validate_datavalue_type_accepts_constant_method
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field,
