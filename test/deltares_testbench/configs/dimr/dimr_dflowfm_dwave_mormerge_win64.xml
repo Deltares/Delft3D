@@ -126,7 +126,7 @@
 <testCases>
 	<testCase name="e124_f01_c01_trench_VanRijn1993_mormerge_wave_e23_f03_c01" ref="dflowfm_default">
 		<path version="DVC">e124_dflowfm-dwaves-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_wave_e23_f03_c01</path>
-		
+		<maxRunTime>1800</maxRunTime>
 		<programs>
 			<program ref="mormerge">
 				<workingDirectory>merge</workingDirectory>
@@ -173,7 +173,7 @@
 
 	<testCase name="e124_f02_c01_groin_mormerge_wave_sedmor" ref="dflowfm_default">
 		<path version="DVC">e124_dflowfm-dwaves-mormerge/f02_mergedtuser/c01_groin_mormerge_wave_sedmor</path>
-		
+		<maxRunTime>1800</maxRunTime>
 		<programs>
 			<program ref="mormerge">
 				<workingDirectory>merge</workingDirectory>
