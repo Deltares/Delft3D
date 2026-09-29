@@ -22,7 +22,7 @@ object StartVerschilanalyse : BuildType({
     if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
         triggers {
             finishBuildTrigger {
-                buildType = "PinAndTag"
+                buildType = '${PinAndTag.id}'
                 successfulOnly = true
             }
         }
