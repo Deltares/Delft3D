@@ -241,7 +241,7 @@ contains
             call msg_flush()
          end if
          if (ITRA1 > 0) then
-            if (tracer_concentration_min_set) then
+            if (tracer_concentration_min_enabled) then
                msgbuf = ' '
                call msg_flush()
                write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMin is set to: ', tracer_concentration_min
@@ -252,7 +252,7 @@ contains
                   call msg_flush()
                end do
             end if
-            if (tracer_concentration_max_set) then
+            if (tracer_concentration_max_enabled) then
                msgbuf = ' '
                call msg_flush()
                write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMax is set to: ', tracer_concentration_max

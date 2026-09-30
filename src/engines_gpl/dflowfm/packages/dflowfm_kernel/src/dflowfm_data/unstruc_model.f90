@@ -1229,10 +1229,8 @@ contains
       call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
 
-      call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min)
-      tracer_concentration_min_set = .not. equal(tracer_concentration_min, -huge(1.0_dp))
-      call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max)
-      tracer_concentration_max_set = .not. equal(tracer_concentration_max, huge(1.0_dp))
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, tracer_concentration_min_enabled)
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, tracer_concentration_max_enabled)
       if (tracer_concentration_min >= tracer_concentration_max) then
          call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
       end if

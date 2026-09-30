@@ -67,8 +67,8 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
       use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
-                            temperature_min, tracer_concentration_min, tracer_concentration_min_set, tracer_concentration_max, &
-                            tracer_concentration_max_set
+                            temperature_min, tracer_concentration_min, tracer_concentration_min_enabled, tracer_concentration_max, &
+                            tracer_concentration_max_enabled
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, tracer_limiter_mass_error, itra1, itran, const_names
@@ -127,7 +127,7 @@ contains
          end if
       end if
 
-      if (itra1 > 0 .and. tracer_concentration_min_set) then
+      if (itra1 > 0 .and. tracer_concentration_min_enabled) then
          do constituent_index = ITRA1, ITRAN
             cells_with_min_limit = 0
             tracer_index = constituent_index - ITRA1 + 1
@@ -150,7 +150,7 @@ contains
          end do
       end if
 
-      if (itra1 > 0 .and. tracer_concentration_max_set) then
+      if (itra1 > 0 .and. tracer_concentration_max_enabled) then
          do constituent_index = ITRA1, ITRAN
             cells_with_max_limit = 0
             tracer_index = constituent_index - ITRA1 + 1
