@@ -86,6 +86,11 @@ module m_physcoef
    integer, parameter :: difmolsed = 0 !< diffusivity of sediment
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
+   real(kind=dp) :: tracer_concentration_min !< lower limit for tracer concentration
+   logical :: tracer_concentration_min_enabled !< is lower limit for tracer concentration?
+   real(kind=dp) :: tracer_concentration_max !< upper limit for tracer concentration
+   logical :: tracer_concentration_max_enabled !< is upper limit for tracer concentration?
+
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
 
@@ -180,6 +185,10 @@ contains
       droot = 0.5_dp
       dstem = 0.5_dp
       frcu_no_vegetation = 2.3e-2_dp
+      tracer_concentration_min = -huge(1.0_dp)
+      tracer_concentration_min_enabled = .false.
+      tracer_concentration_max = huge(1.0_dp)
+      tracer_concentration_max_enabled = .false.
    end subroutine default_physcoef
 
    !> Calculates derived coefficients.
