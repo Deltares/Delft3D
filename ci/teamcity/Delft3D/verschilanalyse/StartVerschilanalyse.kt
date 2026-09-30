@@ -140,7 +140,7 @@ object StartVerschilanalyse : BuildType({
                 # define what apptainer image we should use
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
-                    --apptainer='%va_harbor_protocol%://%dep.Delft3D_Publish.destination_image_specific%' \
+                    --apptainer='%va_harbor_protocol%://%dep.${Publish.id}.destination_image_specific%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
