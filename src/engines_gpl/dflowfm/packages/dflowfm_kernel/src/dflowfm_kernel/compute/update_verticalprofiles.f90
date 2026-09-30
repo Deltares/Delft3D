@@ -893,7 +893,6 @@ contains
    end subroutine calculate_drhodz
 
    !> Lax-inspired time integration method to couple turbulence quantities horizontally
-   !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
    subroutine apply_horizontal_coupling(flow_link, tur_link, tur_node, dtiL)
       use m_flow, only: lbot, ltop, zws, tur_time_int_factor, tur_time_int_method
       use m_flowgeom, only: ln
