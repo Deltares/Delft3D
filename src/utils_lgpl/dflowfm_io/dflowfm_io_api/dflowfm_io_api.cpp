@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-static std::string last_error;
-
 #define ENSURE_ARGUMENT_NOT_NULL(arg) \
     do { \
         if (!(arg)) \
@@ -23,10 +21,7 @@ static std::string last_error;
 
 namespace
 {
-    dflowfm_io::MduDocument* asDocument(mdu_handle_t handle)
-    {
-        return static_cast<dflowfm_io::MduDocument*>(handle);
-    }
+    std::string last_error;
 
     dflowfm_io_result_t exceptionToResult(const std::function<void()>& func)
     {
@@ -81,22 +76,27 @@ namespace
     }
 } // namespace
 
+struct mdu_handle_t
+{
+    dflowfm_io::MduDocument mduDocument;
+};
+
 const char* dflowfm_io_get_last_error()
 {
     return last_error.c_str();
 }
 
-dflowfm_io_result_t mdu_create(mdu_handle_t* handle_out)
+dflowfm_io_result_t mdu_create(mdu_handle_t** handle_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle_out);
     
     return exceptionToResult([&]()
     {
-        *handle_out = new dflowfm_io::MduDocument();
+        *handle_out = new mdu_handle_t();
     });
 }
 
-dflowfm_io_result_t mdu_destroy(mdu_handle_t* handle)
+dflowfm_io_result_t mdu_destroy(mdu_handle_t** handle)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
 
@@ -104,24 +104,24 @@ dflowfm_io_result_t mdu_destroy(mdu_handle_t* handle)
     {
         if (*handle)
         {
-            delete asDocument(*handle);
+            delete *handle;
             *handle = nullptr;
         }
     });
 }
 
-dflowfm_io_result_t mdu_load_from_file(mdu_handle_t handle, const char* filename)
+dflowfm_io_result_t mdu_load_from_file(mdu_handle_t* handle, const char* filename)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(filename);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->Load(std::filesystem::path(filename));
+        handle->mduDocument.Load(std::filesystem::path(filename));
     });
 }
 
-dflowfm_io_result_t mdu_load_from_string(mdu_handle_t handle, const char* data, uint64_t size)
+dflowfm_io_result_t mdu_load_from_string(mdu_handle_t* handle, const char* data, uint64_t size)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(data);
@@ -129,22 +129,22 @@ dflowfm_io_result_t mdu_load_from_string(mdu_handle_t handle, const char* data, 
     return exceptionToResult([&]()
     {
         std::istringstream stream(std::string(data, size));
-        asDocument(handle)->Load(stream);
+        handle->mduDocument.Load(stream);
     });
 }
 
-dflowfm_io_result_t mdu_save_to_file(mdu_handle_t handle, const char* filename)
+dflowfm_io_result_t mdu_save_to_file(mdu_handle_t* handle, const char* filename)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(filename);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->Save(std::filesystem::path(filename));
+        handle->mduDocument.Save(std::filesystem::path(filename));
     });
 }
 
-dflowfm_io_result_t mdu_save_to_string(mdu_handle_t handle, const char** data_out)
+dflowfm_io_result_t mdu_save_to_string(mdu_handle_t* handle, const char** data_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(data_out);
@@ -154,13 +154,13 @@ dflowfm_io_result_t mdu_save_to_string(mdu_handle_t handle, const char** data_ou
     return exceptionToResult([&]()
     {
         std::ostringstream stream;
-        asDocument(handle)->Save(stream);
+        handle->mduDocument.Save(stream);
         stored_string = stream.str();
         *data_out = stored_string.c_str();
     });
 }
 
-dflowfm_io_result_t mdu_get_int(mdu_handle_t handle, const char* key, int32_t* int_out)
+dflowfm_io_result_t mdu_get_int(mdu_handle_t* handle, const char* key, int32_t* int_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -168,11 +168,11 @@ dflowfm_io_result_t mdu_get_int(mdu_handle_t handle, const char* key, int32_t* i
 
     return exceptionToResult([&]()
     {
-        *int_out = asDocument(handle)->GetValue<int>(key);
+        *int_out = handle->mduDocument.GetValue<int>(key);
     });
 }
 
-dflowfm_io_result_t mdu_get_bool(mdu_handle_t handle, const char* key, dflowfm_io_bool_t* bool_out)
+dflowfm_io_result_t mdu_get_bool(mdu_handle_t* handle, const char* key, dflowfm_io_bool_t* bool_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -180,11 +180,11 @@ dflowfm_io_result_t mdu_get_bool(mdu_handle_t handle, const char* key, dflowfm_i
 
     return exceptionToResult([&]()
     {
-        *bool_out = asDocument(handle)->GetValue<bool>(key) ? DFLOWFM_IO_TRUE : DFLOWFM_IO_FALSE;
+        *bool_out = handle->mduDocument.GetValue<bool>(key) ? DFLOWFM_IO_TRUE : DFLOWFM_IO_FALSE;
     });
 }
 
-dflowfm_io_result_t mdu_get_double(mdu_handle_t handle, const char* key, double* double_out)
+dflowfm_io_result_t mdu_get_double(mdu_handle_t* handle, const char* key, double* double_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -192,11 +192,11 @@ dflowfm_io_result_t mdu_get_double(mdu_handle_t handle, const char* key, double*
 
     return exceptionToResult([&]()
     {
-        *double_out = asDocument(handle)->GetValue<double>(key);
+        *double_out = handle->mduDocument.GetValue<double>(key);
     });
 }
 
-dflowfm_io_result_t mdu_get_string(mdu_handle_t handle, const char* key, const char** string_out)
+dflowfm_io_result_t mdu_get_string(mdu_handle_t* handle, const char* key, const char** string_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -206,12 +206,12 @@ dflowfm_io_result_t mdu_get_string(mdu_handle_t handle, const char* key, const c
 
     return exceptionToResult([&]()
     {
-        stored_string = asDocument(handle)->GetValue<std::string>(key);
+        stored_string = handle->mduDocument.GetValue<std::string>(key);
         *string_out = stored_string.c_str();
     });
 }
 
-dflowfm_io_result_t mdu_get_path(mdu_handle_t handle, const char* key, const char** path_out)
+dflowfm_io_result_t mdu_get_path(mdu_handle_t* handle, const char* key, const char** path_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -221,12 +221,12 @@ dflowfm_io_result_t mdu_get_path(mdu_handle_t handle, const char* key, const cha
 
     return exceptionToResult([&]()
     {
-        stored_path = asDocument(handle)->GetValue<std::filesystem::path>(key).string();
+        stored_path = handle->mduDocument.GetValue<std::filesystem::path>(key).string();
         *path_out = stored_path.c_str();
     });
 }
 
-dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64_t* epoch_out, dflowfm_io_bool_t* has_value_out)
+dflowfm_io_result_t mdu_get_datetime(mdu_handle_t* handle, const char* key, int64_t* epoch_out, dflowfm_io_bool_t* has_value_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -235,13 +235,13 @@ dflowfm_io_result_t mdu_get_datetime(mdu_handle_t handle, const char* key, int64
 
     return exceptionToResult([&]()
     {
-        const auto& tp = asDocument(handle)->GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
+        const auto& tp = handle->mduDocument.GetValue<std::optional<std::chrono::system_clock::time_point>>(key);
         *epoch_out = tp.has_value() ? std::chrono::duration_cast<std::chrono::seconds>(tp->time_since_epoch()).count() : 0;
         *has_value_out = tp.has_value() ? DFLOWFM_IO_TRUE : DFLOWFM_IO_FALSE;
     });
 }
 
-dflowfm_io_result_t mdu_get_string_enum(mdu_handle_t handle, const char* key, const char** enum_out)
+dflowfm_io_result_t mdu_get_string_enum(mdu_handle_t* handle, const char* key, const char** enum_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -251,12 +251,12 @@ dflowfm_io_result_t mdu_get_string_enum(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        stored_enum = asDocument(handle)->GetValue<dflowfm_io::StringEnumValue>(key).value;
+        stored_enum = handle->mduDocument.GetValue<dflowfm_io::StringEnumValue>(key).value;
         *enum_out = stored_enum.c_str();
     });
 }
 
-dflowfm_io_result_t mdu_get_int_enum(mdu_handle_t handle, const char* key, int32_t* enum_out)
+dflowfm_io_result_t mdu_get_int_enum(mdu_handle_t* handle, const char* key, int32_t* enum_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -264,11 +264,11 @@ dflowfm_io_result_t mdu_get_int_enum(mdu_handle_t handle, const char* key, int32
 
     return exceptionToResult([&]()
     {
-        *enum_out = asDocument(handle)->GetValue<dflowfm_io::IntEnumValue>(key).value;
+        *enum_out = handle->mduDocument.GetValue<dflowfm_io::IntEnumValue>(key).value;
     });
 }
 
-dflowfm_io_result_t mdu_get_string_list(mdu_handle_t handle, const char* key, const char*** string_list_out, uint64_t* size_out)
+dflowfm_io_result_t mdu_get_string_list(mdu_handle_t* handle, const char* key, const char*** string_list_out, uint64_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -277,12 +277,12 @@ dflowfm_io_result_t mdu_get_string_list(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        auto strings = asDocument(handle)->GetValue<std::vector<std::string>>(key);
+        auto strings = handle->mduDocument.GetValue<std::vector<std::string>>(key);
         storeStaticStrings(std::move(strings), string_list_out, size_out);
     });
 }
 
-dflowfm_io_result_t mdu_get_path_list(mdu_handle_t handle, const char* key, const char*** path_list_out, uint64_t* size_out)
+dflowfm_io_result_t mdu_get_path_list(mdu_handle_t* handle, const char* key, const char*** path_list_out, uint64_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -291,7 +291,7 @@ dflowfm_io_result_t mdu_get_path_list(mdu_handle_t handle, const char* key, cons
 
     return exceptionToResult([&]()
     {
-        const auto& paths = asDocument(handle)->GetValue<std::vector<std::filesystem::path>>(key);
+        const auto& paths = handle->mduDocument.GetValue<std::vector<std::filesystem::path>>(key);
 
         std::vector<std::string> path_strings;
         path_strings.reserve(paths.size());
@@ -301,7 +301,7 @@ dflowfm_io_result_t mdu_get_path_list(mdu_handle_t handle, const char* key, cons
     });
 }
 
-dflowfm_io_result_t mdu_get_double_list(mdu_handle_t handle, const char* key, const double** double_list_out, uint64_t* size_out)
+dflowfm_io_result_t mdu_get_double_list(mdu_handle_t* handle, const char* key, const double** double_list_out, uint64_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -310,58 +310,46 @@ dflowfm_io_result_t mdu_get_double_list(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        const auto& doubles = asDocument(handle)->GetValue<std::vector<double>>(key);
+        const auto& doubles = handle->mduDocument.GetValue<std::vector<double>>(key);
         *double_list_out = doubles.data();
         *size_out = doubles.size();
     });
 }
 
-dflowfm_io_result_t mdu_set_int(mdu_handle_t handle, const char* key, int32_t value)
+dflowfm_io_result_t mdu_set_int(mdu_handle_t* handle, const char* key, int32_t value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, value);
+        handle->mduDocument.SetValue(key, value);
     });
 }
 
-dflowfm_io_result_t mdu_set_bool(mdu_handle_t handle, const char* key, dflowfm_io_bool_t value)
+dflowfm_io_result_t mdu_set_bool(mdu_handle_t* handle, const char* key, dflowfm_io_bool_t value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, value != DFLOWFM_IO_FALSE);
+        handle->mduDocument.SetValue(key, value != DFLOWFM_IO_FALSE);
     });
 }
 
-dflowfm_io_result_t mdu_set_double(mdu_handle_t handle, const char* key, double value)
+dflowfm_io_result_t mdu_set_double(mdu_handle_t* handle, const char* key, double value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, value);
+        handle->mduDocument.SetValue(key, value);
     });
 }
 
-dflowfm_io_result_t mdu_set_string(mdu_handle_t handle, const char* key, const char* value)
-{
-    ENSURE_ARGUMENT_NOT_NULL(handle);
-    ENSURE_ARGUMENT_NOT_NULL(key);
-    ENSURE_ARGUMENT_NOT_NULL(value);
-
-    return exceptionToResult([&]()
-    {
-        asDocument(handle)->SetValue(key, std::string(value));
-    });
-}
-
-dflowfm_io_result_t mdu_set_path(mdu_handle_t handle, const char* key, const char* value)
+dflowfm_io_result_t mdu_set_string(mdu_handle_t* handle, const char* key, const char* value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -369,11 +357,23 @@ dflowfm_io_result_t mdu_set_path(mdu_handle_t handle, const char* key, const cha
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, std::filesystem::path(value));
+        handle->mduDocument.SetValue(key, std::string(value));
     });
 }
 
-dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64_t epoch, dflowfm_io_bool_t has_value)
+dflowfm_io_result_t mdu_set_path(mdu_handle_t* handle, const char* key, const char* value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(value);
+
+    return exceptionToResult([&]()
+    {
+        handle->mduDocument.SetValue(key, std::filesystem::path(value));
+    });
+}
+
+dflowfm_io_result_t mdu_set_datetime(mdu_handle_t* handle, const char* key, int64_t epoch, dflowfm_io_bool_t has_value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -383,11 +383,11 @@ dflowfm_io_result_t mdu_set_datetime(mdu_handle_t handle, const char* key, int64
         std::optional<std::chrono::system_clock::time_point> tp;
         if (has_value != DFLOWFM_IO_FALSE)
             tp = std::chrono::system_clock::time_point(std::chrono::seconds(epoch));
-        asDocument(handle)->SetValue(key, tp);
+        handle->mduDocument.SetValue(key, tp);
     });
 }
 
-dflowfm_io_result_t mdu_set_string_enum(mdu_handle_t handle, const char* key, const char* enum_value)
+dflowfm_io_result_t mdu_set_string_enum(mdu_handle_t* handle, const char* key, const char* enum_value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -395,22 +395,22 @@ dflowfm_io_result_t mdu_set_string_enum(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, dflowfm_io::StringEnumValue{std::string(enum_value)});
+        handle->mduDocument.SetValue(key, dflowfm_io::StringEnumValue{std::string(enum_value)});
     });
 }
 
-dflowfm_io_result_t mdu_set_int_enum(mdu_handle_t handle, const char* key, int32_t enum_value)
+dflowfm_io_result_t mdu_set_int_enum(mdu_handle_t* handle, const char* key, int32_t enum_value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, dflowfm_io::IntEnumValue{enum_value});
+        handle->mduDocument.SetValue(key, dflowfm_io::IntEnumValue{enum_value});
     });
 }
 
-dflowfm_io_result_t mdu_set_string_list(mdu_handle_t handle, const char* key, const char** string_list, uint64_t size)
+dflowfm_io_result_t mdu_set_string_list(mdu_handle_t* handle, const char* key, const char** string_list, uint64_t size)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -418,11 +418,11 @@ dflowfm_io_result_t mdu_set_string_list(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, std::vector<std::string>(string_list, string_list + size));
+        handle->mduDocument.SetValue(key, std::vector<std::string>(string_list, string_list + size));
     });
 }
 
-dflowfm_io_result_t mdu_set_path_list(mdu_handle_t handle, const char* key, const char** path_list, uint64_t size)
+dflowfm_io_result_t mdu_set_path_list(mdu_handle_t* handle, const char* key, const char** path_list, uint64_t size)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -432,11 +432,11 @@ dflowfm_io_result_t mdu_set_path_list(mdu_handle_t handle, const char* key, cons
     {
         std::vector<std::filesystem::path> vec;
         for (uint64_t i = 0; i < size; ++i) vec.emplace_back(path_list[i]);
-        asDocument(handle)->SetValue(key, std::move(vec));
+        handle->mduDocument.SetValue(key, std::move(vec));
     });
 }
 
-dflowfm_io_result_t mdu_set_double_list(mdu_handle_t handle, const char* key, const double* double_list, uint64_t size)
+dflowfm_io_result_t mdu_set_double_list(mdu_handle_t* handle, const char* key, const double* double_list, uint64_t size)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
@@ -444,11 +444,11 @@ dflowfm_io_result_t mdu_set_double_list(mdu_handle_t handle, const char* key, co
 
     return exceptionToResult([&]()
     {
-        asDocument(handle)->SetValue(key, std::vector<double>(double_list, double_list + size));
+        handle->mduDocument.SetValue(key, std::vector<double>(double_list, double_list + size));
     });
 }
 
-dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t handle, const mdu_issue_t** issue_list_out, uint64_t* size_out)
+dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t* handle, const mdu_issue_t** issue_list_out, uint64_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(issue_list_out);
@@ -458,7 +458,7 @@ dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t handle, const mdu_issue_t** 
     static std::vector<mdu_issue_t> stored_issues;
 
     return exceptionToResult([&]() {
-        auto report = asDocument(handle)->GetReport();
+        auto report = handle->mduDocument.GetReport();
 
         stored_messages.clear();
         stored_issues.clear();
