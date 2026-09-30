@@ -70,34 +70,24 @@ namespace dflowfm_io
         template <typename T>
         const T& GetValue(const std::string& key) const
         {
-            EnsureKnownKey(key);
+            EnsureKeyInSchema(key);
             return mduData.getValueAs<T>(key);
         }
 
-        /// @brief Sets the value of a property.
-        /// @tparam T The value type to store.
-        /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
-        /// @param value The value to store.
-        /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
-        template <typename T>
-        void SetValue(const std::string& key, T value)
-        {
-            EnsureKnownKey(key);
-            mduData.setValue(key, std::move(value));
-        }
-
         /// @brief Sets the value of an enum property.
-        /// @tparam T Either @ref IntEnumValue or @ref StringEnumValue.
+        /// @tparam T The value type to store.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         /// @param value The enum value to store. Must be a valid entry in the property's enum definition.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
         /// @throws std::out_of_range if @p value is not a valid enum entry for the property.
         template <typename T>
-            requires std::same_as<T, IntEnumValue> || std::same_as<T, StringEnumValue>
         void SetValue(const std::string& key, T value)
         {
-            EnsureKnownKey(key);
-            EnsureEnumInRange(key, value);
+            EnsureKeyInSchema(key);
+            if constexpr (std::same_as<T, IntEnumValue> || std::same_as<T, StringEnumValue>)
+            {
+                EnsureEnumInRange(key, value);
+            }
             mduData.setValue(key, std::move(value));
         }
 
@@ -106,7 +96,7 @@ namespace dflowfm_io
         MduData mduData;
         IssueReport issues;
 
-        void EnsureKnownKey(const std::string& key) const;
+        void EnsureKeyInSchema(const std::string& key) const;
         void EnsureEnumInRange(const std::string& key, const IntEnumValue& value) const;
         void EnsureEnumInRange(const std::string& key, const StringEnumValue& value) const;
     };

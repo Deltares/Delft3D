@@ -79,7 +79,7 @@ namespace dflowfm_io
         Save(stream);
     }
 
-    void MduDocument::EnsureKnownKey(const std::string& key) const
+    void MduDocument::EnsureKeyInSchema(const std::string& key) const
     {
         if (!schema.FindProperty(key))
             throw std::invalid_argument(
