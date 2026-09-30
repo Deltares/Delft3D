@@ -507,7 +507,7 @@ subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfi
     integer, intent(in), optional :: splitsize
     logical, intent(in), optional :: showonlynonnulls
     logical, intent(in), optional :: columnfirst
-    character(MAXSTRINGLEN)                 :: rec
+    character(MAXSTRINGLEN*5)                 :: rec
     character(MAXSTRINGLEN)                 :: prefix
 
     integer :: i, j, n, split

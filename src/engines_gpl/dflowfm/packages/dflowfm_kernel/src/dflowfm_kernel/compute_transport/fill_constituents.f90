@@ -66,6 +66,7 @@ contains
       use m_alloc, only: aerr
       use m_get_kbot_ktop
       use precision, only: dp
+      use messagehandling, only: IDLEN, LEVEL_WARN, msgbuf, warn_flush, mess      
 
       implicit none
 
@@ -107,6 +108,8 @@ contains
       molecular_diffusion_coeff = 0.0_dp
       sigdifi = 0.0_dp
 
+      ! call mess(LEVEL_WARN, constituents(1, 1:ndx), "const(1:ndkx)", ndx)
+      ! call mess(LEVEL_WARN, constituents(1, ndx+1:), "const(ndkx+1)", ndx, columnfirst=.true.)
       ! if the user supplied a positive value for dicoww, then use vertical molecular diffusion for salinity and temperature
       use_vertical_molecular_diffusion = dicoww%scalar >= 0.0_dp
 
