@@ -676,17 +676,24 @@ contains
    !> Add output items for all 3D waq bottom substances on stations to output set.
    subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
 
+      use m_flow, only: kmx
       use m_fm_wq_processes, only: numwqbots
-      use m_observations_data, only: valobs, IPNT_WQB3D1
+      use m_observations_data, only: numobs, nummovobs, valobs, IPNT_WQB3D1
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in) :: output_config_set !< Read config items out of config set
       integer, intent(in) :: idx_wqbot3D_stations(:) !< Indices of just-in-time added waq bottom substances in output_config_set array
 
-      integer :: i
+      integer :: num_layers, ntot, variable_index, i_start
+      real(dp), pointer :: flattened_valobs_slice(:)
 
-      do i = 1, numwqbots
-         call add_stat_output_items(output_set, output_config_set%configs(idx_wqbot3D_stations(i)), valobs(:, IPNT_WQB3D1 + i - 1))
+      num_layers = max(1, kmx)
+      ntot = numobs + nummovobs
+
+      do variable_index = 1, numwqbots
+         i_start = IPNT_WQB3D1 + (variable_index - 1) * num_layers
+         flattened_valobs_slice(1:ntot * num_layers) => valobs(:, i_start:i_start + num_layers - 1)
+         call add_stat_output_items(output_set, output_config_set%configs(idx_wqbot3D_stations(variable_index)), flattened_valobs_slice)
       end do
 
    end subroutine add_station_wqbot3D_output_items
@@ -3056,7 +3063,7 @@ contains
          if (numwqbots > 0) then
             call add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
             call add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
-            if (model_is_3D()) then
+            if (model_is_3D() .and. his_write_settings%wqbot3d == 1) then
                call add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
                call add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
             end if
