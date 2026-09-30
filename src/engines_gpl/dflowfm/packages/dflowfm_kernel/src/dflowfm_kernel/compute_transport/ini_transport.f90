@@ -200,8 +200,8 @@ contains
          const_names(ispir) = 'secondary_flow_intensity'
       end if
 
+      tracer_limiter_mass_error = 0.0_dp ! initialise mass error counter
       if (itra1 > 0) then
-         maserrtra = 0.0_dp ! initialise mass error counter
          do i = itra1, itran
             itrace = i - itra1 + 1
 

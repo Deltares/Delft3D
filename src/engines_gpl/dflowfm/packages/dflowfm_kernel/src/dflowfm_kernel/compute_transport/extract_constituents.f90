@@ -67,14 +67,15 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
       use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
-                            temperature_min, upperlimittra, lowerlimittra
+                            temperature_min, tracer_concentration_min, tracer_concentration_min_enabled, tracer_concentration_max, &
+                            tracer_concentration_max_enabled
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
-      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, maserrtra, itra1, itran, const_names
+      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, tracer_limiter_mass_error, itra1, itran, const_names
 
       use timers, only: timon, timstop, timstrt
 
-      integer :: iconst, grain, j, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
+      integer :: constituent_index, grain, tracer_index, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
       real(kind=dp) :: salinity ! salinity [psu]
@@ -102,20 +103,20 @@ contains
          cells_with_min_limit = 0
          do k = 1, ndkx
             do grain = 1, mxgr
-               iconst = ised1 + grain - 1
-               if (constituents(iconst, k) < 0.0_dp) then
+               constituent_index = ised1 + grain - 1
+               if (constituents(constituent_index, k) < 0.0_dp) then
                   cells_with_min_limit = cells_with_min_limit + 1
-                  constituents(iconst, k) = 0.0_dp
+                  constituents(constituent_index, k) = 0.0_dp
                end if
 
                ! keep track of mass error because of concentration limitation
-               if (constituents(iconst, k) > upperlimitssc) then
+               if (constituents(constituent_index, k) > upperlimitssc) then
                   cells_with_max_limit = cells_with_max_limit + 1
-                  maserrsed = maserrsed + vol1(k) * (constituents(iconst, k) - upperlimitssc)
-                  constituents(iconst, k) = upperlimitssc
+                  maserrsed = maserrsed + vol1(k) * (constituents(constituent_index, k) - upperlimitssc)
+                  constituents(constituent_index, k) = upperlimitssc
                end if
                if (.not. stm_included) then
-                  sed(grain, k) = constituents(iconst, k)
+                  sed(grain, k) = constituents(constituent_index, k)
                end if
             end do
          end do
@@ -126,44 +127,48 @@ contains
          end if
       end if
 
-      if (itra1 > 0 .and. lowerlimittra >= -1.0e30_dp) then
-         do iconst = ITRA1, ITRAN
+      if (itra1 > 0 .and. tracer_concentration_min_enabled) then
+         do constituent_index = ITRA1, ITRAN
             cells_with_min_limit = 0
-            j = iconst - ITRA1 + 1
+            tracer_index = constituent_index - ITRA1 + 1
             do kk = 1, ndxi
                call getkbotktop(kk, kb, kt)
                do k = kb, kt
                   ! keep track of mass error(s) because of concentration limitation
-                  if (constituents(iconst, k) < lowerlimittra) then
+                  if (constituents(constituent_index, k) < tracer_concentration_min) then
                      cells_with_min_limit = cells_with_min_limit + 1
-                     maserrtra(j, 1) = maserrtra(j, 1) + vol1(k) * (lowerlimittra - constituents(iconst, k))
-                     constituents(iconst, k) = lowerlimittra
+                     tracer_limiter_mass_error(tracer_index, 1) = tracer_limiter_mass_error(tracer_index, 1) + vol1(k) * &
+                                                                  (tracer_concentration_min - constituents(constituent_index, k))
+                     constituents(constituent_index, k) = tracer_concentration_min
                   end if
                end do
             end do
             if (jalogtransportsolverlimiting > 0) then
-               call print_message(IDX_TRA_MIN, '"' // trim(const_names(iconst)) // '" concentration below minimum', cells_with_min_limit, min_limit=lowerlimittra)
+               call print_message(IDX_TRA_MIN, '"'//trim(const_names(constituent_index))//'" concentration below minimum', &
+                                  cells_with_min_limit, min_limit=tracer_concentration_min)
             end if
          end do
       end if
 
-      if (itra1 > 0 .and. upperlimittra <= 1.0e30_dp) then
-         do iconst = ITRA1, ITRAN
+      if (itra1 > 0 .and. tracer_concentration_max_enabled) then
+         do constituent_index = ITRA1, ITRAN
             cells_with_max_limit = 0
-            j = iconst - ITRA1 + 1
+            tracer_index = constituent_index - ITRA1 + 1
             do kk = 1, ndxi
                call getkbotktop(kk, kb, kt)
                do k = kb, kt
                   ! keep track of mass error(s) because of concentration limitation
-                  if (constituents(iconst, k) > upperlimittra) then
+                  if (constituents(constituent_index, k) > tracer_concentration_max) then
                      cells_with_max_limit = cells_with_max_limit + 1
-                     maserrtra(j, 2) = maserrtra(j, 2) + vol1(k) * (constituents(iconst, k) - upperlimittra)
-                     constituents(iconst, k) = upperlimittra
+                     tracer_limiter_mass_error(tracer_index, 2) = tracer_limiter_mass_error(tracer_index, 2) + vol1(k) * &
+                                                                  (constituents(constituent_index, k) - tracer_concentration_max)
+                     constituents(constituent_index, k) = tracer_concentration_max
                   end if
                end do
             end do
             if (jalogtransportsolverlimiting > 0) then
-               call print_message(IDX_TRA_MAX, '"' // trim(const_names(iconst)) // '" concentration above maximum', cells_with_max_limit, max_limit=upperlimittra)
+               call print_message(IDX_TRA_MAX, '"'//trim(const_names(constituent_index))//'" concentration above maximum', &
+                                  cells_with_max_limit, max_limit=tracer_concentration_max)
             end if
          end do
       end if
