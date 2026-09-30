@@ -136,7 +136,8 @@ object StartVerschilanalyse : BuildType({
                 tar -xzvf bundle-%teamcity.build.id%.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle-%teamcity.build.id%.tar.gz
 
-                # start the VA
+                # start the VA, use dep. build chain variables from the PinAndTag to
+                # define what apptainer image we should use
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%dep.Delft3D_Publish.destination_image_specific%' \
