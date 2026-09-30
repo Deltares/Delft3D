@@ -469,7 +469,6 @@ contains
       trimmed = string
    end function trimexact
 
-
    !> Determine whether string1 starts with string2, ignoring case.
    pure function istarts_with(string1, string2) result(matches)
       character(len=*), intent(in) :: string1 !< The string to be checked.
