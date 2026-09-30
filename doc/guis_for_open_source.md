@@ -41,7 +41,7 @@ For a list of known compatibility issues that you might run into when mixing dif
 - Copy the contents (`bin`, `lib` and `share` directories) of the `install_d3d4-suite` (or `install_all`) folder from your development environment into the `kernels\x64` folder created above.
 
 ## Known compatibility issues
-- Shortly after the 2026.02, the libraries were moved from the `lib` to the `bin` folder on Windows.
-  Subsequent builds don't produce a `lib` folder anymore, whereas the 2026.02 user interface expects it.
+- Shortly after the 2026.02 release, the libraries were moved from the `lib` folder to the `bin` folder on Windows.
+  Subsequent builds no longer create a `lib` folder, while the 2026.02 user interface still expects it.
 
-For an updated list of known compatibility issues see the bottom of this page on [main](https://github.com/Deltares/Delft3D/blob/main/doc/guis_for_open_source.md).
+For an updated list of known compatibility issues, see the bottom of this page on [main](https://github.com/Deltares/Delft3D/blob/main/doc/guis_for_open_source.md).
