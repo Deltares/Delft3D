@@ -75,6 +75,14 @@ std::string format_date_time(const std::chrono::year_month_day& date, int hour,
     return stream.str();
 }
 
+/**
+ * Callback function for adding a specified amount of time to a date.
+ * Expects arguments: (DATE, UNIT, integer AMOUNT)
+ * 
+ * DATE must be a string in YYYYMMDD.HHmmss format.
+ * UNIT must be one of "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND".
+ * AMOUNT must be an integer specifying how much to add to the DATE. (can be negative to subtract time)
+ */
 nlohmann::json date_add_callback(inja::Arguments& args)
 {
     if (args.size() != 3 || !args[1]->is_string() || !args[2]->is_number_integer()) {
@@ -165,6 +173,12 @@ nlohmann::json date_add_callback(inja::Arguments& args)
     return format_date_time(result_date, result_hour, result_minute, result_second);
 }
 
+/**
+ * Pads an integer value with leading zeros to achieve the specified width.
+ * Expects arguments: (VALUE, WIDTH)
+ * VALUE can be an integer or a string representing an integer.
+ * WIDTH must be a positive integer specifying the target width.
+ */
 nlohmann::json pad_int_callback(inja::Arguments& args)
 {
     if (args.size() != 2) {
@@ -201,7 +215,7 @@ nlohmann::json pad_int_callback(inja::Arguments& args)
     return stream.str();
 }
 
-} // namespace
+} 
 
 struct inja_context {
     nlohmann::json data;
@@ -209,16 +223,18 @@ struct inja_context {
 };
 
 namespace {
-
-void set_error(inja_context* context, const std::string& message)
-{
-    if (context != nullptr) {
-        context->last_error = message;
+    void set_error(inja_context* context, const std::string& message)
+    {
+        if (context != nullptr) {
+            context->last_error = message;
+        }
     }
-}
+} 
 
-} // namespace
-
+/**
+ * Creates a new Inja context.
+ * Returns a pointer to the newly created context, or nullptr if creation fails.
+ */
 inja_context* inja_create_context(void)
 {
     try {
@@ -228,6 +244,10 @@ inja_context* inja_create_context(void)
     }
 }
 
+/**
+ * Adds a string value to the Inja context under the specified key.
+ * Returns 0 on success, or -1 if an error occurs.
+ */
 int inja_add_string(inja_context* context, const char* key, const char* value)
 {
     if (context == nullptr || key == nullptr || value == nullptr) {
@@ -245,11 +265,18 @@ int inja_add_string(inja_context* context, const char* key, const char* value)
     }
 }
 
+/**
+ * Destroys the specified Inja context, freeing its resources.
+ */
 void inja_destroy_context(inja_context* context)
 {
     delete context;
 }
 
+/**
+ * Renders the specified template file using the Inja context and writes the output to the destination file.
+ * Returns 0 on success, or -1 if an error occurs.
+ */
 int inja_render_file(inja_context* context, const char* template_file,
                      const char* dest_file)
 {
@@ -270,7 +297,6 @@ int inja_render_file(inja_context* context, const char* template_file,
 
         inja::Environment env;
         env.add_callback("pad_int", 2, pad_int_callback);
-        env.add_callback("zfill", 2, pad_int_callback);
         env.add_callback("date_add", 3, date_add_callback);
 
         const std::string rendered = env.render(template_text, context->data);
@@ -295,6 +321,11 @@ int inja_render_file(inja_context* context, const char* template_file,
     }
 }
 
+/**
+ * Retrieves the last error message from the specified Inja context.
+ * The error message is copied into the provided result buffer, which must have a size of at least result_size.
+ * Returns the number of characters copied, or -1 if an error occurs.
+ */
 int inja_get_last_error(const inja_context* context, char* result, int result_size)
 {
     if (context == nullptr || result == nullptr || result_size <= 0) {

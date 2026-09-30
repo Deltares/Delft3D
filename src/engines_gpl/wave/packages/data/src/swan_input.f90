@@ -2636,7 +2636,6 @@ contains
       wdir = sr%wdir(itide)
       !
       if (sr%inputtemplatefile /= '') then
-         ! call update_swan_inp(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
          call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
       else
          call write_swan_inp(wavedata, calccount, &
@@ -2657,6 +2656,10 @@ contains
 
    end subroutine write_swan_input
 
+   !
+   !
+   !==============================================================================
+   ! Generates SWAN input using Inja templates
    subroutine update_swan_inp_injs(filnam, itide, nttide, calccount, inest, sr, wavedata)
       use inja_templates
       use, intrinsic :: iso_c_binding, only: c_char, c_int, c_null_char, c_ptr
@@ -2714,7 +2717,6 @@ contains
       call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, tm_text)
       status = inja_add_string(context, "CACHED_SPEC_FILE"//c_null_char, trim(tm_text)//c_null_char)
 
-      ! tmp_name = trim(filnam)//".inj"
       status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
       if (status /= 0) then
          error_length = inja_get_last_error(context, error_text, int(size(error_text), c_int))
@@ -2729,111 +2731,6 @@ contains
 
 
    end subroutine update_swan_inp_injs
-!
-!
-!==============================================================================
-! open existing INPUT file
-! open new INPUT file
-! read line by line the existing INPUT file
-! write that line to the new input file
-   subroutine update_swan_inp(filnam, itide, nttide, calccount, inest, sr, wavedata)
-      use precision_basics
-      use wave_data
-      implicit none
-
-! Global variables
-      integer, intent(in) :: calccount
-      integer, intent(in) :: itide
-      integer, intent(in) :: nttide
-      character(*), intent(in) :: filnam
-      type(swan_type) :: sr
-      type(wave_data_type) :: wavedata
-      integer, intent(in) :: inest
-!
-! Local variables
-!
-      integer :: old_input
-      integer :: new_input
-      integer :: loc_tag
-      integer :: ierr
-      character(256) :: rec
-      character(256) :: line
-      character(15) :: tbegc
-      character(15) :: tendc
-      character(15), external :: datetime_to_string
-      character(256) :: fname
-      real(hp) :: run_end
-      real(hp) :: run_start
-!
-!! executable statements -------------------------------------------------------
-!
-      write (*, '(2a)') 'Updating pre-existing INPUT file: ', trim(filnam)
-      ! Boundary spectrum cache window:
-      ! - stationary/quasi-stationary: current time only
-      ! - non-stationary: full COMPUTE NONSTAT interval until tendc
-      run_start = wavedata%time%timsec
-      if (sr%modsim == 3) then
-         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
-      else
-         run_end = run_start
-      end if
-      !
-      open (newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
-      if (ierr /= 0) then
-         write (*, '(2a)') '*** ERROR: Unable to find file ', trim(filnam)
-         close (old_input)
-         call wavestop(1, 'Unable to find file '//trim(filnam))
-      end if
-      !
-      open (newunit=new_input, file='INPUT', form='formatted', status='replace')
-
-      read (old_input, '(a)', iostat=ierr) rec
-      if (ierr /= 0) then
-         write (*, '(2a)') '*** ERROR: Unable to read file ', trim(filnam)
-         close (old_input)
-         close (new_input)
-         call wavestop(1, 'Unable to read file '//trim(filnam))
-      end if
-      do while (ierr == 0)
-         !=============================================================================
-         !           look for tags: $TSTART$, $TSTOP$, $HOTSTART$, $HOTSAVE$
-         !=============================================================================
-         !
-         !
-         line = rec
-         loc_tag = index(rec, '$TSTART$')
-         if (loc_tag /= 0) then
-            tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
-            line(loc_tag + 16:) = rec(loc_tag + 8:)
-            write (line(loc_tag:loc_tag + 15), '(a)') tbegc
-            rec = line
-         end if
-         loc_tag = index(rec, '$TSTOP$')
-         if (loc_tag /= 0) then
-            tendc = datetime_to_string(wavedata%time%refdate, wavedata%time%calctimtscale * real(wavedata%time%tscale, hp))
-            write (line(loc_tag:loc_tag + 15), '(a)') tendc
-         end if
-         loc_tag = index(rec, '$HOTSTART$')
-         if (loc_tag /= 0) then
-            ! check for existence of hotfile
-            call create_hotstart_line(inest, fname, line, sr)
-         end if
-         loc_tag = index(rec, '$HOTSAVE$')
-         if (loc_tag /= 0) then
-            ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
-            call create_hotfile_line(fname, inest, line, sr, wavedata)
-         end if
-         call replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
-         write (new_input, '(a)') line
-         line = ' '
-         line(1:2) = ' $ '
-         !
-         read (old_input, '(a)', iostat=ierr) rec
-      end do
-      close (old_input)
-      close (new_input)
-
-   end subroutine update_swan_inp
 !
 !
 !==============================================================================
