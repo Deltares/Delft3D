@@ -19,7 +19,7 @@ Back to [main page](../README.md).
   Build the Release configuration for either `fm-suite` or `all` (see [this page](compiling_Windows.md) for detailed Windows compilation instructions).
 - Copy the contents (`bin` and `share` directories) of the `install_fm-suite` (or `install_all`) folder from your development environment into the `plugins\DeltaShell.Dimr\kernels\x64` folder created above.
 
-**Note:** when starting with Delft3D FM, it is best to combine user interface version XXXX.YY (such as 2026.02) with the kernels built from the [corresponding release tag `DIMRset_XXXX.YY`] (https://github.com/Deltares/Delft3D/releases).
+**Note:** when starting with Delft3D FM, it is best to combine user interface version YYYY.RR (such as 2026.02 combining year and release number) with the kernels built from the [corresponding release tag `DIMRset_YYYY.RR`](https://github.com/Deltares/Delft3D/releases).
 The main branch may include changes that are not compatible with previous releases of the user interface.
 For a list of known compatibility issues that you might run into when mixing different versions of user interfaces and kernels, see the bottom of this page.
 
