@@ -1,4 +1,4 @@
-#include "inja_test.h"
+#include "inja_templates.h"
 
 #include <inja/inja.hpp>
 
