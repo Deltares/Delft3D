@@ -51,6 +51,12 @@ namespace
      * @details Construct both preCICE 2d mesh coordinates and forward mappings from settings.
      * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
      * in preCICE communication buffers in O(1) time.
+     *
+     * \image html "preC-SUMO data mapping diagram-2D Mapping.drawio.svg" "2D Data mapping via preCICE" width=1000px
+     *
+     * \image html "preC-SUMO data mapping diagram-3D Mapping.drawio.svg" "3D Data mapping via preCICE" width=1000px
+     *
+     *
      */
     Mesh getMesh2D3D(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings,
                      const ZSpecification& z_spec)
@@ -143,6 +149,7 @@ namespace pre_c_sumo
         participant.setMeshVertices(csumo_3d_mesh.name, csumo_3d_mesh.coordinates, csumo_3d_mesh.vertex_ids);
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[flow_velocities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes * 3);
         csumo_3d_mesh.quantities[c01_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
         csumo_3d_mesh.quantities[c02_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
         csumo_3d_mesh.quantities[c03_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
