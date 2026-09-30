@@ -916,7 +916,7 @@ contains
       l_top = ltop(flow_link)
 
       ! Apply horizontal coupling of turkin/tureps with care:
-      ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
+      ! Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
       do l = l_bottom, l_top - 1
          k1 = ln(1, l)
          k2 = ln(2, l)
