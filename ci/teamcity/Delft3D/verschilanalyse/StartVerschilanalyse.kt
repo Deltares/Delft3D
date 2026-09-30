@@ -24,12 +24,12 @@ object StartVerschilanalyse : BuildType({
             finishBuildTrigger {
                 buildType = "${PinAndTag.id}"
                 successfulOnly = true
-                // The default branch is triggered on scheduled weekly build chain runs
-                //   and is automatically compared to the latest release candidate.
-                // Release branches should not run on scheduled weekly runs because 
+                // The default branch is triggered manually via a DIMRBakker PinAndTag build
+                //   and this results to this VA output to be automatically compared to the latest release candidate.
+                // Release branches should not get triggered by the DIMRBakker build chain because 
                 //   we don't want to do automatic comparisons to the latest release candidate.
-                // When we have to do special VA tool runs, we should not use 
-                //   this scheduled trigger. 
+                // When we have to do special VA tool runs, for example comparing release branches within each other, 
+                //   we should not use this DIMRBakker configured finishBuildTrigger. 
                 branchFilter = """
                     +:<default>
                     -:all/release/*
@@ -136,8 +136,9 @@ object StartVerschilanalyse : BuildType({
                 tar -xzvf bundle-%teamcity.build.id%.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle-%teamcity.build.id%.tar.gz
 
-                # start the VA, use dep. build chain variables from the PinAndTag to
-                # define what apptainer image we should use
+                # start the VA, use dep. variables from the upstream Publish build to
+                # define what apptainer image we should use. 
+                # The above PinAndTag finishBuildTrigger depends on the Publish build
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%dep.${Publish.id}.destination_image_specific%' \
