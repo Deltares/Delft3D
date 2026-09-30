@@ -22,7 +22,7 @@ object StartVerschilanalyse : BuildType({
     if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
         triggers {
             finishBuildTrigger {
-                buildType = '${PinAndTag.id}'
+                buildType = "${PinAndTag.id}"
                 successfulOnly = true
                 // The default branch is triggered on scheduled weekly build chain runs
                 //   and is automatically compared to the latest release candidate.
