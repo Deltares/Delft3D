@@ -270,7 +270,7 @@ contains
          end if
 
          if (source_sinks%num_total > 0) then
-            call source_sinks%update_discharges() ! add sources and sinks
+            call source_sinks%update_discharges()
          end if
 
          if (wrwaqon) then ! Update waq output
