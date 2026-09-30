@@ -55,6 +55,8 @@ contains
       use m_timer
       use dfm_error
       use m_sedtrails_netcdf, only: sedtrails_write_stats
+      use messagehandling, only: IDLEN, LEVEL_WARN, msgbuf, warn_flush, mess
+      use m_partitioninfo
 
       integer :: key
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -76,6 +78,9 @@ contains
          end if
          time1 = time0 + dts
       end if
+
+      ! write(msgbuf,*) 'Start timestep for rank ', my_rank, ': ', ', timestep ', dnt
+      ! call mess(LEVEL_WARN, msgbuf)
 
       call flow_init_single_timestep(iresult)
       if (iresult /= DFM_NOERR) then
