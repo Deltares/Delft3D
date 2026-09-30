@@ -13,17 +13,24 @@ set(src_path src)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
-list(APPEND source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_templates.f90)
+# list(APPEND source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_templates.f90)
 set(cxx_source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_templates.cpp)
 
 # Define library
 set(library_name wave_data)
+
 add_library(${library_name} ${source_files}
-                            ${cxx_source_files}
                             ${fortran_version_files})
 
+add_library(wave_data_cpp OBJECT
+${cxx_source_files}
+)
+target_include_directories(wave_data_cpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(wave_data_cpp pantor::inja)
+
+
 target_include_directories(${library_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${library_name} pantor::inja)
+target_link_libraries(${library_name} wave_data_cpp pantor::inja)
 
 set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
