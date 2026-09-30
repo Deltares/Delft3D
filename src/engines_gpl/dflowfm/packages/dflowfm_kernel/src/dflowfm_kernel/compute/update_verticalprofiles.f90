@@ -900,10 +900,10 @@ contains
       use m_turbulence, only: dk, TURB_LAX_ALL
 
       ! Arguments
-      integer :: flow_link !< Flow link to apply horizontal coupling for
-      real(kind=dp), dimension(:) :: tur_link
-      real(kind=dp), dimension(:) :: tur_node
-      real(kind=dp) :: dtiL
+      integer, intent(in) :: flow_link !< Flow link to apply horizontal coupling for
+      real(kind=dp), dimension(:), intent(in) :: tur_link
+      real(kind=dp), dimension(:), intent(in) :: tur_node
+      real(kind=dp), intent(in) :: dtiL
 
       ! Local variables
       integer :: l !< Loop index over vertical flow link layers
