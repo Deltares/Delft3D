@@ -836,7 +836,7 @@ contains
             end if
 
             ! When initialtracer is found, get tracername and add tracer boundary.
-            if (quantity(1:13) == 'initialtracer') then
+            if (strcmpi(quantity(1:13), 'initialtracer')) then
                call read_tracer_properties(node_ptr, transformcoef)
 
                call get_tracername(quantity, tracnam, qidnam)
@@ -1263,7 +1263,7 @@ contains
             nbndsd = nbndsd + numsd
          end if
 
-      else if (qidfm(1:9) == 'tracerbnd') then
+      else if (strcmpi(qidfm(1:9), 'tracerbnd')) then
          call get_tracername(qidfm, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -1289,7 +1289,7 @@ contains
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
-      else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
+      else if (strcmpi(qidfm(1:10), 'sedfracbnd') .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
 
@@ -1427,7 +1427,7 @@ contains
          success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
                                            z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
-      else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
+      else if (numtracers > 0 .and. (strcmpi(qid(1:9), 'tracerbnd'))) then
          ! get tracer boundary condition number
          call get_tracername(qid, tracnam, qidnam)
          itrac = find_name(trnames, tracnam)
@@ -1445,7 +1445,7 @@ contains
             success = .true.
          end if
 
-      else if (numfracs > 0 .and. (qid(1:10) == 'sedfracbnd') .and. stm_included) then
+      else if (numfracs > 0 .and. (strcmpi(qid(1:10), 'sedfracbnd')) .and. stm_included) then
 
          call get_sedfracname(qid, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
@@ -1693,6 +1693,7 @@ contains
       use m_missing
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, err_flush
+      use string_module, only: strcmpi
 
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
@@ -1749,7 +1750,7 @@ contains
             do j = ISED1, ISEDN
                threttim(j, nseg) = thrtt(i)
             end do
-         else if (qidfm(1:9) == 'tracerbnd') then
+         else if (strcmpi(qidfm(1:9), 'tracerbnd')) then
             call get_tracername(qidfm, tracnam, qidnam)
             itrac = find_name(trnames, tracnam)
             if (allocated(bndtr) .and. thrtn(i) <= nbndtr(itrac)) then
@@ -1765,7 +1766,7 @@ contains
                iconst = itrac2const(itrac)
                threttim(iconst, nseg) = thrtt(i)
             end if
-         else if (qidfm(1:10) == 'sedfracbnd') then
+         else if (strcmpi(qidfm(1:10), 'sedfracbnd')) then
             ierr = 0
             call get_sedfracname(qidfm, sedfracnam, qidnam)
             ifrac = find_name(sfnames, sedfracnam)

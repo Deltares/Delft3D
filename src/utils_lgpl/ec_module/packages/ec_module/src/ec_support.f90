@@ -313,14 +313,19 @@ contains
 
    !> Look up the variable and standard names for a given quantity name from predefined lists
    subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      use string_module, only: str_tolower
       character(len=*), intent(in) :: fileName !< name of the file, used for error messages
       character(len=*), intent(in) :: quantityName !< name of the quantity to look up
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
       character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
+      
+      character(len=len(quantityName)) :: qid_lower !< Lowercased quantityid, e.g., 'waqfunctionradsurf'.
 
-      select case (str_tolower(trim(quantityName)))
+      qid_lower = str_tolower(trim(quantityName))
+      
+      select case (qid_lower)
       case ('rainfall')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
@@ -576,12 +581,12 @@ contains
          ncvarnames(1) = 'dissip'
          ncstdnames(1) = 'total_energy_dissipation'
       case default ! experiment: gather miscellaneous variables from an NC-file,
-         if (index(quantityName, 'waqsegmentfunction') == 1) then
+         if (index(qid_lower, 'waqsegmentfunction') == 1) then
             allocate (ncvarnames(1))
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName
             ncstdnames(1) = quantityName
-         else if (index(quantityName, 'initialtracer') == 1) then
+         else if (index(qid_lower, 'initialtracer') == 1) then
             allocate (ncvarnames(1))
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName(14:)
