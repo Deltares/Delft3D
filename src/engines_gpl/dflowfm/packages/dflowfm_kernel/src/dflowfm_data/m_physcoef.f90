@@ -87,9 +87,9 @@ module m_physcoef
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
    real(kind=dp) :: tracer_concentration_min !< lower limit for tracer concentration
-   logical :: tracer_concentration_min_enabled !< is lower limit for tracer concentration?
+   logical :: tracer_concentration_min_enabled !< is lower limit for tracer concentration enabled?
    real(kind=dp) :: tracer_concentration_max !< upper limit for tracer concentration
-   logical :: tracer_concentration_max_enabled !< is upper limit for tracer concentration?
+   logical :: tracer_concentration_max_enabled !< is upper limit for tracer concentration enabled?
 
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
