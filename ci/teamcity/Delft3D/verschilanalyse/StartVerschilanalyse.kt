@@ -39,16 +39,7 @@ object StartVerschilanalyse : BuildType({
     }   
 
     params {
-        param("harbor_webhook.image.tag", "development")
         param("va_harbor_protocol", "docker")
-        param(
-            "harbor_webhook.image.url", 
-            sequenceOf(
-                "containers.deltares.nl",
-                DslContext.getParameter("va_harbor_project"),
-                "${DslContext.getParameter("va_harbor_repository")}:development"
-            ).joinToString(separator="/")
-        )         
         param("reference_prefix", "output/release/2025.01")
         checkbox(
             "use_latest_weekly_reference_output",
@@ -148,7 +139,7 @@ object StartVerschilanalyse : BuildType({
                 # start the VA
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
-                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
+                    --apptainer='%va_harbor_protocol%://%dep.Delft3D_Publish.destination_image_specific%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
