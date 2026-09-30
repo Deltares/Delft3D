@@ -421,7 +421,7 @@ contains
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
                        METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
-                       NEAREST_NEIGHBOUR, METHOD_BILINEAR
+                       NEAREST_NEIGHBOUR
 
       integer, intent(in) :: method !< Method, result of select_spatial_field_method.
       integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
@@ -434,7 +434,7 @@ contains
 
       select case (filetype)
       case (UNIFORM, BCASCII)
-         is_valid = any(method == [SPACEANDTIME, METHOD_BILINEAR])
+         is_valid = method == SPACEANDTIME
       case (UNIMAGDIR)
          is_valid = method == SPACEANDTIME
       case (ARCINFO)
@@ -444,7 +444,7 @@ contains
       case (CURVI)
          is_valid = method == WEIGHTFACTORS
       case (NCGRID)
-         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR, METHOD_BILINEAR])
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR])
       case (DATAVALUE)
          is_valid = method == METHOD_CONSTANT
       end select
