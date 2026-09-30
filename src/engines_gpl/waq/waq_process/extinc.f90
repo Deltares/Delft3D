@@ -275,8 +275,6 @@ contains
                                      detric, gloeir, ah_380, sechor1, d_1   ,        &
                                      ext   , extp_d, 1     , spectrumbot,1,sw_uit3)
 
-
-
                         !  Repeated with different secchi calculation method
                         call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,         &
                                      c_det , helhum, tau   , corchl, chlorophyl,     &
@@ -307,8 +305,9 @@ contains
                                       extchl, extp_d, 0     , spectrumtop,0,sw_uit3)
                             extchl= ext - extchl
 
+
                             !
-                            !  Total extinction coefficient minus of detritus
+                            !  Total extinction coefficient minus detritus
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
@@ -317,7 +316,7 @@ contains
                             extdet = ext - extdet
 
                             !
-                            !  Total extinction coefficient of inorganic sediment
+                            !  Total extinction coefficient minus inorganic sediment
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
@@ -326,7 +325,7 @@ contains
                             extgl  = ext - extgl
 
                             !
-                            !  Total extinction coefficient of DOC (humic acids)
+                            !  Total extinction coefficient minus DOC (humic acids)
                             !
                             call uit_zi( diep1 , diep2 , angle , c_gl1 , c_gl2 ,      &
                                       c_det , helhum, tau   , corchl, chlorophyl,     &
@@ -389,6 +388,7 @@ contains
 
                         extim  =  extgl
                         extpoc =  extdet
+                        extalg =  extchl
                         extsal =  0.0
                         ext    =  ext + ext0 + extalg + extmac
                     endif
