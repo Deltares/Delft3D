@@ -2,6 +2,7 @@ module test_deltares_common_gtest
    use assertions_gtest
    use precision, only: sp, dp
    use precision_basics, only: comparereal, equal
+   use m_date_time_from_ref_date, only: date_time_from_ref_date
 
    implicit none(type, external)
 
@@ -91,6 +92,29 @@ contains
       ! verify the scaled check correctly identifies them as equal (3 < 2*epsilon(a)*1e16 ~ 4.4)
       call f90_expect_true(equal(a, b))
    end subroutine test_dp_equal_large_values_requires_scaling
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_date_time_from_ref_date_int64, test_date_time_from_ref_date_int64,
+   !> Times beyond signed 32-bit seconds produce the correct calendar date.
+   subroutine test_date_time_from_ref_date_int64() bind(C)
+      use iso_fortran_env, only: int64
+
+      ! Local variables
+      real(kind=dp) :: time_since_ref
+      integer :: year, month, day, hour, minute, second
+
+      time_since_ref = real(2_int64 ** 33, kind=dp)
+
+      call date_time_from_ref_date(time_since_ref, '20000101', year, month, day, hour, minute, second)
+
+      call f90_expect_eq(year, 2272)
+      call f90_expect_eq(month, 3)
+      call f90_expect_eq(day, 15)
+      call f90_expect_eq(hour, 12)
+      call f90_expect_eq(minute, 56)
+      call f90_expect_eq(second, 32)
+
+   end subroutine test_date_time_from_ref_date_int64
    !$f90tw)
 
 end module test_deltares_common_gtest
