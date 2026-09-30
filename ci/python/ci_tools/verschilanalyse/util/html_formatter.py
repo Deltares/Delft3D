@@ -3,7 +3,13 @@ from typing import ClassVar, Iterable, Iterator
 
 from ci_tools.verschilanalyse.util.excel_exporter import LogComparison
 from ci_tools.verschilanalyse.util.verschilanalyse_comparison import VerschilanalyseComparison
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Tolerances, Variable, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import (
+    OutputType,
+    Tolerances,
+    Variable,
+    VerschillentoolOutput2D,
+    VerschillentoolOutput3D,
+)
 
 
 class HtmlFormatter:
@@ -98,14 +104,20 @@ class HtmlFormatter:
     def _to_rows(
         cls,
         comparisons: dict[str, LogComparison],
-        his_outputs: dict[str, VerschillentoolOutput],
-        map_outputs: dict[str, VerschillentoolOutput],
+        his_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+        map_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
     ) -> Iterator[str]:
         water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(
             cls._exceeded_water_level_models(map_outputs)
         )
         flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(
             cls._exceeded_flow_velocity_models(map_outputs)
+        )
+        salinity_exceeded = set(cls._exceeded_salinity_models(his_outputs)) | set(
+            cls._exceeded_salinity_models(map_outputs)
+        )
+        temperature_exceeded = set(cls._exceeded_temperature_models(his_outputs)) | set(
+            cls._exceeded_temperature_models(map_outputs)
         )
 
         for model_name, comparison in sorted(comparisons.items()):
@@ -136,12 +148,26 @@ class HtmlFormatter:
             if model_name in flow_vel_exceeded:
                 flow_tolerance = "❌ Exceeded"
 
+            salinity_tolerance = "✅ Success"
+            if model_name in salinity_exceeded:
+                salinity_tolerance = "❌ Exceeded"
+            elif "dflowfm2d" in model_name:
+                salinity_tolerance = "N/A"
+
+            temperature_tolerance = "✅ Success"
+            if model_name in temperature_exceeded:
+                temperature_tolerance = "❌ Exceeded"
+            elif "dflowfm2d" in model_name:
+                temperature_tolerance = "N/A"
+
             yield "".join(
                 [
                     f"<td>{model_name}</td>",
                     f"<td>{crash}</td>",
                     f"<td>{water_tolerance}</td>",
                     f"<td>{flow_tolerance}</td>",
+                    f"<td>{salinity_tolerance}</td>",
+                    f"<td>{temperature_tolerance}</td>",
                     f'<td class="align-right">{cur_comp_time}</td>',
                     f'<td class="align-right">{ref_comp_time}</td>',
                     f"<td>{comp_time_tolerance}</td>",
@@ -152,8 +178,8 @@ class HtmlFormatter:
     def _format_model_run_table(
         cls,
         comparisons: dict[str, LogComparison],
-        his_outputs: dict[str, VerschillentoolOutput],
-        map_outputs: dict[str, VerschillentoolOutput],
+        his_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+        map_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
     ) -> str:
         rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, his_outputs, map_outputs))
 
@@ -165,6 +191,8 @@ class HtmlFormatter:
                     <th>Execution status</th>
                     <th>Water level tolerances</th>
                     <th>Flow velocity tolerances</th>
+                    <th>Salinity tolerances</th>
+                    <th>Temperature tolerances</th>
                     <th>Current computation time</th>
                     <th>Reference computation time</th>
                     <th>Computation time tolerance</th>
@@ -177,7 +205,9 @@ class HtmlFormatter:
         return template.format(rows=cls._indent(rows, 1))
 
     @staticmethod
-    def _exceeded_water_level_models(model_outputs: dict[str, VerschillentoolOutput]) -> Iterator[str]:
+    def _exceeded_water_level_models(
+        model_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+    ) -> Iterator[str]:
         for model_name, output in sorted(model_outputs.items()):
             water_lvl_stats = output.water_level
             if (
@@ -188,7 +218,37 @@ class HtmlFormatter:
                 yield model_name
 
     @staticmethod
-    def _exceeded_flow_velocity_models(model_outputs: dict[str, VerschillentoolOutput]) -> Iterator[str]:
+    def _exceeded_salinity_models(
+        model_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+    ) -> Iterator[str]:
+        for model_name, output in sorted(model_outputs.items()):
+            if isinstance(output, VerschillentoolOutput3D):
+                flow_sal_stats = output.salinity
+                if (
+                    flow_sal_stats.avg_max > Tolerances.max(output.output_type, Variable.SALINITY)
+                    or flow_sal_stats.avg_rms > Tolerances.rms(output.output_type, Variable.SALINITY)
+                    or flow_sal_stats.avg_bias > Tolerances.bias(output.output_type, Variable.SALINITY)
+                ):
+                    yield model_name
+
+    @staticmethod
+    def _exceeded_temperature_models(
+        model_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+    ) -> Iterator[str]:
+        for model_name, output in sorted(model_outputs.items()):
+            if isinstance(output, VerschillentoolOutput3D):
+                flow_temp_stats = output.temperature
+                if (
+                    flow_temp_stats.avg_max > Tolerances.max(output.output_type, Variable.TEMPERATURE)
+                    or flow_temp_stats.avg_rms > Tolerances.rms(output.output_type, Variable.TEMPERATURE)
+                    or flow_temp_stats.avg_bias > Tolerances.bias(output.output_type, Variable.TEMPERATURE)
+                ):
+                    yield model_name
+
+    @staticmethod
+    def _exceeded_flow_velocity_models(
+        model_outputs: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
+    ) -> Iterator[str]:
         for model_name, output in sorted(model_outputs.items()):
             flow_vel_stats = output.flow_velocity
             if (
@@ -199,7 +259,9 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: str) -> str:
+    def _format_tolerance_list(
+        cls, output_stats: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D], output_type: str
+    ) -> str:
         exceeded_html = '<span style="color:red;">exceeded</span>'
 
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
@@ -212,6 +274,16 @@ class HtmlFormatter:
             exceeded_html = "exceeded"
             flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
 
+        salinity_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_salinity_models(output_stats))
+        if not salinity_items:
+            exceeded_html = "exceeded"
+            salinity_items = "<li>None: All salinity differences are within tolerances.</li>"
+
+        temperature_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_temperature_models(output_stats))
+        if not temperature_items:
+            exceeded_html = "exceeded"
+            temperature_items = "<li>None: All temperature differences are within tolerances.</li>"
+
         template = textwrap.dedent(
             f"""
             <p>Models where the water level tolerances were {exceeded_html}:</p>
@@ -221,6 +293,14 @@ class HtmlFormatter:
             <p>Models where the flow velocity tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-flow-velocity-tolerance-list">
                 {flow_vel_items}
+            </ul>
+            <p>Models where the salinity tolerances were {exceeded_html}:</p>
+            <ul id="{output_type}-salinity-tolerance-list">
+                {salinity_items}
+            </ul>
+            <p>Models where the temperature tolerances were {exceeded_html}:</p>
+            <ul id="{output_type}-temperature-tolerance-list">
+                {temperature_items}
             </ul>
             """
         ).strip()
