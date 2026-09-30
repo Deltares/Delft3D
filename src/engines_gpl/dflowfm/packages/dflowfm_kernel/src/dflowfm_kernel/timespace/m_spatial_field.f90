@@ -396,7 +396,7 @@ contains
    !> Determines whether a method is accepted for a static forcing file type.
    function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
-                       INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
+                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
 
       integer, intent(in) :: method !< Method, result of select_spatial_field_method.
       integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
@@ -405,9 +405,9 @@ contains
       select case (filetype)
       case (INSIDE_POLYGON)
          is_valid = method == METHOD_CONSTANT
-      case (TRIANGULATION, NCFLOW)
+      case (TRIANGULATION, GEOTIFF, NCFLOW)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
-      case (ARCINFO, GEOTIFF)
+      case (ARCINFO)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
       case (FIELD1D)
          is_valid = method == JUSTUPDATE
@@ -420,17 +420,14 @@ contains
    !! Method and file type are FM enumeration values derived from the input strings.
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
-                       METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
-                       NEAREST_NEIGHBOUR
+                                      METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
+                                      NEAREST_NEIGHBOUR
 
       integer, intent(in) :: method !< Method, result of select_spatial_field_method.
       integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
       logical :: is_valid !< `.true.` when the method is valid for the file type.
 
       is_valid = .false.
-      if (filetype == FILE_TYPE_UNKNOWN) then
-         return
-      end if
 
       select case (filetype)
       case (UNIFORM, BCASCII)
