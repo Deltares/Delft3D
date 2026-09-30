@@ -911,13 +911,11 @@
           <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-          <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
-        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        -->
+          <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         </parameters>
       </file>
       <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
@@ -954,13 +952,11 @@
           <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-          <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
-        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        -->
+          <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         </parameters>
       </file>
       <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
@@ -1477,6 +1473,18 @@
       <file name="dflowfmoutput/HK-FM_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_water_quality_output_2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f030_c120_limit_tracer_concentrations" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c120_limit_tracer_concentrations</path>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         </parameters>
       </file>
     </checks>
