@@ -355,13 +355,13 @@ contains
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
       ! Local variables
-      integer :: i !< Source/sink index
-      integer :: n_sink !< Flowcell index of sink
-      integer :: n_source !< Flowcell index of source
+      integer :: source_sink_index !< Source/sink index
+      integer :: sink_flowcell_index !< Flowcell index of sink
+      integer :: source_flowcell_index !< Flowcell index of source
+      integer, dimension(1) :: dummy_flowcell_index !< Dummy flowcell index for readout
       integer :: jakdtree
       integer :: num_points !< Number of points in the polyline representing the source/sink.
-      integer, dimension(1) :: n_dummy !< Dummy flowcell index for readout
-      character(len=IdLen), dimension(1) :: tmp_name !< Temporary name of the source/sink
+      character(len=IdLen), dimension(1) :: temporary_name !< Temporary name of the source/sink
 
       ierr = DFM_WRONGINPUT
 
@@ -388,24 +388,24 @@ contains
       self%x(self%num_total, 1:num_points) = x_points(1:num_points)
       self%y(self%num_total, 1:num_points) = y_points(1:num_points)
       self%max_xy_points(self%num_total) = num_points
-      n_sink = 0
-      n_source = 0
+      sink_flowcell_index = 0
+      source_flowcell_index = 0
 
       ! Set source/sink name.
       self%name(self%num_total) = name
 
-      tmp_name(1) = name//' source'
+      temporary_name(1) = name//' source'
       jakdtree = 0
-      n_dummy(1) = 0
+      dummy_flowcell_index(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), tmp_name(1), n_dummy(1), jakdtree, -1, INDTP_ALL)
-         n_source = n_dummy(1)
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
+         source_flowcell_index = dummy_flowcell_index(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
       if (num_points == 1) then
 
-         n_sink = 0 ! Only keep the source-side (n_source), and disable momentum discharge
+         sink_flowcell_index = 0 ! Only keep the source-side (source_flowcell_index), and disable momentum discharge
          if (area /= dmiss .and. area /= 0.0_dp) then
             ! User specified an area for momentum discharge, but that does not apply to POINT sources.
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
@@ -414,34 +414,34 @@ contains
          self%area(self%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
-         tmp_name = name//' sink'
-         n_dummy(1) = 0
+         temporary_name = name//' sink'
+         dummy_flowcell_index(1) = 0
          if (self%x(self%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), tmp_name(1), n_dummy(1), jakdtree, -1, INDTP_ALL)
-            n_sink = n_dummy(1)
+            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
+            sink_flowcell_index = dummy_flowcell_index(1)
          end if
 
-         if (n_sink /= 0 .or. n_source /= 0) then
+         if (sink_flowcell_index /= 0 .or. source_flowcell_index /= 0) then
             self%area(self%num_total) = area
          end if
       end if
 
-      if (n_sink == 0 .and. n_source == 0) then
+      if (sink_flowcell_index == 0 .and. source_flowcell_index == 0) then
          write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
          return
       end if
 
-      self%indices(self%num_total, FLOWCELL_SINK) = n_sink
+      self%indices(self%num_total, FLOWCELL_SINK) = sink_flowcell_index
       self%z_bottom(self%num_total, SINK_SIDE) = z_sink(1)
       self%z_top(self%num_total, SINK_SIDE) = z_sink(1)
 
-      self%indices(self%num_total, FLOWCELL_SOURCE) = n_source
+      self%indices(self%num_total, FLOWCELL_SOURCE) = source_flowcell_index
       self%z_bottom(self%num_total, SOURCE_SIDE) = z_source(1)
       self%z_top(self%num_total, SOURCE_SIDE) = z_source(1)
 
-      if (n_sink > 0) then
+      if (sink_flowcell_index > 0) then
          if (z_sink(2) /= dmiss) then
             self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
          end if
@@ -460,19 +460,19 @@ contains
             )
          end if
 
-         do i = 1, self%num_total - 1
-            if (self%indices(i, FLOWCELL_SINK) /= 0 .and. n_sink == self%indices(i, FLOWCELL_SINK)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(i))
+         do source_sink_index = 1, self%num_total - 1
+            if (self%indices(source_sink_index, FLOWCELL_SINK) /= 0 .and. sink_flowcell_index == self%indices(source_sink_index, FLOWCELL_SINK)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(source_sink_index))
                call warn_flush()
-            else if (self%indices(i, FLOWCELL_SOURCE) /= 0 .and. n_sink == self%indices(i, FLOWCELL_SOURCE)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(i))
+            else if (self%indices(source_sink_index, FLOWCELL_SOURCE) /= 0 .and. sink_flowcell_index == self%indices(source_sink_index, FLOWCELL_SOURCE)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(source_sink_index))
                call warn_flush()
             end if
          end do
 
       end if
 
-      if (n_source > 0) then
+      if (source_flowcell_index > 0) then
          if (z_source(2) /= dmiss) then
             self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
