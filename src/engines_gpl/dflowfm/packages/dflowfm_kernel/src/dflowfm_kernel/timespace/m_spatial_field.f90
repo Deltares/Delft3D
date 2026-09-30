@@ -244,6 +244,7 @@ contains
       ! Local variables
       logical :: is_successful
       logical :: has_interpolation_method
+      logical :: is_valid_method_filetype
       logical :: target_mask_file_exists
       character(len=:), allocatable :: trimmed_file_name
       character(len=:), allocatable :: trimmed_group_name
@@ -309,7 +310,7 @@ contains
             call err_flush()
             return
          end if
-   
+
          if (file_extension_conflicts_with_type(input%forcing_file, input%filetype, valid_extensions)) then
             write (msgbuf, '(11a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
                ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
@@ -364,6 +365,20 @@ contains
       end if
       input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
 
+      if (input%filetype == DATAVALUE .or. .not. input%is_static_field) then
+         is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
+      else
+         is_valid_method_filetype = is_valid_static_field_method_filetype(input%method, input%filetype)
+      end if
+
+      if (.not. is_valid_method_filetype) then
+         write (msgbuf, '(9a)') 'Invalid method/filetype combination in file ''', trimmed_file_name, ''': [', &
+            trimmed_group_name, ']. interpolationMethod ''', trim(input%interpolation_method), &
+            ''' is not supported for dataFileType ''', trim(input%forcing_file_type), '''.'
+         call err_flush()
+         return
+      end if
+
       select case (trim(input%quantity))
       case ('qext')
          if (jaQext == 0) then
@@ -378,12 +393,66 @@ contains
 
    end function validate_spatial_field_input
 
+   !> Determines whether a method is accepted for a static forcing file type.
+   function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
+                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
+
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
+
+      select case (filetype)
+      case (INSIDE_POLYGON)
+         is_valid = method == METHOD_CONSTANT
+      case (TRIANGULATION, GEOTIFF, NCFLOW)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
+      case (ARCINFO)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
+      case (FIELD1D)
+         is_valid = method == JUSTUPDATE
+      case default
+         is_valid = .false.
+      end select
+   end function is_valid_static_field_method_filetype
+
+   !> Determines whether a method is accepted for an EC-backed forcing file type.
+   !! Method and file type are FM enumeration values derived from the input strings.
+   function is_valid_ec_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
+                                      METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
+                                      NEAREST_NEIGHBOUR
+
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
+
+      is_valid = .false.
+
+      select case (filetype)
+      case (UNIFORM, BCASCII)
+         is_valid = method == SPACEANDTIME
+      case (UNIMAGDIR)
+         is_valid = method == SPACEANDTIME
+      case (ARCINFO)
+         is_valid = method == SPACEANDTIME
+      case (SPIDERWEB)
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION])
+      case (CURVI)
+         is_valid = method == WEIGHTFACTORS
+      case (NCGRID)
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR])
+      case (DATAVALUE)
+         is_valid = method == METHOD_CONSTANT
+      end select
+   end function is_valid_ec_method_filetype
+
    !> Checks whether a forcing file extension is compatible with its file type.
    function file_extension_conflicts_with_type(forcing_file, file_type, valid_extensions) result(conflicts)
       use m_string_utils, only: join_strings
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
-                       SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
+                                      SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
       character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
       integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
       character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
