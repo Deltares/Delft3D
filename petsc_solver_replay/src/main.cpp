@@ -315,8 +315,12 @@ PetscErrorCode ReplayFile(
     if (!solver_already_exists) {
         PetscCall(KSPCreate(communicator, &solver));
         PetscCall(KSPSetType(solver, KSPCG));
-        PetscCall(KSPSetInitialGuessNonzero(solver, PETSC_TRUE));
         PetscCall(KSPSetFromOptions(solver));
+        KSPType configured_solver_type = nullptr;
+        PetscBool is_preonly = PETSC_FALSE;
+        PetscCall(KSPGetType(solver, &configured_solver_type));
+        PetscCall(PetscStrcmp(configured_solver_type, KSPPREONLY, &is_preonly));
+        PetscCall(KSPSetInitialGuessNonzero(solver, is_preonly ? PETSC_FALSE : PETSC_TRUE));
     }
     const bool rebuild_preconditioner = !solver_already_exists ||
                                         (options.preconditioner_reuse_count > 0 &&
@@ -338,7 +342,13 @@ PetscErrorCode ReplayFile(
         solves_since_preconditioner_rebuild = 0;
     }
 
-    PetscCall(VecCopy(initial_solution, solution));
+    PetscBool uses_initial_guess = PETSC_FALSE;
+    PetscCall(KSPGetInitialGuessNonzero(solver, &uses_initial_guess));
+    if (uses_initial_guess) {
+        PetscCall(VecCopy(initial_solution, solution));
+    } else {
+        PetscCall(VecZeroEntries(solution));
+    }
     PetscLogDouble setup_seconds = 0.0;
     if (options.preconditioner_reuse_count > 0 &&
         solves_since_preconditioner_rebuild >= options.preconditioner_reuse_count) {
