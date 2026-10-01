@@ -32,8 +32,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Grdang', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
-                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
@@ -62,6 +60,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', '1dNetworkFile', OBSOLETE, 'Use individual keywords such as [Geometry] StructureFile, CrossDefFile, etc. instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'roughnessFiles', OBSOLETE, 'Use [Geometry] frictFile instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'nodeFile', OBSOLETE, 'Use [Geometry] storageNodeFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', OBSOLETE, &
+                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'hkad', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE, 'Use [Numerics] fixedWeirScheme instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE, 'Use [Numerics] fixedWeirContraction instead.')
