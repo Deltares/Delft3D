@@ -86,7 +86,8 @@ contains
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0, &
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -396,9 +397,9 @@ contains
       ltur = 0
       if (kmx > 0) then
          select case (iturbulencemodel)
-         case (0, 1, 2)
+         case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur = 0
-         case (3, 4)
+         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
             ltur = 2
          end select
       end if
@@ -915,7 +916,7 @@ contains
          dll_reals(RP_DM) = real(dxx(nm, i50), hp) ! d50 mixture, not dm; following Van Rijn 2007c
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
-         if (iturbulencemodel > 2 .and. kmx > 0) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
             dll_reals(RP_KTUR) = real(turkinws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
