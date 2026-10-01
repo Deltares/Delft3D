@@ -723,11 +723,9 @@ contains
 
                      if (javakeps == 3) then ! tureps
                         if (q1(L) + q1(L + 1) > 0) then
-                           n1 = ln(1, LL)
                            kup = ln(1, L)
                            arLL = a1(n1)
                         else
-                           n2 = ln(2, LL)
                            kup = ln(2, L)
                            arLL = a1(n2)
                         end if
@@ -735,8 +733,6 @@ contains
                         dk(k) = dk(k) + eqcu(kup) * volki
                         bk(k) = bk(k) + sqcu(kup) * volki
                      else if (javakeps == 4) then ! tureps
-                        ac1 = acL(LL)
-                        ac2 = 1.0_dp - ac1
                         k1 = ln(1, L)
                         k2 = ln(2, L)
                         volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
@@ -925,7 +921,7 @@ contains
 
       real(kind=dp) :: ac1 !< Left dx fraction for linked cell 1
       real(kind=dp) :: ac2 !< Left dx fraction for linked cell 2
-      integer :: n1 !< Flow cell index for linked cell 1   
+      integer :: n1 !< Flow cell index for linked cell 1
       integer :: n2 !< Flow cell index for linked cell 2
       integer :: l_bottom !< Bottom flow link layer index
       integer :: l_top !< Top flow link layer index
