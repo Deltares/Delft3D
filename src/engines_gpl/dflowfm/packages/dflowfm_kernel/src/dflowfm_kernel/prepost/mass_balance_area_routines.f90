@@ -391,23 +391,20 @@ contains
 !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
 !! If the input qid is not mba input name, then the same qid is returned (and no mba input name)
    subroutine get_mbainputname(qid, inputname, qidname)
-   use string_module, only: str_tolower
+   use string_module, only: istarts_with
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'massbalanceareanorth'.
       character(len=*), intent(inout) :: inputname !< The trimmed waq input name, e.g., 'north'.
       character(len=*), intent(inout) :: qidname !< The base input name for further use in external file analisys, e.g., 'massbalancearea'.
 
-      character(len=len(qid)) :: qid_lower !< Lowercased quantityid, e.g., 'massbalanceareanorth'.
-
       inputname = ''
-      qid_lower = str_tolower(qid)
 
-      if (qid_lower(1:15) == 'massbalancearea') then
+      if (istarts_with(qid, 'massbalancearea')) then
          qidname = qid(1:15)
          if (len_trim(qid) > 15) then
             inputname = trim(qid(16:))
          end if
-      else if (qid_lower(1:18) == 'waqmassbalancearea') then ! keep for backwards compatibility
+      else if (istarts_with(qid, 'waqmassbalancearea')) then ! keep for backwards compatibility
          qidname = 'massbalancearea'
          if (len_trim(qid) > 18) then
             inputname = trim(qid(19:))

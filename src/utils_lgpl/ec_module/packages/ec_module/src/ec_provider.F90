@@ -335,7 +335,7 @@ contains
 
    !> Create source Items and their contained types, based on file type and file header.
    function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2, data_value) result(success)
-      use string_module, only: str_tolower
+      use string_module, only: str_tolower, istarts_with
 
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -417,9 +417,9 @@ contains
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
             case default
-               if (index(quantityName, 'waqsegmentfunction') == 1 .or. index(quantityName, 'waqSegmentFunction') == 1) then
+               if (istarts_with(quantityName, 'waqsegmentfunction')) then
                   success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else if (index(quantityName, 'initialtracer') == 1 .or. index(quantityName, 'initialTracer') == 1) then
+               else if (istarts_with(quantityName, 'initialtracer')) then
                   success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                else
                   call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
@@ -1866,6 +1866,7 @@ contains
    !> Create subproviders, which create source Items and their contained types.
       !! meteo1.f90: read1polylin
    function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname_in) result(success)
+      use string_module, only: istarts_with
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
@@ -1998,7 +1999,7 @@ contains
          call str_lower(quantityname)
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
-            if (strcmpi(quantityname(1:9),'tracerbnd'          )) then
+            if (istarts_with(quantityname, 'tracerbnd')) then
                quantityname = quantityname(10:len(quantityname))
             end if
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'

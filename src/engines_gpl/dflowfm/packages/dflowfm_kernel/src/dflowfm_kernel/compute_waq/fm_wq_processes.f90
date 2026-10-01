@@ -1343,44 +1343,41 @@ contains
    module subroutine get_waqinputname(qid, inputname, qidname)
       !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
     !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
-      use string_module, only: str_tolower
+      use string_module, only: istarts_with
       implicit none
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'waqfunctionradsurf'.
       character(len=*), intent(inout) :: inputname !< The trimmed waq input name, e.g., 'fluor'.
       character(len=*), intent(inout) :: qidname !< The base input name for further use in external file analisys, e.g., 'tracerbnd'.
 
-      character(len=len(qid)) :: qid_lower !< Lowercased quantityid, e.g., 'waqfunctionradsurf'.
-
       inputname = ''
-      qid_lower = str_tolower(qid)
 
-      if (qid_lower(1:13) == 'initialwaqbot') then
+      if (istarts_with(qid, 'initialwaqbot')) then
          qidname = qid(1:13)
          if (len_trim(qid) > 13) then
             inputname = trim(qid(14:))
          end if
-      else if (qid_lower(1:11) == 'waqfunction') then
+      else if (istarts_with(qid, 'waqfunction')) then
          qidname = qid(1:11)
          if (len_trim(qid) > 11) then
             inputname = trim(qid(12:))
          end if
-      else if (qid_lower(1:16) == 'waqsegmentnumber') then
+      else if (istarts_with(qid, 'waqsegmentnumber')) then
          qidname = qid(1:16)
          if (len_trim(qid) > 16) then
             inputname = trim(qid(17:))
          end if
-      else if (qid_lower(1:18) == 'waqsegmentfunction') then
+      else if (istarts_with(qid, 'waqsegmentfunction')) then
          qidname = qid(1:18)
          if (len_trim(qid) > 18) then
             inputname = trim(qid(19:))
          end if
-      else if (qid_lower(1:12) == 'waqparameter') then
+      else if (istarts_with(qid, 'waqparameter')) then
          qidname = qid(1:12)
          if (len_trim(qid) > 12) then
             inputname = trim(qid(13:))
          end if
-      else if (qid_lower(1:18) == 'waqmassbalancearea') then
+      else if (istarts_with(qid, 'waqmassbalancearea')) then
          qidname = qid(1:18)
          if (len_trim(qid) > 18) then
             inputname = trim(qid(19:))
