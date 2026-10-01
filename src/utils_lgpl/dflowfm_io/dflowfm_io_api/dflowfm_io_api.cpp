@@ -42,22 +42,6 @@ namespace
         }
     }
 
-    void storeStaticStrings(std::vector<std::string>&& strings, const char*** strings_out, uint64_t* size_out)
-    {
-        static std::vector<std::string> stored_strings;
-        static std::vector<const char*> string_ptrs;
-        
-        stored_strings = std::move(strings);
-        string_ptrs.clear();
-        for (const auto& str : stored_strings)
-        {
-            string_ptrs.push_back(str.c_str());
-        }
-
-        *strings_out = string_ptrs.data();
-        *size_out = string_ptrs.size();
-    }
-
     mdu_severity_t toCSeverity(dflowfm_io::Severity severity)
     {
         switch (severity)
@@ -74,11 +58,41 @@ namespace
             return MDU_SEVERITY_INFO;
         }
     }
+
+    class StringStorage
+    {
+    public:
+        [[nodiscard]] const char* clearAndStore(std::string str)
+        { 
+            size_t dummy_size = 0;
+            return *clearAndStore({std::move(str)}, dummy_size);
+        }
+
+        [[nodiscard]] const char** clearAndStore(std::vector<std::string>&& strings, size_t& size_out)
+        { 
+            stored_strings = std::move(strings);
+            string_ptrs.clear();
+            for (const auto& str : stored_strings)
+            {
+                string_ptrs.push_back(str.c_str());
+            }
+            size_out = string_ptrs.size();
+            return string_ptrs.data();
+        }
+
+    private:
+        std::vector<std::string> stored_strings;
+        std::vector<const char*> string_ptrs;
+    };
 } // namespace
 
 struct mdu_handle_t
 {
     dflowfm_io::MduDocument mduDocument;
+    dflowfm_io::IssueReport lastIssueReport;
+
+    StringStorage stringStorage;
+    std::vector<mdu_issue_t> storedIssues;
 };
 
 const char* dflowfm_io_get_last_error()
@@ -149,14 +163,11 @@ dflowfm_io_result_t mdu_save_to_string(mdu_handle_t* handle, const char** data_o
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(data_out);
 
-    static std::string stored_string;
-
     return exceptionToResult([&]()
     {
         std::ostringstream stream;
         handle->mduDocument.Save(stream);
-        stored_string = stream.str();
-        *data_out = stored_string.c_str();
+        *data_out = handle->stringStorage.clearAndStore(stream.str());
     });
 }
 
@@ -202,12 +213,9 @@ dflowfm_io_result_t mdu_get_string(mdu_handle_t* handle, const char* key, const 
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(string_out);
 
-    static std::string stored_string;
-
     return exceptionToResult([&]()
     {
-        stored_string = handle->mduDocument.GetValue<std::string>(key);
-        *string_out = stored_string.c_str();
+        *string_out = handle->stringStorage.clearAndStore(handle->mduDocument.GetValue<std::string>(key));
     });
 }
 
@@ -217,12 +225,9 @@ dflowfm_io_result_t mdu_get_path(mdu_handle_t* handle, const char* key, const ch
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(path_out);
 
-    static std::string stored_path;
-
     return exceptionToResult([&]()
     {
-        stored_path = handle->mduDocument.GetValue<std::filesystem::path>(key).string();
-        *path_out = stored_path.c_str();
+        *path_out = handle->stringStorage.clearAndStore(handle->mduDocument.GetValue<std::filesystem::path>(key).string());
     });
 }
 
@@ -247,12 +252,9 @@ dflowfm_io_result_t mdu_get_string_enum(mdu_handle_t* handle, const char* key, c
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(enum_out);
 
-    static std::string stored_enum;
-
     return exceptionToResult([&]()
     {
-        stored_enum = handle->mduDocument.GetValue<dflowfm_io::StringEnumValue>(key).value;
-        *enum_out = stored_enum.c_str();
+        *enum_out = handle->stringStorage.clearAndStore(handle->mduDocument.GetValue<dflowfm_io::StringEnumValue>(key).value);
     });
 }
 
@@ -278,7 +280,7 @@ dflowfm_io_result_t mdu_get_string_list(mdu_handle_t* handle, const char* key, c
     return exceptionToResult([&]()
     {
         auto strings = handle->mduDocument.GetValue<std::vector<std::string>>(key);
-        storeStaticStrings(std::move(strings), string_list_out, size_out);
+        *string_list_out = handle->stringStorage.clearAndStore(std::move(strings), *size_out);
     });
 }
 
@@ -297,7 +299,7 @@ dflowfm_io_result_t mdu_get_path_list(mdu_handle_t* handle, const char* key, con
         path_strings.reserve(paths.size());
         for (const auto& p : paths) path_strings.push_back(p.string());
 
-        storeStaticStrings(std::move(path_strings), path_list_out, size_out);
+        *path_list_out = handle->stringStorage.clearAndStore(std::move(path_strings), *size_out);
     });
 }
 
@@ -454,32 +456,20 @@ dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t* handle, const mdu_issue_t**
     ENSURE_ARGUMENT_NOT_NULL(issue_list_out);
     ENSURE_ARGUMENT_NOT_NULL(size_out);
 
-    static std::vector<std::string> stored_messages;
-    static std::vector<mdu_issue_t> stored_issues;
-
     return exceptionToResult([&]() {
-        auto report = handle->mduDocument.GetReport();
+        // Store a copy of the report so we can guarantee its lifetime
+        handle->lastIssueReport = handle->mduDocument.GetReport();
 
-        stored_messages.clear();
-        stored_issues.clear();
-        for (const auto& issue : report)
+        handle->storedIssues.clear();
+        for (const auto& issue : handle->lastIssueReport)
         {
-            stored_messages.push_back(issue.message);
-        }
-
-        // Build the issue array in a second pass so the stored message strings
-        // are not reallocated while we capture pointers into them.
-        size_t index = 0;
-        for (const auto& issue : report)
-        {
-            stored_issues.push_back(mdu_issue_t{
+            handle->storedIssues.push_back(mdu_issue_t{
                 .line_number = issue.lineNumber.value_or(-1),
                 .severity = toCSeverity(issue.severity),
-                .message = stored_messages[index].c_str()});
-            ++index;
+                .message = issue.message.c_str()});
         }
 
-        *issue_list_out = stored_issues.data();
-        *size_out = stored_issues.size();
+        *issue_list_out = handle->storedIssues.data();
+        *size_out = handle->storedIssues.size();
     });
 }

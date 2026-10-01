@@ -20,12 +20,15 @@ class TestMduReport(unittest.TestCase):
         doc = _loaded_doc()
         issues = doc.report.get_issues()
         self.assertIsInstance(issues, list)
+        self.assertGreater(len(issues), 0)
         for issue in issues:
             self.assertIsInstance(issue, Issue)
 
     def test_issue_attribute_types(self):
         doc = _loaded_doc()
-        for issue in doc.report.get_issues():
+        issues = doc.report.get_issues()
+        self.assertGreater(len(issues), 0)
+        for issue in issues:
             self.assertIsInstance(issue.line_number, int)
             self.assertIsInstance(issue.severity, Severity)
             self.assertIsInstance(issue.message, str)
