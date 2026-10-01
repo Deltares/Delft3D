@@ -51,6 +51,7 @@ contains
       use m_meteo, only: item_waqfun, item_waqsfun
       use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
+      use m_spatial_field, only: deallocate_time_dependent_spatial_quantities
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
       use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
@@ -124,6 +125,8 @@ contains
          call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
 
       end do
+
+      call scan_time_dependent_spatial_inputs(bnd_ptrs)
 
       ! Register all global WAQ functions before creating any EC target fields.
       ! Growing funinp after a field points into it would invalidate that pointer.
@@ -227,7 +230,7 @@ contains
             istat, &
             prefix='While reading '''//trim(file_names(i_ext))//'''', &
             print_context_keywords=['quantity', 'dataFile'] &
-         )
+            )
 
          if (allocated(itpenzr)) then
             deallocate (itpenzr)
@@ -248,6 +251,8 @@ contains
          call tree_destroy(bnd_ptrs(i_ext)%node_ptr)
       end do
 
+      call deallocate_time_dependent_spatial_quantities()
+
       if (res) then
          iresult = DFM_NOERR
       else
@@ -255,6 +260,65 @@ contains
       end if
 
    end subroutine init_new
+
+   !> Collect quantities with an input that is updated during the time loop.
+   subroutine scan_time_dependent_spatial_inputs(bnd_ptrs)
+      use m_meteo, only: quantity_name_config_file_to_internal_name
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, select_spatial_field_method, &
+                                 is_static_file_type, allocate_time_dependent_spatial_quantities, &
+                                 register_time_dependent_spatial_quantity
+      use precision_basics, only: comparereal
+      use string_module, only: str_tolower
+      use tree_data_types, only: tree_data, tree_data_ptr
+      use tree_structures, only: tree_get_name, tree_num_nodes
+      use timespace_parameters, only: METHOD_UNKNOWN
+
+      type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
+
+      type(tree_data), pointer :: bnd_ptr
+      type(tree_data), pointer :: block_ptr
+      type(t_spatial_field_input) :: input
+      integer :: i, i_ext, max_num_quantities, num_items
+      character(len=:), allocatable :: group_name
+
+      max_num_quantities = 0
+      do i_ext = 1, size(bnd_ptrs)
+         max_num_quantities = max_num_quantities + tree_num_nodes(bnd_ptrs(i_ext)%node_ptr)
+      end do
+      call allocate_time_dependent_spatial_quantities(max_num_quantities)
+
+      do i_ext = 1, size(bnd_ptrs)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = str_tolower(trim(tree_get_name(block_ptr)))
+            select case (group_name)
+            case ('spatial', 'meteo', 'parameter', 'initial')
+               input = read_spatial_field_block(block_ptr)
+            case default
+               cycle
+            end select
+
+            if (comparereal(input%data_value, dmiss) /= 0) then
+               cycle
+            end if
+            input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
+            if (len_trim(input%quantity) == 0 .or. len_trim(input%forcing_file_type) == 0) then
+               cycle
+            end if
+            input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
+            if (input%method == METHOD_UNKNOWN) then
+               cycle
+            end if
+
+            if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
+               call register_time_dependent_spatial_quantity(input%quantity)
+            end if
+         end do
+      end do
+
+   end subroutine scan_time_dependent_spatial_inputs
 
    !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of external forcings file boundary blocks.
    subroutine check_version_number_and_open_external_forcing_file(external_force_file_name, bnd_ptr, major, iresult)
@@ -868,11 +932,12 @@ contains
 !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_ec_parameters, only: ec_undef_int
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
@@ -880,11 +945,19 @@ contains
       integer, intent(in) :: mask(:), kx, filetype, method, oper
       integer, intent(inout) :: ec_item
       real(dp), pointer, intent(out) :: target_data(:)
+      logical, intent(in) :: is_static_field
       logical :: res
 
       integer, pointer :: pkbot(:), pktop(:)
 
-      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      if (is_static_field) then
+         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      else
+         ! target data must be null to avoid binding the pointer to the wrong array.
+         ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
+         ! fm_ext_force_name_to_ec_item
+         target_data => null()
+      end if
       call setzcs()
       pkbot => kbot
       pktop => ktop
@@ -892,8 +965,11 @@ contains
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                     tunit, tstart_user, target_data)
+      if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
+         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                        tunit, tstart_user, target_data)
+      end if
+
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -966,10 +1042,10 @@ contains
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
-      use m_flowtimes, only: tzone, tunit
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
@@ -1008,6 +1084,9 @@ contains
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
+      integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
+      logical :: mapped
       integer :: oper_backup
 
       target_layer = ''
@@ -1017,6 +1096,7 @@ contains
       target_data => null()
       target_data_integer => null()
       target_array_3d => null()
+      mapped_item1 => null()
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
@@ -1026,10 +1106,10 @@ contains
 
       if (input%is_static_field) then
          call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as an initial field from file '"// &
-                               trim(input%forcing_file)//"'.")
+                   trim(input%forcing_file)//"'.")
       else
          call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as a time-dependent forcing from file '"// &
-                               trim(input%forcing_file)//"'.")
+                   trim(input%forcing_file)//"'.")
       end if
 
       associate (quantity => input%quantity, &
@@ -1113,14 +1193,45 @@ contains
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
+                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  !TODO: resolve functions should always find a target array for single target quantities.
+                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
+                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                     if (mapped) then
+                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                              trim(file_name)//''': multiple target arrays are not supported.'
+                           call err_flush()
+                           res = .false.
+                           return
+                        end if
+                        if (associated(mapped_item1) .and. associated(mapped_data1)) then
+                           target_data => mapped_data1
+                        end if
+                     end if
+                  end if
 
-                  if (associated(target_data)) then
+                  if (filetype == DATAVALUE) then
+                     res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                   method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                     if (res) then
+                        res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
+                     end if
+                     ec_item = ec_undef_int
+                  else if (associated(target_data)) then
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
                                                  forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+                  else
+                     write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' with forcingFileType '''// &
+                        trim(forcing_file_type)//''' from file '''//trim(file_name)//''': no target array is available.'
+                     call err_flush()
+                     res = .false.
+                     return
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
@@ -1139,6 +1250,9 @@ contains
                   end if
                end block
             end if
+            if (res .and. associated(mapped_item1)) then
+               mapped_item1 = ec_undef_int
+            end if
          else
             select case (trim(str_tolower(forcing_file_type)))
             case ('bcascii')
@@ -1149,7 +1263,7 @@ contains
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)

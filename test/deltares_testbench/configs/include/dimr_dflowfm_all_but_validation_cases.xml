@@ -626,6 +626,52 @@
       </file>
     </checks>
   </testCase>
+  
+  <testCase name="e02_f004_c140_trench_VR_roughness_morpho" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c140_trench_VR_roughness_morpho</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+
+  <testCase name="e02_f004_c141_trench_VR_roughness_no_morpho_bdfd50" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c141_trench_VR_roughness_no_morpho_bdfd50</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  
+  <testCase name="e02_f004_c142_trench_VR_roughness_morpho_SedDiaFromBfm" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c142_trench_VR_roughness_morpho_SedDiaFromBfm</path>
+
+    <checks>
+      <file name="output/test_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ks" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksmr" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_ksr" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  
   <testCase name="e02_f005_c010_waterlevel_tim_constant" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
 

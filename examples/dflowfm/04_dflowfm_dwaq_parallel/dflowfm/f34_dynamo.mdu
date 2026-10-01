@@ -36,7 +36,7 @@ Bamin                             = 1E-06                                       
 OpenBoundaryTolerance             = 3                                                                   # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                                                                   # Renumber the flow nodes (1: yes, 0: no)
 Kmx                               = 12                                                                  # Number of vertical layers use 0 for 2D
-Layertype                         = 2                                                                   # Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)
+Layertype                         = 1                                                                   # Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)
 NumTopSig                         = 0                                                                   # Number of sigma-layers on top of z-layers
 zLayerGrowthFactor                = 1                                                                   # z-layer thickness growth factor from DzTopUniAboveZ downwards
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
@@ -79,7 +79,7 @@ Turbulenceadvection               = 3                                           
 AntiCreep                         = 0                                                                   # Include anti-creep calculation (0: no, 1: yes)
 Maxwaterleveldiff                 = 0                                                                   # Upper bound on water level changes (<=0: no bounds)
 Maxvelocitydiff                   = 0                                                                   # Upper bound on velocity changes (<=0: no bounds)
-Epshu                             = 0.0001                                                              # Threshold water depth for wet and dry cells
+Epshu                             = 0.0001                                                               # Threshold water depth for wet and dry cells
 FixedWeirRelaxationcoef           = 0.6                                                                 # Fixed weir relaxation coefficient for the computation of energy loss (0 <= coefficient <= 1)
 
 [physics]

@@ -22,20 +22,20 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: BASE_DIR = "."
    integer, parameter :: NUM_SCALAR_METEO_CASES = 15
    character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
-      'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
-      'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
-      'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
+                                                                                                 'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
+                                                                                                 'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
+                                                                                                 'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
    character(len=48), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VARIABLES = [character(len=48) :: &
-      'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
-      'sshf', 'tauu', 'tauv', 'u10', 'v10']
+                                                                                                'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
+                                                                                                'sshf', 'tauu', 'tauv', 'u10', 'v10']
    character(len=64), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_STANDARD_NAMES = [character(len=64) :: &
-      'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
-      'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
-      'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
-      'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
+                                                                                                     'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
+                                                                                                     'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
+                                                                                                     'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
+                                                                                                     'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
    real(dp), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VALUES = [ &
-      1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
-      50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
+                                                             1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
+                                                             50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
 
 contains
 
@@ -322,7 +322,7 @@ contains
       call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
       call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
       call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, &
-                "the inactive layer above the water surface should receive the polygon value")
+                         "the inactive layer above the water surface should receive the polygon value")
 
       num_spatial_parameters = 0
       kmx = 0
@@ -735,9 +735,9 @@ contains
       integer ierr
 
       ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
-            call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
-                                      " 1.0 -1.0  1.5", &
-                                      " 0.0  1.0  1.5"])
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+                                     " 1.0 -1.0  1.5", &
+                                     " 0.0  1.0  1.5"])
 
       call create_file(QEXT_EXT, [ &
                        "[Spatial]", &
@@ -945,18 +945,21 @@ contains
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
    subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
       use m_sferic, only: jsferic
       use m_wind, only: jawind, wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx, xu, yu
       use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+      use m_unstruc_model_data, only: extfile_new_list
 
       character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
       character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
       character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
-      type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
+      integer :: iresult
 
       call create_windxy_netcdf(NC_FILE)
       call create_file(EXT_FILE, [ &
@@ -990,16 +993,11 @@ contains
       jsferic = 0
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
+      extfile_new_list = [character(len=64) :: EXT_FILE, FACTOR_EXT_FILE]
 
-      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
-      call tree_destroy(bnd_ptr)
-      call f90_expect_true(success, 'scalar NetCDF windxy initialization should succeed')
-
-      call parse_spatial_block(FACTOR_EXT_FILE, bnd_ptr, block_ptr)
-      success = init_spatial_fields(block_ptr, BASE_DIR, FACTOR_EXT_FILE, 'Spatial')
-      call tree_destroy(bnd_ptr)
-      call f90_expect_true(success, 'windxy dataValue multiply initialization should succeed')
+      iresult = DFM_NOERR
+      call init_new(iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'windxy NetCDF and dataValue inputs should initialize')
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
                                                irefdate, tzone, tunit, 0.0_dp)
@@ -1233,7 +1231,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_wl.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_wl.ext"
+      character(len=*), parameter :: EXT_FILE = "test_wl.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
                                      " 1.0 -1.0  1.5", &
@@ -1252,8 +1250,8 @@ contains
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1270,11 +1268,11 @@ contains
       call f90_expect_near(s1(1), 1.5_dp, 1.0e-6_dp, "s1(1) should match the sample value")
 
       ! CLEANUP
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
-      if (allocated(bl)) deallocate(bl)
-      if (allocated(s1)) deallocate(s1)
-      if (allocated(hs)) deallocate(hs)
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(hs)) deallocate (hs)
       call teardown_minimal_grid()
    end subroutine test_initialwaterlevel_static_field_populated_at_init
    !$f90tw)
@@ -1295,7 +1293,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_fr.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_fr.ext"
+      character(len=*), parameter :: EXT_FILE = "test_fr.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
@@ -1309,18 +1307,18 @@ contains
 
       ! ARRANGE: s-point grid for kcs/xz/yz plus a single u-point at (0,0)
       call setup_minimal_grid()
-      ndxi  = ndx
+      ndxi = ndx
       ndx2D = 0
-      lnx   = 1
+      lnx = 1
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
-      if (allocated(xu)) deallocate(xu)
-      if (allocated(yu)) deallocate(yu)
-      allocate(xu(lnx), yu(lnx))
-      call realloc(frcu,ndx, fill=0.0_dp, keepExisting=.false.)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
       xu = [0.0_dp]
       yu = [0.0_dp]
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1337,15 +1335,309 @@ contains
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, "frcu(1) should match the sample value")
 
       ! CLEANUP
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
-      lnx   = 0
-      if (allocated(bl))   deallocate(bl)
-      if (allocated(xu))   deallocate(xu)
-      if (allocated(yu))   deallocate(yu)
-      if (allocated(frcu)) deallocate(frcu)
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_static_field_populated_at_init
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_datavalue_with_static_input_is_applied_once, test_datavalue_with_static_input_is_applied_once,
+   subroutine test_datavalue_with_static_input_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flow, only: frcu
+      use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_friction.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_friction.ext'
+      integer :: ierr, iresult
+
+      call create_file(SAMPLE_FILE, ['-1.0 -1.0  0.02', &
+                                     ' 1.0 -1.0  0.02', &
+                                     ' 0.0  1.0  0.02'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    dataValue       = 0.04', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity            = frictioncoefficient', &
+                                  '    forcingFile         = '//SAMPLE_FILE, &
+                                  '    forcingFileType     = sample', &
+                                  '    interpolationMethod = triangulation', &
+                                  '    operand             = override'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      lnx = 1
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_friction_coefficient_time_dependent = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'combined static friction fields should initialize')
+      call f90_expect_eq(ja_friction_coefficient_time_dependent, 0, &
+                         'datavalue should remain static when all other inputs are static')
+      call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
+                           'the later sample field should override the datavalue')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
+                  'the first update should not reapply the static datavalue')
+
+      ndx2D = 0
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airdensity_datavalue_with_static_input_is_applied_once, test_airdensity_datavalue_with_static_input_is_applied_once,
+   !> A static airdensity datavalue must not be reapplied during runtime updates
+   !! after a later static field has replaced it.
+   subroutine test_airdensity_datavalue_with_static_input_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flowgeom, only: ndx2D
+      use m_meteo, only: ja_airdensity, ja_computed_airdensity, item_air_density
+      use m_ec_parameters, only: ec_undef_int
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use m_wind, only: air_density
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_airdensity.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_airdensity.ext'
+      integer :: ierr, iresult
+
+      call create_file(SAMPLE_FILE, ['-1.0 -1.0  1.0', &
+                                     ' 1.0 -1.0  1.0', &
+                                     ' 0.0  1.0  1.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = airdensity', &
+                                  '    dataValue       = 1.2', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity            = airdensity', &
+                                  '    forcingFile         = '//SAMPLE_FILE, &
+                                  '    forcingFileType     = sample', &
+                                  '    interpolationMethod = triangulation', &
+                                  '    operand             = override'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_airdensity = 0
+      ja_computed_airdensity = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'combined static airdensity fields should initialize')
+      call f90_expect_eq(ja_airdensity, 1, 'airdensity should be enabled after initialization')
+      call f90_expect_eq(item_air_density, ec_undef_int, 'static airdensity should not retain a runtime EC item')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the later sample field should override the datavalue during initialization')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'external forcing update should succeed')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the runtime update should not reapply the static datavalue')
+
+      ja_airdensity = 0
+      ndx2D = 0
+      if (allocated(air_density)) deallocate (air_density)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_windxy_multiple_targets_reports_error, test_static_windxy_multiple_targets_reports_error,
+   subroutine test_static_windxy_multiple_targets_reports_error() bind(C)
+      use m_flowgeom, only: lnx, xu, yu
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_unsupported_static_windxy.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_unsupported_static_windxy.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_file(SAMPLE_FILE, ['0.0 0.0 1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = windxy', &
+                       '    forcingFile         = '//SAMPLE_FILE, &
+                       '    forcingFileType     = sample', &
+                       '    interpolationMethod = triangulation'])
+
+      call setup_minimal_grid()
+      lnx = 1
+      allocate (xu(lnx), yu(lnx))
+      xu = 0.0_dp
+      yu = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'a static field with multiple mapped targets must fail initialization')
+
+      lnx = 0
+      deallocate (xu, yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_static_windxy_multiple_targets_reports_error
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
+   !> A static datavalue base must be reapplied before each dynamic multiplication,
+   !! rather than multiplying the previously updated target value cumulatively.
+   subroutine test_static_datavalue_dynamic_multiply_resets_base() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flow, only: frcu
+      use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: BC_FILE = 'test_dynamic_friction_multiplier.bc'
+      character(len=*), parameter :: EXT_FILE = 'test_static_friction_base.ext'
+      integer :: ierr, iresult
+
+      call create_file(BC_FILE, [ &
+                       '[General]', &
+                       '    fileVersion           = 1.01', &
+                       '    fileType              = boundConds', &
+                       '', &
+                       '[forcing]', &
+                       '    name                  = global', &
+                       '    function              = timeseries', &
+                       '    timeInterpolation     = linear', &
+                       '    quantity              = time', &
+                       '    unit                  = seconds since 2000-01-01 00:00:00', &
+                       '    quantity              = frictioncoefficient', &
+                       '    unit                  = 1', &
+                       '    0     2.0', &
+                       '    60    3.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    dataValue       = 1.0', &
+                       '    operand         = override', &
+                       '', &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    forcingFile     = '//BC_FILE, &
+                       '    forcingFileType = bcascii', &
+                       '    operand         = multiply'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      lnx = 1
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_friction_coefficient_time_dependent = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'initialization should succeed')
+      call f90_expect_eq(ja_friction_coefficient_time_dependent, 1, &
+                         'friction coefficient should be marked as time dependent')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 2.0_dp, 1.0e-6_dp, &
+                           'the base should be multiplied by the first time-varying value')
+
+      call set_external_forcings(60.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'second external forcing update should succeed')
+      call f90_expect_near(frcu(1), 3.0_dp, 1.0e-6_dp, &
+                           'the second multiplier should apply to the reinitialized base, not the previous result')
+
+      ja_friction_coefficient_time_dependent = 0
+      ndx2D = 0
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_static_datavalue_dynamic_multiply_resets_base
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterdepth_derives_s1, test_initialwaterdepth_derives_s1,
@@ -1363,7 +1655,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_wd.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_wd.ext"
+      character(len=*), parameter :: EXT_FILE = "test_wd.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  2.0", &
                                      " 1.0 -1.0  2.0", &
@@ -1376,14 +1668,14 @@ contains
                        "    interpolationMethod = triangulation"])
 
       ! ARRANGE: bl=0 everywhere, so expected hs=2.0 and s1 = bl + hs = 2.0
-      ndx  = 1
+      ndx = 1
       ndxi = ndx
       ndx2D = 0
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
@@ -1402,7 +1694,7 @@ contains
       call f90_expect_near(s1(1), 2.0_dp, 1.0e-6_dp, &
                            "s1(1) must equal bl+hs=2.0 via enable_quantity post-processing")
 
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
       if (allocated(bl)) deallocate (bl)
       if (allocated(s1)) deallocate (s1)
@@ -1425,7 +1717,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_sd.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_sd.ext"
+      character(len=*), parameter :: EXT_FILE = "test_sd.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  3.5", &
                                      " 1.0 -1.0  3.5", &
@@ -1437,8 +1729,8 @@ contains
                        "    forcingFileType     = sample", &
                        "    interpolationMethod = triangulation"])
 
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       secchi_depth_is_spatially_varying = .false.
       threshold_abort = LEVEL_FATAL
@@ -1484,7 +1776,7 @@ contains
       logical :: success
       integer :: ierr, expected_friction_type
       character(len=*), parameter :: SAMPLE_FILE = "test_frtype.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_frtype.ext"
+      character(len=*), parameter :: EXT_FILE = "test_frtype.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
@@ -1514,8 +1806,8 @@ contains
       allocate (ifrcutp(lnx), stat=ierr)
       call aerr('ifrcutp(lnx)', ierr, lnx)
       ifrcutp = 0
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1533,9 +1825,9 @@ contains
                          "ifrcutp(1) must equal the Manning integer from frictionTypeStringToInteger")
 
       lnx = 0
-      if (allocated(xu))     deallocate (xu)
-      if (allocated(yu))     deallocate (yu)
-      if (allocated(frcu))   deallocate (frcu)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
       if (allocated(ifrcutp)) deallocate (ifrcutp)
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_with_explicit_frictiontype
@@ -1579,9 +1871,9 @@ contains
                        "    value           = 3"])
 
       call setup_minimal_grid()
-      ndxi  = ndx
+      ndxi = ndx
       ndx2D = 0
-      lnx   = 1
+      lnx = 1
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       allocate (xu(lnx), yu(lnx), stat=ierr)
@@ -1591,8 +1883,8 @@ contains
       ! iadv is only pointered to by resolve_integer_target, not allocated there.
       ! Pre-allocate here so the pointer assignment does not dereference garbage.
       call realloc(iadv, lnx, fill=0, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1608,11 +1900,11 @@ contains
       call f90_expect_eq(iadv(1), 3, "iadv(1) should be 3 (value= keyword via transformcoef(1))")
 
       ! CLEANUP
-      lnx   = 0
-      ndxi  = 0
+      lnx = 0
+      ndxi = 0
       ndx2D = 0
-      if (allocated(xu))   deallocate (xu)
-      if (allocated(yu))   deallocate (yu)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
       if (allocated(iadv)) deallocate (iadv)
       call teardown_minimal_grid()
    end subroutine test_advectiontype_integer_field_populated
@@ -1751,11 +2043,11 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_sal.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_sal.ext"
+      character(len=*), parameter :: EXT_FILE = "test_sal.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
-                                      " 1.0 -1.0  1.5", &
-                                      " 0.0  1.0  1.5"])
+                                     " 1.0 -1.0  1.5", &
+                                     " 0.0  1.0  1.5"])
       call create_file(EXT_FILE, [ &
                        "[Initial]", &
                        "    quantity            = initialsalinity", &
@@ -1765,20 +2057,20 @@ contains
 
       ! ARRANGE
       call setup_minimal_grid()
-      ndxi    = ndx
-      ndx2D   = 0
-      kmx     = 0
-      ndkx    = ndx   ! for kmx=0: ndkx == ndx, one layer per cell
+      ndxi = ndx
+      ndx2D = 0
+      kmx = 0
+      ndkx = ndx ! for kmx=0: ndkx == ndx, one layer per cell
       NUMCONST = 1
-      ISALT    = 1
-      jasal    = 1
+      ISALT = 1
+      jasal = 1
 
       constituents = 0.0_dp
       call realloc(kbot, ndx, fill=1, keepExisting=.false.)
       call realloc(ktop, ndx, fill=1, keepExisting=.false.)
       call realloc(sa1, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1795,16 +2087,16 @@ contains
                            "sa1 should match the sample value after 2D interp + 3D expansion")
 
       ! CLEANUP
-      jasal    = 0
+      jasal = 0
       NUMCONST = 0
-      ISALT    = 0
-      ndkx     = 0
-      kmx      = 0
-      ndxi     = 0
-      ndx2D    = 0
+      ISALT = 0
+      ndkx = 0
+      kmx = 0
+      ndxi = 0
+      ndx2D = 0
       if (allocated(constituents)) deallocate (constituents)
-      if (allocated(kbot))         deallocate (kbot)
-      if (allocated(ktop))         deallocate (ktop)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
       call teardown_minimal_grid()
    end subroutine test_initialsalinity_3d_field_populated
    !$f90tw)
@@ -1846,14 +2138,14 @@ contains
 
       ! Minimal flow geometry: 1 node, 1 sigma layer.
       call setup_minimal_grid()
-      ndxi = ndx        ! ndx == 1, set by setup_minimal_grid
+      ndxi = ndx ! ndx == 1, set by setup_minimal_grid
       ndx2D = 0
-      ndkx = ndx        ! for kmx=1 and 1 node: ndkx = 1
+      ndkx = ndx ! for kmx=1 and 1 node: ndkx = 1
 
       ! Resolver guard: jasal>0 and kmx>0 are required by resolve_initial_target.
       jasal = 1
       kmx = 1
-      layertype = 0      ! sigma layers, avoids the LAYTP_Z branch
+      layertype = 0 ! sigma layers, avoids the LAYTP_Z branch
 
       call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
       call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
@@ -1891,10 +2183,10 @@ contains
       ndkx = 0
       ndxi = 0
       ndx2D = 0
-      if (allocated(sa1))  deallocate (sa1)
+      if (allocated(sa1)) deallocate (sa1)
       if (allocated(kbot)) deallocate (kbot)
       if (allocated(ktop)) deallocate (ktop)
-      if (allocated(zws))  deallocate (zws)
+      if (allocated(zws)) deallocate (zws)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
    !$f90tw)
@@ -2070,7 +2362,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
-      character(len=*), parameter :: EXT_FILE     = "test_fr1d.ext"
+      character(len=*), parameter :: EXT_FILE = "test_fr1d.ext"
 
       call create_file(FIELD1D_FILE, [ &
                        "[General]", &
@@ -2089,7 +2381,7 @@ contains
                        "    forcingFileType = 1dField"])
 
       ! ARRANGE: one 1D flow link; no 1D network needed because there are no [Branch] blocks.
-      lnx   = 1
+      lnx = 1
       lnx1d = 1
       call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
       threshold_abort = LEVEL_FATAL
@@ -2108,13 +2400,12 @@ contains
                            "frcu(1) should equal the global value from the [Global] block")
 
       ! CLEANUP
-      lnx   = 0
+      lnx = 0
       lnx1d = 0
       if (allocated(frcu)) deallocate (frcu)
       call teardown_minimal_grid()
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
    !$f90tw)
-
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
    subroutine test_scalar_meteo_bcascii_matrix() bind(C)
@@ -2205,7 +2496,7 @@ contains
       call f90_expect_true(success, trim(quantity)//' should update at t=0')
       if (trim(forcing_file_type) == 'netcdf') then
          call f90_expect_near(ecInstancePtr%ecFileReadersPtr(1)%ptr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr(1), expected_value, &
-                  1.0e-6_dp, trim(quantity)//' source value at t=0')
+                              1.0e-6_dp, trim(quantity)//' source value at t=0')
       end if
       call f90_expect_near(target_data(1), expected_value, 1.0e-6_dp, trim(quantity)//' value at t=0')
 
@@ -2332,18 +2623,18 @@ contains
       do i = 1, NUM_SCALAR_METEO_CASES
          if (scalar_source) then
             call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
-                                                         [time_dimid], variable_ids(i)), &
-                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+                                                 [time_dimid], variable_ids(i)), &
+                                    'define '//trim(SCALAR_METEO_VARIABLES(i)))
          else
             call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
-                                                         [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
-                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+                                                 [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
+                                    'define '//trim(SCALAR_METEO_VARIABLES(i)))
          end if
          call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
-                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
+                                 'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
          if (.not. scalar_source) then
             call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
-                                           'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+                                    'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
          end if
       end do
 
