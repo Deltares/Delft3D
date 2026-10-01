@@ -95,7 +95,9 @@ contains
       
       womegu = 0.0_dp
 
-      if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then
+      select case (iturbulencemodel)
+
+      case (TURBULENCE_MODEL_CONSTANT)
 
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(LL,Lb,Lt,kxL,dzu,L,k,hdzb,z00,ac1,ac2,n1,n2,k1,k2,womegu,cfuhi3D)
@@ -153,7 +155,7 @@ contains
 
          !$OMP END PARALLEL DO
 
-      else if (iturbulencemodel == TURBULENCE_MODEL_ALGEBRAIC) then ! just testing 1D flow
+      case (TURBULENCE_MODEL_ALGEBRAIC) ! just testing 1D flow
 
          do LL = 1, lnx
 
@@ -216,7 +218,7 @@ contains
 
          end do
 
-      else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
+      case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
 
          call calculate_drhodz(zws, drhodz)
 
@@ -890,7 +892,7 @@ contains
          turkin0 = turkin1
          tureps0 = tureps1
 
-      end if
+      end select
 
       call links_to_centers(vicwws, vicwwu)
       if (jarichardsononoutput > 0) then
