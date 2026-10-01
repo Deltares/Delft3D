@@ -63,7 +63,7 @@ contains
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra, ti_waqproc
       use m_flowparameters, only: jadiagnostictransport
       use m_transport, only: numconst, constituents, isalt, itemp, ised1
-      use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNADSSEDTRA
+      use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_USE_VOL0
       use m_fm_wq_processes, only: perform_waq_sediment_transport_coupling
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_get_kbot_ktop, only: getkbotktop
@@ -186,9 +186,9 @@ contains
             call starttimer(IFMWAQ)
          end if
          if (ti_waqproc < 0.0_dp) then
-            call fm_wq_processes_step(dts, time1, WQ_RUNALL)
+            call fm_wq_processes_step(dts, time1, WQ_RUNALL, WQ_USE_VOL0)
          else
-            call fm_wq_processes_step(dts, time1, WQ_RUNADSSEDTRA)
+            call fm_wq_processes_step(dts, time1, WQ_RUNADSSEDTRA, WQ_USE_VOL0)
          end if
          if (jatimer == 1) then
             call stoptimer(IFMWAQ)

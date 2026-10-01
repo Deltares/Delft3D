@@ -1501,18 +1501,19 @@ contains
       end if
    end subroutine add_wqbot
 
-   module subroutine fm_wq_processes_step(dt, time, processselection)
+   module subroutine fm_wq_processes_step(dt, time, process_selection, volume_selection)
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_area_data
-      use m_flow, only: vol1
+      use m_flow, only: vol0, vol1
       use timers
 
       implicit none
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
-      integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
+      integer, intent(in) :: process_selection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
+      integer, intent(in) :: volume_selection !< indicator for which volume to use (VOL0, VOL1)
 
       integer :: ipoiconc
 
@@ -1531,7 +1532,7 @@ contains
          call timstrt("fm_wq_processes_step", ithand0)
       end if
 
-      select case (processselection)
+      select case (process_selection)
       case (WQ_RUNADSSEDTRA)
          run_process = is_always_process .or. is_ads_sed_tra_process
       case (WQ_RUNOTHER)
@@ -1539,6 +1540,12 @@ contains
       case default !run all processes
          run_process = .true.
       end select
+      
+      if (volume_selection == WQ_USE_VOL0) then
+         vol_wq_processes => vol0
+      else ! default WQ_USE_VOL1
+         vol_wq_processes => vol1
+      end if
 
       !     copy data from D-FlowFM to WAQ
       if (timon) then
@@ -1563,7 +1570,7 @@ contains
          allocate (mbadefdomain(ktx), source=-999)
       end if
 
-      call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol1(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
+      call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol_wq_processes(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
@@ -1591,7 +1598,7 @@ contains
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
       use m_flowgeom, only: Ndxi, ba, yz
-      use m_flow, only: vol1, ucx, ucy
+      use m_flow, only: ucx, ucy
       use m_flowtimes, only: irefdate, tunit
       use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
       use m_fm_wq_processes
@@ -1674,7 +1681,7 @@ contains
 
       ipoivol = arrpoi(iivol)
       do k = 0, ktx - kbx
-         process_space_real(ipoivol + k) = vol1(k + kbx)
+         process_space_real(ipoivol + k) = vol_wq_processes(k + kbx)
       end do
 
       if (isftau > 0) then
@@ -1839,7 +1846,7 @@ contains
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          do k = kb, ktmax
-            wqactive(k) = vol1(k) > waq_vol_dry_thr .and. (vol1(k) / ba(kk)) > waq_dep_dry_thr
+            wqactive(k) = vol_wq_processes(k) > waq_vol_dry_thr .and. (vol_wq_processes(k) / ba(kk)) > waq_dep_dry_thr
          end do
       end do
 
@@ -1913,7 +1920,7 @@ contains
          if (wqactive(k)) then
             do isys = 1, num_substances_transported
                iconst = isys2const(isys)
-               amass(isys, k - kbx + 1) = constituents(iconst, k) * vol1(k)
+               amass(isys, k - kbx + 1) = constituents(iconst, k) * vol_wq_processes(k)
             end do
          else
             do isys = 1, num_substances_transported
@@ -1993,7 +2000,6 @@ contains
       use m_getkbotktopmax
       use m_missing, only: dmiss
       use m_flowgeom, only: Ndxi, ba
-      use m_flow, only: vol1
       use m_flowtimes
       use m_flowparameters, only: EPS10
       use m_fm_wq_processes
@@ -2030,7 +2036,7 @@ contains
             if (wqactive(k)) then
                do isys = 1, num_substances_transported
                   iconst = isys2const(isys)
-                  constituents(iconst, k) = amass(isys, k - kbx + 1) / vol1(k)
+                  constituents(iconst, k) = amass(isys, k - kbx + 1) / vol_wq_processes(k)
                end do
             end if
          end do

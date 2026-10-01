@@ -34,7 +34,7 @@
 !!
 !! Should be called directly after a flow_run_usertimestep.
 module m_flow_finalize_usertimestep
-   use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNOTHER
+   use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNOTHER, WQ_USE_VOL1
 
    implicit none
 
@@ -81,16 +81,16 @@ contains
 
       do_fourier = (md_fou_step == 0)
 
-!   call fm_wq_processes_step(dt_user, time_user, WQ_RUNALL)
+!   run water quality processes
       if (ti_waqproc > 0) then
          if (comparereal(time_user, time_waqproc, EPS10) == 0) then
             if (jatimer == 1) then
                call starttimer(IFMWAQ)
             end if
             if (perform_waq_sediment_transport_coupling) then
-               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNOTHER)
+               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNOTHER, WQ_USE_VOL1)
             else
-               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL)
+               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL, WQ_USE_VOL1)
             end if
             if (jatimer == 1) then
                call stoptimer(IFMWAQ)

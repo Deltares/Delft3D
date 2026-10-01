@@ -72,6 +72,7 @@ module m_fm_wq_processes
    integer, allocatable :: waq_segment_number_indices(:) !< Indices of waqsegmentnumber inputs in paname and painp.
    real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
+   real(hp), pointer, dimension(:) :: vol_wq_processes !< volumes to be used by water quality processes
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
