@@ -650,7 +650,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'LandBoundaryFile', md_ldbfile, success)
       call prop_get(md_ptr, 'geometry', 'ThinDamFile', md_thdfile, success)
       call prop_get(md_ptr, 'geometry', 'Cutcelllist', md_cutcelllist, success)
-      call prop_get(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
+      !call prop_get(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
 
       call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success, value_parsed)
       if (success .and. .not. value_parsed) then
