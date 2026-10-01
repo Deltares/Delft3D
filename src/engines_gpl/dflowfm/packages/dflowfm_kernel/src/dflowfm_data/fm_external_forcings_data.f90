@@ -35,7 +35,7 @@ module fm_external_forcings_data
    logical :: success !< want je wil maar liever succes
    integer :: jatimespace !< doen ja/nee 1/0
    integer :: mhis !< unit nr external forcings history *.exthis
-   integer :: kx, filetype, mext
+   integer :: kx, filetype
    character(len=256) :: qid
    integer :: operand
 

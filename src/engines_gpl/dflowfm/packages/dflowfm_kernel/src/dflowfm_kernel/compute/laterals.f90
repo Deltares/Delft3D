@@ -46,10 +46,8 @@ module m_laterals
    integer, target, public :: numlatsg !< [-] nr of lateral discharge providers  {"rank": 0}
    integer, public :: num_layers !< first dimension of qplat and qqlat array, 1 for 2D, kmx for 3D.
    ! I see 3 occurences where QPLAT is being allocated. Investigate if this is necessary.
-   ! QPLAT is allocated 1) in fm_external_forcings_init_old, module subroutine init_new (will be removed)
-   !                    2) in fm_external_forcings_init, module subroutine init_new
-   !                    3) in test_laterals (unit test)
-   ! so yes, 3 is necessary for now.
+   ! QPLAT is allocated in fm_external_forcings_init and test_laterals (unit test).
+   ! Both allocations are necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
    real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}

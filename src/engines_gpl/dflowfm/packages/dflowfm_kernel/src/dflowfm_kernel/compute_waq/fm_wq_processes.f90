@@ -1095,13 +1095,6 @@ contains
 
       integer, intent(out) :: iresult
 
-      character(len=256) :: filename, sourcemask
-      integer :: kb, k, ja, method, kk, kt, lenqidnam, ipa, ifun, isfun
-      integer :: klocal, waqseg2D, waqseglay
-      character(len=NAMTRACLEN) :: qidnam
-      character(len=20) :: waqinput
-      real(kind=dp), allocatable :: viuh(:) ! temporary variable
-
       integer(4), save :: ithndl = 0
 
       if (timon) then
@@ -1109,8 +1102,6 @@ contains
       end if
 
       iresult = DFM_NOERR
-
-      success = .true. ! default if no valid providers are present in *.ext file (fm_external_forcings_data::success)
 
       if (.not. allocated(paname)) then
          allocate (paname(0))
@@ -1124,153 +1115,8 @@ contains
 
       call settimespacerefdat(refdat, julrefdat, Tzone, Timjan)
 
-      if (mext /= 0) then
-         ja = 1
-
-         do while (ja == 1) ! read *.ext file
-
-            call delpol() ! remove a possibly existing polygon
-            call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, sourcemask)
-            if (ja == 1) then
-               call resolvePath(filename, md_extfile_dir)
-               call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
-               ! Initialize success to be .false.
-               success = .false.
-
-               qidnam = qid
-               call get_waqinputname(qid, waqinput, qidnam)
-               lenqidnam = len_trim(qidnam)
-               if (filetype == 7 .and. method == 4) then
-                  method = 5 ! upward compatible fix
-               end if
-
-               if (qid(1:12) == 'waqparameter') then
-                  ipa = find_name(paname, waqinput)
-
-                  if (ipa == 0) then
-                     num_spatial_parameters = num_spatial_parameters + 1
-                     ipa = num_spatial_parameters
-                     call realloc(paname, num_spatial_parameters, keepExisting=.true., fill=waqinput)
-                     call realloc(painp, [num_spatial_parameters, Ndkx], keepExisting=.true., fill=0.0)
-                  end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
-
-                  !  copy existing parameter values (if they existed) in temp array
-                  do kk = 1, Ndxi
-                     call getkbotktop(kk, kb, kt)
-                     viuh(kk) = painp(ipa, kk)
-                     do k = kb, kb + kmxn(kk) - 1
-                        viuh(k) = painp(ipa, k)
-                     end do
-                  end do
-
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           painp(ipa, kk) = viuh(kk)
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              painp(ipa, k) = painp(ipa, kk)
-                           end do
-                        end if
-                     end do
-                  end if
-                  deallocate (viuh)
-
-               elseif (qid(1:16) == 'waqsegmentnumber') then
-                  ipa = find_name(paname, waqinput)
-
-                  if (ipa == 0) then
-                     num_spatial_parameters = num_spatial_parameters + 1
-                     ipa = num_spatial_parameters
-                     call realloc(paname, num_spatial_parameters, keepExisting=.true., fill=waqinput)
-                     call realloc(painp, [num_spatial_parameters, Ndkx], keepExisting=.true., fill=0.0)
-                  end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
-
-                  ! copy existing parameter values (if they existed) in temp array
-                  do kk = 1, Ndxi
-                     call getkbotktop(kk, kb, kt)
-                     viuh(kk) = painp(ipa, kk)
-                     do k = kb, kb + kmxn(kk) - 1
-                        viuh(k) = painp(ipa, k)
-                     end do
-                  end do
-
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (jampi == 0) then
-                              waqseg2D = mod(int(viuh(kk)) - 1, Ndxi) + 1
-                              waqseglay = (int(viuh(kk)) - 1) / Ndxi + 1
-                           else
-                              waqseg2D = mod(int(viuh(kk)) - 1, Nglobal_s) + 1
-                              waqseglay = (int(viuh(kk)) - 1) / Nglobal_s + 1
-                           end if
-                           klocal = global_to_local(waqseg2D)
-                           if (klocal >= 1 .and. klocal <= Ndxi .and. waqseglay >= 1 .and. waqseglay <= max(1, kmx)) then
-                              call getkbotktop(klocal, kb, kt)
-                              painp(ipa, kk) = max(kb, kb + kmxn(kk) - waqseglay) - kbx + 1
-                           else
-                              painp(ipa, kk) = -999.0
-                           end if
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              painp(ipa, k) = painp(ipa, kk)
-                           end do
-                        end if
-                     end do
-                  end if
-                  deallocate (viuh)
-
-               else if (qid(1:11) == 'waqfunction') then
-
-                  ifun = find_name(funame, waqinput)
-
-                  if (ifun == 0) then
-                     num_time_functions = num_time_functions + 1
-                     call realloc(funame, num_time_functions, keepExisting=.true., fill=waqinput)
-                     call reallocP(funinp, [num_time_functions, 1], keepExisting=.true., fill=0.0_dp)
-                  end if
-                  success = .true.
-
-               else if (qid(1:18) == 'waqsegmentfunction') then
-
-                  isfun = find_name(sfunname, waqinput)
-
-                  if (isfun == 0) then
-                     num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-                     call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill=waqinput)
-                     call reallocP(sfuninp, [num_spatial_time_fuctions, Ndkx], keepExisting=.true., fill=0.0_dp)
-                  end if
-                  success = .true.
-               else
-                  ! just accept any other keyword as success, they are evaluated again in unstruc.F90
-                  success = .true.
-               end if
-
-            end if
-
-         end do
-
-      end if ! read mext file
-
       if (loglevel_StdOut == LEVEL_DEBUG .and. associated(ecInstancePtr)) then
          call ecInstancePrintState(ecInstancePtr, callback_msg, LEVEL_DEBUG)
-      end if
-
-      if (.not. success) then
-         iresult = DFM_EXTFORCERROR
-      end if
-
-      if (mext /= 0) then
-         rewind (mext) ! rewind ext file
       end if
 
       if (timon) then

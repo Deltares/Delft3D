@@ -50,6 +50,7 @@ contains
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
       use m_meteo, only: item_waqfun, item_waqsfun
       use m_ec_parameters, only: ec_undef_int
+      use m_sobekdfm, only: nbnd1d2d, init_1d2d_boundary_points
       use m_source_sink, only: source_sinks
       use m_spatial_field, only: deallocate_time_dependent_spatial_quantities
       use m_unstruc_model_data, only: extfile_new_list
@@ -259,6 +260,10 @@ contains
          iresult = DFM_WRONGINPUT
       end if
 
+      if (iresult == DFM_NOERR .and. nbnd1d2d > 0) then
+         call init_1d2d_boundary_points()
+      end if
+
    end subroutine init_new
 
    !> Collect quantities with an input that is updated during the time loop.
@@ -323,7 +328,9 @@ contains
    !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of external forcings file boundary blocks.
    subroutine check_version_number_and_open_external_forcing_file(external_force_file_name, bnd_ptr, major, iresult)
       use properties, only: get_version_number, prop_file
-      use tree_structures, only: tree_data, tree_create
+      use fm_deprecated_keywords, only: deprecated_ext_keywords
+      use m_deprecation, only: is_obsolete
+      use tree_structures, only: tree_data, tree_create, tree_get_name, tree_num_nodes
       use messageHandling, only: warn_flush, err_flush, msgbuf
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use dfm_error, only: DFM_WRONGINPUT
@@ -338,7 +345,9 @@ contains
       character(len=:), allocatable :: file_name !< Trimmed file name
       integer :: minor !< Version numbers of the external forcing file
       integer :: istat !< Status code for file reading
+      integer :: i
       logical :: is_successful !< Flag indicating if the version number was successfully retrieved
+      character(len=255) :: keyword
 
       ! Check if the external forcing file name is empty, if so, exit without error.
       file_name = trim(external_force_file_name)
@@ -357,6 +366,17 @@ contains
          iresult = DFM_WRONGINPUT
          return
       end if
+
+      do i = 1, tree_num_nodes(bnd_ptr)
+         keyword = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
+         if (is_obsolete('', trim(keyword), deprecated_ext_keywords)) then
+            write (msgbuf, '(5a)') 'Obsolete old-format external forcing keyword ''', trim(keyword), &
+                                   ''' found in file ''', trim(file_name)//'''. Convert the file to the new section-based format.'
+            call err_flush()
+            iresult = DFM_WRONGINPUT
+            return
+         end if
+      end do
 
       ! Check the version number of the external forcing file.
       major = 0

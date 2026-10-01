@@ -47,7 +47,7 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
@@ -959,7 +959,6 @@ contains
       use m_transportdata, only: constituents, const_names
       use m_find_name, only: find_name
       use fm_external_forcings_utils, only: split_qid
-      use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
 
       implicit none
@@ -1002,8 +1001,7 @@ contains
          if (jasal > 0) then
             call realloc(satop, ndx, keepExisting=.true., fill=dmiss)
             if (inisal2D /= 0 .and. inisal2D /= 2) then
-               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                         ''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
+               call mess(LEVEL_WARN, 'InitialSalinityTop and InitialSalinityBot found. Only one of them can be used.')
             end if
             inisal2D = 2
             uniformsalinityabovez = dmiss
@@ -1019,8 +1017,7 @@ contains
          if (jasal > 0) then
             call realloc(sabot, ndx, keepExisting=.true., fill=dmiss)
             if (inisal2D /= 0 .and. inisal2D /= 3) then
-               call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                         ''', initialSalinityTop and initialSalinityBot found. Only one of them can be used.')
+               call mess(LEVEL_WARN, 'InitialSalinityTop and InitialSalinityBot found. Only one of them can be used.')
             end if
             inisal2D = 3
             uniformsalinitybelowz = dmiss
@@ -1606,26 +1603,6 @@ contains
       end select
 
    end subroutine finish_initialization
-
-   !ONLY USED IN INIT_OLD, REMOVE ONCE INIT_OLD IS GONE
-   subroutine initialfield2Dto3D(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
-      use m_missing
-
-      implicit none
-
-      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
-      real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells (1:ndkx).
-      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
-      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
-      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
-
-      real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
-
-      output_array_3d_tmp(1:1, 1:size(output_array_3d)) => output_array_3d
-
-      call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, vertical_range_min, vertical_range_max, operand)
-
-   end subroutine initialfield2Dto3D
 
    !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
    !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical

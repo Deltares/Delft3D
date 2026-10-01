@@ -30,10 +30,10 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterMethod', DEPRECATED, 'Once the keyword is removed/becomes obsolete, the "allNetlinksLoop" method will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', DEPRECATED, &
-                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
+                                  'Use [external forcing] extForceFile instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Grdang', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
-                                  'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFileNew', DEPRECATED, &
+                                  'Use [external forcing] extForceFile instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
@@ -110,6 +110,15 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', OBSOLETE, 'Process fluxes integration is always done by WAQ.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Sediment', 'MasBalMinDep', OBSOLETE)
+
+      ! Adding OBSOLETE root-level keywords from the old external-forcing format
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Quantity', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Filename', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Filetype', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Method', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Operand', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Value', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
+      call add_deprecated_keyword(deprecated_ext_keywords, '', 'Factor', OBSOLETE, 'Convert this old-format external forcing file to the new section-based format.')
 
    end subroutine default_fm_deprecated_keywords
 
