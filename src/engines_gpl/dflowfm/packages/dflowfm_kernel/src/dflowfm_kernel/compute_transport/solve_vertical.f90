@@ -216,7 +216,7 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if ((jased > 0 .or. iconstituent_to_fall_velocity_waq(j) > 0) .and. jaimplicitfallvelocity == 1) then
+               if (jaimplicitfallvelocity == 1) then
                   if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                      fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
                   else if (iconstituent_to_fall_velocity_waq(j) > 0) then
