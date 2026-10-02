@@ -5,6 +5,7 @@ module inja_templates
 
    public :: inja_create_context
    public :: inja_add_string
+   public :: inja_add_string_to_array
    public :: inja_destroy_context
    public :: inja_render_file
    public :: inja_get_last_error
@@ -24,6 +25,15 @@ module inja_templates
          character(kind=c_char), dimension(*), intent(in) :: value !< NUL-terminated value
          integer(c_int) :: status !< Zero on success, or -1 on failure
       end function inja_add_string
+
+      !> Adds or replaces a string value in the inja context.
+      function inja_add_string_to_array(context, key, value) result(status) bind(C, name="inja_add_string_to_array")
+         import :: c_char, c_int, c_ptr
+         type(c_ptr), value, intent(in) :: context !< Opaque inja context
+         character(kind=c_char), dimension(*), intent(in) :: key !< NUL-terminated key
+         character(kind=c_char), dimension(*), intent(in) :: value !< NUL-terminated value
+         integer(c_int) :: status !< Zero on success, or -1 on failure
+      end function inja_add_string_to_array
 
       !> Destroys an inja context created by inja_create_context.
       subroutine inja_destroy_context(context) bind(C, name="inja_destroy_context")

@@ -2717,6 +2717,18 @@ contains
       call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, tm_text)
       status = inja_add_string(context, "CACHED_SPEC_FILE"//c_null_char, trim(tm_text)//c_null_char)
 
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%parread /= 1) cycle
+         if (.not. associated(sr%bnd(ibound)%spectrum)) cycle
+         do isect = 1, size(sr%bnd(ibound)%spectrum)
+            if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
+            call resolve_cached_boundary_spectrum_path(trim(sr%bnd(ibound)%spectrum(isect)), run_start, run_end, tm_text)
+            status = inja_add_string_to_array(context, "CACHED_BND_SPEC_FILES"//c_null_char, trim(tm_text)//c_null_char)
+            write (tm_text, '(a, ".", i0)') trim(sr%bnd(ibound)%name), isect
+            status = inja_add_string_to_array(context, "CACHED_BND_SPEC_NAMES"//c_null_char, trim(tm_text)//c_null_char)
+         end do
+      end do
+
       status = inja_render_file(context, trim(filnam)//c_null_char, "INPUT"//c_null_char)
       if (status /= 0) then
          error_length = inja_get_last_error(context, error_text, int(size(error_text), c_int))

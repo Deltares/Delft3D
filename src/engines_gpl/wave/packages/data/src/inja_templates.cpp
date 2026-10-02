@@ -266,6 +266,31 @@ int inja_add_string(inja_context* context, const char* key, const char* value)
 }
 
 /**
+ * Adds a string value to an array in the Inja context under the specified key.
+ * Creates the array if it does not exist.
+ * Returns 0 on success, or -1 if an error occurs.
+ */
+int inja_add_string_to_array(inja_context* context, const char* key, const char* value) {
+    if (context == nullptr || key == nullptr || value == nullptr) {
+        set_error(context, "Context, key, and value must not be null.");
+        return -1;
+    }
+
+    try {
+        if (!context->data.contains(key) || !context->data[key].is_array()) {
+            context->data[key] = nlohmann::json::array();
+        }
+        context->data[key].push_back(value);
+        context->last_error.clear();
+        return 0;
+    } catch (const std::exception& exception) {
+        set_error(context, exception.what());
+        return -1;
+    }   
+}
+
+
+/**
  * Destroys the specified Inja context, freeing its resources.
  */
 void inja_destroy_context(inja_context* context)

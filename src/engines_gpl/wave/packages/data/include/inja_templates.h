@@ -13,6 +13,10 @@ inja_context* inja_create_context(void);
 /// Adds or replaces a string value in the context. Returns 0 on success.
 int inja_add_string(inja_context* context, const char* key, const char* value);
 
+/// Adds or replaces a string value at the context array. Creates the array if not exists
+/// Returns 0 on success.
+int inja_add_string_to_array(inja_context* context, const char* key, const char* value);
+
 /// Destroys a context created by inja_create_context.
 void inja_destroy_context(inja_context* context);
 
