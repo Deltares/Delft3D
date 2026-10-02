@@ -370,6 +370,7 @@ module m_flowparameters
    !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
    integer :: Icgsolver !< 'Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS '
+   integer :: max_preconditioner_reuses !< Number of PETSc solves reusing a preconditioner after a rebuild; default 10, zero disables reuse.
    integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
@@ -951,6 +952,7 @@ contains
       !                                5 = 0.7*dts, reduce au
       jsolpos = 0 ! in iterative solver force solution above bottom level
       Icgsolver = 4 !    Icgsolver = 1      ! 1 = GS_OMP, 2 = GS_OMPthreadsafe, 3 = GS, 4 = Saadilud
+      max_preconditioner_reuses = 10
       ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 

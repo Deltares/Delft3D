@@ -120,9 +120,6 @@ contains
 
 ! check solver applicability
       if (jampi == 0) then
-         if (icgsolver == 6) then
-            icgsolver = 4 ! lets prevent hk geting tired
-         end if
          if (icgsolver > 4 .and. icgsolver /= 6 .and. icgsolver /= 10 .and. icgsolver /= 44 .and. icgsolver /= 8) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
@@ -612,7 +609,7 @@ contains
 !    call conjugategradientSAAD_global(s1,ndx,nocgiter)
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-         call conjugategradientPETSC(s1, ndx, nocgiter, 1, ipre) ! 1:always compute preconditioner
+         call conjugategradientPETSC(s1, ndx, nocgiter)
          if (nocgiter == -999) then
             ierror = 1
             goto 1234
@@ -1869,12 +1866,7 @@ contains
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
          call ini_petsc(Ndx, ierror)
-         call preparePETSCsolver(0)
-#endif
-      else if (icgsolver == 10) then
-#ifdef HAVE_PETSC
-         call ini_petsc(Ndx, ierror)
-         call preparePETSCsolver(1)
+         call preparePETSCsolver()
 #endif
       else if (icgsolver == 8) then
 #ifdef HAVE_PARMS
