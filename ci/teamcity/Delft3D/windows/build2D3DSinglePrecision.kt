@@ -29,7 +29,7 @@ object WindowsBuild2D3DSP : BuildType({
 
     params {
         param("product", "auto-select")
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("container.tag", "vs2026-intel2026-ltsc2025")
         param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
@@ -86,6 +86,7 @@ object WindowsBuild2D3DSP : BuildType({
             }
             scriptContent = """
                 call C:\set-env.cmd
+                set CONAN_DEFAULT_PROFILE=delft3d_windows_msvc_195_v1
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

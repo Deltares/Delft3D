@@ -82,6 +82,7 @@ object LinuxBuild2D3DSP : BuildType({
                 export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
 
                 # Initialize Conan and install pre-built dependencies from Nexus
+                export CONAN_DEFAULT_PROFILE=delft3d_alma8_intel_2026_v1
                 python run_conan.py initialize deltares --ci
                 python build.py --config flow2d3d --build --build-type %build_type% --ci --build-dir build_flow2d3d --install-dir build_flow2d3d/install
             """.trimIndent()

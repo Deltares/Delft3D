@@ -2,8 +2,11 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "THIRD_PARTY_LIBS_TAG": "oneapi-2024-ifx-release"
+            "THIRD_PARTY_LIBS_TAG": "oneapi-2026-ifx-release"
         }
+    },
+    "containerEnv": {
+        "CONAN_DEFAULT_PROFILE": "delft3d_alma8_intel_2026_v1"
     },
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [

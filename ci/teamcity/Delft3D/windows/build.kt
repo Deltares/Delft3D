@@ -32,7 +32,7 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("container.tag", "vs2026-intel2026-ltsc2025")
         param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
@@ -77,6 +77,7 @@ object WindowsBuild : BuildType({
             name = "Build"
             scriptContent = """
                 call C:\set-env.cmd
+                set CONAN_DEFAULT_PROFILE=delft3d_windows_msvc_195_v1
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
