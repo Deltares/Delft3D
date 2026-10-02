@@ -18,6 +18,45 @@ module test_init_spatial_field
 
 contains
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_netcdf_generic_quantity_uses_explicit_variable, test_netcdf_generic_quantity_uses_explicit_variable,
+   subroutine test_netcdf_generic_quantity_uses_explicit_variable() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names, varname='custom_field')
+      call f90_assert_true(allocated(variable_names))
+      call f90_assert_true(allocated(standard_names))
+      call f90_expect_eq(size(variable_names), 1)
+      call f90_expect_eq(size(standard_names), 1)
+      call f90_expect_streq(cstr(variable_names(1)), cstr('custom_field'))
+      call f90_expect_streq(cstr(standard_names(1)), cstr('custom_field'))
+      call f90_expect_false(allocated(fallback_names))
+   end subroutine test_netcdf_generic_quantity_uses_explicit_variable
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_netcdf_generic_quantity_requires_variable, test_netcdf_generic_quantity_requires_variable,
+   subroutine test_netcdf_generic_quantity_requires_variable() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+      use m_ec_message, only: clear_ec_message
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call clear_ec_message()
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names)
+      call f90_expect_false(allocated(variable_names))
+      call f90_expect_false(allocated(standard_names))
+      call clear_ec_message()
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names, varname='')
+      call f90_expect_false(allocated(variable_names))
+      call f90_expect_false(allocated(standard_names))
+      call clear_ec_message()
+   end subroutine test_netcdf_generic_quantity_requires_variable
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_netcdf_normalizes_quantity, test_initial_netcdf_normalizes_quantity,
    subroutine test_initial_netcdf_normalizes_quantity() bind(C)
       type(t_spatial_field_input) :: input

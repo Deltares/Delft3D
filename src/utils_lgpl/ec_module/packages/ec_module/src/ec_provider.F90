@@ -388,46 +388,10 @@ contains
       case (provFile_netcdf)
          if (present(quantityname)) then
             select case (str_tolower(trim(quantityname)))
-            case ("era_interim_dataset")
-               success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-            case ("rainfall", &
-                  "rainfall_rate", &
-                  "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
-                  "airpressure_stressx_stressy", "charnock", &
-                  "windxy", "stressxy", "windx", "windy", "stressx", "stressy", &
-                  "nudge_salinity_temperature", "nudgesalinitytemperature", &
-                  "airpressure", "atmosphericpressure", &
-                  "airtemperature", "humidity", "dewpoint", "cloudiness", &
-                  "wind_speed", "wind_from_direction", &
-                  "airdensity", &
-                  "humidity_airtemperature_cloudiness", &
-                  "humidity_airtemperature_cloudiness_solarradiation", &
-                  "dewpoint_airtemperature_cloudiness", &
-                  "dewpoint_airtemperature_cloudiness_solarradiation", &
-                  "sea_ice_area_fraction", "sea_ice_thickness", &
-                  "solarradiation", "netsolarradiation", "longwaveradiation", & 
-                  "sensibleheatflux", "latentheatflux", "wavesignificantheight", &
-                  "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
-                  "xwaveforce", "ywaveforce", &
-                  "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoairpressure", "waterlevelcorrection", &
-                  "frictioncoefficient", &
-                  "secchidepth")
-               success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
             case default
-               if (index(quantityName, 'waqsegmentfunction') == 1) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else if (index(quantityName, 'initialtracer') == 1) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else
-                  call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
-                                    //trim(quantityname)//"', file='"//trim(fileReaderPtr%filename)//"'.")
-                  return
-                  ! TODO: user defined quantity name
-                  !success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               end if
+               success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             end select
          else
             call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: NetCDF requires a quantity name.")
@@ -2780,6 +2744,9 @@ contains
 
       ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
       call ecSupportNetcdfGetQuantityCandidateNames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      if (.not. allocated(ncstdnames)) then
+         return
+      end if
 
       ! ------------------------------------------------------------------------------------------------
       ! Inquiry of the dimids and the varids of lon/lat/time coordinate according to the CF-convention
@@ -2810,18 +2777,21 @@ contains
       end if
 
       ! Fill a string array with user-defined variable names
-      if (len_trim(varname) > 0) then
-         if (index(trim(varname), ' ') > 0) then
-            call strsplit(varname, 1, nccustomnames, 1)
-         else
-            call realloc(nccustomnames, 1)
-            nccustomnames(1) = varname
-         end if
+      if (present(varname)) then
+         if (len_trim(varname) > 0) then
+            if (index(trim(varname), ' ') > 0) then
+               call strsplit(varname, 1, nccustomnames, 1)
+            else
+               call realloc(nccustomnames, 1)
+               nccustomnames(1) = varname
+            end if
 
-         if (size(nccustomnames) /= expectedLength) then
-            write (cnum1, '(i2)') expectedLength
-            write (cnum2, '(i2)') size(ncvarnames)
-            call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+            if (size(nccustomnames) /= expectedLength) then
+               write (cnum1, '(i2)') expectedLength
+               write (cnum2, '(i2)') size(nccustomnames)
+               call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+               return
+            end if
          end if
       end if
 

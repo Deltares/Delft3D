@@ -575,7 +575,7 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'dissip'
          ncstdnames(1) = 'total_energy_dissipation'
-      case default ! experiment: gather miscellaneous variables from an NC-file,
+      case default
          if (index(quantityName, 'waqsegmentfunction') == 1) then
             allocate (ncvarnames(1))
             allocate (ncstdnames(1))
@@ -587,11 +587,17 @@ contains
             ncvarnames(1) = quantityName(14:)
             ncstdnames(1) = quantityName(14:)
          else
-            ! we have faulty
-            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
-            !TODO: user defined quantity name
-            !ncvarnames(1) = varname
-            !ncstdnames(1) = varname
+            if (present(varname)) then
+               if (len_trim(varname) > 0) then
+                  allocate (ncvarnames(1))
+                  allocate (ncstdnames(1))
+                  ncvarnames(1) = varname
+                  ncstdnames(1) = varname
+                  return
+               end if
+            end if
+            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)// &
+                                ", has no default NetCDF variable; provide an explicit variable name.")
          end if
       end select
 

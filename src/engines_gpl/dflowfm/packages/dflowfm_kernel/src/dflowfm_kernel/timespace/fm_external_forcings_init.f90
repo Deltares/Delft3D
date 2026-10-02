@@ -964,7 +964,7 @@ contains
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                    varname=variable_name, tgt_item1=ec_item)
+                                    varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
       if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
          res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
                                                         tunit, tstart_user, target_data)
@@ -1193,19 +1193,19 @@ contains
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
-                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  ! Find the registered item for one-shot cleanup; use its data only if target resolution did not find an array.
                   !TODO: resolve functions should always find a target array for single target quantities.
-                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
-                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
-                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
-                     if (mapped) then
-                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
-                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
-                              trim(file_name)//''': multiple target arrays are not supported.'
-                           call err_flush()
-                           res = .false.
-                           return
-                        end if
+                  mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                        mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                  if (mapped) then
+                     if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                        write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                           trim(file_name)//''': multiple target arrays are not supported.'
+                        call err_flush()
+                        res = .false.
+                        return
+                     end if
+                     if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
                         if (associated(mapped_item1) .and. associated(mapped_data1)) then
                            target_data => mapped_data1
                         end if
