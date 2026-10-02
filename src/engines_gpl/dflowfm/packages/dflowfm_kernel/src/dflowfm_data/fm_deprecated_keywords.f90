@@ -50,6 +50,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
 
       ! Adding OBSOLETE MDU keywords
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'IniFieldFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bedLevelFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'botLevUni', OBSOLETE)
