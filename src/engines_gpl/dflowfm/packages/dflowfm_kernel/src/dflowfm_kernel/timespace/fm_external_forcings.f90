@@ -836,7 +836,7 @@ contains
             end if
 
             ! When initialtracer is found, get tracername and add tracer boundary.
-            if (quantity(1:13) == 'initialtracer') then
+            if (strcmpi(quantity(1:13), 'initialtracer')) then
                call read_tracer_properties(node_ptr, transformcoef)
 
                call get_tracername(quantity, tracnam, qidnam)
