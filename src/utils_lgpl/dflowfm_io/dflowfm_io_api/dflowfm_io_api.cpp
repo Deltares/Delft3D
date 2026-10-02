@@ -458,7 +458,7 @@ dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t* handle, const mdu_issue_t**
 
     return exceptionToResult([&]() {
         handle->storedIssues.clear();
-        for (const auto& issue : handle->lastIssueReport)
+        for (const auto& issue : handle->lastIssueReport.GetIssues())
         {
             handle->storedIssues.push_back(mdu_issue_t{
                 .line_number = issue.lineNumber.value_or(-1),

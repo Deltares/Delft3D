@@ -288,14 +288,14 @@ namespace dflowfm_io::test
 
     inline const Issue* FirstIssue(const IssueReport& report, Severity severity)
     {
-        for (const auto& issue : report)
+        for (const auto& issue : report.GetIssues())
             if (issue.severity == severity) return &issue;
         return nullptr;
     }
 
     inline const Issue* FindIssue(const IssueReport& report, Severity severity, const std::string& substring)
     {
-        for (const auto& issue : report)
+        for (const auto& issue : report.GetIssues())
             if (issue.severity == severity && issue.message.find(substring) != std::string::npos)
                 return &issue;
         return nullptr;
@@ -303,7 +303,7 @@ namespace dflowfm_io::test
 
     inline const Issue* FindIssue(const IssueReport& report, const std::string& substring)
     {
-        for (const auto& issue : report)
+        for (const auto& issue : report.GetIssues())
             if (issue.message.find(substring) != std::string::npos)
                 return &issue;
         return nullptr;

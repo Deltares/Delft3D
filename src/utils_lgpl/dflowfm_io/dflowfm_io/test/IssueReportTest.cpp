@@ -14,8 +14,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        EXPECT_TRUE(report.empty());
-        EXPECT_EQ(report.size(), 0);
+        EXPECT_TRUE(report.GetIssues().empty());
     }
 
     TEST(IssueReportTest, DefaultConstructed_HasNoInfos)
@@ -56,7 +55,7 @@ namespace dflowfm_io::test
 
         report.AddError("An error occurred");
 
-        EXPECT_EQ(report.size(), 1);
+        EXPECT_EQ(report.GetIssues().size(), 1);
     }
 
     TEST(IssueReportTest, AddError_IssueHasErroreverity)
@@ -65,7 +64,7 @@ namespace dflowfm_io::test
 
         report.AddError("An error occurred");
 
-        EXPECT_EQ(report[0].severity, Severity::Error);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
     }
 
     TEST(IssueReportTest, AddError_IssueHasCorrectMessage)
@@ -74,7 +73,7 @@ namespace dflowfm_io::test
 
         report.AddError("An error occurred");
 
-        EXPECT_EQ(report[0].message, "An error occurred");
+        EXPECT_EQ(report.GetIssues()[0].message, "An error occurred");
     }
 
     TEST(IssueReportTest, AddError_IssueHasNoLineNumber)
@@ -83,7 +82,7 @@ namespace dflowfm_io::test
 
         report.AddError("An error occurred");
 
-        EXPECT_FALSE(report[0].lineNumber.has_value());
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
 
     TEST(IssueReportTest, AddError_WithFormatArgs_FormatsMessage)
@@ -92,7 +91,7 @@ namespace dflowfm_io::test
 
         report.AddError("Error code: {}", 42);
 
-        EXPECT_EQ(report[0].message, "Error code: 42");
+        EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
     }
 
     // -------------------------------------------------------------------------
@@ -105,7 +104,7 @@ namespace dflowfm_io::test
 
         report.AddWarning("A warning occurred");
 
-        EXPECT_EQ(report.size(), 1);
+        EXPECT_EQ(report.GetIssues().size(), 1);
     }
 
     TEST(IssueReportTest, AddWarning_IssueHasWarningeverity)
@@ -114,7 +113,7 @@ namespace dflowfm_io::test
 
         report.AddWarning("A warning occurred");
 
-        EXPECT_EQ(report[0].severity, Severity::Warning);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
     }
 
     TEST(IssueReportTest, AddWarning_IssueHasCorrectMessage)
@@ -123,7 +122,7 @@ namespace dflowfm_io::test
 
         report.AddWarning("A warning occurred");
 
-        EXPECT_EQ(report[0].message, "A warning occurred");
+        EXPECT_EQ(report.GetIssues()[0].message, "A warning occurred");
     }
 
     TEST(IssueReportTest, AddWarning_IssueHasNoLineNumber)
@@ -132,7 +131,7 @@ namespace dflowfm_io::test
 
         report.AddWarning("A warning occurred");
 
-        EXPECT_FALSE(report[0].lineNumber.has_value());
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
 
     TEST(IssueReportTest, AddWarning_WithFormatArgs_FormatsMessage)
@@ -141,7 +140,7 @@ namespace dflowfm_io::test
 
         report.AddWarning("Warning on field: {}", "fieldName");
 
-        EXPECT_EQ(report[0].message, "Warning on field: fieldName");
+        EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
     }
 
     // -------------------------------------------------------------------------
@@ -154,7 +153,7 @@ namespace dflowfm_io::test
 
         report.AddInfo("An info message");
 
-        EXPECT_EQ(report.size(), 1);
+        EXPECT_EQ(report.GetIssues().size(), 1);
     }
 
     TEST(IssueReportTest, AddInfo_IssueHasInfoeverity)
@@ -163,7 +162,7 @@ namespace dflowfm_io::test
 
         report.AddInfo("An info message");
 
-        EXPECT_EQ(report[0].severity, Severity::Info);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
     }
 
     TEST(IssueReportTest, AddInfo_IssueHasCorrectMessage)
@@ -172,7 +171,7 @@ namespace dflowfm_io::test
 
         report.AddInfo("An info message");
 
-        EXPECT_EQ(report[0].message, "An info message");
+        EXPECT_EQ(report.GetIssues()[0].message, "An info message");
     }
 
     TEST(IssueReportTest, AddInfo_IssueHasNoLineNumber)
@@ -181,7 +180,7 @@ namespace dflowfm_io::test
 
         report.AddInfo("An info message");
 
-        EXPECT_FALSE(report[0].lineNumber.has_value());
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
 
     TEST(IssueReportTest, AddInfo_WithFormatArgs_FormatsMessage)
@@ -190,7 +189,7 @@ namespace dflowfm_io::test
 
         report.AddInfo("Processed {} items", 5);
 
-        EXPECT_EQ(report[0].message, "Processed 5 items");
+        EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
     }
 
     // -------------------------------------------------------------------------
@@ -210,7 +209,7 @@ namespace dflowfm_io::test
 
         report.AddDebug("A debug message");
 
-        EXPECT_EQ(report.size(), 1);
+        EXPECT_EQ(report.GetIssues().size(), 1);
     }
 
     TEST(IssueReportTest, AddDebug_IssueHasDebugeverity)
@@ -219,7 +218,7 @@ namespace dflowfm_io::test
 
         report.AddDebug("A debug message");
 
-        EXPECT_EQ(report[0].severity, Severity::Debug);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
     }
 
     TEST(IssueReportTest, AddDebug_IssueHasCorrectMessage)
@@ -228,7 +227,7 @@ namespace dflowfm_io::test
 
         report.AddDebug("A debug message");
 
-        EXPECT_EQ(report[0].message, "A debug message");
+        EXPECT_EQ(report.GetIssues()[0].message, "A debug message");
     }
 
     TEST(IssueReportTest, AddDebug_IssueHasNoLineNumber)
@@ -237,7 +236,7 @@ namespace dflowfm_io::test
 
         report.AddDebug("A debug message");
 
-        EXPECT_FALSE(report[0].lineNumber.has_value());
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
 
     TEST(IssueReportTest, AddDebug_WithFormatArgs_FormatsMessage)
@@ -246,7 +245,7 @@ namespace dflowfm_io::test
 
         report.AddDebug("Debug value: {}", 7);
 
-        EXPECT_EQ(report[0].message, "Debug value: 7");
+        EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
     }
 
     // -------------------------------------------------------------------------
@@ -259,8 +258,8 @@ namespace dflowfm_io::test
 
         report.AddError(10, "An error occurred");
 
-        ASSERT_TRUE(report[0].lineNumber.has_value());
-        EXPECT_EQ(*report[0].lineNumber, 10);
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
     }
 
     TEST(IssueReportTest, AddError_WithLineNumber_IssueHasErroreverity)
@@ -269,7 +268,7 @@ namespace dflowfm_io::test
 
         report.AddError(10, "An error occurred");
 
-        EXPECT_EQ(report[0].severity, Severity::Error);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
     }
 
     TEST(IssueReportTest, AddError_WithLineNumberAndFormatArgs_FormatsMessage)
@@ -278,7 +277,7 @@ namespace dflowfm_io::test
 
         report.AddError(10, "Error code: {}", 42);
 
-        EXPECT_EQ(report[0].message, "Error code: 42");
+        EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
     }
 
     // -------------------------------------------------------------------------
@@ -291,8 +290,8 @@ namespace dflowfm_io::test
 
         report.AddWarning(20, "A warning occurred");
 
-        ASSERT_TRUE(report[0].lineNumber.has_value());
-        EXPECT_EQ(*report[0].lineNumber, 20);
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 20);
     }
 
     TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasWarningeverity)
@@ -301,7 +300,7 @@ namespace dflowfm_io::test
 
         report.AddWarning(20, "A warning occurred");
 
-        EXPECT_EQ(report[0].severity, Severity::Warning);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
     }
 
     TEST(IssueReportTest, AddWarning_WithLineNumberAndFormatArgs_FormatsMessage)
@@ -310,7 +309,7 @@ namespace dflowfm_io::test
 
         report.AddWarning(20, "Warning on field: {}", "fieldName");
 
-        EXPECT_EQ(report[0].message, "Warning on field: fieldName");
+        EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
     }
 
     // -------------------------------------------------------------------------
@@ -323,8 +322,8 @@ namespace dflowfm_io::test
 
         report.AddInfo(30, "An info message");
 
-        ASSERT_TRUE(report[0].lineNumber.has_value());
-        EXPECT_EQ(*report[0].lineNumber, 30);
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 30);
     }
 
     TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasInfoeverity)
@@ -333,7 +332,7 @@ namespace dflowfm_io::test
 
         report.AddInfo(30, "An info message");
 
-        EXPECT_EQ(report[0].severity, Severity::Info);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
     }
 
     TEST(IssueReportTest, AddInfo_WithLineNumberAndFormatArgs_FormatsMessage)
@@ -342,7 +341,7 @@ namespace dflowfm_io::test
 
         report.AddInfo(30, "Processed {} items", 5);
 
-        EXPECT_EQ(report[0].message, "Processed 5 items");
+        EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
     }
 
     // -------------------------------------------------------------------------
@@ -355,8 +354,8 @@ namespace dflowfm_io::test
 
         report.AddDebug(40, "A debug message");
 
-        ASSERT_TRUE(report[0].lineNumber.has_value());
-        EXPECT_EQ(*report[0].lineNumber, 40);
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 40);
     }
 
     TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasDebugeverity)
@@ -365,7 +364,7 @@ namespace dflowfm_io::test
 
         report.AddDebug(40, "A debug message");
 
-        EXPECT_EQ(report[0].severity, Severity::Debug);
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
     }
 
     TEST(IssueReportTest, AddDebug_WithLineNumberAndFormatArgs_FormatsMessage)
@@ -374,7 +373,7 @@ namespace dflowfm_io::test
 
         report.AddDebug(40, "Debug value: {}", 7);
 
-        EXPECT_EQ(report[0].message, "Debug value: 7");
+        EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
     }
 
     // -------------------------------------------------------------------------
@@ -389,10 +388,10 @@ namespace dflowfm_io::test
         report.AddWarning(10, "Warning at 10");
         report.AddInfo(20, "Info at 20");
 
-        ASSERT_EQ(report.size(), 3);
-        EXPECT_EQ(*report[0].lineNumber, 10);
-        EXPECT_EQ(*report[1].lineNumber, 20);
-        EXPECT_EQ(*report[2].lineNumber, 30);
+        ASSERT_EQ(report.GetIssues().size(), 3);
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
+        EXPECT_EQ(*report.GetIssues()[1].lineNumber, 20);
+        EXPECT_EQ(*report.GetIssues()[2].lineNumber, 30);
     }
 
     TEST(IssueReportTest, AddIssues_WithAndWithoutLineNumbers_IssuesWithoutLineNumberComeFirst)
@@ -402,9 +401,9 @@ namespace dflowfm_io::test
         report.AddError(5, "Error at 5");
         report.AddWarning("Warning without line");
 
-        ASSERT_EQ(report.size(), 2);
-        EXPECT_FALSE(report[0].lineNumber.has_value());
-        EXPECT_TRUE(report[1].lineNumber.has_value());
+        ASSERT_EQ(report.GetIssues().size(), 2);
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_TRUE(report.GetIssues()[1].lineNumber.has_value());
     }
 
     TEST(IssueReportTest, AddIssues_MultipleWithoutLineNumbers_PreservesInsertionOrder)
@@ -415,10 +414,10 @@ namespace dflowfm_io::test
         report.AddWarning("Second warning");
         report.AddInfo("Third info");
 
-        ASSERT_EQ(report.size(), 3);
-        EXPECT_EQ(report[0].message, "First error");
-        EXPECT_EQ(report[1].message, "Second warning");
-        EXPECT_EQ(report[2].message, "Third info");
+        ASSERT_EQ(report.GetIssues().size(), 3);
+        EXPECT_EQ(report.GetIssues()[0].message, "First error");
+        EXPECT_EQ(report.GetIssues()[1].message, "Second warning");
+        EXPECT_EQ(report.GetIssues()[2].message, "Third info");
     }
 
     // -------------------------------------------------------------------------
@@ -660,93 +659,19 @@ namespace dflowfm_io::test
         EXPECT_EQ(result, "");
     }
 
-    // -------------------------------------------------------------------------
-    // Iterators
-    // -------------------------------------------------------------------------
-
-    TEST(IssueReportTest, Iterator_NoIssues_BeginEqualsEnd)
-    {
-        IssueReport report;
-
-        EXPECT_EQ(report.begin(), report.end());
-    }
-
-    TEST(IssueReportTest, Iterator_WithIssues_IteratesAllIssues)
+    TEST(IssueReportTest, GetIssues_ReturnsRecordedIssues)
     {
         IssueReport report;
         report.AddError("Error");
         report.AddWarning("Warning");
         report.AddInfo("Info");
 
-        std::size_t count = 0;
-        for (const auto& issue : report)
-        {
-            (void)issue;
-            ++count;
-        }
+        const auto issues = report.GetIssues();
 
-        EXPECT_EQ(count, 3);
-    }
-
-    TEST(IssueReportTest, ConstIterator_WithIssues_IteratesAllIssues)
-    {
-        IssueReport report;
-        report.AddError("Error");
-        report.AddWarning("Warning");
-
-        const IssueReport& constReport = report;
-        std::size_t count = 0;
-        for (const auto& issue : constReport)
-        {
-            (void)issue;
-            ++count;
-        }
-
-        EXPECT_EQ(count, 2);
-    }
-
-    // -------------------------------------------------------------------------
-    // Operator[]
-    // -------------------------------------------------------------------------
-
-    TEST(IssueReportTest, SubscriptOperator_ValidIndex_ReturnsIssue)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_EQ(report[0].message, "An error");
-    }
-
-    TEST(IssueReportTest, SubscriptOperatorConst_ValidIndex_ReturnsIssue)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        const IssueReport& constReport = report;
-
-        EXPECT_EQ(constReport[0].message, "An error");
-    }
-
-    // -------------------------------------------------------------------------
-    // Size / Empty
-    // -------------------------------------------------------------------------
-
-    TEST(IssueReportTest, Size_AfterAddingMultipleIssues_ReturnsCorrectCount)
-    {
-        IssueReport report;
-        report.AddError("Error");
-        report.AddWarning("Warning");
-        report.AddInfo("Info");
-
-        EXPECT_EQ(report.size(), 3);
-    }
-
-    TEST(IssueReportTest, Empty_AfterAddingIssue_ReturnsFalse)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_FALSE(report.empty());
+        ASSERT_EQ(issues.size(), 3);
+        EXPECT_EQ(issues[0].message, "Error");
+        EXPECT_EQ(issues[1].message, "Warning");
+        EXPECT_EQ(issues[2].message, "Info");
     }
 
 } // namespace dflowfm_io::test

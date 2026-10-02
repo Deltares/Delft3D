@@ -17,6 +17,8 @@ namespace dflowfm_io
         issues.emplace(it, severity, std::move(message), lineNumber);
     }
 
+    std::span<const Issue> IssueReport::GetIssues() const { return issues; }
+
     bool IssueReport::HasDebug() const { return HasSeverity(Severity::Debug); }
 
     bool IssueReport::HasInfo() const { return HasSeverity(Severity::Info); }

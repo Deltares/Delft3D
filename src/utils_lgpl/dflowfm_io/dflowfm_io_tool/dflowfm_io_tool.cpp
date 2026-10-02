@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
         cout << "\nSuccessfully loaded: " << path << "\n\n";
 
-        if (!report.empty())
+        if (!report.GetIssues().empty())
         {
             cout << "Validation report:" << "\n\n";
             cout << report.Format(Severity::Info) << "\n";

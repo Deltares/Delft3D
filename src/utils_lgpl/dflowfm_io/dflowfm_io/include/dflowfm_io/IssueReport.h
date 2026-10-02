@@ -2,6 +2,7 @@
 
 #include <format>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -138,31 +139,8 @@ namespace dflowfm_io
         /// @return A string containing all formatted issues, or an empty string if there are none.
         std::string Format(Severity minSeverity = Severity::Debug) const;
 
-        /// @brief Returns true if no issues have been recorded.
-        bool empty() const { return issues.empty(); }
-
-        /// @brief Returns the total number of recorded issues.
-        std::size_t size() const { return issues.size(); }
-
-        /// @brief Returns an iterator to the first issue.
-        std::vector<Issue>::iterator begin() { return issues.begin(); }
-
-        /// @brief Returns a const iterator to the first issue.
-        std::vector<Issue>::const_iterator begin() const { return issues.begin(); }
-
-        /// @brief Returns an iterator past the last issue.
-        std::vector<Issue>::iterator end() { return issues.end(); }
-
-        /// @brief Returns a const iterator past the last issue.
-        std::vector<Issue>::const_iterator end() const { return issues.end(); }
-
-        /// @brief Returns a reference to the issue at the given index.
-        /// @param index Zero-based index into the sorted issue list.
-        Issue& operator[](std::size_t index) { return issues[index]; }
-
-        /// @brief Returns a const reference to the issue at the given index.
-        /// @param index Zero-based index into the sorted issue list.
-        const Issue& operator[](std::size_t index) const { return issues[index]; }
+        /// @brief Returns the recorded issues in sorted order.
+        std::span<const Issue> GetIssues() const;
 
     private:
         std::vector<Issue> issues;
