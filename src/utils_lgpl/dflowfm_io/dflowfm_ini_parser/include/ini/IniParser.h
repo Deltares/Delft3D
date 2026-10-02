@@ -17,28 +17,19 @@ namespace ini
 
     /// @brief Parses INI-formatted text to an INI data object.
     ///
-    /// @details The parsing behavior can be customized through @ref GetOptions(),
+    /// @details The parsing behavior can be customized through constructor options,
     /// which specifies parsing options like whether duplicate section names,
     /// duplicate property keys and multi-line values are allowed.
     ///
-    /// The INI file format can be customized through @ref GetScheme(),
+    /// The INI file format can be customized through the constructor scheme,
     /// which specifies the characters that define sections, properties and comments.
     class IniParser
     {
     public:
-        /// @brief Gets the scheme that defines the format of the INI file.
-        IniScheme& GetScheme() { return scheme; }
-
-        /// @brief Sets the scheme that defines the format of the INI file.
-        /// @param scheme The new INI scheme.
-        void SetScheme(IniScheme scheme) { this->scheme = std::move(scheme); }
-
-        /// @brief Gets the options that controls the INI parsing behavior.
-        IniParserOptions& GetOptions() { return options; }
-
-        /// @brief Sets the options that controls the INI parsing behavior.
-        /// @param config The new parsing options.
-        void SetOptions(IniParserOptions config) { this->options = std::move(config); }
+        /// @brief Creates a parser with the specified scheme and parsing options.
+        /// @param scheme The INI scheme to use.
+        /// @param options The parsing options to use.
+        explicit IniParser(IniScheme scheme = {}, IniParserOptions options = {});
 
         /// @brief Parses INI-formatted text from the specified string to an INI data object.
         /// @param ini The INI-formatted text to parse.

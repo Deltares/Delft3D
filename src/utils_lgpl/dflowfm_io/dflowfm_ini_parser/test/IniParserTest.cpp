@@ -142,10 +142,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsFalse_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowDuplicateSections = false;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\n[section]";
 
@@ -166,10 +165,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsTrue_IniDataHasMultipleSections)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowDuplicateSections = true;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\n[section]";
 
@@ -287,10 +285,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_SectionWithCommentLineAndParseCommentsIsFalse_SectionCommentsIsEmpty)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.parseComments = false;
+        IniParser parser({}, options);
 
         const std::string ini = "# section comment\n[section]";
 
@@ -455,10 +452,9 @@ namespace ini::test
     TEST_P(IniParserPropertyKeyWithSpacesAllowedTest,
            Parse_PropertyKeyWithSpacesAndAllowPropertyKeysWithSpacesIsTrue_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowPropertyKeysWithSpaces = true;
+        IniParser parser({}, options);
 
         const std::string propertyKey = GetParam();
         const std::string ini = "[section]\n" + propertyKey + "=value";
@@ -480,10 +476,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsFalse_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowDuplicateProperties = false;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nproperty=value2";
 
@@ -504,10 +499,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsTrue_SectionHasProperties)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowDuplicateProperties = true;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nproperty=value2";
 
@@ -660,10 +654,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithInlineCommentAndParseCommentsIsFalse_PropertyCommentIsEmpty)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.parseComments = false;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value # inline comment";
 
@@ -705,14 +698,13 @@ namespace ini::test
 
     TEST_P(IniParserMultiLineValueTest, Parse_PropertyWithMultiLineValue_PropertyHasMultiLineValue)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
 
-        IniScheme& scheme = parser.GetScheme();
+        IniScheme scheme;
         const char delimiter = GetParam();
         scheme.multiLineValueDelimiter = delimiter;
+        IniParser parser(scheme, options);
 
         const std::string ini = "[section]\nproperty=value1 " + std::string(1, delimiter) + "\nvalue2 " +
                                 std::string(1, delimiter) + "\nvalue3";
@@ -728,13 +720,12 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueWithoutDelimiter_PropertyHasMultiLineValue)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
 
-        IniScheme& scheme = parser.GetScheme();
+        IniScheme scheme;
         scheme.multiLineValueDelimiter = std::nullopt;
+        IniParser parser(scheme, options);
 
         const std::string ini = "[section]\nproperty=value1\nvalue2\nvalue3";
 
@@ -747,10 +738,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyMultiLineValueWithoutDelimiterAndDelimiterConfigured_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nvalue2";
 
@@ -771,10 +761,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_MultiLineValueWithoutProperty_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nvalue1 \\\nvalue2 \\\nvalue3";
 
@@ -795,10 +784,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndAllowMultiLineValuesIsFalse_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = false;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\\nvalue2 \\\nvalue3";
 
@@ -819,10 +807,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndCommentLines_CommentLinesAreIgnored)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
+        IniParser parser({}, options);
 
         const std::string ini =
             "[section]\nproperty=value1 \\\n# value comment 1\nvalue2 \\\n# value comment 2\nvalue3";
@@ -838,10 +825,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndInlineComment_PropertyHasComment)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\ # comment1\nvalue2 \\ # comment2\nvalue3 # comment3";
 
@@ -855,11 +841,10 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndInlineCommentAndParseCommentsIsFalse_PropertyCommentIsEmpty)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
         options.parseComments = false;
+        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\ # comment1\nvalue2 \\ # comment2\nvalue3 # comment3";
 
@@ -876,17 +861,16 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_WithIniSchemeConfigured_ReturnsExpectedIniData)
     {
-        IniParser parser = CreateParser();
-
-        IniParserOptions& options = parser.GetOptions();
+        IniParserOptions options;
         options.allowMultiLineValues = true;
 
-        IniScheme& scheme = parser.GetScheme();
+        IniScheme scheme;
         scheme.sectionStartDelimiter = '<';
         scheme.sectionEndDelimiter = '>';
         scheme.propertyAssignmentDelimiter = ':';
         scheme.commentDelimiter = ';';
         scheme.multiLineValueDelimiter = '-';
+        IniParser parser(scheme, options);
 
         const std::string ini = "<section>\nproperty1:value1 - ; comment1\nvalue2 ; comment2";
 

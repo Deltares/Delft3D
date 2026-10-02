@@ -17,10 +17,7 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a readable state.");
         }
 
-        IniParser parser;
-        parser.SetScheme(options.scheme);
-        parser.SetOptions(options.parserOptions);
-
+        IniParser parser(options.scheme, options.parserOptions);
         data = parser.Parse(in);
     }
 
@@ -47,10 +44,7 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a writable state.");
         }
 
-        IniFormatter formatter;
-        formatter.SetScheme(options.scheme);
-        formatter.SetOptions(options.formatterOptions);
-
+        IniFormatter formatter(options.scheme, options.formatterOptions);
         formatter.Format(data, out);
     }
 

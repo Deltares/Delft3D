@@ -4,9 +4,13 @@
 
 #include <iomanip>
 #include <sstream>
+#include <utility>
 
 namespace ini
 {
+
+    IniFormatter::IniFormatter(IniScheme scheme, IniFormatterOptions options)
+        : scheme(std::move(scheme)), options(std::move(options)) {}
 
     std::string IniFormatter::Format(const IniData& iniData) const
     {

@@ -7,9 +7,13 @@
 #include <algorithm>
 #include <format>
 #include <sstream>
+#include <utility>
 
 namespace ini
 {
+
+    IniParser::IniParser(IniScheme scheme, IniParserOptions options)
+        : scheme(std::move(scheme)), options(std::move(options)) {}
 
     IniData IniParser::Parse(const std::string& ini)
     {

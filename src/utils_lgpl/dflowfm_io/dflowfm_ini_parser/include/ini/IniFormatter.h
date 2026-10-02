@@ -12,28 +12,19 @@ namespace ini
 
     /// @brief Formats INI data to an INI-formatted string.
     ///
-    /// @details The formatting behavior can be customized through @ref GetOptions(),
+    /// @details The formatting behavior can be customized through constructor options,
     ///          which specifies formatting options like the property key/value width,
     ///          indentation and whether properties without a value should be written.
     ///
-    ///          The INI file format can be customized through @ref GetScheme(),
+    ///          The INI file format can be customized through the constructor scheme,
     ///          which specifies the characters that define sections, properties and comments.
     class IniFormatter
     {
     public:
-        /// @brief Gets the scheme that defines the format of the INI file.
-        IniScheme& GetScheme() { return scheme; }
-
-        /// @brief Sets the scheme that defines the format of the INI file.
-        /// @param value The new INI scheme.
-        void SetScheme(IniScheme value) { this->scheme = std::move(value); }
-
-        /// @brief Gets the options that control the INI formatting behavior.
-        IniFormatterOptions& GetOptions() { return options; }
-
-        /// @brief Sets the options that control the INI formatting behavior.
-        /// @param value The new formatting options.
-        void SetOptions(IniFormatterOptions options) { this->options = std::move(options); }
+        /// @brief Creates a formatter with the specified scheme and formatting options.
+        /// @param scheme The INI scheme to use.
+        /// @param options The formatting options to use.
+        explicit IniFormatter(IniScheme scheme = {}, IniFormatterOptions options = {});
 
         /// @brief Formats the specified INI data to an INI-formatted string.
         /// @param iniData The @ref IniData to format.
