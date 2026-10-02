@@ -47,8 +47,8 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
-             set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_field_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values_explicit, finish_initialization, resolve_constituent_target, resolve_integer_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
 
@@ -829,7 +829,7 @@ contains
 
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
-   function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
+   function resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index) result(success)
       use string_module, only: str_tolower
       use messagehandling, only: mess, LEVEL_ERROR
       use m_flow, only: sa1
@@ -868,7 +868,7 @@ contains
       call split_qid(quantity, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
-      case ('initialsalinity')
+      case ('salinity')
          if (jasal <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires salinity to be enabled.')
             success = .false.
@@ -877,7 +877,7 @@ contains
          target_array_3d(1:1, 1:size(sa1)) => sa1
          first_index = 1
 
-      case ('initialsedfrac')
+      case ('sedfrac')
          if (.not. stm_included) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires suspended sediment transport to be enabled.')
             success = .false.
@@ -892,7 +892,7 @@ contains
          first_index = iconst
          target_array_3d => constituents
 
-      case ('initialsediment')
+      case ('sediment')
          if (jased <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires a supported sediment transport model.')
             success = .false.
@@ -904,7 +904,7 @@ contains
          first_index = isednum
          target_array_3d => sed
 
-      case ('initialtracer')
+      case ('tracer')
          call get_tracername(quantity, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -918,7 +918,7 @@ contains
          first_index = itrac2const(itrac)
          target_array_3d => constituents
 
-      case ('initialwaqbot')
+      case ('waqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
          if (iwqbot == 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' refers to unknown WAQ bottom variable '''//trim(qid_specific)//'''.')
@@ -941,11 +941,11 @@ contains
       case default
          success = .false.
       end select
-   end function resolve_initial_3d_target
+   end function resolve_constituent_target
 
-   !> Resolve the target array and location type for an [Initial] quantity.
+   !> Resolve the target array and location type for a spatial field quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.
-   function resolve_initial_target(qid, inifilename, target_location_type, target_array) result(success)
+   function resolve_field_target(qid, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -965,7 +965,6 @@ contains
       implicit none
 
       character(len=*), intent(in) :: qid !< Name of the quantity.
-      character(len=*), intent(in) :: inifilename !< Name of the ini file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
       logical :: success !< true if the quantity was recognized and target_array is associated.
@@ -977,19 +976,11 @@ contains
       success = .true.
       call split_qid(qid, qid_base, qid_specific)
       select case (str_tolower(qid_base))
-      case ('waterlevel', 'initialwaterlevel')
-         if (str_tolower(qid) == 'waterlevel') then
-            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
-                      //''' is deprecated, use ''initialWaterLevel'' instead. Please update your input file.')
-         end if
+      case ('waterlevel')
          target_location_type = UNC_LOC_S
          target_array => s1
 
-      case ('waterdepth', 'initialwaterdepth')
-         if (str_tolower(qid) == 'waterdepth') then
-            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
-                      //''' is deprecated, use ''initialWaterDepth'' instead. Please update your input file.')
-         end if
+      case ('waterdepth')
          target_location_type = UNC_LOC_S
          target_array => hs
 
@@ -1032,7 +1023,7 @@ contains
             return
          end if
 
-      case ('initialtemperature')
+      case ('temperature')
          if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
@@ -1097,7 +1088,7 @@ contains
          success = .false.
       end select
 
-   end function resolve_initial_target
+   end function resolve_field_target
 
    !> Resolve the target array and location type for a [Parameter] quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.

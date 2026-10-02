@@ -265,7 +265,7 @@ contains
    subroutine scan_time_dependent_spatial_inputs(bnd_ptrs)
       use m_meteo, only: quantity_name_config_file_to_internal_name
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, select_spatial_field_method, &
-                                 is_static_file_type, allocate_time_dependent_spatial_quantities, &
+                                 is_static_spatial_input, allocate_time_dependent_spatial_quantities, &
                                  register_time_dependent_spatial_quantity
       use precision_basics, only: comparereal
       use string_module, only: str_tolower
@@ -312,7 +312,7 @@ contains
                cycle
             end if
 
-            if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
+            if (.not. is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)) then
                call register_time_dependent_spatial_quantity(input%quantity)
             end if
          end do
@@ -964,10 +964,11 @@ contains
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                    varname=variable_name, tgt_item1=ec_item)
+                                    varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
       if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
-         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                        tunit, tstart_user, target_data)
+         if (res) then
+            res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
+         end if
       end if
 
    end function read_3d_sigma_field
@@ -1045,12 +1046,12 @@ contains
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+      use unstruc_inifields, only: resolve_parameter_target, resolve_field_target, process_hydrological_quantities, resolve_constituent_target, resolve_integer_target, &
                                    initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
@@ -1140,13 +1141,13 @@ contains
             res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
-            res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_field_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            res = resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index)
             if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
                target_data => target_array_3d(first_index, :)
             end if
@@ -1193,28 +1194,33 @@ contains
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
-                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  ! Find the registered item for one-shot cleanup; use its data only if target resolution did not find an array.
                   !TODO: resolve functions should always find a target array for single target quantities.
-                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
-                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
-                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
-                     if (mapped) then
-                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
-                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
-                              trim(file_name)//''': multiple target arrays are not supported.'
-                           call err_flush()
-                           res = .false.
-                           return
-                        end if
+                  mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                        mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                  if (mapped) then
+                     if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                        write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                           trim(file_name)//''': multiple target arrays are not supported.'
+                        call err_flush()
+                        res = .false.
+                        return
+                     end if
+                     if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
                         if (associated(mapped_item1) .and. associated(mapped_data1)) then
                            target_data => mapped_data1
                         end if
                      end if
                   end if
 
-                  if (filetype == DATAVALUE) then
-                     res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                   method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                  if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
+                     if (filetype == NCGRID .and. len_trim(variable_name) > 0) then
+                        res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                      method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+                     else
+                        res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                      method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                     end if
                      if (res) then
                         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
                      end if
@@ -1236,7 +1242,7 @@ contains
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                     if (index(str_tolower(quantity), 'waqbot') == 1) then
                         res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
                      else
                         call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)

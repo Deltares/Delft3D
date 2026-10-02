@@ -93,17 +93,24 @@ contains
       trname = ''
       qidname = qid
 
-      if (qid(1:9) == 'tracerbnd') then
+      if (index(qid, 'tracerbnd') == 1) then
          qidname = qid(1:9)
          if (len_trim(qid) > 9) then
             trname = trim(qid(10:))
          else
             trname = trim(DEFTRACER)
          end if
-      else if (qid(1:13) == 'initialtracer') then
+      else if (index(qid, 'initialtracer') == 1) then
          qidname = qid(1:13)
          if (len_trim(qid) > 13) then
             trname = trim(qid(14:))
+         else
+            trname = trim(DEFTRACER)
+         end if
+      else if (index(qid, 'tracer') == 1) then
+         qidname = qid(1:6)
+         if (len_trim(qid) > 6) then
+            trname = trim(qid(7:))
          else
             trname = trim(DEFTRACER)
          end if
@@ -148,6 +155,13 @@ contains
          qidname = qid(1:34)
          if (len_trim(qid) > 34) then
             sfname = trim(qid(35:))
+         else
+            sfname = trim('unknown_sediment_fraction')
+         end if
+      else if (index(qid, 'sedfrac') == 1) then
+         qidname = qid(1:7)
+         if (len_trim(qid) > 7) then
+            sfname = trim(qid(8:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if

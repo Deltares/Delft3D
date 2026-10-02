@@ -1,6 +1,6 @@
 module test_init_spatial_field
    use assertions_gtest
-   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
+   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input, is_static_spatial_input
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
                                   WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE
@@ -17,6 +17,73 @@ module test_init_spatial_field
    character(len=*), parameter :: BASE_DIR = "."
 
 contains
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_netcdf_generic_quantity_uses_explicit_variable, test_netcdf_generic_quantity_uses_explicit_variable,
+   subroutine test_netcdf_generic_quantity_uses_explicit_variable() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names, varname='custom_field')
+      call f90_assert_true(allocated(variable_names))
+      call f90_assert_true(allocated(standard_names))
+      call f90_expect_eq(size(variable_names), 1)
+      call f90_expect_eq(size(standard_names), 1)
+      call f90_expect_streq(cstr(variable_names(1)), cstr('custom_field'))
+      call f90_expect_streq(cstr(standard_names(1)), cstr('custom_field'))
+      call f90_expect_false(allocated(fallback_names))
+   end subroutine test_netcdf_generic_quantity_uses_explicit_variable
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_netcdf_generic_quantity_requires_variable, test_netcdf_generic_quantity_requires_variable,
+   subroutine test_netcdf_generic_quantity_requires_variable() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+      use m_ec_message, only: clear_ec_message
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call clear_ec_message()
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names)
+      call f90_expect_false(allocated(variable_names))
+      call f90_expect_false(allocated(standard_names))
+      call clear_ec_message()
+      call ecSupportNetcdfGetQuantityCandidateNames('test.nc', 'arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names, varname='')
+      call f90_expect_false(allocated(variable_names))
+      call f90_expect_false(allocated(standard_names))
+      call clear_ec_message()
+   end subroutine test_netcdf_generic_quantity_requires_variable
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_netcdf_normalizes_quantity, test_initial_netcdf_normalizes_quantity,
+   subroutine test_initial_netcdf_normalizes_quantity() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, quantity='initialSecchiDepth')
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR))
+      call f90_expect_true(input%is_static_field)
+      call f90_expect_streq(cstr(input%quantity), cstr('secchidepth'))
+      call f90_expect_eq(input%method, WEIGHTFACTORS)
+   end subroutine test_initial_netcdf_normalizes_quantity
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_modifier_preserves_suffix, test_initial_modifier_preserves_suffix,
+   subroutine test_initial_modifier_preserves_suffix() bind(C)
+      character(len=64) :: quantity
+
+      quantity = 'initialtracerNO3'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('tracerNO3'))
+      quantity = 'secchidepth'
+      call f90_expect_false(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('secchidepth'))
+      quantity = 'initialverticalsalinityprofile'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialverticalsalinityprofile'))
+   end subroutine test_initial_modifier_preserves_suffix
+   !$f90tw)
 
    subroutine make_test_input( &
          input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
@@ -425,7 +492,7 @@ contains
    !> initialwaterlevel must return .true. and resolve to a pointer associated with s1 itself.
    !! Pointer identity proves the resolver wired the correct target.
    subroutine test_resolve_initial_target_waterlevel_points_to_s1() bind(C)
-      use unstruc_inifields, only: resolve_initial_target
+      use unstruc_inifields, only: resolve_field_target
       use fm_location_types, only: UNC_LOC_S
       use m_flow, only: s1
       use m_flowgeom, only: ndx
@@ -440,7 +507,7 @@ contains
       target_array => null()
       target_location_type = 0
 
-      success = resolve_initial_target('initialwaterlevel', 'test.ext', target_location_type, target_array)
+      success = resolve_field_target('waterlevel', target_location_type, target_array)
 
       call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
       call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")

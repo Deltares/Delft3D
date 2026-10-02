@@ -1358,6 +1358,11 @@ contains
          if (len_trim(qidloc) > 13) then
             inputname = trim(qidloc(14:))
          end if
+      else if (qidloc(1:6) == 'waqbot') then
+         qidname = qidloc(1:6)
+         if (len_trim(qidloc) > 6) then
+            inputname = trim(qidloc(7:))
+         end if
       else if (qidloc(1:11) == 'waqfunction') then
          qidname = qidloc(1:11)
          if (len_trim(qidloc) > 11) then

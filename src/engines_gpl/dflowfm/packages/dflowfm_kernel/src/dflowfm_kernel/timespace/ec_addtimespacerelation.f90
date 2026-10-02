@@ -1388,6 +1388,10 @@ contains
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = name(14:)
          end if
+      case ('tracer')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = trname
+         end if
       case default
          ! Simple quantities use the generic source connection below.
       end select
