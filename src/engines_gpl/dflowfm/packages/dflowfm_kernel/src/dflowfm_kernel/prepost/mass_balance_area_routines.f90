@@ -28,11 +28,12 @@
 
 module mass_balance_areas_routines
    use precision, only: dp
-   use m_source_sink, only: source_sinks
+   use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
-   implicit none
+   implicit none(type, external)
 
    private
+   
    public mba_init
    public mba_update
    public mba_final
@@ -275,8 +276,8 @@ contains
       call realloc(mbasorsin, [2, source_sinks%num_total], keepExisting=.true., fill=0)
       call realloc(mbasorsinout, [2, source_sinks%num_total], keepExisting=.true., fill=0)
       do isrc = 1, source_sinks%num_total
-         kk1 = source_sinks%indices(isrc, 1) ! 2D pressure cell nr FROM
-         kk2 = source_sinks%indices(isrc, 4) ! 2D pressure cell nr TO
+         kk1 = source_sinks%indices(isrc, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(isrc, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then
