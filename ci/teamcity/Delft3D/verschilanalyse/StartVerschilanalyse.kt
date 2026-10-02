@@ -40,7 +40,16 @@ object StartVerschilanalyse : BuildType({
 
     params {
         text("va_harbor_protocol", "docker", display = ParameterDisplay.PROMPT)
-        text("va_harbor_image", "%dep.${Publish.id}.destination_image_specific%", display = ParameterDisplay.PROMPT)
+        text(
+            "va_harbor_image",
+            "%dep.${Publish.id}.destination_image_specific%",
+            display = ParameterDisplay.PROMPT,
+            description =
+                "Choose what Verschilanalyse image should be used from harbor." +
+                " When triggering this as a custom build, make sure to replace this" +
+                " with an available image from https://containers.deltares.nl/harbor/projects/9/repositories/delft3dfm/artifacts-tab" +
+                " e.g. containers.deltares.nl/delft3d/delft3dfm:2.31.23-release"
+        )
         text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
         checkbox(
             "use_latest_weekly_reference_output",
