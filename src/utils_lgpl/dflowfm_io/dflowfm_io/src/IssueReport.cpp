@@ -5,7 +5,6 @@
 
 namespace dflowfm_io
 {
-
     void IssueReport::AddIssue(Severity severity, std::optional<int> lineNumber, std::string message)
     {
         auto it = std::lower_bound(issues.begin(), issues.end(), lineNumber,
@@ -18,20 +17,6 @@ namespace dflowfm_io
     }
 
     std::span<const Issue> IssueReport::GetIssues() const { return issues; }
-
-    bool IssueReport::HasDebug() const { return HasSeverity(Severity::Debug); }
-
-    bool IssueReport::HasInfo() const { return HasSeverity(Severity::Info); }
-
-    bool IssueReport::HasWarning() const { return HasSeverity(Severity::Warning); }
-
-    bool IssueReport::HasError() const { return HasSeverity(Severity::Error); }
-
-    bool IssueReport::HasSeverity(Severity severity) const
-    {
-        return std::any_of(issues.begin(), issues.end(),
-                           [severity](const Issue& issue) { return issue.severity == severity; });
-    }
 
     std::string IssueReport::Format(Severity minSeverity) const
     {

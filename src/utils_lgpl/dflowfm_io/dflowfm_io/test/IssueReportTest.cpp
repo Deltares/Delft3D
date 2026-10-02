@@ -17,27 +17,6 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.GetIssues().empty());
     }
 
-    TEST(IssueReportTest, DefaultConstructed_HasNoInfos)
-    {
-        IssueReport report;
-
-        EXPECT_FALSE(report.HasInfo());
-    }
-
-    TEST(IssueReportTest, DefaultConstructed_HasNoWarnings)
-    {
-        IssueReport report;
-
-        EXPECT_FALSE(report.HasWarning());
-    }
-
-    TEST(IssueReportTest, DefaultConstructed_HasNoErrors)
-    {
-        IssueReport report;
-
-        EXPECT_FALSE(report.HasError());
-    }
-
     TEST(IssueReportTest, DefaultConstructed_FormatReturnsEmptyString)
     {
         IssueReport report;
@@ -195,13 +174,6 @@ namespace dflowfm_io::test
     // -------------------------------------------------------------------------
     // AddDebug (no line number)
     // -------------------------------------------------------------------------
-
-    TEST(IssueReportTest, DefaultConstructed_HasNoDebugs)
-    {
-        IssueReport report;
-
-        EXPECT_FALSE(report.HasDebug());
-    }
 
     TEST(IssueReportTest, AddDebug_AddsOneIssue)
     {
@@ -418,74 +390,6 @@ namespace dflowfm_io::test
         EXPECT_EQ(report.GetIssues()[0].message, "First error");
         EXPECT_EQ(report.GetIssues()[1].message, "Second warning");
         EXPECT_EQ(report.GetIssues()[2].message, "Third info");
-    }
-
-    // -------------------------------------------------------------------------
-    // HasDebug / HasInfo / HasWarning / HasError
-    // -------------------------------------------------------------------------
-
-    TEST(IssueReportTest, HasError_AfterAddingError_ReturnsTrue)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_TRUE(report.HasError());
-    }
-
-    TEST(IssueReportTest, HasError_AfterAddingOnlyWarning_ReturnsFalse)
-    {
-        IssueReport report;
-        report.AddWarning("A warning");
-
-        EXPECT_FALSE(report.HasError());
-    }
-
-    TEST(IssueReportTest, HasWarning_AfterAddingWarning_ReturnsTrue)
-    {
-        IssueReport report;
-        report.AddWarning("A warning");
-
-        EXPECT_TRUE(report.HasWarning());
-    }
-
-    TEST(IssueReportTest, HasWarning_AfterAddingOnlyError_ReturnsFalse)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_FALSE(report.HasWarning());
-    }
-
-    TEST(IssueReportTest, HasInfo_AfterAddingInfo_ReturnsTrue)
-    {
-        IssueReport report;
-        report.AddInfo("An info");
-
-        EXPECT_TRUE(report.HasInfo());
-    }
-
-    TEST(IssueReportTest, HasInfo_AfterAddingOnlyError_ReturnsFalse)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_FALSE(report.HasInfo());
-    }
-
-    TEST(IssueReportTest, HasDebug_AfterAddingDebug_ReturnsTrue)
-    {
-        IssueReport report;
-        report.AddDebug("A debug");
-
-        EXPECT_TRUE(report.HasDebug());
-    }
-
-    TEST(IssueReportTest, HasDebug_AfterAddingOnlyError_ReturnsFalse)
-    {
-        IssueReport report;
-        report.AddError("An error");
-
-        EXPECT_FALSE(report.HasDebug());
     }
 
     // -------------------------------------------------------------------------

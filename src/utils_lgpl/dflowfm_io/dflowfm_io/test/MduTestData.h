@@ -293,6 +293,11 @@ namespace dflowfm_io::test
         return nullptr;
     }
 
+    inline bool HasIssue(const IssueReport& report, Severity severity)
+    {
+        return FirstIssue(report, severity) != nullptr;
+    }
+
     inline const Issue* FindIssue(const IssueReport& report, Severity severity, const std::string& substring)
     {
         for (const auto& issue : report.GetIssues())

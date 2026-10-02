@@ -23,7 +23,7 @@ namespace dflowfm_io
     /// @code
     /// MduDocument doc;
     /// IssueReport report = doc.Load("mymodel.mdu");
-    /// if (report.HasError()) { /* handle */ }
+    /// for (const Issue& issue : report.GetIssues()) { /* handle */ }
     /// doc.SetValue("time.tstop", 3600);
     /// doc.Save("mymodel_updated.mdu");
     /// @endcode

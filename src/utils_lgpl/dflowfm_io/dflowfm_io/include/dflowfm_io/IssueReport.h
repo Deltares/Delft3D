@@ -117,18 +117,6 @@ namespace dflowfm_io
             AddIssue(Severity::Debug, lineNumber, std::format(fmt, std::forward<Args>(args)...));
         }
 
-        /// @brief Returns true if the report contains at least one debug issue.
-        bool HasDebug() const;
-
-        /// @brief Returns true if the report contains at least one informational issue.
-        bool HasInfo() const;
-
-        /// @brief Returns true if the report contains at least one warning issue.
-        bool HasWarning() const;
-
-        /// @brief Returns true if the report contains at least one error issue.
-        bool HasError() const;
-
         /// @brief Formats all issues into a human-readable multi-line string.
         /// @details Each issue is rendered on its own line as:
         ///          - `"<Severity>: <message>\n"` when no line number is present, or
@@ -146,7 +134,6 @@ namespace dflowfm_io
         std::vector<Issue> issues;
 
         void AddIssue(Severity severity, std::optional<int> lineNumber, std::string message);
-        bool HasSeverity(Severity severity) const;
     };
 
 } // namespace dflowfm_io

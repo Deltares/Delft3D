@@ -30,14 +30,14 @@ namespace dflowfm_io::test
     {
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_FALSE(report.HasError());
+        EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoWarnings)
     {
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_FALSE(report.HasWarning());
+        EXPECT_FALSE(HasIssue(report, Severity::Warning));
     }
 
     // -------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace dflowfm_io::test
     {
         const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
@@ -70,7 +70,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndProperty)
@@ -95,7 +95,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndProperty)
@@ -120,7 +120,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasInfo());
+        EXPECT_TRUE(HasIssue(report, Severity::Info));
     }
 
     TEST_F(MduValidatorTest, Validate_OptionalPropertyWithoutValue_InfoMentionsSectionAndPropertyAndDefault)
@@ -146,7 +146,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasDebug());
+        EXPECT_TRUE(HasIssue(report, Severity::Debug));
     }
 
     TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_DebugMentionsSectionAndPropertyAndDefault)
@@ -172,7 +172,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownSection_WarningMentionsSectionName)
@@ -196,7 +196,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
     TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndProperty)
@@ -221,7 +221,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_ObsoleteSection_ErrorMentionsSection)
@@ -314,7 +314,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedSection_WarningMentionsSection)
@@ -409,7 +409,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
@@ -436,7 +436,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasError());
+        EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)
@@ -464,7 +464,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
@@ -490,7 +490,7 @@ namespace dflowfm_io::test
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
-        EXPECT_TRUE(report.HasWarning());
+        EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
