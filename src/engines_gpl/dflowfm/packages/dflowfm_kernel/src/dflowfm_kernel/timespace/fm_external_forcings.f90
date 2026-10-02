@@ -771,7 +771,7 @@ contains
       use m_alloc
       use string_module, only: strcmpi
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
-      use unstruc_inifields, only: resolve_initial_3d_target
+      use unstruc_inifields, only: resolve_constituent_target
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush
 

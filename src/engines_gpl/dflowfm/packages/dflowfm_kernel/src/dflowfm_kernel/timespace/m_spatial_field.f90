@@ -44,7 +44,7 @@ module m_spatial_field
    public :: read_averaging_input, averaging_params_to_transformcoef
    public :: allocate_time_dependent_spatial_quantities, deallocate_time_dependent_spatial_quantities, &
              register_time_dependent_spatial_quantity
-   public :: is_static_file_type
+   public :: is_static_spatial_input
 
    integer, parameter :: INI_VALUE_LEN = 256
 
@@ -77,7 +77,7 @@ module m_spatial_field
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
       logical :: is_extrapolation_allowed = .false. !< .true. when extrapolation beyond the source data extent is permitted.
-      logical :: is_static_field = .false. !< .true. when the forcingFileType= describes a static field (no time dimension). Static fields are read once at initialisation; the EC relation is never updated during the time loop.
+      logical :: is_static_field = .false. !< .true. when the input is applied once at initialization, irrespective of source time dependence.
       type(t_averaging_input) :: averaging_input = t_averaging_input() !< Averaging parameters, only meaningful when method = averaging.
    end type t_spatial_field_input
 
@@ -171,33 +171,44 @@ contains
 
    end subroutine averaging_params_to_transformcoef
 
-   !> Returns .true. when the given forcingFileType string describes a static
-   !! spatial field (no time dimension). Contains two exceptions for ambiguous file types.
-   function is_static_file_type(forcing_file_type, method, quantity) result(is_static)
+   !> Classify one-shot spatial inputs and normalize the initial quantity modifier.
+   function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
       use string_module, only: str_tolower
+      use fm_external_forcings_utils, only: split_qid
       use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
 
       character(len=*), intent(in) :: forcing_file_type !< Most forcing file types uniquely determine time-dependence.
       integer, intent(in) :: method !< arcinfo time-dependence is determined by method (currently)
-      character(len=*), intent(in), optional :: quantity !< datavalue time-dependence is determined by quantity, not file type.
+      character(len=*), intent(inout) :: quantity !< Quantity identifier; the generic initial modifier is removed.
       logical :: is_static
+      character(len=len(quantity)) :: qid_base, qid_specific
+
+      if (index(str_tolower(trim(quantity)), 'initial') == 1) then
+         is_static = .true.
+         select case (str_tolower(trim(quantity)))
+         case ('initialvelocityx', 'initialvelocityy', 'initialsalinitytop', 'initialsalinitybot', 'initialunsaturedzonethickness')
+         case default
+            if (index(str_tolower(trim(quantity)), 'initialvertical') /= 1) then
+               quantity = quantity(8:)
+               call split_qid(quantity, qid_base, qid_specific)
+               quantity = trim(str_tolower(qid_base))//trim(qid_specific)
+            end if
+         end select
+         return
+      end if
 
       select case (str_tolower(trim(forcing_file_type)))
       case ('sample', 'geotiff', 'polygon', '1dfield', 'map')
          is_static = .true.
       case ('datavalue')
-         if (present(quantity)) then
-            is_static = .not. quantity_has_time_dependent_input(quantity)
-         else
-            is_static = .false.
-         end if
+         is_static = .not. quantity_has_time_dependent_input(quantity)
       case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
          is_static = .false.
       end select
 
-   end function is_static_file_type
+   end function is_static_spatial_input
 
    !> Select the interpolation method for a spatial field input.
    function select_spatial_field_method(forcing_file_type, interpolation_method, is_extrapolation_allowed) result(method)
@@ -226,7 +237,7 @@ contains
    function validate_spatial_field_input(input, file_name, group_name, base_dir) result(is_successful)
       use messageHandling, only: err_flush, warn_flush, msgbuf
       use timespace, only: convert_file_type_string_to_integer
-      use timespace_parameters, only: DATAVALUE, FILE_TYPE_UNKNOWN
+      use timespace_parameters, only: DATAVALUE, NCGRID, FILE_TYPE_UNKNOWN
       use m_wind, only: jaQext
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
@@ -363,9 +374,10 @@ contains
          call err_flush()
          return
       end if
-      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method, input%quantity)
+      input%is_static_field = is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)
+      input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
-      if (input%filetype == DATAVALUE .or. .not. input%is_static_field) then
+      if (any(input%filetype == [DATAVALUE, NCGRID]) .or. .not. input%is_static_field) then
          is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
       else
          is_valid_method_filetype = is_valid_static_field_method_filetype(input%method, input%filetype)
