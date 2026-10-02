@@ -39,7 +39,7 @@ object StartVerschilanalyse : BuildType({
     }   
 
     params {
-        text("va_harbor_protocol", "docker", display = ParameterDisplay.PROMPT)
+        param("va_harbor_protocol", "docker")
         text(
             "va_harbor_image",
             "%dep.${Publish.id}.destination_image_specific%",
