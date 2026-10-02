@@ -59,7 +59,7 @@ namespace pre_c_sumo
         std::vector<std::string_view> constituent_ids = {c01_id, c02_id, c03_id, c04_id, c05_id,
                                                          c06_id, c07_id, c08_id, c09_id, c10_id};
         std::size_t index_3d = mesh_3d.number_of_zcoordinates;
-        double number_of_layers = (double)mesh_3d.number_of_zcoordinates;
+        double number_of_layers = static_cast<double>(mesh_3d.number_of_zcoordinates);
         for (std::size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
         {
             for (std::size_t c = 0; c < max_number_of_consituents; c++)
