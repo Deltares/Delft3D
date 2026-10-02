@@ -95,7 +95,6 @@ module m_reduce
    logical, allocatable :: logbuf(:) !< Work array in pointonstack>ijtrue
 
    real(kind=dp) :: epscg = 1.0e-14_dp ! epsilon waterlevels cg method (maximum)
-   real(kind=dp) :: epsdiff = 1.0e-3_dp ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
    integer :: maxmatvecs = 100000 ! maximum number of matrix-vector multiplications in Saad solver
 
    real(kind=dp), allocatable :: bbr(:), bbl(:) ! not left !
@@ -118,7 +117,5 @@ module m_reduce
    integer :: ndn
    integer :: mindgr
    integer :: nocgiter
-
-   real(kind=dp), allocatable, dimension(:) :: s1_ghost ! for testsolver
 
 end module m_reduce

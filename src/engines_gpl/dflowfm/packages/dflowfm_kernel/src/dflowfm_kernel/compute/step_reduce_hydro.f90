@@ -72,7 +72,7 @@ contains
 
       implicit none
 
-      integer :: key, jposhchk_sav, itype
+      integer :: key, jposhchk_sav
       integer :: k, ierror, noddifmaxlevm
       logical :: firstnniteration, last_iteration
       real(kind=dp) :: dif, difmaxlevm
@@ -151,8 +151,7 @@ contains
                      if (jatimer == 1) then
                         call starttimer(IUPDSALL)
                      end if
-                     itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
-                     call update_ghosts(itype, 1, Ndx, s1, ierror)
+                     call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
                      if (jatimer == 1) then
                         call stoptimer(IUPDSALL)
                      end if
