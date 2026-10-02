@@ -198,7 +198,7 @@ namespace pre_c_sumo
      */
     [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
     convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumo_settings,
-                                    const std::vector<NF2FFReader>& nf2ff_readers);
+                                    const std::vector<NF2FFReader>& nf2ff_readers, pre_c_sumo::Mesh& csumo_3d_mesh);
     /**
      * @anchor pre_c_sumo_is_diffuser_modelled
      * @brief Query whether the diffuser is modelled explicitly.
