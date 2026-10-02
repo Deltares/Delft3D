@@ -2723,9 +2723,9 @@ contains
          do isect = 1, size(sr%bnd(ibound)%spectrum)
             if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
             call resolve_cached_boundary_spectrum_path(trim(sr%bnd(ibound)%spectrum(isect)), run_start, run_end, tm_text)
-            status = inja_add_string_to_array(context, "CACHED_BND_SPEC_FILES"//c_null_char, trim(tm_text)//c_null_char)
-            write (tm_text, '(a, ".", i0)') trim(sr%bnd(ibound)%name), isect
-            status = inja_add_string_to_array(context, "CACHED_BND_SPEC_NAMES"//c_null_char, trim(tm_text)//c_null_char)
+            status = inja_add_string_to_array(context, "CACHED_BND_SPEC_ARR"//c_null_char, trim(tm_text)//c_null_char)
+            status = inja_add_string_to_object(context, "CACHED_BND_SPEC_OBJ"//c_null_char, &
+                              trim(sr%bnd(ibound)%spectrum(isect))//c_null_char, trim(tm_text)//c_null_char)
          end do
       end do
 

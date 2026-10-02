@@ -231,10 +231,27 @@ namespace {
     }
 } 
 
-/**
- * Creates a new Inja context.
- * Returns a pointer to the newly created context, or nullptr if creation fails.
- */
+
+int inja_add_string_to_object(inja_context* context, const char* key, const char* object_key, const char* value)
+{
+    if (context == nullptr || key == nullptr || object_key == nullptr || value == nullptr) {
+        set_error(context, "Context, key, object key, and value must not be null.");
+        return -1;
+    }
+
+    try {
+        if (!context->data.contains(key) || !context->data[key].is_object()) {
+            context->data[key] = nlohmann::json::object();
+        }
+        context->data[key][object_key] = value;
+        context->last_error.clear();
+        return 0;
+    } catch (const std::exception& exception) {
+        set_error(context, exception.what());
+        return -1;
+    }
+}
+
 inja_context* inja_create_context(void)
 {
     try {
@@ -244,10 +261,7 @@ inja_context* inja_create_context(void)
     }
 }
 
-/**
- * Adds a string value to the Inja context under the specified key.
- * Returns 0 on success, or -1 if an error occurs.
- */
+
 int inja_add_string(inja_context* context, const char* key, const char* value)
 {
     if (context == nullptr || key == nullptr || value == nullptr) {
@@ -265,11 +279,7 @@ int inja_add_string(inja_context* context, const char* key, const char* value)
     }
 }
 
-/**
- * Adds a string value to an array in the Inja context under the specified key.
- * Creates the array if it does not exist.
- * Returns 0 on success, or -1 if an error occurs.
- */
+
 int inja_add_string_to_array(inja_context* context, const char* key, const char* value) {
     if (context == nullptr || key == nullptr || value == nullptr) {
         set_error(context, "Context, key, and value must not be null.");
@@ -289,19 +299,11 @@ int inja_add_string_to_array(inja_context* context, const char* key, const char*
     }   
 }
 
-
-/**
- * Destroys the specified Inja context, freeing its resources.
- */
 void inja_destroy_context(inja_context* context)
 {
     delete context;
 }
 
-/**
- * Renders the specified template file using the Inja context and writes the output to the destination file.
- * Returns 0 on success, or -1 if an error occurs.
- */
 int inja_render_file(inja_context* context, const char* template_file,
                      const char* dest_file)
 {
@@ -346,11 +348,7 @@ int inja_render_file(inja_context* context, const char* template_file,
     }
 }
 
-/**
- * Retrieves the last error message from the specified Inja context.
- * The error message is copied into the provided result buffer, which must have a size of at least result_size.
- * Returns the number of characters copied, or -1 if an error occurs.
- */
+
 int inja_get_last_error(const inja_context* context, char* result, int result_size)
 {
     if (context == nullptr || result == nullptr || result_size <= 0) {
