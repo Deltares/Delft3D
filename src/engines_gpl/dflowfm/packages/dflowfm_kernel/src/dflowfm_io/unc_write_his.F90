@@ -108,7 +108,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -329,8 +329,8 @@ contains
             do i = 1, source_sinks%num_normal
                if (source_sinks%is_normal(i)) then
                   nNodes = 0
-                  k1 = source_sinks%indices(i, 1)
-                  k2 = source_sinks%indices(i, 4)
+                  k1 = source_sinks%indices(i, FLOWCELL_SINK)
+                  k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
                   if (k1 /= 0) then
                      nNodes = nNodes + 1
                   end if
