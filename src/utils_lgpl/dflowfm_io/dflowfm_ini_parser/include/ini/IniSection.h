@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -49,23 +50,9 @@ namespace ini
         /// @param value The new line number.
         void SetLineNumber(int value) { lineNumber = value; }
 
-        /// @brief Returns an iterator to the first property in the section.
-        std::vector<IniProperty>::iterator begin() { return properties.begin(); }
-
-        /// @copydoc IniSection::begin()
-        std::vector<IniProperty>::const_iterator begin() const { return properties.begin(); }
-
-        /// @brief Returns an iterator past the last property in the section.
-        std::vector<IniProperty>::iterator end() { return properties.end(); }
-
-        /// @copydoc IniSection::end()
-        std::vector<IniProperty>::const_iterator end() const { return properties.end(); }
-
-        /// @brief Returns the number of properties in the the section.
-        std::size_t size() const { return properties.size(); }
-
-        /// @brief Returns whether the section contains no properties.
-        bool empty() const { return properties.empty(); }
+        /// @brief Gets a read-only view of the properties in the section.
+        /// @details The view must not outlive this object and must be reacquired after adding or removing properties.
+        std::span<const IniProperty> GetProperties() const { return properties; }
 
         /// @brief Returns the comments associated with this section.
         const std::vector<std::string>& GetComments() const { return comments; }
@@ -357,15 +344,6 @@ namespace ini
         /// @brief Returns whether this section is not equal to @p other.
         /// @details Two sections are not equal when their names, properties or comments differ.
         bool operator!=(const IniSection& other) const;
-
-        /// @brief Returns the property at the specified index.
-        /// @param index The zero-based index of the property to return.
-        /// @return A reference to the property at the specified index.
-        /// @throws std::out_of_range When @p index is out of range.
-        IniProperty& operator[](std::size_t index) { return properties.at(index); }
-
-        /// @copydoc IniSection::operator[](std::size_t)
-        const IniProperty& operator[](std::size_t index) const { return properties.at(index); }
 
     private:
         int lineNumber{0};

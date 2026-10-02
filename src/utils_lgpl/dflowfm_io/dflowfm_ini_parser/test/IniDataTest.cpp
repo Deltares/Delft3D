@@ -17,8 +17,8 @@ namespace ini::test
     {
         IniData iniData;
 
-        EXPECT_TRUE(iniData.empty());
-        EXPECT_EQ(iniData.size(), 0);
+        EXPECT_TRUE(iniData.GetSections().empty());
+        EXPECT_EQ(iniData.GetSections().size(), 0);
     }
 
     TEST(IniDataTest, Constructor_CopyConstructor_CopiesSections)
@@ -31,72 +31,99 @@ namespace ini::test
 
         IniData copiedIniData(iniData);
 
-        ASSERT_EQ(copiedIniData.size(), 1);
+        ASSERT_EQ(copiedIniData.GetSections().size(), 1);
 
-        const IniSection& copiedSection = copiedIniData[0];
+        const IniSection& copiedSection = copiedIniData.GetSections()[0];
         EXPECT_NE(&copiedSection, &section);
         EXPECT_EQ(copiedSection, section);
     }
 
     // -------------------------------------------------------------------------
-    // Iterators
+    // GetSections
     // -------------------------------------------------------------------------
 
-    TEST(IniDataTest, Begin_End_EmptyData_BeginEqualsEnd)
+    TEST(IniDataTest, GetSections_Iteration_EmptyData_BeginEqualsEnd)
     {
         IniData iniData;
 
-        EXPECT_EQ(iniData.begin(), iniData.end());
+        EXPECT_EQ(iniData.GetSections().begin(), iniData.GetSections().end());
     }
 
-    TEST(IniDataTest, Begin_End_WithSections_IteratesInOrder)
+    TEST(IniDataTest, GetSections_Iteration_WithSections_IteratesInOrder)
     {
         IniData iniData;
         iniData.AddSection("Section1");
         iniData.AddSection("Section2");
         iniData.AddSection("Section3");
 
-        auto it = iniData.begin();
+        auto it = iniData.GetSections().begin();
         EXPECT_EQ((it++)->GetName(), "Section1");
         EXPECT_EQ((it++)->GetName(), "Section2");
         EXPECT_EQ((it++)->GetName(), "Section3");
-        EXPECT_EQ(it, iniData.end());
+        EXPECT_EQ(it, iniData.GetSections().end());
+    }
+
+    TEST(IniDataTest, GetSections_ConstOwner_ViewsStoredSections)
+    {
+        IniData mutableIniData;
+        mutableIniData.AddSection("Section1");
+        mutableIniData.AddSection("Section2");
+        const IniData& iniData = mutableIniData;
+
+        auto sections = iniData.GetSections();
+
+        EXPECT_EQ(sections.data(), &iniData.GetSection("Section1"));
+        EXPECT_EQ(sections.size(), 2);
+    }
+
+    TEST(IniDataTest, GetSections_NonConstOwner_ViewsStoredSections)
+    {
+        IniData iniData;
+        iniData.AddSection("Section1");
+        iniData.AddSection("Section2");
+
+        auto sections = iniData.GetSections();
+        EXPECT_EQ(sections.data(), &iniData.GetSection("Section1"));
+
+        ASSERT_EQ(sections.size(), 2);
+        EXPECT_EQ(sections[0].GetName(), "Section1");
+        EXPECT_EQ(sections[1].GetName(), "Section2");
     }
 
     // -------------------------------------------------------------------------
-    // size / empty
+    // GetSections size / empty
     // -------------------------------------------------------------------------
 
-    TEST(IniDataTest, Size_EmptyData_ReturnsZero)
+    TEST(IniDataTest, GetSections_Size_EmptyData_ReturnsZero)
     {
         IniData iniData;
 
-        EXPECT_EQ(iniData.size(), 0);
+        EXPECT_EQ(iniData.GetSections().size(), 0);
     }
 
-    TEST(IniDataTest, Size_WithSections_ReturnsCorrectCount)
+    TEST(IniDataTest, GetSections_Size_WithSections_ReturnsCorrectCount)
     {
         IniData iniData;
         iniData.AddSection("Section1");
         iniData.AddSection("Section2");
         iniData.AddSection("Section3");
 
-        EXPECT_EQ(iniData.size(), 3);
+        EXPECT_EQ(iniData.GetSections().size(), 3);
     }
 
-    TEST(IniDataTest, Empty_EmptyData_ReturnsTrue)
+    TEST(IniDataTest, GetSections_Empty_EmptyData_ReturnsTrue)
     {
         IniData iniData;
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
-    TEST(IniDataTest, Empty_WithSections_ReturnsFalse)
+    TEST(IniDataTest, GetSections_Empty_WithSections_ReturnsFalse)
     {
         IniData iniData;
         iniData.AddSection("Section1");
 
-        EXPECT_FALSE(iniData.empty());
+        EXPECT_FALSE(iniData.GetSections().empty());
     }
 
     // -------------------------------------------------------------------------
@@ -117,7 +144,7 @@ namespace ini::test
         IniSection& section = iniData.AddSection("TestSection");
 
         EXPECT_EQ(section.GetName(), "TestSection");
-        EXPECT_EQ(iniData.size(), 1);
+        EXPECT_EQ(iniData.GetSections().size(), 1);
     }
 
     TEST(IniDataTest, AddSection_SameSectionName_AddsBothSections)
@@ -127,9 +154,9 @@ namespace ini::test
         iniData.AddSection("TestSection");
         iniData.AddSection("TestSection");
 
-        ASSERT_EQ(iniData.size(), 2);
-        EXPECT_EQ(iniData[0].GetName(), "TestSection");
-        EXPECT_EQ(iniData[1].GetName(), "TestSection");
+        ASSERT_EQ(iniData.GetSections().size(), 2);
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "TestSection");
+        EXPECT_EQ(iniData.GetSections()[1].GetName(), "TestSection");
     }
 
     // -------------------------------------------------------------------------
@@ -143,8 +170,8 @@ namespace ini::test
 
         iniData.AddSection(section);
 
-        ASSERT_EQ(iniData.size(), 1);
-        EXPECT_EQ(iniData[0].GetName(), "TestSection");
+        ASSERT_EQ(iniData.GetSections().size(), 1);
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "TestSection");
     }
 
     TEST(IniDataTest, AddSection_SameSection_AddsBothSections)
@@ -156,9 +183,9 @@ namespace ini::test
         iniData.AddSection(section1);
         iniData.AddSection(section2);
 
-        EXPECT_EQ(iniData.size(), 2);
-        EXPECT_EQ(iniData[0], section1);
-        EXPECT_EQ(iniData[1], section2);
+        EXPECT_EQ(iniData.GetSections().size(), 2);
+        EXPECT_EQ(iniData.GetSections()[0], section1);
+        EXPECT_EQ(iniData.GetSections()[1], section2);
     }
 
     TEST(IniDataTest, AddSection_ValidSections_PreservesOrder)
@@ -172,9 +199,9 @@ namespace ini::test
         iniData.AddSection(section2);
         iniData.AddSection(section1);
 
-        EXPECT_EQ(iniData[0], section3);
-        EXPECT_EQ(iniData[1], section2);
-        EXPECT_EQ(iniData[2], section1);
+        EXPECT_EQ(iniData.GetSections()[0], section3);
+        EXPECT_EQ(iniData.GetSections()[1], section2);
+        EXPECT_EQ(iniData.GetSections()[2], section1);
     }
 
     // -------------------------------------------------------------------------
@@ -189,9 +216,9 @@ namespace ini::test
 
         iniData.AddSections({section1, section2});
 
-        EXPECT_EQ(iniData.size(), 2);
-        EXPECT_EQ(iniData[0], section1);
-        EXPECT_EQ(iniData[1], section2);
+        EXPECT_EQ(iniData.GetSections().size(), 2);
+        EXPECT_EQ(iniData.GetSections()[0], section1);
+        EXPECT_EQ(iniData.GetSections()[1], section2);
     }
 
     // -------------------------------------------------------------------------
@@ -470,7 +497,7 @@ namespace ini::test
 
         iniData.RemoveSection(section);
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     TEST(IniDataTest, RemoveSection_SameSectionDifferentInstance_RemovesFirstMatchingSection)
@@ -481,7 +508,7 @@ namespace ini::test
 
         iniData.RemoveSection(other);
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     TEST(IniDataTest, RemoveSection_DifferentSection_DoesNotRemoveSection)
@@ -492,8 +519,8 @@ namespace ini::test
 
         iniData.RemoveSection(section2);
 
-        ASSERT_EQ(iniData.size(), 1);
-        EXPECT_EQ(iniData[0], section1);
+        ASSERT_EQ(iniData.GetSections().size(), 1);
+        EXPECT_EQ(iniData.GetSections()[0], section1);
     }
 
     TEST(IniDataTest, RemoveSection_ExistingSection_PreservesOrder)
@@ -503,14 +530,14 @@ namespace ini::test
         iniData.AddSection("Section2");
         iniData.AddSection("Section3");
 
-        iniData.RemoveSection(iniData[0]);
+        iniData.RemoveSection(iniData.GetSections()[0]);
 
         iniData.AddSection("Section4");
 
-        ASSERT_EQ(iniData.size(), 3);
-        EXPECT_EQ(iniData[0].GetName(), "Section2");
-        EXPECT_EQ(iniData[1].GetName(), "Section3");
-        EXPECT_EQ(iniData[2].GetName(), "Section4");
+        ASSERT_EQ(iniData.GetSections().size(), 3);
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "Section2");
+        EXPECT_EQ(iniData.GetSections()[1].GetName(), "Section3");
+        EXPECT_EQ(iniData.GetSections()[2].GetName(), "Section4");
     }
 
     // -------------------------------------------------------------------------
@@ -539,7 +566,7 @@ namespace ini::test
         iniData.RemoveAllSections(GetParam());
 
         EXPECT_FALSE(iniData.HasSection("Section1"));
-        EXPECT_EQ(iniData.size(), 1);
+        EXPECT_EQ(iniData.GetSections().size(), 1);
     }
 
     INSTANTIATE_TEST_SUITE_P(IniDataTest, IniDataRemoveAllSectionsCaseInsensitiveTest,
@@ -552,7 +579,7 @@ namespace ini::test
 
         iniData.RemoveAllSections("NonExistingName");
 
-        EXPECT_EQ(iniData.size(), 1);
+        EXPECT_EQ(iniData.GetSections().size(), 1);
     }
 
     // -------------------------------------------------------------------------
@@ -568,7 +595,7 @@ namespace ini::test
 
         iniData.RemoveAllSections([](const IniSection& s) { return s.IsNameEqualTo("Section1"); });
 
-        EXPECT_EQ(iniData.size(), 1);
+        EXPECT_EQ(iniData.GetSections().size(), 1);
         EXPECT_FALSE(iniData.HasSection("Section1"));
     }
 
@@ -579,7 +606,7 @@ namespace ini::test
 
         iniData.RemoveAllSections([](const IniSection&) { return false; });
 
-        EXPECT_EQ(iniData.size(), 1);
+        EXPECT_EQ(iniData.GetSections().size(), 1);
     }
 
     // -------------------------------------------------------------------------
@@ -594,7 +621,7 @@ namespace ini::test
 
         iniData.ClearSections();
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     TEST(IniDataTest, ClearSections_WithoutSections_DoesNothing)
@@ -603,7 +630,7 @@ namespace ini::test
 
         iniData.ClearSections();
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     // -------------------------------------------------------------------------
@@ -639,10 +666,10 @@ namespace ini::test
 
         iniData.RenameSections(GetParam(), "NewName");
 
-        ASSERT_EQ(iniData.size(), 3);
-        EXPECT_EQ(iniData[0].GetName(), "NewName");
-        EXPECT_EQ(iniData[1].GetName(), "Name2");
-        EXPECT_EQ(iniData[2].GetName(), "NewName");
+        ASSERT_EQ(iniData.GetSections().size(), 3);
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "NewName");
+        EXPECT_EQ(iniData.GetSections()[1].GetName(), "Name2");
+        EXPECT_EQ(iniData.GetSections()[2].GetName(), "NewName");
     }
 
     INSTANTIATE_TEST_SUITE_P(IniDataTest, IniDataRenameSectionsCaseInsensitiveTest,
@@ -656,8 +683,8 @@ namespace ini::test
 
         iniData.RenameSections("NonExistentName", "NewName");
 
-        EXPECT_EQ(iniData[0].GetName(), "Name1");
-        EXPECT_EQ(iniData[1].GetName(), "Name2");
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "Name1");
+        EXPECT_EQ(iniData.GetSections()[1].GetName(), "Name2");
     }
 
     // -------------------------------------------------------------------------
@@ -713,54 +740,29 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // operator[]
+    // GetSections indexed access
     // -------------------------------------------------------------------------
 
-    TEST(IniDataTest, Indexer_OutOfRangeIndex_ThrowsOutOfRange)
-    {
-        IniData iniData;
-        iniData.AddSection("TestSection");
-
-        EXPECT_THROW(iniData[1], std::out_of_range);
-    }
-
-    TEST(IniDataTest, Indexer_EmptyData_ThrowsOutOfRange)
-    {
-        IniData iniData;
-
-        EXPECT_THROW(iniData[0], std::out_of_range);
-    }
-
-    TEST(IniDataTest, Indexer_ValidIndex_ReturnsCorrectSection)
+    TEST(IniDataTest, GetSections_Index_ValidIndices_ReturnSections)
     {
         IniData iniData;
         iniData.AddSection("Section1");
         iniData.AddSection("Section2");
         iniData.AddSection("Section3");
 
-        EXPECT_EQ(iniData[0].GetName(), "Section1");
-        EXPECT_EQ(iniData[1].GetName(), "Section2");
-        EXPECT_EQ(iniData[2].GetName(), "Section3");
+        EXPECT_EQ(iniData.GetSections()[0].GetName(), "Section1");
+        EXPECT_EQ(iniData.GetSections()[1].GetName(), "Section2");
+        EXPECT_EQ(iniData.GetSections()[2].GetName(), "Section3");
     }
 
-    TEST(IniDataTest, Indexer_ConstValidIndex_ReturnsSection)
+    TEST(IniDataTest, GetSections_Index_ConstOwner_ReturnsSection)
     {
         IniData iniData;
         IniSection& section = iniData.AddSection("TestSection");
 
         const IniData& constIniData = iniData;
 
-        EXPECT_EQ(constIniData[0], section);
-    }
-
-    TEST(IniDataTest, Indexer_ConstOutOfRangeIndex_ThrowsOutOfRange)
-    {
-        IniData iniData;
-        iniData.AddSection("TestSection");
-
-        const IniData& constIniData = iniData;
-
-        EXPECT_THROW(constIniData[1], std::out_of_range);
+        EXPECT_EQ(constIniData.GetSections()[0], section);
     }
 
 } // namespace ini::test

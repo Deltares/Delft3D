@@ -24,7 +24,7 @@ namespace ini
 
     void IniFormatter::WriteSections(const IniData& iniData, std::ostream& stream) const
     {
-        for (const IniSection& section : iniData)
+        for (const IniSection& section : iniData.GetSections())
         {
             if (CanWriteSection(section))
             {
@@ -36,7 +36,7 @@ namespace ini
 
     bool IniFormatter::CanWriteSection(const IniSection& section) const
     {
-        return !section.empty() || options.writeEmptySections;
+        return !section.GetProperties().empty() || options.writeEmptySections;
     }
 
     void IniFormatter::WriteSection(const IniSection& section, std::ostream& stream) const
@@ -50,7 +50,7 @@ namespace ini
 
         stream << scheme.sectionStartDelimiter << section.GetName() << scheme.sectionEndDelimiter;
 
-        if (!section.empty())
+        if (!section.GetProperties().empty())
         {
             WriteNewLine(stream);
             WriteProperties(section, stream);
@@ -59,7 +59,7 @@ namespace ini
 
     void IniFormatter::WriteProperties(const IniSection& section, std::ostream& stream) const
     {
-        for (const IniProperty& property : section)
+        for (const IniProperty& property : section.GetProperties())
         {
             if (CanWriteProperty(property))
             {

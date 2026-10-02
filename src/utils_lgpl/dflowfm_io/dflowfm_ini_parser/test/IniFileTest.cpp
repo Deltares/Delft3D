@@ -29,7 +29,7 @@ namespace ini::tests
 
         file.Load(stream);
 
-        EXPECT_TRUE(file.GetData().empty());
+        EXPECT_TRUE(file.GetData().GetSections().empty());
     }
 
     TEST(IniFileTest, Load_ValidStream_PopulatesSection)
@@ -185,7 +185,7 @@ namespace ini::tests
         IniFile reader;
         reader.Load(stream);
 
-        EXPECT_TRUE(reader.GetData().empty());
+        EXPECT_TRUE(reader.GetData().GetSections().empty());
     }
 
     TEST(IniFileTest, SaveThenLoad_SingleSection_RoundTrips)
@@ -230,7 +230,7 @@ namespace ini::tests
 
         file.SetData(IniData{});
 
-        EXPECT_TRUE(file.GetData().empty());
+        EXPECT_TRUE(file.GetData().GetSections().empty());
     }
 
 } // namespace ini::tests

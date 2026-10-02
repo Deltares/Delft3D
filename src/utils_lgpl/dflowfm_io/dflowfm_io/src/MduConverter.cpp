@@ -182,7 +182,7 @@ namespace dflowfm_io
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
 
-            if (iniData.size() == 1)
+            if (iniData.GetSections().size() == 1)
             {
                 iniSection.AddComment(std::format("Generated on {}\n", GetCurrentTimeString()));
             }

@@ -23,10 +23,10 @@ namespace ini::test
         IniSection section("TestSection");
 
         EXPECT_EQ(section.GetName(), "TestSection");
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
         EXPECT_TRUE(section.GetComments().empty());
         EXPECT_EQ(section.GetLineNumber(), 0);
-        EXPECT_EQ(section.size(), 0);
+        EXPECT_EQ(section.GetProperties().size(), 0);
         EXPECT_EQ(section.GetComments().size(), 0);
     }
 
@@ -49,70 +49,97 @@ namespace ini::test
 
         EXPECT_EQ(copiedSection.GetName(), "OtherSection");
         EXPECT_EQ(copiedSection.GetLineNumber(), 2);
-        ASSERT_EQ(copiedSection.size(), 1);
-        EXPECT_EQ(copiedSection[0], property);
+        ASSERT_EQ(copiedSection.GetProperties().size(), 1);
+        EXPECT_EQ(copiedSection.GetProperties()[0], property);
         ASSERT_EQ(copiedSection.GetComments().size(), 1);
         EXPECT_EQ(copiedSection.GetComments()[0], "TestComment");
     }
 
     // -------------------------------------------------------------------------
-    // Iterators
+    // GetProperties
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, Iterator_NoProperties_BeginEqualsEnd)
+    TEST(IniSectionTest, GetProperties_Iteration_NoProperties_BeginEqualsEnd)
     {
         IniSection section("TestSection");
 
-        EXPECT_EQ(section.begin(), section.end());
+        EXPECT_EQ(section.GetProperties().begin(), section.GetProperties().end());
     }
 
-    TEST(IniSectionTest, Iterator_WithProperties_IteratesInOrder)
+    TEST(IniSectionTest, GetProperties_Iteration_WithProperties_IteratesInOrder)
     {
         IniSection section("TestSection");
         section.AddProperty("Key1", "Value1");
         section.AddProperty("Key2", "Value2");
         section.AddProperty("Key3", "Value3");
 
-        auto it = section.begin();
+        auto it = section.GetProperties().begin();
         EXPECT_EQ((it++)->GetKey(), "Key1");
         EXPECT_EQ((it++)->GetKey(), "Key2");
         EXPECT_EQ((it++)->GetKey(), "Key3");
-        EXPECT_EQ(it, section.end());
+        EXPECT_EQ(it, section.GetProperties().end());
     }
 
-    // -------------------------------------------------------------------------
-    // Size / Empty
-    // -------------------------------------------------------------------------
-
-    TEST(IniSectionTest, Size_NoProperties_ReturnsZero)
+    TEST(IniSectionTest, GetProperties_ConstOwner_ViewsStoredProperties)
     {
-        IniSection section("TestSection");
+        IniSection mutableSection("TestSection");
+        mutableSection.AddProperty("Key1", "Value1");
+        mutableSection.AddProperty("Key2", "Value2");
+        const IniSection& section = mutableSection;
 
-        EXPECT_EQ(section.size(), 0);
+        auto properties = section.GetProperties();
+
+        EXPECT_EQ(properties.data(), &section.GetProperty("Key1"));
+        EXPECT_EQ(properties.size(), 2);
     }
 
-    TEST(IniSectionTest, Size_WithProperties_ReturnsPropertyCount)
+    TEST(IniSectionTest, GetProperties_NonConstOwner_ViewsStoredProperties)
     {
         IniSection section("TestSection");
         section.AddProperty("Key1", "Value1");
         section.AddProperty("Key2", "Value2");
 
-        EXPECT_EQ(section.size(), 2);
+        auto properties = section.GetProperties();
+        EXPECT_EQ(properties.data(), &section.GetProperty("Key1"));
+
+        ASSERT_EQ(properties.size(), 2);
+        EXPECT_EQ(properties[0].GetValue(), "Value1");
+        EXPECT_EQ(properties[1].GetValue(), "Value2");
     }
 
-    TEST(IniSectionTest, Empty_NoProperties_ReturnsTrue)
+    // -------------------------------------------------------------------------
+    // GetProperties size / empty
+    // -------------------------------------------------------------------------
+
+    TEST(IniSectionTest, GetProperties_Size_NoProperties_ReturnsZero)
     {
         IniSection section("TestSection");
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_EQ(section.GetProperties().size(), 0);
     }
 
-    TEST(IniSectionTest, Empty_WithProperties_ReturnsFalse)
+    TEST(IniSectionTest, GetProperties_Size_WithProperties_ReturnsPropertyCount)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("Key1", "Value1");
+        section.AddProperty("Key2", "Value2");
+
+        EXPECT_EQ(section.GetProperties().size(), 2);
+    }
+
+    TEST(IniSectionTest, GetProperties_Empty_NoProperties_ReturnsTrue)
+    {
+        IniSection section("TestSection");
+
+        EXPECT_TRUE(section.GetProperties().empty());
+    }
+
+    TEST(IniSectionTest, GetProperties_Empty_WithProperties_ReturnsFalse)
     {
         IniSection section("TestSection");
         section.AddProperty("Key1", "Value1");
 
-        EXPECT_FALSE(section.empty());
+        EXPECT_FALSE(section.GetProperties().empty());
     }
 
     // -------------------------------------------------------------------------
@@ -134,8 +161,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "TestValue");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_ValidIntValue_AddsPropertyWithValue)
@@ -146,8 +173,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "42");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_ValidFloatValue_AddsPropertyWithValue)
@@ -158,8 +185,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "1.22");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_ValidDoubleValue_AddsPropertyWithValue)
@@ -170,8 +197,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "2.71");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_SamePropertyKey_AddsBothProperties)
@@ -181,9 +208,9 @@ namespace ini::test
         section.AddProperty("TestKey", "TestValue");
         section.AddProperty("TestKey", "TestValue");
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetKey(), "TestKey");
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "TestKey");
     }
 
     // -------------------------------------------------------------------------
@@ -197,8 +224,8 @@ namespace ini::test
 
         IniProperty& addedProperty = section.AddProperty(property);
 
-        ASSERT_EQ(section.size(), 1);
-        ASSERT_EQ(section[0], property);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        ASSERT_EQ(section.GetProperties()[0], property);
         EXPECT_EQ(addedProperty, property);
     }
 
@@ -211,9 +238,9 @@ namespace ini::test
         section.AddProperty(property1);
         section.AddProperty(property2);
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0], property1);
-        EXPECT_EQ(section[1], property2);
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0], property1);
+        EXPECT_EQ(section.GetProperties()[1], property2);
     }
 
     TEST(IniSectionTest, AddProperty_ValidProperties_AddsPropertyAndPreservesOrder)
@@ -227,10 +254,10 @@ namespace ini::test
         section.AddProperty(property2);
         section.AddProperty(property1);
 
-        ASSERT_EQ(section.size(), 3);
-        EXPECT_EQ(section[0], property3);
-        EXPECT_EQ(section[1], property2);
-        EXPECT_EQ(section[2], property1);
+        ASSERT_EQ(section.GetProperties().size(), 3);
+        EXPECT_EQ(section.GetProperties()[0], property3);
+        EXPECT_EQ(section.GetProperties()[1], property2);
+        EXPECT_EQ(section.GetProperties()[2], property1);
     }
 
     // -------------------------------------------------------------------------
@@ -254,7 +281,7 @@ namespace ini::test
         section.AddPropertyIf("TestKey", "TestValue",
                               std::function<bool(const std::string&)>([](const std::string&) { return false; }));
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, AddPropertyIf_ConditionIsTrue_AddsProperty)
@@ -264,9 +291,9 @@ namespace ini::test
         section.AddPropertyIf("TestKey", "TestValue",
                               std::function<bool(const std::string&)>([](const std::string&) { return true; }));
 
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "TestValue");
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[0].GetValue(), "TestValue");
     }
 
     // -------------------------------------------------------------------------
@@ -288,8 +315,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(addedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_ValidValuesAndSpaceSeparator_AddsPropertyWithMultiValue)
@@ -300,8 +327,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "8 9 2");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, AddProperty_ValidValuesAndSemicolonSeparator_AddsPropertyWithMultiValue)
@@ -312,8 +339,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "8;9;2");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     // -------------------------------------------------------------------------
@@ -333,7 +360,7 @@ namespace ini::test
 
         section.AddProperties("TestKey", std::vector<std::string>{});
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, AddProperties_ValidIntValues_AddsProperties)
@@ -342,11 +369,11 @@ namespace ini::test
 
         section.AddProperties("TestKey", std::vector<int>{12, 34});
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "12");
-        EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "34");
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[0].GetValue(), "12");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[1].GetValue(), "34");
     }
 
     TEST(IniSectionTest, AddProperties_ValidFloatValues_AddsProperties)
@@ -355,11 +382,11 @@ namespace ini::test
 
         section.AddProperties("TestKey", std::vector<float>{0.1f, 0.2f});
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "0.1");
-        EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "0.2");
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[0].GetValue(), "0.1");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[1].GetValue(), "0.2");
     }
 
     TEST(IniSectionTest, AddProperties_ValidDoubleValues_AddsProperties)
@@ -368,11 +395,11 @@ namespace ini::test
 
         section.AddProperties("TestKey", std::vector<double>{10.1, 20.2});
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "10.1");
-        EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "20.2");
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[0].GetValue(), "10.1");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[1].GetValue(), "20.2");
     }
 
     TEST(IniSectionTest, AddProperties_ValidStringValues_AddsProperties)
@@ -381,11 +408,11 @@ namespace ini::test
 
         section.AddProperties("TestKey", std::vector<std::string>{"TestValue", "TestValue"});
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "TestValue");
-        EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "TestValue");
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[0].GetValue(), "TestValue");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "TestKey");
+        EXPECT_EQ(section.GetProperties()[1].GetValue(), "TestValue");
     }
 
     // -------------------------------------------------------------------------
@@ -398,7 +425,7 @@ namespace ini::test
 
         section.AddProperties({});
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, AddProperties_ValidProperties_AddsProperties)
@@ -409,9 +436,9 @@ namespace ini::test
 
         section.AddProperties({property1, property2});
 
-        ASSERT_EQ(section.size(), 2);
-        EXPECT_EQ(section[0], property1);
-        EXPECT_EQ(section[1], property2);
+        ASSERT_EQ(section.GetProperties().size(), 2);
+        EXPECT_EQ(section.GetProperties()[0], property1);
+        EXPECT_EQ(section.GetProperties()[1], property2);
     }
 
     // -------------------------------------------------------------------------
@@ -954,8 +981,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "UpdatedValue");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionSetPropertyValueCaseInsensitiveTest,
@@ -970,8 +997,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(updatedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValue_NonExistingKeyAndValidValue_AddsPropertyWithValue)
@@ -982,8 +1009,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "TestValue");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValue_NonExistingKeyAndEmptyValue_AddsPropertyWithEmptyValue)
@@ -995,8 +1022,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(addedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     // -------------------------------------------------------------------------
@@ -1024,8 +1051,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "9 2 9");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionSetPropertyValuesCaseInsensitiveTest,
@@ -1040,8 +1067,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "1 1 1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValues_ExistingKeyAndValidValuesAndSemicolonSeparator_UpdatesPropertyValue)
@@ -1053,8 +1080,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "1;1;1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValues_ExistingKeyAndEmptyValues_UpdatesPropertyToEmptyValue)
@@ -1066,8 +1093,8 @@ namespace ini::test
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(updatedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], updatedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndValidValuesAndSpaceSeparator_AddsPropertyWithValue)
@@ -1078,8 +1105,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "9 2 1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndValidValuesAndSemicolonSeparator_AddsPropertyWithValue)
@@ -1090,8 +1117,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "9;2;1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndEmptyValues_AddsPropertyWithEmptyValue)
@@ -1103,8 +1130,8 @@ namespace ini::test
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(addedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], addedProperty);
     }
 
     // -------------------------------------------------------------------------
@@ -1119,7 +1146,7 @@ namespace ini::test
 
         section.RemoveProperty(property);
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, RemoveProperty_SamePropertyDifferentInstance_RemovesProperty)
@@ -1131,7 +1158,7 @@ namespace ini::test
         section.AddProperty(property1);
         section.RemoveProperty(property2);
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, RemoveProperty_DifferentProperty_DoesNotRemoveProperty)
@@ -1143,8 +1170,8 @@ namespace ini::test
         section.AddProperty(property1);
         section.RemoveProperty(property2);
 
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], property1);
+        ASSERT_EQ(section.GetProperties().size(), 1);
+        EXPECT_EQ(section.GetProperties()[0], property1);
     }
 
     TEST(IniSectionTest, RemoveProperty_ExistingProperty_PreservesOrder)
@@ -1154,14 +1181,14 @@ namespace ini::test
         section.AddProperty("Key2", "Value2");
         section.AddProperty("Key1", "Value3");
 
-        section.RemoveProperty(section[0]);
+        section.RemoveProperty(section.GetProperties()[0]);
 
         section.AddProperty("Key3", "Value4");
 
-        ASSERT_EQ(section.size(), 3);
-        EXPECT_EQ(section[0].GetKey(), "Key2");
-        EXPECT_EQ(section[1].GetKey(), "Key1");
-        EXPECT_EQ(section[2].GetKey(), "Key3");
+        ASSERT_EQ(section.GetProperties().size(), 3);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "Key2");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "Key1");
+        EXPECT_EQ(section.GetProperties()[2].GetKey(), "Key3");
     }
 
     // -------------------------------------------------------------------------
@@ -1190,7 +1217,7 @@ namespace ini::test
         section.RemoveAllProperties(GetParam());
 
         EXPECT_FALSE(section.HasProperty("Key1"));
-        EXPECT_EQ(section.size(), 1);
+        EXPECT_EQ(section.GetProperties().size(), 1);
     }
 
     INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionRemoveAllPropertiesCaseInsensitiveTest,
@@ -1203,7 +1230,7 @@ namespace ini::test
 
         section.RemoveAllProperties("NonExistingKey");
 
-        EXPECT_EQ(section.size(), 1);
+        EXPECT_EQ(section.GetProperties().size(), 1);
     }
 
     // -------------------------------------------------------------------------
@@ -1220,7 +1247,7 @@ namespace ini::test
         section.RemoveAllProperties([](const IniProperty& p) { return p.GetValue() == "Value1"; });
 
         EXPECT_FALSE(section.HasProperty("Key1"));
-        EXPECT_EQ(section.size(), 1);
+        EXPECT_EQ(section.GetProperties().size(), 1);
     }
 
     TEST(IniSectionTest, RemoveAllProperties_PredicateDoesNotMatch_DoesNothing)
@@ -1230,7 +1257,7 @@ namespace ini::test
 
         section.RemoveAllProperties([](const IniProperty&) { return false; });
 
-        EXPECT_EQ(section.size(), 1);
+        EXPECT_EQ(section.GetProperties().size(), 1);
     }
 
     // -------------------------------------------------------------------------
@@ -1245,7 +1272,7 @@ namespace ini::test
 
         section.ClearProperties();
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     TEST(IniSectionTest, ClearProperties_WithoutProperties_DoesNothing)
@@ -1254,7 +1281,7 @@ namespace ini::test
 
         section.ClearProperties();
 
-        EXPECT_TRUE(section.empty());
+        EXPECT_TRUE(section.GetProperties().empty());
     }
 
     // -------------------------------------------------------------------------
@@ -1290,10 +1317,10 @@ namespace ini::test
 
         section.RenameProperties(GetParam(), "NewKey");
 
-        ASSERT_EQ(section.size(), 3);
-        EXPECT_EQ(section[0].GetKey(), "NewKey");
-        EXPECT_EQ(section[1].GetKey(), "Key2");
-        EXPECT_EQ(section[2].GetKey(), "NewKey");
+        ASSERT_EQ(section.GetProperties().size(), 3);
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "NewKey");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "Key2");
+        EXPECT_EQ(section.GetProperties()[2].GetKey(), "NewKey");
     }
 
     INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionRenamePropertiesCaseInsensitiveTest,
@@ -1307,8 +1334,8 @@ namespace ini::test
 
         section.RenameProperties("NonExistentKey", "NewKey");
 
-        EXPECT_EQ(section[0].GetKey(), "Key1");
-        EXPECT_EQ(section[1].GetKey(), "Key2");
+        EXPECT_EQ(section.GetProperties()[0].GetKey(), "Key1");
+        EXPECT_EQ(section.GetProperties()[1].GetKey(), "Key2");
     }
 
     // -------------------------------------------------------------------------

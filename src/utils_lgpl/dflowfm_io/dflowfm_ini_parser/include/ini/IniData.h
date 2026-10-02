@@ -3,6 +3,7 @@
 #include "ini/IniSection.h"
 
 #include <functional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -21,23 +22,9 @@ namespace ini
     class IniData
     {
     public:
-        /// @brief Returns an iterator to the first section in the INI data.
-        std::vector<IniSection>::iterator begin() { return sections.begin(); }
-
-        /// @copydoc IniData::begin()
-        std::vector<IniSection>::const_iterator begin() const { return sections.begin(); }
-
-        /// @brief Returns an iterator past the last section in the INI data.
-        std::vector<IniSection>::iterator end() { return sections.end(); }
-
-        /// @copydoc IniData::end()
-        std::vector<IniSection>::const_iterator end() const { return sections.end(); }
-
-        /// @brief Returns the number of sections in the INI data.
-        std::size_t size() const { return sections.size(); }
-
-        /// @brief Returns whether the INI data contains no sections.
-        bool empty() const { return sections.empty(); }
+        /// @brief Gets a read-only view of the sections in the INI data.
+        /// @details The view must not outlive this object and must be reacquired after adding or removing sections.
+        std::span<const IniSection> GetSections() const { return sections; }
 
         /// @brief Adds a new section with the specified name to the INI data.
         /// @param name The name of the section.
@@ -140,15 +127,6 @@ namespace ini
         /// @brief Returns whether this INI data is not equal to @p other.
         /// @details Two INI data objects are not equal when their sections differ.
         bool operator!=(const IniData& other) const;
-
-        /// @brief Returns the section at the specified index.
-        /// @param index The zero-based index of the section to return.
-        /// @return A reference to the section at the specified index.
-        /// @throws std::out_of_range When @p index is out of range.
-        IniSection& operator[](std::size_t index) { return sections.at(index); }
-
-        /// @copydoc IniData::operator[](std::size_t)
-        const IniSection& operator[](std::size_t index) const { return sections.at(index); }
 
     private:
         std::vector<IniSection> sections;

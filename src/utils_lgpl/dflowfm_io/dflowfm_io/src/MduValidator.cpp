@@ -64,7 +64,7 @@ namespace dflowfm_io
 
     void MduValidator::ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
-        for (const auto& section : iniData)
+        for (const auto& section : iniData.GetSections())
         {
             const auto* sectionSchema = schema.FindSection(section.GetName());
             if (!sectionSchema)
@@ -77,7 +77,7 @@ namespace dflowfm_io
             if (sectionSchema->status.type == StatusType::Obsolete)
                 continue;
 
-            for (const auto& property : section)
+            for (const auto& property : section.GetProperties())
             {
                 const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)
@@ -89,7 +89,7 @@ namespace dflowfm_io
 
     void MduValidator::ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report)
     {
-        for (const auto& section : iniData)
+        for (const auto& section : iniData.GetSections())
         {
             const auto* sectionSchema = schema.FindSection(section.GetName());
             if (!sectionSchema)
@@ -107,7 +107,7 @@ namespace dflowfm_io
                                   section.GetName(), sectionSchema->status.comment);
             }
 
-            for (const auto& property : section)
+            for (const auto& property : section.GetProperties())
             {
                 const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                 if (!propertySchema)

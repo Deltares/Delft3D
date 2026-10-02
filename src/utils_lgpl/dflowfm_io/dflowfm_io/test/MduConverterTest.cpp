@@ -557,7 +557,7 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
-        EXPECT_FALSE(iniData.empty());
+        EXPECT_FALSE(iniData.GetSections().empty());
     }
 
     TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesPresentInIniData)
@@ -602,7 +602,7 @@ namespace dflowfm_io::test
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
         std::size_t previousIndex = 0;
-        for (const auto& section : iniData)
+        for (const auto& section : iniData.GetSections())
         {
             const auto schemaIt = std::find_if(schema.Sections().begin(), schema.Sections().end(),
                                                [&](const auto& s) { return s.name == section.GetName(); });
@@ -612,7 +612,7 @@ namespace dflowfm_io::test
             previousIndex = schemaIndex;
 
             std::size_t previousPropertyIndex = 0;
-            for (const auto& property : section)
+            for (const auto& property : section.GetProperties())
             {
                 const auto propIt = std::find_if(schemaIt->properties.begin(), schemaIt->properties.end(),
                                                  [&](const auto& p) { return p.key == property.GetKey(); });
@@ -636,8 +636,8 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
-        ASSERT_FALSE(iniData.empty());
-        const auto& firstSection = *iniData.begin();
+        ASSERT_FALSE(iniData.GetSections().empty());
+        const auto& firstSection = iniData.GetSections()[0];
         EXPECT_FALSE(firstSection.GetComments().empty());
     }
 
@@ -647,8 +647,9 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
-        ASSERT_GT(std::distance(iniData.begin(), iniData.end()), 1);
-        for (auto it = std::next(iniData.begin()); it != iniData.end(); ++it)
+        const auto sections = iniData.GetSections();
+        ASSERT_GT(sections.size(), 1);
+        for (auto it = std::next(sections.begin()); it != sections.end(); ++it)
             EXPECT_TRUE(it->GetComments().empty()) << "Unexpected comment block on section: " << it->GetName();
     }
 
@@ -658,8 +659,8 @@ namespace dflowfm_io::test
 
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
-        for (const auto& section : iniData)
-            for (const auto& property : section)
+        for (const auto& section : iniData.GetSections())
+            for (const auto& property : section.GetProperties())
                 EXPECT_TRUE(property.HasComment())
                     << "Property missing comment: " << section.GetName() << "." << property.GetKey();
     }

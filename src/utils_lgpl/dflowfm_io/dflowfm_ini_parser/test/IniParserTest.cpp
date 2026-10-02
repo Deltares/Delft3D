@@ -25,7 +25,7 @@ namespace ini::test
 
         const IniData iniData = parser.Parse("");
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     TEST(IniParserTest, Parse_EmptyLinesString_ReturnsIniDataWithoutSections)
@@ -34,7 +34,7 @@ namespace ini::test
 
         const IniData iniData = parser.Parse("\n\n");
 
-        EXPECT_TRUE(iniData.empty());
+        EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     // -------------------------------------------------------------------------
@@ -175,7 +175,7 @@ namespace ini::test
 
         const IniData iniData = parser.Parse(ini);
 
-        EXPECT_EQ(iniData.size(), 2);
+        EXPECT_EQ(iniData.GetSections().size(), 2);
         ASSERT_TRUE(iniData.HasSection("section"));
     }
 
@@ -514,7 +514,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        EXPECT_EQ(section.size(), 2);
+        EXPECT_EQ(section.GetProperties().size(), 2);
         ASSERT_TRUE(section.HasProperty("property"));
     }
 
