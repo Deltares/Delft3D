@@ -108,8 +108,8 @@ contains
       call check_netcdf(nf90_close(ncid))
    end subroutine create_scalar_netcdf
 
-   !> Create a gridded field with two snapshots or no time axis for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time)
+   !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
@@ -117,14 +117,21 @@ contains
       character(len=*), intent(in), optional :: standard_name !< CF standard name for the data variable.
       character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
       logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
+      integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
       integer :: ncid, x_dimid, y_dimid, time_dimid
       integer :: x_varid, y_varid, time_varid, field_varid
+      integer :: num_snapshots
       real(dp), dimension(2, 2, 2) :: values
+      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
       logical :: has_time
 
       has_time = .true.
       if (present(with_time)) then
          has_time = with_time
+      end if
+      num_snapshots = 2
+      if (present(snapshot_count)) then
+         num_snapshots = snapshot_count
       end if
       values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
       values(:, :, 2) = values(:, :, 1) + 10.0_dp
@@ -132,7 +139,7 @@ contains
       call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
       call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
       if (has_time) then
-         call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
       end if
       call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
       call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
@@ -163,8 +170,8 @@ contains
       call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
       call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
       if (has_time) then
-         call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-         call check_netcdf(nf90_put_var(ncid, field_varid, values))
+         call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
       else
          call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
       end if
@@ -1866,6 +1873,59 @@ contains
       end if
       call teardown_minimal_grid()
    end subroutine test_initial_waterlevel_timeless_netcdf
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_single_snapshot_is_constant, test_initial_waterlevel_single_snapshot_is_constant,
+   subroutine test_initial_waterlevel_single_snapshot_is_constant() bind(C)
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_single_snapshot.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_snapshot_times.ext'
+      real(dp), dimension(5), parameter :: START_TIMES = [-100.0_dp, 0.0_dp, 50.0_dp, 100.0_dp, 1000.0_dp]
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      integer :: start_index
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', snapshot_count=1)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel', &
+                       '    operand             = override'])
+
+      do start_index = 1, size(START_TIMES)
+         call setup_minimal_grid_with_points(2)
+         xz = [0.0_dp, 0.5_dp]
+         yz = [0.0_dp, 0.5_dp]
+         call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+         irefdate = 20000101
+         tzone = 0.0_dp
+         tstart_user = START_TIMES(start_index)
+         jsferic = 0
+         threshold_abort = LEVEL_FATAL
+         call initialize_ec_module()
+
+         call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call tree_destroy(bnd_ptr)
+
+         call f90_expect_true(success, 'a single snapshot should initialize at any start time through the ordinary EC path')
+         if (success) then
+            call f90_expect_near(s1(1), 4.0_dp, 1.0e-6_dp, 'single snapshot should have the same center value at any start time')
+            call f90_expect_near(s1(2), 5.5_dp, 1.0e-6_dp, 'single snapshot should retain spatial variation')
+         end if
+
+         tstart_user = 0.0_dp
+         if (allocated(s1)) then
+            deallocate (s1)
+         end if
+         call teardown_minimal_grid()
+      end do
+   end subroutine test_initial_waterlevel_single_snapshot_is_constant
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchi_timeless_netcdf_is_constant, test_secchi_timeless_netcdf_is_constant,

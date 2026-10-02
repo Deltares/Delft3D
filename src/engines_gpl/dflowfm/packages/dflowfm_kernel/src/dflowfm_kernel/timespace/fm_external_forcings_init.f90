@@ -966,8 +966,9 @@ contains
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
       if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
-         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                        tunit, tstart_user, target_data)
+         if (res) then
+            res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
+         end if
       end if
 
    end function read_3d_sigma_field
