@@ -150,7 +150,7 @@ object StartVerschilanalyse : BuildType({
                 # define what apptainer image we should use. 
                 # The above PinAndTag finishBuildTrigger depends on the Publish build
                 pushd "${'$'}{bundle_dir}"
-                echo ./start_verschilanalyse.sh \
+                ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%va_harbor_image%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
