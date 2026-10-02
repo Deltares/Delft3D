@@ -48,6 +48,7 @@ def subdomain_factor_configuration(
     overlap: int | None = None,
     asm_type: str | None = None,
     ordering: str | None = None,
+    factor_shift_type: str | None = None,
 ) -> SolverConfiguration:
     options = ["-ksp_type", ksp_type, "-pc_type", pc_type]
     if overlap is not None:
@@ -59,6 +60,8 @@ def subdomain_factor_configuration(
         options.extend(["-sub_pc_factor_levels", str(factor_levels)])
     if ordering is not None:
         options.extend(["-sub_pc_factor_mat_ordering_type", ordering])
+    if factor_shift_type is not None:
+        options.extend(["-sub_pc_factor_shift_type", factor_shift_type])
     return {"name": name, "options": options}
 
 
@@ -92,24 +95,19 @@ class SummaryRow(TypedDict):
 SOLVER_CONFIGURATIONS: list[SolverConfiguration] = [
     {"name": "CG + block Jacobi", "options": ["-ksp_type", "cg", "-pc_type", "bjacobi"]},
     {"name": "CG + point Jacobi", "options": ["-ksp_type", "cg", "-pc_type", "jacobi"]},
-    {"name": "CG + GAMG", "options": ["-ksp_type", "cg", "-pc_type", "gamg"]},
     *[
         subdomain_factor_configuration(
-            f"CG + block ICC({level})", "cg", "bjacobi", "icc", factor_levels=level
+            f"CG + basic ASM ICC({level}), overlap {overlap}",
+            "cg",
+            "asm",
+            "icc",
+            factor_levels=level,
+            overlap=overlap,
+            asm_type="basic",
+            ordering="rcm",
+            factor_shift_type="positive_definite",
         )
-        for level in (0, 1, 2, 3)
-    ],
-    *[
-        subdomain_factor_configuration(
-            f"BiCGStab + block ILU({level})", "bcgs", "bjacobi", "ilu", factor_levels=level
-        )
-        for level in (1, 2)
-    ],
-    *[
-        subdomain_factor_configuration(
-            f"GMRES + block ILU({level})", "gmres", "bjacobi", "ilu", factor_levels=level
-        )
-        for level in (1, 2)
+        for level, overlap in ((1, 1), (2, 1), (2, 2))
     ],
     *[
         subdomain_factor_configuration(
@@ -122,6 +120,14 @@ SOLVER_CONFIGURATIONS: list[SolverConfiguration] = [
         )
         for level in (1, 2)
     ],
+    subdomain_factor_configuration(
+        "GMRES + ASM ILU(2), overlap 2",
+        "gmres",
+        "asm",
+        "ilu",
+        factor_levels=2,
+        overlap=2,
+    ),
 ]
 
 SUMMARY_PATTERN = re.compile(
