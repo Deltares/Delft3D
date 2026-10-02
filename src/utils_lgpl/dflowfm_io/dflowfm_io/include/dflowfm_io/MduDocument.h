@@ -15,15 +15,15 @@ namespace dflowfm_io
     ///
     /// Supports loading from and saving to file or stream. Property values are
     /// validated against the @ref MduSchema on load; any issues are accessible via
-    /// @ref GetReport after loading.
+    /// the returned @ref IssueReport.
     ///
     /// Individual property values can be read and written via @ref GetValue and @ref SetValue,
     /// or the full dataset can be accessed directly via @ref GetData.
     ///
     /// @code
     /// MduDocument doc;
-    /// doc.Load("mymodel.mdu");
-    /// if (doc.GetReport().HasError()) { /* handle */ }
+    /// IssueReport report = doc.Load("mymodel.mdu");
+    /// if (report.HasError()) { /* handle */ }
     /// doc.SetValue("time.tstop", 3600);
     /// doc.Save("mymodel_updated.mdu");
     /// @endcode
@@ -36,14 +36,14 @@ namespace dflowfm_io
 
         /// @brief Loads and validates an MDU file from a stream.
         /// @param in Input stream positioned at the start of the MDU content.
-        /// @post GetReport() contains any issues found during loading.
-        void Load(std::istream& in);
+        /// @return Issues found during loading.
+        IssueReport Load(std::istream& in);
 
         /// @brief Loads and validates an MDU file from a file path.
         /// @param path Path to the MDU file to load.
         /// @throws std::runtime_error if the file cannot be opened.
-        /// @post GetReport() contains any issues found during loading.
-        void Load(const std::filesystem::path& path);
+        /// @return Issues found during loading.
+        IssueReport Load(const std::filesystem::path& path);
 
         /// @brief Writes the current MDU data to a stream.
         /// @param out Output stream to write to.
@@ -53,10 +53,6 @@ namespace dflowfm_io
         /// @param path Path of the file to write. The file is created or overwritten.
         /// @throws std::runtime_error if the file cannot be opened for writing.
         void Save(const std::filesystem::path& path) const;
-
-        /// @brief Returns the issue report produced by the most recent @ref Load call.
-        /// @return Reference to the @ref IssueReport containing infos, warnings and errors.
-        const IssueReport& GetReport() const { return issues; }
 
         /// @brief Returns the parsed and validated MDU data.
         /// @return Reference to the internal @ref MduData instance.
@@ -94,7 +90,6 @@ namespace dflowfm_io
     private:
         const MduSchema& schema;
         MduData mduData;
-        IssueReport issues;
 
         void EnsureKeyInSchema(const std::string& key) const;
         void EnsureEnumInRange(const std::string& key, const IntEnumValue& value) const;

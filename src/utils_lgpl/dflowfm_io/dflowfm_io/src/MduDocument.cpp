@@ -29,7 +29,7 @@ namespace dflowfm_io
     MduDocument::MduDocument(const MduSchema& schema)
         : schema(schema), mduData(schema.CreateDefaultValues()) {}
 
-    void MduDocument::Load(std::istream& in)
+    IssueReport MduDocument::Load(std::istream& in)
     {
         if (in.fail())
             throw std::ios_base::failure("Stream is not in a readable state.");
@@ -40,10 +40,10 @@ namespace dflowfm_io
 
         std::pair<MduData, IssueReport> result = MduConverter::Convert(iniData, schema);
         mduData = std::move(result.first);
-        issues = std::move(result.second);
+        return std::move(result.second);
     }
 
-    void MduDocument::Load(const std::filesystem::path& path)
+    IssueReport MduDocument::Load(const std::filesystem::path& path)
     {
         if (path.empty())
             throw std::invalid_argument("Path must not be empty.");
@@ -52,7 +52,7 @@ namespace dflowfm_io
         if (!stream.is_open())
             throw std::ios_base::failure("Failed to open file for reading: " + path.string());
 
-        Load(stream);
+        return Load(stream);
     }
 
     void MduDocument::Save(std::ostream& out) const

@@ -131,7 +131,7 @@ dflowfm_io_result_t mdu_load_from_file(mdu_handle_t* handle, const char* filenam
 
     return exceptionToResult([&]()
     {
-        handle->mduDocument.Load(std::filesystem::path(filename));
+        handle->lastIssueReport = handle->mduDocument.Load(std::filesystem::path(filename));
     });
 }
 
@@ -143,7 +143,7 @@ dflowfm_io_result_t mdu_load_from_string(mdu_handle_t* handle, const char* data,
     return exceptionToResult([&]()
     {
         std::istringstream stream(std::string(data, size));
-        handle->mduDocument.Load(stream);
+        handle->lastIssueReport = handle->mduDocument.Load(stream);
     });
 }
 
@@ -457,9 +457,6 @@ dflowfm_io_result_t mdu_get_issue_list(mdu_handle_t* handle, const mdu_issue_t**
     ENSURE_ARGUMENT_NOT_NULL(size_out);
 
     return exceptionToResult([&]() {
-        // Store a copy of the report so we can guarantee its lifetime
-        handle->lastIssueReport = handle->mduDocument.GetReport();
-
         handle->storedIssues.clear();
         for (const auto& issue : handle->lastIssueReport)
         {

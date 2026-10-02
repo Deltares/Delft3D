@@ -40,9 +40,9 @@ namespace dflowfm_io::test
     {
         auto stream = std::istringstream(TestMduString());
 
-        doc.Load(stream);
+        const IssueReport report = doc.Load(stream);
 
-        EXPECT_FALSE(doc.GetReport().HasError());
+        EXPECT_FALSE(report.HasError());
     }
 
     TEST_F(MduDocumentTest, Load_ValidStream_PopulatesMduData)

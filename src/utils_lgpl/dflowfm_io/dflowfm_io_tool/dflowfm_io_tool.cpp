@@ -37,11 +37,10 @@ int main(int argc, char* argv[])
     try
     {
         MduDocument document;
-        document.Load(path);
+        const IssueReport report = document.Load(path);
 
         cout << "\nSuccessfully loaded: " << path << "\n\n";
 
-        const IssueReport& report = document.GetReport();
         if (!report.empty())
         {
             cout << "Validation report:" << "\n\n";
