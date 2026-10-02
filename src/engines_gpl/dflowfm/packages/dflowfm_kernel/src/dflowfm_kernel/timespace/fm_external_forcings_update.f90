@@ -363,15 +363,12 @@ contains
       use m_get_surface_temperature, only: get_surface_temperature
       use m_get_surface_salinity, only: get_surface_salinity, get_salinity_reduction_factor_saturation_humidity
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
-      use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
+      use m_atmospheric_stability, only: compute_scales_and_fluxes, atm_stability_options
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_wind, only: relativewind
       use m_flow, only: ltop, u1, v
       use physicalconsts, only: celsius_to_kelvin
-      use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
-                                  free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity, &
-                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
-                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
+      use m_flowparameters, only: salinity_reduction_factor_saturation_humidity, &
                                   salinity_dependent_evaporation_method, SALINITY_DEPENDENT_EVAPORATION_LINEAR
 
       logical, intent(in) :: initialization !< initialization phase
@@ -381,7 +378,6 @@ contains
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
       real(kind=dp), dimension(:), allocatable, save :: surface_salinity
       real(kind=dp), dimension(lnx) :: windx_link, windy_link
-      type(t_options) :: atm_stability_options
 
       if (.not. allocated(windx)) then
          allocate (windx(ndx))
@@ -405,23 +401,6 @@ contains
       surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
       air_temperature_kelvin = celsius_to_kelvin(air_temperature)
       dew_point_temperature_kelvin = celsius_to_kelvin(dew_point_temperature)
-
-      atm_stability_options%include_stability = .false.
-      if (atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF) then
-         atm_stability_options%include_stability = .true.
-      end if
-
-      atm_stability_options%include_free_convection = .false.
-      if (free_convection == FREE_CONVECTION_ON) then
-         atm_stability_options%include_free_convection = .true.
-      end if
-
-      atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
-      atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
-      atm_stability_options%sensor_height_humidity = sensor_height_humidity
-      atm_stability_options%alpha_m = air_viscous_momentum_coeff
-      atm_stability_options%alpha_h = air_viscous_heat_coeff
-      atm_stability_options%alpha_q = air_viscous_moisture_coeff
 
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR) then
          if (.not. allocated(salinity_reduction_factor_saturation_humidity%values)) then

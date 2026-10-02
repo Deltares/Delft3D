@@ -45,7 +45,7 @@ contains
       use m_inipointers_erosed, only: inipointers_erosed
       use m_sediment
       use m_rdstm
-      use m_flow, only: kmx, ndkx, iturbulencemodel
+      use m_flow, only: kmx, ndkx, iturbulencemodel, TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use morphology_data_module !, only: nullsedtra, allocsedtra
       use sediment_basics_module
       use message_module, only: clearstack, initstack
@@ -126,9 +126,9 @@ contains
       ltur_ = 0
       if (kmx > 0) then
          select case (iturbulencemodel)
-         case (0, 1, 2)
+         case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur_ = 0
-         case (3, 4)
+         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
             ltur_ = 2
          end select
       end if

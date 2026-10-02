@@ -230,6 +230,12 @@ contains
       select case (str_tolower(trim(string)))
       case ('bcascii')
          method = SPACEANDTIME
+      case ('unimagdir')
+         method = SPACEANDTIME
+      case ('curvigrid')
+         method = WEIGHTFACTORS
+      case ('geotiff')
+         method = METHOD_TRIANGULATION
       case ('map')
          method = METHOD_TRIANGULATION
       case ('netcdf')
@@ -244,8 +250,10 @@ contains
          method = METHOD_CONSTANT
       case ('1dfield')
          method = JUSTUPDATE
+      case ('spiderweb')
+         method = WEIGHTFACTORS
       case ('datavalue')
-         method = JUSTUPDATE
+         method = METHOD_CONSTANT
       case default
          method = METHOD_UNKNOWN
       end select
