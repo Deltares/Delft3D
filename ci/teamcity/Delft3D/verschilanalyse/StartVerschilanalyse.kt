@@ -39,25 +39,25 @@ object StartVerschilanalyse : BuildType({
     }   
 
     params {
-        param("va_harbor_protocol", "docker")
-        param("reference_prefix", "output/release/2025.01")
+        text("va_harbor_protocol", "docker", display = ParameterDisplay.PROMPT)
+        text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
         checkbox(
             "use_latest_weekly_reference_output",
             "true",
-            display = ParameterDisplay.NORMAL,
+            display = ParameterDisplay.PROMPT,
             label = "Use latest weekly reference output",
             description = "Use the output of the latest successful weekly verschilanalyse as a reference for this verschilanalyse.",
             checked = "true", 
             unchecked = "false",
         )
-        param("current_prefix", "output/weekly/development")
-        param("models_path", "input")
-        param("model_filter", "")
-        param("json_configs_path", "config")
+        text("current_prefix", "output/weekly/development", display = ParameterDisplay.PROMPT)
+        text("models_path", "input", display = ParameterDisplay.PROMPT)
+        text("model_filter", "", display = ParameterDisplay.PROMPT)
+        text("json_configs_path", "config", display = ParameterDisplay.PROMPT)
         checkbox(
             "run_models",
             "true",
-            display = ParameterDisplay.NORMAL,
+            display = ParameterDisplay.PROMPT,
             label = "Run models on H7",
             description = "Run models on Slurm before running Verschillentool. Disable to reuse existing output at current_prefix.",
             checked = "true",
@@ -66,7 +66,7 @@ object StartVerschilanalyse : BuildType({
         checkbox(
             "send_email",
             "true",
-            display = ParameterDisplay.NORMAL,
+            display = ParameterDisplay.PROMPT,
             label = "Send email report",
             description = "Send email with verschilanalyse results after completion.",
             checked = "true", 
