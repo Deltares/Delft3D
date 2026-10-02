@@ -40,6 +40,7 @@ object StartVerschilanalyse : BuildType({
 
     params {
         text("va_harbor_protocol", "docker", display = ParameterDisplay.PROMPT)
+        text("va_harbor_image", "%dep.${Publish.id}.destination_image_specific%", display = ParameterDisplay.PROMPT)
         text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
         checkbox(
             "use_latest_weekly_reference_output",
@@ -141,7 +142,7 @@ object StartVerschilanalyse : BuildType({
                 # The above PinAndTag finishBuildTrigger depends on the Publish build
                 pushd "${'$'}{bundle_dir}"
                 echo ./start_verschilanalyse.sh \
-                    --apptainer='%va_harbor_protocol%://%dep.${Publish.id}.destination_image_specific%' \
+                    --apptainer='%va_harbor_protocol%://%va_harbor_image%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
