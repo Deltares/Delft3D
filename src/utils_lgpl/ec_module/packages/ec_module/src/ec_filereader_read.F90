@@ -739,7 +739,7 @@ contains
       end if
       !
       ! - Check for the presence of times, indicating the presence of further data blocks.
-      if (.not. has_time .and. .not. has_harmonics) then
+      if (.not. has_time .and. .not. has_harmonics .and. fileReaderPtr%tframe%nr_timesteps /= 0) then
          call set_ec_message("Empty NetCDF time dimension and no harmonic components in "//trim(fileReaderPtr%filename)//".")
          return
       end if
@@ -865,13 +865,13 @@ contains
                else
                   if (item%elementSetPtr%n_layers == 0) then
                      if (item%elementSetPtr%ofType == elmSetType_samples) then
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0], count=[ncol])
                         else
                            ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, timesndx], count=[ncol, 1])
                         end if
                      else
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0], count=[nrow, ncol])
                            else
@@ -912,7 +912,7 @@ contains
                   else
                      ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
                      do k = 1, item%elementSetPtr%n_layers
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0, k], count=[nrow, ncol, 1])
                            else
@@ -953,7 +953,7 @@ contains
          if (has_time) then
             fieldPtr%timesteps = ecSupportTimeIndexToMJD(fileReaderPtr%tframe, timesndx)
             fieldPtr%timesndx = timesndx
-         else if (has_harmonics) then
+         else
             if (t0t1 == 0) then
                fieldPtr%timesteps = -ec_huge_hp
             else if (t0t1 == 1) then

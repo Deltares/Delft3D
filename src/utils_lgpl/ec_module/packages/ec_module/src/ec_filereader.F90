@@ -370,6 +370,14 @@ module m_ec_filereader
                if (associated(itemPtr%hframe)) then
                   ! This is a harmonics file, read all the variable values because we actually don't have time steps.
                   success = ecNetcdfReadVariable(fileReaderPtr, itemPtr)
+               else if (fileReaderPtr%tframe%nr_timesteps == 0) then
+                  do i = 1, fileReaderPtr%nItems
+                     success = ecNetcdfReadVariable(fileReaderPtr, fileReaderPtr%items(i)%ptr)
+                     if (.not. success) then
+                        return
+                     end if
+                     fileReaderPtr%items(i)%ptr%quantityPtr%constant = .true.
+                  end do
                else
                   if (itemPtr%sourceT0FieldPtr%timesndx < 0) then
                      t0t1 = 0

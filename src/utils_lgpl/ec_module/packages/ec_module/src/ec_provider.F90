@@ -3531,8 +3531,13 @@ contains
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
-            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
-                  fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            if (ecNetcdfFindVariableId(fileReaderPtr%fileHandle, fileReaderPtr%fileName, &
+                                      fileReaderPtr%standard_names, fileReaderPtr%variable_names, 'PHASE') /= ec_undef_int) then
+               call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
+                     fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            else
+               success = fileReaderPtr%tframe%nr_timesteps == 0
+            end if
          end if
          if (.not. success) then
             call set_ec_message('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
@@ -3636,6 +3641,8 @@ contains
       integer, dimension(1) :: dimid !< integer id of time variable's dimension variable
       integer :: length !< number of time steps
       integer :: istat !< status of allocation operation
+      integer :: nDimensions, dimension_index, variable_rank
+      character(len=NF90_MAX_NAME) :: dimension_name, coordinate_axis
       !
       success = .false.
       nVariables = 0
@@ -3658,7 +3665,30 @@ contains
                exit
             end if
          end do
-         if (i > nVariables) then ! .... if still not found, you are out of luck !
+         if (i > nVariables) then
+            do dimension_index = 1, nVariables
+               coordinate_axis = ''
+               istat = nf90_get_att(fileReaderPtr%fileHandle, dimension_index, 'axis', coordinate_axis)
+               if (istat == NF90_NOERR .and. strcmpi(coordinate_axis, 'T')) then
+                  call set_ec_message('Invalid NetCDF time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            if (.not. ecSupportNetcdfCheckError(nf90_inquire(fileReaderPtr%fileHandle, nDimensions=nDimensions), &
+                                               'obtain nDimensions', fileReaderPtr%fileName)) then
+               return
+            end if
+            do dimension_index = 1, nDimensions
+               if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimension_index, name=dimension_name), &
+                                                  'obtain dimension name', fileReaderPtr%fileName)) then
+                  return
+               end if
+               if (strcmpi(dimension_name, 'time')) then
+                  call set_ec_message('NetCDF time dimension has no time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            fileReaderPtr%tframe%nr_timesteps = 0
             return
          end if
       end if
@@ -3671,8 +3701,20 @@ contains
                                                     tzone=fileReaderPtr%tframe%ec_timezone)) return
       !
       ! Determine the total number of timesteps.
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, ndims=variable_rank), &
+                                         'obtain time variable rank', fileReaderPtr%fileName)) then
+         return
+      end if
+      if (variable_rank /= 1) then
+         call set_ec_message('NetCDF time coordinate must have one dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, dimids=dimid), "obtain time dimension ids", fileReaderPtr%fileName)) return
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimid(1), len=length), "obtain time dimension length", fileReaderPtr%fileName)) return
+      if (length == 0) then
+         call set_ec_message('Empty NetCDF time dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       fileReaderPtr%tframe%nr_timesteps = length
       allocate (fileReaderPtr%tframe%times(length), stat=istat)
       ! Store the times at which data is available.

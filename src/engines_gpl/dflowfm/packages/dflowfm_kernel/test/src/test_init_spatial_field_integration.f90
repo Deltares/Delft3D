@@ -108,34 +108,46 @@ contains
       call check_netcdf(nf90_close(ncid))
    end subroutine create_scalar_netcdf
 
-   !> Create a two-time gridded field for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit)
+   !> Create a gridded field with two snapshots or no time axis for initialization tests.
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
       character(len=*), intent(in) :: variable_name !< Name of the data variable.
       character(len=*), intent(in), optional :: standard_name !< CF standard name for the data variable.
       character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
+      logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
       integer :: ncid, x_dimid, y_dimid, time_dimid
       integer :: x_varid, y_varid, time_varid, field_varid
       real(dp), dimension(2, 2, 2) :: values
+      logical :: has_time
 
+      has_time = .true.
+      if (present(with_time)) then
+         has_time = with_time
+      end if
       values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
       values(:, :, 2) = values(:, :, 1) + 10.0_dp
       call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
       call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
       call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      if (has_time) then
+         call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      end if
       call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
       call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
       call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
       call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
       call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
       call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+      if (has_time) then
+         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+      else
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
+      end if
       if (present(standard_name)) then
          call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', standard_name))
       else if (variable_name == 'secchi_depth') then
@@ -150,8 +162,12 @@ contains
       call check_netcdf(nf90_enddef(ncid))
       call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
       call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, field_varid, values))
+      if (has_time) then
+         call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
+         call check_netcdf(nf90_put_var(ncid, field_varid, values))
+      else
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
+      end if
       call check_netcdf(nf90_close(ncid))
    end subroutine create_initial_gridded_netcdf
 
@@ -1803,6 +1819,162 @@ contains
       if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
       call teardown_minimal_grid()
    end subroutine test_initial_secchi_netcdf_interpolates_at_start
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_timeless_netcdf, test_initial_waterlevel_timeless_netcdf,
+   subroutine test_initial_waterlevel_timeless_netcdf() bind(C)
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_timeless.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_timeless.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', with_time=.false.)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel', &
+                       '    operand             = override'])
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 1000.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'timeless initial water level should load through EC')
+      if (success) then
+         call f90_expect_near(s1(1), 4.0_dp, 1.0e-6_dp, 'timeless field should interpolate at the center')
+         call f90_expect_near(s1(2), 5.5_dp, 1.0e-6_dp, 'timeless field should retain spatial variation')
+      end if
+      tstart_user = 0.0_dp
+      if (allocated(s1)) then
+         deallocate (s1)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_initial_waterlevel_timeless_netcdf
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchi_timeless_netcdf_is_constant, test_secchi_timeless_netcdf_is_constant,
+   subroutine test_secchi_timeless_netcdf_is_constant() bind(C)
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
+      use m_meteo, only: item_secchi_depth, ecInstancePtr, ec_gettimespacevalue_by_itemID
+      use m_ec_parameters, only: ec_undef_int
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_secchi_timeless.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_secchi_timeless.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'custom_secchi', with_time=.false.)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = secchiDepth', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = custom_secchi', &
+                       '    operand             = override'])
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'timeless source should support a dynamic target')
+      if (success) then
+         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
+                                                -100.0_dp, spatial_secchi_depth)
+         call f90_expect_true(success, 'timeless source should evaluate before the reference date')
+         if (success) then
+            call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'first evaluation should interpolate spatially')
+            call f90_expect_near(spatial_secchi_depth(2), 5.5_dp, 1.0e-6_dp, 'first evaluation should retain spatial variation')
+         end if
+         spatial_secchi_depth = 42.0_dp
+         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
+                                                1000.0_dp, spatial_secchi_depth)
+         call f90_expect_true(success, 'timeless source should evaluate at a later time without advancing records')
+         if (success) then
+            call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'later evaluation should restore the same source value')
+            call f90_expect_near(spatial_secchi_depth(2), 5.5_dp, 1.0e-6_dp, 'later evaluation should preserve spatial variation')
+         end if
+      end if
+      item_secchi_depth = ec_undef_int
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      if (allocated(spatial_secchi_depth)) then
+         deallocate (spatial_secchi_depth)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_secchi_timeless_netcdf_is_constant
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_netcdf_time_dimension_requires_coordinate, test_netcdf_time_dimension_requires_coordinate,
+   subroutine test_netcdf_time_dimension_requires_coordinate() bind(C)
+      use netcdf
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_missing_time_coordinate.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_missing_time_coordinate.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      integer :: ncid, time_dimid
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', with_time=.false.)
+      call check_netcdf(nf90_open(NC_FILE, NF90_WRITE, ncid))
+      call check_netcdf(nf90_redef(ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_close(ncid))
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel'])
+      call setup_minimal_grid()
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_false(success, 'a declared time dimension without a coordinate must not be treated as timeless')
+
+      if (allocated(s1)) then
+         deallocate (s1)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_netcdf_time_dimension_requires_coordinate
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_secchi_netcdf_is_applied_once, test_initial_secchi_netcdf_is_applied_once,
