@@ -81,6 +81,7 @@ object LinuxBuild : BuildType({
                 export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
 
                 # Initialize Conan and install pre-built dependencies from Nexus
+                export CONAN_DEFAULT_PROFILE=delft3d_alma8_intel_2026_v1
                 python run_conan.py initialize deltares --ci
                 python build.py --config %product% --build --build-type %build_type% --ci --build-dir build --install-dir install
             """.trimIndent()
