@@ -2733,10 +2733,11 @@ contains
       if (status /= 0) then
          error_length = inja_get_last_error(context, error_text, int(size(error_text), c_int))
          if (error_length > 0) then
-            write (*, '(a)') 'inja template error: '//transfer(error_text(1:error_length), repeat(' ', error_length))
+            write (*, '(a)') '*** ERROR: template error: '//transfer(error_text(1:error_length), repeat(' ', error_length))
          else
-            write (*, '(a)') 'inja template rendering failed'
+            write (*, '(a)') '*** ERROR: template rendering failed'
          end if
+         call wavestop(1, "While preparing SWAN input file")
       end if
 
       call inja_destroy_context(context)
