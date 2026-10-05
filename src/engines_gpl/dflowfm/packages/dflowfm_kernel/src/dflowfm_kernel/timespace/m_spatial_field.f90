@@ -69,6 +69,7 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
       character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
       character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
+      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' for depth-aware NetCDF interpolation.
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
@@ -106,6 +107,7 @@ contains
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
+      call prop_get(block_ptr, '', 'targetLayer', res%target_layer)
       call prop_get(block_ptr, '', 'dataValue', res%data_value, success=success)
       if (.not. success) then
          res%data_value = dmiss
@@ -239,7 +241,7 @@ contains
       use timespace, only: convert_file_type_string_to_integer
       use timespace_parameters, only: DATAVALUE, NCGRID, FILE_TYPE_UNKNOWN
       use m_wind, only: jaQext
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, str_tolower
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
       use m_meteo, only: quantity_name_config_file_to_internal_name
@@ -376,6 +378,14 @@ contains
       end if
       input%is_static_field = is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
+      
+      if (str_tolower(trim(input%target_layer)) == '3d') then
+         if (input%filetype /= NCGRID) then
+            write (msgbuf, '(5a)') 'targetLayer=3d requires dataFileType NetCDF in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
+            call err_flush()
+            return
+         end if
+      end if
 
       if (any(input%filetype == [DATAVALUE, NCGRID]) .or. .not. input%is_static_field) then
          is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)

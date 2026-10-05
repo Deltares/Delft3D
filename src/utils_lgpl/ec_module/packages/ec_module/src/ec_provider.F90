@@ -3135,8 +3135,10 @@ contains
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
-                  if (size(dimids) > 3) then
-                     nlay = fileReaderPtr%dim_length(dimids(3))
+                  if (z_dimid > 0) then
+                     if (any(dimids == z_dimid)) then
+                        nlay = fileReaderPtr%dim_length(z_dimid)
+                     end if
                   end if
                end if
             end if

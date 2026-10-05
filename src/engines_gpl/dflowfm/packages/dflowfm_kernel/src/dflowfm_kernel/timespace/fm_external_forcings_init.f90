@@ -944,14 +944,16 @@ contains
       real(dp), intent(in) :: target_x(:), target_y(:)
       integer, intent(in) :: mask(:), kx, filetype, method, oper
       integer, intent(inout) :: ec_item
-      real(dp), pointer, intent(out) :: target_data(:)
+      real(dp), pointer, intent(inout) :: target_data(:)
       logical, intent(in) :: is_static_field
       logical :: res
 
       integer, pointer :: pkbot(:), pktop(:)
 
       if (is_static_field) then
-         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+         if (.not. associated(target_data)) then
+            call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+         end if
       else
          ! target data must be null to avoid binding the pointer to the wrong array.
          ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
@@ -967,7 +969,7 @@ contains
                                     varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
       if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
          if (res) then
-            res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
+            res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
          end if
       end if
 
@@ -1079,7 +1081,6 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
-      character(len=256) :: target_layer
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(dp), dimension(:), pointer :: target_data
@@ -1089,8 +1090,6 @@ contains
       integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
       logical :: mapped
       integer :: oper_backup
-
-      target_layer = ''
 
       res = .false.
       ec_item = ec_undef_int
@@ -1117,6 +1116,7 @@ contains
                  forcing_file => input%forcing_file, &
                  forcing_file_type => input%forcing_file_type, &
                  target_mask_file => input%target_mask_file, &
+                 target_layer => input%target_layer, &
                  filetype => input%filetype, &
                  invert_mask => input%invert_mask, &
                  oper => input%oper, &
@@ -1130,6 +1130,7 @@ contains
          end if
 
          kx = 1
+         first_index = 1
          ec_item = ec_undef_int
          target_data => null()
 
@@ -1141,14 +1142,14 @@ contains
             res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
-            res = resolve_field_target(quantity, target_location_type, target_data)
+            res = resolve_field_target(quantity, target_location_type, target_data, target_layer=target_layer)
          end if
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index)
-            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+            res = resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index, target_layer=target_layer)
+            if (res .and. any(target_location_type == [UNC_LOC_3DV, UNC_LOC_S3D]) .and. associated(target_array_3d)) then
                target_data => target_array_3d(first_index, :)
             end if
          end if
@@ -1168,6 +1169,15 @@ contains
             return
          end if
 
+         if (str_tolower(trim(target_layer)) == '3d') then
+            if (target_location_type /= UNC_LOC_S3D .or. .not. associated(target_data) .or. kx /= 1) then
+               write (msgbuf, '(a)') 'targetLayer=3d is not supported for quantity '//trim(quantity)//'.'
+               call err_flush()
+               res = .false.
+               return
+            end if
+         end if
+
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
          call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr)
@@ -1178,6 +1188,9 @@ contains
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
                call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
+            else if (target_location_type == UNC_LOC_S3D .and. str_tolower(trim(target_layer)) == '3d') then
+               res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+               ec_item = ec_undef_int
             else ! normal spatial field
                block
                   real(dp) :: transformcoef(NTRANSFORMCOEF)
@@ -1187,7 +1200,6 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
-                  call prop_get(block_ptr, '', 'targetLayer', target_layer)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)

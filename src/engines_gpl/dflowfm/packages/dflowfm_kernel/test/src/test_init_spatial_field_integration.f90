@@ -109,7 +109,7 @@ contains
    end subroutine create_scalar_netcdf
 
    !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count)
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
@@ -118,13 +118,19 @@ contains
       character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
       logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
       integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
-      integer :: ncid, x_dimid, y_dimid, time_dimid
-      integer :: x_varid, y_varid, time_varid, field_varid
+      logical, intent(in), optional :: with_depth !< Include two depth levels; defaults to false.
+      integer :: ncid, x_dimid, y_dimid, time_dimid, depth_dimid
+      integer :: x_varid, y_varid, time_varid, field_varid, depth_varid
       integer :: num_snapshots
       real(dp), dimension(2, 2, 2) :: values
+      real(dp), dimension(2, 2, 2, 2) :: layered_values
       real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
-      logical :: has_time
+      logical :: has_time, has_depth
 
+      has_depth = .false.
+      if (present(with_depth)) then
+         has_depth = with_depth
+      end if
       has_time = .true.
       if (present(with_time)) then
          has_time = with_time
@@ -135,6 +141,8 @@ contains
       end if
       values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
       values(:, :, 2) = values(:, :, 1) + 10.0_dp
+      layered_values(:, :, 1, :) = values + 20.0_dp
+      layered_values(:, :, 2, :) = values
       call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
       call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
       call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
@@ -147,13 +155,29 @@ contains
       call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
       call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
       call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
+      if (has_depth) then
+         call check_netcdf(nf90_def_dim(ncid, 'depth', 2, depth_dimid))
+         call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [depth_dimid], depth_varid))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
+      end if
       if (has_time) then
          call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
          call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
          call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+         if (has_depth) then
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
+         else
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+         end if
       else
-         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
+         if (has_depth) then
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
+         else
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
+         end if
       end if
       if (present(standard_name)) then
          call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', standard_name))
@@ -169,11 +193,22 @@ contains
       call check_netcdf(nf90_enddef(ncid))
       call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
       call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
+      if (has_depth) then
+         call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
+      end if
       if (has_time) then
          call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
-         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
+         if (has_depth) then
+            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1:num_snapshots)))
+         else
+            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
+         end if
       else
-         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
+         if (has_depth) then
+            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1)))
+         else
+            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
+         end if
       end if
       call check_netcdf(nf90_close(ncid))
    end subroutine create_initial_gridded_netcdf
@@ -2220,6 +2255,130 @@ contains
       if (allocated(sa1)) deallocate (sa1)
       call teardown_minimal_grid()
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_temperature, test_initial_3d_salinity_temperature,
+   subroutine test_initial_3d_salinity_temperature() bind(C)
+      use m_flow, only: sa1, tem1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_ec_message, only: clear_ec_message, dump_ec_message_stack
+      use messagehandling, only: mess, LEVEL_WARN
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_3d.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_3d.ext'
+      character(len=32), dimension(2), parameter :: QUANTITIES = [character(len=32) :: 'initialSalinity', 'initialTemperature']
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      real(dp), dimension(:), pointer :: target
+      logical :: success, has_vertical_error
+      integer :: quantity_index, source_case, saved_kmx, saved_ndkx, saved_layertype
+      integer :: saved_jasal, saved_temperature_model, saved_initem2D
+      real(dp) :: expected_surface
+      character(len=1024) :: ec_message
+
+      saved_kmx = kmx
+      saved_ndkx = ndkx
+      saved_layertype = layertype
+      saved_jasal = jasal
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      call setup_minimal_grid()
+      kmx = 2
+      ndkx = 3
+      layertype = LAYTP_SIGMA
+      jasal = 1
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      call realloc(kbot, ndx, fill=2, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=3, keepExisting=.false.)
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws = [-4.0_dp, -4.0_dp, -2.0_dp, 0.0_dp]
+      call realloc(zcs, ndkx, keepExisting=.false.)
+      call realloc(sa1, ndkx, keepExisting=.false.)
+      call realloc(tem1, ndkx, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+
+      do source_case = 1, 4
+         call create_initial_gridded_netcdf(NC_FILE, 'field', with_time=source_case /= 3, &
+                                            snapshot_count=merge(1, 2, source_case == 2), with_depth=source_case /= 4)
+         expected_surface = 9.0_dp
+         if (source_case == 2 .or. source_case == 3) then
+            expected_surface = 4.0_dp
+         end if
+         do quantity_index = 1, size(QUANTITIES)
+            call create_file(EXT_FILE, [ &
+                             '[Spatial]', &
+                             '    quantity            = '//trim(QUANTITIES(quantity_index)), &
+                             '    forcingFile         = '//NC_FILE, &
+                             '    forcingFileType     = netcdf', &
+                             '    forcingVariableName = field', &
+                             '    targetLayer         = 3D', &
+                             '    operand             = override'])
+            if (quantity_index == 1) then
+               target => sa1
+            else
+               target => tem1
+            end if
+            target = 42.0_dp
+            call initialize_ec_module()
+            call clear_ec_message()
+            call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+            success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+            call tree_destroy(bnd_ptr)
+            if (source_case == 4) then
+               call f90_expect_false(success, 'EC must reject horizontal input for a layered target')
+               has_vertical_error = .false.
+               ec_message = dump_ec_message_stack(LEVEL_FATAL, capture_ec_error)
+               call f90_expect_true(has_vertical_error, 'EC should explain the missing source depth')
+               call f90_expect_true(all(target == 42.0_dp), 'rejection must leave the model target unchanged')
+            else
+               if (.not. success) then
+                  ec_message = dump_ec_message_stack(LEVEL_WARN, capture_ec_error)
+               end if
+               call f90_expect_true(success, 'explicit 3D initialization should succeed without nudging')
+               if (success) then
+                  call f90_expect_near(target(2), expected_surface + 20.0_dp, 1.0e-6_dp, 'bottom layer must retain its depth-specific value')
+                  call f90_expect_near(target(3), expected_surface, 1.0e-6_dp, 'surface layer must retain its depth-specific value')
+                  call f90_expect_eq(target(1), 42.0_dp, '3D loading must not use the horizontal representative entry')
+                  if (quantity_index == 2) then
+                     call f90_expect_eq(initem2D, 0, 'temperature must not subsequently be expanded from horizontal values')
+                  end if
+               end if
+            end if
+         end do
+      end do
+
+      call clear_ec_message()
+      kmx = saved_kmx
+      ndkx = saved_ndkx
+      layertype = saved_layertype
+      jasal = saved_jasal
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      tstart_user = 0.0_dp
+      deallocate (sa1, tem1, kbot, ktop, zws, zcs)
+      call teardown_minimal_grid()
+
+   contains
+
+      subroutine capture_ec_error(level, message)
+         integer, intent(in) :: level
+         character(len=*), intent(in) :: message
+
+         if (index(message, 'vertical coordinates') > 0) then
+            has_vertical_error = .true.
+         end if
+         if (source_case /= 4) then
+            call mess(level, message)
+         end if
+      end subroutine capture_ec_error
+
+   end subroutine test_initial_3d_salinity_temperature
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
