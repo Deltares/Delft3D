@@ -378,7 +378,7 @@ contains
       end if
       input%is_static_field = is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
-      
+
       if (str_tolower(trim(input%target_layer)) == '3d') then
          if (input%filetype /= NCGRID) then
             write (msgbuf, '(5a)') 'targetLayer=3d requires dataFileType NetCDF in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'

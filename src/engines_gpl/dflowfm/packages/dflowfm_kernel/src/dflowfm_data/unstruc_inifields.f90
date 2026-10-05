@@ -47,7 +47,7 @@ module unstruc_inifields
    private
 
    public :: init1dField, spaceInit1dField, &
-             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_field_target, resolve_parameter_target, process_hydrological_quantities, &
+             set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_constituent_target, resolve_integer_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
@@ -855,7 +855,6 @@ contains
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
       character(len=*), optional, intent(in) :: target_layer !< Requested target layer; '3d' requires full cell-layer storage.
       logical :: success !< true if the quantity was recognized and target_array_3d is associated.
-      logical :: supports_3d
 
       character(len=256) :: qid_base, qid_specific
       character(len=NAMTRACLEN) :: tracnam, qidnam
@@ -866,7 +865,6 @@ contains
       first_index = 1
       target_location_type = UNC_LOC_S
       success = .true.
-      supports_3d = .false.
 
       call split_qid(quantity, qid_base, qid_specific)
 
@@ -879,7 +877,6 @@ contains
          end if
          target_array_3d(1:1, 1:size(sa1)) => sa1
          first_index = 1
-         supports_3d = .true.
 
       case ('sedfrac')
          if (.not. stm_included) then
@@ -895,7 +892,6 @@ contains
          end if
          first_index = iconst
          target_array_3d => constituents
-         supports_3d = .true.
 
       case ('sediment')
          if (jased <= 0) then
@@ -922,7 +918,6 @@ contains
          end if
          first_index = itrac2const(itrac)
          target_array_3d => constituents
-         supports_3d = .true.
 
       case ('waqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
@@ -948,12 +943,15 @@ contains
          success = .false.
       end select
       if (success) then
-         success = resolve_target_layer(target_layer, quantity, supports_3d, size(target_array_3d, 2), target_location_type)
+         select case (str_tolower(qid_base))
+         case ('salinity', 'sedfrac', 'tracer')
+            success = set_3D_target_location(target_layer, quantity, size(target_array_3d, 2), target_location_type)
+         end select
       end if
    end function resolve_constituent_target
 
-   !> Select layered interpolation only for quantities with full cell-layer storage.
-   function resolve_target_layer(target_layer, quantity, supports_3d, target_size, target_location_type) result(success)
+   !> Select layered interpolation for a quantity whose resolver owns full cell-layer storage.
+   function set_3D_target_location(target_layer, quantity, target_size, target_location_type) result(success)
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S3D
       use m_flow, only: kmx, ndkx
@@ -961,7 +959,6 @@ contains
 
       character(len=*), optional, intent(in) :: target_layer !< Requested layer selection; absent preserves the default target.
       character(len=*), intent(in) :: quantity !< Quantity name for diagnostics.
-      logical, intent(in) :: supports_3d !< Whether this quantity owns full cell-layer storage.
       integer, intent(in) :: target_size !< Size of the resolved target row or array.
       integer, intent(inout) :: target_location_type !< Default target location, promoted for explicit '3d'.
       logical :: success
@@ -973,18 +970,18 @@ contains
       if (str_tolower(trim(target_layer)) /= '3d') then
          return
       end if
-      if (.not. supports_3d .or. kmx <= 0 .or. target_size /= ndkx) then
+      if (kmx <= 0 .or. target_size /= ndkx) then
          call mess(LEVEL_ERROR, 'targetLayer=3d requires full cell-layer storage in a layered model for quantity '//trim(quantity)//'.')
          success = .false.
          return
       end if
 
       target_location_type = UNC_LOC_S3D
-   end function resolve_target_layer
+   end function set_3D_target_location
 
    !> Resolve the target array and location type for a spatial field quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.
-   function resolve_field_target(qid, target_location_type, target_array, target_layer) result(success)
+   function resolve_initial_target(qid, target_location_type, target_array, target_layer) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -1008,14 +1005,12 @@ contains
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
       character(len=*), optional, intent(in) :: target_layer !< Requested target layer; '3d' requires full cell-layer storage.
       logical :: success !< true if the quantity was recognized and target_array is associated.
-      logical :: supports_3d
       character(len=256) :: qid_base, qid_specific
       integer :: iconst
 
       target_array => null()
       target_location_type = 0
       success = .true.
-      supports_3d = .false.
       call split_qid(qid, qid_base, qid_specific)
       select case (str_tolower(qid_base))
       case ('waterlevel')
@@ -1070,7 +1065,6 @@ contains
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
-            supports_3d = .true.
          else
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model to be enabled.')
             success = .false.
@@ -1132,12 +1126,15 @@ contains
       end select
 
       if (success) then
-         success = resolve_target_layer(target_layer, qid, supports_3d, size(target_array), target_location_type)
-         if (success .and. supports_3d .and. target_location_type == UNC_LOC_S3D) then
-            initem2D = 0
-         end if
+         select case (str_tolower(qid_base))
+         case ('temperature')
+            success = set_3D_target_location(target_layer, qid, size(target_array), target_location_type)
+            if (success .and. target_location_type == UNC_LOC_S3D) then
+               initem2D = 0
+            end if
+         end select
       end if
-   end function resolve_field_target
+   end function resolve_initial_target
 
    !> Resolve the target array and location type for a [Parameter] quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.

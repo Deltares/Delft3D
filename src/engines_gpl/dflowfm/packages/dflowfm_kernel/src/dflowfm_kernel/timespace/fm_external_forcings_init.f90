@@ -1053,7 +1053,7 @@ contains
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
-      use unstruc_inifields, only: resolve_parameter_target, resolve_field_target, process_hydrological_quantities, resolve_constituent_target, resolve_integer_target, &
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_constituent_target, resolve_integer_target, &
                                    initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
@@ -1142,7 +1142,7 @@ contains
             res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
-            res = resolve_field_target(quantity, target_location_type, target_data, target_layer=target_layer)
+            res = resolve_initial_target(quantity, target_location_type, target_data, target_layer=target_layer)
          end if
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)

@@ -87,7 +87,7 @@ contains
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolvers_select_3d_targets, test_resolvers_select_3d_targets,
    subroutine test_resolvers_select_3d_targets() bind(C)
-      use unstruc_inifields, only: resolve_field_target, resolve_constituent_target
+      use unstruc_inifields, only: resolve_initial_target, resolve_constituent_target
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D
       use m_flow, only: sa1, tem1, kmx, ndkx
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
@@ -121,18 +121,18 @@ contains
       target_row => constituent_target(first_index, :)
       call f90_expect_true(associated(target_row, sa1), 'resolver must retain full salinity storage')
 
-      success = resolve_field_target('temperature', location, target, target_layer='all')
+      success = resolve_initial_target('temperature', location, target, target_layer='all')
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S)
       call f90_expect_eq(initem2D, 1)
-      success = resolve_field_target('temperature', location, target, target_layer='3d')
+      success = resolve_initial_target('temperature', location, target, target_layer='3d')
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S3D)
       call f90_expect_true(associated(target, tem1), 'resolver must retain full temperature storage')
       call f90_expect_eq(initem2D, 0, 'resolver owns temperature expansion suppression')
 
       kmx = 0
-      call f90_expect_false(resolve_field_target('temperature', location, target, target_layer='3d'))
+      call f90_expect_false(resolve_initial_target('temperature', location, target, target_layer='3d'))
       call f90_expect_false(resolve_constituent_target('salinity', location, constituent_target, first_index, target_layer='3d'))
 
       kmx = saved_kmx
@@ -570,7 +570,7 @@ contains
    !> initialwaterlevel must return .true. and resolve to a pointer associated with s1 itself.
    !! Pointer identity proves the resolver wired the correct target.
    subroutine test_resolve_initial_target_waterlevel_points_to_s1() bind(C)
-      use unstruc_inifields, only: resolve_field_target
+      use unstruc_inifields, only: resolve_initial_target
       use fm_location_types, only: UNC_LOC_S
       use m_flow, only: s1
       use m_flowgeom, only: ndx
@@ -585,7 +585,7 @@ contains
       target_array => null()
       target_location_type = 0
 
-      success = resolve_field_target('waterlevel', target_location_type, target_array)
+      success = resolve_initial_target('waterlevel', target_location_type, target_array)
 
       call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
       call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")
