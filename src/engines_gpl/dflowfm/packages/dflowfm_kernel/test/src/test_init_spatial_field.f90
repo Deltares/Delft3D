@@ -75,7 +75,7 @@ contains
 
       quantity = 'initialtracerNO3'
       call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
-      call f90_expect_streq(cstr(quantity), cstr('tracerNO3'))
+      call f90_expect_streq(cstr(quantity), cstr('tracerno3'))
       quantity = 'secchidepth'
       call f90_expect_false(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
       call f90_expect_streq(cstr(quantity), cstr('secchidepth'))

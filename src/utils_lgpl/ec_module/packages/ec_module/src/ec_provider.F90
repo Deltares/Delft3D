@@ -335,7 +335,7 @@ contains
 
    !> Create source Items and their contained types, based on file type and file header.
    function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2, data_value) result(success)
-      use string_module, only: str_tolower, istarts_with
+      use string_module, only: str_tolower
 
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -417,17 +417,7 @@ contains
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
             case default
-               if (istarts_with(quantityName, 'waqsegmentfunction')) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else if (istarts_with(quantityName, 'initialtracer')) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else
-                  call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
-                                    //trim(quantityname)//"', file='"//trim(fileReaderPtr%filename)//"'.")
-                  return
-                  ! TODO: user defined quantity name
-                  !success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               end if
+               success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             end select
          else
             call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: NetCDF requires a quantity name.")
@@ -2781,6 +2771,9 @@ contains
 
       ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
       call ecSupportNetcdfGetQuantityCandidateNames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      if (.not. allocated(ncstdnames)) then
+         return
+      end if
 
       ! ------------------------------------------------------------------------------------------------
       ! Inquiry of the dimids and the varids of lon/lat/time coordinate according to the CF-convention
@@ -2811,18 +2804,21 @@ contains
       end if
 
       ! Fill a string array with user-defined variable names
-      if (len_trim(varname) > 0) then
-         if (index(trim(varname), ' ') > 0) then
-            call strsplit(varname, 1, nccustomnames, 1)
-         else
-            call realloc(nccustomnames, 1)
-            nccustomnames(1) = varname
-         end if
+      if (present(varname)) then
+         if (len_trim(varname) > 0) then
+            if (index(trim(varname), ' ') > 0) then
+               call strsplit(varname, 1, nccustomnames, 1)
+            else
+               call realloc(nccustomnames, 1)
+               nccustomnames(1) = varname
+            end if
 
-         if (size(nccustomnames) /= expectedLength) then
-            write (cnum1, '(i2)') expectedLength
-            write (cnum2, '(i2)') size(ncvarnames)
-            call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+            if (size(nccustomnames) /= expectedLength) then
+               write (cnum1, '(i2)') expectedLength
+               write (cnum2, '(i2)') size(nccustomnames)
+               call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+               return
+            end if
          end if
       end if
 
@@ -3562,8 +3558,13 @@ contains
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
-            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
-                  fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            if (ecNetcdfFindVariableId(fileReaderPtr%fileHandle, fileReaderPtr%fileName, &
+                                      fileReaderPtr%standard_names, fileReaderPtr%variable_names, 'PHASE') /= ec_undef_int) then
+               call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
+                     fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            else
+               success = fileReaderPtr%tframe%nr_timesteps == 0
+            end if
          end if
          if (.not. success) then
             call set_ec_message('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
@@ -3667,6 +3668,8 @@ contains
       integer, dimension(1) :: dimid !< integer id of time variable's dimension variable
       integer :: length !< number of time steps
       integer :: istat !< status of allocation operation
+      integer :: nDimensions, dimension_index, variable_rank
+      character(len=NF90_MAX_NAME) :: dimension_name, coordinate_axis
       !
       success = .false.
       nVariables = 0
@@ -3689,7 +3692,30 @@ contains
                exit
             end if
          end do
-         if (i > nVariables) then ! .... if still not found, you are out of luck !
+         if (i > nVariables) then
+            do dimension_index = 1, nVariables
+               coordinate_axis = ''
+               istat = nf90_get_att(fileReaderPtr%fileHandle, dimension_index, 'axis', coordinate_axis)
+               if (istat == NF90_NOERR .and. strcmpi(coordinate_axis, 'T')) then
+                  call set_ec_message('Invalid NetCDF time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            if (.not. ecSupportNetcdfCheckError(nf90_inquire(fileReaderPtr%fileHandle, nDimensions=nDimensions), &
+                                               'obtain nDimensions', fileReaderPtr%fileName)) then
+               return
+            end if
+            do dimension_index = 1, nDimensions
+               if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimension_index, name=dimension_name), &
+                                                  'obtain dimension name', fileReaderPtr%fileName)) then
+                  return
+               end if
+               if (strcmpi(dimension_name, 'time')) then
+                  call set_ec_message('NetCDF time dimension has no time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            fileReaderPtr%tframe%nr_timesteps = 0
             return
          end if
       end if
@@ -3702,8 +3728,20 @@ contains
                                                     tzone=fileReaderPtr%tframe%ec_timezone)) return
       !
       ! Determine the total number of timesteps.
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, ndims=variable_rank), &
+                                         'obtain time variable rank', fileReaderPtr%fileName)) then
+         return
+      end if
+      if (variable_rank /= 1) then
+         call set_ec_message('NetCDF time coordinate must have one dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, dimids=dimid), "obtain time dimension ids", fileReaderPtr%fileName)) return
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimid(1), len=length), "obtain time dimension length", fileReaderPtr%fileName)) return
+      if (length == 0) then
+         call set_ec_message('Empty NetCDF time dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       fileReaderPtr%tframe%nr_timesteps = length
       allocate (fileReaderPtr%tframe%times(length), stat=istat)
       ! Store the times at which data is available.

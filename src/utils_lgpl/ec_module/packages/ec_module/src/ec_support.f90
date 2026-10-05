@@ -587,12 +587,23 @@ contains
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName(14:)
             ncstdnames(1) = quantityName(14:)
+         else if (istarts_with(quantityName, 'tracer')) then
+            allocate (ncvarnames(1))
+            allocate (ncstdnames(1))
+            ncvarnames(1) = quantityName(7:)
+            ncstdnames(1) = quantityName(7:)
          else
-            ! we have faulty
-            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
-            !TODO: user defined quantity name
-            !ncvarnames(1) = varname
-            !ncstdnames(1) = varname
+            if (present(varname)) then
+               if (len_trim(varname) > 0) then
+                  allocate (ncvarnames(1))
+                  allocate (ncstdnames(1))
+                  ncvarnames(1) = varname
+                  ncstdnames(1) = varname
+                  return
+               end if
+            end if
+            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)// &
+                                ", has no default NetCDF variable; provide an explicit variable name.")
          end if
       end select
 
