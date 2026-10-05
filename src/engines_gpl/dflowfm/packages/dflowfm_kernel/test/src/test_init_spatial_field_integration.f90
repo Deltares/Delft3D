@@ -2352,16 +2352,9 @@ contains
       deallocate (sa1, kbot, ktop, zws, zcs)
       call teardown_minimal_grid()
 
-   contains
-
    end subroutine run_initial_3d_salinity_case
-   !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
-   !> Verifies that a secchidepth [Spatial] block fills spatial_secchi_depth and sets
-   !! secchi_depth_is_spatially_varying=.true. via enable_quantity post-processing.
-   !! Both must fire together: a filled array with the flag still false would silently
-   !! cause the model to use the uniform fallback value instead.
    subroutine test_secchidepth_static_field_and_post_processing() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying
       use m_flowtimes, only: irefdate, tzone, tstart_user
