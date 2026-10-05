@@ -42,7 +42,7 @@ contains
 
    subroutine dobatch() !
       use precision, only: dp
-      use m_flow, only: kmx, iturbulencemodel, jaustarint, q1
+      use m_flow, only: kmx, iturbulencemodel, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, jaustarint, q1
       use unstruc_api, only: api_loadmodel, flow
 
       integer :: k, ierr, mout, km(100)
@@ -68,7 +68,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 3
+         iturbulencemodel = TURBULENCE_MODEL_KEPS
          jaustarint = 0
          if (k > 10) then
             dt_max = 1.0_dp
@@ -78,7 +78,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 4
+         iturbulencemodel = TURBULENCE_MODEL_KTAU
          jaustarint = 0
          if (k > 10) then
             dt_max = 1.0_dp
@@ -88,7 +88,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 3
+         iturbulencemodel = TURBULENCE_MODEL_KEPS
          jaustarint = 1
          if (k > 10) then
             dt_max = 1.0_dp
@@ -98,7 +98,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 4
+         iturbulencemodel = TURBULENCE_MODEL_KTAU
          jaustarint = 1
          if (k > 10) then
             dt_max = 1.0_dp
@@ -108,7 +108,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 3
+         iturbulencemodel = TURBULENCE_MODEL_KEPS
          jaustarint = 2
          if (k > 10) then
             dt_max = 1.0_dp
@@ -118,7 +118,7 @@ contains
 
          call api_loadmodel('tst.mdu')
          kmx = km(k)
-         iturbulencemodel = 4
+         iturbulencemodel = TURBULENCE_MODEL_KTAU
          jaustarint = 2
          if (k > 10) then
             dt_max = 1.0_dp

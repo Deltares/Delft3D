@@ -71,6 +71,7 @@ contains
       use m_heatfluxes
       use m_ec_interpolationsettings
       use unstruc_channel_flow
+      use m_atmospheric_stability, only: default_atmospheric_stability
       use m_sobekdfm
       use m_fm_icecover, only: default_fm_icecover
       use m_waves, only: default_waves
@@ -89,7 +90,7 @@ contains
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
       use m_prefetch, only: cleanup_prefetch_arrays
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: SourceSinks, source_sinks
       use m_unstruc_netcdf_data, only: default_unstruc_netcdf_data
 
       implicit none
@@ -116,6 +117,8 @@ contains
       call default_grw()
 
       call default_wind()
+
+      call default_atmospheric_stability()
 
       call default_lateral()
 
@@ -148,7 +151,7 @@ contains
       call default_modelbounds()
 
       call default_fm_external_forcing_data()
-      call source_sinks%dealloc()
+      source_sinks = SourceSinks()
 
       call default_channel_flow()
 

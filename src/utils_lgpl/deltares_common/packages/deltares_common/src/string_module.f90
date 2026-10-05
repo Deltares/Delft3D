@@ -49,6 +49,7 @@ module string_module
    public :: str_lower
    public :: str_toupper
    public :: str_upper
+   public :: istarts_with
    public :: strcmpi
    public :: trimexact
    public :: remove_leading_spaces
@@ -467,6 +468,23 @@ contains
       character(len=length) :: trimmed !< Resulting string.
       trimmed = string
    end function trimexact
+
+   !> Determine whether string1 starts with string2, ignoring case.
+   pure function istarts_with(string1, string2) result(matches)
+      character(len=*), intent(in) :: string1 !< The string to be checked.
+      character(len=*), intent(in) :: string2 !< The string to check for at the start of string1.
+      logical :: matches
+
+      integer :: len2
+
+      len2 = len(string2)
+
+      if (len(string1) < len2) then
+         matches = .false.
+      else
+         matches = str_tolower(string1(:len2)) == str_tolower(string2)
+      end if
+   end function istarts_with
 
    ! ------------------------------------------------------------------------------
    !   Function:   strcmpi
