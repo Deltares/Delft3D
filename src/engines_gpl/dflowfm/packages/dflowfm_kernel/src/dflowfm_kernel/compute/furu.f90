@@ -68,7 +68,7 @@ contains
 
       implicit none
 
-      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, itpbn, i
+      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, boundary_type, i
       integer :: kup, kdo, iup
 
       real(kind=dp) :: bui, cu, du, du0, gdxi, ds
@@ -284,13 +284,13 @@ contains
 
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         itpbn = kbndu(4, n)
+         boundary_type = kbndu(4, n)
          call getLbotLtop(LL, Lb, Lt)
 
          !Original:  !zbndun = zbndu( (n-1)*kmxd + 1 )
-         if (itpbn == BOUNDARY_VELOCITY_FLUX) then
+         if (boundary_type == BOUNDARY_VELOCITY_FLUX) then
             zbndun = zbndq(n)
-         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then 
+         else if (boundary_type == BOUNDARY_VELOCITY_RIEMANN) then 
             zbndun = u1(LL) ! set in xbeach_absgen_bc
          else ! other types that use alfsmo
             zbndun = zbndu((n - 1) * kmxd + 1)
@@ -301,11 +301,11 @@ contains
             zbndun = alfsmo * zbndun + (1.0_dp - alfsmo) * zbndu0n ! i.c. smoothing, start from 0
          end if
 
-         if (itpbn == BOUNDARY_CRITICAL_OUTFLOW) then
+         if (boundary_type == BOUNDARY_CRITICAL_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                zbndun = -sqrt(ag * (s1(k2) - min(bob(1, LL), bob(2, LL))))
             end if
-         else if (itpbn == BOUNDARY_WEIR_OUTFLOW) then
+         else if (boundary_type == BOUNDARY_WEIR_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                hb = s1(k2) - min(bob(1, LL), bob(2, LL))
                h23 = twot * hb
@@ -337,7 +337,7 @@ contains
             ru(L) = zbndun
 
             if (Lt > Lb) then
-               if (jaLogprofatubndin /= 1 .and. itpbn == BOUNDARY_VELOCITY_NORMAL_INFLOW) then ! non logprof and vertical profile specified
+               if (jaLogprofatubndin /= 1 .and. boundary_type == BOUNDARY_VELOCITY_NORMAL_INFLOW) then ! non logprof and vertical profile specified
                   ru(L) = zbndu((n - 1) * kmxd + L - Lb + 1) * min(1.0_dp, alfsmo)
                else if (abs(u1(Lb)) > 1.0e-4_dp .and. z00 > 0.0_dp) then
                   if (jaustarint == 0 .or. jaustarint == 3 .or. jaustarint == 1) then
