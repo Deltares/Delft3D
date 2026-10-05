@@ -3315,8 +3315,8 @@ contains
             targetElementSet => targetItem%elementSetPtr
 
             if (associated(targetElementSet%z)) then
-               if (sourceElementSet%n_layers == 0 .or. .not. associated(sourceElementSet%z)) then
-                  call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires NetCDF source vertical coordinates.')
+               if (sourceElementSet%n_layers < 2 .or. .not. associated(sourceElementSet%z)) then
+                  call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires at least two NetCDF source vertical coordinates.')
                   return
                end if
             end if
