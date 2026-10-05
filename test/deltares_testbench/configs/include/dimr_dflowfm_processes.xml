@@ -1489,8 +1489,8 @@
       </file>
     </checks>
   </testCase>
-  <testCase name="e02_f030_c121_SedimentationTransportCoupling_sediments" ref="dflowfm_default">
-    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c121_SedimentationTransportCoupling_sediments</path>
+  <testCase name="e02_f030_c122_sedimentationTransportCoupling_sediments" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c122_sedimentationTransportCoupling_sediments</path>
     <checks>
       <file name="output/FlowFM_map.nc" type="netCDF">
         <parameters>
