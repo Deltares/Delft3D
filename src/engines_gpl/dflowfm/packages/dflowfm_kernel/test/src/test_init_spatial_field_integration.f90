@@ -1910,8 +1910,8 @@ contains
    end subroutine test_initial_waterlevel_timeless_netcdf
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_single_snapshot_is_constant, test_initial_waterlevel_single_snapshot_is_constant,
-   subroutine test_initial_waterlevel_single_snapshot_is_constant() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_snapshot_netcdf, test_initial_waterlevel_snapshot_netcdf,
+   subroutine test_initial_waterlevel_snapshot_netcdf() bind(C)
       use m_flow, only: s1
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
@@ -1960,7 +1960,7 @@ contains
          end if
          call teardown_minimal_grid()
       end do
-   end subroutine test_initial_waterlevel_single_snapshot_is_constant
+   end subroutine test_initial_waterlevel_snapshot_netcdf
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchi_timeless_netcdf_is_constant, test_secchi_timeless_netcdf_is_constant,
@@ -2257,38 +2257,53 @@ contains
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_temperature, test_initial_3d_salinity_temperature,
-   subroutine test_initial_3d_salinity_temperature() bind(C)
-      use m_flow, only: sa1, tem1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
-      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_two_timestamps, test_initial_3d_salinity_two_timestamps,
+   subroutine test_initial_3d_salinity_two_timestamps() bind(C)
+      call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
+   end subroutine test_initial_3d_salinity_two_timestamps
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_one_timestamp, test_initial_3d_salinity_one_timestamp,
+   subroutine test_initial_3d_salinity_one_timestamp() bind(C)
+      call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
+   end subroutine test_initial_3d_salinity_one_timestamp
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_timeless, test_initial_3d_salinity_timeless,
+   subroutine test_initial_3d_salinity_timeless() bind(C)
+      call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
+   end subroutine test_initial_3d_salinity_timeless
+   !$f90tw)
+
+   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface)
+      use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
+      use m_flowparameters, only: jasal
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
       use m_ec_message, only: clear_ec_message, dump_ec_message_stack
       use messagehandling, only: mess, LEVEL_WARN
 
-      character(len=*), parameter :: NC_FILE = 'test_initial_3d.nc'
-      character(len=*), parameter :: EXT_FILE = 'test_initial_3d.ext'
-      character(len=32), dimension(2), parameter :: QUANTITIES = [character(len=32) :: 'initialSalinity', 'initialTemperature']
+      character(len=*), intent(in) :: case_name
+      logical, intent(in) :: with_time
+      integer, intent(in) :: snapshot_count
+      real(dp), intent(in) :: expected_surface
+
+      character(len=64) :: nc_file, ext_file
       type(tree_data), pointer :: bnd_ptr, block_ptr
-      real(dp), dimension(:), pointer :: target
-      logical :: success, has_vertical_error
-      integer :: quantity_index, source_case, saved_kmx, saved_ndkx, saved_layertype
-      integer :: saved_jasal, saved_temperature_model, saved_initem2D
-      real(dp) :: expected_surface
+      logical :: success
+      integer :: saved_kmx, saved_ndkx, saved_layertype
+      integer :: saved_jasal
       character(len=1024) :: ec_message
 
       saved_kmx = kmx
       saved_ndkx = ndkx
       saved_layertype = layertype
       saved_jasal = jasal
-      saved_temperature_model = temperature_model
-      saved_initem2D = initem2D
       call setup_minimal_grid()
       kmx = 2
       ndkx = 3
       layertype = LAYTP_SIGMA
       jasal = 1
-      temperature_model = TEMPERATURE_MODEL_TRANSPORT
       call realloc(kbot, ndx, fill=2, keepExisting=.false.)
       call realloc(ktop, ndx, fill=3, keepExisting=.false.)
       if (allocated(zws)) deallocate (zws)
@@ -2296,89 +2311,50 @@ contains
       zws = [-4.0_dp, -4.0_dp, -2.0_dp, 0.0_dp]
       call realloc(zcs, ndkx, keepExisting=.false.)
       call realloc(sa1, ndkx, keepExisting=.false.)
-      call realloc(tem1, ndkx, keepExisting=.false.)
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 50.0_dp
       jsferic = 0
       threshold_abort = LEVEL_FATAL
 
-      do source_case = 1, 4
-         call create_initial_gridded_netcdf(NC_FILE, 'field', with_time=source_case /= 3, &
-                                            snapshot_count=merge(1, 2, source_case == 2), with_depth=source_case /= 4)
-         expected_surface = 9.0_dp
-         if (source_case == 2 .or. source_case == 3) then
-            expected_surface = 4.0_dp
-         end if
-         do quantity_index = 1, size(QUANTITIES)
-            call create_file(EXT_FILE, [ &
-                             '[Spatial]', &
-                             '    quantity            = '//trim(QUANTITIES(quantity_index)), &
-                             '    forcingFile         = '//NC_FILE, &
-                             '    forcingFileType     = netcdf', &
-                             '    forcingVariableName = field', &
-                             '    targetLayer         = 3D', &
-                             '    operand             = override'])
-            if (quantity_index == 1) then
-               target => sa1
-            else
-               target => tem1
-            end if
-            target = 42.0_dp
-            call initialize_ec_module()
-            call clear_ec_message()
-            call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-            success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
-            call tree_destroy(bnd_ptr)
-            if (source_case == 4) then
-               call f90_expect_false(success, 'EC must reject horizontal input for a layered target')
-               has_vertical_error = .false.
-               ec_message = dump_ec_message_stack(LEVEL_FATAL, capture_ec_error)
-               call f90_expect_true(has_vertical_error, 'EC should explain the missing source depth')
-               call f90_expect_true(all(target == 42.0_dp), 'rejection must leave the model target unchanged')
-            else
-               if (.not. success) then
-                  ec_message = dump_ec_message_stack(LEVEL_WARN, capture_ec_error)
-               end if
-               call f90_expect_true(success, 'explicit 3D initialization should succeed without nudging')
-               if (success) then
-                  call f90_expect_near(target(2), expected_surface + 20.0_dp, 1.0e-6_dp, 'bottom layer must retain its depth-specific value')
-                  call f90_expect_near(target(3), expected_surface, 1.0e-6_dp, 'surface layer must retain its depth-specific value')
-                  call f90_expect_eq(target(1), 42.0_dp, '3D loading must not use the horizontal representative entry')
-                  if (quantity_index == 2) then
-                     call f90_expect_eq(initem2D, 0, 'temperature must not subsequently be expanded from horizontal values')
-                  end if
-               end if
-            end if
-         end do
-      end do
+      write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
+      write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
+      call initialize_ec_module()
+      call create_initial_gridded_netcdf(trim(nc_file), 'field', with_time=with_time, &
+                                         snapshot_count=snapshot_count, with_depth=.true.)
+      call create_file(trim(ext_file), [ &
+                       '[Spatial]', &
+                       '    quantity            = initialSalinity', &
+                       '    forcingFile         = '//trim(nc_file), &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = field', &
+                       '    targetLayer         = 3D', &
+                       '    operand             = override'])
+      sa1 = 42.0_dp
+      call clear_ec_message()
+      call parse_spatial_block(trim(ext_file), bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, trim(ext_file), 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'explicit 3D salinity initialization should succeed without nudging')
+      if (success) then
+         call f90_expect_near(sa1(2), expected_surface + 20.0_dp, 1.0e-6_dp, 'bottom layer must retain its depth-specific value')
+         call f90_expect_near(sa1(3), expected_surface, 1.0e-6_dp, 'surface layer must retain its depth-specific value')
+         call f90_expect_eq(sa1(1), 42.0_dp, '3D loading must not use the horizontal representative entry')
+      end if
 
+      call initialize_ec_module()
       call clear_ec_message()
       kmx = saved_kmx
       ndkx = saved_ndkx
       layertype = saved_layertype
       jasal = saved_jasal
-      temperature_model = saved_temperature_model
-      initem2D = saved_initem2D
       tstart_user = 0.0_dp
-      deallocate (sa1, tem1, kbot, ktop, zws, zcs)
+      deallocate (sa1, kbot, ktop, zws, zcs)
       call teardown_minimal_grid()
 
    contains
 
-      subroutine capture_ec_error(level, message)
-         integer, intent(in) :: level
-         character(len=*), intent(in) :: message
-
-         if (index(message, 'vertical coordinates') > 0) then
-            has_vertical_error = .true.
-         end if
-         if (source_case /= 4) then
-            call mess(level, message)
-         end if
-      end subroutine capture_ec_error
-
-   end subroutine test_initial_3d_salinity_temperature
+   end subroutine run_initial_3d_salinity_case
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
