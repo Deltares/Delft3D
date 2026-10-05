@@ -1188,9 +1188,6 @@ contains
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
                call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
-            else if (target_location_type == UNC_LOC_S3D .and. str_tolower(trim(target_layer)) == '3d') then
-               res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
-               ec_item = ec_undef_int
             else ! normal spatial field
                block
                   real(dp) :: transformcoef(NTRANSFORMCOEF)
@@ -1201,7 +1198,7 @@ contains
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
 
-                  if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
+                  if (associated(target_array_3d) .and. target_location_type /= UNC_LOC_S3D) then ! allocate horizontal staging buffer for 2D-to-3D expansion
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
@@ -1224,8 +1221,11 @@ contains
                         end if
                      end if
                   end if
-
-                  if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
+                  ! These two have to go through the EC-module as a one-shot timespacerelation
+                  if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+                     ec_item = ec_undef_int
+                  else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
                      if (filetype == NCGRID .and. len_trim(variable_name) > 0) then
                         res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                       method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
@@ -1236,14 +1236,11 @@ contains
                      if (res) then
                         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
                      end if
-                     ec_item = ec_undef_int
-                  else if (associated(target_data)) then
+                  else if (associated(target_data)) then ! normal timespaceinitialfield
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
                                                  forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
-                  else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                   else
                      write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' with forcingFileType '''// &
                         trim(forcing_file_type)//''' from file '''//trim(file_name)//''': no target array is available.'
@@ -1252,7 +1249,7 @@ contains
                      return
                   end if
 
-                  if (associated(target_array_3d)) then !> 3D postprocessing
+                  if (associated(target_array_3d) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
                      oper = oper_backup
                      if (index(str_tolower(quantity), 'waqbot') == 1) then
                         res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
