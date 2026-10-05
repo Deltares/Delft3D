@@ -1,16 +1,16 @@
 [General]
-fileVersion=2.02
-fileType=extForce
+fileVersion = 3.00
+fileType    = extForce
 
 [Boundary]
-quantity=waterlevelbnd
-locationFile=f34_001.pli
-forcingFile=f34_001.bc
+quantity     = waterlevelbnd
+locationFile = f34_001.pli
+forcingFile  = f34_001.bc
 
-[Meteo]
-quantity=windxy
-forcingFile=f34.wnd
-forcingFileType=uniMagDir
-interpolationMethod=linearSpaceTime
-operand=O
-
+[Spatial]
+quantity             = windxy          # Name of the quantity. See UM Section C.5.3
+dataFile             = f34.wnd         # Name of file containing the data for this spatial quantity.
+dataFileType         = uniMagDir       # Type of dataFile.
+interpolationMethod  = linearSpaceTime # Type of (spatial) interpolation.
+operand              = override        # How this data is combined with previous data for the same quantity (if any).
+extrapolationAllowed = 0               # Optionally allow nearest neighbour extrapolation in space (0: no, 1: yes). Default off.

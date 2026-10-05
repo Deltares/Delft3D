@@ -33,7 +33,7 @@
 !! frictioncoefficient, etc.
 module unstruc_inifields
 
-   use m_setinitialverticalprofile, only: setinitialverticalprofile
+   use m_setinitialverticalprofile, only: setinitialverticalprofilez
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
    use messagehandling, only: msgbuf, warn_flush, err_flush
@@ -477,7 +477,7 @@ contains
          istat, &
          prefix='While reading '''//trim(filename)//'''', &
          print_context_keywords=['quantity', 'dataFile'] &
-      )
+         )
       ! No errors
       write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, &
          ' [Branch] blocks have been read and handled.'
@@ -831,7 +831,7 @@ contains
 !! Returns .true. if the quantity was recognized and target_array is associated.
    function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
       use string_module, only: str_tolower
-      use messagehandling, only: mess, LEVEL_WARN
+      use messagehandling, only: mess, LEVEL_ERROR
       use m_flow, only: sa1
       use m_flowparameters, only: jasal
       use m_transport, only: const_names
@@ -846,7 +846,7 @@ contains
       use m_find_name, only: find_name
       use m_add_bndtracer, only: add_bndtracer
       use m_add_tracer, only: add_tracer
-      use fm_location_types, only: UNC_LOC_S
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_3DV
       use processes_input, only: paname, painp, num_spatial_parameters
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
@@ -870,6 +870,7 @@ contains
       select case (str_tolower(qid_base))
       case ('initialsalinity')
          if (jasal <= 0) then
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires salinity to be enabled.')
             success = .false.
             return
          end if
@@ -878,12 +879,13 @@ contains
 
       case ('initialsedfrac')
          if (.not. stm_included) then
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires suspended sediment transport to be enabled.')
             success = .false.
             return
          end if
          iconst = find_name(const_names, qid_specific)
          if (iconst <= 0) then
-            call mess(LEVEL_WARN, 'resolve_initial_3d_target: unknown sediment fraction '''//trim(qid_specific)//'''.')
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' refers to unknown sediment fraction '''//trim(qid_specific)//'''.')
             success = .false.
             return
          end if
@@ -891,7 +893,8 @@ contains
          target_array_3d => constituents
 
       case ('initialsediment')
-         if (jased /= 1 .or. jased /= 2 .or. jased /= 3) then
+         if (jased <= 0) then
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires a supported sediment transport model.')
             success = .false.
             return
          end if
@@ -908,7 +911,7 @@ contains
          call add_tracer(qid_specific, iconst)
          itrac = find_name(trnames, qid_specific)
          if (itrac == 0) then
-            call mess(LEVEL_WARN, 'resolve_initial_3d_target: tracer '''//trim(qid_specific)//''' not found.')
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' refers to unknown tracer '''//trim(qid_specific)//'''.')
             success = .false.
             return
          end if
@@ -918,7 +921,7 @@ contains
       case ('initialwaqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
          if (iwqbot == 0) then
-            call mess(LEVEL_WARN, 'resolve_initial_3d_target: WAQ bottom variable '''//trim(qid_specific)//''' not found.')
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' refers to unknown WAQ bottom variable '''//trim(qid_specific)//'''.')
             success = .false.
             return
          end if
@@ -952,6 +955,10 @@ contains
       use m_flowgeom, only: ndx, lnx
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, &
                                   temperature_model, TEMPERATURE_MODEL_NONE, initem2D, inivel
+      use m_sediment, only: stm_included
+      use m_transportdata, only: constituents, const_names
+      use m_find_name, only: find_name
+      use fm_external_forcings_utils, only: split_qid
       use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
 
@@ -961,12 +968,15 @@ contains
       character(len=*), intent(in) :: inifilename !< Name of the ini file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
-      logical :: success !< true if the quantity was recognized.
+      logical :: success !< true if the quantity was recognized and target_array is associated.
+      character(len=256) :: qid_base, qid_specific
+      integer :: iconst
 
       target_array => null()
       target_location_type = 0
       success = .true.
-      select case (str_tolower(qid))
+      call split_qid(qid, qid_base, qid_specific)
+      select case (str_tolower(qid_base))
       case ('waterlevel', 'initialwaterlevel')
          if (str_tolower(qid) == 'waterlevel') then
             call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
@@ -999,6 +1009,10 @@ contains
             uniformsalinityabovez = dmiss
             target_location_type = UNC_LOC_S
             target_array => satop
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires salinity to be enabled.')
+            success = .false.
+            return
          end if
 
       case ('initialsalinitybot')
@@ -1012,6 +1026,10 @@ contains
             uniformsalinitybelowz = dmiss
             target_location_type = UNC_LOC_S
             target_array => sabot
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires salinity to be enabled.')
+            success = .false.
+            return
          end if
 
       case ('initialtemperature')
@@ -1019,6 +1037,10 @@ contains
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model to be enabled.')
+            success = .false.
+            return
          end if
 
       case ('initialvelocityx')
@@ -1039,12 +1061,36 @@ contains
          if (temperature_model /= TEMPERATURE_MODEL_NONE .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => tem1
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model and a 3D flow model.')
+            success = .false.
+            return
          end if
 
       case ('initialverticalsalinityprofile')
          if (jasal > 0 .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => sa1
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires salinity and a 3D flow model.')
+            success = .false.
+            return
+         end if
+
+      case ('initialverticalsedfracprofile', 'initialverticalsigmasedfracprofile')
+         if (stm_included .and. kmx > 0) then
+            iconst = find_name(const_names, qid_specific)
+            if (iconst <= 0) then
+               call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' refers to unknown sediment fraction '''//trim(qid_specific)//'''.')
+               success = .false.
+               return
+            end if
+            target_location_type = UNC_LOC_3DV
+            target_array => constituents(iconst, :)
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires sediment transport and a 3D flow model.')
+            success = .false.
+            return
          end if
 
       case default
@@ -1071,8 +1117,8 @@ contains
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
-                    WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
-                    WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING, wave_input_is_required
+                             WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
+                             WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING, wave_input_is_required
       use m_waves, only: offline_wave_input_requirements
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
       use fm_external_forcings_utils, only: split_qid
@@ -1669,7 +1715,7 @@ contains
                kb = kbot(n)
                kt = ktop(n)
                call operate(output_array_3d(n), input_array_2d(n), operand)
-               ! intentionally fill all levels, even those above the water surface. 
+               ! intentionally fill all levels, even those above the water surface.
                ! This is necessary for waq variables, and is harmless for quantities like salinity.
                do k = kb, kb + kmxn(n) - 1
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

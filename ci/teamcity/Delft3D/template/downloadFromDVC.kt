@@ -6,8 +6,8 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
 object TemplateDownloadFromDVC : Template({
-    name = "Download doc folders."
-    description = "Download all doc folders via doc.dvc files, recursively for engine dir."
+    name = "Download docs from DVC"
+    description = "Download engine doc folders via DVC."
     buildNumberPattern = "%build.vcs.number%"
 
     params {

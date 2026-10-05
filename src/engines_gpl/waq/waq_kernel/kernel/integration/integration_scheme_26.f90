@@ -323,7 +323,7 @@ contains
                 updatr = .true.
             case (2) ! the fraudulent computation option
                 call update_volumes_and_time_step(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivoll:), &
+                        j(inrha:), j(inrh2:), j(inrft:), a(ivoll:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivol2:), dlwqd)
@@ -334,7 +334,7 @@ contains
                 lstrec = .true.
             case default               !     read new volumes from files
                 call update_volumes_and_time_step(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivol2:), &
+                        j(inrha:), j(inrh2:), j(inrft:), a(ivol2:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivoll:), dlwqd)

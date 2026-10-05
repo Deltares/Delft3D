@@ -12,11 +12,9 @@ import Delft3D.linux.containers.*
 
 object TestPythonCiTools : BuildType({
     id("TestPythonCiTools")
-    name = "Test Python CI tools"
+    name = "Lint Python CI tools"
     buildNumberPattern = "%build.vcs.number%"
-    description = """
-        Runs tests and quality checks on the python CI tools (including DIMRset delivery).
-    """.trimIndent()
+    description = "ruff, mypy, and pytest for ci/python."
 
     // The name `coverage.zip` for the pytest coverage report should not be changed.
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.

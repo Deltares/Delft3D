@@ -1,8 +1,8 @@
 [General]
-fileVersion=2.02
-fileType=extForce
+fileVersion = 3.00
+fileType    = extForce
 
 [Boundary]
-quantity=waterlevelbnd
-locationFile=Boundary01.pli
-forcingFile=WaterLevel.bc
+quantity     = waterlevelbnd
+locationFile = Boundary01.pli
+forcingFile  = WaterLevel.bc

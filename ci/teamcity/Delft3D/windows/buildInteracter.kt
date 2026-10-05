@@ -10,8 +10,8 @@ import Delft3D.step.*
 
 
 object WindowsBuildDflowfmInteracter : BuildType({
-    name = "Build D-flow FM Interacter"
-    description = "Separate DflowFM Interacter Build"
+    name = "Build D-Flow FM Interacter"
+    description = "Separate D-Flow FM Interacter build."
     templates(
         TemplatePublishStatus,
         TemplateMonitorPerformance,

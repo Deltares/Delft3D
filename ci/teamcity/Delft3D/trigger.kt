@@ -11,7 +11,7 @@ import Delft3D.ciUtilities.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for pull-requests and will schedule the appropriate pre-merge testbenches."
+    description = "Start pre-merge TestBench, unit tests, and container examples for pull requests."
 
     templates(
         TemplateLinuxAgent,
@@ -32,7 +32,7 @@ object Trigger : BuildType({
     params {
         param("testbench_table", "ci/teamcity/Delft3D/vars/dimr_testbench_table.csv")
 
-        param("teamcity_user", "svc_dimr_trigger")
+        param("teamcity_user", DslContext.getParameter("teamcity_user"))
         password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
 
         param("matrix_list_lnx64", "dummy_value")

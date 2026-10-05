@@ -1385,7 +1385,7 @@ contains
       use precision, only: dp
       use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
-                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
+                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, &
                         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
                         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
                         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
@@ -1795,7 +1795,7 @@ contains
             ierr = nf90_put_att(irstfile, id_fvcoro, 'units', 'm s-2')
          end if
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! Definition and attributes of vertical eddy viscosity vicwwu
             ierr = nf90_def_var(irstfile, 'vicwwu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_vicwwu)
             ierr = nf90_put_att(irstfile, id_vicwwu, 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -1815,11 +1815,11 @@ contains
             ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
             ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_tureps1, '_FillValue', dmiss)
-            if (iturbulencemodel == 3) then
+            if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                ierr = nf90_put_att(irstfile, id_tureps1, 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent energy dissipation')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 'm2 s-3')
-            else if (iturbulencemodel == 4) then
+            else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                !ierr = nf90_put_att(irstfile, id_tureps1,  'standard_name', '')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent time scale')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 's-1')
@@ -2148,7 +2148,7 @@ contains
                ierr = nf90_put_att(irstfile, id_thlyr, 'units', 'm')
             end if
 
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = nf90_def_var(irstfile, 'preload', nf90_double, [id_nlyrdim, id_flowelemdim, id_timedim], id_preload)
                ierr = nf90_put_att(irstfile, id_preload, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
                ierr = nf90_put_att(irstfile, id_preload, 'long_name', 'Historical largest load on layer of the bed in flow cell center')
@@ -2901,7 +2901,7 @@ contains
          ! write averaged u1
          ierr = nf90_put_var(irstfile, id_unorma, u1(1:lnx), start=[1, itim], count=[lnx, 1])
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! write vertical eddy viscosity vicwwu
             work0 = dmiss
             do LL = 1, lnx
@@ -3220,7 +3220,7 @@ contains
                ierr = nf90_put_var(irstfile, id_lyrfrac, frac(:, :, 1:ndxi), [1, 1, 1, itim], [stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
             ! preload
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
             ! porosity
@@ -3789,7 +3789,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -3804,7 +3804,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
       use m_unstruc_netcdf_data, only: flowgeom_map
@@ -4329,6 +4329,12 @@ contains
             if (ice_mapout%snow_temperature) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, nf90_double, UNC_LOC_S, 'snow_temperature', 'temperature_in_surface_snow', 'Temperature of the snow layer', 'K', jabndnd=jabndnd_)
             end if
+            if (ice_mapout%qh_air2ice) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, nf90_double, UNC_LOC_S, 'qh_air2ice', '', 'Heat flux from air to snow/ice cover', 'W m-2', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, nf90_double, UNC_LOC_S, 'qh_ice2wat', '', 'Heat flux from ice cover to water', 'W m-2', jabndnd=jabndnd_)
+            end if
          end if
 
          if (jawind > 0) then
@@ -4388,20 +4394,23 @@ contains
                end if
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
+               if (soiltempthick > 0.0_dp) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, nc_precision, UNC_LOC_S, 'tbed', '', 'Temperature of the bed', 'degC', jabndnd=jabndnd_)
+               end if
             end if
          end if
 
          ! Turbulence.
          if (map_write_settings%tur > 0 .and. kmx > 0) then
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, nc_precision, UNC_LOC_W, 'difwws_total', 'eddy_diffusivity', 'total vertical eddy diffusivity of salinity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
-               if (iturbulencemodel == 3) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
-               else if (iturbulencemodel == 4) then
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', '', 'turbulent time scale', 's-1', jabndnd=jabndnd_)
                end if
             end if
@@ -4641,7 +4650,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, nc_precision, UNC_LOC_S, 'poros', '', 'Porosity of a layer of the bed in flow cell center', '-', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
-               if (stmpar%morpar%moroutput%preload) then
+               if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=[mapids%id_tsp%id_nlyrdim, -2, -1], jabndnd=jabndnd_)
                end if
                !
@@ -5389,7 +5398,7 @@ contains
 
       ! Turbulence.
       if (map_write_settings%tur > 0 .and. kmx > 0) then
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             vicwwu_total = 0.0_dp
             vicwws_total = 0.0_dp
             do LL = 1, lnx
@@ -5873,7 +5882,7 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, UNC_LOC_S, poros, locdim=2, jabndnd=jabndnd_)
             end if
             !
-            if (stmpar%morpar%moroutput%preload) then
+            if (stmpar%morpar%moroutput%preload .and. associated(stmpar%morlyr%state%preload)) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
             end if
             !
@@ -6111,6 +6120,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, UNC_LOC_S, snow_temperature, jabndnd=jabndnd_)
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_air2ice, UNC_LOC_S, qh_air2ice, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qh_ice2wat, UNC_LOC_S, qh_ice2wat, jabndnd=jabndnd_)
+         end if
       end if
 
       ! Heat flux models
@@ -6135,6 +6150,9 @@ contains
             end if
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
+            if (soiltempthick > 0.0_dp) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, UNC_LOC_S, tbed, jabndnd=jabndnd_)
+            end if
          end if
       end if
 
@@ -6562,16 +6580,16 @@ contains
          do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
-            n = source_sinks%indices(isrc, 1)
+            n = source_sinks%indices(isrc, FLOWCELL_SINK)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SINK_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SINK_SIDE)) then
                      nktop = nk
                   end if
                end do
@@ -6581,16 +6599,16 @@ contains
             end if
             !
             ! Sources
-            n = source_sinks%indices(isrc, 4)
+            n = source_sinks%indices(isrc, FLOWCELL_SOURCE)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SOURCE_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SOURCE_SIDE)) then
                      nktop = nk
                   end if
                end do
@@ -6666,7 +6684,8 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
-                               ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+                               ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, &
+                               ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -6712,9 +6731,10 @@ contains
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
          id_q1main, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
-         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
+         id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
          id_ice_s1, id_ice_zmax, id_ice_zmin, id_ice_area_fraction, id_ice_thickness, id_ice_pressure, id_ice_temperature, id_snow_thickness, id_snow_temperature, &
+         id_qh_air2ice, id_qh_ice2wat, &
          id_cwav, id_cgwav, id_sigmwav, &
          id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
          id_1d2d_edges, id_1d2d_zeta1d, id_1d2d_crest_level, id_1d2d_b_2di, id_1d2d_b_2dv, id_1d2d_d_2dv, id_1d2d_q_zeta, id_1d2d_q_lat, &
@@ -6866,6 +6886,9 @@ contains
                   end if
 
                   call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  if (soiltempthick > 0.0_dp) then
+                     call definencvar(imapfile, id_tbed(iid), nf90_double, idims, 'tbed', 'Temperature of the bed', 'degC', 'FlowElem_xcc FlowElem_ycc')
+                  end if
                end if
             end if
 
@@ -7279,7 +7302,7 @@ contains
             end if
 
             if (map_write_settings%tur > 0 .and. kmx > 0) then
-               if (iturbulencemodel >= 3) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                   ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turkin1(iid))
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
@@ -7315,11 +7338,11 @@ contains
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), '_FillValue', dmiss)
 
-                  if (iturbulencemodel == 3) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent energy dissipation')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 'm2 s-3')
-                  else if (iturbulencemodel == 4) then
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent time scale')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 's-1')
                   end if
@@ -7988,6 +8011,12 @@ contains
             if (ice_mapout%snow_temperature) then
                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
+            if (ice_mapout%qh_air2ice) then
+               call definencvar(imapfile, id_qh_air2ice(iid), nf90_double, idims, 'qh_air2ice', 'Heat flux from air to snow/ice cover', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%qh_ice2wat) then
+               call definencvar(imapfile, id_qh_ice2wat(iid), nf90_double, idims, 'qh_ice2wat', 'Heat flux from ice cover to water', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+            end if
          end if
 
          if ((map_write_settings%wind > 0 .or. map_write_settings%windstress > 0 .or. jaseparate_ == 2) .and. jawind /= 0) then
@@ -8190,7 +8219,7 @@ contains
             if (apply_thermobaricity) then
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
             end if
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
                ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
                ierr = nf90_inq_varid(imapfile, 'vicwwu', id_vicwwu(iid))
@@ -8719,7 +8748,7 @@ contains
                end if
             end if
 
-            if (map_write_settings%tur > 0 .and. iturbulencemodel >= 3) then
+            if (map_write_settings%tur > 0 .and. any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                do LL = 1, lnx
                   work0(:, LL) = dmiss ! For proper fill values in z-model runs.
                   call getLbotLtopmax(LL, Lb, Ltx)
@@ -9443,6 +9472,12 @@ contains
          if (ice_mapout%snow_temperature) then
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
+         if (ice_mapout%qh_air2ice) then
+            ierr = nf90_put_var(imapfile, id_qh_air2ice(iid), qh_air2ice, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%qh_ice2wat) then
+            ierr = nf90_put_var(imapfile, id_qh_ice2wat(iid), qh_ice2wat, [1, itim], [ndxndxi, 1])
+         end if
       end if
 
       if (map_write_settings%heatflux > 0) then ! Heat modelling only
@@ -9461,6 +9496,9 @@ contains
             end if
 
             ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
+            if (soiltempthick > 0.0_dp) then
+               ierr = nf90_put_var(imapfile, id_tbed(iid), tbed, [1, itim], [ndxndxi, 1])
+            end if
          end if
       end if
       call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
@@ -12422,7 +12460,7 @@ contains
          call readyy('Reading map data', 0.75_dp)
 
          ! turbulence variables
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! vicwwu
             ierr = get_var_and_shift(imapfile, 'vicwwu', vicwwu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
@@ -12907,8 +12945,6 @@ contains
                      end if
                   end if
                end if
-
-               ! sedshort, preload, porosity, dpsed?
             end select
          end if
 

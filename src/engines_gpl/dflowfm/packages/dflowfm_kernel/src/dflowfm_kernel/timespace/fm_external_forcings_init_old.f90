@@ -38,9 +38,9 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
-      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
-      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
+      use m_source_sink, only: source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
@@ -481,12 +481,12 @@ contains
 
             else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename)
+               call setinitialverticalprofilez(tem1, ndkx, filename)
                success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename)
+               call setinitialverticalprofilez(sa1, ndkx, filename)
                success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
@@ -547,7 +547,7 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename)
+                  call setinitialverticalprofilez(tt, ndkx, filename)
                   success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
@@ -1216,7 +1216,7 @@ contains
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
                ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
+               call source_sinks%add_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
