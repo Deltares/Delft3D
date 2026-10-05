@@ -84,6 +84,7 @@ contains
    !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
    subroutine get_tracername(qid, trname, qidname)
       use m_transportdata, only: DEFTRACER
+      use string_module, only: istarts_with
       implicit none
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
@@ -93,24 +94,17 @@ contains
       trname = ''
       qidname = qid
 
-      if (index(qid, 'tracerbnd') == 1) then
+      if (istarts_with(qid, 'tracerbnd')) then
          qidname = qid(1:9)
          if (len_trim(qid) > 9) then
             trname = trim(qid(10:))
          else
             trname = trim(DEFTRACER)
          end if
-      else if (index(qid, 'initialtracer') == 1) then
+      else if (istarts_with(qid, 'initialtracer')) then
          qidname = qid(1:13)
          if (len_trim(qid) > 13) then
             trname = trim(qid(14:))
-         else
-            trname = trim(DEFTRACER)
-         end if
-      else if (index(qid, 'tracer') == 1) then
-         qidname = qid(1:6)
-         if (len_trim(qid) > 6) then
-            trname = trim(qid(7:))
          else
             trname = trim(DEFTRACER)
          end if
@@ -122,6 +116,7 @@ contains
    !> Convert quantity id (from .ext file) to sediment fraction name (split in generic qidname and specific fraction name).
    !! If the input qid is no sediment fraction, then the same qid is returned (and no fraction name)
    subroutine get_sedfracname(qid, sfname, qidname)
+      use string_module, only: istarts_with
       implicit none
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
@@ -130,38 +125,32 @@ contains
 
       sfname = ''
 
-      if (index(qid, 'sedfracbnd') == 1) then
+      
+      if (istarts_with(qid, 'sedfracbnd')) then
          qidname = qid(1:10)
          if (len_trim(qid) > 10) then
             sfname = trim(qid(11:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialsedfrac') == 1) then
+      else if (istarts_with(qid, 'initialsedfrac')) then
          qidname = qid(1:14)
          if (len_trim(qid) > 14) then
             sfname = trim(qid(15:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialverticalsedfracprofile') == 1) then
+      else if (istarts_with(qid, 'initialverticalsedfracprofile')) then
          qidname = qid(1:29)
          if (len_trim(qid) > 29) then
             sfname = trim(qid(30:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialverticalsigmasedfracprofile') == 1) then
+      else if (istarts_with(qid, 'initialverticalsigmasedfracprofile')) then
          qidname = qid(1:34)
          if (len_trim(qid) > 34) then
             sfname = trim(qid(35:))
-         else
-            sfname = trim('unknown_sediment_fraction')
-         end if
-      else if (index(qid, 'sedfrac') == 1) then
-         qidname = qid(1:7)
-         if (len_trim(qid) > 7) then
-            sfname = trim(qid(8:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
