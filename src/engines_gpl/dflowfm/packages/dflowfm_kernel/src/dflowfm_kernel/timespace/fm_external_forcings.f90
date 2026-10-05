@@ -769,7 +769,7 @@ contains
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, istarts_with
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use unstruc_inifields, only: resolve_initial_3d_target
       use m_qnerror
@@ -836,7 +836,7 @@ contains
             end if
 
             ! When initialtracer is found, get tracername and add tracer boundary.
-            if (quantity(1:13) == 'initialtracer') then
+            if (istarts_with(quantity, 'initialtracer')) then
                call read_tracer_properties(node_ptr, transformcoef)
 
                call get_tracername(quantity, tracnam, qidnam)
@@ -1060,7 +1060,7 @@ contains
       use m_meteo, qid_meteo => qid, filetype_meteo => filetype
       use m_sobekdfm
       use m_flowparameters, only: jawave
-      use string_module
+      use string_module, only: strcmpi, istarts_with
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
       use m_qnerror
@@ -1263,7 +1263,7 @@ contains
             nbndsd = nbndsd + numsd
          end if
 
-      else if (qidfm(1:9) == 'tracerbnd') then
+      else if (istarts_with(qidfm(1:9), 'tracerbnd')) then
          call get_tracername(qidfm, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -1280,7 +1280,7 @@ contains
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
 
-      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
+      else if (istarts_with(qid, 'initialtracer')) then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -1289,7 +1289,7 @@ contains
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
-      else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
+      else if (istarts_with(qidfm, 'sedfracbnd') .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
 
@@ -1427,7 +1427,7 @@ contains
          success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
                                            z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
-      else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
+      else if (numtracers > 0 .and. istarts_with(qid, 'tracerbnd')) then
          ! get tracer boundary condition number
          call get_tracername(qid, tracnam, qidnam)
          itrac = find_name(trnames, tracnam)
@@ -1445,7 +1445,7 @@ contains
             success = .true.
          end if
 
-      else if (numfracs > 0 .and. (qid(1:10) == 'sedfracbnd') .and. stm_included) then
+      else if (numfracs > 0 .and. istarts_with(qid, 'sedfracbnd') .and. stm_included) then
 
          call get_sedfracname(qid, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
@@ -1513,7 +1513,7 @@ contains
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_transportdata, only: NAMLEN
-      use string_module, only: strcmpi
+      use string_module, only: istarts_with
       use timespace_parameters, only: uniform, bcascii, spaceandtime
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
       use timespace_parameters, only: OPERAND_OVERRIDE
@@ -1693,6 +1693,7 @@ contains
       use m_missing
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, err_flush
+      use string_module, only: strcmpi
 
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
@@ -1749,7 +1750,7 @@ contains
             do j = ISED1, ISEDN
                threttim(j, nseg) = thrtt(i)
             end do
-         else if (qidfm(1:9) == 'tracerbnd') then
+         else if (strcmpi(qidfm(1:9), 'tracerbnd')) then
             call get_tracername(qidfm, tracnam, qidnam)
             itrac = find_name(trnames, tracnam)
             if (allocated(bndtr) .and. thrtn(i) <= nbndtr(itrac)) then
@@ -1765,7 +1766,7 @@ contains
                iconst = itrac2const(itrac)
                threttim(iconst, nseg) = thrtt(i)
             end if
-         else if (qidfm(1:10) == 'sedfracbnd') then
+         else if (strcmpi(qidfm(1:10), 'sedfracbnd')) then
             ierr = 0
             call get_sedfracname(qidfm, sedfracnam, qidnam)
             ifrac = find_name(sfnames, sedfracnam)
