@@ -977,6 +977,8 @@ contains
          call mess(LEVEL_ERROR, 'Icgsolver 8, the pARMS solver, is no longer supported.')
       else if (icgsolver == 9 .or. icgsolver > 90) then
          call mess(LEVEL_ERROR, 'Icgsolver 9 and values greater than 90 are no longer supported.')
+      else if (icgsolver == 10) then
+         call mess(LEVEL_ERROR, 'Icgsolver 10, the experimental Jacobi solver, is no longer supported.')
       end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
       if (icgsolver == 6) then

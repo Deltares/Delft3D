@@ -536,7 +536,6 @@ contains
       use m_flowtimes, only: handle_sol
       use m_timer
       use m_qnerror
-      use m_solve_jacobi
       use m_solve_petsc, only: conjugategradientPETSC
 
 #ifdef HAVE_PETSC
@@ -606,8 +605,6 @@ contains
 #else
          call qnerror('No PETSC solver available', ' ', ' ')
 #endif
-      else if (icgsolver == 10) then
-         call solve_jacobi(s1, ndx, nocgiter)
       else
          call qnerror('no valid solver', ' ', ' ')
       end if
@@ -1829,12 +1826,7 @@ contains
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
          call ini_petsc(Ndx, ierror)
-         call preparePETSCsolver(0)
-#endif
-      else if (icgsolver == 10) then
-#ifdef HAVE_PETSC
-         call ini_petsc(Ndx, ierror)
-         call preparePETSCsolver(1)
+         call preparePETSCsolver()
 #endif
       end if
 

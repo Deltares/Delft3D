@@ -50,9 +50,8 @@ module m_solve_petsc
          integer, intent(out) :: ierror !< error (1) or not (0)
       end subroutine ini_petsc
 
-      module subroutine preparePETSCsolver(japipe)
+      module subroutine preparePETSCsolver()
          implicit none
-         integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
       end subroutine preparePETSCsolver
 
       module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
