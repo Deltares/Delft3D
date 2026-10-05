@@ -222,7 +222,7 @@ contains
          sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2), ucy(k2)) * cs + nod2liny(LL, 2, ucx(k2), ucy(k2)) * sn
                      ucx(kb) = uin * lin2nodx(LL, 1, cs, sn)

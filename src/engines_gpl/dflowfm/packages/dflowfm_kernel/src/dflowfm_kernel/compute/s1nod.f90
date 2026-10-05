@@ -184,19 +184,19 @@ contains
          L = kbndz(3, n)
          itpbn = kbndz(4, n)
 !    bbr(kb) = 1d0
-         if (itpbn == BOUNDARY_WATER_LEVEL) then ! waterlevelbnd
+         if (itpbn == BOUNDARY_WATER_LEVEL) then
             water_level_boundary = zbndz(n)
             if (alfsmo < 1.0_dp) then
                water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
-         else if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then ! neumannbnd, positive specified slope leads to inflow
+         else if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then ! positive specified slope leads to inflow
             !water_level_boundary   = s1(k2) + zbndz(n)*dx(L)
             water_level_boundary = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! right-hand side
-         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then ! Riemannbnd
+         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then
 !       hh   = max(epshs, 0.5d0*( hs(kb) + hs(k2) ) )
 !       water_level_boundary   = 2d0*zbndz(n) - zbndz0(n) - sqrt(hh/ag)*u1(L)
             water_level_boundary = 2.0_dp * zbndz(n) - zbndz0(n)
-         else if (itpbn == BOUNDARY_WATER_LEVEL_OUTFLOW) then ! outflowbnd
+         else if (itpbn == BOUNDARY_WATER_LEVEL_OUTFLOW) then
             if (u0(L) > 0.0_dp) then
                water_level_boundary = s1(k2)
             else
@@ -204,7 +204,7 @@ contains
                dtgh = dts * (sqrt(ag * hh))
                water_level_boundary = s1(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
             end if
-         else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then ! qhbnd
+         else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then
             water_level_boundary = zbndz(n)
             if (alfsmo < 1.0_dp) then
                water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)

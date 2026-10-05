@@ -37,4 +37,6 @@ module m_boundary_condition_type
    integer, parameter, public :: BOUNDARY_VELOCITY_RIEMANN = 5 ! velocity Riemann boundary
    integer, parameter, public :: BOUNDARY_WATER_LEVEL_OUTFLOW = 6 ! water level outflow
    integer, parameter, public :: BOUNDARY_DISCHARGE_HEAD = 7 ! discharge-head (qh) boundary
+   integer, parameter, public :: BOUNDARY_CRITICAL_OUTFLOW = 8 ! critical outflow boundary
+   integer, parameter, public :: BOUNDARY_WEIR_OUTFLOW = 9 ! weir outflow boundary
 end module m_boundary_condition_type
