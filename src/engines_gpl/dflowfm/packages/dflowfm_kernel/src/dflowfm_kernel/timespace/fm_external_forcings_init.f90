@@ -929,14 +929,13 @@ contains
 
    end function resolve_meteo_target
 
-!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
+!> Read a static 3D field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_ec_parameters, only: ec_undef_int
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
@@ -945,20 +944,12 @@ contains
       integer, intent(in) :: mask(:), kx, filetype, method, oper
       integer, intent(inout) :: ec_item
       real(dp), pointer, intent(inout) :: target_data(:)
-      logical, intent(in) :: is_static_field
       logical :: res
 
       integer, pointer :: pkbot(:), pktop(:)
 
-      if (is_static_field) then
-         if (.not. associated(target_data)) then
-            call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
-         end if
-      else
-         ! target data must be null to avoid binding the pointer to the wrong array.
-         ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
-         ! fm_ext_force_name_to_ec_item
-         target_data => null()
+      if (.not. associated(target_data)) then
+         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
       end if
       call setzcs()
       pkbot => kbot
@@ -967,13 +958,35 @@ contains
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-      if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
-         if (res) then
-            res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
-         end if
+      if (res) then
+         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
       end if
 
    end function read_3d_sigma_field
+
+!> Register the time-dependent nudgesalinitytemperature relation with sigma coordinates.
+   function add_nudgesalinitytemperature_sigma_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                        filetype, method, oper, variable_name, ec_item) result(res)
+      use m_setzcs, only: setzcs
+      use m_flow, only: zcs, kbot, ktop
+      use m_meteo, only: ec_addtimespacerelation
+
+      character(len=*), intent(in) :: quantity, forcing_file, variable_name
+      real(dp), intent(in) :: target_x(:), target_y(:)
+      integer, intent(in) :: mask(:), kx, filetype, method, oper
+      integer, intent(inout) :: ec_item
+      logical :: res
+
+      integer, pointer :: pkbot(:), pktop(:)
+
+      call setzcs()
+      pkbot => kbot
+      pktop => ktop
+
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                    filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
+                                    varname=variable_name, tgt_item1=ec_item)
+   end function add_nudgesalinitytemperature_sigma_relation
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
    function init_field1d_block(quantity, forcing_file, file_name) result(res)
@@ -1223,7 +1236,7 @@ contains
                   end if
                   ! These two have to go through the EC-module as a one-shot timespacerelation
                   if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                      ec_item = ec_undef_int
                   else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
                      if (filetype == NCGRID .and. len_trim(variable_name) > 0) then
@@ -1274,11 +1287,12 @@ contains
                res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
             case default
-               if (len_trim(variable_name) > 0) then
+               if (target_location_type == UNC_LOC_S3D .and. str_tolower(quantity) == 'nudgesalinitytemperature') then
+                  res = add_nudgesalinitytemperature_sigma_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                                    filetype, method, oper, variable_name, ec_item)
+               else if (len_trim(variable_name) > 0) then
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-               else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)

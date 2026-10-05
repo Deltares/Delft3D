@@ -69,7 +69,7 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
       character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
       character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
-      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' for depth-aware NetCDF interpolation.
+      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' for static depth-aware NetCDF interpolation.
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
@@ -380,8 +380,8 @@ contains
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
       if (str_tolower(trim(input%target_layer)) == '3d') then
-         if (input%filetype /= NCGRID) then
-            write (msgbuf, '(5a)') 'targetLayer=3d requires dataFileType NetCDF in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
+         if (input%filetype /= NCGRID .or. .not. input%is_static_field) then
+            write (msgbuf, '(5a)') 'targetLayer=3d requires a static NetCDF field in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
             call err_flush()
             return
          end if

@@ -157,9 +157,10 @@ contains
       input%target_layer = '3d'
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                    'initialSalinity with targetLayer=3d and sample input must fail input validation')
-      !call make_test_input(input, quantity='salinity')
-      !input%target_layer = '3d'
-      !call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR))
+      call make_test_input(input, quantity='salinity')
+      input%target_layer = '3d'
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                   'dynamic salinity with targetLayer=3d must fail input validation')
    end subroutine test_3d_target_requires_initial_netcdf
    !$f90tw)
 
