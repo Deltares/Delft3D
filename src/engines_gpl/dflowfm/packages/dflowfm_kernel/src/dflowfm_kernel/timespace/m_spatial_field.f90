@@ -188,7 +188,8 @@ contains
       if (index(str_tolower(trim(quantity)), 'initial') == 1) then
          is_static = .true.
          select case (str_tolower(trim(quantity)))
-         case ('initialvelocityx', 'initialvelocityy', 'initialsalinitytop', 'initialsalinitybot', 'initialunsaturedzonethickness')
+         case ('initialvelocity', 'initialvelocityx', 'initialvelocityy', 'initialsalinitytop', &
+               'initialsalinitybot', 'initialunsaturedzonethickness')
          case default
             if (index(str_tolower(trim(quantity)), 'initialvertical') /= 1) then
                quantity = quantity(8:)
