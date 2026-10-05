@@ -447,11 +447,12 @@ contains
                if (javau > 0 .or. javakeps > 0) then
                   call calculate_womegu(womegu, LL)
 
+                  ac1 = acL(LL)
+                  ac2 = 1.0_dp - ac1
+                  n1 = ln(1, LL)
+                  n2 = ln(2, LL)
+
                   if (javakeps >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
-                     ac1 = acL(LL)
-                     ac2 = 1.0_dp - ac1
-                     n1 = ln(1, LL)
-                     n2 = ln(2, LL)
 
                      arLL = ac1 * a1(n1) + ac2 * a1(n2)
                      do L = Lb, Lt - 1
