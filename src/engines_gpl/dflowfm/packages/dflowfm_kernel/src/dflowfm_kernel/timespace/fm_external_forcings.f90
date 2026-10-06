@@ -1706,7 +1706,7 @@ contains
 
       registered_items(1:max_ext_bnd_items) = ''
 
-   end subroutine
+   end subroutine init_registered_items
 
    function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
       ! Arguments

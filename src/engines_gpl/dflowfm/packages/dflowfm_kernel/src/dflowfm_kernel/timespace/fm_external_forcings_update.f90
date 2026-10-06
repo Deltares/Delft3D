@@ -122,9 +122,10 @@ contains
       real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
       real(kind=dp), dimension(:), allocatable :: zcgen_legacy_kx3 !< Legacy 3-slot generalstructure buffer: crest level, gate lower edge level, gate opening width.
 
-      call timstrt('External forcings', handle_ext)
-
+      ! Initialization
       success = .true.
+
+      call timstrt('External forcings', handle_ext)
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
          allocate (zcgen_legacy_kx3(ncgensg * 3))
@@ -369,8 +370,10 @@ contains
       use m_flowparameters, only: salinity_reduction_factor_saturation_humidity, &
                                   salinity_dependent_evaporation_method, SALINITY_DEPENDENT_EVAPORATION_LINEAR
 
+      ! Arguments
       logical, intent(in) :: initialization !< initialization phase
 
+      ! Local variables
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature
       real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
       real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
@@ -422,8 +425,10 @@ contains
       use messagehandling, only: LEVEL_ERROR, mess
       use m_ec_parameters, only: ec_undef_int
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
+      ! Local variables
       logical :: foundtempforcing
 
       ! Update arrays relative_humidity, air_temperature and cloudiness in a single method call.
@@ -485,9 +490,11 @@ contains
 
    end subroutine update_temperature_forcings
 
-!> get_timespace_value_by_name_and_consider_success_value
+   !> get_timespace_value_by_name_and_consider_success_value
    subroutine get_timespace_value_by_name_and_consider_success_value(name, time_in_seconds)
       use precision, only: dp
+
+      ! Arguments
       character(*), intent(in) :: name
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -495,10 +502,11 @@ contains
 
    end subroutine get_timespace_value_by_name_and_consider_success_value
 
-!> get_timespace_value_by_item_and_consider_success_value
+   !> get_timespace_value_by_item_and_consider_success_value
    subroutine get_timespace_value_by_item_and_consider_success_value(item, time_in_seconds)
       use precision, only: dp
 
+      ! Arguments
       integer, intent(in) :: item
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -510,8 +518,9 @@ contains
    subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
       use precision, only: dp
 
+      ! Arguments
       integer, intent(in) :: item !< Item for getting values
-      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
+      real(kind=dp), dimension(:), intent(inout) :: array !< Array that stores the values
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
@@ -522,18 +531,20 @@ contains
    subroutine get_timespace_value_by_item_and_array(item, array, time_in_seconds)
       use precision, only: dp
 
+      ! Arguments
       integer, intent(in) :: item !< Item for getting values
-      real(kind=dp), intent(inout) :: array(:) !< Array that stores the values
+      real(kind=dp), dimension(:), intent(inout) :: array !< Array that stores the values
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
    end subroutine get_timespace_value_by_item_and_array
 
-!> get_timespace_value_by_item
+   !> get_timespace_value_by_item
    subroutine get_timespace_value_by_item(item, time_in_seconds)
       use precision, only: dp
 
+      ! Arguments
       integer, intent(in) :: item !< Item for getting values
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -541,49 +552,43 @@ contains
 
    end subroutine get_timespace_value_by_item
 
-!> set_wave_parameters
+   !> set_wave_parameters
    subroutine set_wave_parameters(initialization)
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush, err_flush
 
+      ! Arguments
       logical, intent(in) :: initialization !< initialization phase
 
+      ! Local variables
       logical :: all_wave_variables !< flag indicating whether _all_ wave variables should be mirrored at the boundary
-
       integer :: k
 
       if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
 
          if (.not. initialization) then
-            !
             if (jawave == WAVE_NC_OFFLINE) then
-               !
                call set_offline_wave_parameters()
-               !
             else
-               !
                call set_all_wave_parameters()
 
                ! NB: choose whether to keep if(.not. initialization) hidden in initialize_wave_parameters or in set_wave_parameters
 
                if (.not. success) then
-                  !
                   ! success = .false. : Most commonly, WAVE data has not been written to the com-file yet:
                   ! - Print a warning
                   ! - Continue with the calculation
                   ! - Just try it the next timestep again
                   ! - success must be set to .true., otherwise the calculation is aborted
-                  !
+                  
                   message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                   success = .true.
                end if
             end if
          end if
-         !
          ! Now do the check on success for non-com file situations, and error when variable is missing
-         !
          if (.not. success) then
             message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
@@ -659,17 +664,17 @@ contains
             if (nbndu > 0) then
                call fill_open_boundary_cells_with_inner_values(nbndu, kbndu)
             end if
-            !
+            
             ! waterlevel boundaries
             if (nbndz > 0) then
                call fill_open_boundary_cells_with_inner_values(nbndz, kbndz)
             end if
-            !
+            
             !  normal-velocity boundaries
             if (nbndn > 0) then
                call fill_open_boundary_cells_with_inner_values(nbndn, kbndn)
             end if
-            !
+            
             !  tangential-velocity boundaries
             if (nbndt > 0) then
                call fill_open_boundary_cells_with_inner_values(nbndt, kbndt)
@@ -687,7 +692,7 @@ contains
    end subroutine set_wave_parameters
 
    subroutine get_values_and_consider_fww(item)
-
+      ! Arguments
       integer, intent(in) :: item
 
       success_copy = success
@@ -698,7 +703,7 @@ contains
 
    end subroutine get_values_and_consider_fww
 
-!> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
+   !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
    subroutine set_all_wave_parameters()
       ! This part must be skipped during initialization
       if (jawave == WAVE_SWAN_ONLINE) then
@@ -747,7 +752,6 @@ contains
 
    !> Read only the offline wave quantities required by the active configuration.
    subroutine set_offline_wave_parameters()
-
       ! EC owns the raw source fields. Reset only FM-derived fields before
       ! calculating them from the values EC provides.
       hwav(:) = 0.0_dp
@@ -777,6 +781,7 @@ contains
 
    !> Read one required offline wave item, while never passing an undefined item to EC.
    subroutine get_required_offline_wave_value(quantity_flag, item)
+      ! Arguments
       integer, intent(in) :: quantity_flag
       integer, intent(in) :: item
 
@@ -790,15 +795,18 @@ contains
       end if
 
       success = success .and. ecGetValues(ecInstancePtr, item, ecTime)
+
    end subroutine get_required_offline_wave_value
 
-!> convert wave direction [degrees] from nautical to cartesian meteorological convention
+   !> convert wave direction [degrees] from nautical to cartesian meteorological convention
    elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wave_direction) result(cartesian_wave_direction)
       use precision, only: dp
 
+      ! Arguments
       real(kind=dp), intent(in) :: nautical_wave_direction !< wave direction [degrees] in nautical  convention
       real(kind=dp) :: cartesian_wave_direction !< wave direction [degrees] in cartesian convention
 
+      ! Local variables 
       real(kind=dp), parameter :: MAX_RANGE_IN_DEGREES = 360.0_dp
       real(kind=dp), parameter :: CONVERSION_PARAMETER_IN_DEGREES = 270.0_dp
 
@@ -806,10 +814,12 @@ contains
 
    end function convert_wave_direction_from_nautical_to_cartesian
 
-!> retrieve icecover
+   !> retrieve icecover
    subroutine retrieve_icecover(time_in_seconds)
       use precision, only: dp, fp
       use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_thickness, ICECOVER_EXT
+
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       if (ja_icecover == ICECOVER_EXT) then
@@ -825,9 +835,11 @@ contains
 
    end subroutine retrieve_icecover
 
-!> retrieve_rainfall
+   !> retrieve_rainfall
    subroutine retrieve_rainfall(time_in_seconds)
       use precision, only: dp
+
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       ! Retrieve rainfall for ext-file quantity 'rainfall'.
@@ -845,8 +857,11 @@ contains
    !> update_network_data
    subroutine update_network_data(time_in_seconds)
       use precision, only: dp
+
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
+      ! Local variables
       logical :: success_previous
 
       success_previous = success
@@ -899,18 +914,22 @@ contains
 
    end subroutine update_network_data
 
-!> update_subsidence_and_uplift_data
+   !> update_subsidence_and_uplift_data
    subroutine update_subsidence_and_uplift_data(time_in_seconds)
       use precision, only: dp
+
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       if (.not. sdu_first) then
          ! preserve the previous 'bedrock_surface_elevation' for computing the subsidence/uplift rate
          subsupl_tp = subsupl
       end if
+
       if (item_subsiduplift /= ec_undef_int) then
          success = success .and. ec_gettimespacevalue(ecInstancePtr, 'bedrock_surface_elevation', time_in_seconds)
       end if
+
       if (sdu_first) then
          ! preserve the first 'bedrock_surface_elevation' field as the initial field
          subsupl_tp = subsupl
@@ -920,11 +939,13 @@ contains
 
    end subroutine update_subsidence_and_uplift_data
 
-!> prepare_air_pressure_temperature_dew_point_temperature
+   !> prepare_air_pressure_temperature_dew_point_temperature
    module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
-      use m_meteo, only: item_apwxwy_p, item_airpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+      use m_meteo, only: item_apwxwy_p, item_airpressure, item_hac_air_temperature, item_hacs_air_temperature, &
+         item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
+         item_dacs_dew_point_temperature, item_dew_point_temperature
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       ! air pressure items
@@ -942,6 +963,7 @@ contains
       call get_timespace_value_by_item_and_consider_success_value(item_dac_dew_point_temperature, time_in_seconds)
       call get_timespace_value_by_item_and_consider_success_value(item_dacs_dew_point_temperature, time_in_seconds)
       call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
+      
    end subroutine prepare_air_pressure_temperature_dew_point_temperature
 
 end submodule fm_external_forcings_update
