@@ -868,8 +868,6 @@ contains
       use m_flowgeom, only: ndx, lnx
       use string_module, only: str_tolower
 
-      implicit none
-
       character(len=*), intent(in) :: quantity !< Name of the quantity.
       character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).

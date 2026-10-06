@@ -70,7 +70,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_waves, only: offline_wave_input_requirements
    use m_alloc, only: realloc
 
-   implicit none
+   implicit none(type, external)
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
@@ -339,8 +339,6 @@ contains
       use m_set_nudgerate, only: set_nudgerate
       use m_set_saltem_nudge, only: set_saltem_nudge
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_rate, nudge_time
-
-      implicit none
 
       if (janudge == 1) then ! and here last actions on sal/tem nudging, before we set rho
          call set_nudgerate()

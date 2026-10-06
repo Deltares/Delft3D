@@ -31,7 +31,7 @@ submodule(fm_external_forcings) fm_external_forcings_init_old
    use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
-   implicit none
+   implicit none(type, external)
 
 contains
 

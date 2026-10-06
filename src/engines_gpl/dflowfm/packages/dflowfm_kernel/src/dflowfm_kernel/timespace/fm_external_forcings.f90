@@ -1011,11 +1011,8 @@ contains
    end subroutine read_location_files_from_boundary_blocks
 
    subroutine appendrettime(qidfm, nbnd, rettime)
-
       use fm_external_forcings_data
       use m_alloc
-
-      implicit none
 
       character(len=256), intent(in) :: qidfm ! constituent index
       integer, intent(in) :: nbnd ! boundary cell index
@@ -1631,7 +1628,7 @@ contains
 
    subroutine register_quantity_pli_combination(quantity, location_file)
       use m_alloc
-      implicit none
+
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location_file
       character(len=max_registered_item_id) :: item_id
@@ -1649,7 +1646,6 @@ contains
    end subroutine register_quantity_pli_combination
 
    subroutine init_registered_items()
-      implicit none
       num_registered_items = 0
 
       max_ext_bnd_items = 64 ! Default start size.
@@ -1663,7 +1659,6 @@ contains
    end subroutine
 
    function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
-      implicit none
       logical :: is_registered
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location_file
@@ -3208,8 +3203,6 @@ contains
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc, aerr
-
-      implicit none
 
       integer :: ierr
 

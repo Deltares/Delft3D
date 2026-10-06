@@ -31,7 +31,7 @@
 module fm_external_forcings_utils
    use precision_basics, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -85,7 +85,6 @@ contains
    subroutine get_tracername(qid, trname, qidname)
       use m_transportdata, only: DEFTRACER
       use string_module, only: istarts_with
-      implicit none
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
       character(len=*), intent(out) :: trname !< The trimmed tracer name, e.g., 'fluor'.
@@ -117,7 +116,6 @@ contains
    !! If the input qid is no sediment fraction, then the same qid is returned (and no fraction name)
    subroutine get_sedfracname(qid, sfname, qidname)
       use string_module, only: istarts_with
-      implicit none
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
       character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
@@ -167,7 +165,6 @@ contains
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
    subroutine get_constituent_name(original_quantity, constituent_name, base_quantity)
       use string_module, only: strcmpi
-      implicit none
 
       character(len=*), intent(in) :: original_quantity !< Original quantity id, e.g., 'sourcesink_salinityDelta'.
       character(len=*), intent(out) :: constituent_name !< The trimmed constituent name, e.g., 'salinity', or 'sand', or 'fluor'. Empty '' if not a constituent.

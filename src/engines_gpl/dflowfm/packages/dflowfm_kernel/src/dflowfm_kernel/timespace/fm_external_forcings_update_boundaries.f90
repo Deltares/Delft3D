@@ -29,7 +29,7 @@
 
 submodule(fm_external_forcings) fm_external_forcings_update_boundaries
 
-   implicit none
+   implicit none(type, external)
 
 contains
 
@@ -58,8 +58,6 @@ contains
       use m_oned_functions
       use m_obs_on_flowgeom, only: obs_on_flowgeom
       use unstruc_messages, only: callback_msg
-
-      implicit none
 
       real(kind=dp), intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
