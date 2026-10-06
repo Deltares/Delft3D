@@ -850,10 +850,10 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
-      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DS or UNC_LOC_3DV).
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D or UNC_LOC_3DV).
       real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< Output to the target 3D array.
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
-      character(len=*), optional, intent(in) :: target_layer !< absent means 2D input, '3D' changs target_location to UNC_LOC_3DS. TODO: support bot, top, all and integers
+      character(len=*), optional, intent(in) :: target_layer !< Absent means 2D input; '3D' changes target_location_type to UNC_LOC_S3D. TODO: support bot, top, all and integers
       logical :: success !< true if the quantity was recognized and target_array_3d is associated.
 
       character(len=256) :: qid_base, qid_specific
