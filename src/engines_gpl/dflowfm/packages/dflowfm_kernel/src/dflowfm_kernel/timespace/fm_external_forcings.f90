@@ -42,12 +42,18 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, &
-      allocatewindarrays, init_spatial_fields, init_new, finalize_offline_wave_input_requirements
+   public :: set_external_forcings_boundaries
+   public :: adduniformtimerelation_objects
+   public :: flow_initexternalforcings
+   public :: findexternalboundarypoints
+   public :: allocatewindarrays
+   public :: init_spatial_fields
+   public :: init_new
+   public :: finalize_offline_wave_input_requirements
 
-   integer, parameter :: max_registered_item_id = 512
+   integer, parameter :: MAX_REGISTERED_ITEM_ID = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
-   character(len=max_registered_item_id), allocatable :: registered_items(:)
+   character(len=MAX_REGISTERED_ITEM_ID), allocatable :: registered_items(:)
    integer :: num_registered_items = 0
 
    interface
@@ -109,7 +115,7 @@ module fm_external_forcings
    abstract interface
       subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
          integer, intent(in) :: number_of_links !< number of links
-         integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
+         integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
       end subroutine
    end interface
 
@@ -142,14 +148,16 @@ module fm_external_forcings
 
 contains
 
-!> print_error_message
+   !> print_error_message
    subroutine print_error_message(time_in_seconds)
       use m_ec_message, only: dump_ec_message_stack
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, mess
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
 
+      ! Local variables
       character(len=255) :: tmpstr
 
       write (tmpstr, '(f22.11)') time_in_seconds
@@ -157,7 +165,7 @@ contains
       tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
    end subroutine print_error_message
 
-!> prepare_wind_model_data
+   !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
       use m_flowparameters, only: jawave, flow_without_waves, EPS10
@@ -169,19 +177,28 @@ contains
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
-      integer :: ec_item_id, first, last, link, i, k
+      ! Local variables
+      integer :: ec_item_id
+      integer :: first
+      integer :: last
+      integer :: link
+      integer :: i
+      integer :: k
       logical :: first_time_wind
 
       wx = 0.0_dp
       wy = 0.0_dp
       wdsu_x = 0.0_dp
       wdsu_y = 0.0_dp
+
       if (allocated(ec_pwxwy_c) .or. allocated(ec_charnock)) then
          wcharnock%values = 0.0_dp
       end if
+
       call initialize_array_with_zero(ec_pwxwy_x)
       call initialize_array_with_zero(ec_pwxwy_y)
 
@@ -193,6 +210,7 @@ contains
          first = id_first_wind
          last = id_last_wind
       end if
+
       do i = first, last
          ec_item_id = get_ec_item_id(i)
          ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
@@ -235,6 +253,7 @@ contains
          else
             cycle ! avoid updating id_first_wind and id_last_wind
          end if
+
          if (.not. success) then
             iresult = DFM_EXTFORCERROR
             call print_error_message(time_in_seconds)
@@ -257,17 +276,21 @@ contains
       end if
 
       if (allocated(ec_pwxwy_x) .and. allocated(ec_pwxwy_y)) then
+
          if (jawindstressgiven == 1) then
             call perform_additional_spatial_interpolation(wdsu_x, wdsu_y)
          else
             call perform_additional_spatial_interpolation(wx, wy)
          end if
+
          if (allocated(ec_pwxwy_c)) then
             do link = 1, lnx
                wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_pwxwy_c(ln(1, link)) + ec_pwxwy_c(ln(2, link)))
             end do
          end if
+
       end if
+
       if (allocated(ec_charnock)) then
          do link = 1, lnx
             wcharnock%values(link) = wcharnock%values(link) + 0.5_dp * (ec_charnock(ln(1, link)) + ec_charnock(ln(2, link)))
@@ -298,46 +321,48 @@ contains
       iresult = DFM_NOERR
    contains
 
-!> get_ec_item_id
-      integer function get_ec_item_id(i)
-         integer, intent(in) :: i !< Input index
+      !> get_ec_item_id
+      integer function get_ec_item_id(index)
+         ! Arguments
+         integer, intent(in) :: index !< Input index
 
-         get_ec_item_id = ecInstancePtr%ecItemsPtr(i)%ptr%id
+         get_ec_item_id = ecInstancePtr%ecItemsPtr(index)%ptr%id
 
       end function get_ec_item_id
 
-!> ec_number_of_items
+      !> ec_number_of_items
       integer function get_ec_number_of_items()
 
          get_ec_number_of_items = ecInstancePtr%nItems
 
       end function get_ec_number_of_items
 
-!> get_timespace_value_by_name
+      !> get_timespace_value_by_name
       subroutine get_timespace_value_by_name(name)
-
+         ! Arguments
          character(*), intent(in) :: name !< Input name
 
          success = ec_gettimespacevalue(ecInstancePtr, name, time_in_seconds)
 
       end subroutine get_timespace_value_by_name
 
-!> get_timespace_value_by_item_and_array
+      !> get_timespace_value_by_item_and_array
       subroutine get_timespace_value_by_item_and_array(item, array)
          use m_flowtimes, only: irefdate, tzone, tunit
 
+         ! Arguments
          integer, intent(in) :: item !< Input item
-         real(kind=dp), intent(inout) :: array(:) !< Array that stores the obatained values
+         real(kind=dp), dimension(:), intent(inout) :: array !< Array that stores the obatained values
 
          success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds, array)
 
       end subroutine get_timespace_value_by_item_and_array
 
-!> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
+      !> perform_additional_spatial_interpolation, the size of array_x and array_y is lnx.
       subroutine perform_additional_spatial_interpolation(array_x, array_y)
-
-         real(kind=dp), intent(inout) :: array_x(:) !< Array of X-components for interpolation
-         real(kind=dp), intent(inout) :: array_y(:) !< Array of Y-components for interpolation
+         ! Arguments
+         real(kind=dp), dimension(:), intent(inout) :: array_x !< Array of X-components for interpolation
+         real(kind=dp), dimension(:), intent(inout) :: array_y !< Array of Y-components for interpolation
 
          do link = 1, lnx
             array_x(link) = array_x(link) + 0.5_dp * (ec_pwxwy_x(ln(1, link)) + ec_pwxwy_x(ln(2, link)))
@@ -346,19 +371,21 @@ contains
 
       end subroutine perform_additional_spatial_interpolation
 
-!> get_timespace_value_by_item
+      !> get_timespace_value_by_item
       subroutine get_timespace_value_by_item(item)
          use m_flowtimes, only: irefdate, tzone, tunit
+
+         ! Arguments
          integer, intent(in) :: item !< Input item
 
          success = ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
       end subroutine get_timespace_value_by_item
 
-!> initialize_array_with_zero
+      !> initialize_array_with_zero
       subroutine initialize_array_with_zero(array)
-
-         real(kind=dp), allocatable, intent(inout) :: array(:) !< Array that will be initialized
+         ! Arguments
+         real(kind=dp), dimension(:), allocatable, intent(inout) :: array !< Array that will be initialized
 
          if (allocated(array)) then
             array(:) = 0.0_dp
@@ -368,11 +395,12 @@ contains
 
    end subroutine prepare_wind_model_data
 
-!> Prepare wind data if jawind=1 and air_pressure_available
+   !> Prepare wind data if jawind=1 and air_pressure_available
    subroutine prepare_wind(time_in_seconds, iresult)
       use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
+      ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
 
@@ -385,11 +413,12 @@ contains
       iresult = DFM_NOERR
    end subroutine prepare_wind
 
-!> Gets windstress (and air pressure) from input files, and sets the windstress
+   !> Gets windstress (and air pressure) from input files, and sets the windstress
    subroutine calculate_wind_stresses(iresult)
       use m_wind, only: jawind
       use dfm_error, only: DFM_NOERR
 
+      ! Arguments
       integer, intent(out) :: iresult !< Error indicator
 
       if (jawind > 0) then
@@ -400,10 +429,10 @@ contains
 
    end subroutine calculate_wind_stresses
 
-!> select_wave_variables_subgroup
-!! select routine depending on whether all or a subgroup of wave variables are allocated
+   !> select_wave_variables_subgroup
+   !! select routine depending on whether all or a subgroup of wave variables are allocated
    subroutine select_wave_variables_subgroup(all_wave_variables)
-
+      ! Arguments
       logical, intent(in) :: all_wave_variables
 
       if (all_wave_variables) then
@@ -414,13 +443,15 @@ contains
 
    end subroutine select_wave_variables_subgroup
 
-!> fill_open_boundary_cells_with_inner_values_all
+   !> fill_open_boundary_cells_with_inner_values_all
    subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
       use m_waves
 
+      ! Arguments
       integer, intent(in) :: number_of_links !< number of links
-      integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
 
+      ! Local variables
       integer :: link !< link counter
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
@@ -444,16 +475,18 @@ contains
 
    end subroutine fill_open_boundary_cells_with_inner_values_all
 
-!> fill_open_boundary_cells_with_inner_values_fewer
+   !> fill_open_boundary_cells_with_inner_values_fewer
    subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
       use m_waves
       use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
-                             WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
-                             WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+         WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, WAVE_INPUT_DISSIPATION_SURFACE, &
+         WAVE_INPUT_DISSIPATION_WHITE_CAPPING
 
+      ! Arguments
       integer, intent(in) :: number_of_links !< number of links
-      integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
 
+      ! Local variables
       integer :: link !< link counter
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
@@ -515,7 +548,7 @@ contains
 
    end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
-   subroutine findexternalboundarypoints() ! find external boundary points
+   subroutine findexternalboundarypoints()
       use m_netw
       use m_flow, filetype_hide => filetype ! Two stages: 1 = collect elsets for which data is provided
       use m_flowgeom !             2 = add relations between elsets and their providers
@@ -535,10 +568,11 @@ contains
       use m_filez, only: oldfil, doclose
       use messagehandling, only: msgbuf, msg_flush, err_flush
 
+      ! Local variables
       character(len=256) :: filename
       integer :: filetype
-      integer, allocatable :: kce(:) ! kc edges (numl)
-      integer, allocatable :: ke(:) ! kc edges (numl)
+      integer, dimension(:), allocatable :: kce ! kc edges (numl)
+      integer, dimension(:), allocatable :: ke ! kc edges (numl)
       integer :: i_ext !< index of external forcing file
       logical :: jawel
       integer :: ja_ext_force
@@ -551,8 +585,8 @@ contains
       integer :: num_bc_ini_blocks
       character(len=64) :: varname
 
+      ! Initialization
       jatimespace = 1
-
       return_time = 0
       ja_ext_force = 0
       ext_force_bnd_used = .false.
@@ -691,7 +725,7 @@ contains
       call make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
 
       if (jampi == 1) then
-! disable mirror cells that are not mirror cells in the whole model by setting kce=0
+         ! disable mirror cells that are not mirror cells in the whole model by setting kce=0
          call partition_reduce_mirrorcells(Nx, kce, ke, ierror)
       end if
 
@@ -775,16 +809,18 @@ contains
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush
 
+      ! Arguments
       character(len=*), intent(in) :: filename !< Name of the inifield file to read
       integer, intent(in) :: nx !< Number of boundary points (size of kce)
 
+      ! Local variables
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr !
+      type(tree_data), pointer :: node_ptr
       integer :: istat !
-      integer, parameter :: ini_key_len = 32 !
-      integer, parameter :: ini_value_len = 256 !
-      character(len=ini_key_len) :: groupname !
-      character(len=ini_value_len) :: quantity !
+      integer, parameter :: INI_KEY_LEN = 32
+      integer, parameter :: INI_VALUE_LEN = 256
+      character(len=INI_KEY_LEN) :: groupname
+      character(len=INI_VALUE_LEN) :: quantity
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: itrac, janew
@@ -856,8 +892,8 @@ contains
 
    end subroutine read_initialtracer_properties
 
-   subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
-                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+   subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, numz, numu, nums, numtm, numsd, &
+         numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
       use timespace, only: NODE_ID, POLY_TIM
       use tree_data_types
@@ -874,23 +910,25 @@ contains
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush
 
+      ! Arguments
       character(len=*), intent(in) :: filename
       integer, intent(in) :: nx
       integer, dimension(nx), intent(inout) :: kce
       integer, intent(out) :: num_bc_ini_blocks
       integer, intent(inout) :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
 
+      ! Local variables
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr !
+      type(tree_data), pointer :: node_ptr
       integer :: filetype !< possible values POLY_TIM: use polygon file as location reference, or NODE_ID: use nodeId as a location reference
       integer :: istat !
-      integer, parameter :: ini_key_len = 32 !
-      integer, parameter :: ini_value_len = 256 !
-      character(len=ini_key_len) :: groupname !
-      character(len=ini_value_len) :: quantity !
-      character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
-      character(len=ini_value_len) :: forcing_file !
-      real(kind=dp) :: return_time !
+      integer, parameter :: INI_KEY_LEN = 32
+      integer, parameter :: INI_VALUE_LEN = 256
+      character(len=INI_KEY_LEN) :: groupname
+      character(len=INI_VALUE_LEN) :: quantity
+      character(len=INI_VALUE_LEN) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
+      character(len=INI_VALUE_LEN) :: forcing_file
+      real(kind=dp) :: return_time
       real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
@@ -1014,9 +1052,12 @@ contains
       use fm_external_forcings_data
       use m_alloc
 
+      ! Arguments
       character(len=256), intent(in) :: qidfm ! constituent index
       integer, intent(in) :: nbnd ! boundary cell index
       real(kind=dp), intent(in) :: rettime ! return time (h)
+
+      ! Local variables
       integer :: thrtlen ! temp array length
 
       if (allocated(thrtt)) then
@@ -1067,22 +1108,23 @@ contains
                                            BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
                                            BOUNDARY_DISCHARGE_HEAD
 
-      character(len=256), intent(in) :: qid !
-      character(len=256), intent(in) :: filename !
+      ! Arguments
+      character(len=256), intent(in) :: qid
+      character(len=256), intent(in) :: filename
       integer, intent(in) :: filetype
-      integer, intent(in) :: nx !
-      integer, dimension(nx), intent(inout) :: kce !
+      integer, intent(in) :: nx
+      integer, dimension(nx), intent(inout) :: kce
       real(kind=dp), intent(in) :: return_time
-      integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
-                             numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+      integer, intent(in) :: numz, numu, nums, numtm, numsd, &
+                             numt, numuxy, numn, num1d2d, numw, numtr, numsf
       integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
-
       real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
       real(kind=dp), optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
       real(kind=dp), optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
 
-      character(len=256) :: qidfm !
+      ! Local variables
+      character(len=256) :: qidfm
       integer :: itpbn
       character(len=NAMTRACLEN) :: tracnam, sfnam, qidnam
       character(len=20) :: tracunit
@@ -1090,7 +1132,6 @@ contains
       integer :: janew
       character(len=:), allocatable :: pliname
 
-! call bndname_to_fm(qid,qidfm)
       qidfm = qid
       if (qidfm == 'waterlevelbnd' .or. qidfm == 'neumannbnd' .or. qidfm == 'riemannbnd' .or. qidfm == 'outflowbnd' .or. qidfm == 'qhbnd') then
 
@@ -1351,7 +1392,7 @@ contains
 
    end subroutine processexternalboundarypoints
 
-!> Calls the ec_addtimespacerelation with all proper unstruc-specific target arrays and element set masks.
+   !> Calls the ec_addtimespacerelation with all proper unstruc-specific target arrays and element set masks.
    function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcing_file, targetindex) result(success)
       use fm_external_forcings_data, no1 => qid, no2 => filetype, no3 => operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
@@ -1361,6 +1402,7 @@ contains
       use m_find_name, only: find_name
       use messagehandling, only: LEVEL_WARN, mess
 
+      ! Arguments
       character(len=*), intent(inout) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
       integer, intent(in) :: filetype !< File type of current quantity.
@@ -1369,6 +1411,7 @@ contains
       character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
+      ! Local variables
       logical :: success
       character(len=256) :: tracnam, sfnam, qidnam
       integer :: itrac, isf
@@ -1429,9 +1472,9 @@ contains
          call get_tracername(qid, tracnam, qidnam)
          itrac = find_name(trnames, tracnam)
 
-! for parallel runs, we always need to add the tracer, even if this subdomain has no tracer boundary conditions defined
-!      call add_tracer(tracnam, iconst)
-!      update: all tracers are counted first and allocated later
+         ! for parallel runs, we always need to add the tracer, even if this subdomain has no tracer boundary conditions defined
+         ! call add_tracer(tracnam, iconst)
+         ! update: all tracers are counted first and allocated later
 
          if (nbndtr(itrac) > 0) then
             pzmin => bndtr(itrac)%zminmax(1:nbndtr(itrac))
@@ -1475,17 +1518,17 @@ contains
       else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
          success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
 
-      else !There is some boundary that is not detected or recognized
-!      success = .false.
-! SPvdP: this is not an error, especially for parallel runs
+      else ! There is some boundary that is not detected or recognized
       end if
    end function addtimespacerelation_boundaries
 
-!> Initializes memory for laterals on flow nodes.
+   !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
       use m_laterals, only: kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
+
+      ! Local variables
       integer :: ierr
       integer :: nlatndguess
 
@@ -1501,11 +1544,11 @@ contains
       end if
    end subroutine ini_alloc_laterals
 
-!> Calls the ec_addtimespacerelation with all proper dflowfm-specific
-!! target arrays and element set masks for object parameters with
-!! spatially uniform time series.
-!! Also handles inside one function the old-style *.ext quantities and
-!! the new style *.ext and structures.ini quantities.
+   !> Calls the ec_addtimespacerelation with all proper dflowfm-specific
+   !! target arrays and element set masks for object parameters with
+   !! spatially uniform time series.
+   !! Also handles inside one function the old-style *.ext quantities and
+   !! the new style *.ext and structures.ini quantities.
    function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
@@ -1515,6 +1558,7 @@ contains
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
       use timespace_parameters, only: OPERAND_OVERRIDE
 
+      ! Arguments
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
       character(len=*), intent(in) :: objtype !< Type name of the object for which this relation is set (e.g., 'lateral', for prettyprinting only).
@@ -1524,21 +1568,23 @@ contains
       integer, intent(in) :: targetindex !< Target index in target value array (typically, the current count of this object type, e.g. numlatsg).
       integer, intent(in) :: vectormax !< The number of values per object ('kx'), typically 1.
       logical :: success !< Return value. Whether relation was added successfully.
-      real(kind=dp), intent(inout), target :: targetarray(:) !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
+      real(kind=dp), dimension(:), intent(inout), target :: targetarray !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
 
+      ! Local variables
       character(len=256) :: valuestring, fnam, qid_base
       character(len=NAMLEN) :: const_name
       real(kind=dp) :: valuedble
-      real(kind=dp) :: xdum(1), ydum(1)
-      integer :: kdum(1)
+      real(kind=dp), dimension(1) :: xdum, ydum
+      integer, dimension(1) :: kdum
       integer :: ierr, L
-      real(kind=dp), pointer :: targetarrayptr(:)
-      real(kind=dp), pointer :: dbleptr(:)
+      real(kind=dp), dimension(:), pointer :: targetarrayptr
+      real(kind=dp), dimension(:), pointer :: dbleptr
       integer :: tgtitem
       integer, pointer :: intptr, multuniptr
       logical :: file_exists
 
-      success = .true. ! initialization
+      ! Initialization
+      success = .true.
       xdum = 1.0_dp
       ydum = 1.0_dp
       kdum = 1
@@ -1624,14 +1670,18 @@ contains
       else
          targetarray(targetindex) = valuedble ! Constant value for always, set it now already.
       end if
+
    end function adduniformtimerelation_objects
 
    subroutine register_quantity_pli_combination(quantity, location_file)
       use m_alloc
 
+      ! Arguments
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location_file
-      character(len=max_registered_item_id) :: item_id
+
+      ! Local variables
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
 
       item_id = trim(quantity)//'-'//trim(location_file)
 
@@ -1659,11 +1709,14 @@ contains
    end subroutine
 
    function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
-      logical :: is_registered
+      ! Arguments
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location_file
+      logical :: is_registered
+
+      ! Local variables
       integer :: i
-      character(len=max_registered_item_id) :: item_id
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
 
       item_id = trim(quantity)//'-'//trim(location_file)
 
@@ -1679,7 +1732,6 @@ contains
    end function quantity_pli_combination_is_registered
 
    subroutine init_threttimes()
-
       use m_flow
       use m_flowgeom
       use fm_external_forcings_data
@@ -1690,6 +1742,7 @@ contains
       use messagehandling, only: msgbuf, err_flush
       use string_module, only: strcmpi
 
+      ! Local variables
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
 
@@ -1876,11 +1929,12 @@ contains
 
    end subroutine init_threttimes
 
-!> Initializes boundaries and meteo for the current model.
-!! @return Integer result status (0 if successful)
+   !> Initializes boundaries and meteo for the current model.
+   !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use dfm_error, only: DFM_NOERR
 
+      ! Arguments
       integer :: iresult
 
       call setup(iresult)
@@ -1907,15 +1961,17 @@ contains
       end if
    end subroutine finalize_offline_wave_input_requirements
 
-!> Validate all external-forcing providers required by the active offline wave configuration.
+   !> Validate all external-forcing providers required by the active offline wave configuration.
    subroutine validate_offline_wave_input_providers(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_flowparameters, only: jawave
       use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
       use messagehandling, only: LEVEL_ERROR, mess
 
+      ! Arguments
       integer, intent(inout) :: iresult
 
+      ! Local variables
       logical :: missing_input
 
       if (jawave /= WAVE_NC_OFFLINE) then
@@ -1941,21 +1997,24 @@ contains
    contains
 
       subroutine report_missing_input(quantity_flag, quantity_name)
+         ! Arguments
          integer, intent(in) :: quantity_flag
          character(len=*), intent(in) :: quantity_name
+
+         ! Local variables
          character(len=256) :: dependencies
-         character(len=*), parameter :: wave_kinematics_dependencies = '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
+         character(len=*), parameter :: WAVE_KINEMATICS_DEPENDENCIES = '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
 
          if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
              .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
             select case (quantity_flag)
             case (WAVE_INPUT_SIGNIFICANT_HEIGHT)
-               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, '// &
+               dependencies = trim(WAVE_KINEMATICS_DEPENDENCIES)//', FlowWithoutWaves, '// &
                               '3Dwavebreakerturbulence, or Waveforcing = 2 or 3'
             case (WAVE_INPUT_PERIOD)
-               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, or Waveforcing = 2 or 3'
+               dependencies = trim(WAVE_KINEMATICS_DEPENDENCIES)//', FlowWithoutWaves, or Waveforcing = 2 or 3'
             case (WAVE_INPUT_DIRECTION)
-               dependencies = trim(wave_kinematics_dependencies)//', or Waveforcing = 2 or 3'
+               dependencies = trim(WAVE_KINEMATICS_DEPENDENCIES)//', or Waveforcing = 2 or 3'
             case (WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y)
                dependencies = 'Waveforcing = 1 or 3'
             case (WAVE_INPUT_DISSIPATION_TOTAL)
@@ -1971,12 +2030,13 @@ contains
 
    end subroutine validate_offline_wave_input_providers
 
-!> Validate that sensible and latent heat flux are either both supplied or both absent.
+   !> Validate that sensible and latent heat flux are either both supplied or both absent.
    subroutine validate_heat_flux_input_providers(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_wind, only: sensible_heat_flux_available, latent_heat_flux_available
       use messagehandling, only: LEVEL_ERROR, mess
 
+      ! Arguments
       integer, intent(inout) :: iresult
 
       if (sensible_heat_flux_available .neqv. latent_heat_flux_available) then
@@ -1986,7 +2046,7 @@ contains
       end if
    end subroutine validate_heat_flux_input_providers
 
-!> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
+   !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)
       use dfm_error, only: DFM_NOERR
       use m_transport, only: const_names
@@ -2009,8 +2069,10 @@ contains
       use network_data, only: LINK_1D_BOUNDARY
       use m_waves, only: reset_offline_wave_input_providers
 
+      ! Arguments
       integer, intent(out) :: iresult
 
+      ! Local variables
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
@@ -2389,7 +2451,6 @@ contains
          end if
 
       end if
-! ========================
 
       if (allocated(kbndsd)) then
          deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
@@ -2714,9 +2775,9 @@ contains
       use fm_external_forcings_data, only: bubblescreens
       use m_alloc, only: realloc
       use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
-
       use m_structures, only: fill_geometry_source_sinks
 
+      ! Local variables
       integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
@@ -2784,9 +2845,12 @@ contains
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
+      ! Arguments
       integer, intent(inout) :: iresult
+
+      ! Local variables
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
-      logical :: hyst_dummy(2)
+      logical, dimension(2) :: hyst_dummy
       real(kind=dp) :: area, width, hdx
       type(t_storage), dimension(:), pointer :: stors
       type(t_netcell_set) :: netcell_cache
@@ -3185,8 +3249,10 @@ contains
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess
 
+      ! Arguments
       logical :: success
 
+      ! Initialization
       success = .true.
 
       if (jaZerozbndinflowadvection > 0) then
@@ -3204,6 +3270,7 @@ contains
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc, aerr
 
+      ! Arguments
       integer :: ierr
 
       if (.not. allocated(wx)) then
