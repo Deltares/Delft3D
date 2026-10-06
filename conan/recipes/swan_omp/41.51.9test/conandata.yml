@@ -1,0 +1,4 @@
+sources:
+  "41.51.9test":
+    url: "https://github.com/Deltares/SWAN/archive/refs/tags/41.51.9TEST.tar.gz"
+    sha256: "BAB2FCDE80569D13381BB615634B8C8F7143856BE9A32D282B5803BF9C400215"

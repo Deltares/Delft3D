@@ -67,6 +67,8 @@ find_package(triangle CONFIG REQUIRED)
 find_package(Boost CONFIG REQUIRED)
 find_package(precice CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(SWAN_MPI CONFIG REQUIRED)
+find_package(SWAN_OMP CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)

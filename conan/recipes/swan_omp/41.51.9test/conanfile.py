@@ -7,8 +7,8 @@ from conan.tools.files import get
 from conan import ConanFile
 
 
-class swanRecipe(ConanFile):
-    name = "swan"
+class swan_ompRecipe(ConanFile):
+    name = "swan_omp"
     package_type = "library"
     implements = ["auto_shared_fpic"]
 
@@ -59,7 +59,8 @@ class swanRecipe(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure(
-            build_script_folder=os.path.join(self.source_folder, "src", "cmake")
+            build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
+            cli_args=['-DUSE_MPI="OFF"']
         )
         cmake.build()
 
@@ -68,8 +69,8 @@ class swanRecipe(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "SWAN")
-        self.cpp_info.set_property("cmake_target_name", "SWAN::SWAN")
+        self.cpp_info.set_property("cmake_file_name", "SWAN_OMP")
+        self.cpp_info.set_property("cmake_target_name", "SWAN_OMP::SWAN_OMP")
         self.cpp_info.includedirs = ["include"]
-        self.cpp_info.libs = ["swan"]
+        self.cpp_info.libs = ["swan_omp"]
         self.cpp_info.requires = ["netcdf::netcdf", "netcdf-fortran::netcdf-fortran", "hdf5::hdf5"]
