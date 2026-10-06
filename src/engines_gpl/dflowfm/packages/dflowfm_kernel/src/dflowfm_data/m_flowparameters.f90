@@ -199,8 +199,6 @@ module m_flowparameters
 
    integer :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
-   integer :: javiuplus3D = 1 !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
-
    integer :: jafrculin !< use linear friction yes/no
 
    integer :: jaFrcInternalTides2D !< use internal tides friction (1) or not (0)

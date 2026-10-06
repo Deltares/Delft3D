@@ -103,9 +103,6 @@ contains
       OPTION(i) = 'Javatem                                 '
       it(2 * i) = 2
       i = i + 1
-      OPTION(i) = 'Javiuplus3D                             '
-      it(2 * i) = 2
-      i = i + 1
       OPTION(i) = 'Jaqaisq1                                '
       it(2 * i) = 2
       i = i + 1
@@ -283,8 +280,6 @@ contains
       i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVATEM)
       i = i + 1
-      call IFORMputINTEGER(2 * i, javiuplus3D)
-      i = i + 1
       call IFORMputINTEGER(2 * i, jaqaisq1)
       i = i + 1
       if (source_sinks%add_k_to_turkin) then
@@ -374,8 +369,6 @@ contains
             call IFORMGETdouble(2 * i, Cfconhormom)
             i = i + 1
             call IFORMGETINTEGER(2 * i, JAVATEM)
-            i = i + 1
-            call IFORMGETINTEGER(2 * i, javiuplus3D)
             i = i + 1
             call IFORMGETINTEGER(2 * i, jaqaisq1)
             i = i + 1
