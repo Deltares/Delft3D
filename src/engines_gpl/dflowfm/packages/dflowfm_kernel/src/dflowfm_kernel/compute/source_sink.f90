@@ -723,7 +723,6 @@ contains
                end if
             end do
          end if
-
       end do
 
    end subroutine update_source_sink_discharges
