@@ -108,13 +108,6 @@ contains
          else
             trname = trim(DEFTRACER)
          end if
-      else if (istarts_with(qid, 'tracer')) then
-         qidname = qid(1:6)
-         if (len_trim(qid) > 6) then
-            trname = trim(qid(7:))
-         else
-            trname = trim(DEFTRACER)
-         end if
       end if
 
       return

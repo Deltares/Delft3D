@@ -185,18 +185,25 @@ contains
       logical :: is_static
       character(len=len(quantity)) :: qid_base, qid_specific
 
+      ! 'initial' quantities are always static
       if (index(str_tolower(trim(quantity)), 'initial') == 1) then
          is_static = .true.
-         select case (str_tolower(trim(quantity)))
-         case ('initialvelocity', 'initialvelocityx', 'initialvelocityy', 'initialsalinitytop', &
-               'initialsalinitybot', 'initialunsaturedzonethickness')
-         case default
-            if (index(str_tolower(trim(quantity)), 'initialvertical') /= 1) then
-               quantity = quantity(8:)
+         if (index(str_tolower(trim(quantity)), 'initialvertical') == 1 .or. &
+             index(str_tolower(trim(quantity)), 'initialtracer') == 1 .or. &
+             index(str_tolower(trim(quantity)), 'initialsedfrac') == 1 .or. &
+             index(str_tolower(trim(quantity)), 'initialwaqbot') == 1) then
+            ! These prefixes identify quantity families, not a generic initial modifier.
+         else
+            select case (str_tolower(trim(quantity))) ! previous initial-only quantities keep their original name
+            case ('initialvelocity', 'initialvelocityx', 'initialvelocityy', 'initialwaterlevel', 'initialwaterdepth', &
+               'initialsalinity', 'initialtemperature', 'initialsediment', 'initialsalinitytop', 'initialsalinitybot', &
+               'initialunsaturedzonethickness')
+            case default
+               quantity = quantity(8:) ! we shave off 'initial'
                call split_qid(quantity, qid_base, qid_specific)
                quantity = trim(str_tolower(qid_base))//trim(qid_specific)
-            end if
-         end select
+            end select
+         end if
          return
       end if
 

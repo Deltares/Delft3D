@@ -869,7 +869,7 @@ contains
       call split_qid(quantity, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
-      case ('salinity')
+      case ('initialsalinity')
          if (jasal <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires salinity to be enabled.')
             success = .false.
@@ -878,7 +878,7 @@ contains
          target_array_3d(1:1, 1:size(sa1)) => sa1
          first_index = 1
 
-      case ('sedfrac')
+      case ('initialsedfrac')
          if (.not. stm_included) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires suspended sediment transport to be enabled.')
             success = .false.
@@ -893,7 +893,7 @@ contains
          first_index = iconst
          target_array_3d => constituents
 
-      case ('sediment')
+      case ('initialsediment')
          if (jased <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires a supported sediment transport model.')
             success = .false.
@@ -905,7 +905,7 @@ contains
          first_index = isednum
          target_array_3d => sed
 
-      case ('tracer')
+      case ('initialtracer')
          call get_tracername(quantity, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -919,7 +919,7 @@ contains
          first_index = itrac2const(itrac)
          target_array_3d => constituents
 
-      case ('waqbot')
+      case ('initialwaqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
          if (iwqbot == 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' refers to unknown WAQ bottom variable '''//trim(qid_specific)//'''.')
@@ -944,7 +944,7 @@ contains
       end select
       if (success) then
          select case (str_tolower(qid_base))
-         case ('salinity', 'sedfrac', 'tracer')
+         case ('initialsalinity', 'initialsedfrac', 'initialtracer')
             success = set_3D_target_location(target_layer, quantity, size(target_array_3d, 2), target_location_type)
          end select
       end if
@@ -1013,11 +1013,11 @@ contains
       success = .true.
       call split_qid(qid, qid_base, qid_specific)
       select case (str_tolower(qid_base))
-      case ('waterlevel')
+      case ('waterlevel', 'initialwaterlevel')
          target_location_type = UNC_LOC_S
          target_array => s1
 
-      case ('waterdepth')
+      case ('waterdepth', 'initialwaterdepth')
          target_location_type = UNC_LOC_S
          target_array => hs
 
@@ -1060,11 +1060,15 @@ contains
             return
          end if
 
-      case ('temperature')
+      case ('initialtemperature')
          if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
+            success = set_3D_target_location(target_layer, qid, size(target_array), target_location_type)
+            if (success .and. target_location_type == UNC_LOC_S3D) then
+               initem2D = 0
+            end if
          else
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model to be enabled.')
             success = .false.
@@ -1125,15 +1129,6 @@ contains
          success = .false.
       end select
 
-      if (success) then
-         select case (str_tolower(qid_base))
-         case ('temperature')
-            success = set_3D_target_location(target_layer, qid, size(target_array), target_location_type)
-            if (success .and. target_location_type == UNC_LOC_S3D) then
-               initem2D = 0
-            end if
-         end select
-      end if
    end function resolve_initial_target
 
    !> Resolve the target array and location type for a [Parameter] quantity.
@@ -1776,7 +1771,7 @@ contains
       real(kind=dp), dimension(:), intent(in) :: input_array_2d !< input array on 2D grid cells
       real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
       character(len=*), intent(in) :: target_layer !< the target layer, should be "kbot", "all", or a positive integer.
-      character(len=*), intent(in) :: quantity !< the quantity name, should be "waqbot", parsed and checked at call site.
+      character(len=*), intent(in) :: quantity !< the quantity name, should be "initialwaqbot", parsed and checked at call site.
       integer, intent(in) :: operand
       logical :: success
 

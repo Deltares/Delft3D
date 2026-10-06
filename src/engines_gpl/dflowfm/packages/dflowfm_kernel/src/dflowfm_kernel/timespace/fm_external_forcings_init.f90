@@ -1264,7 +1264,7 @@ contains
 
                   if (associated(target_array_3d) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
                      oper = oper_backup
-                     if (index(str_tolower(quantity), 'waqbot') == 1) then
+                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
                         res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
                      else
                         call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
