@@ -872,7 +872,7 @@ contains
    !! Handles allocation and flag setup for all meteo quantities.
    !! target_array remains null for most quantities (EC module writes directly
    !! into named arrays); only set for quantities that need an explicit target pointer (e.g. qext).
-   function resolve_meteo_target(quantity, file_name, target_location_type, target_array) result(success)
+   function resolve_meteo_target(quantity, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -885,7 +885,6 @@ contains
 
       ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the quantity.
-      character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
       logical :: success
@@ -1164,7 +1163,7 @@ contains
             res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_meteo_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
@@ -2105,7 +2104,7 @@ contains
       case default
          success = .false.
       end select
-      
+
    end function scan_for_heat_quantities
 
 end submodule fm_external_forcings_init
