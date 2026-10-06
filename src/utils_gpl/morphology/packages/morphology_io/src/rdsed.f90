@@ -60,7 +60,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     use MessageHandling, only: mess, LEVEL_ERROR
     use message_module
     use morphology_data_module
-    !use bedcomposition_module
     use sediment_basics_module
     use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
     use system_utils, only:SHARED_LIB_PREFIX, SHARED_LIB_EXTENSION

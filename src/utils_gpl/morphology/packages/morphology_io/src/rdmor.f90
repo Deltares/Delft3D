@@ -41,13 +41,13 @@ contains
 subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                & lsed      ,nmaxus    ,nto       ,lfbedfrm  , &
                & nambnd    ,julday    ,mor_ptr   ,sedpar    ,morpar    , &
-               & fwfac     ,morlyr    ,griddim)
+               & fwfac     ,morlyr    ,griddim   ,ag)
 !!--declarations----------------------------------------------------------------
     use precision, only: fp
     use properties
     use table_handles
     use bedcomposition_module
-    use morphology_data_module, only: sedpar_type, morpar_type
+    use morphology_data_module, only: sedpar_type, morpar_type, BURFLUFF0_COMPUTED, BURFLUFF0_BY_USER
     use grid_dimens_module, only: griddimtype
     use sediment_basics_module
     use string_module
@@ -79,6 +79,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     type(bedcomp_data)             , pointer     :: morlyr
     real(fp)                       , intent(out) :: fwfac
     type(griddimtype)   , target   , intent(in)  :: griddim
+    real(fp)                       , intent(in)  :: ag !< gravity acceleration (m/s^2)
 !
 ! Local variables
 !
@@ -303,18 +304,18 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & nmaxus    ,nto       ,lfbedfrm  , &
                  & nambnd    ,version   ,lsedtot   , sedpar%namsed    , &
                  & morpar    ,morlyr    ,sedpar    ,mor_ptr   , &
-                 & griddim   )
+                 & griddim   ,ag)
     if (error) return
     !
-    if (morlyr%settings%iunderlyr == BED_LAYERED) then
+    if (morlyr%settings%iunderlyr /= BED_LAYERED) then
        morpar%moroutput%poros = .false.
-       morpar%moroutput%td = .false.
+       morpar%moroutput%depos_time = .false.
        morpar%moroutput%preload = .false.
     end if
     !
     if (sedpar%anymud) then
-       if (morlyr%settings%iconsolidate==1) then
-          morpar%flufflyr%iburtype = 2
+       if (morlyr%settings%iconsolidate /= CONSOL_NONE) then
+          morpar%flufflyr%iburtype = BURFLUFF0_COMPUTED
        endif
        call rdflufflyr(lundia    ,error    ,filmor    ,lsed    , &
                      & mor_ptr   ,morpar%flufflyr     ,sedpar  , &
@@ -939,7 +940,8 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     moroutput%thlyr = moroutput%dpsed
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
-    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
+    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%depos_time)
+    call prop_get(mor_ptr, 'Output', 'depositTime'                 , moroutput%depos_time)
     call prop_get(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
     !
@@ -2253,26 +2255,28 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
        do i = 0, 1 ! loop over burial terms
           if (i==0) then ! is this mixing of 0/1-based indexing clear for the user?
              key = 'BurFluff0'
-             quantity = 'burial term 1'
+             quantity = '0-order burial term'
              bfluff => flufflyr%bfluff0
              bfluff_fil => flufflyr%bfluff0_fil
           else
              key = 'BurFluff1'
-             quantity = 'burial term 2'
+             quantity = '1-order burial term'
              bfluff => flufflyr%bfluff1
              bfluff_fil => flufflyr%bfluff1_fil
           end if
           bfluff = 0.0_fp
           !
-          if (flufflyr%iburtype /= 1 .and. i == 0) then
+          if (flufflyr%iburtype /= BURFLUFF0_BY_USER .and. i == 0) then
+             flufflyr%iburtype = BURFLUFF0_COMPUTED
              !
-             ! Burial term 1 fluff layer computed dynamically
+             ! 0-order burial term fluff layer computed dynamically
              !
              call prop_get(mor_ptr, 'FluffLayer', 'cmfluff', cmfluff)
              call prop_get(mor_ptr, 'FluffLayer', 'kkfluff', kkfluff)
              call prop_get(mor_ptr, 'FluffLayer', 'acalbur0', acalbur0)
-          else 
-             ! flufflyr%iburtype == 1
+          else
+             ! BurFluff0 is read only if iburtype == BURFLUFF0_BY_USER
+             ! BurFluff1 is read always
              call prop_get(mor_ptr, 'FluffLayer', key, filmor, is_float, bfluff(1,1), filename)
              if (is_float) then
                 if (bfluff(1,1) < 0.0_fp) then
@@ -2406,14 +2410,14 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
     write (lundia, '(2a,i20)') txtput1, ':', iflufflyr
     !
     if (iflufflyr==1) then
-        txtput1 = 'Burial coefficient 1'
-        if (flufflyr%iburtype == 1) then
+        txtput1 = '0-order burial coefficient'
+        if (flufflyr%iburtype == BURFLUFF0_BY_USER) then
            if (flufflyr%bfluff0_fil /= ' ') then
               write(lundia,'(3a)') txtput1, ':', trim(flufflyr%bfluff0_fil)
            else
               write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%bfluff0(1,1)
            end if
-        else
+        else ! BURFLUFF0_COMPUTED
            write(lundia,'(3a)') txtput1, ':', 'Computed using'
            txtput1 = '   Fluffy layer dry density'
            write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%cmfluff
@@ -2423,7 +2427,7 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
            write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%acalbur0            
         end if
         !
-        txtput1 = 'Burial coefficient 2'
+        txtput1 = '1-order burial coefficient'
         if (flufflyr%bfluff1_fil /= ' ') then
             write(lundia,'(3a)') txtput1, ':', trim(flufflyr%bfluff1_fil)
         else

@@ -35,15 +35,20 @@ contains
 
     !> Write and count the warning
     !! But only actually write it if there are less than max_counter messages already
+    !
+    ! Note:
+    ! With very large models the counter may exceed the maximum positive value for integers,
+    ! causing a wrap-around. So only increase it when the maximum has not been reached yet.
+    !
     subroutine write_warning( string, cell )
         character(len=*), intent(in)   :: string     !< String to written
         integer, intent(in)            :: cell       !< Index of the cell (segment) that is involved
 
         character(len=len(string)+10)  :: string_out
 
-        message_counter = message_counter + 1
-
         if ( message_counter <= max_counter ) then
+            message_counter = message_counter + 1
+
             write( string_out, '(a,x,i0)' ) string, cell
 
             call write_log_message( string_out )
