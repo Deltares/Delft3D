@@ -55,7 +55,7 @@ module m_trachy
    logical :: waqol !< Logical for waq-online coupling in trachytopes computation
    logical :: lfdxx !< Logical for sediment diameters  of trachytopes computation (not used yet)
    !logical                           :: spatial_bedform             !< Logical for inclusion of spatially varying dune properties in trachytopes computation (not used yet)
-   logical :: update_umag !< Logical for updating cell-centred velocity magnitude in trachytopes computation
+   logical :: update_umag = .false. !< Logical for updating cell-centred velocity magnitude in trachytopes computation
    logical :: trachy_resistance = .false. !< Logical for additional resistance term in momentum equation
    !
    !real(kind=dp), allocatable     :: rhosol(:)                   !< Density of sediment (lsedtot)
@@ -90,6 +90,8 @@ contains
       linit = .false. !< Logical for initial step of trachytopes computation (not used)
       waqol = .false. !< Logical for waq-online coupling in trachytopes computation
       lfdxx = .false. !< Logical for sediment diameters  of trachytopes computation (not used yet)
+      update_umag = .false. !< Logical for updating cell-centred velocity magnitude in trachytopes computation
+      trachy_resistance = .false. !< Logical for additional resistance term in momentum equation
       !spatial_bedform = .false.   !< Logical for inclusion of spatially varying dune properties in trachytopes computation (not used yet)
       !lsedtot = 1                 !< number of sediment fractions in trachytopes computation
       !i50 = 1                     !< index of sediment percentile in trachytopes computation

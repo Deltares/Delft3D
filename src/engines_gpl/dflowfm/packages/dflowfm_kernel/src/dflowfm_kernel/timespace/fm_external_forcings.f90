@@ -769,7 +769,7 @@ contains
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, istarts_with
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use unstruc_inifields, only: resolve_initial_3d_target
       use m_qnerror
@@ -836,7 +836,7 @@ contains
             end if
 
             ! When initialtracer is found, get tracername and add tracer boundary.
-            if (quantity(1:13) == 'initialtracer') then
+            if (istarts_with(quantity, 'initialtracer')) then
                call read_tracer_properties(node_ptr, transformcoef)
 
                call get_tracername(quantity, tracnam, qidnam)
@@ -1060,7 +1060,7 @@ contains
       use m_meteo, qid_meteo => qid, filetype_meteo => filetype
       use m_sobekdfm
       use m_flowparameters, only: jawave
-      use string_module
+      use string_module, only: strcmpi, istarts_with
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
       use m_qnerror
@@ -1263,7 +1263,7 @@ contains
             nbndsd = nbndsd + numsd
          end if
 
-      else if (qidfm(1:9) == 'tracerbnd') then
+      else if (istarts_with(qidfm(1:9), 'tracerbnd')) then
          call get_tracername(qidfm, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -1280,7 +1280,7 @@ contains
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
 
-      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
+      else if (istarts_with(qid, 'initialtracer')) then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -1289,7 +1289,7 @@ contains
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
-      else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
+      else if (istarts_with(qidfm, 'sedfracbnd') .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
 
@@ -1427,7 +1427,7 @@ contains
          success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
                                            z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
-      else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
+      else if (numtracers > 0 .and. istarts_with(qid, 'tracerbnd')) then
          ! get tracer boundary condition number
          call get_tracername(qid, tracnam, qidnam)
          itrac = find_name(trnames, tracnam)
@@ -1445,7 +1445,7 @@ contains
             success = .true.
          end if
 
-      else if (numfracs > 0 .and. (qid(1:10) == 'sedfracbnd') .and. stm_included) then
+      else if (numfracs > 0 .and. istarts_with(qid, 'sedfracbnd') .and. stm_included) then
 
          call get_sedfracname(qid, sfnam, qidnam)
          isf = find_name(sfnames, sfnam)
@@ -1513,7 +1513,7 @@ contains
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_transportdata, only: NAMLEN
-      use string_module, only: strcmpi
+      use string_module, only: istarts_with
       use timespace_parameters, only: uniform, bcascii, spaceandtime
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
       use timespace_parameters, only: OPERAND_OVERRIDE
@@ -1693,6 +1693,7 @@ contains
       use m_missing
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, err_flush
+      use string_module, only: strcmpi
 
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
@@ -1749,7 +1750,7 @@ contains
             do j = ISED1, ISEDN
                threttim(j, nseg) = thrtt(i)
             end do
-         else if (qidfm(1:9) == 'tracerbnd') then
+         else if (strcmpi(qidfm(1:9), 'tracerbnd')) then
             call get_tracername(qidfm, tracnam, qidnam)
             itrac = find_name(trnames, tracnam)
             if (allocated(bndtr) .and. thrtn(i) <= nbndtr(itrac)) then
@@ -1765,7 +1766,7 @@ contains
                iconst = itrac2const(itrac)
                threttim(iconst, nseg) = thrtt(i)
             end if
-         else if (qidfm(1:10) == 'sedfracbnd') then
+         else if (strcmpi(qidfm(1:10), 'sedfracbnd')) then
             ierr = 0
             call get_sedfracname(qidfm, sedfracnam, qidnam)
             ifrac = find_name(sfnames, sedfracnam)
@@ -1895,7 +1896,7 @@ contains
          call init_old(iresult)
       end if
       if (iresult == DFM_NOERR) then
-         call finalize()
+         call finalize(iresult)
       end if
 
    end function flow_initexternalforcings
@@ -1914,7 +1915,7 @@ contains
 !> Validate all external-forcing providers required by the active offline wave configuration.
    subroutine validate_offline_wave_input_providers(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
-      use m_flowparameters, only: jawave, waveforcing
+      use m_flowparameters, only: jawave
       use m_waves, only: offline_wave_input_requirements, offline_wave_input_providers
       use messagehandling, only: LEVEL_ERROR, mess
 
@@ -1947,16 +1948,48 @@ contains
       subroutine report_missing_input(quantity_flag, quantity_name)
          integer, intent(in) :: quantity_flag
          character(len=*), intent(in) :: quantity_name
+         character(len=256) :: dependencies
+         character(len=*), parameter :: wave_kinematics_dependencies = '3Dstokesprofile, 3Dwavestreaming, 3Dwaveboundarylayer, Rouwav'
 
          if (wave_input_is_required(offline_wave_input_requirements, quantity_flag) .and. &
              .not. wave_input_is_required(offline_wave_input_providers, quantity_flag)) then
-            call mess(LEVEL_ERROR, 'Missing offline wave quantity '''//quantity_name// &
-                      ''' required by the active Wavemodelnr = 7 configuration with Waveforcing =', waveforcing)
+            select case (quantity_flag)
+            case (WAVE_INPUT_SIGNIFICANT_HEIGHT)
+               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, '// &
+                              '3Dwavebreakerturbulence, or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_PERIOD)
+               dependencies = trim(wave_kinematics_dependencies)//', FlowWithoutWaves, or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_DIRECTION)
+               dependencies = trim(wave_kinematics_dependencies)//', or Waveforcing = 2 or 3'
+            case (WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y)
+               dependencies = 'Waveforcing = 1 or 3'
+            case (WAVE_INPUT_DISSIPATION_TOTAL)
+               dependencies = 'Waveforcing = 2'
+            case (WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+               dependencies = '3Dwavebreakerturbulence or Waveforcing = 3'
+            end select
+            call mess(LEVEL_ERROR, 'Missing required offline wave quantity '''//quantity_name// &
+                      '''. Possible dependencies: '//trim(dependencies))
             missing_input = .true.
          end if
       end subroutine report_missing_input
 
    end subroutine validate_offline_wave_input_providers
+
+!> Validate that sensible and latent heat flux are either both supplied or both absent.
+   subroutine validate_heat_flux_input_providers(iresult)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_wind, only: sensible_heat_flux_available, latent_heat_flux_available
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      integer, intent(inout) :: iresult
+
+      if (sensible_heat_flux_available .neqv. latent_heat_flux_available) then
+         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be ' // &
+                   'provided together or both be omitted; only one of them was found in the external forcings.')
+         iresult = DFM_WRONGINPUT
+      end if
+   end subroutine validate_heat_flux_input_providers
 
 !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)
@@ -2733,7 +2766,7 @@ contains
    end subroutine finalize_source_sinks
 
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
-   subroutine finalize()
+   subroutine finalize(iresult)
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
       use m_storage, only: t_storage, get_surface
@@ -2756,6 +2789,7 @@ contains
       use unstruc_inifields, only: finalize_1dfield_global_values
       use network_data, only: LINK_1D
 
+      integer, intent(inout) :: iresult
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, nstor, i, ja
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
@@ -2770,7 +2804,8 @@ contains
 
       call finalize_1dfield_global_values()
       call finalize_offline_wave_input_requirements()
-      call validate_offline_wave_input_providers(ierr)
+      call validate_offline_wave_input_providers(iresult)
+      call validate_heat_flux_input_providers(iresult)
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then

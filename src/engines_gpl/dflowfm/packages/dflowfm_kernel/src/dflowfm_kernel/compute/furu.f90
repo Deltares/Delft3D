@@ -64,7 +64,7 @@ contains
       use mathconsts, only: ee
       use network_data, only: LINK_1D2D_INTERNAL
       use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
-                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW
+                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_VELOCITY_RIEMANN
 
       implicit none
 

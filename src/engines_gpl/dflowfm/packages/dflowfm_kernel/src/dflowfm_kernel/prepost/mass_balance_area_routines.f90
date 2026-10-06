@@ -28,11 +28,12 @@
 
 module mass_balance_areas_routines
    use precision, only: dp
-   use m_source_sink, only: source_sinks
+   use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
-   implicit none
+   implicit none(type, external)
 
    private
+   
    public mba_init
    public mba_update
    public mba_final
@@ -275,8 +276,8 @@ contains
       call realloc(mbasorsin, [2, source_sinks%num_total], keepExisting=.true., fill=0)
       call realloc(mbasorsinout, [2, source_sinks%num_total], keepExisting=.true., fill=0)
       do isrc = 1, source_sinks%num_total
-         kk1 = source_sinks%indices(isrc, 1) ! 2D pressure cell nr FROM
-         kk2 = source_sinks%indices(isrc, 4) ! 2D pressure cell nr TO
+         kk1 = source_sinks%indices(isrc, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(isrc, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then
@@ -391,24 +392,23 @@ contains
 !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
 !! If the input qid is not mba input name, then the same qid is returned (and no mba input name)
    subroutine get_mbainputname(qid, inputname, qidname)
+   use string_module, only: istarts_with
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'massbalanceareanorth'.
       character(len=*), intent(inout) :: inputname !< The trimmed waq input name, e.g., 'north'.
       character(len=*), intent(inout) :: qidname !< The base input name for further use in external file analisys, e.g., 'massbalancearea'.
 
-      character(len=256) :: qidloc !< Original quantityid, e.g., 'massbalanceareanorth'.
-
       inputname = ''
-      qidloc = qid
-      if (qidloc(1:15) == 'massbalancearea') then
-         qidname = qidloc(1:15)
-         if (len_trim(qidloc) > 15) then
-            inputname = trim(qidloc(16:))
+
+      if (istarts_with(qid, 'massbalancearea')) then
+         qidname = qid(1:15)
+         if (len_trim(qid) > 15) then
+            inputname = trim(qid(16:))
          end if
-      else if (qidloc(1:18) == 'waqmassbalancearea') then ! keep for backwards compatibility
+      else if (istarts_with(qid, 'waqmassbalancearea')) then ! keep for backwards compatibility
          qidname = 'massbalancearea'
-         if (len_trim(qidloc) > 18) then
-            inputname = trim(qidloc(19:))
+         if (len_trim(qid) > 18) then
+            inputname = trim(qid(19:))
          end if
       end if
    end subroutine get_mbainputname

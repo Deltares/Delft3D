@@ -82,7 +82,8 @@ contains
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
                                   TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
-      use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
+      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, &
+         TURBULENCE_MODEL_KTAU, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
@@ -418,7 +419,7 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
-         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
+         if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)

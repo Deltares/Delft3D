@@ -106,8 +106,8 @@ module m_ec_typedefs
       integer :: func
       integer :: timecolumn !< Number of the column holding the time strings, compul
       character(len=50) :: timeunit !< netcdf-convention time unit definition
-      logical :: periodic = .False. !< should a timeseries be rewinded beyond the last entry ?
-      integer :: timeint !< Type of time interpolation
+      logical :: periodic = .false. !< should a timeseries be rewinded beyond the last entry ?
+      integer :: timeint = timeint_lin !< Type of time interpolation
       integer :: vptyp !< Type of specification of vertical position
       real(hp), pointer :: vp(:) => null() !< vertical positions
       integer :: numlay = 1 !< number of vertical layers
@@ -129,7 +129,7 @@ module m_ec_typedefs
       integer :: nctimndx = 1 !< record number to be read
       integer, dimension(:), allocatable :: ncdimvector !< List of dimensions in NetCDF describing the chosen variable
       integer, allocatable, dimension(:) :: dimvector !< dimension ID's indexing the variable of interest
-      logical :: feof = .False. !< End-Of-File signal
+      logical :: feof = .false. !< End-Of-File signal
       real(hp), dimension(:), allocatable :: buffer !< buffer for temporary storage in readers
       !
       integer :: astro_component_column = -1 !< number of the column, containing astronomic components
@@ -245,7 +245,7 @@ module m_ec_typedefs
    type tEcTimeseries
       integer :: id
       integer :: ntimes = 0
-      logical :: finalized = .False. !< no further updates for this timeseries; start from beginning
+      logical :: finalized = .false. !< no further updates for this timeseries; start from beginning
       real(hp) :: tmin, tmax !< time span of this series
       real(hp), dimension(:), allocatable :: times !< 1-dim times array
       real(hp), dimension(:, :), allocatable :: values !< 1-dim values array

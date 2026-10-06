@@ -3327,7 +3327,7 @@ contains
       use network_data
       use geometry_module
       use m_wind, only: jawind
-      use m_boundary, only: BOUNDARY_ABSORBING_GENERATING
+      use m_boundary_condition_type, only: BOUNDARY_ABSORBING_GENERATING
 
       implicit none
 
