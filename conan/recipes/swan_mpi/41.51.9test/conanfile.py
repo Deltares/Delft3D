@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
+from conan.tools.env import Environment
 from conan.tools.files import get
 
 from conan import ConanFile
@@ -26,7 +27,9 @@ class swan_mpiRecipe(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-        self.folders.generators = os.path.join(self.folders.build, "conan", "generators")
+        self.folders.generators = os.path.join(
+            self.folders.build, "conan", "generators"
+        )
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
@@ -57,12 +60,24 @@ class swan_mpiRecipe(ConanFile):
         tc.generate()
 
     def build(self):
+        env = Environment()
+        if self.settings.os == "Linux":
+            compilers = self.conf.get(
+                "tools.build:compiler_executables", default={}, check_type=dict
+            )
+            # SWAN overrides CMAKE_Fortran_COMPILER with mpiifx. Prevent FindMPI
+            # from selecting that wrapper as its own underlying compiler.
+            env.define(
+                "I_MPI_F90",
+                compilers.get("fortran", str(self.settings.fortran_compiler)),
+            )
         cmake = CMake(self)
-        cmake.configure(
-            build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
-            cli_args=['-DUSE_MPI="ON"']
-        )
-        cmake.build()
+        with env.vars(self).apply():
+            cmake.configure(
+                build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
+                cli_args=['-DUSE_MPI="ON"'],
+            )
+            cmake.build()
 
     def package(self):
         cmake = CMake(self)
@@ -73,4 +88,8 @@ class swan_mpiRecipe(ConanFile):
         self.cpp_info.set_property("cmake_target_name", "SWAN_MPI::SWAN_MPI")
         self.cpp_info.includedirs = ["include"]
         self.cpp_info.libs = ["swan_mpi"]
-        self.cpp_info.requires = ["netcdf::netcdf", "netcdf-fortran::netcdf-fortran", "hdf5::hdf5"]
+        self.cpp_info.requires = [
+            "netcdf::netcdf",
+            "netcdf-fortran::netcdf-fortran",
+            "hdf5::hdf5",
+        ]
