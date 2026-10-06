@@ -69,7 +69,7 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
       character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
       character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
-      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' for static depth-aware NetCDF interpolation.
+      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' full 3D netcdf input. TODO: generalize for other filetypes/quantities.
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
@@ -78,7 +78,7 @@ module m_spatial_field
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
       logical :: is_extrapolation_allowed = .false. !< .true. when extrapolation beyond the source data extent is permitted.
-      logical :: is_static_field = .false. !< .true. when the input is applied once at initialization, irrespective of source time dependence.
+      logical :: is_static_field = .false. !< .true. when the spatial field input describes an initialfield that should be applied exactly once at initialisation.
       type(t_averaging_input) :: averaging_input = t_averaging_input() !< Averaging parameters, only meaningful when method = averaging.
    end type t_spatial_field_input
 
@@ -114,7 +114,7 @@ contains
       end if
       call read_averaging_input(block_ptr, res%averaging_input)
 
-      !Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
+      ! Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
       if (len_trim(res%forcing_file_type) == 0) then
          call prop_get(block_ptr, '', 'dataFileType', res%forcing_file_type)
       end if
@@ -173,7 +173,8 @@ contains
 
    end subroutine averaging_params_to_transformcoef
 
-   !> Classify one-shot spatial inputs and normalize the initial quantity modifier.
+   !> Determine whether the spatial input describes a field that should be applied once at initialisation. 
+   ! 'initial' quantities are always static, regardless of method or file type.
    function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
       use string_module, only: str_tolower
       use fm_external_forcings_utils, only: split_qid
@@ -185,7 +186,6 @@ contains
       logical :: is_static
       character(len=len(quantity)) :: qid_base, qid_specific
 
-      ! 'initial' quantities are always static
       if (index(str_tolower(trim(quantity)), 'initial') == 1) then
          is_static = .true.
          if (index(str_tolower(trim(quantity)), 'initialvertical') == 1 .or. &

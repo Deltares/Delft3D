@@ -630,8 +630,8 @@ contains
       target_array => null()
       target_location_type = 0
       success = resolve_initial_target('waterlevel', target_location_type, target_array)
-      call f90_expect_true(success, "deprecated waterlevel spelling should remain accepted")
-      call f90_expect_true(associated(target_array, s1), "deprecated spelling must still point directly to s1")
+      call f90_expect_true(success, "waterlevel spelling should remain accepted")
+      call f90_expect_true(associated(target_array, s1), "waterlevel must still point directly to s1")
 
       ndx = 0
       if (allocated(s1)) deallocate (s1)

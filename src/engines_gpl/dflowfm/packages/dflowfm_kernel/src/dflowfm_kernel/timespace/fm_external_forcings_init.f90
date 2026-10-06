@@ -1234,10 +1234,11 @@ contains
                         end if
                      end if
                   end if
-                  ! These two have to go through the EC-module as a one-shot timespacerelation
+
                   if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
                      res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                      ec_item = ec_undef_int
+                  ! TODO: support other time-dependent filetypes as an initial field
                   else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
                      if (filetype == NCGRID .and. len_trim(variable_name) > 0) then
                         res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &

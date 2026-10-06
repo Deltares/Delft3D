@@ -850,10 +850,10 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
-      integer, intent(out) :: target_location_type !< Location type; explicit '3d' selects UNC_LOC_S3D.
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DS or UNC_LOC_3DV).
       real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< Output to the target 3D array.
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
-      character(len=*), optional, intent(in) :: target_layer !< Requested target layer; '3d' requires full cell-layer storage.
+      character(len=*), optional, intent(in) :: target_layer !< absent means 2D input, '3D' changs target_location to UNC_LOC_3DS. TODO: support bot, top, all and integers
       logical :: success !< true if the quantity was recognized and target_array_3d is associated.
 
       character(len=256) :: qid_base, qid_specific
@@ -950,17 +950,17 @@ contains
       end if
    end function resolve_constituent_target
 
-   !> Select layered interpolation for a quantity whose resolver owns full cell-layer storage.
+   !> Set the target location type to UNC_LOC_3DS if kmx > 0, the array size is correct and target layer is '3D'.
    function set_3D_target_location(target_layer, quantity, target_size, target_location_type) result(success)
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S3D
       use m_flow, only: kmx, ndkx
       use messagehandling, only: mess, LEVEL_ERROR
 
-      character(len=*), optional, intent(in) :: target_layer !< Requested layer selection; absent preserves the default target.
+      character(len=*), optional, intent(in) :: target_layer !< Target layer from the spatial_input block.
       character(len=*), intent(in) :: quantity !< Quantity name for diagnostics.
-      integer, intent(in) :: target_size !< Size of the resolved target row or array.
-      integer, intent(inout) :: target_location_type !< Default target location, promoted for explicit '3d'.
+      integer, intent(in) :: target_size !< Size of the resolved target array.
+      integer, intent(inout) :: target_location_type !< Quantity target location, changed to UNC_LOC_S3D for correct input.
       logical :: success
 
       success = .true.
@@ -979,8 +979,7 @@ contains
       target_location_type = UNC_LOC_S3D
    end function set_3D_target_location
 
-   !> Resolve the target array and location type for a spatial field quantity.
-   !! Handles all quantities that map to a plain real(dp) 1D array.
+   !> Resolve all 'initial' quantities, plus waterlevel/waterdepth.
    function resolve_initial_target(qid, target_location_type, target_array, target_layer) result(success)
       use messageHandling
       use m_alloc, only: realloc
