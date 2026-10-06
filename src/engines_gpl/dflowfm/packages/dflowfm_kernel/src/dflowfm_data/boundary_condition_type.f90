@@ -39,4 +39,5 @@ module m_boundary_condition_type
    integer, parameter, public :: BOUNDARY_DISCHARGE_HEAD = 7 ! discharge-head (qh) boundary
    integer, parameter, public :: BOUNDARY_CRITICAL_OUTFLOW = 8 ! critical outflow boundary
    integer, parameter, public :: BOUNDARY_WEIR_OUTFLOW = 9 ! weir outflow boundary
+   integer, parameter, public :: BOUNDARY_ABSORBING_GENERATING = 10 ! absorbing generating boundary
 end module m_boundary_condition_type

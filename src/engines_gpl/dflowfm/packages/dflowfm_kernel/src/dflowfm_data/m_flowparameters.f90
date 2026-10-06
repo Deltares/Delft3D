@@ -306,7 +306,7 @@ module m_flowparameters
 
    integer :: jacstbnd !< Delft-3D type cell-centered velocities at boundaries (ucx, ucy)
    !< or more precise: copy of inside cell vector, WITHOUT taking bnd. normal comp.
-   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
+   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user-prescribed
    integer :: jaLogprofkepsbndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
    integer :: jamodelspecific = 0 !< override for above two parameters
 

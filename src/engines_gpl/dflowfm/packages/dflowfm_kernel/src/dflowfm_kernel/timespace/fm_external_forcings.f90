@@ -1068,7 +1068,7 @@ contains
       use messagehandling, only: msgbuf, msg_flush, err_flush
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
                                            BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
-                                           BOUNDARY_DISCHARGE_HEAD
+                                           BOUNDARY_DISCHARGE_HEAD, BOUNDARY_VELOCITY_ABSORBING_GENERATING
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
@@ -1176,9 +1176,9 @@ contains
          nubnd = nubnd + 1
 
          if (qidfm == 'velocitybnd') then
-            boundary_type = 3
+            boundary_type = BOUNDARY_VELOCITY_NORMAL_INFLOW
          else if (qidfm == 'dischargebnd') then
-            boundary_type = 4
+            boundary_type = BOUNDARY_VELOCITY_FLUX
             nqbnd = nqbnd + 1
             call realloc(L1qbnd, nqbnd)
             L1qbnd(nqbnd) = nbndu + 1
@@ -1198,13 +1198,13 @@ contains
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
             end if
-            boundary_type = 5
+            boundary_type = BOUNDARY_VELOCITY_ABSORBING_GENERATING
          else if (qidfm == 'qhubnd') then
-            boundary_type = 6
+            boundary_type = BOUNDARY_DISCHARGE_HEAD
          else if (qidfm == 'criticaloutflowbnd') then
-            boundary_type = 8
+            boundary_type = BOUNDARY_CRITICAL_OUTFLOW
          else if (qidfm == 'weiroutflowbnd') then
-            boundary_type = 9
+            boundary_type = BOUNDARY_WEIR_OUTFLOW
          end if
 
          itpeu(nbndu + 1:nbndu + numu) = boundary_type
