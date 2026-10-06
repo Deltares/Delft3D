@@ -33,7 +33,7 @@ submodule(fm_external_forcings) fm_external_forcings_update_boundaries
 
 contains
 
-!> set boundary conditions
+   !> set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
       use m_setzminmax, only: setzminmax
       use precision, only: dp
@@ -59,9 +59,11 @@ contains
       use m_obs_on_flowgeom, only: obs_on_flowgeom
       use unstruc_messages, only: callback_msg
 
+      ! Arguments
       real(kind=dp), intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
+      ! Local variables
       integer :: i, n, k2, kb, L, itrac, isf
       real(kind=dp) :: dQ
 
