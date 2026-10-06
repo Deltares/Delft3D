@@ -1015,11 +1015,18 @@ contains
       case ('waterlevel', 'initialwaterlevel')
          target_location_type = UNC_LOC_S
          target_array => s1
+         if (str_tolower(qid) == 'waterlevel') then
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
+                      //''' is deprecated, use ''initialWaterLevel'' instead. Please update your input file.')
+         end if
 
       case ('waterdepth', 'initialwaterdepth')
          target_location_type = UNC_LOC_S
          target_array => hs
-
+         if (str_tolower(qid) == 'waterdepth') then
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
+                      //''' is deprecated, use ''initialWaterDepth'' instead. Please update your input file.')
+         end if
       case ('initialunsaturedzonethickness')
          call realloc(h_unsat, ndx, keepExisting=.true., fill=dmiss)
          target_location_type = UNC_LOC_S
