@@ -72,7 +72,7 @@ contains
 
       implicit none
 
-      real(kind=dp) :: tetm1, tkedisL
+      real(kind=dp) :: tetm1
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
@@ -410,11 +410,6 @@ contains
                      end if
                   end if
 
-                  !c TKEPRO is the energy transfer flux from Internal Wave energy to
-                  !c Turbulent Kinetic energy and thus a source for the k-equation.
-                  !c TKEDIS is the energy transfer flux from Turbulent Kinetic energy to
-                  !c Internal Wave energy and thus a sink for the k-equation.
-
                   ! Production, dissipation, and buoyancy term in TKE equation;
                   ! dissipation and positive buoyancy are split by Newton linearization;
                   ! buoyancy only for unstable stratification;
@@ -436,16 +431,14 @@ contains
 
                   !
                   if (iturbulencemodel == 3) then
-                     sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
+                     sinktu = tureps0(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
                   else if (iturbulencemodel == 4) then
-                     sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
+                     sinktu = 1.0_dp / tureps0(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
                   end if
-
-                  ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
 
                end do ! Lb, Lt-1
 
@@ -672,19 +665,13 @@ contains
                         dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
                      end if
 
-                     ! Similar to the k-equation, in the eps-equation the net IWE to TKE
-                     ! transfer rate (TKEPRO-TKEDIS) is added to the eps-production term, but
-                     ! split for implicit treatment for avoiding negative epsilon.
-
                      sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
-                     !
                      ! Add wave dissipation production term
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
                      end if
 
-                     tkedisL = 0.0_dp ! tkedis(L)
-                     sinktu = c2e * (tureps0(L) + tkedisL) / turkin1(L)
+                     sinktu = c2e * tureps0(L) / turkin1(L)
 
                      !c Addition of production and of dissipation to matrix ;                               epsilon
                      !c observe implicit treatment by Newton linearization.
