@@ -92,6 +92,7 @@ module m_source_sink
    contains
 
       procedure :: initialize => initialize_source_sinks
+      procedure :: dealloc => dealloc_source_sinks
       procedure :: realloc => realloc_source_sinks
       procedure, private :: realloc_xy => realloc_xy_source_sinks
 
@@ -189,6 +190,25 @@ contains
       self%cumulative_discharge_waq_previous = 0.0_dp
 
    end subroutine initialize_source_sinks
+
+   !> Deallocates the SourceSinks object and its associated global arrays.
+   subroutine dealloc_source_sinks(self)
+      ! Parameters
+      class(SourceSinks), intent(inout) :: self
+
+      select type(self)
+      type is (SourceSinks)
+         self = SourceSinks()
+      end select
+
+      if (allocated(source_sink_all_discharges)) then
+         deallocate (source_sink_all_discharges)
+      end if
+      if (allocated(source_sink_reduction)) then
+         deallocate (source_sink_reduction)
+      end if
+
+   end subroutine dealloc_source_sinks
 
    !> Reallocates the SourceSinks object arrays to new size, keeping existing values.
    subroutine realloc_source_sinks(self, new_size)
