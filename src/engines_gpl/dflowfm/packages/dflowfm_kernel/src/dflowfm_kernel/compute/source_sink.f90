@@ -92,7 +92,7 @@ module m_source_sink
    contains
 
       procedure :: initialize => initialize_source_sinks
-      procedure :: dealloc => dealloc_source_sinks
+      procedure :: reset => reset_source_sinks
       procedure :: realloc => realloc_source_sinks
       procedure, private :: realloc_xy => realloc_xy_source_sinks
 
@@ -191,8 +191,8 @@ contains
 
    end subroutine initialize_source_sinks
 
-   !> Deallocates the SourceSinks object and its associated global arrays.
-   subroutine dealloc_source_sinks(self)
+   !> Resets the SourceSinks object and deallocates its associated global arrays.
+   subroutine reset_source_sinks(self)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
 
@@ -208,7 +208,7 @@ contains
          deallocate (source_sink_reduction)
       end if
 
-   end subroutine dealloc_source_sinks
+   end subroutine reset_source_sinks
 
    !> Reallocates the SourceSinks object arrays to new size, keeping existing values.
    subroutine realloc_source_sinks(self, new_size)
