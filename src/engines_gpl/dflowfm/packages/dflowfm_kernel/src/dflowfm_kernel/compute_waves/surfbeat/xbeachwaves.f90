@@ -3327,6 +3327,7 @@ contains
       use network_data
       use geometry_module
       use m_wind, only: jawind
+      use m_boundary_condition_type, only: BOUNDARY_ABSORBING_GENERATING
 
       implicit none
 
@@ -3365,7 +3366,7 @@ contains
       dlengthrm = 0.0_dp
 
       do n = 1, nbndu
-         if (kbndu(4, n) == 5) then
+         if (kbndu(4, n) == BOUNDARY_ABSORBING_GENERATING) then
             Lb = kbndu(3, n)
             numbnd = kbndu(5, n)
             if (numbnd > maxnumbnds) then
@@ -3423,7 +3424,7 @@ contains
       end if
 
       do n = 1, nbndu
-         if (kbndu(4, n) == 5) then ! absgen boundary
+         if (kbndu(4, n) == BOUNDARY_ABSORBING_GENERATING) then
             kb = kbndu(1, n)
             ki = kbndu(2, n)
             Lb = kbndu(3, n)

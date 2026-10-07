@@ -199,8 +199,6 @@ module m_flowparameters
 
    integer :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
-   integer :: javiuplus3D = 1 !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
-
    integer :: jafrculin !< use linear friction yes/no
 
    integer :: jaFrcInternalTides2D !< use internal tides friction (1) or not (0)
@@ -306,7 +304,7 @@ module m_flowparameters
 
    integer :: jacstbnd !< Delft-3D type cell-centered velocities at boundaries (ucx, ucy)
    !< or more precise: copy of inside cell vector, WITHOUT taking bnd. normal comp.
-   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
+   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user-prescribed
    integer :: jaLogprofkepsbndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
    integer :: jamodelspecific = 0 !< override for above two parameters
 
@@ -806,7 +804,7 @@ contains
 
       jawavebreakerturbulence = WAVE_BREAKER_TURB_ON ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
-      jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
+      jawavedelta = WAVE_BOUNDARYLAYER_SANA ! Wave boundary layer formulation: 1=Sana
 
       jawaveforces = WAVE_FORCES_ON
 
@@ -840,7 +838,7 @@ contains
 
       ibedlevmode = BLMODE_DFM !< Default: Compute bed levels solely by ibedlevtyp, i.e., derived from velocity points (or direct bl tiles).
 
-      ibedlevtyp = 3 ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
+      ibedlevtyp = BEDLEV_TYPE_MEAN ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
       ! 2 : Bottom levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
       ! 3 : Bottom levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
       ! 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
