@@ -129,7 +129,9 @@
           endif
           output_hyd%num_layers_grid  = input_hyd%num_layers_grid
           output_hyd%num_layers = maxval(ipnt_v)
-          output_hyd%nosegl= maxval(ipnt_h)
+          output_hyd%nosegl = maxval(ipnt_h)
+          output_hyd%num_columns = output_hyd%nosegl
+          output_hyd%num_rows = 1
           output_hyd%num_cells = output_hyd%num_layers*output_hyd%nosegl
           output_hyd%crs = input_hyd%crs
           output_hyd%openbndsect_coll%current_size = 0
