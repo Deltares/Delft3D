@@ -42,6 +42,8 @@ contains
    subroutine find_nearest_flowlinks(xx, yy, link_nrs_nearest)
       use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
       use m_cellmask_from_polygon_set, only: t_netcell_set
+      use m_GlobalParameters, only: INDTP_1D
+      use m_inflowcell, only: inflowcell
       use m_partitioninfo, only: jampi
       use mpi
 
@@ -52,7 +54,7 @@ contains
       integer :: ii
       character(len=255) :: str
       real(dp), dimension(:), allocatable :: distances
-      integer, dimension(:), allocatable :: netcell_nrs
+      integer, dimension(:), allocatable :: cell_nrs
       type(t_netcell_set) :: netcell_cache
       integer :: ierror
 
@@ -60,17 +62,22 @@ contains
          call mess(LEVEL_ERROR, 'find_flowlinks: unmatched input array size')
       end if
 
-      allocate (distances(size(xx)), netcell_nrs(size(xx)))
+      allocate (distances(size(xx)), cell_nrs(size(xx)))
       netcell_cache = t_netcell_set()
-      netcell_nrs = netcell_cache%find_netcell(xx, yy)
+      cell_nrs = netcell_cache%find_netcell(xx, yy)
+      do ii = 1, size(xx)
+         if (cell_nrs(ii) == 0) then
+            call inflowcell(xx(ii), yy(ii), cell_nrs(ii), -1, INDTP_1D)
+         end if
+      end do
       if (jampi == 1 .and. size(xx) > 0) then
-         call mpi_allreduce(mpi_in_place, netcell_nrs, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
+         call mpi_allreduce(mpi_in_place, cell_nrs, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
       end if
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)
-         if (netcell_nrs(ii) == 0) then
+         if (cell_nrs(ii) == 0) then
             write (str, '(A,I6,A,F14.4,A,F14.4,A)') 'find_flowlinks: point ', ii, '([x, y] = [', xx(ii), ',', yy(ii), &
-               ']) lies outside of the 2D mesh; closest flowlink might be inaccurate'
+               ']) lies outside of the model grid; closest flowlink might be inaccurate'
             call mess(LEVEL_WARN, trim(str))
          end if
       end do
