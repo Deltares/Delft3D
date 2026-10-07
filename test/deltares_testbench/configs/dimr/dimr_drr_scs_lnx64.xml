@@ -76,7 +76,7 @@
         </program>
       </programs>
       <location ref="reference_results" type="reference">
-        <from>win64</from>
+        <from>lnx64</from>
       </location>
       <location ref="cases" type="input">
         <from>.</from>
