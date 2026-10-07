@@ -47,7 +47,7 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
       use m_flowtimes, only: refdate_mjd
-      use string_module, only: str_upper, str_tolower
+      use string_module, only: str_upper, str_tolower, strcmpi
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
@@ -341,7 +341,7 @@ contains
          end if
 
          ! add 3D settings if needed
-         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. target_name == 'tracerbnd' .or. target_name == 'sedfracbnd')) then ! TODO JRE sediment
+         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. strcmpi(target_name, 'tracerbnd') .or. strcmpi(target_name, 'sedfracbnd'))) then ! TODO JRE sediment
             if (success) then
                success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
             end if
@@ -1503,6 +1503,10 @@ contains
             write (txt2, "('factor = ', F4.2)") real(Ndatasize, kind=dp) / real(Ncols * Nrows, kind=dp)
             call mess(LEVEL_INFO, trim(txt1)//' '//trim(txt2))
          end if
+      end if
+
+      if (present(tgt_item1) .and. associated(targetItemPtr1)) then
+         tgt_item1 = targetItemPtr1
       end if
 
       ec_addtimespacerelation = .true.
