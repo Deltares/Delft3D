@@ -41,36 +41,36 @@ contains
    !> Find for each input point the flow link with the shortest perpendicular distance to it, given a set of points [xx, yy].
    subroutine find_nearest_flowlinks(xx, yy, link_nrs_nearest)
       use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
-      use m_GlobalParameters, only: INDTP_ALL
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_partitioninfo, only: jampi
       use mpi
-      use m_inflowcell, only: inflowcell
 
       real(dp), dimension(:), intent(in) :: xx !< x-coordinate of input points
       real(dp), dimension(:), intent(in) :: yy !< y-coordinate of input points
       integer, dimension(:), intent(out) :: link_nrs_nearest !< Link numbers with the shortest perpendicular distance to the points [xx, yy]
 
-      integer :: ii, k, jaoutside
+      integer :: ii
       character(len=255) :: str
       real(dp), dimension(:), allocatable :: distances
+      integer, dimension(:), allocatable :: netcell_nrs
+      type(t_netcell_set) :: netcell_cache
       integer :: ierror
 
       if (size(xx) /= size(yy) .or. size(xx) /= size(link_nrs_nearest)) then
          call mess(LEVEL_ERROR, 'find_flowlinks: unmatched input array size')
       end if
 
-      allocate (distances(size(xx)))
+      allocate (distances(size(xx)), netcell_nrs(size(xx)))
+      netcell_cache = t_netcell_set()
+      netcell_nrs = netcell_cache%find_netcell(xx, yy)
+      if (jampi == 1 .and. size(xx) > 0) then
+         call mpi_allreduce(mpi_in_place, netcell_nrs, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
+      end if
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)
-         k = 0
-         jaoutside = -1
-         call inflowcell(xx(ii), yy(ii), k, jaoutside, INDTP_ALL)
-         if (jampi == 1) then
-            call mpi_allreduce(mpi_in_place, k, 1, mpi_integer, mpi_max, mpi_comm_world, ierror)
-         end if
-         if (k == 0) then
+         if (netcell_nrs(ii) == 0) then
             write (str, '(A,I6,A,F14.4,A,F14.4,A)') 'find_flowlinks: point ', ii, '([x, y] = [', xx(ii), ',', yy(ii), &
-               ']) lies outside of the model grid; closest flowlink might be inaccurate'
+               ']) lies outside of the 2D mesh; closest flowlink might be inaccurate'
             call mess(LEVEL_WARN, trim(str))
          end if
       end do
@@ -264,7 +264,7 @@ contains
       integer, dimension(:), intent(inout) :: link_nrs_nearest !< id of the flowlink whose midpoint lies closest to the point [x, y]
 
       integer :: number_of_links, i
-      real(dp), dimension(2) :: distance_and_rank_pair
+      real(dp), dimension(:, :), allocatable :: distance_and_rank_pairs
       integer :: ierr, rank_with_shortest_distance
 
       if (jampi == 0) then
@@ -276,14 +276,18 @@ contains
       end if
 
       number_of_links = size(distances)
+      if (number_of_links == 0) then
+         return
+      end if
+
+      allocate (distance_and_rank_pairs(2, number_of_links))
+      distance_and_rank_pairs(1, :) = distances
+      distance_and_rank_pairs(2, :) = real(my_rank, dp)
+      call mpi_allreduce(mpi_in_place, distance_and_rank_pairs, number_of_links, mpi_2double_precision, &
+                         mpi_minloc, mpi_comm_world, ierr)
 
       do i = 1, number_of_links
-
-         ! Use mpi_allreduce with mpi_minloc to determine which process reported the shortest distance
-         distance_and_rank_pair = [distances(i), real(my_rank, dp)] ! Because mpi_minloc needs a pair of values of the same type
-         call mpi_allreduce(mpi_in_place, distance_and_rank_pair, 1, mpi_2double_precision, mpi_minloc, mpi_comm_world, ierr)
-         rank_with_shortest_distance = nint(distance_and_rank_pair(2))
-
+         rank_with_shortest_distance = nint(distance_and_rank_pairs(2, i))
          ! Let the process with the shortest distance keep their flowlink id; all others set it to zero
          if (my_rank /= rank_with_shortest_distance) then
             link_nrs_nearest(i) = 0
