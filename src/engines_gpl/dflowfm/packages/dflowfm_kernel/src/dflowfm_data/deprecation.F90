@@ -123,7 +123,7 @@ contains
 
       keyword = get_keyword(chapter, key, set)
       if (len_trim(keyword%additional_information) /= 0) then
-         call mess(LEVEL_INFO, prefix//': keyword ['//trim(chapter)//'] '//trim(key)//': '//keyword%additional_information)
+         call mess(LEVEL_INFO, prefix//': in block ['//trim(chapter)//'] keyword '''//trim(key)//''': '//keyword%additional_information)
       end if
    end subroutine print_additional_keyword_information
 
@@ -242,17 +242,17 @@ contains
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
 
-                        call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//trim(context_info)//' is obsolete and cannot be used anymore. Check possible typo.')
+                        call mess(LEVEL_ERROR, prefix//': in block ['//trim(chapter_name)//'] keyword '''//trim(node_name)//''''//trim(context_info)//' is obsolete and cannot be used anymore. Check possible typo.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else if (needs_usage_warning(trim(chapter_name), trim(node_name))) then
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
-                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//trim(context_info)//' is unknown or not used by the program. Check possible typo.')
+                        call mess(LEVEL_WARN, prefix//': in block ['//trim(chapter_name)//'] keyword '''//trim(node_name)//''''//trim(context_info)//' is unknown or not used by the program. Check possible typo.')
                      end if
                   else
                      ! keyword is known and used (node_visit >= 1)
                      if (is_deprecated(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_deprecated = num_deprecated + 1
-                        call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//trim(context_info)//' is deprecated and may be removed in a future release.')
+                        call mess(LEVEL_WARN, prefix//': in block ['//trim(chapter_name)//'] keyword '''//trim(node_name)//''''//trim(context_info)//' is deprecated and may be removed in a future release.')
                         call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      end if
                   end if
