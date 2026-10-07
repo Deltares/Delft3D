@@ -16,7 +16,7 @@ RUN $installer = 'C:\vs_Community.exe'; \
         # Start-Process flattens ArgumentList, so quote the path after PowerShell parses -Command. \
         $quote = [char]34; \
         $quotedInstallPath = $quote + $installPath + $quote; \
-        $installerArguments = '--passive --wait --norestart --nocache ' + \
+        $installerArguments = '--passive --wait --noUpdateInstaller --norestart --nocache ' + \
             '--installPath ' + $quotedInstallPath + ' ' + \
             '--add Microsoft.VisualStudio.Workload.NativeDesktop ' + \
             '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + \
