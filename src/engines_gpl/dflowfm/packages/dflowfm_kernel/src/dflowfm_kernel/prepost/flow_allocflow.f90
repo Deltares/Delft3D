@@ -97,6 +97,7 @@ contains
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
       use m_physcoef, only: dynroughveg, frcuni
+      use precision_basics, only: comparereal
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -290,7 +291,10 @@ contains
                dzm = (zmx - zbt) / mxlayz
             else
                dzm = dztop
-               mxlayz = (zmx - zbt) / dzm
+               mxlayz = floor((zmx - zbt) / dzm)
+               if (comparereal(modulo(zmx - zbt, dzm), 0.0_dp) > 0) then
+                  mxlayz = mxlayz + 1
+               end if
                if (numtopsig > 0 .and. janumtopsiguniform == 1) then
                   mxlayz = max(mxlayz, numtopsig)
                end if
@@ -381,7 +385,7 @@ contains
                if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
                   zslay(mx, j) = zmx
-                  
+
                   ! Fill top uniform layers, thickness equal to dzm
                   do k = mx - 1, mx - kuni, -1
                      zslay(k, j) = zslay(k + 1, j) - dzm
@@ -393,14 +397,14 @@ contains
                      dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
-                  
+
                else
                   ! Fill layers based on dzslay computed above, scaled to the actual depth range
                   zslay(0, j) = zmn
                   do k = 1, mx
                      zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
                   end do
-                  
+
                end if
             end if
          end do
@@ -452,7 +456,7 @@ contains
 
          ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
          call map_ndkx_to_ndx()
-         
+
          LL = Lnx ! Stapelen vanaf grondlaag
          do L = 1, lnx
             n1 = ln(1, L)
@@ -1258,6 +1262,6 @@ contains
       end if
 
       call set_kbot_ktop(jazws0=1)
-      
+
    end subroutine flow_allocflow
 end module m_flow_allocflow
