@@ -3,7 +3,7 @@ from pathlib import Path
 
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.env import Environment
-from conan.tools.files import get
+from conan.tools.files import get, replace_in_file
 
 from conan import ConanFile
 
@@ -38,6 +38,13 @@ class swan_mpiRecipe(ConanFile):
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
+        # The callable SWAN library also needs the separately built module archives.
+        replace_in_file(
+            self,
+            str(self._swan_source_folder / "CMakeLists.txt"),
+            "install(TARGETS ${SWANLIB} ARCHIVE",
+            "install(TARGETS ${SWANLIB} ${SWANMOD_TARGETS} ARCHIVE",
+        )
 
     @property
     def _swan_source_folder(self):
@@ -86,8 +93,15 @@ class swan_mpiRecipe(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "SWAN_MPI")
         self.cpp_info.set_property("cmake_target_name", "SWAN_MPI::SWAN_MPI")
-        self.cpp_info.includedirs = ["include"]
-        self.cpp_info.libs = ["swan_mpi"]
+        self.cpp_info.includedirs = []
+        self.cpp_info.libs = [
+            "swan_mpi_lib",
+            "swanmod",
+            "swanmod_xnl",
+            "swanmod_io",
+            "swanmod_core",
+            "swanmod_base",
+        ]
         self.cpp_info.requires = [
             "netcdf::netcdf",
             "netcdf-fortran::netcdf-fortran",

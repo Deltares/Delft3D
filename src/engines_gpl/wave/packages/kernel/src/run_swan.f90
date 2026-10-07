@@ -89,7 +89,7 @@ subroutine run_swan (casl)
        if (numranks > 1) then
           call wave_mpi_bcast(SWAN_GO, ierr)
           if ( ierr == MPI_SUCCESS ) then
-             call swan(engine_comm_world)
+             call swan_lib(engine_comm_world)
              call wave_mpi_barrier(ierr)
           endif
           if ( ierr /= MPI_SUCCESS ) then
@@ -97,7 +97,7 @@ subroutine run_swan (casl)
              call wavestop(1, '*** ERROR: MPI produced an internal error')
           endif
        else
-          call swan(engine_comm_world)
+          call swan_lib(engine_comm_world)
        endif
     else
        !

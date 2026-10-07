@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import get
+from conan.tools.files import get, replace_in_file
 
 from conan import ConanFile
 
@@ -26,7 +26,9 @@ class swan_ompRecipe(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-        self.folders.generators = os.path.join(self.folders.build, "conan", "generators")
+        self.folders.generators = os.path.join(
+            self.folders.build, "conan", "generators"
+        )
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
@@ -35,6 +37,13 @@ class swan_ompRecipe(ConanFile):
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
+        # The callable SWAN library also needs the separately built module archives.
+        replace_in_file(
+            self,
+            str(self._swan_source_folder / "CMakeLists.txt"),
+            "install(TARGETS ${SWANLIB} ARCHIVE",
+            "install(TARGETS ${SWANLIB} ${SWANMOD_TARGETS} ARCHIVE",
+        )
 
     @property
     def _swan_source_folder(self):
@@ -60,7 +69,7 @@ class swan_ompRecipe(ConanFile):
         cmake = CMake(self)
         cmake.configure(
             build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
-            cli_args=['-DUSE_MPI="OFF"']
+            cli_args=['-DUSE_MPI="OFF"'],
         )
         cmake.build()
 
@@ -71,6 +80,19 @@ class swan_ompRecipe(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "SWAN_OMP")
         self.cpp_info.set_property("cmake_target_name", "SWAN_OMP::SWAN_OMP")
-        self.cpp_info.includedirs = ["include"]
-        self.cpp_info.libs = ["swan_omp"]
-        self.cpp_info.requires = ["netcdf::netcdf", "netcdf-fortran::netcdf-fortran", "hdf5::hdf5"]
+        self.cpp_info.includedirs = []
+        self.cpp_info.libs = [
+            "swan_omp_lib",
+            "swanmod",
+            "swanmod_xnl",
+            "swanmod_io",
+            "swanmod_core",
+            "swanmod_base",
+        ]
+        if self.settings.os == "Linux":
+            self.cpp_info.system_libs = ["iomp5"]
+        self.cpp_info.requires = [
+            "netcdf::netcdf",
+            "netcdf-fortran::netcdf-fortran",
+            "hdf5::hdf5",
+        ]
