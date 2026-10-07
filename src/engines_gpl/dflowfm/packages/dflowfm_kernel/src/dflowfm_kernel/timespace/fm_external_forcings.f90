@@ -1066,9 +1066,10 @@ contains
       use m_qnerror
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, msg_flush, err_flush
-      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
-                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
-                                           BOUNDARY_DISCHARGE_HEAD, BOUNDARY_VELOCITY_ABSORBING_GENERATING
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, BOUNDARY_VELOCITY_NORMAL_INFLOW, &
+                                           BOUNDARY_VELOCITY_FLUX, BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD, BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, &
+                                           BOUNDARY_ABSORBING_GENERATING
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
@@ -1198,7 +1199,7 @@ contains
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
             end if
-            boundary_type = BOUNDARY_VELOCITY_ABSORBING_GENERATING
+            boundary_type = BOUNDARY_ABSORBING_GENERATING
          else if (qidfm == 'qhubnd') then
             boundary_type = BOUNDARY_DISCHARGE_HEAD
          else if (qidfm == 'criticaloutflowbnd') then
@@ -1985,7 +1986,7 @@ contains
       integer, intent(inout) :: iresult
 
       if (sensible_heat_flux_available .neqv. latent_heat_flux_available) then
-         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be ' // &
+         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be '// &
                    'provided together or both be omitted; only one of them was found in the external forcings.')
          iresult = DFM_WRONGINPUT
       end if

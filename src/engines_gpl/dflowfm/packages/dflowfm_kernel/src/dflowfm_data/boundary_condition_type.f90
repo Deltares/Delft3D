@@ -33,7 +33,7 @@ module m_boundary_condition_type
    integer, parameter, public :: BOUNDARY_WATER_LEVEL = 1 ! water level boundary
    integer, parameter, public :: BOUNDARY_WATER_LEVEL_NEUMANN = 2 ! water level neumann
    integer, parameter, public :: BOUNDARY_VELOCITY_NORMAL_INFLOW = 3 ! velocity normal ingoing component
-   integer, parameter, public :: BOUNDARY_VELOCITY_FLUX = 4 ! velocity flux boundary
+   integer, parameter, public :: BOUNDARY_VELOCITY_FLUX = 4 ! discharge/velocity flux boundary
    integer, parameter, public :: BOUNDARY_VELOCITY_RIEMANN = 5 ! velocity Riemann boundary
    integer, parameter, public :: BOUNDARY_WATER_LEVEL_OUTFLOW = 6 ! water level outflow
    integer, parameter, public :: BOUNDARY_DISCHARGE_HEAD = 7 ! discharge-head (qh) boundary
