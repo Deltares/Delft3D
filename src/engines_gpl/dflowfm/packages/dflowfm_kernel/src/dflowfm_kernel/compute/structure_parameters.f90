@@ -341,21 +341,21 @@ contains
                   end if
 
                   if (hs(ku) > epshs) then
-                     valgategen(IVAL_WIDTHUP, n) = valgategen(IVAL_WIDTHUP, n) + wu(L)
-                     valgategen(IVAL_S1UP, n) = valgategen(IVAL_S1UP, n) + s1(ku) * wu(L)
+                     valgategen(IVAL_WIDTHUP, n) = valgategen(IVAL_WIDTHUP, n) + wu(La)
+                     valgategen(IVAL_S1UP, n) = valgategen(IVAL_S1UP, n) + s1(ku) * wu(La)
                   end if
                   if (hs(kd) > epshs) then
-                     valgategen(IVAL_WIDTHDN, n) = valgategen(IVAL_WIDTHDN, n) + wu(L)
-                     valgategen(IVAL_S1DN, n) = valgategen(IVAL_S1DN, n) + s1(kd) * wu(L)
+                     valgategen(IVAL_WIDTHDN, n) = valgategen(IVAL_WIDTHDN, n) + wu(La)
+                     valgategen(IVAL_S1DN, n) = valgategen(IVAL_S1DN, n) + s1(kd) * wu(La)
                   end if
                   if (hs(ku) > epshs .and. hs(kd) > epshs) then
-                     valgategen(IVAL_WIDTHUPDN, n) = valgategen(IVAL_WIDTHUPDN, n) + wu(L)
-                     valgategen(IVAL_HEAD, n) = valgategen(IVAL_HEAD, n) + (s1(ku) - s1(kd)) * wu(L)
+                     valgategen(IVAL_WIDTHUPDN, n) = valgategen(IVAL_WIDTHUPDN, n) + wu(La)
+                     valgategen(IVAL_HEAD, n) = valgategen(IVAL_HEAD, n) + (s1(ku) - s1(kd)) * wu(La)
                   end if
 
-                  k = kcgen(1, L)
+                  k = ln(1, La)
                   if (q1(La) < 0.0_dp) then
-                     k = kcgen(2, L)
+                     k = ln(2, La)
                   end if
                   if (hs(k) > epshs) then
                      valgategen(IVAL_GATE_WIDTHWET, n) = valgategen(IVAL_GATE_WIDTHWET, n) + wu(La)
@@ -439,6 +439,11 @@ contains
                   end if
                   call fill_valstruct_perlink(valweirgen(:, n), La, dir, ST_UNSET, 0, 0)
                end do
+               if (L1cgensg(i) <= L2cgensg(i)) then
+                  valweirgen(NUMVALS_WEIRGEN, n) = 1
+                  valweirgen(IVAL_CRESTW, n) = zcgen(4 * i)
+                  valweirgen(IVAL_CRESTL, n) = zcgen(4 * i - 3)
+               end if
             end do
          end if
       end if
@@ -863,11 +868,11 @@ contains
          else ! old weir
             do n = 1, nweirgen
                call average_valstruct(valweirgen(:, n), ST_UNSET, 0)
-               i = weir2cgen(n)
-               if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
-                  valweirgen(NUMVALS_WEIRGEN, n) = 1 ! rank contains the weir.
-                  valweirgen(IVAL_CRESTW, n) = zcgen(4 * i) ! id_weirgen_crestw.
-                  valweirgen(IVAL_CRESTL, n) = zcgen(4 * i - 3) ! id_weirgen_cresth.
+               if (jampi > 0) then
+                  if (valweirgen(NUMVALS_WEIRGEN, n) > 1.0_dp) then
+                     valweirgen(IVAL_CRESTW, n) = valweirgen(IVAL_CRESTW, n) / valweirgen(NUMVALS_WEIRGEN, n)
+                     valweirgen(IVAL_CRESTL, n) = valweirgen(IVAL_CRESTL, n) / valweirgen(NUMVALS_WEIRGEN, n)
+                  end if
                end if
             end do
          end if
@@ -904,12 +909,8 @@ contains
                if (valgategen(IVAL_GATE_WIDTHWET, n) == 0.0_dp) then
                   valgategen(IVAL_GATE_FLOWH, n) = dmiss
                else
-                  if (network%sts%numGates > 0) then
-                     i = network%sts%gateIndices(n)
-                  else
-                     i = gate2cgen(n)
-                  end if
-                  valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(4 * i - 2) - zcgen(4 * i - 3), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(4 * i - 3)), 0.0_dp) ! flow through height is always positive
+                  valgategen(IVAL_GATE_FLOWH, n) = max(min(valgategen(IVAL_GATE_EDGEL, n) - valgategen(IVAL_GATE_SILLH, n), &
+                                                         valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - valgategen(IVAL_GATE_SILLH, n)), 0.0_dp) ! flow through height is always positive
                end if
             end do
          end if
@@ -964,10 +965,10 @@ contains
          do n = 1, npumpsg
             call average_valstruct(valpump(:, n), ST_UNSET, 0)
 
+            jaghostexist = 0
             do L = L1pumpsg(n), L2pumpsg(n)
                Lf = kpump(3, L)
                La = abs(Lf)
-               jaghostexist = 0
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
                   if (jaghost == 1) then
