@@ -1,0 +1,4 @@
+sources:
+  "41.51.10beta":
+    url: "https://github.com/Deltares/SWAN/archive/refs/tags/41.51.10beta.tar.gz"
+    sha256: "9B0782FBF777B664BD63842E01DF8AC15B3E783E627BE274883F8CD94800EE21"

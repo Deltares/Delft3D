@@ -24,7 +24,7 @@ target_link_libraries(${library_name} PRIVATE
     nefis
     netCDF::netcdff
     triangle::triangle
-    swan
+    SWAN_MPI::SWAN_MPI
 )
 
 if (WIN32)
