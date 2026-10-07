@@ -47,11 +47,11 @@ contains
       use m_get_Lbot_Ltop, only: getLbotLtop
 
       implicit none
-      
+
       integer :: L, k1, k2, LL, Lb, Lt
       real(kind=dp) :: CpilL, uv
 
-      if (kmx == 0) then 
+      if (kmx == 0) then
          if (japillar == 1) then
             do L = 1, lnx
                k1 = ln(1, L)
