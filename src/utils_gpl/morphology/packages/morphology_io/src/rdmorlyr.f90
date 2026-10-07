@@ -90,6 +90,7 @@ contains
       character(20) :: parname
       character(45) :: txtput1
       character(20) :: txtput2
+      character(40) :: txtput3
       character(80) :: bndname
       character(256) :: errmsg
       character(999) :: plyrstr
@@ -734,24 +735,24 @@ contains
             txtput1 = 'Mobility model for vertical sorting'
             select case (imobility)
             case (MOBILITY_OFF)
-               txtput2 = ' not used'
+               txtput3 = ' not used'
             case (MOBILITY_DISCRETE)
-               txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+               txtput3 = ' Shields curve and discrete mobility'
             case (MOBILITY_SHIELDS)
-               txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+               txtput3 = ' Shields curve and continuous mobility'
             case (MOBILITY_WILCOCKMCARDELL)
-               txtput2 = ' Wilcock and McArdell (1997)'
+               txtput3 = ' Wilcock and McArdell (1997)'
             case (MOBILITY_SEDTRANS)
-               txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+               txtput3 = ' Critical 0.047 and discrete mobility'
             case default
-               txtput2 = ' not used'
+               txtput3 = ' not used'
                errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
-               write (lundia, '(3a)') txtput1, ':', txtput2
+               write (lundia, '(3a)') txtput1, ':', txtput3
                call write_error(errmsg, unit=lundia)
                error = .true.
                return
             end select
-            write (lundia, '(3a)') txtput1, ':', txtput2
+            write (lundia, '(3a)') txtput1, ':', txtput3
 
             associate (telfil => morpar%telfil)
                istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
