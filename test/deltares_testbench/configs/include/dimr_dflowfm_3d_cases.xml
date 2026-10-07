@@ -1554,7 +1554,7 @@
   <testCase name="e02_f208_c042_bridge_pillars_3Dsigma" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f208_3D_hydraulic_structures/c042_bridge_pillars_3Dsigma</path>
     <checks>
-      <file name="dflowfm/dflowfmoutput/bp_001_his.nc" type="netCDF">
+      <file name="dflowfmoutput/bp_001_his.nc" type="netCDF">
         <parameters>
           <parameter name="x_velocity" toleranceAbsolute="0.0005"/>
           <parameter name="y_velocity" toleranceAbsolute="0.0005"/>
