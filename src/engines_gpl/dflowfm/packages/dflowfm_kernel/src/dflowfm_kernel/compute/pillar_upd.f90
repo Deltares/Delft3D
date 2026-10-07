@@ -42,29 +42,59 @@ contains
       use precision, only: dp
       use fm_external_forcings_data, only: Cpil
       use m_flowgeom, only: lnx, ln, dx
-      use m_flow, only: u1, v, advi
+      use m_flow, only: u1, v, advi, kmx
       use m_flowparameters, only: japillar
+      use m_get_Lbot_Ltop, only: getLbotLtop
+
       implicit none
-      integer :: L, k1, k2
+      
+      integer :: L, k1, k2, LL, Lb, Lt
       real(kind=dp) :: CpilL, uv
 
-      if (japillar == 1) then
-         do L = 1, lnx
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
-            uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
-            advi(L) = advi(L) + CpilL * uv / dx(L)
-         end do
-      else if (japillar == 3) then
-         do L = 1, lnx
-            if (Cpil(L) == 0.0_dp) then
-               cycle
-            end if
-            CpilL = Cpil(L)
-            uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
-            advi(L) = advi(L) + CpilL * uv / dx(L)
-         end do
+      if (kmx == 0) then 
+         if (japillar == 1) then
+            do L = 1, lnx
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
+               uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
+               advi(L) = advi(L) + CpilL * uv / dx(L)
+            end do
+         else if (japillar == 3) then
+            do L = 1, lnx
+               if (Cpil(L) == 0.0_dp) then
+                  cycle
+               end if
+               CpilL = Cpil(L)
+               uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
+               advi(L) = advi(L) + CpilL * uv / dx(L)
+            end do
+         end if
+      else
+         if (japillar == 1) then
+            do L = 1, lnx
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
+               call getLbotLtop(L, Lb, Lt)
+               do LL = Lb, Lt
+                  uv = sqrt(u1(LL) * u1(LL) + v(LL) * v(LL))
+                  advi(LL) = advi(LL) + CpilL * uv / dx(L)
+               end do
+            end do
+         else if (japillar == 3) then
+            do L = 1, lnx
+               call getLbotLtop(L, Lb, Lt)
+               if (Cpil(L) == 0.0_dp) then
+                  cycle
+               end if
+               CpilL = Cpil(L)
+               do LL = Lb, Lt
+                  uv = sqrt(u1(LL) * u1(LL) + v(LL) * v(LL))
+                  advi(LL) = advi(LL) + CpilL * uv / dx(L)
+               end do
+            end do
+         end if
       end if
 
    end subroutine pillar_upd
