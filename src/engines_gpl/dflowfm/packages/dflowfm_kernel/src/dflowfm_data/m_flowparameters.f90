@@ -126,7 +126,7 @@ module m_flowparameters
    integer :: air_water_interaction_model !< Air water interaction model, use one of AIR_WATER_INTERACTION_MODEL_... parameters
    integer, parameter :: AIR_WATER_INTERACTION_MODEL_NONE = 0 !< No air water interaction model
    integer, parameter :: AIR_WATER_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
-   
+
    integer :: atmospheric_stability_function !< Atmospheric stability function, use one of ATMOSPHERIC_STABILITY_FUNCTION_... parameters
    integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_NONE = 0 !< No atmospheric stability function
    integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_ECMWF = 1 !< ECMWF atmospheric stability function
@@ -134,13 +134,13 @@ module m_flowparameters
    integer :: free_convection !< Switch for free convection, use one of FREE_CONVECTION_... parameters
    integer, parameter :: FREE_CONVECTION_OFF = 0 !< Free convection off
    integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
-   
+
    integer :: salinity_dependent_evaporation_method !< Switch for methods for determining salinity_reduction_factor_saturation_humidity
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_NONE = 0 !< salinity_reduction_factor_saturation_humidity is 1.0 (no reduction)
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_CONSTANT = 1 !< salinity_reduction_factor_saturation_humidity is constant
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
-   
+
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
@@ -183,7 +183,11 @@ module m_flowparameters
 
    integer :: jasecflow !< 0: no, 1: yes
 
-   integer :: japillar !< 0: no, 1: yes
+   integer :: pillar_method !< Switch for methods for computing bridge pillars
+   integer, parameter :: PILLAR_NONE = 0 !< pillar_method not active
+   integer, parameter :: PILLAR_DELFT3D_FLOWNODE = 1 !< pillar_method based on reduced surface area (top view)
+   integer, parameter :: PILLAR_VEGETATION_BAPTIST = 2 !< pillar_method using vegetation approach of
+   integer, parameter :: PILLAR_DELFT3D_FLOWLINK = 3 !< pillar_method based on reduced cross-sectional area (side view)
 
    integer :: jaequili !< secondary flow intensity gets calculated as equilibrium (0=no, 1=yes)
 
@@ -761,7 +765,7 @@ contains
 
       jasecflow = 0 ! include secondary flow (0=no, 1=yes)
 
-      japillar = 0 ! include pillar (0=no, 1=yes)
+      pillar_method = PILLAR_NONE ! Switch for methods for computing bridge pillars
 
       jaequili = 0 ! equilibrium secondary flow (0=no, 1=yes)
 
@@ -770,7 +774,7 @@ contains
       jasal = 0 ! Include salinity (autoset by flow_initexternalforcings())
 
       temperature_model = TEMPERATURE_MODEL_NONE ! Temperature model
-      
+
       air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model

@@ -539,7 +539,6 @@ contains
       use m_array_or_scalar, only: realloc
       use precision_basics, only: equal
 
-
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -669,7 +668,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
       call prop_get(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
       if (len_trim(md_pillarfile) > 0) then
-         japillar = 3
+         pillar_method = PILLAR_DELFT3D_FLOWLINK
       end if
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
@@ -1332,7 +1331,7 @@ contains
       ierror = DFM_NOERR
 
       call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
-      if (japillar == 2) then
+      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
          javeg = 1
       end if
       if (kmx == 0 .and. javeg > 0) then

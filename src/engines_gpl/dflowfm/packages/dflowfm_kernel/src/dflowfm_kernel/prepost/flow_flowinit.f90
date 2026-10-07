@@ -126,7 +126,8 @@ contains
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
                                   air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, &
-                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE
+                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
+                                  pillar_method, PILLAR_NONE
 
       implicit none
 
@@ -419,7 +420,7 @@ contains
          call setstruclink()
       end if
 
-      if (japillar > OFF) then
+      if (pillar_method > PILLAR_NONE) then
          call setpillars()
       end if
 

@@ -43,7 +43,7 @@ contains
       use fm_external_forcings_data, only: Cpil
       use m_flowgeom, only: lnx, ln, dx
       use m_flow, only: u1, v, advi, kmx
-      use m_flowparameters, only: japillar
+      use m_flowparameters, only: pillar_method, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK
       use m_get_Lbot_Ltop, only: getLbotLtop
 
       implicit none
@@ -52,7 +52,7 @@ contains
       real(kind=dp) :: CpilL, uv
 
       if (kmx == 0) then
-         if (japillar == 1) then
+         if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
             do L = 1, lnx
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -60,7 +60,7 @@ contains
                uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
                advi(L) = advi(L) + CpilL * uv / dx(L)
             end do
-         else if (japillar == 3) then
+         else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
             do L = 1, lnx
                if (Cpil(L) == 0.0_dp) then
                   cycle
@@ -71,7 +71,7 @@ contains
             end do
          end if
       else
-         if (japillar == 1) then
+         if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
             do L = 1, lnx
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -82,7 +82,7 @@ contains
                   advi(LL) = advi(LL) + CpilL * uv / dx(L)
                end do
             end do
-         else if (japillar == 3) then
+         else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
             do L = 1, lnx
                call getLbotLtop(L, Lb, Lt)
                if (Cpil(L) == 0.0_dp) then
