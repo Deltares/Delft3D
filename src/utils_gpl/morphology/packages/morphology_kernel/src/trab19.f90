@@ -24,8 +24,12 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
 module m_trab19
    implicit none
+   private
+   public trab19
+
 contains
 
 !> computes sediment transport according to the transport formula of Van Thiel / Van Rijn (2008)
@@ -37,8 +41,6 @@ contains
       use precision
       use mathconsts
       use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry, calculate_urms
-      !
-      implicit none
 !
 ! Arguments
 !

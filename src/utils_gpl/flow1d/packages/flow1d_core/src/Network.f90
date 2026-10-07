@@ -50,6 +50,7 @@ module m_network
    public getFrictionValue
    public update_flow1d_admin
    public getRoughnessForProfile
+   private default_network
    
    
    interface realloc
@@ -79,9 +80,9 @@ module m_network
    end type
 
    type, public   :: t_network
-      integer                                   :: numk                    !< total number of links (internal and boundary)
-      integer                                   :: numl                    !< total number of links (internal and boundary)
-      logical                                   :: sferic                  !< flag indicating whether the used coordinate system is sferical or metric
+      integer                                   :: numk        = 0         !< total number of links (internal and boundary)
+      integer                                   :: numl        = 0         !< total number of links (internal and boundary)
+      logical                                   :: sferic      = .false.   !< flag indicating whether the used coordinate system is sferical or metric
       type(t_administration_1d)                 :: adm                     !< network administration
       type(t_nodeSet)                           :: nds                     !< set of nodes
       type(t_branchSet)                         :: brs                     !< set of branches
@@ -130,6 +131,16 @@ contains
 
    end subroutine dealloc_1dadmin
 
+   subroutine default_network(network)
+      type(t_network), intent(inout) :: network
+
+      network%numk = 0
+      network%numl = 0
+      network%sferic = .false.
+      network%loaded = .false.
+      network%initialized = .false.
+   end subroutine default_network
+
 
    subroutine deallocNetwork(network)
       ! Modules
@@ -154,7 +165,7 @@ contains
       call dealloc(network%CSDefinitions)
       call dealloc(network%spData)
       call dealloc(network%observcrs)
-      network%loaded = .false.
+      call default_network(network)
    
    end subroutine deallocNetwork
 

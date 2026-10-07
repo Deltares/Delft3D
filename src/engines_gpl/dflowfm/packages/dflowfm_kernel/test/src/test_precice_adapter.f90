@@ -48,20 +48,21 @@ contains
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
    subroutine test_adapter_add_to_fm_administration() bind(C)
       use m_flow_geominit, only: flow_geominit
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use precice_adapter
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: SourceSinks, source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_alloc, only: realloc
       use m_resetfullflowmodel, only: resetfullflowmodel
 
       type(t_grid_helper) :: grid_helper
       type(precice_adapter_t) :: adapter
+      type(t_netcell_set) :: netcell_cache
       integer :: expected_sink_cell
       integer :: expected_source_cell
 
       ! Setup grid
       call disable_timers_logging_and_mpi()
-      call source_sinks%dealloc()
+      call source_sinks%reset()
       call source_sinks%initialize(1)
       grid_helper = t_grid_helper()
       call grid_helper%make_square_grid( &
@@ -70,10 +71,9 @@ contains
          )
       call flow_geominit(0)
 
-      call init_cell_geom_as_polylines()
-      expected_sink_cell = point_find_netcell(5.0_dp, 5.0_dp)
-      expected_source_cell = point_find_netcell(15.0_dp, 7.0_dp)
-      call cleanup_cell_geom_polylines()
+      netcell_cache = t_netcell_set()
+      expected_sink_cell = netcell_cache%find_netcell(5.0_dp, 5.0_dp)
+      expected_source_cell = netcell_cache%find_netcell(15.0_dp, 7.0_dp)
 
       ! Setup adapter
       call precice_adapter_allocate_read_arrays(adapter, 1)
@@ -95,16 +95,15 @@ contains
       call f90_assert_eq(source_sinks%num_total, 1, "Unexpected number of total source sinks"//c_null_char)
       call f90_assert_eq(source_sinks%num_nearfield, 1, "Unexpected number of nearfield source sinks"//c_null_char)
       call f90_assert_streq(trim(source_sinks%name(1)), "preC-SUMO_0123", "Unexpected name for source sink 1"//c_null_char)
-      call f90_assert_eq(source_sinks%indices(1, 1), expected_sink_cell, "Unexpected indices(1,1) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_bottom(1, 1), -1.2_dp, 1e-5_dp, "Unexpected z_bottom(1,1) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_top(1, 1), 3.4_dp, 1e-5_dp, "Unexpected z_top(1,1) in source sinks"//c_null_char)
-      call f90_assert_eq(source_sinks%indices(1, 4), expected_source_cell, "Unexpected indices(1,4) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_bottom(1, 2), 5.6_dp, 1e-5_dp, "Unexpected z_bottom(1,2) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_top(1, 2), -7.8_dp, 1e-5_dp, "Unexpected z_top(1,2) in source sinks"//c_null_char)
+      call f90_assert_eq(source_sinks%indices(1, FLOWCELL_SINK), expected_sink_cell, "Unexpected indices(1,1) in source sinks"//c_null_char)
+      call f90_assert_near(source_sinks%z_bottom(1, SINK_SIDE), -1.2_dp, 1e-5_dp, "Unexpected z_bottom(1,1) in source sinks"//c_null_char)
+      call f90_assert_near(source_sinks%z_top(1, SINK_SIDE), 3.4_dp, 1e-5_dp, "Unexpected z_top(1,1) in source sinks"//c_null_char)
+      call f90_assert_eq(source_sinks%indices(1, FLOWCELL_SOURCE), expected_source_cell, "Unexpected indices(1,4) in source sinks"//c_null_char)
+      call f90_assert_near(source_sinks%z_bottom(1, SOURCE_SIDE), 5.6_dp, 1e-5_dp, "Unexpected z_bottom(1,2) in source sinks"//c_null_char)
+      call f90_assert_near(source_sinks%z_top(1, SOURCE_SIDE), -7.8_dp, 1e-5_dp, "Unexpected z_top(1,2) in source sinks"//c_null_char)
       call f90_assert_near(source_sink_all_discharges(1, 1), 9.10_dp, 1e-5_dp, "Unexpected source_sink_all_discharges(1, 1) in source sinks"//c_null_char)
 
       ! Cleanup
-      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
       call precice_adapter_deallocate_read_arrays(adapter)
       call resetfullflowmodel()

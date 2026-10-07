@@ -165,7 +165,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     logical                              , pointer :: roller
     logical                              , pointer :: sferic
     logical                              , pointer :: xbeach
-    character(20) , dimension(:)         , pointer :: namsed
     character(8)                         , pointer :: dpsopt
     character(4)                         , pointer :: rouflo
     integer       , dimension(:)         , pointer :: order_sta
@@ -353,7 +352,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     roller              => gdp%gdprocs%roller
     sferic              => gdp%gdtricom%sferic
     xbeach              => gdp%gdprocs%xbeach
-    namsed              => gdp%gdsedpar%namsed
     dpsopt              => gdp%gdnumeco%dpsopt
     rouflo              => gdp%gdtricom%rouflo
     rhow                => gdp%gdphysco%rhow
@@ -554,7 +552,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & kmax      ,lmax      ,lstsci    ,ltur      ,nmaxus    , &
                     & noroco    ,norow     ,nostat    ,nsrc      ,ntruv     , &
                     & grdang    ,dpsopt    ,sferic    ,lsed      ,lsedtot   , &
-                    & zmodel    ,ch(namsrc),ch(namcon),namsed    , &
+                    & zmodel    ,ch(namsrc),ch(namcon), &
                     & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(irocol) , &
                     & r(xcor)   ,r(ycor)   ,r(xz)     ,r(yz)     ,r(alfas)  , &
                     & r(dpd)    ,r(thick)  ,r(sig)    ,r(sig)    , &

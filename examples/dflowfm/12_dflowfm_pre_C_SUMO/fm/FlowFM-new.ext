@@ -1,0 +1,11 @@
+[General]
+fileVersion = 3.00
+fileType    = extForce
+
+[Spatial]
+quantity            = initialtracerTracer1 # Name of the quantity.
+targetMaskFile      = fullextent.pol       # Name of <*.pol> file to be used as mask. Grid parts inside any polygon will receive the spatial forcing.
+interpolationMethod = constant             # Type of (spatial) interpolation.
+operand             = override             # How this data is combined with previous data for the same quantity (if any).
+extrapolationMethod = 0                    # Option for (spatial) extrapolation.
+dataValue           = 1.0                  # Constant value to be set inside all model points inside the polygon, used when no dataFile/dataFileType is specified. Requires targetMaskFile=*.pol and interpolationMethod=constant.

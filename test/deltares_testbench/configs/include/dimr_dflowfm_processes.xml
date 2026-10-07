@@ -251,6 +251,7 @@
   </testCase>
   <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
         <parameters>
@@ -369,6 +370,7 @@
   </testCase>
   <testCase name="e02_f030_c004_westernscheldt_noproc_2D" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
         <parameters>
@@ -735,7 +737,7 @@
   </testCase>
   <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
-    <maxRunTime>15000.0000000</maxRunTime>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">
         <parameters>
@@ -909,13 +911,11 @@
           <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-          <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
-        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        -->
+          <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         </parameters>
       </file>
       <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
@@ -952,13 +952,11 @@
           <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
           <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-          <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
-        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        -->
+          <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+          <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         </parameters>
       </file>
       <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
@@ -1381,6 +1379,7 @@
   </testCase>
   <testCase name="e02_f030_c109_westernscheldt_dynamo_2D_statistics" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
         <parameters>
@@ -1478,8 +1477,21 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f030_c120_limit_tracer_concentrations" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c120_limit_tracer_concentrations</path>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
+    <maxRunTime>1140</maxRunTime>
     <programs>
       <program ref="dimr_plain" seq="1">
         <arguments>
@@ -1525,6 +1537,7 @@
   </testCase>
   <testCase name="e02_f030_c202_parallel_dredge_dump" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c202_parallel_dredge_dump</path>
+    <maxRunTime>1260</maxRunTime>
     <programs>
       <program ref="dimr_plain" seq="1">
         <arguments>
@@ -1594,6 +1607,7 @@
   </testCase>
   <testCase name="e02_f030_c401_Course_tracers" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
@@ -1622,6 +1636,7 @@
   </testCase>
   <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
+    <maxRunTime>720</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>
@@ -1640,6 +1655,7 @@
   </testCase>
   <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
+    <maxRunTime>900</maxRunTime>
     <checks>
       <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
         <parameters>

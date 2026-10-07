@@ -542,7 +542,6 @@ subroutine compute_secundary_state(gdp       )
     logical                              , pointer :: lftrto
     logical                              , pointer :: veg3d
     include 'tri-dyn.igd'
-    real(fp)      , dimension(:)         , pointer :: rhosol
     integer                              , pointer :: lturi
     real(fp)                             , pointer :: grdang
     real(fp)                             , pointer :: saleqs
@@ -823,7 +822,6 @@ subroutine compute_secundary_state(gdp       )
     kfvz0               => gdp%gdr_i_ch%kfvz0
     kfvz1               => gdp%gdr_i_ch%kfvz1
     kcscut              => gdp%gdr_i_ch%kcscut
-    rhosol              => gdp%gdsedpar%rhosol
     lturi               => gdp%gdtricom%lturi
     grdang              => gdp%gdtricom%grdang
     saleqs              => gdp%gdtricom%saleqs
@@ -990,7 +988,7 @@ subroutine compute_secundary_state(gdp       )
     call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
             & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
             & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-            & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+            & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
     !
     ! Z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
     !

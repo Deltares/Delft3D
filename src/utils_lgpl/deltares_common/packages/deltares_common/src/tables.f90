@@ -111,6 +111,7 @@ contains
 !
 !===============================================================================
    subroutine org_readtable(this, filnam, refjulday, errorstring)
+      use m_scannr, only: scannr
 !!--description-----------------------------------------------------------------
 !
 !    Function: Read table files (i.e. BCT/BCC/BCM)

@@ -97,7 +97,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <!-- a generic testCase configuration for running tests with arbitrary programs and platform independent results -->
@@ -109,7 +109,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <!-- a generic testCase configuration for running tests with arbitrary programs and platform dependent results -->
@@ -122,7 +122,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="postproc">
@@ -132,7 +132,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

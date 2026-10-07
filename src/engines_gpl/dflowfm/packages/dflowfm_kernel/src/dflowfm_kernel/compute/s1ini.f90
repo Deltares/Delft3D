@@ -34,7 +34,7 @@ module m_s1ini
    use m_update_waq_sink_source_fluxes, only: update_waq_sink_source_fluxes
    use m_update_waq_lateral_fluxes, only: update_waq_lateral_fluxes
    use m_setgrwflowexpl, only: setgrwflowexpl
-   use m_source_sink, only: setsorsin, source_sinks
+   use m_source_sink, only: source_sinks
 
    implicit none
 
@@ -55,7 +55,7 @@ contains
       use m_ship
       use m_transport, only: constituents, itemp
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
-      use m_mass_balance_areas
+      use m_mass_balance_area_data
       use m_partitioninfo
       use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
@@ -76,7 +76,7 @@ contains
       end if
 
       if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
-         heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
+         heatsrc = 0.0_dp ! just prior to source_sinks%update_discharges that may add to heatsrc
       else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
       end if
@@ -270,7 +270,7 @@ contains
          end if
 
          if (source_sinks%num_total > 0) then
-            call setsorsin() ! add sources and sinks
+            call source_sinks%update_discharges()
          end if
 
          if (wrwaqon) then ! Update waq output

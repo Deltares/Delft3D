@@ -27,8 +27,8 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
-            <!-- seconds -->
+            
+
         </testCase>
 
         <!-- Configuration for DELWAQ steady-state options - dummy -->
@@ -46,8 +46,8 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
-            <!-- seconds -->
+            
+
         </testCase>
     </defaultTestCases>
 

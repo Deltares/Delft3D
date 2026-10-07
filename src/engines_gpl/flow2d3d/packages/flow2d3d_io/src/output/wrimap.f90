@@ -3,7 +3,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
                   & kmax      ,lmax      ,lstsci    ,ltur      ,nmaxus    , &
                   & noroco    ,norow     ,nostat    ,nsrc      ,ntruv     , &
                   & grdang    ,dpsopt    ,sferic    ,lsed      ,lsedtot   , &
-                  & zmodel    ,namsrc    ,namcon    ,namsed    , &
+                  & zmodel    ,namsrc    ,namcon    , &
                   & kcu       ,kcv       ,kcs       ,irocol    , &
                   & xcor      ,ycor      ,xz        ,yz        ,alfas     , &
                   & dpd       ,thick     ,zk        ,sig       , &
@@ -83,6 +83,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     logical                         , pointer :: ztbml
     real(fp)                        , pointer :: rhow
     real(fp)                        , pointer :: ag
+    character(20) , dimension(:)    , pointer :: namsed
 !
 ! Global variables
 !
@@ -133,7 +134,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     character(16)                                                                     , intent(in)  :: simdat      !!  Simulation date representing the
                                                                                                                    !!  flow condition at this date
     character(20), dimension(lmax)                                                    , intent(in)  :: namcon      !  Description and declaration in esm_alloc_char.f90
-    character(20), dimension(lsedtot)                                                 , intent(in)  :: namsed      !  Description and declaration in esm_alloc_char.f90
     character(20), dimension(nsrc)                                                                  :: namsrc      !  Description and declaration in esm_alloc_char.f90
     character(21)                                                                     , intent(in)  :: selmap      !  Description and declaration in tricom.igs
     character(8)                                                                      , intent(in)  :: dpsopt      !  Description and declaration in numeco.igs
@@ -255,6 +255,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     lsal           => gdp%d%lsal
     ltem           => gdp%d%ltem
     densin         => gdp%gdmorpar%densin
+    namsed         => gdp%gdsedpar%namsed
     !
     ! Initialize local variables
     !

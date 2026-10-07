@@ -74,11 +74,20 @@ module m_flow ! flow arrays-999
    integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)
    integer, parameter :: LAYTP_DENS_SIGMA = 4 !< Density controlled sigma-layers
 
-   integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
-   integer, parameter :: STRCH_USER = 1
-   integer, parameter :: STRCH_EXPONENT = 2
+   integer, parameter :: STRETCH_UNI_OVER_EXP = -1 !< uniform over exponential, for backward compatibility (only for layertype = LAYTP_Z)
+   integer, parameter :: STRETCH_UNIFORM = 0 !< uniform layers
+   integer, parameter :: STRETCH_USER = 1 !< user defined layers
+   integer, parameter :: STRETCH_EXPONENT = 2 !< exponential layers
+   integer, parameter :: STRETCH_UNDEFINED = -999 !< undefined stretching type
+   integer :: stretch_type = STRETCH_UNDEFINED !< Stretching type for layers
 
-   integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
+   integer :: iturbulencemodel !< Turbulence model to be used (0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau)
+   integer, parameter :: TURBULENCE_MODEL_NONE = 0 !< No turbulence model
+   integer, parameter :: TURBULENCE_MODEL_CONSTANT = 1 !< Constant turbulence model
+   integer, parameter :: TURBULENCE_MODEL_ALGEBRAIC = 2 !< Algebraic turbulence model
+   integer, parameter :: TURBULENCE_MODEL_KEPS = 3 !< k-epsilon turbulence model
+   integer, parameter :: TURBULENCE_MODEL_KTAU = 4 !< k-tau turbulence model
+
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
@@ -96,8 +105,8 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: uuk !< coefficient vertical mom exchange of kmx layers
 
    real(kind=dp), allocatable, dimension(:) :: laycof !< coefficients for sigma layer
-   !    1: Percentages of the layers, user defined, laycof(kmx)
-   !    2: Stretching level, and two coefficients for layers growth, laycof(3)
+   !    if stretch_type = STRETCH_USER: Percentages of the layers, user defined, laycof(kmx)
+   !    if stretch_type = STRETCH_EXPONENT: Stretching level, and two coefficients for layers growth, laycof(3)
    !
    real(kind=dp), allocatable, dimension(:, :) :: dzslay ! the normalized thickness of layer, dim = (: , maxlaydefs)
 
@@ -569,7 +578,7 @@ contains
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
       layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
-      iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
+      iturbulencemodel = TURBULENCE_MODEL_KEPS !< 0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       z_layer_growth_factor = 1.0_dp
 

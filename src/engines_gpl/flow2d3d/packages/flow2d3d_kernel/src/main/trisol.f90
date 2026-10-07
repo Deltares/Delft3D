@@ -548,7 +548,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer      , dimension(:)          , pointer :: nread
     integer      , dimension(:)          , pointer :: sedtyp
     real(fp)     , dimension(:)          , pointer :: rcousr
-    real(fp)     , dimension(:)          , pointer :: rhosol
     character(20), dimension(:)          , pointer :: procs
     logical                              , pointer :: dryrun
     logical                              , pointer :: eulerisoglm
@@ -1095,7 +1094,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nprptr              => gdp%gdusrpar%nprptr
     sedtyp              => gdp%gdsedpar%sedtyp
     rcousr              => gdp%gdusrpar%rcousr
-    rhosol              => gdp%gdsedpar%rhosol
     procs               => gdp%gdusrpar%procs
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
@@ -1579,7 +1577,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_dengra, gdp)
           call dengra(icreep    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
                     & icx       ,icy       ,lstsci    ,lsts      ,lsal      , &
-                    & ltem      ,lsed      ,saleqs    ,temeqs    ,rhosol    , &
+                    & ltem      ,lsed      ,saleqs    ,temeqs    , &
                     & i(kcs)    ,i(kfu)    ,r(s0)     ,d(dps)    ,r(hu)     , &
                     & r(thick)  ,r(sig)    ,r(guu)    ,r(gvu)    ,r(r0)     , &
                     & r(dicuv)  ,r(dpu)    ,r(dpdksi) ,r(dsdksi) ,r(dtdksi) , &
@@ -1589,7 +1587,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = nmaxddb
           call dengra(icreep    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
                     & icx       ,icy       ,lstsci    ,lsts      ,lsal      , &
-                    & ltem      ,lsed      ,saleqs    ,temeqs    ,rhosol    , &
+                    & ltem      ,lsed      ,saleqs    ,temeqs    , &
                     & i(kcs)    ,i(kfv)    ,r(s0)     ,d(dps)    ,r(hv)     , &
                     & r(thick)  ,r(sig)    ,r(gvv)    ,r(guv)    ,r(r0)     , &
                     & r(dicuv)  ,r(dpv)    ,r(dpdeta) ,r(dsdeta) ,r(dtdeta) , &
@@ -2168,7 +2166,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
                   & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
                   & densin    ,zmodel    ,r(thick)  ,r(r1)      ,r(rho)    , &
-                  & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+                  & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
           call timer_stop(timer_dens, gdp)
        endif
        !
@@ -2206,9 +2204,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
-                    & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                    & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                    & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                    & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
                     & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
@@ -2603,7 +2601,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_dengra, gdp)
           call dengra(icreep    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
                     & icx       ,icy       ,lstsci    ,lsts      ,lsal      , &
-                    & ltem      ,lsed      ,saleqs    ,temeqs    ,rhosol    , &
+                    & ltem      ,lsed      ,saleqs    ,temeqs    , &
                     & i(kcs)    ,i(kfu)    ,r(s0)     ,d(dps)    ,r(hu)     , &
                     & r(thick)  ,r(sig)    ,r(guu)    ,r(gvu)    ,r(r0)     , &
                     & r(dicuv)  ,r(dpu)    ,r(dpdksi) ,r(dsdksi) ,r(dtdksi) , &
@@ -2613,7 +2611,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = nmaxddb
           call dengra(icreep    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
                     & icx       ,icy       ,lstsci    ,lsts      ,lsal      , &
-                    & ltem      ,lsed      ,saleqs    ,temeqs    ,rhosol    , &
+                    & ltem      ,lsed      ,saleqs    ,temeqs    , &
                     & i(kcs)    ,i(kfv)    ,r(s0)     ,d(dps)    ,r(hv)     , &
                     & r(thick)  ,r(sig)    ,r(gvv)    ,r(guv)    ,r(r0)     , &
                     & r(dicuv)  ,r(dpv)    ,r(dpdeta) ,r(dsdeta) ,r(dtdeta) , &
@@ -3241,7 +3239,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
                   & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
                   & densin    ,zmodel    ,r(thick)  ,r(r1)      ,r(rho)    , &
-                  & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+                  & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
           call timer_stop(timer_dens, gdp)
        endif
        !
@@ -3280,9 +3278,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
-                    & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                    & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
+                    & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                    & r(r1)     ,r(s0)     ,i(kcs)    ,r(rhowat) , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
                     & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &

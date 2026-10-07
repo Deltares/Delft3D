@@ -9,11 +9,12 @@ import Delft3D.template.*
 
 object ValidationDocumentMatrix : BuildType({
     templates(
-        TemplateDownloadFromS3,
+        TemplateDownloadFromDVC,
         TemplateValidationDocumentation
     )
 
-    name = "Validation document (Latex/PDF)"
+    name = "Validation document"
+    description = "Generate validation PDF reports."
 
     val engineOptions = listOf(
         "dflowfm:e02_dflowfm",

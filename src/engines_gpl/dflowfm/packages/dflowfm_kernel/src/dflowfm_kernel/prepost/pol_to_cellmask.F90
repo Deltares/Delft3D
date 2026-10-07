@@ -30,7 +30,7 @@
 !> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
    use precision, only: dp
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+   use m_cellmask_from_polygon_set, only: t_polygon_set
 
    implicit none
 
@@ -41,16 +41,18 @@ module m_pol_to_cellmask
 contains
 
    !> Create a cellmask from a set of x,y coordinates and a set of polygon points. Any  point inside the polygon is masked as 1.
-   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points) result(mask)
+   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points, enable_binning) result(mask)
       use m_alloc, only: realloc
 
       integer, intent(in) :: polygon_points !< Number of polygon points
       integer, intent(in) :: num_netcells !< Number of points to mask
-      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
+      real(kind=dp), dimension(polygon_points), intent(in) :: x_poly, y_poly, z_poly !< Polygon coordinate arrays
       real(kind=dp), intent(in), dimension(:) :: x_points, y_points !< Point coordinates to mask
+      logical, intent(in) :: enable_binning !< Whether to use latitude bins for large polygon sets.
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
 
       integer :: k
+      type(t_polygon_set) :: polygon_cache
 
       if (polygon_points == 0) then
          return
@@ -58,16 +60,14 @@ contains
 
       call realloc(mask, num_netcells, keepexisting=.false., fill=0)
 
-      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
+      polygon_cache = t_polygon_set(x_poly, y_poly, z_poly, enable_binning)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, num_netcells
-         mask(k) = cellmask_from_polygon_set(x_points(k), y_points(k))
+         mask(k) = merge(1, 0, polygon_cache%is_masked(x_points(k), y_points(k)))
       end do
       !$OMP END PARALLEL DO
-
-      call cellmask_from_polygon_set_cleanup()
 
    end function pol_to_cellmask
 
@@ -117,11 +117,12 @@ contains
       allocate (mask(ndxi), source=0)
 
       if (ndx2d > 0) then
-         mask(1:ndx2d) = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump))
+         mask(1:ndx2d) = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump), enable_binning=.false.)
       end if
 
       if (ndx1d > 0) then
-         mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), yz(ndx2d + 1:ndxi))
+         mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), &
+                                                yz(ndx2d + 1:ndxi), enable_binning=.false.)
       end if
 
       call delpol()

@@ -1,13 +1,3 @@
-module m_tranb5
-   implicit none
-
-contains
-
-   subroutine tranb5(u, v, d50, d90, chezy, &
-                   & h, hrms, tp, dir, npar, &
-                   & par, dzdx, dzdy, vonkar, ws, &
-                   & poros, sbotx, sboty, ssusx, ssusy, &
-                   & cesus)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -34,19 +24,30 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tranb5
+   use m_tranb5_wave, only: wave
+   use m_termgy, only: termgy
+   use m_termfy, only: termfy
+   use m_fgyint, only: fgyint
+   use m_bailtr, only: bailtr
+   implicit none
+   private
+   public tranb5
+
+contains
+
+   subroutine tranb5(u, v, d50, d90, chezy, &
+                   & h, hrms, tp, dir, npar, &
+                   & par, dzdx, dzdy, vonkar, ws, &
+                   & poros, sbotx, sboty, ssusx, ssusy, &
+                   & cesus)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! bijker with wave effect
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use mathconsts
-      !
-      implicit none
 !
 ! Arguments
 !
@@ -113,9 +114,6 @@ contains
       real(fp) :: w ! flow velocity in z
       real(fp) :: z
       real(fp) :: zfact
-      real(fp), external :: fgyint
-      real(hp), external :: termfy
-      real(hp), external :: termgy
       real(fp) :: epssl
       real(fp) :: faca
       real(fp) :: facu

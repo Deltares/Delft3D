@@ -65,7 +65,7 @@ contains
       ktop0 = ktop
       vol1 = 0.0_dp
 
-      if (Layertype == LAYTP_SIGMA) then ! sigma-layers
+      if (layertype == LAYTP_SIGMA) then ! sigma-layers
          do n = 1, ndx
             kb = kbot(n)
 
@@ -84,7 +84,7 @@ contains
          end do
          return
 
-      else if (Layertype == LAYTP_Z) then ! z- or z-sigma-layers
+      else if (layertype == LAYTP_Z) then ! z- or z-sigma-layers
          do n = 1, ndx
             kb = kbot(n)
 
@@ -133,20 +133,20 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
+      else if (layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
          do n = 1, ndx
             kb = kbot(n)
 
             Ldn = laydefnr(n)
             if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
+               if (laytyp(Ldn) == LAYTP_SIGMA) then ! sigma
                   h0 = s1(n) - zws(kb - 1)
                   do k = 1, kmxn(n) - 1
                      zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
                   end do
                   ktop(n) = kb + kmxn(n) - 1
                   zws(ktop(n)) = s1(n)
-               else if (Laytyp(Ldn) == 2) then ! z
+               else if (laytyp(Ldn) == LAYTP_Z) then ! z
 
                   ktx = kb + kmxn(n) - 1
                   call getzlayerindices(n, nlayb, nrlay)
@@ -168,7 +168,7 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
+      else if (layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
          dkx = 0.5_dp
          do n = 1, ndx
             drhok = 0.01_dp
@@ -302,7 +302,7 @@ contains
          return
       end if
 
-      if (Layertype == LAYTP_SIGMA) then ! sigma only
+      if (layertype == LAYTP_SIGMA) then ! sigma only
          do i_bnd = 1, nbndz
             n = kbndz(1, i_bnd)
             if (n <= 0 .or. n > ndx) then
@@ -327,7 +327,7 @@ contains
          end do
          return ! Early exit - no link updates needed for sigma layers, volumes already calculated
 
-      else if (Layertype == LAYTP_Z) then ! z or z-sigma
+      else if (layertype == LAYTP_Z) then ! z or z-sigma
          do i_bnd = 1, nbndz
             n = kbndz(1, i_bnd)
             if (n <= 0 .or. n > ndx) then
@@ -387,7 +387,7 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
+      else if (layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
          do i_bnd = 1, nbndz
             n = kbndz(1, i_bnd)
             if (n <= 0 .or. n > ndx) then
@@ -399,14 +399,14 @@ contains
 
             Ldn = laydefnr(n)
             if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
+               if (laytyp(Ldn) == LAYTP_SIGMA) then ! sigma
                   h0 = s0(n) - zws(kb - 1)
                   do k = 1, kmxn(n) - 1
                      zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
                   end do
                   ktop(n) = kb + kmxn(n) - 1
                   zws(ktop(n)) = s0(n)
-               else if (Laytyp(Ldn) == 2) then ! z
+               else if (laytyp(Ldn) == LAYTP_Z) then ! z
                   ktx = kb + kmxn(n) - 1
                   call getzlayerindices(n, nlayb, nrlay)
                   do k = kb, ktx
@@ -432,7 +432,7 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
+      else if (layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
          ! Simplified version for boundary nodes only - skip the global smoothing,
          ! because looping over all nodes would be too expensive for updating boundary nodes only.
          numbd = 0.5_dp * kmx

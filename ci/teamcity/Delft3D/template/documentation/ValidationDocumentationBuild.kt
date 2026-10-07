@@ -8,19 +8,14 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 object TemplateValidationDocumentation : Template({
     name = "Generate validation report"
-    description = "This build configuration generates validation reports for the Delft3D engine."
+    description = "Generate validation reports for a Delft3D engine."
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
-        %engine_dir%/*.log=>logging
-        %engine_dir%/doc/validation/*.pdf=>pdf
-        %engine_dir%/doc/validation/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/doc/validation/*.pdf=>pdf
+        test/deltares_testbench/data/cases/%engine_dir%/doc/validation/*.log=>logging
     """.trimIndent()
-
-    params {
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
-    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -38,7 +33,7 @@ object TemplateValidationDocumentation : Template({
             command = module {
                 module = "ci_tools.documentation.generate_validation_report"
                 scriptArguments = """
-                    --tex-file %engine_dir%/doc/validation/%engine_name%_validation_doc.tex
+                    --tex-file test/deltares_testbench/data/cases/%engine_dir%/doc/validation/%engine_name%_validation_doc.tex
                     --teamcity
                 """.trimIndent()
             }

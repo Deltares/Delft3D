@@ -54,6 +54,7 @@ module m_longculverts
    public LongCulvertsToProfs
    public setFrictionForLongculverts
    public reduceFlowAreaAtLongculverts
+   public remove_longculvert_flowlinks
    public get_valve_relative_opening_c_loc
    public find1d2dculvertlinks
    public initialize_Long_Culverts
@@ -63,8 +64,52 @@ module m_longculverts
    interface realloc
       module procedure reallocLongCulverts
    end interface
-
+   
 contains
+
+   !> Removes flow links administered by long culverts from a link list.
+   !! The list is compacted in place, preserving the orientation of retained links.
+   pure subroutine remove_longculvert_flowlinks(numlinks, links)
+      integer, intent(inout) :: numlinks !< Number of flow links in links.
+      integer, dimension(:), intent(inout) :: links !< Flow links to be filtered.
+
+      integer, allocatable :: longculvert_links(:)
+      integer, dimension(size(links)) :: filtered_links
+      integer :: i, j, k, num_longculvert_links
+
+      num_longculvert_links = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            num_longculvert_links = num_longculvert_links + count(longculverts(i)%flowlinks /= 0)
+         end if
+      end do
+
+      allocate (longculvert_links(num_longculvert_links))
+      k = 0
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%flowlinks)) then
+            do j = 1, size(longculverts(i)%flowlinks)
+               if (longculverts(i)%flowlinks(j) /= 0) then
+                  k = k + 1
+                  longculvert_links(k) = abs(longculverts(i)%flowlinks(j))
+               end if
+            end do
+         end if
+      end do
+
+      k = 0
+      do i = 1, numlinks
+         if (links(i) == 0 .or. .not. any(longculvert_links == abs(links(i)))) then
+            k = k + 1
+            filtered_links(k) = links(i)
+         end if
+      end do
+
+      if (k > 0) then
+         links(1:k) = filtered_links(1:k)
+      end if
+      numlinks = k
+   end subroutine remove_longculvert_flowlinks
 
    !> Sets ALL (scalar) variables in this module to their default values.
    !! For a reinit prior to flow computation, call reset_longculverts() instead.
@@ -415,6 +460,11 @@ contains
                longculvertindex = longculvertindex + 1
                if (longculvertindex == i) then
                   ncoords = size(longculverts(i)%xcoords)
+                  if (ncoords == 0) then
+                     write (msgbuf, '(A,I0)') 'Error: No coordinates found for structure #', j
+                     call err_flush()
+                     exit
+                  end if
                   call tree_remove_child_by_name(current, 'xCoordinates', ierror)
                   if (ierror /= 0) then
                      write (msgbuf, '(A,I0)') 'Error Removing xCoordinates from structure #', j
@@ -427,6 +477,8 @@ contains
                   end if
                   call prop_set(current, '', 'xCoordinates', xcoords(coordindex:coordindex + ncoords - 1), '')
                   call prop_set(current, '', 'yCoordinates', ycoords(coordindex:coordindex + ncoords - 1), '')
+                  longculverts(i)%xcoords = xcoords(coordindex:coordindex + ncoords - 1)
+                  longculverts(i)%ycoords = ycoords(coordindex:coordindex + ncoords - 1)
                   coordindex = coordindex + ncoords + 1
                   exit
                end if
@@ -779,6 +831,13 @@ contains
          end do
       end if
 
+      ! The cache and partition paths can retain flow links while changing their
+      ! local orientation. Therefore this mapping must also be refreshed when
+      ! skiplinks is true.
+      do ilongc = 1, nlongculverts
+         call set_longculvert_flow_direction(ilongc)
+      end do
+
       if (newculverts) then
          do ilongc = 1, nlongculverts
             do i = 2, longculverts(ilongc)%numlinks - 1
@@ -849,6 +908,69 @@ contains
 
    end subroutine longculvertsToProfs
 
+   !> Reconstruct the flow link orientation based on input polyline
+   subroutine set_longculvert_flow_direction(ilongc)
+      use m_flowparameters, only: EPS10
+      use m_flowgeom, only: ln
+      use network_data, only: xzw, yzw
+      use precision_basics, only: equal
+
+      integer, intent(in) :: ilongc
+      integer :: L_flow, flownode_1, flownode_2, coordinate_index
+      logical :: flownode_1_is_coordinate_1, flownode_1_is_coordinate_2
+      logical :: flownode_2_is_coordinate_1, flownode_2_is_coordinate_2
+
+      if (.not. newculverts) then ! old long culverts cannot use coordinate matching, but also don't need direction detection
+         return
+      end if
+
+      ! todo: remove defensive guards and make sure our long culvert objcect is always in a valid state
+      if (longculverts(ilongc)%numlinks <= 0) then
+         return
+      end if
+      if (.not. allocated(longculverts(ilongc)%flowlinks) .or. &
+          .not. allocated(longculverts(ilongc)%xcoords) .or. .not. allocated(longculverts(ilongc)%ycoords)) then
+         return
+      end if
+      if (size(longculverts(ilongc)%flowlinks) < 1 .or. &
+          size(longculverts(ilongc)%xcoords) < 2 .or. size(longculverts(ilongc)%ycoords) < 2) then
+         return
+      end if
+
+      L_flow = abs(longculverts(ilongc)%flowlinks(1))
+      if (L_flow <= 0 .or. L_flow > size(ln, dim=2)) then
+         return
+      end if
+
+      flownode_1 = ln(1, L_flow)
+      flownode_2 = ln(2, L_flow)
+      if (flownode_1 <= 0 .or. flownode_2 <= 0) then
+         return
+      end if
+
+      do coordinate_index = 1, size(longculverts(ilongc)%xcoords) - 1
+         flownode_1_is_coordinate_1 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_1_is_coordinate_2 = equal(xzw(flownode_1), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_1), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
+         flownode_2_is_coordinate_1 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index), EPS10)
+         flownode_2_is_coordinate_2 = equal(xzw(flownode_2), longculverts(ilongc)%xcoords(coordinate_index + 1), EPS10) .and. &
+                                      equal(yzw(flownode_2), longculverts(ilongc)%ycoords(coordinate_index + 1), EPS10)
+
+         if (flownode_1_is_coordinate_1 .and. flownode_2_is_coordinate_2) then
+            longculverts(ilongc)%orientation = 1
+            return
+         else if (flownode_2_is_coordinate_1 .and. flownode_1_is_coordinate_2) then
+            longculverts(ilongc)%orientation = -1
+            return
+         end if
+      end do
+
+      call mess(LEVEL_ERROR, 'Cannot match any coordinate pair of long culvert '//trim(longculverts(ilongc)%id)// &
+                ' to the endpoints of its first local flow link;')
+   end subroutine set_longculvert_flow_direction
+
    !> Fill frcu and icrctyp for the corresponding flow link numbers of the long culverts
    subroutine setFrictionForLongculverts()
       use m_flow
@@ -885,8 +1007,11 @@ contains
          if (longculverts(i)%numlinks > 0) then
             L = abs(longculverts(i)%flowlinks(1))
             if (L > 0) then
+               longculverts(i)%valve_relative_opening = min(longculverts(i)%valve_relative_opening, 1.0_dp)
+               longculverts(i)%valve_relative_opening = max(longculverts(i)%valve_relative_opening, 0.0_dp)
                au(L) = longculverts(i)%valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
+               L_dir = longculverts(i)%orientation * L_dir
                allowed_flowdir = longculverts(i)%allowed_flowdir
                if (allowed_flowdir == FLOWDIR_NONE &
                    .or. L_dir < 0 .and. allowed_flowdir == FLOWDIR_POSITIVE &
@@ -1376,18 +1501,21 @@ contains
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
       use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
+      use m_1d_structures, only: FLOWDIR_POSITIVE
 
       implicit none
 
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net, direction_target
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
 
       longculvert%flowlinks = 0
+      longculvert%orientation = 1
+      direction_target = 0
       jafounds = 0 ! Found the starting node or not
       jafounde = 0 ! Found the ending node or not
       is = 1 ! the starting node of the polyline
@@ -1405,7 +1533,7 @@ contains
          return
       end if
       !Find the last 1D node of the branch
-      if (branch_idx > 0 .and. network%BRS%size >= i) then
+      if (branch_idx > 0 .and. network%BRS%size >= branch_idx) then
          inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
          inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
       else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
@@ -1433,6 +1561,7 @@ contains
                linkabs = abs(nd(nodenum)%ln(i))
                if (kcu(abs(linkabs)) == 5) then
                   longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
+                  direction_target = longculvert%flownode_up
                   ! For the later search
                   jafounds = 1
                end if
@@ -1444,6 +1573,7 @@ contains
                call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
                if (ierror == 0 .and. jnode(1) > 0) then
                   nodenum = jnode(1) ! For the later search
+                  direction_target = nodenum
                   is = j ! this will be the starting node of the long culvert in current domain
                   jafounds = 1
                   exit
@@ -1477,7 +1607,7 @@ contains
 
       if (jafounds == 1 .and. jafounde == 1) then
          if (contact_idx > 0) then
-            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+            longculvert%flowlinks(1) = lne2ln(contactnetlinks(contact_idx))
          else
             do i = 1, nd(nodenum)%lnx
                linknum = nd(nodenum)%ln(i)
@@ -1507,6 +1637,15 @@ contains
                   end do
                end if
             end do
+         end if
+      end if
+
+      ! Positive long-culvert flow follows the input polyline. The first flow
+      ! link has positive direction from ln(1, :) to ln(2, :).
+      if (longculvert%flowlinks(1) /= 0) then
+         linkabs = abs(longculvert%flowlinks(1))
+         if (direction_target == ln(1, linkabs)) then
+            longculvert%orientation = -1
          end if
       end if
    end subroutine

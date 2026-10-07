@@ -161,7 +161,9 @@ contains
                   ! if you know why this is the case it would be nice to change the behaviour so that cellmask only has nump entries
                   ! and get rid of local_cell_mask
                   call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
-                  local_cell_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  ! Enclosures cover most of the model, so bounding-box rejection cannot avoid their expensive polygon scans.
+                  local_cell_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw, &
+                                                    enable_binning=jinside == -1)
                   cellmask(1:nump) = local_cell_mask(1:nump)
                   call delpol()
                   call restorepol()

@@ -324,8 +324,10 @@ contains
       else
          fu(1) = 0.0_dp
          ru(1) = 0.0_dp
+         au(1) = 0.0_dp
          fu(2) = 0.0_dp
          ru(2) = 0.0_dp
+         au(2) = 0.0_dp
       end if
 
       if (gatefraction < 1.0_dp - GATE_FRACTION_EPS) then
@@ -343,6 +345,8 @@ contains
       else
          fu(3) = 0.0_dp
          ru(3) = 0.0_dp
+         au(3) = 0.0_dp
+         
       end if
 
       auL = (au(1) + au(2)) + au(3)

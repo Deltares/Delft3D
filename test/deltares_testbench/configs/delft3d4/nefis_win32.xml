@@ -7,7 +7,7 @@
                 Basic Windows configuration file: tb3_cfg_win32_hp.xml
                 From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
                 From hp to parallel: Use mpi as shell (in related program)
-                                     Overrule maxruntime when needed
+                                     
                                      Only cases that run in parallel mode
                 -->
     <config>
@@ -270,7 +270,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_01_default">
             <programs>
@@ -282,7 +282,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_02_default">
             <programs>
@@ -294,7 +294,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_03_default">
             <programs>
@@ -306,7 +306,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_04_default">
             <programs>
@@ -318,7 +318,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_05_default">
             <programs>
@@ -330,7 +330,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_06_default">
             <programs>
@@ -342,7 +342,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_07_default">
             <programs>
@@ -354,7 +354,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_08_default">
             <programs>
@@ -366,7 +366,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_09_default">
             <programs>
@@ -378,7 +378,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_10_default">
             <programs>
@@ -390,7 +390,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_11_default">
             <programs>
@@ -402,7 +402,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_12_default">
             <programs>
@@ -414,7 +414,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_13_default">
             <programs>
@@ -426,7 +426,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_14_default">
             <programs>
@@ -438,7 +438,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_15_default">
             <programs>
@@ -450,7 +450,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_16_default">
             <programs>
@@ -462,7 +462,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_17_default">
             <programs>
@@ -474,7 +474,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_18_default">
             <programs>
@@ -486,7 +486,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_19_default">
             <programs>
@@ -498,7 +498,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_20_default">
             <programs>
@@ -510,7 +510,7 @@
             <location ref="reference_results" type="reference">
                 <from>win32/e80_nefis/f01</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
 
@@ -534,7 +534,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_01" ref="test_01_default">
             <path>c01</path>
@@ -551,7 +551,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_02" ref="test_02_default">
             <path>c02</path>
@@ -568,7 +568,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_03" ref="test_03_default">
             <path>c03</path>
@@ -585,7 +585,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_04" ref="test_04_default">
             <path>c04</path>
@@ -602,7 +602,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_05" ref="test_05_default">
             <path>c05</path>
@@ -619,7 +619,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_06" ref="test_06_default">
             <path>c06</path>
@@ -636,7 +636,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_07" ref="test_07_default">
             <path>c07</path>
@@ -653,7 +653,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_08" ref="test_08_default">
             <path>c08</path>
@@ -670,7 +670,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_09" ref="test_09_default">
             <path>c09</path>
@@ -687,7 +687,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_10" ref="test_10_default">
             <path>c10</path>
@@ -704,7 +704,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_11" ref="test_11_default">
             <path>c11</path>
@@ -721,7 +721,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_12" ref="test_12_default">
             <path>c12</path>
@@ -738,7 +738,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_14" ref="test_14_default">
             <path>c14</path>
@@ -755,7 +755,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_15" ref="test_15_default">
             <path>c15</path>
@@ -772,7 +772,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_16" ref="test_16_default">
             <path>c16</path>
@@ -789,7 +789,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_17" ref="test_17_default">
             <path>c17</path>
@@ -806,7 +806,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_18" ref="test_18_default">
             <path>c18</path>
@@ -823,7 +823,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_19" ref="test_19_default">
             <path>c19</path>
@@ -840,7 +840,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="test_20" ref="test_20_default">
             <path>c20</path>
@@ -857,7 +857,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </testCases>
 </deltaresTestbench_v3>

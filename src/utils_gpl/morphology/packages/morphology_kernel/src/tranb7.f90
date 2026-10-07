@@ -1,10 +1,3 @@
-module m_tranb7
-   implicit none
-
-contains
-
-   subroutine tranb7(utot, d50, d90, h, npar, &
-                   & par, sbot, ssus, vonkar, mudfrac)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,19 +24,24 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tranb7
+   implicit none
+   private
+   public tranb7
+
+contains
+
+   subroutine tranb7(utot, d50, d90, h, npar, &
+                   & par, sbot, ssus, vonkar, mudfrac)
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
 ! van rijn (1984)
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use sed_support_routines, only: shld
-      implicit none
 !
 ! Arguments
 !

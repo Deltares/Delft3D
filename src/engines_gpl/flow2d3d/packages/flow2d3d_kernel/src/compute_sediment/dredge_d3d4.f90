@@ -79,6 +79,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     integer                                  :: istat
     integer                                  :: ndomains ! number of DD domains or MPI partitions
     real(fp)                                 :: hdtmor
+    real(hp)                                 :: morft   
 
 ! Struiksma Hirano merge
     real(fp), dimension(:)  , allocatable  :: dunelength  
@@ -129,11 +130,14 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
        sbot      = 0.0_fp !Setting the transport to zero sets the flux to zero.
        dunelength = 1.0e10_fp !A very large dune length causes the flux to be negligible. 
        !
-       hdtmor    = hdt*morfac
+       hdtmor    = 0.0_fp
+       morft = -999.0_hp 
        if (gdmorpar%moroutput%morstats) then
            call morstats(gderosed, gdmorpar, dbodsd, nmlb, nmub, lsedtot)
        endif   
-       if (updmorlyr(gdmorlyr, dbodsd, dz_dummy, dunelength, sbot, hdtmor, messages) /= 0) then
+       ! update morlyr but do not perform any time dependent development (dt = 0.0_fp)
+       ! such developments only occur during call from bott3d
+       if (updmorlyr(gdmorlyr, dbodsd, dz_dummy, dunelength, sbot, hdtmor, morft, messages) /= 0) then
            call writemessages(messages, lundia)
            error = .true.
        endif

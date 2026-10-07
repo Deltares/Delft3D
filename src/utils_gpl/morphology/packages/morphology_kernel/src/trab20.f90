@@ -27,6 +27,8 @@
 
 module m_trab20
    implicit none
+   private
+   public trab20
 
 contains
 
@@ -39,8 +41,6 @@ contains
       use precision
       use mathconsts
       use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry, calculate_urms
-      !
-      implicit none
 !
 ! Arguments
 !

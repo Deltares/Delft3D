@@ -9,11 +9,12 @@ import Delft3D.template.*
 
 object FunctionalityDocumentMatrix : BuildType({
     templates(
-        TemplateDownloadFromS3, 
+        TemplateDownloadFromDVC,
         TemplateFunctionalityDocumentation
     )
 
-    name = "Functionality document (Latex/PDF)"
+    name = "Functionality document"
+    description = "Generate functionality PDF reports."
 
     val engineOptions = listOf(
         "dflowfm:e02_dflowfm",

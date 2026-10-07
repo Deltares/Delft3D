@@ -51,7 +51,8 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
+                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -84,15 +85,19 @@ contains
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
 
-      if (iturbulencemodel <= 0 .or. kmx == 0) then
+      if (iturbulencemodel <= TURBULENCE_MODEL_NONE .or. kmx == 0) then
          return
       end if
 
       if (iadvec == 0) then
          javau = 0
       end if
+      
+      womegu = 0.0_dp
 
-      if (iturbulencemodel == 1) then ! 1=constant
+      select case (iturbulencemodel)
+
+      case (TURBULENCE_MODEL_CONSTANT)
 
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(LL,Lb,Lt,kxL,dzu,L,k,hdzb,z00,ac1,ac2,n1,n2,k1,k2,womegu,cfuhi3D)
@@ -114,7 +119,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
+               if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -150,7 +155,7 @@ contains
 
          !$OMP END PARALLEL DO
 
-      else if (iturbulencemodel == 2) then ! 2=algebraic , just testing 1D flow
+      case (TURBULENCE_MODEL_ALGEBRAIC) ! just testing 1D flow
 
          do LL = 1, lnx
 
@@ -169,7 +174,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
+               if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -213,7 +218,7 @@ contains
 
          end do
 
-      else if (iturbulencemodel >= 3) then ! 3=k-epsilon, 4=k-tau
+      case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
 
          call calculate_drhodz(zws, drhodz)
 
@@ -319,12 +324,12 @@ contains
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
 
                ! Calculate turkin source from wave dissipation: preparation
-               if (jawave > NO_WAVES) then
+               if (jawave /= NO_WAVES) then
                   if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                   end if
 
-                  if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                  if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                      k1 = ln(1, LL)
                      k2 = ln(2, LL)
                      ac1 = acl(LL)
@@ -390,7 +395,7 @@ contains
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
-                     if (iturbulencemodel == 3) then
+                     if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                         if (bruva(k) > 0.0_dp) then
                            dk(k) = dk(k) + buoflu(k)
                            bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
@@ -399,7 +404,7 @@ contains
                         elseif (bruva(k) < 0.0_dp) then
                            dk(k) = dk(k) - buoflu(k)
                         end if
-                     else if (iturbulencemodel == 4) then
+                     else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                         if (bruva(k) > 0.0_dp) then
                            bk(k) = bk(k) + buoflu(k) / turkin0(L)
                         else if (bruva(k) < 0.0_dp) then
@@ -420,7 +425,7 @@ contains
                   ! Addition of production and of dissipation to matrix ;
                   ! observe implicit treatment by Newton linearization.
 
-                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+                  if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
                      dijdij(k) = ((u1(Lu) - ustokes(Lu) - u1(L) + ustokes(L))**2 + (v(Lu) - vstokes(Lu) - v(L) + vstokes(L))**2) / dzw(k)**2
                   else
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
@@ -433,11 +438,11 @@ contains
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
 
                   !
-                  if (iturbulencemodel == 3) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                      sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
-                  else if (iturbulencemodel == 4) then
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                      sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
@@ -447,14 +452,15 @@ contains
 
                end do ! Lb, Lt-1
 
-               if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+               if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                   ! check if first layer is thicker than fwavpendep*wave height
                   ! Then use JvK solution
                   if (hu(LL) - hu(Lt - 1) >= fwavpendep * hrmsLL) then
-                     dk(kxL - 1) = dk(kxL - 1) + pkwmag * fwavpendep * hrmsLL / (hu(LL) - hu(Lt - 1)) ! m2/s3
+                     pkwav(kxL - 1) = 0.5_dp * pkwmag * fwavpendep * hrmsLL / (hu(LL) - hu(Lt - 1))
+                     dk(kxL - 1) = dk(kxL - 1) + pkwav(kxL - 1) ! m2/s3
                   else
                      ! distribute over layers
-                     do L = Lt - 1, Lb
+                     do L = Lt - 1, Lb, -1
                         if (hu(L + 1) < wdep) then
                            exit
                         end if
@@ -587,17 +593,17 @@ contains
                               tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
                               teps = 0.5_dp * (tureps0(L) + tureps0(L))
                               tkin = 0.5_dp * (turkin0(L) + turkin0(L))
-                              if (iturbulencemodel == 3) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  tauinf = c2e * teps / tkin !
-                              else if (iturbulencemodel == 4) then
+                              else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  tauinf = c2e / teps
                               end if
                               if (tauinf > tauinv) then ! turb damping not governed by plants => free flow damping only
                                  tauinv = 0.0_dp ! tauinv = max(tauinv, tauinf)
                               end if
-                              if (iturbulencemodel == 3) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  wke = wk * tauinv
-                              else if (iturbulencemodel == 4) then
+                              else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  wke = wk * (1.0_dp - tureps1(L) * tauinv) * tureps1(L) / turkin1(L)
                               end if
                               if (L < Lt) then
@@ -660,7 +666,7 @@ contains
                              + difd * (tureps0(L - 1) - tureps0(L)) * tetm1
                   end if
 
-                  if (iturbulencemodel == 3) then ! k-eps
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
 
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
@@ -676,7 +682,7 @@ contains
                      sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
                      !
                      ! Add wave dissipation production term
-                     if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                     if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
                      end if
 
@@ -689,7 +695,7 @@ contains
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
 
-                  else if (iturbulencemodel == 4) then ! k-tau
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
 
                      if (bruva(k) < 0.0_dp) then ! instable
                         bk(k) = bk(k) + c3t_unstable * bruva(k) * tureps0(L)
@@ -723,13 +729,13 @@ contains
 
                end do
 
-               if (iturbulencemodel == 3) then ! Boundary conditions EPSILON:
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then ! Boundary conditions
 
                   ak(kxL) = -1.0_dp ! Flux at the free surface:
                   bk(kxL) = 1.0_dp
                   ck(kxL) = 0.0_dp
                   dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-                  if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
+                  if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
                      dk(kxL) = dk(kxL) + dzu(Lt - Lb + 1) * pkwmag / (fwavpendep * hrmsLL)
                   end if
 
@@ -742,7 +748,7 @@ contains
                      dk(0) = 0.0_dp
                   end if
 
-               else if (iturbulencemodel == 4) then ! Boundary conditions tau:
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then ! Boundary conditions
 
                   ak(kxL) = 0.0_dp ! at the free surface:
                   bk(kxL) = 1.0_dp
@@ -841,8 +847,8 @@ contains
                      end do
                      epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
                      epssur = tureps1(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-                     if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                        epssur = epssur - dzu(Lt - Lb + 1) * fwavpendep * pkwmag / hrmsLL
+                     if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                        epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if
                      epsbot = max(epsbot, eps_min)
                      epssur = max(epssur, eps_min)
@@ -862,13 +868,15 @@ contains
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
-               if (iturbulencemodel == 3) then ! k-eps
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * turkin1(Lb0:Lt) / tureps1(Lb0:Lt))
-               else if (iturbulencemodel == 4) then ! k-tau
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
                end if
 
-               vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+               if (jawave == NO_WAVES .or. jawavebreakerturbulence == WAVE_BREAKER_TURB_OFF) then
+                  vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+               end if
                vicwwu(Lb0) = min(vicwwu(Lb0), vicwwu(Lb) * Eddyviscositybedfacmax)
 
                call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
@@ -884,7 +892,7 @@ contains
          turkin0 = turkin1
          tureps0 = tureps1
 
-      end if
+      end select
 
       call links_to_centers(vicwws, vicwwu)
       if (jarichardsononoutput > 0) then

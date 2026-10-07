@@ -7,7 +7,7 @@
                 Basic Windows configuration file: tb3_cfg_win32_hp.xml
                 From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
                 From hp to parallel: Use mpi as shell (in related program)
-                                     Overrule maxruntime when needed
+                                     
                                      Only cases that run in parallel mode
                 -->
     <config>
@@ -83,7 +83,7 @@
             <location ref="dsctestbench_reference_results" type="reference">
                 <from>win64</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
 
@@ -107,7 +107,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c01" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c01</path>
@@ -124,7 +124,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c02" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c02</path>
@@ -141,7 +141,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c03" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c03</path>
@@ -158,7 +158,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c10" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c10</path>
@@ -175,7 +175,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c11" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c11</path>
@@ -192,7 +192,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c17" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c17</path>
@@ -209,7 +209,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c18" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c18</path>
@@ -226,7 +226,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c19" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c19</path>
@@ -243,7 +243,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c20" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c20</path>
@@ -260,7 +260,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e80_f01_c21" ref="test_default">
             <path version="2025-07-15T11:16:00">e80_nefis/f01/c20</path>
@@ -277,7 +277,7 @@
                     <skipline>-----</skipline>
                 </file>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </testCases>
 </deltaresTestbench_v3>

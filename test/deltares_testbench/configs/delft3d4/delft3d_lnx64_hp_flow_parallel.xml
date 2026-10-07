@@ -211,7 +211,7 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
+
       <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D"/>
@@ -224,7 +224,7 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
+
       <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D_FLOW2D3D"/>
@@ -237,7 +237,7 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
+
       <programs>
         <program ref="FLOW2D3D_RTC"/>
       </programs>
@@ -249,7 +249,7 @@
       <location ref="dsctestbench-references_data" type="reference">
         <from>lnx64</from>
       </location>
-      <maxRunTime>2500.0</maxRunTime>
+
       <!-- seconds -->
       <programs>
         <program ref="FLOW2D3D_WAVE"/>

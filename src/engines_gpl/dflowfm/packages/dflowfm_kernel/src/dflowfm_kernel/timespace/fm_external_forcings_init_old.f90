@@ -38,22 +38,23 @@ contains
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
-      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
-      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
+      use m_source_sink, only: source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr, md_mbafile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+      use m_mass_balance_area, only: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -67,6 +68,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -80,7 +82,7 @@ contains
 
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
       integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
@@ -95,6 +97,7 @@ contains
       real(kind=dp), external :: ran0
       character(len=256) :: rec
       integer, allocatable :: mask(:)
+      integer, allocatable :: selected_nodes(:)
       real(kind=dp), allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
 
@@ -109,6 +112,10 @@ contains
       ydum = 1.0_dp
       kdum = 1
 
+      if (len_trim(md_mbafile) == 0) then
+         call initialize_mass_balance_area_arrays()
+      end if
+
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
 
@@ -117,6 +124,7 @@ contains
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
+            qid = quantity_name_config_file_to_internal_name(qid)
             call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
@@ -473,12 +481,12 @@ contains
 
             else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename)
+               call setinitialverticalprofilez(tem1, ndkx, filename)
                success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename)
+               call setinitialverticalprofilez(sa1, ndkx, filename)
                success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
@@ -539,7 +547,7 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename)
+                  call setinitialverticalprofilez(tt, ndkx, filename)
                   success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
@@ -1150,6 +1158,7 @@ contains
             else if (jaoldstr > 0 .and. qid == 'generalstructure') then
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
+               call remove_longculvert_flowlinks(numgen, kegen(ncgen + 1:numl))
                success = .true.
                write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
                call msg_flush()
@@ -1207,7 +1216,7 @@ contains
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
                ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
+               call source_sinks%add_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
@@ -1235,9 +1244,6 @@ contains
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
-                  if (.not. allocated(mbaname)) then
-                     allocate (mbaname(0))
-                  end if
                   imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
@@ -1245,26 +1251,28 @@ contains
                      imba = nomba
                      call realloc(mbaname, nomba, keepExisting=.true., fill=mbainputname)
                   end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., Fill=dmiss)
 
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  allocate (selected_nodes(ndxi))
+                  call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                                  LOCTP_POLYGON_FILE, filename)
 
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (mbadef(kk) /= -999) then
-                              ! warn that segment nn at xx, yy is nog mon area imba
-                           end if
-                           mbadef(kk) = imba
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mbadef(k) = imba
-                           end do
-                        end if
+                  do kk = 1, nselected
+                     node = selected_nodes(kk)
+                     if (mbadef(node) /= -999) then
+                        ! warn that segment nn at xx, yy is nog mon area imba
+                     end if
+
+                     mbadef(node) = imba
+                     call getkbotktop(node, kb, kt)
+
+                     do k = kb, kb + kmxn(node) - 1
+                        mbadef(k) = imba
                      end do
-                  end if
-                  deallocate (viuh)
+                  end do
+
+                  deallocate (selected_nodes)
+                  success = .true.
+
                else
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
@@ -1458,6 +1466,10 @@ contains
 
       end do
       call timstop(handle_extra(50)) ! extforcefile old
+
+      if (len_trim(md_mbafile) == 0) then
+         call finalize_mass_balance_area_arrays()
+      end if
 
       call init_misc(iresult)
 

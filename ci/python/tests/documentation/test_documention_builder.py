@@ -1,10 +1,11 @@
 import logging
 from pathlib import Path
 
+import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from ci_tools.documentation.documentation_builder import DocumentationBuilder, Launcher
+from ci_tools.documentation.documentation_builder import DocumentationBuilder, Launcher, ShellError
 
 
 class TestDocumentationBuilder:
@@ -52,17 +53,17 @@ class TestDocumentationBuilder:
         assert bibtex_call.args[0] == "bibtex documentation.aux"
         assert makeindex_call.args[0] == "makeindex documentation.idx"
 
-    def test_build__command_fails__catch_error(self, mocker: MockerFixture) -> None:
+    def test_build__command_fails__reports_and_raises(self, mocker: MockerFixture) -> None:
         # Arrange
         launcher = mocker.Mock(spec=Launcher)
         logger = mocker.Mock(spec=logging.Logger)
         launcher.shell.side_effect = [0, 1]  # First command succeeds, the next one fails.
         doc_builder = DocumentationBuilder(launcher=launcher, logger=logger)
 
-        # Act
-        doc_builder.build(Path("path/to/my_doc.tex"))
+        # Act / Assert: TeamCity test is marked failed, exception propagates for batch exit code.
+        with pytest.raises(ShellError):
+            doc_builder.build(Path("path/to/my_doc.tex"))
 
-        # Assert
         assert len(launcher.shell.call_args_list) == 2
         logger.exception.assert_called_once()
 
@@ -76,7 +77,8 @@ class TestDocumentationBuilder:
         fs.create_file(path.parent / "pdflatex-stdout-1.log")
 
         # Act
-        doc_builder.build(path)
+        with pytest.raises(ShellError):
+            doc_builder.build(path)
 
         # Assert
         assert launcher.shell.call_args.kwargs["stdout_file"] == path.parent / "pdflatex-stdout-2.log"

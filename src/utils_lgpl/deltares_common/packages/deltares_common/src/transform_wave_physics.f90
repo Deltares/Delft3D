@@ -29,9 +29,32 @@
 module m_transform_wave_physics
    implicit none
 
-   public :: transform_wave_physics_hp, transform_wave_physics_sp
+   public :: transform_wave_physics_hp, transform_wave_physics_sp, transform_wave_period_hp
 
 contains
+
+   !> Convert an input mean wave period to the peak-period representation used by D-Flow FM.
+   subroutine transform_wave_period_hp(period, m, n, gamma0, tp, ierr)
+      use precision, only: hp
+
+      integer, intent(in) :: m
+      integer, intent(in) :: n
+      real(hp), dimension(m*n), intent(in) :: period
+      real(hp), intent(in) :: gamma0
+      real(hp), dimension(m*n), intent(out) :: tp
+      integer, intent(out) :: ierr
+
+      real(hp) :: perfac
+
+      perfac = 1.0_hp
+      call jonswap_mean2peak_period_factor(gamma0, perfac, ierr)
+      if (ierr < 0) then
+         tp = 0.0_hp
+         return
+      end if
+
+      tp = period * perfac
+   end subroutine transform_wave_period_hp
 
    subroutine transform_wave_physics_hp(hs, dir, period, depth, &
                                      & fx, fy, mx, my, &
@@ -46,6 +69,7 @@ contains
       ! NONE
     !!--declarations----------------------------------------------------------------
       use mathconsts, only: sqrt2_hp, degrad_hp
+      use ieee_arithmetic, only: ieee_is_nan
       use precision
       implicit none
       !
@@ -109,6 +133,17 @@ contains
       !
       npnt = m * n
       do lcount = 1, npnt
+         if (ieee_is_nan(hs(lcount)) .or. ieee_is_nan(period(lcount))) then
+            hrms(lcount) = 0.0_hp
+            tp(lcount) = 0.0_hp
+            fx(lcount) = 0.0_hp
+            fy(lcount) = 0.0_hp
+            mx(lcount) = 0.0_hp
+            my(lcount) = 0.0_hp
+            wsbodyu(lcount) = 0.0_hp
+            wsbodyv(lcount) = 0.0_hp
+            cycle
+         end if
          hrm = hs(lcount) / sqrt2_hp
          dirh = dir(lcount)
          deph = depth(lcount)

@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 object TemplatePublishStatus : Template({
 
-    name = "Publish Status"
-    description = "Send build status to GitHub."
+    name = "Publish status"
+    description = "Publish build status to GitHub."
 
     features {
         if (DslContext.getParameter("enable_commit_status_publisher").lowercase() == "true") {

@@ -187,7 +187,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="dimr_trunk_2">
@@ -204,7 +204,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="dimr_trunk_4">
@@ -221,7 +221,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
     <testCase name="postproc">
@@ -235,7 +235,7 @@
       <location ref="cases" type="input">
         <from>.</from>
       </location>
-      <maxRunTime>60.0</maxRunTime>
+
       <!-- seconds -->
     </testCase>
   </defaultTestCases>

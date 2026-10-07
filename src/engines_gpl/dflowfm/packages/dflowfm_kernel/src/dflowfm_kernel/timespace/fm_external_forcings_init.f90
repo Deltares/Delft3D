@@ -34,6 +34,7 @@ submodule(fm_external_forcings) fm_external_forcings_init
    implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
+   real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
 
 contains
 
@@ -47,14 +48,19 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_flow, only: kmx
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, numlatsg
+      use m_meteo, only: item_waqfun, item_waqsfun
+      use m_ec_parameters, only: ec_undef_int
       use m_source_sink, only: source_sinks
+      use m_spatial_field, only: deallocate_time_dependent_spatial_quantities
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use properties, only: MAX_PROP_LENGTH
+      use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
+      use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
       use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use unstruc_inifields, only: register_waq_target
       use unstruc_messages, only: threshold_abort
 
       ! Arguments
@@ -80,6 +86,8 @@ contains
       integer :: num_laterals !< Total number of laterals in all external forcing files
       integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
       integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
+      logical :: is_read
+      character(len=INI_VALUE_LEN) :: quantity
 
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: file_names !< List of file names
       character(len=MAX_PROP_LENGTH), dimension(:), allocatable :: base_dirs !< List of base directories
@@ -101,7 +109,7 @@ contains
       do i_ext = 1, size(extfile_new_list)
 
          call check_version_number_and_open_external_forcing_file(trim(extfile_new_list(i_ext)), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
-         
+
          ! Abort initialization if an external forcing file could not be validated or opened.
          if (iresult /= DFM_NOERR) then
 
@@ -117,6 +125,30 @@ contains
          call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
 
       end do
+
+      call scan_time_dependent_spatial_inputs(bnd_ptrs)
+
+      ! Register all global WAQ functions before creating any EC target fields.
+      ! Growing funinp after a field points into it would invalidate that pointer.
+      do i_ext = 1, size(extfile_new_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items_in_file = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items_in_file
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+            select case (str_tolower(group_name))
+            case ('spatial', 'parameter', 'initial')
+               quantity = ''
+               call prop_get(block_ptr, '', 'quantity', quantity, is_read)
+               if (is_read) then
+                  call register_waq_target(quantity)
+               end if
+            end select
+         end do
+      end do
+      call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
+      nosfunext = num_spatial_time_fuctions
+      call realloc(item_waqsfun, nosfunext, keepExisting=.false., fill=ec_undef_int)
 
       ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
@@ -185,14 +217,20 @@ contains
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(file_names(i_ext)), ''': [', trim(group_name), ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
 
          threshold_abort = initial_threshold_abort
 
-         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
+         call check_file_tree_for_deprecated_keywords( &
+            bnd_ptr, &
+            deprecated_ext_keywords, &
+            istat, &
+            prefix='While reading '''//trim(file_names(i_ext))//'''', &
+            print_context_keywords=['quantity', 'dataFile'] &
+            )
 
          if (allocated(itpenzr)) then
             deallocate (itpenzr)
@@ -213,6 +251,8 @@ contains
          call tree_destroy(bnd_ptrs(i_ext)%node_ptr)
       end do
 
+      call deallocate_time_dependent_spatial_quantities()
+
       if (res) then
          iresult = DFM_NOERR
       else
@@ -220,6 +260,65 @@ contains
       end if
 
    end subroutine init_new
+
+   !> Collect quantities with an input that is updated during the time loop.
+   subroutine scan_time_dependent_spatial_inputs(bnd_ptrs)
+      use m_meteo, only: quantity_name_config_file_to_internal_name
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, select_spatial_field_method, &
+                                 is_static_file_type, allocate_time_dependent_spatial_quantities, &
+                                 register_time_dependent_spatial_quantity
+      use precision_basics, only: comparereal
+      use string_module, only: str_tolower
+      use tree_data_types, only: tree_data, tree_data_ptr
+      use tree_structures, only: tree_get_name, tree_num_nodes
+      use timespace_parameters, only: METHOD_UNKNOWN
+
+      type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
+
+      type(tree_data), pointer :: bnd_ptr
+      type(tree_data), pointer :: block_ptr
+      type(t_spatial_field_input) :: input
+      integer :: i, i_ext, max_num_quantities, num_items
+      character(len=:), allocatable :: group_name
+
+      max_num_quantities = 0
+      do i_ext = 1, size(bnd_ptrs)
+         max_num_quantities = max_num_quantities + tree_num_nodes(bnd_ptrs(i_ext)%node_ptr)
+      end do
+      call allocate_time_dependent_spatial_quantities(max_num_quantities)
+
+      do i_ext = 1, size(bnd_ptrs)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+         num_items = tree_num_nodes(bnd_ptr)
+         do i = 1, num_items
+            block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = str_tolower(trim(tree_get_name(block_ptr)))
+            select case (group_name)
+            case ('spatial', 'meteo', 'parameter', 'initial')
+               input = read_spatial_field_block(block_ptr)
+            case default
+               cycle
+            end select
+
+            if (comparereal(input%data_value, dmiss) /= 0) then
+               cycle
+            end if
+            input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
+            if (len_trim(input%quantity) == 0 .or. len_trim(input%forcing_file_type) == 0) then
+               cycle
+            end if
+            input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
+            if (input%method == METHOD_UNKNOWN) then
+               cycle
+            end if
+
+            if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
+               call register_time_dependent_spatial_quantity(input%quantity)
+            end if
+         end do
+      end do
+
+   end subroutine scan_time_dependent_spatial_inputs
 
    !> Checks the version number of the external forcing file and opens it, returning a pointer to the tree of external forcings file boundary blocks.
    subroutine check_version_number_and_open_external_forcing_file(external_force_file_name, bnd_ptr, major, iresult)
@@ -317,7 +416,7 @@ contains
 
    end subroutine build_itpenzr_and_itpenur
 
-   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array. 
+   !> Computes the lateral bed areas for all laterals in the model, and stores them in the balat array.
    !! The lateral bed area is computed as the sum of the bed areas of all nodes that belong to the lateral, excluding ghost nodes.
    subroutine compute_lateral_bed_areas()
       use m_flowgeom, only: ba
@@ -389,7 +488,7 @@ contains
       ! First check for required input:
       call prop_get(block_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
@@ -408,7 +507,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -417,7 +516,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -428,16 +527,16 @@ contains
          operand = convert_operand_string_to_integer(property_value)
 
          if (len_trim(property_value) == 1) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(property_value)//''' is deprecated. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': operand value '''//trim(property_value)//''' is deprecated. ' &
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
 
          if (operand == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+            write (msgbuf, '(a)') 'In ['//trim(group_name)//'] block in file '''//trim(file_name)//''': unknown operand value '''//trim(property_value)//''' found. ' &
                //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call err_flush()
-         end if 
+         end if
       end if
 
       num_items_in_block = 0
@@ -787,7 +886,7 @@ contains
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
 
       case ('pseudoairpressure')
@@ -833,11 +932,12 @@ contains
 !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
    function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_ec_parameters, only: ec_undef_int
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
       character(len=*), intent(in) :: quantity, forcing_file, variable_name
@@ -845,11 +945,19 @@ contains
       integer, intent(in) :: mask(:), kx, filetype, method, oper
       integer, intent(inout) :: ec_item
       real(dp), pointer, intent(out) :: target_data(:)
+      logical, intent(in) :: is_static_field
       logical :: res
 
       integer, pointer :: pkbot(:), pktop(:)
 
-      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      if (is_static_field) then
+         call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      else
+         ! target data must be null to avoid binding the pointer to the wrong array.
+         ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
+         ! fm_ext_force_name_to_ec_item
+         target_data => null()
+      end if
       call setzcs()
       pkbot => kbot
       pktop => ktop
@@ -857,8 +965,11 @@ contains
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                     tunit, tstart_user, target_data)
+      if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
+         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                        tunit, tstart_user, target_data)
+      end if
+
    end function read_3d_sigma_field
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -927,19 +1038,20 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower, strcmpi
-      use messageHandling, only: err_flush, msgbuf
+      use string_module, only: str_tolower
+      use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
-      use m_flowtimes, only: tzone, tunit
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+                                   initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_setinitialverticalprofile, only: setinitialverticalprofile
@@ -948,6 +1060,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
+      use precision_basics, only: comparereal
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -965,22 +1078,39 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
+      character(len=256) :: target_layer
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
+      integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
+      logical :: mapped
       integer :: oper_backup
+
+      target_layer = ''
 
       res = .false.
       ec_item = ec_undef_int
       target_data => null()
       target_data_integer => null()
       target_array_3d => null()
+      mapped_item1 => null()
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-      if (.not. res) return
+      if (.not. res) then
+         return
+      end if
+
+      if (input%is_static_field) then
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as an initial field from file '"// &
+                   trim(input%forcing_file)//"'.")
+      else
+         call mess(LEVEL_INFO, "Initializing spatial quantity '"//trim(input%quantity)//"' as a time-dependent forcing from file '"// &
+                   trim(input%forcing_file)//"'.")
+      end if
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -1017,6 +1147,9 @@ contains
          end if
          if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
+               target_data => target_array_3d(first_index, :)
+            end if
          end if
          if (.not. res) then
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
@@ -1029,7 +1162,7 @@ contains
             end if
          end if
          if (.not. res) then
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
          end if
@@ -1042,7 +1175,7 @@ contains
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
-               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               call setinitialverticalprofile(quantity, target_data, size(target_data), forcing_file)
                res = .true.
             else ! normal spatial field
                block
@@ -1053,33 +1186,72 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
+                  call prop_get(block_ptr, '', 'targetLayer', target_layer)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
+                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  !TODO: resolve functions should always find a target array for single target quantities.
+                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
+                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                     if (mapped) then
+                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                              trim(file_name)//''': multiple target arrays are not supported.'
+                           call err_flush()
+                           res = .false.
+                           return
+                        end if
+                        if (associated(mapped_item1) .and. associated(mapped_data1)) then
+                           target_data => mapped_data1
+                        end if
+                     end if
+                  end if
 
-                  if (associated(target_data)) then
+                  if (filetype == DATAVALUE) then
+                     res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                   method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                     if (res) then
+                        res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
+                     end if
+                     ec_item = ec_undef_int
+                  else if (associated(target_data)) then
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
                                                  forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
+                  else
+                     write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' with forcingFileType '''// &
+                        trim(forcing_file_type)//''' from file '''//trim(file_name)//''': no target array is available.'
+                     call err_flush()
+                     res = .false.
+                     return
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      oper = oper_backup
-                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                        res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
+                     else
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                     end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
-                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
-                        painp(first_index, 1:target_num_points) = target_data(1:target_num_points)
+                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:16)) == 'waqsegmentnumber') then
+                        painp(first_index, :) = target_array_3d(first_index, :)
                         deallocate (target_array_3D)
                      end if
                      deallocate (target_data)
                   end if
                end block
+            end if
+            if (res .and. associated(mapped_item1)) then
+               mapped_item1 = ec_undef_int
             end if
          else
             select case (trim(str_tolower(forcing_file_type)))
@@ -1091,10 +1263,10 @@ contains
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if
@@ -1112,20 +1284,39 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
-               if (strcmpi(quantity, 'frictioncoefficient')) then
-                  res = set_friction_type_values_explicit(block_ptr, input%oper)
-               end if
-            end if
-            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
+            if (.not. res) res = enable_special_quantity(quantity, block_ptr, input%oper)
+            res = .true. ! Successful loading is sufficient; not every quantity requires an enablement action.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//trim(file_name)// &
-               ''': ['//group_name//']. Check previous log lines for details.'
+               ''': ['//trim(group_name)//']. Check previous log lines for details.'
             call err_flush()
          end if
       end associate
 
    end function init_spatial_fields
+
+   !> Enable quantities that require post-load data or additional block metadata. TODO: refactor to avoid special cases if possible.
+   function enable_special_quantity(quantity, block_ptr, operand) result(success)
+      use fm_external_forcings_utils, only: split_qid
+      use tree_data_types, only: tree_data
+      use unstruc_inifields, only: set_friction_type_values_explicit
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
+      type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
+      integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
+      logical :: success
+
+      character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
+
+      call split_qid(quantity, quantity_base, quantity_specific)
+      select case (str_tolower(quantity_base))
+      case ('frictioncoefficient')
+         success = set_friction_type_values_explicit(block_ptr, operand)
+      case default
+         success = .false.
+      end select
+   end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
@@ -1184,7 +1375,7 @@ contains
       case ('airdensity')
          ja_airdensity = 1
 
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          air_pressure_available = .true.
 
       case ('pseudoAirPressure')
@@ -1316,7 +1507,7 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use m_polygon, only: dzL, npl
+      use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1331,6 +1522,7 @@ contains
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
+      real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
       logical :: is_successful
       logical :: is_read
@@ -1354,7 +1546,7 @@ contains
 
       ! Use generic polyline reader
       call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       if (.not. is_successful) return
 
       ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
@@ -1374,16 +1566,14 @@ contains
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = z_coordinates(npts)
             if (num_columns > 3) then
-               ! 4th column (dzL) needs to be read from the polygon module directly,
-               ! since read_polyline_coordinates only returns the 3rd column (zpl).
-               z_range_source(2) = dzL(npl)
+               z_range_source(2) = fourth_coordinates(npts)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = z_coordinates(1)
             if (num_columns > 3) then
-               z_range_sink(2) = dzL(1)
+               z_range_sink(2) = fourth_coordinates(1)
             end if
          end if
       end if
@@ -1401,7 +1591,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
-      use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1460,9 +1650,9 @@ contains
       call prop_get(block_ptr, '', 'area', area, is_read)
 
       ! Create the actual source/sink based on the parsed data
-      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
+      call source_sinks%add(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1534,14 +1724,13 @@ contains
    !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens_in_extfile(bnd_ptr, base_dir, file_name, i_bubblescreen, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
-      use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use string_module, only: strcmpi, str_tolower
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: t_netcell_set
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1556,7 +1745,7 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens 
+      integer, intent(inout) :: i_bubblescreen !< Global index for bubblescreens
       integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
@@ -1570,11 +1759,11 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      character(len=:), allocatable :: id !< Bubblescreen id
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      type(t_netcell_set) :: netcell_cache
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
 
@@ -1583,8 +1772,7 @@ contains
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
+      netcell_cache = t_netcell_set()
 
       ! Loop over all [blocks] in the external forcings file and count the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1616,13 +1804,14 @@ contains
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
-                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(bubblescreen%id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
                         'use zLevel to specify Bubblescreen location.'
                      call warn_flush()
                   end if
                end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
-               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               call netcell_cache%find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, &
+                                                                 bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
@@ -1643,7 +1832,6 @@ contains
          end if
       end do
 
-      call cleanup_cell_geom_polylines()
       ! initialize global geometry
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       nNodesBubbleScreen = 0
@@ -1687,11 +1875,10 @@ contains
       use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use m_polygon, only: xpl, ypl, zpl, npl
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
+      use m_source_sink, only: source_sinks
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
@@ -1727,7 +1914,7 @@ contains
 
             n_cells = bubblescreen%num_flowcells
             bubblescreen_cells = bubblescreen%flowcell_indices
-            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            ! we need the global number of bubblescreen cells, source_sinks%add must be called on every partition
             if (jampi == 1) then
                bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                n_cells = size(bubblescreen_cells)
@@ -1762,11 +1949,11 @@ contains
                write (srcid, '(A,I0)') trim(bubblescreen%id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
-               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               call source_sinks%add(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
                   bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
-                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by source_sinks%add
                end if
             end do
 
@@ -1824,9 +2011,9 @@ contains
          target_x => xk(1:target_num_points)
          target_y => yk(1:target_num_points)
       case (UNC_LOC_GLOBAL)
-         target_num_points = 0
-         target_x => null()
-         target_y => null()
+         target_num_points = 1
+         target_x => GLOBAL_DUMMY_TARGET
+         target_y => GLOBAL_DUMMY_TARGET
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select

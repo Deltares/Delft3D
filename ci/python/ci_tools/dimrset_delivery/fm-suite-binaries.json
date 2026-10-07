@@ -5,27 +5,51 @@
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_date_time-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_atomic.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_filesystem-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_chrono.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_log_setup-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_container.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_log-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_date_time.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_program_options-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_filesystem.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\boost_thread-vc143-mt-x64-1_90.dll",
+            "file": "bin\\boost_log_setup.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_log.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_program_options.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_regex.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_serialization.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_thread.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\boost_unit_test_framework.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
@@ -374,10 +398,6 @@
         },
         {
             "file": "bin\\libpetsc.dll",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
-            "file": "bin\\libxml2.dll",
             "issuedTo": "Stichting Deltares"
         },
         {

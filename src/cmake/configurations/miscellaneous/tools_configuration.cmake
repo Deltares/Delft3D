@@ -34,10 +34,6 @@ if(NOT TARGET kdtree_wrapper)
     add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
 endif()
 
-if(NOT TARGET precice::precice)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice)
-endif()
-
 if (NOT TARGET pugixml::pugixml)
     add_subdirectory(${checkout_src_root}/${pugixml_module} pugixml)
 endif()

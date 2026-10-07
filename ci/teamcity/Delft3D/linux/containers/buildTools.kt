@@ -10,7 +10,7 @@ import java.io.File
 
 object LinuxBuildTools : BuildType({
     name = "Build tools"
-    description = "Build-environment container image to build our Delf3D software in."
+    description = "Base image used to compile Delft3D."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(

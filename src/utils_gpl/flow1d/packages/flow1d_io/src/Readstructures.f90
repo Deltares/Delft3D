@@ -68,7 +68,7 @@ module m_readstructures
 
    ! Structure file current version: 1.00
    integer, parameter :: StructureFileMajorVersion = 3
-   integer, parameter :: StructureFileMinorVersion = 1
+   integer, parameter :: StructureFileMinorVersion = 2
 
    ! History structure file versions:
 
@@ -81,6 +81,8 @@ module m_readstructures
    ! 2.01 (2020-10-20): Added new type=longCulvert.
    ! 3.00 (2021-06-17): Bridge field 'bedLevel' removed and replaced by 'shift' (UNST-5177).
    ! 3.01 (2024-11-25): Added new type=gate, polylineFile replaced by locationFile.
+   ! 3.02 (2026-07-29): Dambreak field 'DambreakLevelsAndWidths' deprecated and replaced by 'crestLevel'
+   !                    and 'breachWidth' (UNST-8759). Support for .bc timeseries.
 
 contains
 
@@ -851,7 +853,10 @@ contains
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters. (only for uniform interface now, later: to which dambreak forcing will be added if needed.)
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
 
-      logical :: localsuccess
+      logical :: localsuccess, localsuccess2
+      logical :: timeseries_self_contained !< Whether timeseries are fully referenced (i.e. as in .bc files, so not relative to t0).
+
+      timeseries_self_contained = .false. ! Legacy behavior: .tim files relative to t0
 
       allocate (dambr)
 
@@ -911,18 +916,48 @@ contains
          end if
       end if
 
-      ! get the name of the tim file
+      ! Get breach growth timeseries from .bc files (or legacy .tim files)
       if (dambr%algorithm == BREACH_GROWTH_TIMESERIES) then
-         ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
-         !            All time-space handling of the dambreak is still done in kernel.
+         ! UNST-8759: Try new separate crestLevel and breachWidth keywords first.
+         call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', dambr%crest_level_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess)
+         call get_value_or_addto_forcinglist(md_ptr, 'breachWidth', dambr%breach_width_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess2)
+         
+         ! NOTE: only when we declare dambreakLevelsAndWidth obsolete, fully enable the required checks below (i.e., remove if):
+         ! If *either* of crestLevel and breachWidth is present, assume new input and validate as usual, don't fall back to legacy.
+         if (localsuccess .or. localsuccess2) then
+            success = success .and. check_input_result(localsuccess, st_id, 'crestLevel')
+            success = success .and. check_input_result(localsuccess2, st_id, 'breachWidth')
 
-         call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levels_and_widths, localsuccess)
-         success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
-         if (.not. success) return
+            ! Only if *both* were read successfully, we can declare the timeseries self-contained.
+            timeseries_self_contained = localsuccess .and. localsuccess2
+         else
+            ! Fallback only when neither crestLevel nor breachWidth was given: read legacy DambreakLevelsAndWidths filename.
+            ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
+            !            All time-space handling of the dambreak is still done in kernel.
+            call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levels_and_widths, localsuccess)
+            if (localsuccess) then
+               call setMessage(LEVEL_WARN, 'Warning Reading Dambreak '''//trim(st_id)//''': DambreakLevelsAndWidths is deprecated. Use crestLevel and breachWidth instead.')
+            end if
+            success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
+
+            timeseries_self_contained = .false.
+         end if
+
+         if (.not. success) then
+            return
+         end if
       end if
 
       call prop_get(md_ptr, 'Structure', 'T0', dambr%t0, localsuccess)
-      success = success .and. check_input_result(localsuccess, st_id, 'T0')
+      if (dambr%algorithm == BREACH_GROWTH_TIMESERIES .and. timeseries_self_contained) then
+         if (localsuccess) then
+            call setMessage(LEVEL_WARN, 'Warning Reading Dambreak '''//trim(st_id)//''': T0 is ignored when crestLevel and breachWidth are specified as time series.')
+         end if
+      else
+         ! T0 is required for all other algorithms, and for legacy .tim files.
+         success = success .and. check_input_result(localsuccess, st_id, 'T0')
+      end if
+
       if (.not. success) return
 
       call set_dambreak_coefficients(dambr)

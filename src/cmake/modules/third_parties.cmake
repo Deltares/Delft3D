@@ -12,9 +12,6 @@ set(md5_module ${third_party_open_path}/md5/${cmake_directory})
 # metis
 set(metis_module ${third_party_open_path}/metis/${cmake_directory})
 
-# precice
-set(precice_module ${third_party_open_path}/precice)
-
 # libsigwatch
 set(libsigwatch_module ${third_party_open_path}/libsigwatch/${cmake_directory})
 

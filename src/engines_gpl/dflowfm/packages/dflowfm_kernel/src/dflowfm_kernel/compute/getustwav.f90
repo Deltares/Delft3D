@@ -39,13 +39,12 @@ module m_get_ustwav
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, EPS10
-      use m_flowgeom, only: ln, csu, snu
-      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
+      use m_flow, only: hu, jawavestokes, ag, EPS10
+      use m_flowgeom, only: ln, csu, snu, acl
+      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, fwfac, strlyrfac
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
       use m_sferic, only: twopi, dg2rd, pi
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_xbeach_data, only: R, cwav, gammaxxb, roller
       use mathconsts, only: ee
 
       integer, intent(in) :: LL
@@ -58,11 +57,16 @@ contains
       real(kind=dp), intent(out) :: uorbu
 
       real(kind=dp), external :: sinhsafei
-      integer :: k1, k2, Lb, Lt, L, Lmin
+      integer :: k1, k2, Lb, Lt, L
       real(kind=dp) :: Tsig, Hrms, asg, rk, shs, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, sintu
       real(kind=dp) :: p1, p2, h, z, uusto, fac
-      real(kind=dp) :: rolthk, rmax, erol, crol, mass
+      real(kind=dp) :: ac1, ac2
+      real(kind=dp) :: streamdepth
 
+      real(kind=dp), parameter :: alfaw = 20.0_dp
+      real(kind=dp), parameter :: halfsqpi = 1.0_dp / (2.0_dp * sqrt(acos(-1.0_dp)))
+
+      ustw2 = 0.0_dp
       Dfu = 0.0_dp
       Dfuc = 0.0_dp
       deltau = 0.0_dp
@@ -72,10 +76,13 @@ contains
       costu = 1.0_dp
       fw = 0.0_dp
 
+      ac1 = acl(LL)
+      ac2 = 1.0_dp - ac1
+
       call getLbotLtop(LL, Lb, Lt)
       k1 = ln(1, LL)
       k2 = ln(2, LL)
-      Tsig = 0.5_dp * (twav(k1) + twav(k2))
+      Tsig = ac1 * twav(k1) + ac2 * twav(k2)
       ustokes(Lb:Lt) = 0.0_dp
       vstokes(Lb:Lt) = 0.0_dp
       ustokes(LL) = 0.0_dp
@@ -90,11 +97,11 @@ contains
 
       phi1 = phiwav(k1)
       phi2 = phiwav(k2)
-      csw = 0.5_dp * (cos(phi1 * dg2rd) + cos(phi2 * dg2rd))
-      snw = 0.5_dp * (sin(phi1 * dg2rd) + sin(phi2 * dg2rd))
+      csw = ac1 * cos(phi1 * dg2rd) + ac2 * cos(phi2 * dg2rd)
+      snw = ac1 * sin(phi1 * dg2rd) + ac2 * sin(phi2 * dg2rd)
 
       call getwavenr(hu(LL), tsig, rk)
-      Hrms = 0.5_dp * (hwav(k1) + hwav(k2))
+      Hrms = ac1 * hwav(k1) + ac2 * hwav(k2)
       Hrms = min(hrms, gammax * hu(LL))
       asg = 0.5_dp * Hrms ! Wave amplitude = 0.5*Hrms
       shs = sinhsafei(rk * hu(LL))
@@ -102,7 +109,8 @@ contains
       sintu = -csw * snu(LL) + snw * csu(LL)
 
       if (jawaveStokes == STOKES_DRIFT_DEPTHUNIFORM) then
-         uusto = 0.5_dp * omeg * asg * asg / hu(LL)
+         !uusto = 0.5_dp * omeg * asg * asg / hu(LL)
+         uusto = 0.5_dp * ag * asg**2 * rk / (omeg * hu(LL)) ! with tanh(kh)
          ustokes(Lb:Lt) = costu * uusto
          vstokes(Lb:Lt) = sintu * uusto
          ustokes(LL) = costu * uusto ! for convenience
@@ -124,38 +132,6 @@ contains
          ! depth averaged
          ustokes(LL) = costu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL) ! these are needed, also for 3D models (see u bnd furu)
          vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL)
-
-         ! add 3D roller contribution to stokes drift
-         if (jawave == WAVE_SURFBEAT .and. roller == 1) then
-            ! roller mass flux
-            rmax = 0.125_dp * rhomean * ag * (gammaxxb * h)**2
-            erol = min(0.5_dp * (R(k1) + R(k2)), rmax)
-            crol = max(0.5_dp * (cwav(k1) + cwav(k2)), 1.0e-1_dp)
-            mass = 2.0_dp * erol / crol / rhomean
-            !
-            if (Lt > Lb) then
-               !
-               ! determine roller thickness
-               lmin = Lt
-               rolthk = 0.0_dp
-               do L = Lt - 1, Lb, -1
-                  lmin = L
-                  rolthk = hu(Lt) - hu(L)
-                  if (rolthk >= 0.5_dp * hrms) then
-                     exit
-                  end if
-               end do
-               !
-               ! depth dependent contribution
-               ustokes(Lmin:Lt) = ustokes(Lmin:Lt) + mass / rolthk * costu
-               vstokes(Lmin:Lt) = vstokes(Lmin:Lt) + mass / rolthk * sintu
-            end if
-            !
-            ! depth averaged contribution
-            ustokes(LL) = ustokes(LL) + mass / h * costu
-            vstokes(LL) = ustokes(LL) + mass / h * sintu
-         end if
-
       end if
 
       if (shs > EPS10) then
@@ -165,20 +141,30 @@ contains
             fac = sqrt(pi) / 2.0_dp
          end if
          uorbu = omeg * asg * shs * fac ! Orbital velocity, sqrt factor to match delft3d
+         !
+         if (z00 <= 0.0_dp) then ! guard for hydraulically smooth flow
+            return
+         end if
+         !
          call Swart(Tsig, uorbu, z00, fw, ustw2)
          ustw2 = ftauw * ustw2 ! ustar wave squared times calibrationcoeff ftauw
 
          dks = 33.0_dp * z00 ! should be 30 for consistency with getust
          aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
-         deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard
-         deltau = alfdeltau * max(deltau, ee * z00) ! alfaw = 20d0
-         deltau = min(0.5_dp * hu(LL), deltau) !
+         deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
+         deltau = max(deltau, ee * z00) ! alfaw makes wbl at least ~2ks thick
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
-         Dfu = 0.28_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-         Dfu = fwfac * Dfu / deltau ! divided by deltau    (m2/s3), missing rho divided out in adve denominator rho*delta
-         Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+         deltau = min(0.5_dp * hu(LL), alfaw * deltau)
+         streamdepth = min(hu(LL), strlyrfac * deltau) ! divided by 3 deltau see van Rijn, streaming layer about 3-5 times wbl
+         Dfu = fwfac * halfsqpi * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+
+         if (streamdepth > 0.0_dp) then
+            Dfuc = 2.0_dp * Dfu * rk / omeg * costu / streamdepth ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+         else
+            Dfuc = 0.0_dp
+         end if
 
       else
          ustw2 = 0.0_dp

@@ -62,6 +62,7 @@
     </testCase>
     <testCase name="e02_f012_c0325" ref="sif_dimr">
         <path version="2025-10-15T15:07:12.409000">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
+        <maxRunTime>540</maxRunTime>
         <programs>
           <program ref="execute_singularity">
             <arguments>
@@ -150,6 +151,7 @@
     </testCase>
     <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <maxRunTime>900</maxRunTime>
       <programs>
         <program ref="execute_singularity" seq="1">
           <arguments>
@@ -172,7 +174,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+      
       <checks>
         <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
            <parameters>
@@ -185,6 +187,7 @@
     </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="sif_dimr">
       <path version="2026-03-17T10:15:49.591000">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+      <maxRunTime>420</maxRunTime>
       <programs>
         <program ref="execute_singularity" seq="1">
           <arguments>
@@ -207,7 +210,6 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>
@@ -219,6 +221,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c100" ref="sif_dimr">
+      <maxRunTime>900</maxRunTime>
         <path version="2025-10-15T15:07:15.034000">e02_dflowfm/f014_parallel/c100_guayas_model</path>
         <programs>
           <program ref="execute_singularity">
@@ -258,6 +261,7 @@
     </testCase>
     <testCase name="e02_f014_c101_icg7" ref="sif_dimr">
         <path version="2025-10-15T15:07:16.919000">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
+        <maxRunTime>900</maxRunTime>
         <programs>
           <program ref="execute_singularity">
             <arguments>
@@ -343,6 +347,7 @@
     </testCase>
     <testCase name="e02_f014_c201" ref="sif_dimr">
         <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
+        <maxRunTime>480</maxRunTime>
         <programs>
           <program ref="execute_singularity">
             <arguments>

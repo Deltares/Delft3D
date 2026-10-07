@@ -3,7 +3,7 @@
 usePreCICE=1
 startFM=1
 startPreCSUMO=1
-installDir=install_fm-suite
+installDir=build_fm-suite_debug/install
 
 bindir=$(readlink -f ../../../${installDir}/bin)
 libdir=$(readlink -f ../../../${installDir}/lib)
