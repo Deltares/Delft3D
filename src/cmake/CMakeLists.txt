@@ -210,7 +210,6 @@ set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
-set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
@@ -247,7 +246,6 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
      OR ${configuration_type} STREQUAL ${dwaves_configuration}
-     OR ${configuration_type} STREQUAL ${swan_configuration}
      OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
      OR ${configuration_type} STREQUAL ${tools_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
@@ -304,12 +302,6 @@ endif()
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
     include(configurations/components/dwaves_configuration.cmake)
-endif()
-
-# SWAN configuration
-if(${configuration_type} STREQUAL ${swan_configuration})
-    message(STATUS "Generating solution for SWAN ...")
-    include(configurations/components/swan_configuration.cmake)
 endif()
 
 # Flow2D3D (Delft3D4) configuration

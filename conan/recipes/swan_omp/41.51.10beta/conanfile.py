@@ -2,14 +2,13 @@ import os
 from pathlib import Path
 
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.env import Environment
-from conan.tools.files import get, replace_in_file
+from conan.tools.files import get
 
 from conan import ConanFile
 
 
-class swan_mpiRecipe(ConanFile):
-    name = "swan_mpi"
+class swan_ompRecipe(ConanFile):
+    name = "swan_omp"
     package_type = "library"
     implements = ["auto_shared_fpic"]
 
@@ -27,9 +26,7 @@ class swan_mpiRecipe(ConanFile):
 
     def layout(self):
         cmake_layout(self)
-        self.folders.generators = os.path.join(
-            self.folders.build, "conan", "generators"
-        )
+        self.folders.generators = os.path.join(self.folders.build, "conan", "generators")
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
@@ -38,13 +35,6 @@ class swan_mpiRecipe(ConanFile):
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
-        # The callable SWAN library also needs the separately built module archives.
-        replace_in_file(
-            self,
-            str(self._swan_source_folder / "CMakeLists.txt"),
-            "install(TARGETS ${SWANLIB} ARCHIVE",
-            "install(TARGETS ${SWANLIB} ${SWANMOD_TARGETS} ARCHIVE",
-        )
 
     @property
     def _swan_source_folder(self):
@@ -56,9 +46,7 @@ class swan_mpiRecipe(ConanFile):
         deps.generate()
         tc = CMakeToolchain(self)
         # Work around bug in conan relating to CheckLibraryExists, see https://github.com/conan-io/conan/issues/12180
-        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(
-            self.settings.build_type
-        )
+        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(self.settings.build_type)
         tc.cache_variables["CMAKE_INSTALL_LIBDIR"] = "lib"
         tc.cache_variables["CMAKE_INSTALL_BINDIR"] = "bin"
         # Do not build tests or examples
@@ -67,41 +55,31 @@ class swan_mpiRecipe(ConanFile):
         tc.generate()
 
     def build(self):
-        env = Environment()
-        if self.settings.os == "Linux":
-            compilers = self.conf.get(
-                "tools.build:compiler_executables", default={}, check_type=dict
-            )
-            # SWAN overrides CMAKE_Fortran_COMPILER with mpiifx. Prevent FindMPI
-            # from selecting that wrapper as its own underlying compiler.
-            env.define(
-                "I_MPI_F90",
-                compilers.get("fortran", str(self.settings.fortran_compiler)),
-            )
         cmake = CMake(self)
-        with env.vars(self).apply():
-            cmake.configure(
-                build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
-                cli_args=['-DUSE_MPI="ON"'],
-            )
-            cmake.build()
+        cmake.configure(
+            build_script_folder=os.path.join(self.source_folder, "src", "cmake"),
+            cli_args=['-DUSE_MPI="OFF"'],
+        )
+        cmake.build()
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "SWAN_MPI")
-        self.cpp_info.set_property("cmake_target_name", "SWAN_MPI::SWAN_MPI")
+        self.cpp_info.set_property("cmake_file_name", "SWAN_OMP")
+        self.cpp_info.set_property("cmake_target_name", "SWAN_OMP::SWAN_OMP")
         self.cpp_info.includedirs = []
         self.cpp_info.libs = [
-            "swan_mpi_lib",
+            "swan_omp_lib",
             "swanmod",
             "swanmod_xnl",
             "swanmod_io",
             "swanmod_core",
             "swanmod_base",
         ]
+        if self.settings.os == "Linux":
+            self.cpp_info.system_libs = ["iomp5"]
         self.cpp_info.requires = [
             "netcdf::netcdf",
             "netcdf-fortran::netcdf-fortran",

@@ -21,8 +21,8 @@ class Delft3DRecipe(ConanFile):
         self.requires("libxml2/2.15.3")
         self.requires("precice/3.4.1")
         self.requires("gtest/1.18.0")
-        self.requires("swan_mpi/41.51.9test")
-        self.requires("swan_omp/41.51.9test")
+        self.requires("swan_mpi/41.51.10beta")
+        self.requires("swan_omp/41.51.10beta")
 
     def generate(self):
         save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")
