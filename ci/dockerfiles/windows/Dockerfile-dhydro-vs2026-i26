@@ -4,6 +4,11 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
 
+# Add Visual Studio registry keys to prevent auto-updates of the toolchain during builds.
+RUN reg add "HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup" /v "BackgroundDownloadDisabled" /t REG_DWORD /d 1 /f; \
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup" /v "AutoUpdateDisabled" /t REG_DWORD /d 1 /f; \
+    reg add "HKLM\SOFTWARE\Policies\Microsoft\VisualStudio\Setup" /v "ChannelUpdateDisabled" /t REG_DWORD /d 1 /f
+
 RUN $installer = 'C:\vs_Community.exe'; \
     $installPath = 'C:\Program Files\Microsoft Visual Studio\18\Community'; \
     Invoke-WebRequest -Uri 'https://aka.ms/vs/18/Stable/vs_community.exe' -OutFile $installer -UseBasicParsing; \
