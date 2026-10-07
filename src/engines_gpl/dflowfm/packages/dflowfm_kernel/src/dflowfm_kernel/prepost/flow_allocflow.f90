@@ -290,7 +290,10 @@ contains
                dzm = (zmx - zbt) / mxlayz
             else
                dzm = dztop
-               mxlayz = (zmx - zbt) / dzm
+               mxlayz = floor((zmx - zbt) / dzm)
+               if (modulo(zmx - zbt, dzm) > 0.0_dp) then
+                  mxlayz = mxlayz + 1
+               end if
                if (numtopsig > 0 .and. janumtopsiguniform == 1) then
                   mxlayz = max(mxlayz, numtopsig)
                end if
@@ -381,7 +384,7 @@ contains
                if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
                   zslay(mx, j) = zmx
-                  
+
                   ! Fill top uniform layers, thickness equal to dzm
                   do k = mx - 1, mx - kuni, -1
                      zslay(k, j) = zslay(k + 1, j) - dzm
@@ -393,14 +396,14 @@ contains
                      dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
-                  
+
                else
                   ! Fill layers based on dzslay computed above, scaled to the actual depth range
                   zslay(0, j) = zmn
                   do k = 1, mx
                      zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
                   end do
-                  
+
                end if
             end if
          end do
@@ -452,7 +455,7 @@ contains
 
          ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
          call map_ndkx_to_ndx()
-         
+
          LL = Lnx ! Stapelen vanaf grondlaag
          do L = 1, lnx
             n1 = ln(1, L)
@@ -1258,6 +1261,6 @@ contains
       end if
 
       call set_kbot_ktop(jazws0=1)
-      
+
    end subroutine flow_allocflow
 end module m_flow_allocflow
