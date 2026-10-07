@@ -41,7 +41,7 @@ module m_observations
 
    implicit none
 
-   integer, parameter, private :: capacity_ = 1 !< Nr of additionally allocated elements when lists are full
+   integer, parameter, private :: capacity_ = 200 !< Initial observation capacity
    integer, private :: iUniq_ = 1
    character(len=*), parameter, private :: defaultName_ = 'Obs'
 
@@ -753,7 +753,7 @@ contains
       integer, optional, intent(in) :: iOP !< local index of obs that are defined via *.ini, in the m_network%network%obs set.
 
       logical :: isMoving_
-      integer :: i, inew, isize, loctype_
+      integer :: i, inew, isize, loctype_, new_capacity
 
       character(len=IdLen) :: name_
       name_ = ' '
@@ -784,19 +784,20 @@ contains
       end if
 
       if (isize <= numobs + nummovobs) then
-         call realloc(xobs, numobs + nummovobs + capacity_)
-         call realloc(yobs, numobs + nummovobs + capacity_)
-         call realloc(xyobs, 2 * (nummovobs + capacity_))
-         call realloc(kobs, numobs + nummovobs + capacity_)
-         call realloc(lobs, numobs + nummovobs + capacity_)
-         call realloc(neighbour_nodes_obs, [3, numobs + nummovobs + capacity_])
-         call realloc(neighbour_weights_obs, [3, numobs + nummovobs + capacity_])
-         call realloc(namobs, numobs + nummovobs + capacity_)
-         call realloc(smxobs, numobs + nummovobs + capacity_)
-         call realloc(cmxobs, numobs + nummovobs + capacity_)
-         call realloc(locTpObs, numobs + nummovobs + capacity_)
-         call realloc(obs2OP, numobs + nummovobs + capacity_)
-         call realloc(intobs, numobs + nummovobs + capacity_)
+         new_capacity = max(capacity_, 2 * isize, numobs + nummovobs + 1)
+         call realloc(xobs, new_capacity)
+         call realloc(yobs, new_capacity)
+         call realloc(xyobs, 2 * new_capacity)
+         call realloc(kobs, new_capacity)
+         call realloc(lobs, new_capacity)
+         call realloc(neighbour_nodes_obs, [3, new_capacity])
+         call realloc(neighbour_weights_obs, [3, new_capacity])
+         call realloc(namobs, new_capacity)
+         call realloc(smxobs, new_capacity)
+         call realloc(cmxobs, new_capacity)
+         call realloc(locTpObs, new_capacity)
+         call realloc(obs2OP, new_capacity)
+         call realloc(intobs, new_capacity)
       end if
 
       ! Before adding new normal observation station:
