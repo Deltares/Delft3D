@@ -151,7 +151,8 @@ contains
       call default_modelbounds()
 
       call default_fm_external_forcing_data()
-      call source_sinks%dealloc()
+
+      call source_sinks%reset()
 
       call default_channel_flow()
 

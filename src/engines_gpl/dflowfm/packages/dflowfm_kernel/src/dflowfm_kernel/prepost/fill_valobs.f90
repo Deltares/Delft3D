@@ -53,7 +53,7 @@ contains
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
-                        u1, v, ltop
+                        u1, v, ltop, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
@@ -168,7 +168,7 @@ contains
          call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
       end if
 
-      if (model_is_3D() .and. his_write_settings%tur > 0 .and. iturbulencemodel >= 2) then
+      if (model_is_3D() .and. his_write_settings%tur > 0 .and. any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
          vicwwu_total = 0.0_dp
          vicwws_total = 0.0_dp
          do LL = 1, lnx
@@ -662,7 +662,7 @@ contains
                   klay = kk - kb + nlayb + 1
                   ! Taken care of by interpolate_horizontal
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
+                  if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_VICWWS_TOTAL + klay - 1) = vicwws_total(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
@@ -697,10 +697,10 @@ contains
                   do L = Lb - 1, Lt
                      klay = L - Lb + nlaybL + 1
                      valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-                     if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
+                     if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
                      end if
-                     if (iturbulencemodel >= 3 .and. his_write_settings%tur > 0) then
+                     if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
                         valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
                      end if
