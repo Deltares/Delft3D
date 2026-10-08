@@ -51,10 +51,8 @@ module m_nearfield
    ! constants
    integer, parameter, public :: NEARFIELD_DISABLED = 0 !< If nearfield_mode is NEARFIELD_DISABLED (default), then nearfield/COSUMO is disabled
    integer, parameter, public :: NEARFIELD_ENABLED = 1 !< After call addNearfieldData, nearfield_mode is set to NEARFIELD_ENABLED. This ensures:
-   !< - addNearfieldData does not need to be called again, until the data is updated and
-   !<   passes the pointers again.
-   !< - that subroutine setNFEntrainmentMomentum can be called if flag NearFieldEntrainmentMomentum
-   !<   is switched on
+   !< - addNearfieldData does not need to be called again, until the data is updated and passes the pointers again.
+   !< - that subroutine setNFEntrainmentMomentum can be called if flag NearFieldEntrainmentMomentum is switched on
    integer, parameter, public :: NEARFIELD_UPDATED = 2 !< nearfield_mode is set to NEARFIELD_UPDATED, everytime DIMR passes a data pointer
    !< from cosumo_bmi to D-Flow FM. This is the trigger to call addNearfieldData in
    !< set_external_forcings.
