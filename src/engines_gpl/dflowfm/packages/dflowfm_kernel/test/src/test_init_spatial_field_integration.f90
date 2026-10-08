@@ -2201,6 +2201,64 @@ contains
    end subroutine test_initial_temperature_netcdf_interpolates_at_start
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_missing_explicit_variable_fails, test_initial_temperature_missing_explicit_variable_fails,
+   subroutine test_initial_temperature_missing_explicit_variable_fails() bind(C)
+      use m_flow, only: tem1, kmx
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_missing, only: dmiss
+      use m_ec_message, only: clear_ec_message
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_temperature_missing_variable.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_temperature_missing_variable.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: saved_temperature_model, saved_initem2D, saved_kmx
+
+      call create_initial_gridded_netcdf(NC_FILE, 'thetao', 'sea_water_potential_temperature', 'degrees_Celsius')
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialTemperature', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = missing_thetao', &
+                       '    operand             = override'])
+
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      saved_kmx = kmx
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(tem1, ndx, fill=dmiss, keepExisting=.false.)
+      kmx = 0
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call clear_ec_message()
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'initial temperature should fail when the explicitly selected NetCDF variable is absent')
+
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      kmx = saved_kmx
+      tstart_user = 0.0_dp
+      if (allocated(tem1)) deallocate (tem1)
+      call clear_ec_message()
+      call teardown_minimal_grid()
+   end subroutine test_initial_temperature_missing_explicit_variable_fails
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_salinity_netcdf_interpolates_at_start, test_initial_salinity_netcdf_interpolates_at_start,
    subroutine test_initial_salinity_netcdf_interpolates_at_start() bind(C)
       use m_flow, only: sa1, kmx
