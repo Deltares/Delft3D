@@ -243,4 +243,39 @@ contains
    end subroutine test_triinterp2_pointcloud_boundary_regression
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ec_module, test_netcdf_candidate_helper_returns_predefined_mapping, test_netcdf_candidate_helper_returns_predefined_mapping,
+   subroutine test_netcdf_candidate_helper_returns_predefined_mapping() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+      use iso_c_utils, only: cstr
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call ecSupportNetcdfGetQuantityCandidateNames('waterlevelbnd', standard_names, &
+                                                   variable_names, fallback_names)
+      call f90_assert_true(allocated(variable_names))
+      call f90_assert_true(allocated(standard_names))
+      call f90_expect_eq(size(variable_names), 1)
+      call f90_expect_eq(size(standard_names), 1)
+      call f90_expect_streq(cstr(variable_names(1)), cstr('waterlevel'))
+      call f90_expect_streq(cstr(standard_names(1)), cstr('sea_surface_height'))
+      call f90_expect_false(allocated(fallback_names))
+   end subroutine test_netcdf_candidate_helper_returns_predefined_mapping
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ec_module, test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped, test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped,
+   subroutine test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+      use m_ec_message, only: clear_ec_message
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call clear_ec_message()
+      call ecSupportNetcdfGetQuantityCandidateNames('arbitrary_target', standard_names, &
+                                                   variable_names, fallback_names)
+      call f90_expect_false(allocated(variable_names))
+      call f90_expect_false(allocated(standard_names))
+      call clear_ec_message()
+   end subroutine test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped
+   !$f90tw)
+
 end module test_ec_module
