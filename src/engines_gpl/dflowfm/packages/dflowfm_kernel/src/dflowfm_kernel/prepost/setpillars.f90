@@ -54,7 +54,7 @@ contains
       integer :: i, j, k, L, Lf, La, m, n
       real(kind=dp) :: pi
       integer, dimension(:), allocatable :: npil
-      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link
+      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link 
       real(kind=dp), dimension(:), allocatable :: Aeff !< effective area of cell (pillartype=1) of width of link (pillartype=3) available for flow (not occupied by pillars)
       real(kind=dp) :: velocity_squared_correction_per_width !< correction factor for velocity squared per unit width to be used in pillar drag calculation
       integer, dimension(:), allocatable :: linktype
