@@ -931,7 +931,7 @@ contains
 
 !> Read a static 3D field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
-   function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+   function read_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, &
                                 filetype, method, oper, variable_name, ec_item, target_data) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
@@ -964,18 +964,26 @@ contains
 
    end function read_3d_sigma_field
 
-!> Register the time-dependent nudgesalinitytemperature relation with sigma coordinates.
-   function add_nudgesalinitytemperature_sigma_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+!> Register the time-and-space dependent 3D field relation.
+!! No values are ready/set yet, that should be done by ec_gettimespacevalues in the timeloop.
+   function add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                                         filetype, method, oper, variable_name, ec_item) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop
       use m_meteo, only: ec_addtimespacerelation
 
-      character(len=*), intent(in) :: quantity, forcing_file, variable_name
-      real(dp), intent(in) :: target_x(:), target_y(:)
-      integer, intent(in) :: mask(:), kx, filetype, method, oper
-      integer, intent(inout) :: ec_item
-      logical :: res
+      character(len=*), intent(in) :: quantity !< Quantity id (often coming from external forcings file)
+      character(len=*), intent(in) :: forcing_file !< File containing the source data values.
+      character(len=*), intent(in) :: variable_name !< Variable name with the forcing_file (e.g., for NetCDF files).
+      real(dp), intent(in) :: target_x(:) !< Array of x-coordinates for the target ElementSet.
+      real(dp), intent(in) :: target_y(:) !< Array of y-coordinates for the target ElementSet.
+      integer, intent(in) :: mask(:) !< Array of masking values for the target ElementSet.
+      integer, intent(in) :: vector_max !< Vector max (length of data values at each element location).
+      integer, intent(in) :: filetype !< FM's filetype enumeration.
+      integer, intent(in) :: method !< FM's method enumeration.
+      integer, intent(in) :: oper !< FM's operand enumeration.
+      integer, intent(inout) :: ec_item !< Target item id for the created relation.
+      logical :: res !< Whether or not relation was succesfully created.
 
       integer, pointer :: pkbot(:), pktop(:)
 

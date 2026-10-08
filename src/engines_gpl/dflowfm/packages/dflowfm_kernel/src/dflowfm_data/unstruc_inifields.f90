@@ -950,7 +950,7 @@ contains
       end if
    end function resolve_constituent_target
 
-   !> Set the target location type to UNC_LOC_3DS if kmx > 0, the array size is correct and target layer is '3D'.
+   !> Set the target location type to UNC_LOC_S3D if kmx > 0 and the array size is correct and target layer is '3D'.
    function set_3D_target_location(target_layer, quantity, target_size, target_location_type) result(success)
       use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S3D
@@ -960,7 +960,7 @@ contains
       character(len=*), optional, intent(in) :: target_layer !< Target layer from the spatial_input block.
       character(len=*), intent(in) :: quantity !< Quantity name for diagnostics.
       integer, intent(in) :: target_size !< Size of the resolved target array.
-      integer, intent(inout) :: target_location_type !< Quantity target location, changed to UNC_LOC_S3D for correct input.
+      integer, intent(inout) :: target_location_type !< Quantity target location type (use UNC_LOC_* constants), changed to UNC_LOC_S3D for correct input.
       logical :: success
 
       success = .true.

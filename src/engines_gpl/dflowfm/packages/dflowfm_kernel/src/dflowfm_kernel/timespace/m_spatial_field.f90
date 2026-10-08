@@ -174,7 +174,9 @@ contains
    end subroutine averaging_params_to_transformcoef
 
    !> Determine whether the spatial input describes a field that should be applied once at initialisation. 
-   ! 'initial' quantities are always static, regardless of method or file type.
+   !! Quantity ids starting with 'initial' are always deemed static, regardless of method or file type.
+   !! (This allows using NetCDF files with or without time-dimension as initial fields.)
+   !! For all other quantities, the (non-)static nature is detected from the file type and possibly the method.
    function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
       use string_module, only: str_tolower
       use fm_external_forcings_utils, only: split_qid
@@ -389,7 +391,7 @@ contains
 
       if (str_tolower(trim(input%target_layer)) == '3d') then
          if (input%filetype /= NCGRID .or. .not. input%is_static_field) then
-            write (msgbuf, '(5a)') 'targetLayer=3d requires a static NetCDF field in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
+            write (msgbuf, '(5a)') 'targetLayer=3d requires either a NetCDF field or a time-independent field in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
             call err_flush()
             return
          end if
