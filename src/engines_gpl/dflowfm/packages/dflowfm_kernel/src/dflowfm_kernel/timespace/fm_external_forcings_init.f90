@@ -931,7 +931,7 @@ contains
 
 !> Read a static 3D field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
-   function read_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+   function initialize_static_3d_field(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                 filetype, method, oper, variable_name, ec_item, target_data) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
@@ -939,12 +939,19 @@ contains
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
-      character(len=*), intent(in) :: quantity, forcing_file, variable_name
-      real(dp), intent(in) :: target_x(:), target_y(:)
-      integer, intent(in) :: mask(:), kx, filetype, method, oper
-      integer, intent(inout) :: ec_item
-      real(dp), pointer, intent(inout) :: target_data(:)
-      logical :: res
+      character(len=*), intent(in) :: quantity !< Quantity id (often coming from external forcings file)
+      character(len=*), intent(in) :: forcing_file !< File containing the source data values.
+      character(len=*), intent(in) :: variable_name !< Variable name with the forcing_file (e.g., for NetCDF files).
+      real(dp), intent(in) :: target_x(:) !< Array of x-coordinates for the target ElementSet.
+      real(dp), intent(in) :: target_y(:) !< Array of y-coordinates for the target ElementSet.
+      integer, intent(in) :: mask(:) !< Array of masking values for the target ElementSet.
+      integer, intent(in) :: vector_max !< Vector max (length of data values at each element location).
+      integer, intent(in) :: filetype !< FM's filetype enumeration.
+      integer, intent(in) :: method !< FM's method enumeration.
+      integer, intent(in) :: oper !< FM's operand enumeration.
+      integer, intent(inout) :: ec_item !< Target item id for the created relation.
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target data storage for the static field.
+      logical :: res !< Whether or not relation was succesfully created.
 
       integer, pointer :: pkbot(:), pktop(:)
 
@@ -955,18 +962,18 @@ contains
       pkbot => kbot
       pktop => ktop
 
-      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
       if (res) then
          res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
       end if
 
-   end function read_3d_sigma_field
+   end function initialize_static_3d_field
 
 !> Register the time-and-space dependent 3D field relation.
 !! No values are ready/set yet, that should be done by ec_gettimespacevalues in the timeloop.
-   function add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+   function add_timespace_3D_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                                         filetype, method, oper, variable_name, ec_item) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop
@@ -991,10 +998,10 @@ contains
       pkbot => kbot
       pktop => ktop
 
-      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
                                     varname=variable_name, tgt_item1=ec_item)
-   end function add_nudgesalinitytemperature_sigma_relation
+   end function add_timespace_3D_field_relation
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
    function init_field1d_block(quantity, forcing_file, file_name) result(res)
@@ -1244,7 +1251,7 @@ contains
                   end if
 
                   if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = initialize_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                      ec_item = ec_undef_int
                   ! TODO: support other time-dependent filetypes as an initial field
                   else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
@@ -1297,7 +1304,7 @@ contains
                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
             case default
                if (target_location_type == UNC_LOC_S3D .and. str_tolower(quantity) == 'nudgesalinitytemperature') then
-                  res = add_nudgesalinitytemperature_sigma_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                  res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                                                     filetype, method, oper, variable_name, ec_item)
                else if (len_trim(variable_name) > 0) then
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
