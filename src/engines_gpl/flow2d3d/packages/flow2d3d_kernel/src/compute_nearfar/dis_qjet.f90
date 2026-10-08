@@ -38,7 +38,7 @@ subroutine det_qjet(q, v, b)
 !!--declarations----------------------------------------------------------------
 !
     use precision
-    use mathconsts
+    use m_mathconstants
 !
 ! Global variables
 !

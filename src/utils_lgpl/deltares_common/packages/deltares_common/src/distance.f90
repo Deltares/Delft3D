@@ -39,7 +39,7 @@ subroutine distance(sferic    ,x1        ,y1        , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
 !

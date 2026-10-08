@@ -45,7 +45,7 @@ module unstruc_netcdf_map_class
    use netcdf
    use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_INFO, LEVEL_FATAL
    use m_flowparameters, only: EPS10, jaeulervel, jawave
-   use mathconsts, only: raddeg_hp
+   use m_mathconstants, only: raddeg_hp
    use m_waveconst
 
    implicit none

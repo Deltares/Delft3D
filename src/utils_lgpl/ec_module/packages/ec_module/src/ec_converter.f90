@@ -34,7 +34,7 @@
 module m_ec_converter
    use m_ec_typedefs
    use m_ec_message
-   use mathconsts
+   use m_mathconstants
    use m_ec_support
    use m_ec_alloc
    use m_ec_parameters

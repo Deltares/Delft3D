@@ -38,7 +38,7 @@ subroutine ksieta2xy(mmax    ,nmaxus    ,kcs      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

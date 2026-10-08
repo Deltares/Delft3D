@@ -336,7 +336,7 @@ contains
    !! variables necessary for the analysis in arrays.
    subroutine reafou(lunfou, filfou, kmax, lstsc, lsal, ltem, tstart, tstop, ti_fou, success)
       use precision
-      use mathconsts
+      use m_mathconstants
       use string_module
       use m_flowtimes, only: Tudunitstr
       implicit none
@@ -1702,7 +1702,7 @@ contains
    !! - closes fourier analysis output file
    subroutine wrfou()
       use precision, only: fp
-      use mathconsts, only: raddeg
+      use m_mathconstants, only: raddeg
       use netcdf
       use unstruc_netcdf
       use m_sferic, only: jsferic
@@ -2111,7 +2111,7 @@ contains
 
    !> final update of fousma and fousmb
    subroutine fourier_final(ifou, nmaxus)
-      use mathconsts, only: raddeg
+      use m_mathconstants, only: raddeg
       integer, intent(in) :: ifou !< Fourier counter
       integer, intent(in) :: nmaxus !< dimension of current quantity
       real(kind=fp) :: freqnt !< Frequency in degrees per hour
