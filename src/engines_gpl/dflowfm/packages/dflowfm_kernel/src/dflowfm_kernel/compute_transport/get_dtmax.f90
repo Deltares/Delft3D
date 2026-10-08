@@ -52,7 +52,7 @@ contains
       use timers, only: timon, timstrt, timstop
       use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: mtd, stm_included
-      use m_fm_wq_processes, only: nfallwaq, fall_velocity_waq
+      use m_fm_wq_processes, only: nfallvelocity_waq, fall_velocity_waq
 
       implicit none
 
@@ -79,7 +79,7 @@ contains
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
       use_mtdws = stm_included .and. ISED1 > 0
-      use_fall_velocity_waq = nfallwaq > 0
+      use_fall_velocity_waq = nfallvelocity_waq > 0
 
       if (jalimitdtdiff == 1) then
 !        determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"

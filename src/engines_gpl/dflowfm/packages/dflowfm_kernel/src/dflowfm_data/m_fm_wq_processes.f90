@@ -82,7 +82,7 @@ module m_fm_wq_processes
    integer :: num_exchanges_z_dir !< Number of exchanges vertical
    integer :: num_exchanges_bottom_dir !< Number of exchanges in the bed
    integer, allocatable, dimension(:) :: iexpnt !< Exchange pointer
-   integer, allocatable, dimension(:) :: iex2k !< Exchange to k mapping
+   integer, allocatable, dimension(:) :: iexchange_to_cell_number !< Exchange to cell number mapping
 
    real(hp), allocatable, dimension(:, :) :: amass !< mass array to be updated
    logical, allocatable, dimension(:) :: wqactive !< indicates if processes are active based on volume ('VolumeDryThreshold') and depth ('DepthDryThreshold') criteria
@@ -112,7 +112,7 @@ module m_fm_wq_processes
    integer :: waq_sediment_transport_coupling = 0 !< MDU setting of WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
    logical :: perform_waq_sediment_transport_coupling = .false.  !< Apply WAQ sedimentation coupled with FM transport calculation
    real(hp), dimension(:, :), allocatable :: fall_velocity_waq ! fall velocities from water quality processes (m/s)
-   integer :: nfallwaq ! number of substances with fall velocities
+   integer :: nfallvelocity_waq ! number of substances with fall velocities
    integer, allocatable, dimension(:) :: iconstituent_to_fall_velocity_waq ! constituent to waq fall velocity number
    integer, allocatable, dimension(:) :: ifall_velocity_waq_to_vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
 
@@ -152,10 +152,10 @@ module m_fm_wq_processes
    integer, parameter :: NODETECTNANNEG = 0 !< no detection
    integer, parameter :: DETECTNANNEGCELL = 1 !< detect NaN and negative values per cell
    integer, parameter :: DETECTNANNEGCOLUMN = 2 !< detect NaN and negative values per column
-   integer :: detectnanneg = NODETECTNANNEG !< setting for detecting NaN and negative values in concentration fields.
-   real(hp) :: detectnegthreshold = -1.0e-6_hp !< threshold for detecting negative values in concentration fields
-   integer :: detectnannegmsgmax = 10000 !< Maximum number of messages for detecting NaN and negative values in concentration fields
-   integer :: detectnannegmsg = 0 !< message counter for detecting NaN and negative values in concentration fields
+   integer :: detect_nan_negative_values = NODETECTNANNEG !< setting for detecting NaN and negative values in concentration fields.
+   real(hp) :: detect_negative_values_threshold = -1.0e-6_hp !< threshold for detecting negative values in concentration fields
+   integer :: detect_nan_negative_values_max_messages = 10000 !< Maximum number of messages for detecting NaN and negative values in concentration fields
+   integer :: detect_nan_negative_values_nmessages = 0 !< message counter for detecting NaN and negative values in concentration fields
    !
    !     Balance output
    !

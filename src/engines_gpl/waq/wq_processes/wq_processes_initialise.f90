@@ -953,7 +953,7 @@ contains
         do iproc = 1, num_processes_activated
             call pronrs(pronam(iproc), promnr(iproc))
             is_always_process(iproc) = index_in_array(pronam(iproc), always_processes) > 0
-            is_ads_sed_tra_process(iproc) = index_in_array(pronam(iproc), ads_sed_res_processes) > 0
+            is_ads_sed_tra_process(iproc) = index_in_array(pronam(iproc), ads_sed_tra_processes) > 0
         end do
 
         if (timon) call timstop(ithndl)

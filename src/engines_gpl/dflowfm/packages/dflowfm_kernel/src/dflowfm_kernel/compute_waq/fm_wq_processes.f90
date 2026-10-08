@@ -60,7 +60,7 @@ contains
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
 
-      integer :: janew, iex, ierr
+      integer :: janew, iexchange, ierr
       integer :: kk, k, kb, kt, ktmax, kdum
 
       logical :: Lsub, Leho, Lstt, Lpdf, Lopl, Lblm, Lallocated
@@ -165,17 +165,17 @@ contains
          call realloc(iexpnt, 4 * num_exchanges_z_dir, keepExisting=.false., fill=0)
 
          ! allocate exchange to interface array
-         call realloc(iex2k, num_exchanges_z_dir, keepExisting=.false., fill=0)
+         call realloc(iexchange_to_cell_number, num_exchanges_z_dir, keepExisting=.false., fill=0)
 
          ! set vertical exchanges
-         iex = 0
+         iexchange = 0
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             do k = ktmax, kb + 1, -1
-               iex = iex + 1
-               iexpnt(1 + 4 * (iex - 1)) = k - kbx + 1
-               iexpnt(2 + 4 * (iex - 1)) = k - 1 - kbx + 1
-               iex2k(iex) = k - 1
+               iexchange = iexchange + 1
+               iexpnt(1 + 4 * (iexchange - 1)) = k - kbx + 1
+               iexpnt(2 + 4 * (iexchange - 1)) = k - 1 - kbx + 1
+               iexchange_to_cell_number(iexchange) = k - 1
             end do
          end do
       else
@@ -553,7 +553,7 @@ contains
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
       logical :: no_reflection_wq
 
-      integer :: iex
+      integer :: iexchange
       integer :: kk, k, kb, kt, ktmax
 
       integer :: lunlsp
@@ -578,7 +578,7 @@ contains
       character(len=10), parameter :: cbloom = 'd40blo'
       character(len=20), parameter :: cdoprocesses = 'DoProcesses'
       character(len=20), parameter :: cprocessesinactive = 'ProcessesInactive'
-      character(len=20), parameter :: cdetectnanneg = 'DetectNaNNeg'
+      character(len=20), parameter :: cdetectnanneg = 'detect_nan_negative_values'
       character(len=20), parameter :: cnegthreshold = 'NegThreshold'
       character(len=20), parameter :: cdetectnannegmsgmax = 'DetectMsgMax'
 
@@ -976,14 +976,14 @@ contains
 
       !    Prepare fall velocity array
       !    count number of substances with fall velocities
-      nfallwaq = 0
+      nfallvelocity_waq = 0
       if (perform_waq_sediment_transport_coupling) then
-         nfallwaq = count(ivpnw(1:num_substances_transported) > 0)
+         nfallvelocity_waq = count(ivpnw(1:num_substances_transported) > 0)
       end if
       call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
-      if (nfallwaq > 0) then
-         call realloc(fall_velocity_waq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
-         call realloc(ifall_velocity_waq_to_vpnw, nfallwaq, keepExisting=.true., fill=0)
+      if (nfallvelocity_waq > 0) then
+         call realloc(fall_velocity_waq, [Ndkx, nfallvelocity_waq], keepExisting=.false., fill=0.0_hp)
+         call realloc(ifall_velocity_waq_to_vpnw, nfallvelocity_waq, keepExisting=.true., fill=0)
          ifallwaq = 0
          do isys = 1, num_substances_transported
             if (ivpnw(isys) > 0) then
@@ -1026,12 +1026,12 @@ contains
 
       !     exchange areas
       ip = arrpoi(iiarea)
-      iex = 0
+      iexchange = 0
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          do k = ktmax, kb + 1, -1
-            process_space_real(ip + iex) = ba(kk)
-            iex = iex + 1
+            process_space_real(ip + iexchange) = ba(kk)
+            iexchange = iexchange + 1
          end do
       end do
 
@@ -1085,9 +1085,9 @@ contains
       icon = index_in_array(cdetectnanneg, coname_sub)
       if (icon > 0) then
          ! Detection of NaN and negative values in concentrations is requested.
-         call mess(LEVEL_INFO, 'Found constant ''DetectNaNNeg''. Water quality processes will detect NaN and negative values in the state vector.')
-         detectnanneg = nint(covalue_sub(icon))
-         select case (detectnanneg)
+         call mess(LEVEL_INFO, 'Found constant ''detect_nan_negative_values''. Water quality processes will detect NaN and negative values in the state vector.')
+         detect_nan_negative_values = nint(covalue_sub(icon))
+         select case (detect_nan_negative_values)
          case (DETECTNANNEGCELL)
             call mess(LEVEL_INFO, 'Detection of NaN and negative values in concentrations per cell.')
          case (DETECTNANNEGCOLUMN)
@@ -1099,19 +1099,19 @@ contains
          ! Get optional threshold for negative values.
          icon = index_in_array(cnegthreshold, coname_sub)
          if (icon > 0) then
-            detectnegthreshold = covalue_sub(icon)
-            call mess(LEVEL_INFO, 'Found constant ''NegThreshold''. Will detect values less than ', detectnegthreshold)
+            detect_negative_values_threshold = covalue_sub(icon)
+            call mess(LEVEL_INFO, 'Found constant ''NegThreshold''. Will detect values less than ', detect_negative_values_threshold)
          else
-            call mess(LEVEL_INFO, 'No constant ''NegThreshold'' found. Will detect values less than ', detectnegthreshold)
+            call mess(LEVEL_INFO, 'No constant ''NegThreshold'' found. Will detect values less than ', detect_negative_values_threshold)
          end if
 
          ! Get optinonal maximum number of messages.
          icon = index_in_array(cdetectnannegmsgmax, coname_sub)
          if (icon > 0) then
-            detectnannegmsgmax = nint(covalue_sub(icon))
-            call mess(LEVEL_INFO, 'Found constant ''DetectMsgMax''. Will limit the number of messages to ', detectnannegmsgmax)
+            detect_nan_negative_values_max_messages = nint(covalue_sub(icon))
+            call mess(LEVEL_INFO, 'Found constant ''DetectMsgMax''. Will limit the number of messages to ', detect_nan_negative_values_max_messages)
          else
-            call mess(LEVEL_INFO, 'No constant ''DetectMsgMax'' found. Will limit the number of messages to ', detectnannegmsgmax)
+            call mess(LEVEL_INFO, 'No constant ''DetectMsgMax'' found. Will limit the number of messages to ', detect_nan_negative_values_max_messages)
          end if
       end if
 
@@ -1854,14 +1854,14 @@ contains
       ipoiconc = arrpoi(iiconc)
       
       ! switch messages off when maximum number of messages reached.
-      if (detectnanneg > 0 .and. detectnannegmsg > detectnannegmsgmax) then
-         call mess(LEVEL_INFO, 'Maximum number of massages on NaNs and Negative values reached: ', detectnannegmsgmax)
-         detectnanneg = 0
+      if (detect_nan_negative_values > 0 .and. detect_nan_negative_values_nmessages > detect_nan_negative_values_max_messages) then
+         call mess(LEVEL_INFO, 'Maximum number of massages on NaNs and Negative values reached: ', detect_nan_negative_values_max_messages)
+         detect_nan_negative_values = 0
       end if
-      detectnannegmsgbefore = detectnannegmsg
+      detectnannegmsgbefore = detect_nan_negative_values_nmessages
 
       ! report fer cell or column depending on user choice.
-      select case (detectnanneg)
+      select case (detect_nan_negative_values)
       case (DETECTNANNEGCELL)
          ! report by cell
          do isys = 1, num_substances_transported
@@ -1870,12 +1870,12 @@ contains
                call getkbotktop(kk, kb, kt)
                do k = kb, kt
                   if (.not. ieee_is_finite(constituents(iconst, k))) then
-                     detectnannegmsg = detectnannegmsg + 1
+                     detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
                      call mess(LEVEL_INFO, 'NaN value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
                      call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
                      call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
-                  else if (constituents(iconst, k) < detectnegthreshold) then
-                     detectnannegmsg = detectnannegmsg + 1
+                  else if (constituents(iconst, k) < detect_negative_values_threshold) then
+                     detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
                      call mess(LEVEL_INFO, 'Negative value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
                      call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
                      call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
@@ -1889,8 +1889,8 @@ contains
             iconst = isys2const(isys)
             do kk = 1, Ndxi
                call getkbotktop(kk, kb, kt)
-               if (any(.not. ieee_is_finite(constituents(iconst, kb:kt))) .or. any(constituents(iconst, kb:kt) < detectnegthreshold)) then
-                  detectnannegmsg = detectnannegmsg + 1
+               if (any(.not. ieee_is_finite(constituents(iconst, kb:kt))) .or. any(constituents(iconst, kb:kt) < detect_negative_values_threshold)) then
+                  detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
                   call mess(LEVEL_INFO, 'NaN or negative value detected for substance '//trim(const_names(iconst))//' in column ', kk)
                   call mess(LEVEL_INFO, 'Value received from D-FlowFM, old value in processes, top to bottom for cells', kt, kb)
                   do k = kt, kb, -1
@@ -1902,9 +1902,9 @@ contains
       end select
       
       ! report time and number of new messages for this time step if any new messages were generated.
-      if (detectnannegmsg > detectnannegmsgbefore) then
+      if (detect_nan_negative_values_nmessages > detectnannegmsgbefore) then
          call mess(LEVEL_INFO, 'The time in seconds of this time step: ', time)
-         call mess(LEVEL_INFO, 'Number of new messages in this time step: ', detectnannegmsg - detectnannegmsgbefore)
+         call mess(LEVEL_INFO, 'Number of new messages in this time step: ', detect_nan_negative_values_nmessages - detectnannegmsgbefore)
       end if
 
       ! fill concentrations
@@ -2020,7 +2020,7 @@ contains
       integer :: i, j, ip
       integer :: kk, k, kb, kt, ktmax
       logical :: copyoutput
-      integer :: iex, ifall
+      integer :: iexchange, ifall
 
       integer(4), save :: ithand1 = 0
       integer(4), save :: ithand2 = 0
@@ -2046,11 +2046,11 @@ contains
       end if
 
       ! Copy fall velocities here
-      if (nfallwaq > 0) then
-         do iex = 1, num_exchanges_z_dir
-            k = iex2k(iex)
-            do ifall = 1, nfallwaq
-               fall_velocity_waq(k, ifall) = velowaq(ifall_velocity_waq_to_vpnw(ifall), iex)
+      if (nfallvelocity_waq > 0) then
+         do iexchange = 1, num_exchanges_z_dir
+            k = iexchange_to_cell_number(iexchange)
+            do ifall = 1, nfallvelocity_waq
+               fall_velocity_waq(k, ifall) = velowaq(ifall_velocity_waq_to_vpnw(ifall), iexchange)
             end do
          end do
       end if
