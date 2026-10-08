@@ -213,7 +213,7 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if (jaimplicitfallvelocity == 1) then
+               if (jaimplicitfallvelocity == 1) then ! implicit fallvelocity
                   fluxfac = 0.0_dp
                   if (jased == 4) then
                      if (j >= ISED1 .and. j <= ISEDN) then
