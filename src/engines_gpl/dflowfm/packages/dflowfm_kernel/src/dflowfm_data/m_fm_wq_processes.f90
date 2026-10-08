@@ -72,6 +72,7 @@ module m_fm_wq_processes
    integer, allocatable :: waq_segment_number_indices(:) !< Indices of waqsegmentnumber inputs in paname and painp.
    real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
+   real(hp), pointer, dimension(:) :: vol_wq_processes !< volumes to be used by water quality processes
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
@@ -81,6 +82,7 @@ module m_fm_wq_processes
    integer :: num_exchanges_z_dir !< Number of exchanges vertical
    integer :: num_exchanges_bottom_dir !< Number of exchanges in the bed
    integer, allocatable, dimension(:) :: iexpnt !< Exchange pointer
+   integer, allocatable, dimension(:) :: iexchange_to_cell_number !< Exchange to cell number mapping
 
    real(hp), allocatable, dimension(:, :) :: amass !< mass array to be updated
    logical, allocatable, dimension(:) :: wqactive !< indicates if processes are active based on volume ('VolumeDryThreshold') and depth ('DepthDryThreshold') criteria
@@ -106,7 +108,13 @@ module m_fm_wq_processes
    integer, allocatable, dimension(:) :: imbs2sys !< D-Flow FM mass balance number to WAQ substance (0=not a WAQ substance)
    integer, allocatable, dimension(:) :: isys2trac !< WAQ active system to D-FlowFM tracer
    integer, allocatable, dimension(:) :: isys2wqbot !< WAQ inactive system to D-FlowFM water quality bottom variable
-   integer, allocatable, dimension(:) :: ifall2vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
+
+   integer :: waq_sediment_transport_coupling = 0 !< MDU setting of WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
+   logical :: perform_waq_sediment_transport_coupling = .false.  !< Apply WAQ sedimentation coupled with FM transport calculation
+   real(hp), dimension(:, :), allocatable :: fall_velocity_waq ! fall velocities from water quality processes (m/s)
+   integer :: nfallvelocity_waq ! number of substances with fall velocities
+   integer, allocatable, dimension(:) :: iconstituent_to_fall_velocity_waq ! constituent to waq fall velocity number
+   integer, allocatable, dimension(:) :: ifall_velocity_waq_to_vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
 
    integer :: numwqbots = 0 !< number of water quality bottom variables
    character(len=NAMWAQLEN), dimension(:), allocatable :: wqbotnames !< water quality bottom variable names
@@ -140,6 +148,14 @@ module m_fm_wq_processes
    integer :: isfwaveheight !< pointer to wave height     segment function
    integer :: isfwavelength !< pointer to wave length     segment function
    integer :: isfwaveperiod !< pointer to wave period     segment function
+   !
+   integer, parameter :: NODETECTNANNEG = 0 !< no detection
+   integer, parameter :: DETECTNANNEGCELL = 1 !< detect NaN and negative values per cell
+   integer, parameter :: DETECTNANNEGCOLUMN = 2 !< detect NaN and negative values per column
+   integer :: detect_nan_negative_values = NODETECTNANNEG !< setting for detecting NaN and negative values in concentration fields.
+   real(hp) :: detect_negative_values_threshold = -1.0e-6_hp !< threshold for detecting negative values in concentration fields
+   integer :: detect_nan_negative_values_max_messages = 10000 !< Maximum number of messages for detecting NaN and negative values in concentration fields
+   integer :: detect_nan_negative_values_nmessages = 0 !< message counter for detecting NaN and negative values in concentration fields
    !
    !     Balance output
    !

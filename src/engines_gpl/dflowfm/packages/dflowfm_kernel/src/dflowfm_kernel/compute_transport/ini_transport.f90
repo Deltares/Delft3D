@@ -214,6 +214,9 @@ contains
                const_names(i) = 'tracer_'//trim(str)
             end if
 
+            ! use thetavert from WAQ for all tracers
+            thetavert(i) = md_thetav_waq
+
             ! Lookup oxygen tracer index, if present.
             if (trim(str_tolower(const_names(i))) == 'oxy') then
                ioxy = i

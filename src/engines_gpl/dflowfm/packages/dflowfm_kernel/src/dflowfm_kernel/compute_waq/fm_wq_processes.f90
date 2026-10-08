@@ -60,7 +60,7 @@ contains
       integer(4) :: nosys_eho, notot_eho, nocons_eho
       integer(4) :: i
 
-      integer :: janew, iex, ierr
+      integer :: janew, iexchange, ierr
       integer :: kk, k, kb, kt, ktmax, kdum
 
       logical :: Lsub, Leho, Lstt, Lpdf, Lopl, Lblm, Lallocated
@@ -164,14 +164,18 @@ contains
          ! allocate vertical exchanges array
          call realloc(iexpnt, 4 * num_exchanges_z_dir, keepExisting=.false., fill=0)
 
+         ! allocate exchange to interface array
+         call realloc(iexchange_to_cell_number, num_exchanges_z_dir, keepExisting=.false., fill=0)
+
          ! set vertical exchanges
-         iex = 0
+         iexchange = 0
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
             do k = ktmax, kb + 1, -1
-               iex = iex + 1
-               iexpnt(1 + 4 * (iex - 1)) = k - kbx + 1
-               iexpnt(2 + 4 * (iex - 1)) = k - 1 - kbx + 1
+               iexchange = iexchange + 1
+               iexpnt(1 + 4 * (iexchange - 1)) = k - kbx + 1
+               iexpnt(2 + 4 * (iexchange - 1)) = k - 1 - kbx + 1
+               iexchange_to_cell_number(iexchange) = k - 1
             end do
          end do
       else
@@ -514,7 +518,7 @@ contains
       use m_wq_processes_pmsa_size
       use bloom_data_vtrans
       use m_alloc
-      use m_flow, only: kmx
+      use m_flow, only: kmx, Ndkx
       use m_flowgeom, only: Ndxi, ba
       use m_sferic, only: jsferic
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, jawave, &
@@ -543,12 +547,13 @@ contains
       integer :: nowarn !< count of warnings
       integer :: ierr, ierr2 !< error count
 
-      integer(4) :: i, j, ip, icon, ipar, ifun, isfun, ivar
+      integer(4) :: i, j, ip, isys, icon, ipar, ifun, isfun, ivar
       integer :: ipoifmlayer, ipoifmktop, ipoifmkbot
+      integer :: ifallwaq ! counter for fall velocities
       integer(4) :: refdayNr ! reference day number, varying from 1 till 365
       logical :: no_reflection_wq
 
-      integer :: iex
+      integer :: iexchange
       integer :: kk, k, kb, kt, ktmax
 
       integer :: lunlsp
@@ -573,6 +578,9 @@ contains
       character(len=10), parameter :: cbloom = 'd40blo'
       character(len=20), parameter :: cdoprocesses = 'DoProcesses'
       character(len=20), parameter :: cprocessesinactive = 'ProcessesInactive'
+      character(len=20), parameter :: cdetectnanneg = 'detect_nan_negative_values'
+      character(len=20), parameter :: cnegthreshold = 'NegThreshold'
+      character(len=20), parameter :: cdetectnannegmsgmax = 'DetectMsgMax'
 
       character(len=20), parameter :: cWaveH = 'WaveHeight'
       character(len=20), parameter :: cWaveL = 'WaveLength'
@@ -924,10 +932,6 @@ contains
          outputs%pointers(i) = -1
       end do
 
-      deallocate (coname_sub)
-      deallocate (covalue_sub)
-      deallocate (ouname_sub)
-
       !     calculation timers need to be known for the statistical processes (start time/stop time)
       isfact = 1
       itfact = 86400
@@ -954,8 +958,6 @@ contains
       if (ierr /= 0) then
          call mess(LEVEL_ERROR, 'Something went wrong during initialisation of the processes. Check the lsp-file: ', trim(proc_log_file))
       end if
-      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
-      call mess(LEVEL_INFO, '==========================================================================')
 
       !     proces fractional step multiplier is 1 for all
       prondt = 1
@@ -971,6 +973,26 @@ contains
       call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)
       !     And actually allocate and zero the A array
       call realloc(process_space_real, sizepmsa, keepExisting=.false., fill=0.0)
+
+      !    Prepare fall velocity array
+      !    count number of substances with fall velocities
+      nfallvelocity_waq = 0
+      if (perform_waq_sediment_transport_coupling) then
+         nfallvelocity_waq = count(ivpnw(1:num_substances_transported) > 0)
+      end if
+      call realloc(iconstituent_to_fall_velocity_waq, numconst, keepExisting=.true., fill=0)
+      if (nfallvelocity_waq > 0) then
+         call realloc(fall_velocity_waq, [Ndkx, nfallvelocity_waq], keepExisting=.false., fill=0.0_hp)
+         call realloc(ifall_velocity_waq_to_vpnw, nfallvelocity_waq, keepExisting=.true., fill=0)
+         ifallwaq = 0
+         do isys = 1, num_substances_transported
+            if (ivpnw(isys) > 0) then
+               ifallwaq = ifallwaq + 1
+               iconstituent_to_fall_velocity_waq(isys2const(isys)) = ifallwaq
+               ifall_velocity_waq_to_vpnw(ifallwaq) = ivpnw(isys)
+            end if
+         end do
+      end if
 
       !     constants from the substance file
       ip = arrpoi(iicons)
@@ -1004,12 +1026,12 @@ contains
 
       !     exchange areas
       ip = arrpoi(iiarea)
-      iex = 0
+      iexchange = 0
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          do k = ktmax, kb + 1, -1
-            process_space_real(ip + iex) = ba(kk)
-            iex = iex + 1
+            process_space_real(ip + iexchange) = ba(kk)
+            iexchange = iexchange + 1
          end do
       end do
 
@@ -1059,7 +1081,47 @@ contains
          end do
       end if
 
+      ! Check if detection of NaN and negative values in substance concentrations is requested, and if so, get optional threshold and maximum number of messages.
+      icon = index_in_array(cdetectnanneg, coname_sub)
+      if (icon > 0) then
+         ! Detection of NaN and negative values in concentrations is requested.
+         call mess(LEVEL_INFO, 'Found constant ''detect_nan_negative_values''. Water quality processes will detect NaN and negative values in the state vector.')
+         detect_nan_negative_values = nint(covalue_sub(icon))
+         select case (detect_nan_negative_values)
+         case (DETECTNANNEGCELL)
+            call mess(LEVEL_INFO, 'Detection of NaN and negative values in concentrations per cell.')
+         case (DETECTNANNEGCOLUMN)
+            call mess(LEVEL_INFO, 'Detection of NaN and negative values in concentrations per column.')
+         case default
+            call mess(LEVEL_ERROR, 'Invalid value detection of NaN or negative values in concentrations. Use 1 (per cell) or 2 (per column) to switch it on.')
+         end select
+
+         ! Get optional threshold for negative values.
+         icon = index_in_array(cnegthreshold, coname_sub)
+         if (icon > 0) then
+            detect_negative_values_threshold = covalue_sub(icon)
+            call mess(LEVEL_INFO, 'Found constant ''NegThreshold''. Will detect values less than ', detect_negative_values_threshold)
+         else
+            call mess(LEVEL_INFO, 'No constant ''NegThreshold'' found. Will detect values less than ', detect_negative_values_threshold)
+         end if
+
+         ! Get optinonal maximum number of messages.
+         icon = index_in_array(cdetectnannegmsgmax, coname_sub)
+         if (icon > 0) then
+            detect_nan_negative_values_max_messages = nint(covalue_sub(icon))
+            call mess(LEVEL_INFO, 'Found constant ''DetectMsgMax''. Will limit the number of messages to ', detect_nan_negative_values_max_messages)
+         else
+            call mess(LEVEL_INFO, 'No constant ''DetectMsgMax'' found. Will limit the number of messages to ', detect_nan_negative_values_max_messages)
+         end if
+      end if
+
+      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
+      call mess(LEVEL_INFO, '==========================================================================')
       jawaqproc = 2 ! processes succesfully initiated
+
+      deallocate (coname_sub)
+      deallocate (covalue_sub)
+      deallocate (ouname_sub)
 
       if (timon) then
          call timstop(ithndl)
@@ -1438,17 +1500,19 @@ contains
       end if
    end subroutine add_wqbot
 
-   module subroutine fm_wq_processes_step(dt, time)
+   module subroutine fm_wq_processes_step(dt, time, process_selection, volume_selection)
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_area_data
-      use m_flow, only: vol1
+      use m_flow, only: vol0, vol1
       use timers
 
       implicit none
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      integer, intent(in) :: process_selection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
+      integer, intent(in) :: volume_selection !< indicator for which volume to use (VOL0, VOL1)
 
       integer :: ipoiconc
 
@@ -1465,6 +1529,21 @@ contains
 
       if (timon) then
          call timstrt("fm_wq_processes_step", ithand0)
+      end if
+
+      select case (process_selection)
+      case (WQ_RUNADSSEDTRA)
+         run_process = is_always_process .or. is_ads_sed_tra_process
+      case (WQ_RUNOTHER)
+         run_process = .not. is_ads_sed_tra_process
+      case default !run all processes
+         run_process = .true.
+      end select
+      
+      if (volume_selection == WQ_USE_VOL0) then
+         vol_wq_processes => vol0
+      else ! default WQ_USE_VOL1
+         vol_wq_processes => vol1
       end if
 
       !     copy data from D-FlowFM to WAQ
@@ -1490,19 +1569,19 @@ contains
          allocate (mbadefdomain(ktx), source=-999)
       end if
 
-      call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol1(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
+      call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol_wq_processes(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
                                dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf))
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), perform_waq_sediment_transport_coupling)
 
       ! copy data from WAQ to D-FlowFM
       if (timon) then
          call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
       end if
-      call copy_data_from_wq_processes_to_fm(dt, time)
+      call copy_data_from_wq_processes_to_fm(dt, time, process_space_real(ipoivelx))
       if (timon) then
          call timstop(ithand2)
       end if
@@ -1518,7 +1597,7 @@ contains
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
       use m_flowgeom, only: Ndxi, ba, yz
-      use m_flow, only: vol1, ucx, ucy
+      use m_flow, only: ucx, ucy
       use m_flowtimes, only: irefdate, tunit
       use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
       use m_fm_wq_processes
@@ -1530,6 +1609,7 @@ contains
       use m_get_kbot_ktop
       use m_get_link1
       use m_waveconst
+      use ieee_arithmetic
       implicit none
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
@@ -1543,6 +1623,7 @@ contains
       integer :: ip, ifun, isfun
       integer :: kk, k, kb, kt, ktmax, ktwq
       integer :: L
+      integer :: detectnannegmsgbefore
 
       logical, save :: first = .true.
 
@@ -1599,7 +1680,7 @@ contains
 
       ipoivol = arrpoi(iivol)
       do k = 0, ktx - kbx
-         process_space_real(ipoivol + k) = vol1(k + kbx)
+         process_space_real(ipoivol + k) = vol_wq_processes(k + kbx)
       end do
 
       if (isftau > 0) then
@@ -1764,12 +1845,68 @@ contains
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          do k = kb, ktmax
-            wqactive(k) = vol1(k) > waq_vol_dry_thr .and. (vol1(k) / ba(kk)) > waq_dep_dry_thr
+            wqactive(k) = vol_wq_processes(k) > waq_vol_dry_thr .and. (vol_wq_processes(k) / ba(kk)) > waq_dep_dry_thr
          end do
       end do
 
-      ! fill concentrations
+      ! check concentrations for NaN and negative values (when requested by user)
       ipoiconc = arrpoi(iiconc)
+      
+      ! switch messages off when maximum number of messages reached.
+      if (detect_nan_negative_values > 0 .and. detect_nan_negative_values_nmessages > detect_nan_negative_values_max_messages) then
+         call mess(LEVEL_INFO, 'Maximum number of massages on NaNs and Negative values reached: ', detect_nan_negative_values_max_messages)
+         detect_nan_negative_values = 0
+      end if
+      detectnannegmsgbefore = detect_nan_negative_values_nmessages
+
+      ! report fer cell or column depending on user choice.
+      select case (detect_nan_negative_values)
+      case (DETECTNANNEGCELL)
+         ! report by cell
+         do isys = 1, num_substances_transported
+            iconst = isys2const(isys)
+            do kk = 1, Ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  if (.not. ieee_is_finite(constituents(iconst, k))) then
+                     detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
+                     call mess(LEVEL_INFO, 'NaN value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
+                     call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
+                     call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
+                  else if (constituents(iconst, k) < detect_negative_values_threshold) then
+                     detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
+                     call mess(LEVEL_INFO, 'Negative value detected for substance '//trim(const_names(iconst))//' in column, cell ', kk, k)
+                     call mess(LEVEL_INFO, 'Value received from D-FlowFM: ', constituents(iconst, k))
+                     call mess(LEVEL_INFO, 'Old value in processes: ', process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1))
+                  end if
+               end do
+            end do
+         end do
+      case (DETECTNANNEGCOLUMN)
+         ! report by column if any NaN or negative value is detected in the column
+         do isys = 1, num_substances_transported
+            iconst = isys2const(isys)
+            do kk = 1, Ndxi
+               call getkbotktop(kk, kb, kt)
+               if (any(.not. ieee_is_finite(constituents(iconst, kb:kt))) .or. any(constituents(iconst, kb:kt) < detect_negative_values_threshold)) then
+                  detect_nan_negative_values_nmessages = detect_nan_negative_values_nmessages + 1
+                  call mess(LEVEL_INFO, 'NaN or negative value detected for substance '//trim(const_names(iconst))//' in column ', kk)
+                  call mess(LEVEL_INFO, 'Value received from D-FlowFM, old value in processes, top to bottom for cells', kt, kb)
+                  do k = kt, kb, -1
+                     call mess(LEVEL_INFO, constituents(iconst, k), real(process_space_real(ipoiconc + (k - kbx) * num_substances_total + isys - 1), 8))
+                  end do
+               end if
+            end do
+         end do
+      end select
+      
+      ! report time and number of new messages for this time step if any new messages were generated.
+      if (detect_nan_negative_values_nmessages > detectnannegmsgbefore) then
+         call mess(LEVEL_INFO, 'The time in seconds of this time step: ', time)
+         call mess(LEVEL_INFO, 'Number of new messages in this time step: ', detect_nan_negative_values_nmessages - detectnannegmsgbefore)
+      end if
+
+      ! fill concentrations
       do k = kbx, ktx
          do isys = 1, num_substances_transported
             iconst = isys2const(isys)
@@ -1782,7 +1919,7 @@ contains
          if (wqactive(k)) then
             do isys = 1, num_substances_transported
                iconst = isys2const(isys)
-               amass(isys, k - kbx + 1) = constituents(iconst, k) * vol1(k)
+               amass(isys, k - kbx + 1) = constituents(iconst, k) * vol_wq_processes(k)
             end do
          else
             do isys = 1, num_substances_transported
@@ -1857,12 +1994,11 @@ contains
       return
    end subroutine copy_data_from_fm_to_wq_processes
 
-   subroutine copy_data_from_wq_processes_to_fm(dt, tim)
+   subroutine copy_data_from_wq_processes_to_fm(dt, tim, velowaq)
       !  copy data from WAQ to D-FlowFM
       use m_getkbotktopmax
       use m_missing, only: dmiss
       use m_flowgeom, only: Ndxi, ba
-      use m_flow, only: vol1
       use m_flowtimes
       use m_flowparameters, only: EPS10
       use m_fm_wq_processes
@@ -1874,6 +2010,7 @@ contains
 
       real(kind=dp), intent(in) :: dt
       real(kind=dp), intent(in) :: tim
+      real(kind=real_wp), intent(in) :: velowaq(num_velocity_arrays_extra, num_exchanges_z_dir) !< array with additional velocities
 
       integer :: isys, iconst, iwqbot
       integer :: ivar, iarr, iv_idx
@@ -1882,6 +2019,7 @@ contains
       integer :: i, j, ip
       integer :: kk, k, kb, kt, ktmax
       logical :: copyoutput
+      integer :: iexchange, ifall
 
       integer(4), save :: ithand1 = 0
       integer(4), save :: ithand2 = 0
@@ -1897,13 +2035,23 @@ contains
             if (wqactive(k)) then
                do isys = 1, num_substances_transported
                   iconst = isys2const(isys)
-                  constituents(iconst, k) = amass(isys, k - kbx + 1) / vol1(k)
+                  constituents(iconst, k) = amass(isys, k - kbx + 1) / vol_wq_processes(k)
                end do
             end if
          end do
       end do
       if (timon) then
          call timstop(ithand1)
+      end if
+
+      ! Copy fall velocities here
+      if (nfallvelocity_waq > 0) then
+         do iexchange = 1, num_exchanges_z_dir
+            k = iexchange_to_cell_number(iexchange)
+            do ifall = 1, nfallvelocity_waq
+               fall_velocity_waq(k, ifall) = velowaq(ifall_velocity_waq_to_vpnw(ifall), iexchange)
+            end do
+         end do
       end if
 
       ! Ouputs to waq outputs array (only when his or map outputs will be written within the next timestep,
