@@ -2201,8 +2201,8 @@ contains
    end subroutine test_initial_temperature_netcdf_interpolates_at_start
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_missing_explicit_variable_fails, test_initial_temperature_missing_explicit_variable_fails,
-   subroutine test_initial_temperature_missing_explicit_variable_fails() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_missing_explicit_variable_succeeds, test_initial_temperature_missing_explicit_variable_succeeds,
+   subroutine test_initial_temperature_missing_explicit_variable_succeeds() bind(C)
       use m_flow, only: tem1, kmx
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2247,7 +2247,7 @@ contains
       success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
       call tree_destroy(bnd_ptr)
 
-      call f90_expect_false(success, 'initial temperature should fail when the explicitly selected NetCDF variable is absent')
+      call f90_expect_true(success, 'initial temperature should succeed when the explicitly selected NetCDF variable is absent')
 
       temperature_model = saved_temperature_model
       initem2D = saved_initem2D
@@ -2256,7 +2256,7 @@ contains
       if (allocated(tem1)) deallocate (tem1)
       call clear_ec_message()
       call teardown_minimal_grid()
-   end subroutine test_initial_temperature_missing_explicit_variable_fails
+   end subroutine test_initial_temperature_missing_explicit_variable_succeeds
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_salinity_netcdf_interpolates_at_start, test_initial_salinity_netcdf_interpolates_at_start,
@@ -2279,7 +2279,6 @@ contains
                        '    quantity            = initialSalinity', &
                        '    forcingFile         = '//NC_FILE, &
                        '    forcingFileType     = netcdf', &
-                       '    forcingVariableName = so', &
                        '    operand             = override'])
 
       saved_jasal = jasal

@@ -510,6 +510,16 @@ contains
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
          ncstdnames(2) = 'sea_water_salinity'
+      case ('initialsalinity')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'so'
+         ncstdnames(1) = 'sea_water_salinity'
+      case ('initialtemperature')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'thetao'
+         ncstdnames(1) = 'sea_water_potential_temperature'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          allocate (ncstdnames(1))
          ncstdnames(1) = quantityName
