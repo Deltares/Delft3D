@@ -829,7 +829,7 @@ contains
 
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
-   function resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index, target_layer) result(success)
+   function resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer) result(success)
       use string_module, only: str_tolower
       use messagehandling, only: mess, LEVEL_ERROR
       use m_flow, only: sa1
@@ -851,17 +851,17 @@ contains
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D or UNC_LOC_3DV).
-      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< Output to the target 3D array.
+      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_rank_2 !< The rank-2 target array for the quantity.
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
       character(len=*), optional, intent(in) :: target_layer !< Absent means 2D input; '3D' changes target_location_type to UNC_LOC_S3D. TODO: support bot, top, all and integers
-      logical :: success !< true if the quantity was recognized and target_array_3d is associated.
+      logical :: success !< true if the quantity was recognized and target_array_rank_2 is associated.
 
       character(len=256) :: qid_base, qid_specific
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: iconst, itrac, isednum, iwqbot, janew, iostat
 
-      target_array_3d => null()
+      target_array_rank_2 => null()
       first_index = 1
       target_location_type = UNC_LOC_S
       success = .true.
@@ -875,7 +875,7 @@ contains
             success = .false.
             return
          end if
-         target_array_3d(1:1, 1:size(sa1)) => sa1
+         target_array_rank_2(1:1, 1:size(sa1)) => sa1
          first_index = 1
 
       case ('initialsedfrac')
@@ -891,7 +891,7 @@ contains
             return
          end if
          first_index = iconst
-         target_array_3d => constituents
+         target_array_rank_2 => constituents
 
       case ('initialsediment')
          if (jased <= 0) then
@@ -903,7 +903,7 @@ contains
          read (qid_specific(1:1), '(i1)', iostat=iostat) isednum
          if (iostat /= 0) isednum = 1
          first_index = isednum
-         target_array_3d => sed
+         target_array_rank_2 => sed
 
       case ('initialtracer')
          call get_tracername(quantity, tracnam, qidnam)
@@ -917,7 +917,7 @@ contains
             return
          end if
          first_index = itrac2const(itrac)
-         target_array_3d => constituents
+         target_array_rank_2 => constituents
 
       case ('initialwaqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
@@ -927,7 +927,7 @@ contains
             return
          end if
          first_index = iwqbot
-         target_array_3d => wqbot
+         target_array_rank_2 => wqbot
 
       case ('waqparameter', 'waqsegmentnumber')
          target_location_type = UNC_LOC_S
@@ -936,8 +936,8 @@ contains
          if (str_tolower(qid_base) == 'waqsegmentnumber') then
             call register_waq_segment_number_index(first_index)
          end if
-         allocate (target_array_3d(first_index:first_index, size(painp, 2)))
-         target_array_3d(first_index, :) = painp(first_index, :)
+         allocate (target_array_rank_2(first_index:first_index, size(painp, 2)))
+         target_array_rank_2(first_index, :) = painp(first_index, :)
 
       case default
          success = .false.
@@ -945,7 +945,7 @@ contains
       if (success) then
          select case (str_tolower(qid_base))
          case ('initialsalinity', 'initialsedfrac', 'initialtracer')
-            success = set_3D_target_location(target_layer, quantity, size(target_array_3d, 2), target_location_type)
+            success = set_3D_target_location(target_layer, quantity, size(target_array_rank_2, 2), target_location_type)
          end select
       end if
    end function resolve_constituent_target

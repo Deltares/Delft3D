@@ -1113,7 +1113,7 @@ contains
 
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
-      real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      real(kind=dp), dimension(:, :), pointer :: target_array_rank_2
       real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
       integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
       logical :: mapped
@@ -1123,7 +1123,7 @@ contains
       ec_item = ec_undef_int
       target_data => null()
       target_data_integer => null()
-      target_array_3d => null()
+      target_array_rank_2 => null()
       mapped_item1 => null()
 
       input = read_spatial_field_block(block_ptr)
@@ -1176,9 +1176,9 @@ contains
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_constituent_target(quantity, target_location_type, target_array_3d, first_index, target_layer=target_layer)
-            if (res .and. any(target_location_type == [UNC_LOC_3DV, UNC_LOC_S3D]) .and. associated(target_array_3d)) then
-               target_data => target_array_3d(first_index, :)
+            res = resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer=target_layer)
+            if (res .and. any(target_location_type == [UNC_LOC_3DV, UNC_LOC_S3D]) .and. associated(target_array_rank_2)) then
+               target_data => target_array_rank_2(first_index, :)
             end if
          end if
          if (.not. res) then
@@ -1226,7 +1226,7 @@ contains
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
 
-                  if (associated(target_array_3d) .and. target_location_type /= UNC_LOC_S3D) then ! allocate horizontal staging buffer for 2D-to-3D expansion
+                  if (associated(target_array_rank_2) .and. target_location_type /= UNC_LOC_S3D) then ! allocate horizontal staging buffer for 2D-to-3D expansion
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
@@ -1243,7 +1243,7 @@ contains
                         res = .false.
                         return
                      end if
-                     if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
+                     if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_rank_2)) then
                         if (associated(mapped_item1) .and. associated(mapped_data1)) then
                            target_data => mapped_data1
                         end if
@@ -1278,17 +1278,17 @@ contains
                      return
                   end if
 
-                  if (associated(target_array_3d) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
+                  if (associated(target_array_rank_2) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
                      oper = oper_backup
                      if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
-                        res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
+                        res = apply_waqbot_target_layer(target_data, target_array_rank_2(first_index, :), target_layer, quantity, oper) .and. res
                      else
-                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_rank_2(first_index, :), transformcoef(13), transformcoef(14), oper)
                      end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:16)) == 'waqsegmentnumber') then
-                        painp(first_index, :) = target_array_3d(first_index, :)
-                        deallocate (target_array_3D)
+                        painp(first_index, :) = target_array_rank_2(first_index, :)
+                        deallocate (target_array_rank_2)
                      end if
                      deallocate (target_data)
                   end if
