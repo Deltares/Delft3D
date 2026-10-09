@@ -287,7 +287,6 @@ namespace pre_c_sumo
             const double intake_flow_rate = diffuser.intakeFlowRate();
             double intake_weight_norm = 0.0;
             std::vector<double> constituents(diffuser.constituents());
-            std::vector<double> intake_average_constituents(constituents.size());
             // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
             // for flow magnitudes and would let tiny positive numerical noise trigger
             // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
@@ -317,29 +316,19 @@ namespace pre_c_sumo
                     intake_weight_norm = std::max(intake_weight_norm, 1.0);
 
                     // Intakes are sink-only terms (not connected to source points).
-                    for (const auto& intake : intakes)
+                    // Update constituents from diffuser with weighted intake constituents if operator is excess.
+                    if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
                     {
-                        // Update intake constituents.
-                        if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
+                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh);
+                        for (const auto& intake : intakes)
                         {
-                            std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh);
                             for (std::size_t constituent_index = 0; constituent_index < constituents.size();
                                  constituent_index++)
                             {
-                                intake_average_constituents[constituent_index] +=
-                                    intake_constituents[constituent_index] * (intake.has_weight ? intake.weight : 1.0) /
-                                    intake_weight_norm;
+                                constituents[constituent_index] += intake_constituents[constituent_index] *
+                                                                   (intake.has_weight ? intake.weight : 1.0) /
+                                                                   intake_weight_norm;
                             }
-                        }
-                    }
-
-                    // Update constituents array to be sent with sources if the operation is excess.
-                    if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
-                    {
-                        for (std::size_t constituent_index = 0; constituent_index < constituents.size();
-                             constituent_index++)
-                        {
-                            constituents[constituent_index] += intake_average_constituents[constituent_index];
                         }
                     }
                 }
