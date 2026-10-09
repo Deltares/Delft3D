@@ -49,6 +49,19 @@ dev = [
     "requests ~= 2.32",
 ]
 
+# Optional console command, available after an editable install (`pip install -e .`) from this directory.
+# `python TestBench.py ...` keeps working and is what CI uses.
+[project.scripts]
+testbench = "TestBench:main"
+
+# Needed for the editable install: ship `TestBench.py` and the `src` package (imported as `src.*`).
+[tool.setuptools]
+py-modules = ["TestBench"]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+namespaces = true  # `src/` has no `__init__.py` files.
+
 # Ruff settings (linting and formatting).
 # https://docs.astral.sh/ruff/settings/
 [tool.ruff]
