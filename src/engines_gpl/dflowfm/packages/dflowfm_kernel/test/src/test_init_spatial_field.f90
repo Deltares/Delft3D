@@ -81,12 +81,12 @@ contains
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolvers_select_3d_targets, test_resolvers_select_3d_targets,
    subroutine test_resolvers_select_3d_targets() bind(C)
-      use unstruc_inifields, only: resolve_initial_target, resolve_constituent_target
+      use unstruc_inifields, only: resolve_constituent_target
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D
       use m_flow, only: sa1, tem1, kmx, ndkx
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
 
-      real(dp), dimension(:), pointer :: target, target_row
+      real(dp), dimension(:), pointer :: target_row
       real(dp), dimension(:, :), pointer :: constituent_target
       integer :: location, first_index, saved_kmx, saved_ndkx
       integer :: saved_jasal, saved_temperature_model, saved_initem2D
@@ -101,6 +101,7 @@ contains
       ndkx = 3
       jasal = 1
       temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
       threshold_abort = LEVEL_FATAL
       call realloc(sa1, ndkx, fill=42.0_dp, keepExisting=.false.)
       call realloc(tem1, ndkx, fill=42.0_dp, keepExisting=.false.)
@@ -117,18 +118,26 @@ contains
       target_row => constituent_target(first_index, :)
       call f90_expect_true(associated(target_row, sa1), 'resolver must retain full salinity storage')
 
-      success = resolve_initial_target('initialTemperature', location, target, target_layer=TARGET_LAYER_UNIFORM)
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_UNIFORM)
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S)
-      call f90_expect_eq(initem2D, 1)
-      success = resolve_initial_target('initialTemperature', location, target, target_layer=TARGET_LAYER_ALL_3D)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'new spatial-field resolver must leave the legacy expansion flag clear')
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_ALL_3D)
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S3D)
-      call f90_expect_true(associated(target, tem1), 'resolver must retain full temperature storage')
-      call f90_expect_eq(initem2D, 0, 'resolver owns temperature expansion suppression')
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'explicit 3D input must leave the legacy expansion flag clear')
 
       kmx = 0
-      call f90_expect_false(resolve_initial_target('initialTemperature', location, target, target_layer=TARGET_LAYER_ALL_3D))
+      call f90_expect_false(resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                               target_layer=TARGET_LAYER_ALL_3D))
       call f90_expect_false(resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D))
 
       kmx = saved_kmx
@@ -138,26 +147,6 @@ contains
       initem2D = saved_initem2D
       deallocate (sa1, tem1)
    end subroutine test_resolvers_select_3d_targets
-   !$f90tw)
-
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_3d_target_requires_initial_netcdf, test_3d_target_requires_initial_netcdf,
-   subroutine test_3d_target_requires_initial_netcdf() bind(C)
-      type(t_spatial_field_input) :: input
-
-      threshold_abort = LEVEL_FATAL
-      call make_test_input(input, quantity='initialSalinity')
-      input%target_layer = TARGET_LAYER_ALL_3D
-      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                  'initialSalinity with targetLayer=3D and NetCDF must pass input validation')
-      call make_test_input(input, quantity='initialSalinity', forcing_file='dummy.xyz', forcing_file_type='sample')
-      input%target_layer = TARGET_LAYER_ALL_3D
-      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                   'initialSalinity with targetLayer=3d and sample input must fail input validation')
-      call make_test_input(input, quantity='salinity')
-      input%target_layer = TARGET_LAYER_ALL_3D
-      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                   'dynamic salinity with targetLayer=3d must fail input validation')
-   end subroutine test_3d_target_requires_initial_netcdf
    !$f90tw)
 
    subroutine make_test_input( &

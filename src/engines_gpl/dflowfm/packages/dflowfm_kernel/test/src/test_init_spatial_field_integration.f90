@@ -2186,7 +2186,7 @@ contains
       call tree_destroy(bnd_ptr)
 
       call f90_expect_true(success, 'initial temperature NetCDF should initialize without nudging')
-      call f90_expect_eq(initem2D, 1, 'canonical temperature resolver must retain its initialization flag')
+      call f90_expect_eq(initem2D, 0, 'new-ext temperature initialization must leave the legacy expansion flag clear')
       if (success) then
          call f90_expect_near(tem1(1), 9.0_dp, 1.0e-6_dp, 'temperature should interpolate at simulation start')
          call f90_expect_near(tem1(2), 10.5_dp, 1.0e-6_dp, 'temperature should retain spatial variation')
@@ -2248,6 +2248,7 @@ contains
       call tree_destroy(bnd_ptr)
 
       call f90_expect_true(success, 'initial temperature should succeed when the explicitly selected NetCDF variable is absent')
+      call f90_expect_eq(initem2D, 0, 'missing new-ext temperature data must not set the legacy expansion flag')
 
       temperature_model = saved_temperature_model
       initem2D = saved_initem2D

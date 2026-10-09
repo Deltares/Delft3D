@@ -1171,7 +1171,7 @@ contains
             res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
-            res = resolve_initial_target(quantity, target_location_type, target_data, target_layer=target_layer)
+            res = resolve_initial_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)

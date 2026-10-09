@@ -833,8 +833,8 @@ contains
    function resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer) result(success)
       use string_module, only: str_tolower
       use messagehandling, only: mess, LEVEL_ERROR
-      use m_flow, only: sa1
-      use m_flowparameters, only: jasal
+      use m_flow, only: sa1, tem1
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
@@ -870,6 +870,17 @@ contains
       call split_qid(quantity, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
+
+      case ('initialtemperature')
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+            target_location_type = UNC_LOC_S
+            target_array_rank_2(1:1, 1:size(tem1)) => tem1
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires a temperature model to be enabled.')
+            success = .false.
+            return
+         end if
+
       case ('initialsalinity')
          if (jasal <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires salinity to be enabled.')
@@ -945,7 +956,7 @@ contains
       end select
       if (success) then
          select case (str_tolower(qid_base))
-         case ('initialsalinity', 'initialsedfrac', 'initialtracer')
+         case ('initialsalinity', 'initialsedfrac', 'initialtracer', 'initialtemperature')
             success = set_3D_target_location(target_layer, quantity, size(target_array_rank_2, 2), target_location_type)
          end select
       end if
@@ -980,7 +991,7 @@ contains
    end function set_3D_target_location
 
    !> Resolve all 'initial' quantities, plus waterlevel/waterdepth.
-   function resolve_initial_target(qid, target_location_type, target_array, target_layer) result(success)
+   function resolve_initial_target(qid, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -989,7 +1000,7 @@ contains
       use m_flow, only: s1, hs, sa1, satop, sabot, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, &
-                                  temperature_model, TEMPERATURE_MODEL_NONE, initem2D, inivel
+                                  temperature_model, TEMPERATURE_MODEL_NONE, inivel
       use m_sediment, only: stm_included
       use m_transportdata, only: constituents, const_names
       use m_find_name, only: find_name
@@ -1002,7 +1013,6 @@ contains
       character(len=*), intent(in) :: qid !< Name of the quantity.
       integer, intent(out) :: target_location_type !< Location type; explicit '3d' selects UNC_LOC_S3D.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
-      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number
       logical :: success !< true if the quantity was recognized and target_array is associated.
       character(len=256) :: qid_base, qid_specific
       integer :: iconst
@@ -1013,20 +1023,20 @@ contains
       call split_qid(qid, qid_base, qid_specific)
       select case (str_tolower(qid_base))
       case ('waterlevel', 'initialwaterlevel')
-         target_location_type = UNC_LOC_S
-         target_array => s1
          if (str_tolower(qid) == 'waterlevel') then
             call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
                       //''' is deprecated, use ''initialWaterLevel'' instead. Please update your input file.')
          end if
+         target_location_type = UNC_LOC_S
+         target_array => s1
 
       case ('waterdepth', 'initialwaterdepth')
-         target_location_type = UNC_LOC_S
-         target_array => hs
          if (str_tolower(qid) == 'waterdepth') then
             call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
                       //''' is deprecated, use ''initialWaterDepth'' instead. Please update your input file.')
          end if
+         target_location_type = UNC_LOC_S
+         target_array => hs
       case ('initialunsaturedzonethickness')
          call realloc(h_unsat, ndx, keepExisting=.true., fill=dmiss)
          target_location_type = UNC_LOC_S
@@ -1062,21 +1072,6 @@ contains
             target_array => sabot
          else
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires salinity to be enabled.')
-            success = .false.
-            return
-         end if
-
-      case ('initialtemperature')
-         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
-            target_location_type = UNC_LOC_S
-            target_array => tem1
-            initem2D = 1
-            success = set_3D_target_location(target_layer, qid, size(target_array), target_location_type)
-            if (success .and. target_location_type == UNC_LOC_S3D) then
-               initem2D = 0
-            end if
-         else
-            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model to be enabled.')
             success = .false.
             return
          end if
