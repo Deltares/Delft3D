@@ -74,11 +74,11 @@ module unstruc_inifields
    ! 1.01: initial implemented version
 
    ! Module-level state for deferred assignment of 1dField file [Global] values.
-   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
-   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
-   real(dp), public :: water_global_value_1dfield = -999.0_dp
-   real(dp), public :: friction_global_value_1dfield = -999.0_dp
-   character(len=256), public :: water_global_quantity_1dfield = ''
+   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:) !< Mask of 1D water locations with explicitly specified values.
+   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:) !< Mask of 1D friction locations with explicitly specified values.
+   real(dp), public :: water_global_value_1dfield = -999.0_dp !< Global water value applied to unspecified 1D locations.
+   real(dp), public :: friction_global_value_1dfield = -999.0_dp !< Global friction value applied to unspecified 1D locations.
+   character(len=256), public :: water_global_quantity_1dfield = '' !< Water quantity represented by water_global_value_1dfield.
 
 contains
 
@@ -498,8 +498,8 @@ contains
       use m_ec_interpolationsettings
       use string_module, only: str_tolower
       implicit none
-      character(len=*), intent(in) :: sAveragingType ! averaging type string
-      integer, intent(out) :: iAveragingType ! averaging type integer
+      character(len=*), intent(in) :: sAveragingType !< Averaging type name.
+      integer, intent(out) :: iAveragingType !< EC averaging type enum; -1 when the name is invalid.
 
       select case (trim(str_tolower(sAveragingType)))
       case ('mean')
@@ -685,9 +685,9 @@ contains
       use timespace_parameters, only: OPERAND_OVERRIDE
       implicit none
 
-      type(tree_data), pointer, intent(in) :: block_ptr
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing the friction type.
       integer, intent(in) :: operand !< Operand for the friction type assignment.
-      logical :: res
+      logical :: res !< .true. if the friction type was read successfully.
       integer :: link
 
       character(len=256) :: friction_type_str
@@ -807,10 +807,10 @@ contains
       use m_flowgeom, only: iadv, ibot
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid
-      integer, intent(out) :: target_location_type
-      integer, dimension(:), pointer, intent(out) :: target_array
-      logical :: success
+      character(len=*), intent(in) :: qid !< Quantity identifier.
+      integer, intent(out) :: target_location_type !< Location type for the resolved target.
+      integer, dimension(:), pointer, intent(out) :: target_array !< Integer target array; null when the quantity is not handled.
+      logical :: success !< .true. if the quantity was recognized and the target array is associated.
 
       target_array => null()
       target_location_type = 0
@@ -1772,8 +1772,8 @@ contains
       real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
       integer, intent(in) :: target_layer !< Target layer enum or positive layer number.
       character(len=*), intent(in) :: quantity !< the quantity name, should be "initialwaqbot", parsed and checked at call site.
-      integer, intent(in) :: operand
-      logical :: success
+      integer, intent(in) :: operand !< Operand used to combine the input and target values.
+      logical :: success !< .true. if the target layer was applied successfully.
 
       integer :: n, k, kb, kt, ktmax
 

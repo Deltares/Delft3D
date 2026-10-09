@@ -94,8 +94,8 @@ contains
       use m_missing, only: dmiss
 
       integer :: extrapolation_method_legacy
-      type(tree_data), pointer, intent(in) :: block_ptr
-      type(t_spatial_field_input) :: res
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing the spatial field block.
+      type(t_spatial_field_input) :: res !< Parsed spatial field input.
       logical :: success
       extrapolation_method_legacy = 0
 
@@ -170,8 +170,8 @@ contains
       use properties, only: prop_get
       use unstruc_inifields, only: averagingTypeStringToInteger
 
-      type(tree_data), pointer, intent(in) :: block_ptr
-      type(t_averaging_input), intent(out) :: avg
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing averaging keywords.
+      type(t_averaging_input), intent(out) :: avg !< Parsed averaging parameters.
 
       logical :: is_read
       character(len=256) :: averagingType
@@ -194,8 +194,8 @@ contains
    subroutine averaging_params_to_transformcoef(avg, transformcoef)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
 
-      type(t_averaging_input), intent(in) :: avg
-      real(dp), intent(inout) :: transformcoef(NTRANSFORMCOEF)
+      type(t_averaging_input), intent(in) :: avg !< Averaging parameters to copy.
+      real(dp), intent(inout) :: transformcoef(NTRANSFORMCOEF) !< Transform coefficients updated with averaging parameters.
 
       transformcoef(4) = real(avg%averaging_type, dp) !< averagingType  (slot 4)
       transformcoef(5) = avg%rel_size !< relSize        (slot 5)
@@ -216,7 +216,7 @@ contains
       character(len=*), intent(in) :: forcing_file_type !< Most forcing file types uniquely determine time-dependence.
       integer, intent(in) :: method !< arcinfo time-dependence is determined by method (currently)
       character(len=*), intent(inout) :: quantity !< Quantity identifier; the generic initial modifier is removed.
-      logical :: is_static
+      logical :: is_static !< .true. when the input should be applied once during initialization.
       character(len=len(quantity)) :: qid_base, qid_specific
 
       if (index(str_tolower(trim(quantity)), 'initial') == 1) then
@@ -262,7 +262,7 @@ contains
       character(len=*), intent(in) :: forcing_file_type !< File type used to select the default method and apply fallbacks.
       character(len=*), intent(in) :: interpolation_method !< Explicit interpolation method, or empty to use the file type default.
       logical, intent(in) :: is_extrapolation_allowed !< Whether to select the extrapolating variant of the method.
-      integer :: method
+      integer :: method !< Selected FM interpolation method enum.
 
       if (len_trim(interpolation_method) > 0) then
          method = convert_method_string_to_integer(interpolation_method)
@@ -290,13 +290,13 @@ contains
       use m_missing, only: dmiss
 
       ! Arguments
-      type(t_spatial_field_input), intent(inout) :: input
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
-      character(len=*), intent(in) :: base_dir
+      type(t_spatial_field_input), intent(inout) :: input !< Parsed input to validate and complete with derived values.
+      character(len=*), intent(in) :: file_name !< Name of the enclosing input file, used in diagnostics.
+      character(len=*), intent(in) :: group_name !< Name of the input block, used in diagnostics.
+      character(len=*), intent(in) :: base_dir !< Base directory used to resolve relative paths.
 
       ! Local variables
-      logical :: is_successful
+      logical :: is_successful !< .true. if the input is valid.
       logical :: has_interpolation_method
       logical :: is_valid_method_filetype
       logical :: target_mask_file_exists

@@ -929,8 +929,7 @@ contains
 
    end function resolve_meteo_target
 
-!> Read a static 3D field using EC with sigma coordinates (WEIGHTFACTORS method).
-!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
+   !> Read a static 3D field using EC. Separate routine to avoid binding a temporary array to the EC module's target array.
    function initialize_static_3d_field(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                 filetype, method, oper, variable_name, ec_item, target_data) result(res)
       use m_setzcs, only: setzcs
@@ -970,6 +969,44 @@ contains
       end if
 
    end function initialize_static_3d_field
+
+   !> Register an EC time-space relation for a spatial field.
+   !! BCASCII uses the forcing-file argument; other file types use a variable name or data value.
+   function add_timespace_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
+                                         forcing_file_type, filetype, method, oper, variable_name, data_value, ec_item, target_data) result(res)
+      use m_meteo, only: ec_addtimespacerelation
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< Quantity identifier for the EC item.
+      character(len=*), intent(in) :: forcing_file !< File containing the forcing data.
+      character(len=*), intent(in) :: forcing_file_type !< File type string; selects the BCASCII call variant.
+      character(len=*), intent(in) :: variable_name !< Optional variable name in the forcing file.
+      real(dp), dimension(:), intent(in) :: target_x !< X-coordinates of the target element set.
+      real(dp), dimension(:), intent(in) :: target_y !< Y-coordinates of the target element set.
+      real(dp), intent(in) :: data_value !< Constant value used when no variable name is provided.
+      integer, dimension(:), intent(in) :: mask !< Target element mask.
+      integer, intent(in) :: vector_max !< Maximum number of values per target location.
+      integer, intent(in) :: filetype !< FM forcing file type enumeration.
+      integer, intent(in) :: method !< Spatial and temporal interpolation method.
+      integer, intent(in) :: oper !< Operand applied to the forcing values.
+      integer, intent(inout) :: ec_item !< EC item identifier, set when the relation is registered.
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target array associated with the EC relation.
+      logical :: res !< .true. if the EC relation was registered successfully.
+
+      select case (trim(str_tolower(forcing_file_type)))
+      case ('bcascii')
+         res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, 'global', filetype, &
+                                       method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+      case default
+         if (len_trim(variable_name) > 0) then
+            res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
+                                          method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+         else
+            res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
+                                          method, oper, data_value=data_value, tgt_item1=ec_item, tgt_data1=target_data)
+         end if
+      end select
+   end function add_timespace_field_relation
 
 !> Register the time-and-space dependent 3D field relation.
 !! No values are ready/set yet, that should be done by ec_gettimespacevalues in the timeloop.
@@ -1066,6 +1103,8 @@ contains
 
    end function init_field1d_block
 
+   !> Initialize a spatial block.
+   !! Static inputs are applied during initialization; dynamic inputs are registered as time-dependent forcings.
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
@@ -1074,7 +1113,7 @@ contains
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, &
                        SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, TARGET_LAYER_ALL_3D
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
       use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID
@@ -1094,12 +1133,12 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use precision_basics, only: comparereal
 
-      type(tree_data), pointer, intent(in) :: block_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node for the field block.
+      character(len=*), intent(in) :: base_dir !< Base directory used to resolve relative paths.
+      character(len=*), intent(in) :: file_name !< Name of the enclosing input file, used in diagnostics.
+      character(len=*), intent(in) :: group_name !< Name of the field block, used in diagnostics.
 
-      logical :: res
+      logical :: res !< .true. if the field block was initialized successfully.
 
       integer, allocatable :: mask(:)
       integer :: target_location_type
@@ -1256,13 +1295,9 @@ contains
                      ec_item = ec_undef_int
                   ! TODO: support other time-dependent filetypes as an initial field
                   else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
-                     if (filetype == NCGRID .and. len_trim(variable_name) > 0) then
-                        res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                      method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-                     else
-                        res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                      method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
-                     end if
+                     res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                        forcing_file_type, filetype, method, oper, variable_name, &
+                                                        input%data_value, ec_item, target_data)
                      if (res) then
                         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
                      end if
@@ -1299,22 +1334,14 @@ contains
                mapped_item1 = ec_undef_int
             end if
          else
-            select case (trim(str_tolower(forcing_file_type)))
-            case ('bcascii')
-               res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                             method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
-            case default
-               if (target_location_type == UNC_LOC_S3D .and. str_tolower(quantity) == 'nudgesalinitytemperature') then
-                  res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                                                    filetype, method, oper, variable_name, ec_item)
-               else if (len_trim(variable_name) > 0) then
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-               else
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
-               end if
-            end select
+            if (target_location_type == UNC_LOC_S3D) then
+               res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                     filetype, method, oper, variable_name, ec_item)
+            else
+               res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                  forcing_file_type, filetype, method, oper, variable_name, &
+                                                  input%data_value, ec_item, target_data)
+            end if
          end if
 
          !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
@@ -1560,17 +1587,17 @@ contains
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
-      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates !< Parsed X-coordinates.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates !< Parsed Y-coordinates.
       integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
-      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
-      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source !< Two-point source vertical range; dmiss when unspecified.
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink !< Two-point sink vertical range; dmiss when unspecified.
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
       real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
-      logical :: is_successful
+      logical :: is_successful !< .true. if the source/sink coordinates were parsed successfully.
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
       logical :: have_location_file
