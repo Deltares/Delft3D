@@ -209,7 +209,7 @@ contains
    !! (This allows using NetCDF files with or without time-dimension as initial fields.)
    !! For all other quantities, the (non-)static nature is detected from the file type and possibly the method.
    function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
-      use string_module, only: str_tolower
+      use string_module, only: istarts_with, str_tolower
       use fm_external_forcings_utils, only: split_qid
       use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
 
@@ -219,12 +219,12 @@ contains
       logical :: is_static !< .true. when the input should be applied once during initialization.
       character(len=len(quantity)) :: qid_base, qid_specific
 
-      if (index(str_tolower(trim(quantity)), 'initial') == 1) then
+      if (istarts_with(quantity, 'initial')) then
          is_static = .true.
-         if (index(str_tolower(trim(quantity)), 'initialvertical') == 1 .or. &
-             index(str_tolower(trim(quantity)), 'initialtracer') == 1 .or. &
-             index(str_tolower(trim(quantity)), 'initialsedfrac') == 1 .or. &
-             index(str_tolower(trim(quantity)), 'initialwaqbot') == 1) then
+         if (istarts_with(quantity, 'initialvertical') .or. &
+             istarts_with(quantity, 'initialtracer') .or. &
+             istarts_with(quantity, 'initialsedfrac') .or. &
+             istarts_with(quantity, 'initialwaqbot')) then
             ! These prefixes identify quantity families, not a generic initial modifier.
          else
             select case (str_tolower(trim(quantity))) ! previous initial-only quantities keep their original name

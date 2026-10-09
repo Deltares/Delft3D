@@ -1108,7 +1108,7 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower
+      use string_module, only: istarts_with, str_tolower
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, &
@@ -1316,7 +1316,7 @@ contains
 
                   if (associated(target_array_rank_2) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
                      oper = oper_backup
-                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
+                     if (istarts_with(quantity, 'initialwaqbot')) then
                         res = apply_waqbot_target_layer(target_data, target_array_rank_2(first_index, :), target_layer, quantity, oper) .and. res
                      else
                         call initialfield2Dto3D_dbl_slice(target_data, target_array_rank_2(first_index, :), transformcoef(13), transformcoef(14), oper)
