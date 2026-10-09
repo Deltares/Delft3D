@@ -42,7 +42,7 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
 
 !
 ! Arguments

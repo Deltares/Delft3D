@@ -54,7 +54,7 @@ contains
       use m_trachy, only: trachy_resistance
       use unstruc_display
       use m_get_chezy, only: get_chezy
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
 
       implicit none
 

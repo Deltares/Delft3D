@@ -81,7 +81,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use flow2d3d_timers
     use sediment_basics_module
     !

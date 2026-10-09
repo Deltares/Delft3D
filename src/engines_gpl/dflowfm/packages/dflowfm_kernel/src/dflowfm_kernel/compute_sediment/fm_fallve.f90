@@ -65,7 +65,7 @@ contains
       use m_fm_erosed, only: taub, sedtyp
       use flocculation, only: get_tshear_tdiss
       use m_get_kbot_ktop
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       use m_eqsettle, only: eqsettle
       !
       implicit none

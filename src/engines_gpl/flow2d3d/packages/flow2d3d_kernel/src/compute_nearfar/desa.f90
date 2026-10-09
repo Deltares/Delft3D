@@ -43,7 +43,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

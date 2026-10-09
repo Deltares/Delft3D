@@ -10,7 +10,7 @@ module precice_adapter
    use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
    use precision, only: dp
    use precision_basics, only: comparereal
-   use mathconsts, only: degrad
+   use m_mathconstants, only: degrad
    use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
 
    implicit none(type, external)

@@ -47,7 +47,7 @@ module kdtree2Factory
    
       use m_alloc
       use physicalconsts, only: earth_radius 
-      use mathconsts, only: degrad_hp 
+      use m_mathconstants, only: degrad_hp 
    
       type(kdtree_instance),          intent(inout) :: treeinst
       integer,                        intent(in   ) :: N       !< number of entries
@@ -156,7 +156,7 @@ module kdtree2Factory
    subroutine make_queryvector_kdtree(treeinst, x, y, jsferic)
 
       use physicalconsts, only: earth_radius
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       type(kdtree_instance), intent(inout) :: treeinst
       double precision,      intent(in   ) :: x, y   !< coordinates
