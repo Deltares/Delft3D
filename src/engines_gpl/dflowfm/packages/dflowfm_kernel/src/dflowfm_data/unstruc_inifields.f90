@@ -41,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
    use stdlib_kinds, only: c_bool
+   use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM, TARGET_LAYER_ALL_3D
 
    use precision, only: dp
    implicit none(type, external)
@@ -853,7 +854,7 @@ contains
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D or UNC_LOC_3DV).
       real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_rank_2 !< The rank-2 target array for the quantity.
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
-      character(len=*), optional, intent(in) :: target_layer !< Absent means 2D input; '3D' changes target_location_type to UNC_LOC_S3D. TODO: support bot, top, all and integers
+      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number
       logical :: success !< true if the quantity was recognized and target_array_rank_2 is associated.
 
       character(len=256) :: qid_base, qid_specific
@@ -952,12 +953,11 @@ contains
 
    !> Set the target location type to UNC_LOC_S3D if kmx > 0 and the array size is correct and target layer is '3D'.
    function set_3D_target_location(target_layer, quantity, target_size, target_location_type) result(success)
-      use string_module, only: str_tolower
       use fm_location_types, only: UNC_LOC_S3D
       use m_flow, only: kmx, ndkx
       use messagehandling, only: mess, LEVEL_ERROR
 
-      character(len=*), optional, intent(in) :: target_layer !< Target layer from the spatial_input block.
+      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number.
       character(len=*), intent(in) :: quantity !< Quantity name for diagnostics.
       integer, intent(in) :: target_size !< Size of the resolved target array.
       integer, intent(inout) :: target_location_type !< Quantity target location type (use UNC_LOC_* constants), changed to UNC_LOC_S3D for correct input.
@@ -967,7 +967,7 @@ contains
       if (.not. present(target_layer)) then
          return
       end if
-      if (str_tolower(trim(target_layer)) /= '3d') then
+      if (target_layer /= TARGET_LAYER_ALL_3D) then
          return
       end if
       if (kmx <= 0 .or. target_size /= ndkx) then
@@ -1002,7 +1002,7 @@ contains
       character(len=*), intent(in) :: qid !< Name of the quantity.
       integer, intent(out) :: target_location_type !< Location type; explicit '3d' selects UNC_LOC_S3D.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
-      character(len=*), optional, intent(in) :: target_layer !< Requested target layer; '3d' requires full cell-layer storage.
+      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number
       logical :: success !< true if the quantity was recognized and target_array is associated.
       character(len=256) :: qid_base, qid_specific
       integer :: iconst
@@ -1771,35 +1771,27 @@ contains
       use m_flow, only: kmx, kbot, ktop, kmxn
       use m_missing, only: dmiss
       use messageHandling, only: err_flush, msgbuf
-      use string_module, only: str_tolower
       use timespace, only: operate
 
       real(kind=dp), dimension(:), intent(in) :: input_array_2d !< input array on 2D grid cells
       real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
-      character(len=*), intent(in) :: target_layer !< the target layer, should be "kbot", "all", or a positive integer.
+      integer, intent(in) :: target_layer !< Target layer enum or positive layer number.
       character(len=*), intent(in) :: quantity !< the quantity name, should be "initialwaqbot", parsed and checked at call site.
       integer, intent(in) :: operand
       logical :: success
 
-      integer :: n, k, kb, kt, ktmax, layer, read_status
+      integer :: n, k, kb, kt, ktmax
 
-      select case (str_tolower(trim(target_layer)))
-      case ('', 'bottom')
-         layer = -1
-      case ('all')
-         layer = 0
-      case default !> read string as integer
-         read (target_layer, *, iostat=read_status) layer
-         if (read_status /= 0 .or. layer <= 0) then
-            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''bottom'', ''all'', or a positive layer number.'
-            call err_flush()
-            success = .false.
-            return
-         end if
-      end select
+      if (target_layer < TARGET_LAYER_TOP) then
+         write (msgbuf, '(a,i0,a)') 'Invalid targetLayer ', target_layer, ' for quantity '''//trim(quantity)// &
+            '''. Expected ''bottom'', ''top''/''surface'', ''all'', or a positive layer number.'
+         call err_flush()
+         success = .false.
+         return
+      end if
 
-      if (layer > max(kmx, 1)) then
-         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
+      if (target_layer > max(kmx, 1)) then
+         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', target_layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
          call err_flush()
          success = .false.
          return
@@ -1815,10 +1807,12 @@ contains
          kb = kbot(n)
          kt = ktop(n)
          ktmax = kb + kmxn(n) - 1
-         if (layer < 0) then
+         if (target_layer == TARGET_LAYER_BOTTOM) then
             call operate(output_array_3d(kb), input_array_2d(n), operand)
-         else if (layer > 0) then
-            k = ktmax - max(kmx, 1) + layer
+         else if (target_layer == TARGET_LAYER_TOP) then
+            call operate(output_array_3d(kt), input_array_2d(n), operand)
+         else if (target_layer > TARGET_LAYER_UNIFORM) then
+            k = ktmax - max(kmx, 1) + target_layer
             if (k >= kb) call operate(output_array_3d(k), input_array_2d(n), operand)
          else
             do k = kb, kt

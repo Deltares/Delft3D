@@ -1072,7 +1072,8 @@ contains
       use string_module, only: str_tolower
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
-      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, &
+                       SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, TARGET_LAYER_ALL_3D
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
@@ -1197,7 +1198,7 @@ contains
             return
          end if
 
-         if (str_tolower(trim(target_layer)) == '3d') then
+         if (target_layer == TARGET_LAYER_ALL_3D) then
             if (target_location_type /= UNC_LOC_S3D .or. .not. associated(target_data) .or. kx /= 1) then
                write (msgbuf, '(a)') 'targetLayer=3d is not supported for quantity '//trim(quantity)//'.'
                call err_flush()

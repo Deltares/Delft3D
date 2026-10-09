@@ -31,6 +31,7 @@
 !> Struct definitions and block readers for spatial/meteo and initial/parameter fields.
 module m_spatial_field
    use precision, only: dp
+   use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM, TARGET_LAYER_ALL_3D
    use timespace_parameters, only: OPERAND_OVERRIDE
    use m_ec_interpolationsettings, only: RCEL_DEFAULT
    use m_missing, only: dmiss
@@ -47,6 +48,7 @@ module m_spatial_field
    public :: is_static_spatial_input
 
    integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: TARGET_LAYER_INVALID = -4
 
    character(len=INI_VALUE_LEN), dimension(:), allocatable :: time_dependent_spatial_quantities
    integer :: num_time_dependent_spatial_quantities = 0
@@ -69,7 +71,8 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
       character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
       character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
-      character(len=INI_VALUE_LEN) :: target_layer = ' ' !< targetLayer= selection: 'bottom', 'top', a layer number (e.g. 1, 2), 'all', or '3d' full 3D netcdf input. TODO: generalize for other filetypes/quantities.
+      character(len=INI_VALUE_LEN) :: target_layer_string = ' ' !< Original targetLayer= value, retained for input diagnostics.
+      integer :: target_layer = TARGET_LAYER_BOTTOM !< Target layer enum or positive layer number.
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
@@ -107,7 +110,7 @@ contains
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
-      call prop_get(block_ptr, '', 'targetLayer', res%target_layer)
+      call prop_get(block_ptr, '', 'targetLayer', res%target_layer_string)
       call prop_get(block_ptr, '', 'dataValue', res%data_value, success=success)
       if (.not. success) then
          res%data_value = dmiss
@@ -131,6 +134,34 @@ contains
       end if
 
    end function read_spatial_field_block
+
+   !> Convert targetLayer text to its integer representation.
+   function parse_target_layer(target_layer_string) result(target_layer)
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: target_layer_string
+      integer :: target_layer
+      integer :: read_status
+
+      select case (str_tolower(trim(target_layer_string)))
+      case ('')
+         target_layer = TARGET_LAYER_BOTTOM
+      case ('bottom')
+         target_layer = TARGET_LAYER_BOTTOM
+      case ('top', 'surface')
+         target_layer = TARGET_LAYER_TOP
+      case ('all')
+         target_layer = TARGET_LAYER_UNIFORM
+      case ('3d')
+         target_layer = TARGET_LAYER_ALL_3D
+      case default
+         target_layer = TARGET_LAYER_INVALID
+         read (target_layer_string, *, iostat=read_status) target_layer
+         if (read_status /= 0 .or. target_layer <= 0) then
+            target_layer = TARGET_LAYER_INVALID
+         end if
+      end select
+   end function parse_target_layer
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
    !! averagingType is read as an integer matching the EC enum.
@@ -284,6 +315,14 @@ contains
          return
       end if
 
+      input%target_layer = parse_target_layer(input%target_layer_string)
+      if (input%target_layer == TARGET_LAYER_INVALID) then
+         write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(input%target_layer_string)//''' in file '''//trimmed_file_name//''': ['// &
+            trimmed_group_name//']. Expected bottom, top/surface, all, 3d, or a positive layer number.'
+         call err_flush()
+         return
+      end if
+
       if (comparereal(input%data_value, dmiss) /= 0) then
          if (len_trim(input%forcing_file) > 0) then
             write (msgbuf, '(5a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
@@ -389,7 +428,7 @@ contains
       input%is_static_field = is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)
       input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
-      if (str_tolower(trim(input%target_layer)) == '3d') then
+      if (input%target_layer == TARGET_LAYER_ALL_3D) then
          if (input%filetype /= NCGRID .or. .not. input%is_static_field) then
             write (msgbuf, '(5a)') 'targetLayer=3d requires either a NetCDF field or a time-independent field in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
             call err_flush()

@@ -2617,6 +2617,7 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
    subroutine test_waqbot_vertical_layer_selection() bind(C)
       use m_flow, only: kmx, kbot, ktop, kmxn
+      use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM
       use timespace_parameters, only: OPERAND_OVERRIDE
       use unstruc_inifields, only: apply_waqbot_target_layer
 
@@ -2631,19 +2632,30 @@ contains
       input_2d = 1.0_dp
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, 'bottom', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_BOTTOM, 'initialwaqbottestbot', OPERAND_OVERRIDE)
       call f90_expect_true(success, "targetLayer should be accepted")
       call f90_expect_eq(output_3d(2), 1.0_dp, "targetLayer should select the active bottom layer")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "targetLayer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_TOP, 'initialwaqbottesttop', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "top targetLayer should be accepted")
+      call f90_expect_eq(output_3d(7), 1.0_dp, "top targetLayer should select the active top layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "top targetLayer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_UNIFORM, 'initialwaqbottestall', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "all targetLayer should be accepted")
+      call f90_expect_eq(sum(output_3d), 6.0_dp, "all targetLayer should update every active layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, 4, 'initialwaqbottestl4', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 4 should be accepted")
       call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, 8, 'initialwaqbottestl8', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 8 should be accepted")
       call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
