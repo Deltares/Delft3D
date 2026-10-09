@@ -321,7 +321,13 @@ end function get_proj_string_from_epsg
 !   if (add_latlon) then ! If x,y are not in WGS84 system, then add mandatory additional lon/lat coordinates.
       call transform_coordinates(src_proj_string, WGS84_PROJ_STRING, src_x, src_y, lon, lat)
       ierr = nf90_put_var(ncid, varid_lon, lon, start = start_, count = count_)
+      if (ierr /= nf90_noerr) then
+         call mess(LEVEL_ERROR, 'transform_and_put_latlon_coordinates: writing longitude: '//trim(nf90_strerror(ierr)))
+      end if
       ierr = nf90_put_var(ncid, varid_lat, lat, start = start_, count = count_)
+      if (ierr /= nf90_noerr) then
+         call mess(LEVEL_ERROR, 'transform_and_put_latlon_coordinates: writing latitude: '//trim(nf90_strerror(ierr)))
+      end if
 !   end if
    end subroutine
 #endif
