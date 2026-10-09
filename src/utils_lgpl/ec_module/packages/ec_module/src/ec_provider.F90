@@ -335,7 +335,7 @@ contains
 
    !> Create source Items and their contained types, based on file type and file header.
    function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2, data_value) result(success)
-      use string_module, only: str_tolower, istarts_with
+      use string_module, only: str_tolower
 
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -417,17 +417,7 @@ contains
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
             case default
-               if (istarts_with(quantityName, 'waqsegmentfunction')) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else if (istarts_with(quantityName, 'initialtracer')) then
-                  success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               else
-                  call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
-                                    //trim(quantityname)//"', file='"//trim(fileReaderPtr%filename)//"'.")
-                  return
-                  ! TODO: user defined quantity name
-                  !success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
-               end if
+               success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             end select
          else
             call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: NetCDF requires a quantity name.")
@@ -2741,12 +2731,14 @@ contains
 
       integer, dimension(:, :), allocatable :: crd_dimids, crd_dimlen
       integer :: timeint
-      integer :: expectedLength
+      integer :: num_variables
       character(len=:), allocatable :: nameVar ! variable name in error message
+      character(len=:), allocatable :: sourceQuantityName
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
       logical :: is_scalar_source
       logical :: has_horizontal_coordinates
+      logical :: has_custom_variable_names
       !
       success = .false.
       itemPtr => null()
@@ -2760,6 +2752,10 @@ contains
       rotate_pole = .false.
       is_scalar_source = .false.
       has_horizontal_coordinates = .false.
+      has_custom_variable_names = .false.
+      if (present(varname)) then
+         has_custom_variable_names = len_trim(varname) > 0
+      end if
 
       ! =============================================================================
       ! Find the Quantity corresponding to quantityName. (configurable in the future)
@@ -2780,7 +2776,16 @@ contains
       idvar = -1
 
       ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
-      call ecSupportNetcdfGetQuantityCandidateNames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      call ecSupportNetcdfGetQuantityCandidateNames(quantityName, ncstdnames, ncvarnames, ncstdnames_fallback)
+      if (allocated(ncstdnames)) then
+         num_variables = size(ncstdnames) ! Quantity found
+      else if (has_custom_variable_names) then
+         num_variables = 1 ! Quantity not found, but we have a custom name to identify the variable by
+      else
+         call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileReaderPtr%filename)// &
+                             ", has no default NetCDF variable; provide an explicit variable name.")
+         return
+      end if
 
       ! ------------------------------------------------------------------------------------------------
       ! Inquiry of the dimids and the varids of lon/lat/time coordinate according to the CF-convention
@@ -2804,14 +2809,8 @@ contains
          if (x_dimid > 0 .and. x_dimid == y_dimid) nod_dimid = x_dimid ! stations with x/y
       end if
 
-      if (allocated(ncstdnames)) then
-         expectedLength = size(ncstdnames)
-      else
-         expectedLength = 0
-      end if
-
       ! Fill a string array with user-defined variable names
-      if (len_trim(varname) > 0) then
+      if (has_custom_variable_names) then
          if (index(trim(varname), ' ') > 0) then
             call strsplit(varname, 1, nccustomnames, 1)
          else
@@ -2819,17 +2818,29 @@ contains
             nccustomnames(1) = varname
          end if
 
-         if (size(nccustomnames) /= expectedLength) then
-            write (cnum1, '(i2)') expectedLength
-            write (cnum2, '(i2)') size(ncvarnames)
+         if (size(nccustomnames) /= num_variables) then
+            write (cnum1, '(i2)') num_variables
+            write (cnum2, '(i2)') size(nccustomnames)
             call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+            return
          end if
       end if
 
-      do i = 1, expectedLength
-         call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames, ignore_case=.true.)
-         if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
-            call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
+      do i = 1, num_variables
+         sourceQuantityName = trim(quantityName)
+         if (allocated(ncstdnames)) then
+            sourceQuantityName = trim(ncstdnames(i))
+         end if
+
+         ! Search custom names first, then the mapped standard and variable names.
+         if (allocated(ncstdnames)) then
+            call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, &
+                                              uservarnames=nccustomnames, ignore_case=.true.)
+            if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
+               call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
+            end if
+         else
+            call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, uservarnames=nccustomnames, ignore_case=.true.)
          end if
          if (idvar <= 0) then ! Variable not found among standard names and variable names either
             if (allocated(nccustomnames)) then
@@ -2840,7 +2851,9 @@ contains
             call set_ec_message("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename)//"'.")
             return
          end if
-         fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
+         if (allocated(ncstdnames)) then
+            fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
+         end if
 
          ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims) ! get the number of dimensions
          if (allocated(coordids)) then
@@ -2934,7 +2947,7 @@ contains
                if (len_trim(coord_names(j)) > 0) then
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
-                     call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+                     call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                        //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
@@ -2964,7 +2977,7 @@ contains
 
          is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
          if (is_scalar_source .and. has_horizontal_coordinates) then
-            call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+            call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                               //"' declares horizontal coordinates but has only a time dimension. " &
                               //"data with coordinates must include a station or grid dimension.")
             return
@@ -2973,11 +2986,11 @@ contains
             grid_type = elmSetType_scalar
          else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
-               call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
-               call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
@@ -3139,8 +3152,10 @@ contains
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
-                  if (size(dimids) > 3) then
-                     nlay = fileReaderPtr%dim_length(dimids(3))
+                  if (z_dimid > 0) then
+                     if (any(dimids == z_dimid)) then
+                        nlay = fileReaderPtr%dim_length(z_dimid)
+                     end if
                   end if
                end if
             end if
@@ -3248,7 +3263,7 @@ contains
          case default
             timeint = timeint_lin
          end select
-         if (.not. (ecQuantitySet(instancePtr, quantityId, name=ncstdnames(i), ncid=idvar, timeint=timeint))) return
+         if (.not. (ecQuantitySet(instancePtr, quantityId, name=sourceQuantityName, ncid=idvar, timeint=timeint))) return
          if (.not. (ecQuantitySetUnitsFillScaleOffsetFromNcidVarid(instancePtr, quantityId, fileReaderPtr%fileHandle, idvar))) return
 
          ! ========================
@@ -3562,8 +3577,13 @@ contains
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
-            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
-                  fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            if (ecNetcdfFindVariableId(fileReaderPtr%fileHandle, fileReaderPtr%fileName, &
+                                      fileReaderPtr%standard_names, fileReaderPtr%variable_names, 'PHASE') /= ec_undef_int) then
+               call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
+                     fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+            else
+               success = fileReaderPtr%tframe%nr_timesteps == 0
+            end if
          end if
          if (.not. success) then
             call set_ec_message('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
@@ -3667,6 +3687,8 @@ contains
       integer, dimension(1) :: dimid !< integer id of time variable's dimension variable
       integer :: length !< number of time steps
       integer :: istat !< status of allocation operation
+      integer :: nDimensions, dimension_index, variable_rank
+      character(len=NF90_MAX_NAME) :: dimension_name, coordinate_axis
       !
       success = .false.
       nVariables = 0
@@ -3689,7 +3711,30 @@ contains
                exit
             end if
          end do
-         if (i > nVariables) then ! .... if still not found, you are out of luck !
+         if (i > nVariables) then
+            do dimension_index = 1, nVariables
+               coordinate_axis = ''
+               istat = nf90_get_att(fileReaderPtr%fileHandle, dimension_index, 'axis', coordinate_axis)
+               if (istat == NF90_NOERR .and. strcmpi(coordinate_axis, 'T')) then
+                  call set_ec_message('Invalid NetCDF time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            if (.not. ecSupportNetcdfCheckError(nf90_inquire(fileReaderPtr%fileHandle, nDimensions=nDimensions), &
+                                               'obtain nDimensions', fileReaderPtr%fileName)) then
+               return
+            end if
+            do dimension_index = 1, nDimensions
+               if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimension_index, name=dimension_name), &
+                                                  'obtain dimension name', fileReaderPtr%fileName)) then
+                  return
+               end if
+               if (strcmpi(dimension_name, 'time')) then
+                  call set_ec_message('NetCDF time dimension has no time coordinate in '//trim(fileReaderPtr%fileName)//'.')
+                  return
+               end if
+            end do
+            fileReaderPtr%tframe%nr_timesteps = 0
             return
          end if
       end if
@@ -3702,8 +3747,20 @@ contains
                                                     tzone=fileReaderPtr%tframe%ec_timezone)) return
       !
       ! Determine the total number of timesteps.
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, ndims=variable_rank), &
+                                         'obtain time variable rank', fileReaderPtr%fileName)) then
+         return
+      end if
+      if (variable_rank /= 1) then
+         call set_ec_message('NetCDF time coordinate must have one dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, dimids=dimid), "obtain time dimension ids", fileReaderPtr%fileName)) return
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimid(1), len=length), "obtain time dimension length", fileReaderPtr%fileName)) return
+      if (length == 0) then
+         call set_ec_message('Empty NetCDF time dimension in '//trim(fileReaderPtr%fileName)//'.')
+         return
+      end if
       fileReaderPtr%tframe%nr_timesteps = length
       allocate (fileReaderPtr%tframe%times(length), stat=istat)
       ! Store the times at which data is available.

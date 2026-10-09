@@ -312,15 +312,13 @@ contains
    ! =======================================================================
 
    !> Look up the variable and standard names for a given quantity name from predefined lists
-   subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+   subroutine ecSupportNetcdfGetQuantityCandidateNames(quantityName, ncstdnames, ncvarnames, ncstdnames_fallback)
       use string_module, only: str_tolower, istarts_with
-      character(len=*), intent(in) :: fileName !< name of the file, used for error messages
       character(len=*), intent(in) :: quantityName !< name of the quantity to look up
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
-      
+
       select case (str_tolower(trim(quantityName)))
       case ('rainfall')
          allocate (ncvarnames(1))
@@ -512,6 +510,16 @@ contains
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
          ncstdnames(2) = 'sea_water_salinity'
+      case ('initialsalinity')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'so'
+         ncstdnames(1) = 'sea_water_salinity'
+      case ('initialtemperature')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'thetao'
+         ncstdnames(1) = 'sea_water_potential_temperature'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          allocate (ncstdnames(1))
          ncstdnames(1) = quantityName
@@ -535,15 +543,6 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'hs' ! significant wave height
          ncstdnames(1) = 'sea_surface_wave_significant_height'
-      case ('waveperiod')
-         if (present(varname)) then
-            allocate (ncvarnames(1))
-            allocate (ncstdnames(1))
-            ncvarnames(1) = varname ! wave period
-            ncstdnames(1) = varname
-         else
-            call set_ec_message("Variable name for quantity 'waveperiod' not provided for file "//trim(fileName)//".")
-         end if
       case ('wavedirection')
          allocate (ncvarnames(1:2))
          allocate (ncstdnames(1:2))
@@ -587,12 +586,6 @@ contains
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName(14:)
             ncstdnames(1) = quantityName(14:)
-         else
-            ! we have faulty
-            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
-            !TODO: user defined quantity name
-            !ncvarnames(1) = varname
-            !ncstdnames(1) = varname
          end if
       end select
 
