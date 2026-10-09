@@ -104,7 +104,7 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
 !!--declarations----------------------------------------------------------------
     use precision
     use precision_basics, only: comparereal
-    use mathconsts
+    use m_mathconstants
     use trachytopes_data_module
     use m_calrou
     use message_module

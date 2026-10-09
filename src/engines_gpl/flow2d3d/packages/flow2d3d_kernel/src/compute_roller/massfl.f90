@@ -36,7 +36,7 @@ subroutine massfl(c         ,dir       ,ewave1    ,eroll1    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

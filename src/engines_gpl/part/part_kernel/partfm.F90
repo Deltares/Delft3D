@@ -67,7 +67,7 @@ contains
         use m_sferic, only: jsferic
         use geometry_module, only: Cart3Dtospher, sphertocart3D
         use physicalconsts, only: earth_radius
-        use mathconsts, only: raddeg_hp, pi
+        use m_mathconstants, only: raddeg_hp, pi
         use random_generator
         use m_part_flow, only: kmx
 

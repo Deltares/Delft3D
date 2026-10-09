@@ -38,7 +38,7 @@ module m_ec_filereader_read
    use m_ec_support
    use m_ec_message
    use m_ec_bcreader
-   use mathconsts
+   use m_mathconstants
    use time_module
    use string_module
    use m_ec_astro

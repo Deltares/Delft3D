@@ -683,7 +683,7 @@ contains
 
       use network_data
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       use geometry_module, only: dcosphi, cross
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D

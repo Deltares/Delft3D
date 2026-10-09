@@ -35,7 +35,7 @@ subroutine stoktb(hrmsnm, tpu, h, ustokes, gdp)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

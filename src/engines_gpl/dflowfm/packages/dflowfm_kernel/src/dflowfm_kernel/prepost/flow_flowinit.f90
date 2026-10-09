@@ -1366,7 +1366,7 @@ contains
       use precision, only: dp
       use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
-      use mathconsts, only: sqrt2_hp
+      use m_mathconstants, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
