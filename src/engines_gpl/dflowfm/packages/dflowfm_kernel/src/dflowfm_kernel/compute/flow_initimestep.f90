@@ -68,7 +68,7 @@ contains
       use m_partitioninfo
       use m_sethu
       use fm_external_forcings, only: calculate_wind_stresses, prepare_wind, prepare_air_pressure_temperature_dew_point_temperature, &
-                       compute_air_water_interaction_most_fluxes, set_external_forcings_boundaries
+                                      compute_air_water_interaction_most_fluxes, set_external_forcings_boundaries
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
@@ -199,7 +199,7 @@ contains
       call initialize_structures_actual_params(network%sts)
       call timstop(handle_extra(45)) ! Start structactual
 
-      if (japillar == 1 .or. japillar == 3) then
+      if (pillar_method == PILLAR_DELFT3D_FLOWNODE .or. pillar_method == PILLAR_DELFT3D_FLOWLINK) then
          call pillar_upd()
       end if
 
