@@ -65,7 +65,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, ee
+    use m_mathconstants, only: pi, ee
     use bedcomposition_module
     use morphology_data_module
     use sediment_basics_module

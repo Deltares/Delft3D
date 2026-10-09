@@ -51,7 +51,7 @@ contains
       use m_sediment, only: stm_included
       use m_flowtimes, only: dts
       use m_filez, only: error
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
 
       implicit none
       integer, intent(in) :: LL, Lb

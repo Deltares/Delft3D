@@ -434,6 +434,25 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e04_f05_c06_nest_template" ref="dimr_trunk">
+    <path version="DVC">e04_wave/f05-nest/c06_template</path>
+    <checks>
+      <file name="wavm-inlet-inlet.nc" type="NETCDF">
+        <parameters>
+          <parameter name="dir" toleranceAbsolute="400.0"/>
+          <parameter name="hsign" toleranceAbsolute="0.01"/>
+          <parameter name="period" toleranceAbsolute="0.08"/>
+        </parameters>
+      </file>
+      <file name="wavm-inlet-detailed.nc" type="NETCDF">
+        <parameters>
+          <parameter name="dir" toleranceAbsolute="400.0"/>
+          <parameter name="hsign" toleranceAbsolute="0.02"/>
+          <parameter name="period" toleranceAbsolute="0.6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <!-- ================================================================= -->
   <testCase name="e04_f06_c01_write_wavh" ref="dimr_trunk">
     <path version="DVC">e04_wave/f06-io/c01_write_wavh</path>

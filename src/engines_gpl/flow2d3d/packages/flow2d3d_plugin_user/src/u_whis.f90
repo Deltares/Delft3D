@@ -45,7 +45,7 @@ subroutine u_whis(lundat    ,header    ,runid     ,itime     ,idate     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

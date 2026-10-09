@@ -2781,7 +2781,7 @@ contains
       use m_laterals, only: initialize_lateraldata
       use m_get_kbot_ktop
       use m_get_prof_1D
-      use mathconsts, only: pi
+      use m_mathconstants, only: pi
       use m_filez, only: doclose
       use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc

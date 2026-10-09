@@ -45,7 +45,7 @@ subroutine setwav(comfil    ,lundia    ,error     ,mmax       ,nmax       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use flow2d3d_timers
     use datagroups
     use globaldata

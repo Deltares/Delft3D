@@ -39,7 +39,7 @@ subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use string_module
     !

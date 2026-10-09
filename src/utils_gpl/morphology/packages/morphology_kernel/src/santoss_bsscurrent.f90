@@ -46,7 +46,7 @@ subroutine santoss_bsscurrent(i2d3d, g, d, d50, d90, delta, unet, ang, &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: degrad
+    use m_mathconstants, only: degrad
 !
 ! arguments
 !

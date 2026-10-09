@@ -326,7 +326,7 @@ contains
         use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
         use geometry_module, only: Cart3Dtospher, sphertocart3D
         use physicalconsts, only: earth_radius
-        use mathconsts, only: raddeg_hp
+        use m_mathconstants, only: raddeg_hp
         use random_generator
         use timers
         use m_part_modeltypes
