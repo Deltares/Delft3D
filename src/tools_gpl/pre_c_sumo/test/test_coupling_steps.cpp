@@ -66,7 +66,7 @@ namespace
             xml << "    <Qintake>" << qintake << "</Qintake>\n";
         }
         xml << R"(    <Qsource>10.0</Qsource>
-    <constituentsOperator>excess</constituentsOperator>
+    <constituentsOperator>absolute</constituentsOperator>
     <constituents>10.0 0.0</constituents>
   </discharge>
   <NFResult>
@@ -140,7 +140,8 @@ namespace
 
         std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).value();
+        pre_c_sumo::Mesh dummy_mesh = {};
+        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).value();
     }
 
     /**
@@ -162,7 +163,8 @@ namespace
 
         std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).value();
+        pre_c_sumo::Mesh dummy_mesh = {};
+        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).value();
     }
 } // namespace
 
@@ -182,7 +184,7 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndOneSink)
      <discharge>
         <Qintake>10.0</Qintake>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
      </discharge>
      <NFResult>
@@ -218,7 +220,7 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndTwoSinks)
      <discharge>
         <Qintake>10.0</Qintake>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
      </discharge>
      <NFResult>
@@ -255,7 +257,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
      <discharge>
         <Qintake>10.0</Qintake>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
      </discharge>
      <NFResult>
@@ -277,8 +279,10 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
 
     std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
+    pre_c_sumo::Mesh dummy_mesh = {};
 
-    const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
+    const auto connected_sources_sinks =
+        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers, dummy_mesh);
 
     EXPECT_TRUE(connected_sources_sinks.has_value());
     EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 2000u);
@@ -292,7 +296,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
      <discharge>
         <Qintake>10.0</Qintake>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
      </discharge>
      <NFResult>
@@ -313,8 +317,10 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
 
     std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
+    pre_c_sumo::Mesh dummy_mesh = {};
 
-    const auto connected_sources_sinks = pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers);
+    const auto connected_sources_sinks =
+        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers, dummy_mesh);
 
     EXPECT_TRUE(connected_sources_sinks.has_value());
     EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 1000u);
@@ -409,7 +415,8 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
     EXPECT_NEAR(nf2ff_readers.front().intakeFlowRate(), 0.0, 1e-12);
     EXPECT_TRUE(nf2ff_readers.front().intakes().empty());
 
-    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+    pre_c_sumo::Mesh dummy_mesh = {};
+    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
     ASSERT_TRUE(connected.has_value());
     ASSERT_EQ(connected.value().get_number_of_entries(), 2000u);
 
@@ -456,7 +463,7 @@ TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneUsesClampAtOne)
     <fileVersion>0.3</fileVersion>
     <discharge>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
     </discharge>
     <NFResult>
@@ -488,7 +495,7 @@ TEST(CsumoPreciceCouplingStepsTest, IntakeWeightSumBelowOneUsesClampAtOne)
     <discharge>
         <Qintake>10.0</Qintake>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
     </discharge>
     <NFResult>
@@ -523,7 +530,7 @@ TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneProducesLowerDischarg
     <fileVersion>0.3</fileVersion>
     <discharge>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
     </discharge>
     <NFResult>
@@ -542,7 +549,7 @@ TEST(CsumoPreciceCouplingStepsTest, SourceWeightSumBelowOneProducesLowerDischarg
     <fileVersion>0.3</fileVersion>
     <discharge>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
     </discharge>
     <NFResult>
@@ -581,7 +588,7 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     <fileVersion>0.3</fileVersion>
     <discharge>
         <Qsource>10.0</Qsource>
-        <constituentsOperator>excess</constituentsOperator>
+        <constituentsOperator>absolute</constituentsOperator>
         <constituents>10.0 0.0</constituents>
     </discharge>
     <NFResult>
@@ -609,7 +616,8 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     ASSERT_GT(nf2ff_readers[0].sinks()[0].entrainment, nf2ff_readers[0].sinks()[1].entrainment);
 
     // Verify that the error message contains the sink index and the negative delta_s value
-    auto result = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers);
+    pre_c_sumo::Mesh dummy_mesh = {};
+    auto result = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
     if (result.has_value())
     {
         FAIL() << "Expected pre_c_sumo::ConnectedSourceSourcesError to be returned";
@@ -626,5 +634,5 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     }
 
     // Verify (once more) that an error was returned.
-    EXPECT_FALSE(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers).has_value());
+    EXPECT_FALSE(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).has_value());
 }

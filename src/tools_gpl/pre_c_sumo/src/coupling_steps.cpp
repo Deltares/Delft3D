@@ -36,7 +36,13 @@ namespace pre_c_sumo
                 .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
                 .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
-                .constituents = {0.0, 0.0, 0.0}, // constituents, // TODO: obtain layered data from far-field
+                .constituents = {mesh_3d.quantities[c01_id][index_3d + i], mesh_3d.quantities[c02_id][index_3d + i],
+                                 mesh_3d.quantities[c03_id][index_3d + i], mesh_3d.quantities[c04_id][index_3d + i],
+                                 mesh_3d.quantities[c05_id][index_3d + i], mesh_3d.quantities[c06_id][index_3d + i],
+                                 mesh_3d.quantities[c07_id][index_3d + i], mesh_3d.quantities[c08_id][index_3d + i],
+                                 mesh_3d.quantities[c09_id][index_3d + i], mesh_3d.quantities[c10_id][index_3d + i]
+
+                }, // constituents
             });
         }
         return FarFieldPoint2D{
@@ -45,6 +51,24 @@ namespace pre_c_sumo
             .water_depth = mesh_2d.quantities[water_levels_id][index_2d] + mesh_2d.quantities[bed_levels_id][index_2d],
             .layers = layers,
         };
+    }
+
+    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d)
+    {
+        std::vector<double> constituents(max_number_of_consituents);
+        const std::vector<std::string_view> constituent_ids = {c01_id, c02_id, c03_id, c04_id, c05_id,
+                                                               c06_id, c07_id, c08_id, c09_id, c10_id};
+        const std::size_t index_3d = mesh_3d.number_of_zcoordinates;
+        const double number_of_layers = static_cast<double>(mesh_3d.number_of_zcoordinates);
+        for (std::size_t c = 0; c < max_number_of_consituents; c++)
+        {
+            for (std::size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
+            {
+                constituents[c] += mesh_3d.quantities[constituent_ids[c]][index_3d + i];
+            }
+            constituents[c] /= number_of_layers;
+        }
+        return constituents;
     }
 
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
@@ -149,17 +173,14 @@ namespace pre_c_sumo
 
     bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
     {
-        constexpr int check_delay_in_ms = 50;
-        constexpr int timeout_in_ms = 10000;
+        constexpr int check_delay_in_ms = 50; // Wait 50ms before looking for a file again.
+        constexpr int timeout_in_ms = 10000;  // Hard limit of waiting at most for 10 seconds for all files.
         int total_delay_in_ms = 0;
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
-            // Wait for the NF2FF file to be available
-            // TODO: Might be necessary to check whether writing the file is finished too
             while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file) && total_delay_in_ms < timeout_in_ms)
             {
-                // Throttle CPU load.
                 std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
                 total_delay_in_ms += check_delay_in_ms;
             }
@@ -193,7 +214,8 @@ namespace pre_c_sumo
     }
 
     std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
-        const CSumoSettingsReader& csumo_settings, const std::vector<NF2FFReader>& nf2ff_readers)
+        const CSumoSettingsReader& csumo_settings, const std::vector<NF2FFReader>& nf2ff_readers,
+        pre_c_sumo::Mesh& csumo_3d_mesh)
     {
         ConnectedSinkSources connectedsinksources{};
         const auto& diffuser_settings = csumo_settings.diffusers();
@@ -260,46 +282,11 @@ namespace pre_c_sumo
                 }
             }
 
-            // Match nearfield dischargeToSrc behavior: add explicit source discharge
-            // terms independent of entrainment sink deltas.
-            //
-            // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
-            // DIMR-exchange:
-            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
-            // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
-            //       Area of this fraction is total area divided by the weight factor:
-            //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
-            //       ...):
-            //                  Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-            //       Since w1+w2+...=1.0, we can write this as:
-            //               w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-            //       =>
-            //               wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
-            //       =>
-            //               ai = Atot / wi
-            if (!sources.empty())
-            {
-                const double source_flow_rate = diffuser.sourceFlowRate();
-                for (const auto& source : sources)
-                {
-                    double weight_fraction = (source.has_weight ? source.weight : 1.0) / source_weight_norm;
-                    double discharge = source_flow_rate * weight_fraction;
-                    double source_z_top =
-                        single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
-                    double source_z_bottom =
-                        single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude_weighted =
-                        source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
-                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(
-                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
-                        discharge, source_moment_magnitude_weighted, source_moment_direction, diffuser.constituents());
-                }
-            }
-
-            // Intake
+            // Process intakes and set up possibly modified constituents for sources
             auto intakes = diffuser.intakes();
             const double intake_flow_rate = diffuser.intakeFlowRate();
+            double intake_weight_norm = 0.0;
+            std::vector<double> constituents(diffuser.constituents());
             // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
             // for flow magnitudes and would let tiny positive numerical noise trigger
             // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
@@ -320,7 +307,6 @@ namespace pre_c_sumo
                 }
                 if (!intakes.empty())
                 {
-                    double intake_weight_norm = 0.0;
                     for (const auto& intake : intakes)
                     {
                         intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
@@ -330,8 +316,71 @@ namespace pre_c_sumo
                     intake_weight_norm = std::max(intake_weight_norm, 1.0);
 
                     // Intakes are sink-only terms (not connected to source points).
+                    // Update constituents from diffuser with weighted intake constituents if operator is excess.
+                    if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
+                    {
+                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh);
+                        for (const auto& intake : intakes)
+                        {
+                            for (std::size_t constituent_index = 0; constituent_index < constituents.size();
+                                 constituent_index++)
+                            {
+                                constituents[constituent_index] += intake_constituents[constituent_index] *
+                                                                   (intake.has_weight ? intake.weight : 1.0) /
+                                                                   intake_weight_norm;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Match nearfield dischargeToSrc behavior: add explicit source discharge
+            // terms independent of entrainment sink deltas.
+            //
+            // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
+            // DIMR-exchange:
+            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
+            // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
+            //       Area of this fraction is total area divided by the weight factor:
+            //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
+            //       ...):
+            //                  Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       Since w1+w2+...=1.0, we can write this as:
+            //               w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
+            //       =>
+            //               wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
+            //       =>
+            //               ai = Atot / wi
+            if (!sources.empty())
+            {
+                const double source_flow_rate = diffuser.sourceFlowRate();
+
+                for (const auto& source : sources)
+                {
+                    double weight_fraction = (source.has_weight ? source.weight : 1.0) / source_weight_norm;
+                    double discharge = source_flow_rate * weight_fraction;
+                    double source_z_top =
+                        single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
+                    double source_z_bottom =
+                        single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
+                    double source_moment_magnitude_weighted =
+                        source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
+                    double source_moment_direction = source.has_u ? source.u_direction : 0.0;
+                    connectedsinksources.add_entry(
+                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
+                        discharge, source_moment_magnitude_weighted, source_moment_direction, constituents);
+                }
+            }
+
+            // Dispatch optional intakes after source/sinks
+            if (intake_flow_rate > minimum_intake_flow_rate)
+            {
+                if (!intakes.empty())
+                {
+                    // Intakes are sink-only terms (not connected to source points).
                     for (const auto& intake : intakes)
                     {
+                        // Dispatch intake discharge.
                         const double intake_discharge =
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
@@ -341,6 +390,7 @@ namespace pre_c_sumo
                 }
             }
         }
+
         std::println("connectedsinksources size = {}", connectedsinksources.get_number_of_entries());
         return connectedsinksources;
     }
