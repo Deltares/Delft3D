@@ -1,0 +1,4 @@
+# The native dflowfm_io_api library is staged into this directory by the build (CMake), then bundled
+# into the wheel. Keep the directory tracked, but never commit the binary itself.
+*
+!.gitignore
