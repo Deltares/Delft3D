@@ -603,13 +603,11 @@ contains
    !> Compose the global matrix and solver for PETSc.
    !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
    !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
-   module subroutine preparePETSCsolver(japipe)
+   module subroutine preparePETSCsolver()
       use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
       use m_reduce, only: dp
       use m_partitioninfo, only: ndomains
       use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
-
-      integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
       integer :: jasucces
 
@@ -661,11 +659,7 @@ contains
          call KSPSetOperators(Solver, Amat, Amat, ierr)
       end if
       if (ierr == PETSC_OK) then
-         if (japipe /= 1) then
-            call KSPSetType(Solver, 'cg', ierr)
-         else
-            call KSPSetType(Solver, 'pipecg', ierr)
-         end if
+         call KSPSetType(Solver, 'cg', ierr)
       end if
       if (ierr == PETSC_OK) then
          call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)

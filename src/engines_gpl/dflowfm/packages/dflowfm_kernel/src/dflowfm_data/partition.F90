@@ -128,7 +128,6 @@ module m_partitioninfo
    integer, parameter :: ITYPE_U3D = 4 !< 3D flow link communication identifier
    integer, parameter :: ITYPE_Sall3D = 5 !< 3D water-level communcation identifier, all ghost levels
    integer, parameter :: ITYPE_SallTheta = 6 !< water-level communcation identifier, all ghost levels, theta-grid (for XBeach waves)
-   integer, parameter :: ITYPE_Snonoverlap = 7 !< non-overlappling ghost nodes (for solver)
    integer, parameter :: ITYPE_U3DW = 8 !< 3D flow link communication identifier, starting at 0, for interfaces
    integer, parameter :: ITYPE_CN = 9 !< corners communication identificator
 
@@ -140,9 +139,8 @@ module m_partitioninfo
    integer :: numlay_cellbased = 0 !< number of cell-based ghost-cell layers
    integer :: numlay_nodebased = 0 !< number of node-based ghost-cell layers
 
-   integer :: minghostlev_s = 0 !< minimum ghost-cell layer level of water-level nodes, used for overlap in solver
-   integer :: maxghostlev_s = 0 !< maximum ghost-cell layer level of water-level nodes, used for overlap in solver
-   integer :: ighosttype_s = IGHOSTTYPE_CELLBASED
+   integer, parameter :: IGHOSTLEVEL_S = 1 !< first cell-based ghost level used by the water-level solver
+
 
    integer :: minghostlev_u = 0 !< minimum ghost-cell layer level of links
    integer :: maxghostlev_u = 0 !< maximum ghost-cell layer level of links
@@ -155,7 +153,6 @@ module m_partitioninfo
    integer, parameter :: ITAG_S = 1 !< communication tag
    integer, parameter :: ITAG_U = 2 !< communication tag
    integer, parameter :: ITAG_SALL = 3 !< communication tag
-   integer, parameter :: ITAG_SNONOVERLAP = 4 !< communication tag
    integer, parameter :: ITAG_CN = 5 !< communication tag
 
    integer :: numghost_s !< number of water-level ghost nodes
@@ -170,9 +167,6 @@ module m_partitioninfo
    integer, allocatable, target :: ighostlist_sall(:) !< list of water-level ghost nodes, in order of their corresponding domain
    integer, allocatable, target :: nghostlist_sall(:) !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
 
-   integer :: numghost_snonoverlap !< number of water-level ghost nodes
-   integer, allocatable, target :: ighostlist_snonoverlap(:) !< list of water-level ghost nodes, in order of their corresponding domain
-   integer, allocatable, target :: nghostlist_snonoverlap(:) !< pointer to last s-node of a certain ghost domain in the ighostlist_s array, first domain first, etc., includes fictitious domain '0' (0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
 
    integer :: numghost_cn !< number of water-level ghost node corners
    integer, allocatable, target :: ighostlist_cn(:) !< list of water-level ghost node corners, in order of their corresponding domain
@@ -190,9 +184,6 @@ module m_partitioninfo
    integer, allocatable, target :: isendlist_sall(:) !< list of water level internal nodes to be sent to other domains, all ghostlevels.
    integer, allocatable, target :: nsendlist_sall(:) !< pointer to last s-node of a certain other domain in the isendlist_sall array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
 
-   integer :: numsend_snonoverlap !< number of water level send nodes, all non-overlapping ghostlevels (for solver).
-   integer, allocatable, target :: isendlist_snonoverlap(:) !< list of water level internal nodes to be sent to other domains, all non-overlapping ghostlevels (for solver).
-   integer, allocatable, target :: nsendlist_snonoverlap(:) !< pointer to last s-node of a certain other domain in the isendlist_snonoverlap array, first domain first, etc., includes fictitious domain '0' ('0, n1, n1+n2, n1+n1+n3, ...) {"shape": ["-1:numdomains-1"]}
 
    integer :: numsend_cn !< number of water level send node corners, all ghostlevels.
    integer, allocatable, target :: isendlist_cn(:) !< list of water level internal node corners to be sent to other domains, all ghostlevels.
@@ -205,8 +196,6 @@ module m_partitioninfo
 
    real(kind=dp), allocatable, private :: work(:), workrec(:) !< work array
 
-   real(kind=dp), allocatable :: workmatbd(:, :) ! for overlap (solver): matrix (bbr,ddr)
-   real(kind=dp), allocatable :: workmatc(:, :) ! for overlap (solver): matrix (ccr)
 
    integer, allocatable :: nghostlist_s_3D(:)
    integer, allocatable :: nsendlist_s_3D(:)
@@ -223,7 +212,6 @@ module m_partitioninfo
    integer, allocatable :: nghostlist_sall_theta(:)
    integer, allocatable :: nsendlist_sall_theta(:)
 
-   integer :: jaoverlap !< overlap in solver (1) or not (0)
 
 #ifdef HAVE_MPI
    integer :: jampi = 1 !< use MPI (1) or not (0)
@@ -234,16 +222,6 @@ module m_partitioninfo
 
    real(kind=dp), allocatable :: reducebuf(:) !< work array for mpi-reduce
    integer :: nreducebuf !< size of work array 'reducebuf'
-
-!   for test solver:  Schwarz method with Robin-Robin coupling
-   integer :: nbndint ! number of interface links
-   integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
-   real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   real(kind=dp) :: stoptol = 1.0e-4_dp ! parameter of stopping criteria for subsolver of Schwarz method
-   real(kind=dp) :: sbeta = 10.0_dp ! beta value in Robin-Robin coupling for Schwarz iterations
-   real(kind=dp) :: prectol = 0.50e-2_dp ! tolerance for drop of preconditioner
-   integer :: jabicgstab = 1 !
-   integer :: Nsubiters = 1000
 
 !  1D global arrays that are stored during partitioning
    character(len=ug_idsLen), private, allocatable :: nodeids_g(:) !< backup for nodeids during partitioning
@@ -463,58 +441,21 @@ contains
    end subroutine generate_partitioning_from_pol
 
 !> set ghostlevel parameters
-   subroutine partition_setghost_params(icgsolver)
+   subroutine partition_setghost_params()
       implicit none
 
-      integer, intent(in) :: icgsolver !< solver type
+      numlay_cellbased = 4
+      numlay_nodebased = 3
 
-!     set overlap for Schwarz solver, if uninitialized (0)
-      if (icgsolver == 9 .or. icgsolver > 90) then
-         numlay_cellbased = 4
-         numlay_nodebased = 3
-         ighosttype_s = IGHOSTTYPE_NODEBASED
+      minghostlev_sall = 1
+      maxghostlev_sall = 5
 
-         if (icgsolver > 90) then
-            minghostlev_s = icgsolver - 90
-            maxghostlev_s = minghostlev_s
-
-!           for Robin-Robin interface conditions
-            ighosttype_s = IGHOSTTYPE_NODEBASED
-            minghostlev_s = max(minghostlev_s - 1, 1)
-
-!            numlay_cellbased = max(numlay_cellbased,maxghostlev_s)
-            numlay_nodebased = max(numlay_nodebased, maxghostlev_s)
-         else
-            minghostlev_s = numlay_cellbased
-            maxghostlev_s = numlay_cellbased
-         end if
-
-         minghostlev_sall = 1
-         maxghostlev_sall = max(numlay_cellbased, numlay_nodebased) + 1
-
-         minghostlev_u = 1
-         maxghostlev_u = max(numlay_cellbased, numlay_nodebased) + 1
-      else
-         numlay_cellbased = 4
-         numlay_nodebased = 3
-
-         minghostlev_s = 1
-         maxghostlev_s = 1
-
-         minghostlev_sall = 1
-         maxghostlev_sall = 5
-
-         minghostlev_u = 1
-         maxghostlev_u = 5
-      end if
-
-      return
+      minghostlev_u = 1
+      maxghostlev_u = 5
    end subroutine partition_setghost_params
 
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
-      use m_flowparameters, only: icgsolver
-
       implicit none
 
       character(len=*), intent(in) :: md_ident
@@ -524,7 +465,7 @@ contains
       character(len=128) :: mesg
       ierror = 1
 
-      call partition_setghost_params(icgsolver)
+      call partition_setghost_params()
 
 !     the following subroutine will determine the number of domains and generate the domain numbering
       if (npartition_pol > 0) then
@@ -567,12 +508,6 @@ contains
 
 !     flow links: check and fix orientation of send list
       call partition_fixorientation_ghostlist(ierror)
-      if (ierror /= 0) then
-         goto 1234
-      end if
-
-!     make non-overlapping ghost- and sendlists (for solver)
-      call partition_fill_ghostsendlist_nonoverlap(ierror)
       if (ierror /= 0) then
          goto 1234
       end if
@@ -1350,7 +1285,7 @@ contains
       error = 0
 
 !     get ghost lists for all ghost levels at flownodes, links and corners
-      call make_ghost_list(domain_number, ITYPE_S, minghostlev_s, maxghostlev_s, numghost_s, &
+      call make_ghost_list(domain_number, ITYPE_S, IGHOSTLEVEL_S, IGHOSTLEVEL_S, numghost_s, &
                            ighostlist_s, nghostlist_s, error)
       call make_ghost_list(domain_number, ITYPE_Sall, minghostlev_sall, maxghostlev_sall, numghost_sall, &
                            ighostlist_sall, nghostlist_sall, error)
@@ -1549,7 +1484,7 @@ contains
       if (itype == ITYPE_Sall) then ! flow node
          call get_ghost_cells(domain_number, minghostlev_sall, maxghostlev_sall, IGHOSTTYPE_SALL, ghost_list)
       else if (itype == ITYPE_S) then
-         call get_ghost_cells(domain_number, minghostlev_s, maxghostlev_s, ighosttype_s, ghost_list)
+         call get_ghost_cells(domain_number, IGHOSTLEVEL_S, IGHOSTLEVEL_S, IGHOSTTYPE_CELLBASED, ghost_list)
       else if (itype == ITYPE_U) then ! flow link
          call get_ghost_links(domain_number, minghostlev_u, maxghostlev_u, IGHOSTTYPE_U, ghost_list)
       else if (itype == ITYPE_CN) then ! flow node corners
@@ -1612,7 +1547,7 @@ contains
          return
       end if
 
-      if (itype == ITYPE_S .or. itype == ITYPE_SALL .or. itype == ITYPE_SNONOVERLAP) then ! flownodes
+      if (itype == ITYPE_S .or. itype == ITYPE_SALL) then ! flownodes
          x_local => xzw
          y_local => yzw
       else if (itype == ITYPE_U) then ! flowlinks
@@ -1951,16 +1886,6 @@ contains
          end if
          x_coords => xzw
          y_coords => yzw
-      else if (itype == ITYPE_Snonoverlap) then ! all non-overlapping flow nodes (for solver)
-         if (from_send_list == 0) then
-            nfromlist => nghostlist_snonoverlap
-            ifromlist => ighostlist_snonoverlap
-         else
-            nfromlist => nsendlist_snonoverlap
-            ifromlist => isendlist_snonoverlap
-         end if
-         x_coords => xzw
-         y_coords => yzw
       else if (itype == ITYPE_U) then ! flow links
          if (from_send_list == 0) then
             nfromlist => nghostlist_u
@@ -2066,11 +1991,7 @@ contains
 !        make ghostcells of other domain in this domain
          if (from_send_list == 0) then
             call partition_set_ghostlevels(other_domain, numlay_cell, numlay_node, 1, error)
-            if (itype /= ITYPE_Snonoverlap) then
-               call partition_get_ghosts(other_domain, itype, ghost_list, error)
-            else
-               call partition_get_ghosts(other_domain, ITYPE_Sall, ghost_list, error)
-            end if
+            call partition_get_ghosts(other_domain, itype, ghost_list, error)
          end if
 
 !       find the send cells
@@ -2376,112 +2297,6 @@ contains
       return
    end subroutine partition_fill_ghostsendlist_3d
 
-!> generate non-overlapping ghost/sendlists (for solver)
-   subroutine partition_fill_ghostsendlist_nonoverlap(error)
-      use m_alloc, only: realloc
-      implicit none
-
-      integer, intent(out) :: error !< error (1) or not (0)
-
-      integer :: i, idmn, iglev, inum, k, lenold
-
-      if (allocated(nghostlist_snonoverlap)) then
-         deallocate (nghostlist_snonoverlap)
-      end if
-      if (allocated(ighostlist_snonoverlap)) then
-         deallocate (ighostlist_snonoverlap)
-      end if
-
-      if (allocated(nsendlist_snonoverlap)) then
-         deallocate (nsendlist_snonoverlap)
-      end if
-      if (allocated(isendlist_snonoverlap)) then
-         deallocate (isendlist_snonoverlap)
-      end if
-
-      allocate (nghostlist_snonoverlap(-1:ndomains - 1))
-      nghostlist_snonoverlap = 0
-      allocate (nsendlist_snonoverlap(-1:ndomains - 1))
-      nsendlist_snonoverlap = 0
-
-!     check for overlap (in solver)
-      if (maxghostlev_s == 1) then
-         jaoverlap = 0
-         error = 0
-         return
-      end if
-
-!     safety: allocate lists with full overlapping length
-      lenold = ubound(ighostlist_sall, 1)
-      allocate (ighostlist_snonoverlap(lenold))
-      ighostlist_snonoverlap = 0
-      lenold = ubound(isendlist_sall, 1)
-      allocate (isendlist_snonoverlap(lenold))
-      isendlist_snonoverlap = 0
-
-      jaoverlap = 1
-
-!     select nodes from ghostlist
-      inum = 0
-      do idmn = 0, ndomains - 1
-         if (idmn == my_rank) then
-            cycle
-         end if
-
-         do i = nghostlist_sall(idmn - 1) + 1, nghostlist_sall(idmn)
-            k = ighostlist_sall(i)
-
-!           get appropriate ghostlevel
-            if (ighosttype_s == IGHOSTTYPE_CELLBASED) then
-               iglev = ighostlev_cellbased(k)
-            else if (ighosttype_s == IGHOSTTYPE_NODEBASED) then
-               iglev = ighostlev_nodebased(k)
-            else ! combined
-               iglev = ighostlev(k)
-            end if
-
-!!           only add ghost nodes with ghostlevel >= minghostlev_s
-!           only add ghost nodes with ghostlevel >= maxghostlev_s
-!            if ( iglev.ge.minghostlev_s .or. iglev.eq.0 ) then
-            if (iglev >= maxghostlev_s .or. iglev == 0) then
-               nghostlist_snonoverlap(idmn) = nghostlist_snonoverlap(idmn) + 1
-               inum = inum + 1
-               ighostlist_snonoverlap(inum) = k
-            end if
-         end do
-      end do
-
-!     make nghostlist_snonoverlap cumulative
-      nghostlist_snonoverlap(-1) = 0
-      do i = 0, ndomains - 1
-         nghostlist_snonoverlap(i) = nghostlist_snonoverlap(i - 1) + nghostlist_snonoverlap(i)
-      end do
-
-!     make sendlist
-      call partition_make_sendlist_MPI(ITYPE_Snonoverlap, numlay_cellbased + 1, numlay_nodebased + 1, isendlist_snonoverlap, nsendlist_snonoverlap)
-
-!     (re)set number of ghost nodes/links
-      numghost_snonoverlap = nghostlist_snonoverlap(ndomains - 1)
-      numsend_snonoverlap = nsendlist_snonoverlap(ndomains - 1)
-
-!     safety: make dummy empty lists
-      call realloc(nghostlist_snonoverlap, ndomains - 1, -1, keepExisting=.true., fill=0)
-      call realloc(nsendlist_snonoverlap, ndomains - 1, -1, keepExisting=.true., fill=0)
-
-      call realloc(ighostlist_snonoverlap, max(numghost_snonoverlap, 1), keepExisting=.true., fill=0)
-      call realloc(isendlist_snonoverlap, max(numsend_snonoverlap, 1), keepExisting=.true., fill=0)
-
-!     check number of non-overlapping ghost nodes
-!      if ( numghost_snonoverlap .ne. numghost_sall-noverlap ) then
-!         call mess(LEVEL_ERROR, 'partition_fill_ghostsendlist_nonoverlap gave error')
-!         goto 1234
-!      end if
-
-      error = 0
-
-      return
-   end subroutine partition_fill_ghostsendlist_nonoverlap
-
    subroutine update_ghosts(itype, ndim, n, solution, error, ignore_orientation)
 #ifdef HAVE_MPI
       use m_flowgeom, only: dp, ndx, lnx
@@ -2568,21 +2383,6 @@ contains
                                nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, ITAG_U, error, nghostlist_u_3Dw, nsendlist_u_3Dw, &
                                kmxL + 1, Lbot - 1, ignore_orientation=ignore_orientation)
 
-!     overlap
-      else if (itype == ITYPE_Snonoverlap) then
-         if (n /= ndx) then
-            call qnerror('update_ghosts, ITYPE_Snonoverlap: numbering error', ' ', ' ')
-            goto 1234
-         end if
-         if (jaoverlap == 1) then
-            call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_snonoverlap(ndomains - 1), ighostlist_snonoverlap, &
-                                  nghostlist_snonoverlap, nsendlist_snonoverlap(ndomains - 1), isendlist_snonoverlap, nsendlist_snonoverlap, &
-                                  ITAG_Snonoverlap, error, ignore_orientation=ignore_orientation)
-         else ! no overlap: use sall
-            call update_ghost_loc(ndomains, ndim, n, solution, nghostlist_sall(ndomains - 1), ighostlist_sall, &
-                                  nghostlist_sall, nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, ITAG_Sall, error, &
-                                  ignore_orientation=ignore_orientation)
-         end if
       else
          call qnerror('update_ghosts: unknown ghost type', ' ', ' ')
       end if
@@ -3118,24 +2918,10 @@ contains
       end do
 
       if (jampi == 1) then
-         if (jaoverlap == 0) then
-            !        unmark ghost cells
-            do i = 1, numghost_sall
-               iglobnum(ighostlist_sall(i)) = 0
-            end do
-         else
-            !        unmark non-overlapping ghost cells
-            do i = 1, numghost_snonoverlap
-               iglobnum(ighostlist_snonoverlap(i)) = 0
-            end do
-         end if
-
-!!        unmark ghost cells, alternative based on ghost levels
-!         do i=1,Ndx
-!            if ( ighostlev(i).ge.minghostlev_s ) then
-!               iglobnum(i) = 0
-!            end if
-!         end do
+         ! unmark ghost cells
+         do i = 1, numghost_sall
+            iglobnum(ighostlist_sall(i)) = 0
+         end do
 
 !        compute number of active non-ghost cells
          num = count(iglobnum == 1)
@@ -3177,11 +2963,7 @@ contains
          end if
          !call update_ghost(dum,ierror)
          if (jampi == 1) then
-            if (jaoverlap == 0) then
-               call update_ghosts(ITYPE_Sall, 1, Ndx, dum, ierror)
-            else
-               call update_ghosts(ITYPE_Snonoverlap, 1, Ndx, dum, ierror)
-            end if
+            call update_ghosts(ITYPE_Sall, 1, Ndx, dum, ierror)
          end if
          if (jatime == 1) then
             call stoptimer(IMPICOMM)
@@ -4141,15 +3923,9 @@ contains
       integer :: i
       integer :: k, L, LL
 
-      if (jaoverlap == 0) then
-         do i = 1, nghostlist_sall(ndomains - 1)
-            kfs(ighostlist_sall(i)) = -abs(kfs(ighostlist_sall(i))) !0
-         end do
-      else
-         do i = 1, nghostlist_snonoverlap(ndomains - 1)
-            kfs(ighostlist_snonoverlap(i)) = -abs(kfs(ighostlist_snonoverlap(i))) ! 0
-         end do
-      end if
+      do i = 1, nghostlist_sall(ndomains - 1)
+         kfs(ighostlist_sall(i)) = -abs(kfs(ighostlist_sall(i))) !0
+      end do
 
       return ! I do not understand the next code, switching it off did not alter results of my test computation, lets try it for the testbench
 
@@ -4187,10 +3963,6 @@ contains
       integer :: ierr
 #ifdef HAVE_PETSC
       call stoppetsc()
-#endif
-
-#ifdef HAVE_PARMS
-      call deallocparms()
 #endif
 
 #ifdef HAVE_MPI

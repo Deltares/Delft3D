@@ -80,8 +80,6 @@ get_fortran_source_files(${dflowfm_utils_path} dflowfm_utils)
 get_fortran_source_files(${dflowfm_utils_path}/rest_f90 dflowfm_utils_rest_f90)
 get_fortran_source_files(${dflowfm_utils_path}/to_deltares_common dflowfm_utils_to_deltares_common)
 
-list(REMOVE_ITEM dflowfm_utils ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_parms.F90)
-
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
 
 # --- Generated unc_put_var_map ---

@@ -59,7 +59,7 @@ TransportTimestepping       = 1                   # Timestepping method in Trans
 Vertadvtypsal               = 6                   # Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
 Vertadvtyptem               = 6                   # Vertical advection type for temperature (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
 Zlayercenterbedvel          = 1                   # reconstruction of center velocity at half closed bedcells (0=no, 1: copy bed link velocities)
-Icgsolver                   = 4                   # Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)
+Icgsolver                   = 4                   # Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/PETSc)
 Noderivedtypes              = 5                   # 0=use der. types. , 1 = less, 2 = lesser, 5 = also dealloc der. types
 Tlfsmo                      = 0.                  # Fourier smoothing time (s) on water level boundaries
 Logprofkepsbndin            = 0                   # inflow: 0=0 keps, 1 = log keps, 2 = user3D
