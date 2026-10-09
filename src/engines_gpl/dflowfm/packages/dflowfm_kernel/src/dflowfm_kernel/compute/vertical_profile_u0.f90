@@ -33,7 +33,7 @@
 ! =================================================================================================
 ! =================================================================================================
 module m_vertical_profile_u0
-   use m_tridag, only: tridag
+   use m_tridag, only: tridag_two_rhs
 
    implicit none
 
@@ -299,16 +299,10 @@ contains
 
       if (javau == 5) then
          call pentadiag(aa, a, b, c, cc, d, Ru(Lb:), kxL)
-      else
-         call tridag(a, b, c, d, e, Ru(Lb:), kxL)
-      end if
-
-      d(1:kxL) = cu
-
-      if (javau == 5) then
+         d(1:kxL) = cu
          call pentadiag(aa, a, b, c, cc, d, Fu(Lb:), kxL)
       else
-         call tridag(a, b, c, d, e, Fu(Lb:), kxL)
+         call tridag_two_rhs(a, b, c, d, cu, e, Ru(Lb:), Fu(Lb:), kxL)
       end if
 
    end subroutine vertical_profile_u0
