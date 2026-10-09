@@ -86,7 +86,7 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
 
       real(kind=dp), dimension(kmx, NUMCONST) :: a, b, c, d ! work array: aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
-      real(kind=dp), dimension(kmx) :: ac, bc, cc, dc, sol, e ! work array: solution and dummy array in tridag, respectively
+      real(kind=dp), dimension(kmx) :: sol, e ! work array: solution and dummy array in tridag, respectively
       real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
       real(kind=dp) :: fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
@@ -103,10 +103,6 @@ contains
 
       dt_loc = dts
       rhs = 0.0_dp
-      ac = 0.0_dp
-      bc = 0.0_dp
-      cc = 0.0_dp
-      dc = 0.0_dp
       difwws(:) = 0.0_dp
       difwws_total(:) = 0.0_dp
 
@@ -114,7 +110,7 @@ contains
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -237,14 +233,9 @@ contains
          end do
 
 !     solve system(s)
+         nel = kt - kb + 1
          do j = 1, NUMCONST
-            ! make this compiler safe, ie don't pass first element and assume memory contiguity
-            nel = kt - kb + 1
-            ac(1:nel) = a(1:nel, j)
-            bc(1:nel) = b(1:nel, j)
-            cc(1:nel) = c(1:nel, j)
-            dc(1:nel) = d(1:nel, j)
-            call tridag(ac, bc, cc, dc, e, sol, nel)
+            call tridag(a(1:nel, j), b(1:nel, j), c(1:nel, j), d(1:nel, j), e, sol, nel)
             sed(j, kb:kt) = sol(1:nel)
             sed(j, kt + 1:ktx) = sed(j, kt)
          end do

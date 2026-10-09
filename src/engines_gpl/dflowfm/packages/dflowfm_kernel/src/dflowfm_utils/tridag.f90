@@ -30,35 +30,94 @@
 !
 !
 module m_tridag
+   use precision, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
-   public :: tridag
+   public :: tridag, tridag_two_rhs
+
+   real(kind=dp), parameter :: pivot_tolerance = 1.0e-15_dp
 
 contains
 
-   subroutine tridag(a, b, c, d, e, u, n)
-      use precision, only: dp
+   !> Solve a tridiagonal system with the Thomas algorithm and small-pivot regularization.
+   subroutine tridag(lower, diagonal, upper, rhs, work, solution, n)
+      integer, intent(in) :: n !< Number of rows; must be at least one.
+      real(kind=dp), dimension(n), intent(in) :: lower !< Lower diagonal; lower(1) is unused.
+      real(kind=dp), dimension(n), intent(in) :: diagonal !< Main diagonal.
+      real(kind=dp), dimension(n), intent(in) :: upper !< Upper diagonal; upper(n) is unused.
+      real(kind=dp), dimension(n), intent(in) :: rhs !< Right-hand side.
+      real(kind=dp), dimension(n), intent(out) :: work !< Workspace for the normalized upper diagonal.
+      real(kind=dp), dimension(n), intent(out) :: solution !< Solution.
 
-      integer :: n, j
-      real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1.0e-15_dp
+      integer :: row
+      real(kind=dp) :: pivot, inverse_pivot
 
-      bet = b(1)
-      u(1) = d(1) / bet
-      do j = 2, n
-         e(j) = c(j - 1) / bet
-         bet = b(j) - a(j) * e(j)
-         if (abs(bet) < accur) then
-            bet = sign(accur, bet)
+      work(1) = 0.0_dp
+      pivot = diagonal(1)
+      if (abs(pivot) < pivot_tolerance) then
+         pivot = sign(pivot_tolerance, pivot)
+      end if
+      inverse_pivot = 1.0_dp / pivot
+      solution(1) = rhs(1) * inverse_pivot
+      do row = 2, n
+         work(row) = upper(row - 1) * inverse_pivot
+         pivot = diagonal(row) - lower(row) * work(row)
+         if (abs(pivot) < pivot_tolerance) then
+            pivot = sign(pivot_tolerance, pivot)
          end if
-         u(j) = (d(j) - a(j) * u(j - 1)) / bet
+         inverse_pivot = 1.0_dp / pivot
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
       end do
 
-      do j = n - 1, 1, -1
-         u(j) = u(j) - e(j + 1) * u(j + 1)
+      do row = n - 1, 1, -1
+         solution(row) = solution(row) - work(row + 1) * solution(row + 1)
       end do
    end subroutine tridag
+
+   !> Solve two systems with the same tridiagonal matrix, sharing the Thomas elimination.
+   !! The second right-hand side has the same value in every row. Reciprocal pivots
+   !! are shared by both solutions; results need not be bitwise identical to tridag.
+   subroutine tridag_two_rhs(lower, diagonal, upper, rhs, constant_rhs, work, solution, constant_solution, n)
+      integer, intent(in) :: n !< Number of rows; must be at least one.
+      real(kind=dp), dimension(n), intent(in) :: lower !< Lower diagonal; lower(1) is unused.
+      real(kind=dp), dimension(n), intent(in) :: diagonal !< Main diagonal.
+      real(kind=dp), dimension(n), intent(in) :: upper !< Upper diagonal; upper(n) is unused.
+      real(kind=dp), dimension(n), intent(in) :: rhs !< First right-hand side.
+      real(kind=dp), intent(in) :: constant_rhs !< Value in every row of the second right-hand side.
+      real(kind=dp), dimension(n), intent(out) :: work !< Workspace for the normalized upper diagonal.
+      real(kind=dp), dimension(n), intent(out) :: solution !< Solution for rhs.
+      real(kind=dp), dimension(n), intent(out) :: constant_solution !< Solution for constant_rhs.
+
+      integer :: row
+      real(kind=dp) :: pivot, inverse_pivot
+
+      work(1) = 0.0_dp
+      pivot = diagonal(1)
+      if (abs(pivot) < pivot_tolerance) then
+         pivot = sign(pivot_tolerance, pivot)
+      end if
+      inverse_pivot = 1.0_dp / pivot
+      solution(1) = rhs(1) * inverse_pivot
+      constant_solution(1) = constant_rhs * inverse_pivot
+
+      do row = 2, n
+         work(row) = upper(row - 1) * inverse_pivot
+         pivot = diagonal(row) - lower(row) * work(row)
+         if (abs(pivot) < pivot_tolerance) then
+            pivot = sign(pivot_tolerance, pivot)
+         end if
+         inverse_pivot = 1.0_dp / pivot
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
+         constant_solution(row) = (constant_rhs - lower(row) * constant_solution(row - 1)) * inverse_pivot
+      end do
+
+      do row = n - 1, 1, -1
+         solution(row) = solution(row) - work(row + 1) * solution(row + 1)
+         constant_solution(row) = constant_solution(row) - work(row + 1) * constant_solution(row + 1)
+      end do
+   end subroutine tridag_two_rhs
 
 end module m_tridag
