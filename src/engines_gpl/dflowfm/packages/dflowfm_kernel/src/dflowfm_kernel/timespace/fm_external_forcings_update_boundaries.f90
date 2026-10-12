@@ -33,7 +33,7 @@ submodule(fm_external_forcings) fm_external_forcings_update_boundaries
 
 contains
 
-   !> set boundary conditions
+   !> Set boundary conditions
    module subroutine set_external_forcings_boundaries(time, iresult)
       use m_setzminmax, only: setzminmax
       use precision, only: dp
