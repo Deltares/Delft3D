@@ -35,6 +35,7 @@ module m_nearfield
    use precision_basics, only: dp, comparereal
    use MessageHandling
    use m_alloc, only: realloc
+   use m_nearfield_data
    use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
    use m_transport
 
@@ -48,81 +49,41 @@ module m_nearfield
    public :: addNearfieldData
    public :: dealloc_nfarrays
 
+   ! m_nearfield_data variables exposed through m_nearfield
+
    ! constants
-   integer, parameter, public :: NEARFIELD_DISABLED = 0 !< If nearfield_mode is NEARFIELD_DISABLED (default), then nearfield/COSUMO is disabled
-   integer, parameter, public :: NEARFIELD_ENABLED = 1 !< After call addNearfieldData, nearfield_mode is set to NEARFIELD_ENABLED. This ensures:
-   !< - addNearfieldData does not need to be called again, until the data is updated and passes the pointers again.
-   !< - that subroutine setNFEntrainmentMomentum can be called if flag NearFieldEntrainmentMomentum is switched on
-   integer, parameter, public :: NEARFIELD_UPDATED = 2 !< nearfield_mode is set to NEARFIELD_UPDATED, everytime DIMR passes a data pointer
-   !< from cosumo_bmi to D-Flow FM. This is the trigger to call addNearfieldData in
-   !< set_external_forcings.
-   integer, parameter :: NF_IX = 1 !< Column 1 in COSUMO data          : x-coordinate
-   integer, parameter :: NF_IY = 2 !< Column 2 in COSUMO data          : y-coordinate
-   integer, parameter :: NF_IZ = 3 !< Column 3 in COSUMO data          : z-coordinate
-   integer, parameter :: NF_IS = 4 !< Column 4 in COSUMO data          : S-factor: if S changes along the sink traject, then entrainment appears
-   integer, parameter :: NF_IH = 5 !< Column 5 in COSUMO data          : half the plume height
-   integer, parameter :: NF_IW = 6 !< Column 6 in COSUMO data          : half the plume width
-   integer, parameter :: NF_IUMAG = 7 !< Column 7 in COSUMO data, OPTIONAL: momentum magnitude
-   integer, parameter :: NF_IUDIR = 8 !< Column 8 in COSUMO data, OPTIONAL: momentum direction: 0: to North, 90: to East
-   integer, parameter :: NUM_TRACK = 1000 !< If there is only one source point, a track is created perpendicular to "last sink -> source",
-   !< using NF_IW. NUM_TRACK points are defined on this track to detect all cells containing source points.
-   integer, parameter :: CONST_OPERATOR_UNDEFINED = 0
-   integer, parameter :: CONST_OPERATOR_EXCESS = 1
-   integer, parameter :: CONST_OPERATOR_ABSOLUTE = 2
+   public :: NEARFIELD_DISABLED
+   public :: NEARFIELD_ENABLED
+   public :: NEARFIELD_UPDATED
    
    ! integers
-   integer, public :: nearfield_mode !< Switch to enable/disable COSUMO
-   integer, public :: nf_num_dif !< Number of diffusers     as obtained from COSUMO_BMI
-   integer, public :: nf_numconst !< Number of constituents  as obtained from COSUMO_BMI
-   integer, public :: nf_numintake !< Number of intake points as obtained from COSUMO_BMI
-   integer, public :: nf_numsour !< Number of source points as obtained from COSUMO_BMI
-   integer, public :: nf_numsink !< Number of sink points   as obtained from COSUMO_BMI
-   integer, public :: nf_namlen !< Length of character strings in nf_const_operator as obtained from COSUMO_BMI
-   integer :: nf_sour_track_max !< Maximum (over all diffusers) of all source track flow cells
-   integer :: nf_intake_cnt_max !< Maximum (over all diffusers) of all number of intake points
-   integer :: nf_entr_max !< Maximum (over all diffusers) of all entrainment points (coupled sink source points)
+   public :: nearfield_mode
+   public :: nf_num_dif
+   public :: nf_numconst
+   public :: nf_numintake 
+   public :: nf_numsour
+   public :: nf_numsink
+   public :: nf_namlen
+   public :: nf_sour_track_max
    
    ! Pointers to data inside COSUMO_BMI, allocated in COSUMO_BMI
-   real(kind=dp), dimension(:), pointer, public :: nf_q_source !< Qsource
-   real(kind=dp), dimension(:), pointer, public :: nf_q_intake !< Qintake
-   real(kind=dp), dimension(:, :), pointer, public :: nf_const !< Constituent values
-   !< DIM 1: diffuser
-   !< DIM 2: constituent
-   real(kind=dp), dimension(:, :, :), pointer, public :: nf_intake !< Intake
-   !< DIM 1: diffuser
-   !< DIM 2: intake point id
-   !< DIM 3: X, Y, Z
-   real(kind=dp), dimension(:, :, :), pointer, public :: nf_sink !< Sinks
-   !< DIM 1: diffuser
-   !< DIM 2: sink point id
-   !< DIM 3: X, Y, Z, S, H, B
-   real(kind=dp), dimension(:, :, :), pointer, public :: nf_sour !< Sources
-   !< DIM 1: diffuser
-   !< DIM 2: source point id
-   !< DIM 3: X, Y, Z, S, H, B, Umag, Udir
-   character(:), dimension(:), pointer, public :: nf_const_operator !< Constituent operator
-   logical(kind=c_bool), dimension(:), pointer, public :: nf_src_mom !< true: Umag and Udir in nf_sour are filled
+   public :: nf_q_source
+   public :: nf_q_intake
+   public :: nf_const
+   public :: nf_intake
+   public :: nf_sink
+   public :: nf_sour
+   public :: nf_const_operator
+   public :: nf_src_mom
    
    ! NearField arrays on FM domain, allocated in FM
-   integer, dimension(:, :), allocatable :: nf_sink_n !<    Flow cell index of sink   points of all diffusers
-   integer, dimension(:, :), allocatable :: nf_sour_n !<    Flow cell index of source points of all diffusers
-   integer, dimension(:, :), allocatable :: nf_intake_n !<    Flow cell index of intake points of all diffusers
-   integer, dimension(:, :), allocatable :: nf_intake_nk !< 3D index of nf_intake_n
-   integer, dimension(:), allocatable :: nf_numintake_idif !< nf_numintake per diffuser
-   integer, dimension(:), allocatable :: nf_entr_start !< Start index in src arrays of entrainment points (coupled sink source)        of all diffusers
-   integer, dimension(:), allocatable :: nf_entr_end !< End   index in src arrays of entrainment points (coupled sink source)        of all diffusers
-   integer, dimension(:, :), allocatable :: nf_sinkid !< 3D index of nf_sink_n for each src point (from nf_entr_start to nf_entr_end) of all diffusers
-   real(kind=dp), dimension(:, :), allocatable :: nf_sour_wght !< Fraction * 1000.0       of each source point of all diffusers
-   real(kind=dp), dimension(:), allocatable :: nf_sour_wght_sum !< Sum of all source weights for each diffuser
-   real(kind=dp), dimension(:, :), allocatable :: nf_intake_wght !< Fraction * nf_numintake of each intake point of all diffusers
-   real(kind=dp), dimension(:, :), allocatable :: nf_intake_z !< Z coordinate            of each intake point of all diffusers
+   public :: nf_sink_n
+   public :: nf_sour_n
+   public :: nf_numintake_idif
+   public :: nf_entr_start
+   public :: nf_entr_end
+   public :: nf_sinkid
 
-   type :: intake_location_t
-      integer :: index_2d
-      integer :: index_3d
-      real(kind=dp) :: z_coordinate
-      integer :: weight_count
-   end type intake_location_t
 contains
 !
 !

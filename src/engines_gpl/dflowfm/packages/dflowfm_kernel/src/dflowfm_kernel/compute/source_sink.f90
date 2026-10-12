@@ -98,6 +98,8 @@ module m_source_sink
 
       procedure :: add => add_source_sink
       procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
+      procedure :: add_nearfield => add_nearfield_source_sinks
+      procedure, private :: add_nearfield_source_sinks_entrainment
       procedure :: update_discharges => update_source_sink_discharges
 
    end type SourceSinks
@@ -517,6 +519,157 @@ contains
 
    end subroutine add_source_sink
 
+   subroutine add_nearfield_source_sinks(self)
+      use m_nearfield_data, only: nf_num_dif, nf_entr_start, nf_entr_end, nf_sinkid, nf_numintake_idif
+      use m_physcoef, only: NFEntrainmentMomentum
+
+      ! Arguments
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance.
+
+      ! Local variables
+      integer :: i_diffuser !< Index of the diffuser associated with the nearfield source/sink
+      real(kind=dp) :: sum_weight_intakes
+
+      ! Reset number of nearfield sources to 0, they will be re-added
+      self%num_total = self%num_total - self%num_nearfield
+      self%num_nearfield = 0
+
+      if (NFEntrainmentMomentum > 0) then
+         call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
+         call realloc(nf_entr_end, nf_num_dif, keepExisting=.false., fill=0)
+      end if
+
+      if (allocated(nf_sinkid)) then
+         nf_sinkid = 0
+      end if
+
+      ! Initialize source_sinks object if not already done
+      if (.not. allocated(self%name)) then
+         allocate(self%name(1))
+      end if
+
+      do i_diffuser = 1, nf_num_dif
+
+         sum_weight_intakes = real(nf_numintake_idif(i_diffuser), kind=dp)
+
+         ! ENTRAINMENT
+         call self%add_nearfield_source_sinks_entrainment(i_diffuser)
+
+         ! DISCHARGE ITSELF
+
+
+         ! INTAKES
+
+
+      end do
+
+   end subroutine add_nearfield_source_sinks
+
+   !> Add the nearfield source/sinks with entrainment
+   subroutine add_nearfield_source_sinks_entrainment(self, i_diffuser)
+      use m_flow, only: zws
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_nearfield_data, only: nf_num_dif, nf_entr_start, nf_entr_end, nf_sinkid, nf_sour_track_max, &
+         nf_numsour, nf_numsink, nf_sour, nf_sink, nf_sour_n, nf_sink_n, NF_IH, NF_IZ, NF_IS, &
+         nf_q_source, nf_sour_wght, nf_sour_wght_sum
+      use m_physcoef, only: NFEntrainmentMomentum
+
+      ! Arguments
+      class(SourceSinks), intent(inout) :: self !< Source/sinks object containing the nearfield source/sinks
+      integer, intent(in) :: i_diffuser !< Index of the nearfield diffuser
+
+      ! Local variables
+      integer :: i_constituent !< Constituent index
+      integer :: i_sink !< Index of the sink associated with the nearfield diffuser
+      integer :: i_source !< Index of the source associated with the nearfield diffuser
+      integer :: layer_index !< Index of the vertical layer containing the nearfield source/sink
+      integer :: top_layer_index !< Index of the top vertical layer in the nearfield flowcell
+      integer :: bottom_layer_index !< Index of the bottom vertical layer in the nearfield flowcell
+      integer :: nearfield_maximum_entrainmant_points !< !< Maximum (over all diffusers) of all entrainment points (coupled sink source points)
+
+      ! Initialization
+      nearfield_maximum_entrainmant_points = 0
+
+      ! Set up the initial entrainment indices for the current diffuser
+      if (NFEntrainmentMomentum > 0) then
+         nf_entr_start(i_diffuser) = self%num_total + 1
+         nf_entr_end(i_diffuser) = nf_entr_start(i_diffuser) - 1
+      end if
+
+      do i_sink = 2, nf_numsink
+         do i_source = 1, nf_sour_track_max
+
+            if (nf_sour_n(i_diffuser, i_source) == 0) then
+               exit ! This might happen if the number of sources is not the same for each diffuser
+            end if
+
+            ! Increment the number of nearfield and total source/sinks
+            self%num_nearfield = self%num_nearfield + 1
+            self%num_total = self%num_total + 1
+
+            ! Increment the entrainment end index and update the maximum entrainment points if applicable
+            if (NFEntrainmentMomentum > 0) then
+               nf_entr_end(i_diffuser) = nf_entr_end(i_diffuser) + 1
+               nearfield_maximum_entrainmant_points = max(nearfield_maximum_entrainmant_points, nf_entr_end(i_diffuser) - nf_entr_start(i_diffuser) + 1)
+            end if
+
+            ! Reallocate the source/sinks object to accommodate the new total number of source/sinks
+            call self%realloc(self%num_total)
+
+            ! Write the name of the current source/sink diffuser
+            write (self%name(self%num_total), '(3(a,i0.4))') "diffuser ", i_diffuser, " , sink ", i_sink, " , source_track ", i_source
+
+            ! Add sink side
+            self%indices(self%num_total, FLOWCELL_SINK) = nf_sink_n(i_diffuser, i_sink)
+            self%z_bottom(self%num_total, SINK_SIDE) = -nf_sink(i_diffuser, i_sink, NF_IZ) - nf_sink(i_diffuser, i_sink, NF_IH)
+            self%z_top(self%num_total, SINK_SIDE) = -nf_sink(i_diffuser, i_sink, NF_IZ) + nf_sink(i_diffuser, i_sink, NF_IH)
+            
+            ! Add source side
+            self%indices(self%num_total, FLOWCELL_SOURCE) = nf_sour_n(i_diffuser, i_source)
+            
+            if (nf_numsour == 1) then
+               self%z_bottom(self%num_total, SOURCE_SIDE) = -nf_sour(i_diffuser, nf_numsour, NF_IZ) - nf_sour(i_diffuser, nf_numsour, NF_IH) 
+               self%z_top(self%num_total, SOURCE_SIDE) = -nf_sour(i_diffuser, nf_numsour, NF_IZ) + nf_sour(i_diffuser, nf_numsour, NF_IH)
+            else
+               self%z_bottom(self%num_total, SOURCE_SIDE) = -nf_sour(i_diffuser, i_source, NF_IZ)
+               self%z_top(self%num_total, SOURCE_SIDE) = -nf_sour(i_diffuser, i_source, NF_IZ)
+            end if
+
+            ! Check if the new source/sink coincides with an existing source/sink location
+            call check_mixed_source_sink(self%num_total)
+            
+            ! Compute the total discharge for the new source/sink
+            source_sink_all_discharges(1, self%num_total) = &
+               (nf_sink(i_diffuser, i_sink, NF_IS) - nf_sink(i_diffuser, i_sink - 1, NF_IS)) &
+               * nf_q_source(i_diffuser) &
+               * nf_sour_wght(i_diffuser, i_source) / &
+               nf_sour_wght_sum(i_diffuser)
+
+            ! Constituents: Entrainment does not cause addition
+            do i_constituent = 1, numconst
+               source_sink_all_discharges(i_constituent + 1, self%num_total) = 0.0_dp
+            end do
+               
+            if (NFEntrainmentMomentum > 0) then
+               ! Store the layer index of the flow nodes containing the sink locations.
+               ! They are used in subroutine setNFEntrainmentMomentum
+               call realloc(nf_sinkid, [nf_num_dif, nearfield_maximum_entrainmant_points], keepExisting=.true., fill=0)
+               call getkbotktop(nf_sink_n(i_diffuser, i_sink), bottom_layer_index, top_layer_index)
+
+               do layer_index = bottom_layer_index, top_layer_index
+                  if (zws(layer_index) > -nf_sink(i_diffuser, i_sink, NF_IZ) .or. layer_index == top_layer_index) then
+                     exit
+                  end if
+               end do
+
+               nf_sinkid(i_diffuser, nf_entr_end(i_diffuser) - nf_entr_start(i_diffuser) + 1) = layer_index
+
+            end if
+         end do
+      end do
+
+   end subroutine add_nearfield_source_sinks_entrainment
+
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine update_source_sink_discharges(self)
       use m_flow, only: kmx, zws, vol1, qin, epshs
@@ -726,5 +879,46 @@ contains
       end do
 
    end subroutine update_source_sink_discharges
+
+   !> Every time a nearfield source/sink point is added, check for mixed locations.
+   !! Generate a warning if a nearfield source/sink point coincides with an existing sink/source location.
+   subroutine check_mixed_source_sink(num_source_sink)
+      use MessageHandling, only: mess, LEVEL_WARN
+
+      integer, intent(in) :: num_source_sink
+      
+      ! Locals
+      integer :: i
+      character(300) :: message
+      
+      do i = 1, num_source_sink - 1
+
+         ! Check if new sink coincides with an already existing source
+         ! Horizontally:
+         if (source_sinks%indices(num_source_sink, FLOWCELL_SINK) == source_sinks%indices(i, FLOWCELL_SOURCE) .and. source_sinks%indices(num_source_sink, FLOWCELL_SINK) /= 0) then
+            ! Vertically:
+            ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
+            if (source_sinks%z_top(num_source_sink, SINK_SIDE) > source_sinks%z_bottom(i, SOURCE_SIDE) .and. source_sinks%z_top(i, SOURCE_SIDE) > source_sinks%z_bottom(num_source_sink, SINK_SIDE)) then
+               write (message, '(5a,i0)') "The sink location of '", trim(source_sinks%name(num_source_sink)), &
+                                      & "' coincides with the source location of '", trim(source_sinks%name(i)), &
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, FLOWCELL_SINK)
+               call mess(LEVEL_WARN, trim(message))
+            end if
+         end if
+         
+         ! Check if new source coincides with an already existing sink
+         ! Horizontally:
+         if (source_sinks%indices(num_source_sink, FLOWCELL_SOURCE) == source_sinks%indices(i, FLOWCELL_SINK) .and. source_sinks%indices(num_source_sink, FLOWCELL_SOURCE) /= 0) then
+            ! Vertically:
+            ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
+            if (source_sinks%z_top(num_source_sink, SOURCE_SIDE) > source_sinks%z_bottom(i, SINK_SIDE) .and. source_sinks%z_top(i, SINK_SIDE) > source_sinks%z_bottom(num_source_sink, SOURCE_SIDE)) then
+               write (message, '(5a,i0)') "The source location of '", trim(source_sinks%name(num_source_sink)), &
+                                      & "' coincides with the sink location of '", trim(source_sinks%name(i)), &
+                                      & "'. Horizontal cell index: ", source_sinks%indices(num_source_sink, FLOWCELL_SOURCE)
+               call mess(LEVEL_WARN, trim(message))
+            end if
+         end if
+      end do
+   end subroutine check_mixed_source_sink
 
 end module m_source_sink
