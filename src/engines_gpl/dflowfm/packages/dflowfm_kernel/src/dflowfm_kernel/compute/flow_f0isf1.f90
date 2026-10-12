@@ -58,7 +58,6 @@ contains
       use m_source_sink, only: source_sinks
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
-      REAL (kind=dp) :: foutje
 
       call a1vol1tot()
 
