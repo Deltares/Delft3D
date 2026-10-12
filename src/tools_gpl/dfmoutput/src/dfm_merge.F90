@@ -253,6 +253,8 @@ contains
       id_timestep = -1
       id_dimTwo = -1
       nMeshOld = 1 ! For old format input file, the number of meshes is 1
+      jasedmor = 0
+      jamorfac = 0
 
    !! 0a. Open input files
       call dfm_order_by_partition(infiles, nfiles)
