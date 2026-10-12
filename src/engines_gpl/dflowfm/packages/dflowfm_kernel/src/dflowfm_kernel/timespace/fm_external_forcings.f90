@@ -44,7 +44,6 @@ module fm_external_forcings
 
    private
 
-   public :: set_external_forcings_boundaries
    public :: adduniformtimerelation_objects
    public :: flow_initexternalforcings
    public :: findexternalboundarypoints
@@ -110,6 +109,9 @@ module fm_external_forcings
    public :: prepare_air_pressure_temperature_dew_point_temperature
    public :: prepare_wind
    public :: calculate_wind_stresses
+
+   ! Expose fm_external_forcings_update_boundaries functions
+   public :: set_external_forcings_boundaries
 
    public :: set_external_forcings
    public :: sourcesink_parse_coordinates
