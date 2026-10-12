@@ -61,7 +61,7 @@ contains
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       use network_data, only: LINK_1D2D_INTERNAL
       use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
                                            BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_VELOCITY_RIEMANN

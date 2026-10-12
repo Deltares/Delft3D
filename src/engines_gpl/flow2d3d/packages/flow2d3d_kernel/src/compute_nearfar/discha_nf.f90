@@ -43,7 +43,7 @@ subroutine discha_nf(kmax      ,lstsci    ,nmmax     ,kfs       ,sour      ,sink
 ! 3. Use tot_mass and sournf to add the correct volumes to the global sour array
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use dfparall
     !

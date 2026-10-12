@@ -57,7 +57,7 @@ subroutine tstat(prshis    ,selhis    ,rhow      ,zmodel    ,nostat    , &
     use precision
     !
     use globaldata
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
     !

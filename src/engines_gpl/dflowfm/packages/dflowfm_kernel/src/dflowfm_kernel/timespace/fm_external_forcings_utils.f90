@@ -31,7 +31,7 @@
 module fm_external_forcings_utils
    use precision_basics, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -85,12 +85,13 @@ contains
    subroutine get_tracername(qid, trname, qidname)
       use m_transportdata, only: DEFTRACER
       use string_module, only: istarts_with
-      implicit none
 
+      ! Arguments
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
       character(len=*), intent(out) :: trname !< The trimmed tracer name, e.g., 'fluor'.
       character(len=*), intent(out) :: qidname !< The base quantity name for further use in external forcing, e.g., 'tracerbnd'.
 
+      ! Initialization
       trname = ''
       qidname = qid
 
@@ -110,21 +111,20 @@ contains
          end if
       end if
 
-      return
    end subroutine get_tracername
 
    !> Convert quantity id (from .ext file) to sediment fraction name (split in generic qidname and specific fraction name).
    !! If the input qid is no sediment fraction, then the same qid is returned (and no fraction name)
    subroutine get_sedfracname(qid, sfname, qidname)
       use string_module, only: istarts_with
-      implicit none
 
+      ! Arguments
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
       character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
       character(len=*), intent(inout) :: qidname !< The base quantity name for further use in external forcing, e.g., 'sedfracbnd'.
 
+      ! Initialization
       sfname = ''
-
       
       if (istarts_with(qid, 'sedfracbnd')) then
          qidname = qid(1:10)
@@ -155,6 +155,7 @@ contains
             sfname = trim('unknown_sediment_fraction')
          end if
       end if
+
    end subroutine get_sedfracname
 
    !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
@@ -167,15 +168,17 @@ contains
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
    subroutine get_constituent_name(original_quantity, constituent_name, base_quantity)
       use string_module, only: strcmpi
-      implicit none
 
+      ! Arguments
       character(len=*), intent(in) :: original_quantity !< Original quantity id, e.g., 'sourcesink_salinityDelta'.
       character(len=*), intent(out) :: constituent_name !< The trimmed constituent name, e.g., 'salinity', or 'sand', or 'fluor'. Empty '' if not a constituent.
       character(len=*), intent(out) :: base_quantity !< The base quantity name for further use in external forcing, e.g., 'sourcesink_constituentDelta'. Unchanged original_quantity if not a constituent.
 
+      ! Local variables
       integer :: quantity_length
       integer :: index_prefix_end, index_suffix_start
 
+      ! Initialization
       constituent_name = ''
 
       quantity_length = len_trim(original_quantity)
@@ -202,6 +205,7 @@ contains
             constituent_name = constituent_name(8:)
          end if
       end if
+
    end subroutine get_constituent_name
 
    !> Read tracer properties from an ini file node.
@@ -209,9 +213,11 @@ contains
       use properties
       use tree_data_types, only: tree_data
 
+      ! Arguments
       type(tree_data), pointer :: node_ptr !< The tree structure containing a single ini-file chapter/block.
-      real(kind=dp), intent(inout) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), dimension(:), intent(inout) :: transformcoef !< Transformation coefficients
 
+      ! Local variables
       real(kind=dp) :: tracer_fall_velocity ! Tracer fall velocity
       real(kind=dp) :: tracer_decay_time ! Tracer decay time
 
@@ -222,71 +228,75 @@ contains
       tracer_decay_time = 0.0_dp
       call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
       transformcoef(25) = tracer_decay_time
-   end subroutine
-!> Read bubblescreen forcing attributes from block pointer
-function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, &
-                                              id, x_coordinates, y_coordinates, z_coordinates, num_columns, &
-                                              z_level, discharge_input) result(success)
-   use MessageHandling, only: err_flush, msgbuf
-   use properties, only: prop_get
-   use tree_data_types, only: tree_data
-   use m_read_location_info, only: read_polyline_coordinates
 
-   ! Parameters
-   type(tree_data), pointer, intent(in) :: block_ptr
-   character(len=*), intent(in) :: base_dir
-   character(len=*), intent(in) :: file_name
-   character(len=*), intent(in) :: group_name
-   character(len=255), intent(out) :: id
-   real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
-   real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
-   real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
-   integer, intent(out) :: num_columns
-   real(kind=dp), intent(out) :: z_level
-   character(len=:), allocatable, intent(out) :: discharge_input
-   logical :: success
+   end subroutine read_tracer_properties
 
-   ! Local variables
-   character(len=INI_VALUE_LEN) :: readout_id
-   character(len=INI_VALUE_LEN) :: readout_discharge_input
-   logical :: is_read
+   !> Read bubblescreen forcing attributes from block pointer
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, x_coordinates, y_coordinates, &
+         z_coordinates, num_columns, z_level, discharge_input) result(success)
+      use MessageHandling, only: err_flush, msgbuf
+      use properties, only: prop_get
+      use tree_data_types, only: tree_data
+      use m_read_location_info, only: read_polyline_coordinates
 
-   success = .false.
-   num_columns = 0
+      ! Arguments
+      type(tree_data), pointer, intent(in) :: block_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      character(len=255), intent(out) :: id
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
+      integer, intent(out) :: num_columns
+      real(kind=dp), intent(out) :: z_level
+      character(len=:), allocatable, intent(out) :: discharge_input
+      logical :: success
 
-   ! (required) id
-   call prop_get(block_ptr, '', 'id', readout_id, is_read)
-   if (.not. is_read .or. len_trim(readout_id) == 0) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
-      call err_flush()
-      return
-   end if
-   id = trim(readout_id)
+      ! Local variables
+      character(len=INI_VALUE_LEN) :: readout_id
+      character(len=INI_VALUE_LEN) :: readout_discharge_input
+      logical :: is_read
 
-   ! (required) polyline coordinates (from locationFile or inline keys)
-   call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
-                                  x_coordinates, y_coordinates, z_coordinates, num_columns, success)
-   if (.not. success) return
-
-   ! (required) zLevel
-   call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
-   if (.not. is_read) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
-      call err_flush()
+      ! Initialization
       success = .false.
-      return
-   end if
+      num_columns = 0
 
-   ! (required) discharge
-   call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
-   if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
-      call err_flush()
-      success = .false.
-      return
-   end if
-   discharge_input = trim(readout_discharge_input)
+      ! (required) id
+      call prop_get(block_ptr, '', 'id', readout_id, is_read)
+      if (.not. is_read .or. len_trim(readout_id) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      id = trim(readout_id)
 
-   success = .true.
-end function read_bubblescreen_forcing_attributes
+      ! (required) polyline coordinates (from locationFile or inline keys)
+      call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
+                                    x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+      if (.not. success) return
+
+      ! (required) zLevel
+      call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+
+      ! (required) discharge
+      call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
+      if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+      discharge_input = trim(readout_discharge_input)
+
+      success = .true.
+
+   end function read_bubblescreen_forcing_attributes
+
 end module fm_external_forcings_utils

@@ -37,7 +37,7 @@ subroutine hds_wf(kfs       ,dps       ,s1        ,xcor      ,ycor      ,&
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

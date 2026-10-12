@@ -4,7 +4,6 @@ import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 
 import Delft3D.verschilanalyse.ReportVerschilanalyse
 
@@ -19,37 +18,17 @@ object StartVerschilanalyse : BuildType({
         cleanCheckout = true
     }
 
-    if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
-        triggers {
-            finishBuildTrigger {
-                buildType = "${PinAndTag.id}"
-                successfulOnly = true
-                // The default branch is triggered manually via a DIMRBakker PinAndTag build
-                //   and this results to this VA output to be automatically compared to the latest release candidate.
-                // Release branches should not get triggered by the DIMRBakker build chain because 
-                //   we don't want to do automatic comparisons to the latest release candidate.
-                // When we have to do special VA tool runs, for example comparing release branches within each other, 
-                //   we should not use this DIMRBakker configured finishBuildTrigger. 
-                branchFilter = """
-                    +:<default>
-                    -:all/release/*
-                """.trimIndent()
-            }
-        }
-    }   
-
     params {
+        param("harbor_webhook.image.tag", "development")
         param("va_harbor_protocol", "docker")
-        text(
-            "va_harbor_image",
-            "%dep.${Publish.id}.destination_image_specific%",
-            display = ParameterDisplay.PROMPT,
-            description =
-                "Choose what Verschilanalyse image should be used from harbor." +
-                " When triggering this as a custom build, make sure to replace this" +
-                " with an available image from https://containers.deltares.nl/harbor/projects/9/repositories/delft3dfm/artifacts-tab" +
-                " e.g. containers.deltares.nl/delft3d/delft3dfm:2.31.23-release"
-        )
+        param(
+            "harbor_webhook.image.url", 
+            sequenceOf(
+                "containers.deltares.nl",
+                DslContext.getParameter("va_harbor_project"),
+                "${DslContext.getParameter("va_harbor_repository")}:development"
+            ).joinToString(separator="/")
+        ) 
         text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
         checkbox(
             "use_latest_weekly_reference_output",
@@ -82,6 +61,34 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
+    }
+
+    triggers {
+        if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
+            // TeamCity webhook plugin docs: https://github.com/tcplugins/tcWebHookTrigger
+            // I couldn't find a webhook event payload example in the Harbor documentation,
+            // but this GitHub issue comment has an example:
+            // https://github.com/keel-hq/keel/issues/510#issuecomment-647014097
+            trigger {
+                type = "webhookBuildTrigger"
+                param("webhook.build.trigger.path.mappings", """
+                    name=harbor_webhook.type::path=${'$'}.type::required=true
+                    name=harbor_webhook.image.digest::path=${'$'}.event_data.resources[0].digest::required=true
+                    name=harbor_webhook.image.tag::path=${'$'}.event_data.resources[0].tag::required=true
+                    name=harbor_webhook.image.url::path=${'$'}.event_data.resources[0].resource_url::required=true
+                    name=harbor_webhook.repository::path=${'$'}.event_data.repository.name::required=true
+                    name=harbor_webhook.project::path=${'$'}.event_data.repository.namespace::required=true
+                """.trimIndent())
+                param("webhook.build.trigger.path.filters", """
+                    name=harbor_webhook.type::template=${'$'}{harbor_webhook.type}::regex=PUSH_ARTIFACT
+                    name=harbor_webhook.project::template=${'$'}{harbor_webhook.project}::regex=${DslContext.getParameter("va_harbor_project")}
+                    name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("va_harbor_repository")}
+                    name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
+                    name=current_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
+                """.trimIndent())
+                param("webhook.build.trigger.include.payload", "true")
+            }
+        }
     }
 
     steps {
@@ -146,12 +153,10 @@ object StartVerschilanalyse : BuildType({
                 tar -xzvf bundle-%teamcity.build.id%.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle-%teamcity.build.id%.tar.gz
 
-                # start the VA, use dep. variables from the upstream Publish build to
-                # define what apptainer image we should use. 
-                # The above PinAndTag finishBuildTrigger depends on the Publish build
+                # start the VA
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
-                    --apptainer='%va_harbor_protocol%://%va_harbor_image%' \
+                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
