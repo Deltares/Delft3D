@@ -524,7 +524,7 @@ contains
    !
    real(kind=dp) function getdx(x1, y1, x2, y2, jsferic)
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
       implicit none
       real(kind=dp) :: x1, y1, x2, y2
@@ -567,7 +567,7 @@ contains
    !
    real(kind=dp) function getdy(x1, y1, x2, y2, jsferic)
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
 
       implicit none
@@ -609,7 +609,7 @@ contains
    ! sphertocart3D
    !
    subroutine sphertocart3D(x1, y1, xx1, yy1, zz1) !, jsferic) ! from spherical 2D to Cartesian 3D coordinates
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
       implicit none
       real(kind=dp) :: x1, y1, xx1, yy1, zz1, rr
@@ -633,7 +633,7 @@ contains
    !    transform 3D Cartesian coordinates to 2D spherical (jsferic=1) or 2D Cartesian (jsferic=0) coordinates
    !    x1 will be close to xref in spherical coordinates
    subroutine Cart3Dtospher(xx1, yy1, zz1, x1, y1, xref)
-      use mathconsts, only: raddeg_hp
+      use m_mathconstants, only: raddeg_hp
       implicit none
 
       real(kind=dp), intent(in) :: xx1 !< 3D x-coordinate
@@ -1108,7 +1108,7 @@ contains
 !      use m_sferic
 !      use m_missing
 !      use geometry_module, only: sphertocart3D
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       implicit none
 
       real(kind=dp), intent(in) :: xp, yp !< point coordinates
@@ -1549,7 +1549,7 @@ contains
    !>    transform vector with componentis in global spherical coordinate directions (xglob,yglob) to local coordinate directions (xloc,yloc) around reference point (xref,yref)
    subroutine spher2locvec(xref, yref, N, xglob, yglob, vxglob, vyglob, vxloc, vyloc, jsferic, jasfer3D, dmiss)
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
 
@@ -1640,7 +1640,7 @@ contains
 
    subroutine spher2locvec2(xref, yref, N, xglob, yglob, vxglob, vyglob, vxloc, vyloc, jsferic, jasfer3D, dmiss)
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
 
@@ -1734,7 +1734,7 @@ contains
    !
    !> Normalized vector in direction 1 -> 2, in the orientation of (xu,yu)
    subroutine normalin(x1, y1, x2, y2, xn, yn, xu, yu, jsferic, jasfer3D, dxymis)
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
       implicit none
       real(kind=dp), intent(in) :: x1
       real(kind=dp), intent(in) :: y1
@@ -1800,7 +1800,7 @@ contains
       !! so make sure your alpha is in degrees.
    subroutine normalout(x1, y1, x2, y2, xn, yn, jsferic, jasfer3D, dmiss, dxymis) ! normals out edge 1  2
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
       real(kind=dp) :: x1, y1, x2, y2, xn, yn
@@ -1868,7 +1868,7 @@ contains
    subroutine normaloutchk(x1, y1, x2, y2, x3, y3, xn, yn, jaflip, jsferic, jasfer3D, dmiss, dxymis)
 
       use physicalconsts, only: earth_radius
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
       real(kind=dp), intent(in) :: x1, y1 !< First point of line
@@ -1960,7 +1960,7 @@ contains
    !    xu = x + alpha v, with v in reference frame of x
    subroutine xpav(x, y, alpha, vx, vy, xu, yu, jsferic, jasfer3D)
 
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
 
@@ -2031,7 +2031,7 @@ contains
    subroutine comp_masscenter2D(N, xin, y, xcg, ycg, area, jacounterclockwise, jsferic, dmiss)
 
       use physicalconsts, only: earth_radius
-      use mathconsts, only: degrad_hp
+      use m_mathconstants, only: degrad_hp
 
       implicit none
 
@@ -2530,7 +2530,7 @@ contains
       !! See also getcellcircumcenter
    subroutine GETCIRCUMCENTER(nn, xv, yv, lnnl, xz, yz, jsferic, jasfer3D, jglobe, jins, dmiss, dxymis, dcenterinside, circumcenter_method_dummy)
       use precision, only: hp
-      use mathconsts, only: degrad_hp, raddeg_hp
+      use m_mathconstants, only: degrad_hp, raddeg_hp
       use physicalconsts, only: earth_radius
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, ALL_NETLINKS_LOOP, circumcenter_tolerance
 
@@ -2719,7 +2719,7 @@ contains
    !> compute circumcenter of a triangle
    subroutine circumcenter3(nn, x, y, xz, yz, jsferic) ! of triangle n                      ! todo : sferic
 
-      use mathconsts, only: degrad_hp, raddeg_hp
+      use m_mathconstants, only: degrad_hp, raddeg_hp
       use physicalconsts, only: earth_radius
 
       implicit none

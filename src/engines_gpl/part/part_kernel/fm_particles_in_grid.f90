@@ -676,7 +676,7 @@ contains
         !>            Determines the new position of a particle using spherical coordinates
 
         use m_waq_precision, only: dp
-        use mathconsts, only:      raddeg_hp, degrad_hp
+        use m_mathconstants, only:      raddeg_hp, degrad_hp
         use physicalconsts, only:  earth_radius
         use m_sferic_part, only:   ptref
         use geometry_module, only: Cart3Dtospher, sphertocart3D

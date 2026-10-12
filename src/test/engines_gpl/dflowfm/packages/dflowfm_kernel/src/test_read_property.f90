@@ -43,7 +43,7 @@ contains
       use dfm_error
       use ifport, only: CHANGEDIRQQ
       use properties
-      use mathconsts, only: eps_hp
+      use m_mathconstants, only: eps_hp
       use m_strucs
 
       integer :: ierr

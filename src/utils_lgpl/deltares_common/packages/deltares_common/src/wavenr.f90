@@ -50,7 +50,7 @@ subroutine wavenr(water_depth, period, wave_number, local_gravity)
     ! NONE
     !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
     !
