@@ -27,22 +27,31 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_init
+module fm_external_forcings_init
    use precision_basics, only: dp
    use m_missing, only: dmiss, imiss
 
    implicit none(type, external)
 
+   private
+
    integer, parameter :: INI_VALUE_LEN = 256
    real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
+
+   public :: init_new
+   public :: init_spatial_fields
+   public :: sourcesink_parse_coordinates
+   public :: addtimespacerelation_boundaries
+   public :: adduniformtimerelation_objects
 
 contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_new(iresult)
+   subroutine init_new(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use fm_external_forcings_data, only: set_lateral_count
+      use fm_external_forcings_utils, only: init_registered_items
       use m_alloc, only: realloc
       use m_ec_parameters, only: provFile_uniform
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
@@ -461,6 +470,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
+      use fm_external_forcings_utils, only: quantity_pli_combination_is_registered, register_quantity_pli_combination
       use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
@@ -768,6 +778,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
+      use fm_external_forcings_utils, only: ini_alloc_laterals
 
       ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -882,6 +893,7 @@ contains
                         qext, jaqin
       use m_flowgeom, only: ndx, lnx
       use string_module, only: str_tolower
+      use fm_external_forcings_utils, only: allocatewindarrays
 
       ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the quantity.
@@ -1052,7 +1064,7 @@ contains
 
    end function init_field1d_block
 
-   module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+   function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower
@@ -1522,7 +1534,7 @@ contains
    end function enable_quantity
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
-   module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
+   function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
@@ -2107,4 +2119,265 @@ contains
 
    end function scan_for_heat_quantities
 
-end submodule fm_external_forcings_init
+   !> Calls the ec_addtimespacerelation with all proper unstruc-specific target arrays and element set masks.
+   function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcing_file, targetindex) result(success)
+      use fm_external_forcings_data, no1 => qid, no2 => filetype, no3 => operand, no4 => success
+      use fm_external_forcings_utils, only: check_keyword_zerozbndinflowadvection, get_tracername, get_sedfracname
+      use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_flowparameters, only: jawave
+      use m_flowtimes, only: dt_nodal
+      use m_qnerror
+      use m_find_name, only: find_name
+      use messagehandling, only: LEVEL_WARN, mess
+
+      ! Arguments
+      character(len=*), intent(inout) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
+      character(len=*), intent(in) :: filename !< Name of data file for current quantity.
+      integer, intent(in) :: filetype !< File type of current quantity.
+      integer, intent(in) :: method !< Time-interpolation method for current quantity.
+      integer, intent(in) :: operand !< Operand w.r.t. previous data
+      character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
+      integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
+
+      ! Local variables
+      logical :: success
+      character(len=256) :: tracnam, sfnam, qidnam
+      integer :: itrac, isf
+      real(kind=dp), dimension(:), pointer :: pzmin, pzmax
+
+      success = .true. ! initialization
+
+      ! Special forcingsfile: if name equals 'REALTIME', do not do an ec_addtimespacerelation, just leave it to the external caller to fill zbnd* target value array.
+      ! TODO: AVD: we now leave it to caller to fill array with length(zbnd*),
+      ! instead of the number of polyline points. Cleaner alternative is to create
+      ! a poly_tim provider, with the *underlying* point child providers being REALTIME.
+      if (present(forcing_file)) then
+         if (trim(forcing_file) == 'REALTIME') then
+            call mess(LEVEL_DEBUG, 'addtimespacerelation_boundaries: leave empty timespacerelation for '''//trim(qid)//''' from locationFile '''//trim(filename)//''' (REALTIME data).')
+            return
+         end if
+      end if
+
+      kx = 1
+      if (nbndz > 0 .and. (qid == 'waterlevelbnd' .or. qid == 'neumannbnd' .or. qid == 'riemannbnd' .or. qid == 'outflowbnd')) then
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, dtnodal=dt_nodal, targetindex=targetindex)
+
+      else if (nbndz > 0 .and. nqhbnd > 0 .and. (qid == 'qhbnd')) then
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbndu > 0 .and. (qid == 'dischargebnd' .or. qid == 'criticaloutflowbnd' .or. qid == 'weiroutflowbnd' .or. qid == 'absgenbnd')) then
+         if (qid == 'absgenbnd') then
+            jawave = 4
+         end if
+         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbndu > 0 .and. qid == 'velocitybnd') then
+         pzmin => zminmaxu(1:nbndu)
+         pzmax => zminmaxu(nbndu + 1:2 * nbndu)
+         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, &
+                                           xy2bndu, z=sigmabndu, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbnds > 0 .and. qid == 'salinitybnd') then ! 2D
+         pzmin => zminmaxs(1:nbnds)
+         pzmax => zminmaxs(nbnds + 1:2 * nbnds)
+         success = ec_addtimespacerelation(qid, xbnds, ybnds, kds, kx, filename, filetype, method, operand, xy2bnds, &
+                                           z=sigmabnds, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbndTM > 0 .and. qid == 'temperaturebnd') then
+         pzmin => zminmaxtm(1:nbndTM)
+         pzmax => zminmaxtm(nbndTM + 1:2 * nbndTM)
+         success = ec_addtimespacerelation(qid, xbndTM, ybndTM, kdtm, kx, filename, filetype, method, operand, xy2bndtm, &
+                                           z=sigmabndtm, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbndsd > 0 .and. (qid == 'sedimentbnd')) then
+         pzmin => zminmaxsd(1:nbndsd)
+         pzmax => zminmaxsd(nbndsd + 1:2 * nbndsd)
+         success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
+                                           z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (numtracers > 0 .and. istarts_with(qid, 'tracerbnd')) then
+         ! get tracer boundary condition number
+         call get_tracername(qid, tracnam, qidnam)
+         itrac = find_name(trnames, tracnam)
+
+         ! for parallel runs, we always need to add the tracer, even if this subdomain has no tracer boundary conditions defined
+         ! call add_tracer(tracnam, iconst)
+         ! update: all tracers are counted first and allocated later
+
+         if (nbndtr(itrac) > 0) then
+            pzmin => bndtr(itrac)%zminmax(1:nbndtr(itrac))
+            pzmax => bndtr(itrac)%zminmax(nbndtr(itrac) + 1:2 * nbndtr(itrac))
+            success = ec_addtimespacerelation(qid, bndtr(itrac)%x, bndtr(itrac)%y, bndtr(itrac)%kd, kx, filename, filetype, method, operand, bndtr(itrac)%xy2, &
+                                              z=bndtr(itrac)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+         else
+            success = .true.
+         end if
+
+      else if (numfracs > 0 .and. istarts_with(qid, 'sedfracbnd') .and. stm_included) then
+
+         call get_sedfracname(qid, sfnam, qidnam)
+         isf = find_name(sfnames, sfnam)
+
+         if (isf > 0) then
+            if (nbndsf(isf) > 0) then
+               pzmin => bndsf(isf)%zminmax(1:nbndsf(isf))
+               pzmax => bndsf(isf)%zminmax(nbndsf(isf) + 1:2 * nbndsf(isf))
+               success = ec_addtimespacerelation(qid, bndsf(isf)%x, bndsf(isf)%y, bndsf(isf)%kd, kx, filename, filetype, method, operand, bndsf(isf)%xy2, &
+                                                 z=bndsf(isf)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+            else
+               success = .true.
+            end if
+         else
+            call mess(LEVEL_WARN, 'Initializing boundary block for file '''//trim(filename)//''', getting unknown sediment fraction '''//trim(sfnam)//''' from QUANTITY '''//trim(qid)//'''.')
+            call qnerror('Initializing boundary block for file '''//trim(filename)//''', getting unknown sediment fraction '''//trim(sfnam)//''' from QUANTITY '''//trim(qid)//'''.', ' ', ' ')
+         end if
+
+      else if (nbndt > 0 .and. (qid == 'tangentialvelocitybnd')) then
+         success = ec_addtimespacerelation(qid, xbndt, ybndt, kdt, kx, filename, filetype, method, operand, xy2bndt, forcingfile=forcing_file, targetindex=targetindex)
+
+      else if (nbnduxy > 0 .and. (qid == 'uxuyadvectionvelocitybnd')) then
+         kx = 2
+         pzmin => zminmaxuxy(1:nbnduxy)
+         pzmax => zminmaxuxy(nbnduxy + 1:2 * nbnduxy)
+         success = ec_addtimespacerelation(qid, xbnduxy, ybnduxy, kduxy, kx, filename, filetype, method, operand, xy2bnduxy, &
+                                           z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file)
+         success = success .and. check_keyword_zerozbndinflowadvection()
+
+      else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
+         success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
+
+      else ! There is some boundary that is not detected or recognized
+      end if
+   end function addtimespacerelation_boundaries
+
+   !> Calls the ec_addtimespacerelation with all proper dflowfm-specific
+   !! target arrays and element set masks for object parameters with
+   !! spatially uniform time series.
+   !! Also handles inside one function the old-style *.ext quantities and
+   !! the new style *.ext and structures.ini quantities.
+   function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
+      !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
+      use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_transportdata, only: NAMLEN
+      use string_module, only: istarts_with
+      use timespace_parameters, only: uniform, bcascii, spaceandtime
+      use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
+      use fm_external_forcings_utils, only: get_constituent_name
+
+      ! Arguments
+      character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
+      character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
+      character(len=*), intent(in) :: objtype !< Type name of the object for which this relation is set (e.g., 'lateral', for prettyprinting only).
+      character(len=*), intent(in) :: objid !< Id of the object for which this relation is set (for prettyprinting only).
+      character(len=*), intent(in) :: paramname !< Name of the parameter that is set in this relation (e.g., 'discharge', for prettyprinting only).
+      character(len=*), intent(in) :: paramvalue !< String containing the parameter value (either a scalar double, or 'REALTIME', or a filename)
+      integer, intent(in) :: targetindex !< Target index in target value array (typically, the current count of this object type, e.g. numlatsg).
+      integer, intent(in) :: vectormax !< The number of values per object ('kx'), typically 1.
+      logical :: success !< Return value. Whether relation was added successfully.
+      real(kind=dp), dimension(:), intent(inout), target :: targetarray !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
+
+      ! Local variables
+      character(len=256) :: valuestring, fnam, qid_base
+      character(len=NAMLEN) :: const_name
+      real(kind=dp) :: valuedble
+      real(kind=dp), dimension(1) :: xdum, ydum
+      integer, dimension(1) :: kdum
+      integer :: ierr, L
+      real(kind=dp), dimension(:), pointer :: targetarrayptr
+      real(kind=dp), dimension(:), pointer :: dbleptr
+      integer :: tgtitem
+      integer, pointer :: intptr, multuniptr
+      logical :: file_exists
+
+      ! Initialization
+      success = .true.
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
+
+      if (len_trim(paramvalue) > 0) then
+         valuestring = paramvalue
+      else if (len_trim(location_file) > 0) then
+         ! Old-style *.ext:
+         ! Prepare time series relation, if the .pli file has an associated .tim file.
+         L = index(location_file, '.', back=.true.) - 1
+         valuestring = location_file(1:L)//'_0001.tim'
+         inquire (file=valuestring, exist=file_exists)
+         if (.not. file_exists) then
+            valuestring = location_file(1:L)//'.tim'
+            inquire (file=valuestring, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               success = .false.
+               return
+            end if
+         end if
+
+      else
+         call mess(LEVEL_ERROR, trim(objtype)//' '''//trim(objid)//''', '//paramname//' could not be read.')
+         success = .false.
+      end if
+
+      ! Now check the valuestring for either scalar/REALTIME/.tim filename
+      read (valuestring, *, iostat=ierr) valuedble
+      targetarrayptr => targetarray
+      tgtitem = ec_undef_int
+
+      if (ierr /= 0 .or. index(valuestring, '/') == 1) then ! No number or a string starting with '/': check for timeseries filename
+         if (strcmpi(trim(valuestring), 'REALTIME')) then
+            success = .true.
+            ! targetarray(targetindex) should be filled via DLL's API
+            write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
+            call dbg_flush()
+         else
+            qid_base = qid
+            call get_constituent_name(qid, const_name, qid_base)
+            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
+               success = .true.
+            else
+               success = .false.
+               write (msgbuf, '(a)') 'Unknown quantity '''//trim(qid)//'''.'
+               call err_flush()
+               return
+            end if
+
+            fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
+            ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
+            if (index(trim(fnam)//'|', '.tim|') > 0) then
+               ! uniform=single time series vectormax = 1
+               success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
+                                                 filetype=uniform, &
+                                                 method=spaceandtime, &
+                                                 operand=OPERAND_OVERRIDE, &
+                                                 tgt_data1=targetarrayptr, &
+                                                 tgt_item1=tgtitem, &
+                                                 multuni1=multuniptr, &
+                                                 targetIndex=targetindex)
+            elseif (index(trim(fnam)//'|', '.bc|') > 0) then
+               ! uniform=single time series vectormax = 1
+
+               success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
+                                                 filetype=bcascii, &
+                                                 method=spaceandtime, &
+                                                 operand=OPERAND_OVERRIDE, &
+                                                 tgt_data1=targetarrayptr, &
+                                                 tgt_item1=tgtitem, &
+                                                 multuni1=multuniptr, &
+                                                 targetIndex=targetindex, &
+                                                 forcingFile=fnam)
+            end if
+         end if
+      else
+         targetarray(targetindex) = valuedble ! Constant value for always, set it now already.
+      end if
+
+   end function adduniformtimerelation_objects
+
+end module fm_external_forcings_init

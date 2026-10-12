@@ -43,8 +43,18 @@ module fm_external_forcings_utils
    public :: read_bubblescreen_forcing_attributes
    public :: print_error_message
    public :: select_wave_variables_subgroup
+   public :: quantity_pli_combination_is_registered
+   public :: register_quantity_pli_combination
+   public :: init_registered_items
+   public :: check_keyword_zerozbndinflowadvection
+   public :: ini_alloc_laterals
+   public :: allocatewindarrays
 
    integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: MAX_REGISTERED_ITEM_ID = 512
+   character(len=MAX_REGISTERED_ITEM_ID), allocatable :: registered_items(:)
+   integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
+   integer :: num_registered_items = 0
 
    abstract interface
       subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
@@ -447,5 +457,125 @@ contains
       end do
 
    end subroutine fill_open_boundary_cells_with_inner_values_fewer
+
+   function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+      logical :: is_registered
+
+      ! Local variables
+      integer :: i
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      is_registered = .false.
+
+      do i = 1, num_registered_items
+         if (item_id == registered_items(i)) then
+            is_registered = .true.
+            return
+         end if
+      end do
+
+   end function quantity_pli_combination_is_registered
+
+   subroutine register_quantity_pli_combination(quantity, location_file)
+      use m_alloc
+
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+
+      ! Local variables
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      if (num_registered_items >= max_ext_bnd_items) then
+         max_ext_bnd_items = ceiling(1.2 * num_registered_items)
+         call realloc(registered_items, max_ext_bnd_items, keepExisting=.true., fill='')
+      end if
+
+      num_registered_items = num_registered_items + 1
+      registered_items(num_registered_items) = item_id
+
+   end subroutine register_quantity_pli_combination
+
+   subroutine init_registered_items()
+      num_registered_items = 0
+
+      max_ext_bnd_items = 64 ! Default start size.
+      if (allocated(registered_items)) then
+         deallocate (registered_items)
+      end if
+      allocate (registered_items(max_ext_bnd_items))
+
+      registered_items(1:max_ext_bnd_items) = ''
+
+   end subroutine init_registered_items
+
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
+
+      ! Arguments
+      logical :: success
+
+      ! Initialization
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
+
+   !> Initializes memory for laterals on flow nodes.
+   subroutine ini_alloc_laterals()
+      use m_laterals, only: kclat, nnlat
+      use m_flowgeom, only: ndx2d, ndxi, ndx
+      use m_alloc
+
+      ! Local variables
+      integer :: ierr
+      integer :: nlatndguess
+
+      if (.not. allocated(nnlat)) then ! just once
+         nlatndguess = ndx2d + 2 * (ndxi - ndx2d) ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
+         allocate (nnLat(nlatndguess), stat=ierr)
+         call aerr('nnLat(nlatndguess)', ierr, nlatndguess)
+         nnLat = 0
+      end if
+      if (.not. allocated(kcLat)) then
+         allocate (kcLat(ndx), stat=ierr) ! only if needed
+         call aerr('kcLat(ndx)', ierr, ndx)
+      end if
+   end subroutine ini_alloc_laterals
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc, aerr
+
+      ! Arguments
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
+      end if
+
+   end subroutine allocatewindarrays
 
 end module fm_external_forcings_utils
