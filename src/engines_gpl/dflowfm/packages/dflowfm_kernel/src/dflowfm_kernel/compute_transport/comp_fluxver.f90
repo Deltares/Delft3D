@@ -134,15 +134,15 @@ contains
             do j = 1, NUMCONST
                qw_loc = qw(k)
                if (jaimplicitfallvelocity == 0) then ! explicit
-                  if (iconstituent_to_fall_velocity_waq(j) > 0) then
-                     qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * ba(kk)
-                  else if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
+                  if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
                         qw_loc = qw(k) ! settling flux zero below kmxsed layer
                      else
                         qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
                      end if
+                  else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                     qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * ba(kk)
                   else
                      qw_loc = qw(k) - wsf(j) * ba(kk)
                   end if
