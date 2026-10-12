@@ -36,6 +36,7 @@ module fm_external_forcings
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name, ini_alloc_laterals, allocatewindarrays
    use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, addtimespacerelation_boundaries, adduniformtimerelation_objects
+   use fm_external_forcings_init_old, only: init_old
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
       prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
    use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries
@@ -48,18 +49,6 @@ module fm_external_forcings
    public :: flow_initexternalforcings
    public :: findexternalboundarypoints
    public :: finalize_offline_wave_input_requirements
-
-   interface
-      module subroutine init_old(iresult)
-         integer, intent(inout) :: iresult
-      end subroutine init_old
-   end interface
-
-   interface
-      module subroutine init_misc(iresult)
-         integer, intent(inout) :: iresult
-      end subroutine init_misc
-   end interface
 
    ! Expose fm_external_forcings_utils functions
    public :: allocatewindarrays
