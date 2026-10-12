@@ -57,7 +57,6 @@ contains
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
-      REAL (kind=dp) :: foutje
 
       call a1vol1tot()
 
