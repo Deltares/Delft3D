@@ -50,13 +50,14 @@ contains
                         idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
       use m_flowparameters, only: japure1D
       use m_partitioninfo, only: jampi, idomain, my_rank
-      use m_drawthis, only: ndraw
+      !use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
+      REAL (kind=dp) :: foutje
 
       call a1vol1tot()
 
@@ -207,34 +208,29 @@ contains
 
       end if
 
-      if (NDRAW(28) == 34) then ! Display values at flow nodes: volerror
-
-         if (kmx == 0) then
-            do kk = 1, ndxi
-               if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) then
-                     cycle
-                  end if
+      if (kmx == 0) then
+         do kk = 1, ndxi
+            if (jampi == 1) then
+               if (idomain(kk) /= my_rank) then
+                  cycle
                end if
-               volerror(kk) = vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk)) ! array transfer
-            end do
-
-         else
-
-            do kk = 1, ndxi
-               if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) then
-                     cycle
-                  end if
+            end if
+            volerror(kk) = volerror(kk) + abs(vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk))) ! array transfer
+            continue
+         end do
+      else
+         do kk = 1, ndxi
+            if (jampi == 1) then
+               if (idomain(kk) /= my_rank) then
+                  cycle
                end if
+            end if
 
-               call getkbotktop(kk, kb, kt)
-               do k = kb, kt
-                  volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
-               end do
+            call getkbotktop(kk, kb, kt)
+            do k = kb, kt
+               volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
             end do
-
-         end if
+         end do
       end if
 
       if (jaPure1D >=3) then

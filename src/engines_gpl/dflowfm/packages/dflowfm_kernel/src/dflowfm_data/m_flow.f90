@@ -148,23 +148,21 @@ module m_flow
    ! Flow arrays
 
    ! node related, dim = ndx
-   real(kind=dp), allocatable, target, dimension(:) :: s0 !< [m] Waterlevel at start of timestep. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target, dimension(:) :: s1 !< [m] Waterlevel at end of timestep. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target, dimension(:) :: s1max !< [m] Maximum waterlevel at end of timestep for Fourier output. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, dimension(:) :: s00 !< [m] Waterlevel for checking iteration in nonlinear solver.
-   real(kind=dp), allocatable, target, dimension(:) :: a0 !< [m2] Storage area at start of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: a1 !< [m2] Storage area at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: vol1 !< [m3] total volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: vol0 !< [m3] total volume at start of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: vol1_f !< [m3] Flow volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: vol0_f !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: volume_change !< flow volume change during last timestep at nodes, dim=ndx
-   real(kind=dp), allocatable, target, dimension(:) :: lateral_correction !< [m3] Flow volume change due to lateral inflow during last timestep at nodes, dim=ndx
-   real(kind=dp), allocatable, dimension(:) :: sq !< [m3/s] Total influx at water level point.
-   real(kind=dp), allocatable, dimension(:) :: sqa !< [m3/s] Total outflux at s point, u1 based, non-conservative for iadvec==38.
-   real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] Waterdepth at cell centre = s1 - bl. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, dimension(:) :: cfs !< [-] Dimensionless friction coefficient sag/C in cell centre.
-   real(kind=dp), allocatable, dimension(:) :: volerror !< [m3] Volume error.
+   real(kind=dp), allocatable, target, dimension(:) :: s0 !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: s1 !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: volume_error !< [m] volume error    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: s1max !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: s00 !< waterlevel    (m ) for checking iteration in nonlin
+   real(kind=dp), allocatable, target, dimension(:) :: a0 !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: a1 !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol1 !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol0 !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol1_f !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, dimension(:) :: sq !< total  influx (m3/s) at water level point
+   real(kind=dp), allocatable, dimension(:) :: sqa !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
+   real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: cfs !< dimensionless friction coefficient sag/C in cell centre
+   real(kind=dp), allocatable, target, dimension(:) :: volerror !< volume error
 
    real(kind=dp), allocatable, dimension(:) :: voldhu !< [m3] node volume based on downwind hu
 
