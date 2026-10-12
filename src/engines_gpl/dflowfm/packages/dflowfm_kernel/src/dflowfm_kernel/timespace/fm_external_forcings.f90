@@ -36,7 +36,7 @@ module fm_external_forcings
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
-      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings
+      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
    use m_waveconst
 
    implicit none(type, external)
@@ -111,9 +111,13 @@ module fm_external_forcings
       end function sourcesink_parse_coordinates
    end interface
 
-   public :: set_external_forcings
-   public :: prepare_air_pressure_temperature_dew_point_temperature
+   ! Expose fm_external_forcings_update functions
    public :: compute_air_water_interaction_most_fluxes
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: prepare_wind
+   public :: calculate_wind_stresses
+
+   public :: set_external_forcings
    public :: sourcesink_parse_coordinates
 
 contains
