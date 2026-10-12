@@ -500,13 +500,15 @@ subroutine resetMaxerrorLevel()
    maxErrorLevel = 0
 end subroutine
 
-subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfirst)
+
+subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfirst, sliceorder)
     integer, intent(in) :: level
     double precision, dimension(:), intent(in) :: a
     character(*), intent(in) :: name
     integer, intent(in), optional :: splitsize
     logical, intent(in), optional :: showonlynonnulls
     logical, intent(in), optional :: columnfirst
+    integer, dimension(:), intent(in), optional :: sliceorder
     character(MAXSTRINGLEN*5)                 :: rec
     character(MAXSTRINGLEN)                 :: prefix
 
@@ -550,11 +552,19 @@ subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfi
             do i = 1, nrows
                 n = min(split, size(a) - (i-1)*split)
                 b = 0
+                if (present(sliceorder)) then
+                    n = size(sliceorder)
+                endif
                 do j = 1, n
-                    b(j) = a((j-1)*nrows + i)
+                    if (present(sliceorder)) then
+                        b(j) = a((sliceorder(j)-1)*nrows + i)
+                    else
+                        b(j) = a((j-1)*nrows + i)
+                    endif
                 end do
                 write(prefix,'(A,"[",I0,":",I0,"]=")')  name, (i-1)*split+1, (i-1)*split+n
-                write(rec,'(A30,*(F18.15))') prefix, b(1:n)
+                write(rec,'(A30,*(1X,F23.15))') prefix, b(1:n)
+                ! write(rec,'(A30,*(F19.15))') prefix, b(1:n)
                 call SetMessage(level, rec)
             end do
         end block
@@ -565,7 +575,7 @@ subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfi
     do while (i <= size(a))
         n = min(split, size(a) - i + 1)
         write(prefix,'(A,"[",I0,":",I0,"]=")')  name, i, i+n-1
-        write(rec,'(A30,*(F18.15))') prefix, a(i:i+n-1)
+        write(rec,'(A30,*(F19.15))') prefix, a(i:i+n-1)
         call SetMessage(level, rec)
         i = i + n
     end do
