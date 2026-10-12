@@ -878,18 +878,6 @@ contains
                elseif (tmpdimids(1) == id_timedim(itopo, ifileScan) .and. trim(varname) == 'timestep') then
                   id_timestep(ifileScan) = ivScan ! TODO: AvD: do this for all ii files, not only for 'ifileScan'
                   cycle
-               elseif (tmpdimids(1) == id_timedim(itopo, ifileScan) .and. trim(varname) == 'morft') then
-                   id_morft(ifileScan) = ivScan
-                   cycle
-               elseif (tmpdimids(1) == id_timedim(itopo, ifileScan) .and. trim(varname) == 'morfac') then
-                   id_morfac(ifileScan) = ivScan
-                   cycle
-               elseif (tmpdimids(1) == id_sedtotdim(itopo, ifileScan) .and. trim(varname) == 'sedfrac_name') then
-                   id_frac_name(ifileScan) = ivScan
-                   cycle
-               elseif (tmpdimids(1) == id_sedsusdim(itopo, ifileScan) .and. trim(varname) == 'sussedfrac_name') then
-                   id_susfrac_name(ifileScan) = ivScan
-                   cycle
                end if
             end if
 !
@@ -1848,10 +1836,9 @@ contains
       
       ! copy the attrubutes of sedfrac_name and sussedfrac_name
       if (jasedmor == 1) then
-         !!define sedfrac_name and sussedfrac_name variables and copy their attributes!!
          ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
          ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', 100, id_strlendim(itopo, noutfile))
-         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedtotdim(itopo, noutfile)/), id_frac_name(noutfile)) !TODO: relocate somewhere such that itopo=1?
+         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedtotdim(itopo, noutfile)/), id_frac_name(noutfile))
          ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
          if (isNetCDF4) then
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
@@ -2047,7 +2034,7 @@ contains
          do it = 1, ntsel
             ierr = nf90_get_var(ncids(ifileScan), id_time(ifileScan), times(it), start=(/itimsel(it)/)) ! count=1
             ierr = nf90_get_var(ncids(ifileScan), id_timestep(ifileScan), timestep(it), start=(/itimsel(it)/)) ! count=1
-            ! if it contains sedtrans/mor variables
+            ! copy morft/morfac if they exist
             if (jasedmor == 1) then
                ierr = nf90_get_var(ncids(ifileScan), id_morft(ifileScan), morft(it), start=(/itimsel(it)/))
                if (jamorfac == 1) then
@@ -2058,7 +2045,7 @@ contains
 
          ierr = nf90_put_var(ncids(noutfile), id_time(noutfile), times, count=(/ntsel/))
          ierr = nf90_put_var(ncids(noutfile), id_timestep(noutfile), timestep, count=(/ntsel/))
-         ! if it contains sedtrans/mor variables
+         ! copy morft/morfac if they exist
          if (jasedmor == 1) then
             ierr = nf90_put_var(ncids(noutfile), id_morft(noutfile), morft, count=(/ntsel/))
             if (jamorfac == 1) then
@@ -2073,7 +2060,7 @@ contains
          nsedtot(noutfile) = nsedtotsel
          allocate (sedfrac_name(nsedtotsel))
          do it = 1, nsedtotsel
-             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it))
+             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it), start=(/1, it/), count=(/20, 1/))
          end do
          ierr = nf90_put_var(ncids(noutfile), id_frac_name(noutfile), sedfrac_name)
       
@@ -2081,7 +2068,7 @@ contains
          nsedsus(noutfile) = nsedsussel
          allocate (sussedfrac_name(nsedsussel))
          do it = 1, nsedsussel
-             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it))
+             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it), start=(/1, it/), count=(/20, 1/))
          end do
          ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
       end if
