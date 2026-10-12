@@ -37,6 +37,7 @@ module fm_external_forcings
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
       prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
+   use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries
    use m_waveconst
 
    implicit none(type, external)
@@ -56,13 +57,6 @@ module fm_external_forcings
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
    character(len=MAX_REGISTERED_ITEM_ID), allocatable :: registered_items(:)
    integer :: num_registered_items = 0
-
-   interface
-      module subroutine set_external_forcings_boundaries(time, iresult)
-         real(kind=dp), intent(in) :: time !< current simulation time (s)
-         integer, intent(out) :: iresult !< Integer error status
-      end subroutine set_external_forcings_boundaries
-   end interface
 
    interface
       module subroutine init_new(iresult)

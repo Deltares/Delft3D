@@ -27,14 +27,18 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_update_boundaries
+module fm_external_forcings_update_boundaries
 
    implicit none(type, external)
+
+   private
+
+   public :: set_external_forcings_boundaries
 
 contains
 
    !> set boundary conditions
-   module subroutine set_external_forcings_boundaries(time, iresult)
+   subroutine set_external_forcings_boundaries(time, iresult)
       use m_setzminmax, only: setzminmax
       use precision, only: dp
       use m_dambreak_breach, only: update_dambreak_breach
@@ -304,4 +308,4 @@ contains
 
    end subroutine set_external_forcings_boundaries
 
-end submodule fm_external_forcings_update_boundaries
+end module fm_external_forcings_update_boundaries
