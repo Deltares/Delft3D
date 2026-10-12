@@ -97,7 +97,7 @@ module m_reduce
    real(kind=dp) :: epscg = 1.0e-14_dp ! epsilon waterlevels cg method (maximum)
    integer :: maxmatvecs = 100000 ! maximum number of matrix-vector multiplications in Saad solver
 
-   real(kind=dp), allocatable :: bbr(:), bbl(:) ! not left !
+   real(kind=dp), allocatable :: bbr(:)
    real(kind=dp), allocatable :: ccr(:), ccrsav(:)
    real(kind=dp), allocatable :: ddr(:)
 

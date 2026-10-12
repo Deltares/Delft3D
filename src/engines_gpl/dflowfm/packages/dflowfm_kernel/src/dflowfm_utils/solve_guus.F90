@@ -46,7 +46,7 @@ contains
 
    subroutine inireduce()
       use m_reduce
-      use m_flowparameters, only: Noderivedtypes, icgsolver, ipre
+      use m_flowparameters, only: Noderivedtypes, icgsolver
       use m_flowgeom
       use m_partitioninfo
       use m_alloc
@@ -119,18 +119,15 @@ contains
 
 ! check solver applicability
       if (jampi == 0) then
-         if (icgsolver == 6) then
-            icgsolver = 4 ! lets prevent hk geting tired
-         end if
-         if (icgsolver > 4 .and. icgsolver /= 6 .and. icgsolver /= 10 .and. icgsolver /= 44) then
+         if (icgsolver /= 4 .and. icgsolver /= 6) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
-            icgsolver = 1
+            icgsolver = 4
          end if
       else
          if (icgsolver == 4) then ! as a service to the user too
             icgsolver = 6
-         else if (icgsolver < 4 .or. icgsolver == 44) then
+         else if (icgsolver /= 6) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
          end if
@@ -139,9 +136,6 @@ contains
       if (icgsolver /= 4) then
          Noderivedtypes = 0
       end if
-
-! set preconditioner
-      ipre = 0
 
       if (jampi == 1) then
 !   do not eliminate ghost- and sendnodes
@@ -531,7 +525,7 @@ contains
 
    subroutine solve_matrix(s1, ndx, itsol)
       use Timers
-      use m_flowparameters, only: noderivedtypes, icgsolver, ipre
+      use m_flowparameters, only: noderivedtypes, icgsolver
       use m_reduce
       use m_flowtimes, only: handle_sol
       use m_timer
@@ -575,29 +569,19 @@ contains
          call starttimer(ICG)
       end if
 
-      if (icgsolver == 1) then
-         call conjugategradient_omp(s1, ndx, ipre) ! ipre = 0,1    ! faster, solution depends on thread sequence
-      else if (icgsolver == 2) then
-         call conjugategradient_omp_threadsafe(s1, ndx, ipre) ! ipre = 0,1    ! slower, solution always identical
-      else if (icgsolver == 3) then
-         call conjugategradient(s1, ndx, ipre) ! ipre = 0,1,2  ! no omp
-      else if (icgsolver == 4 .or. icgsolver == 44) then
+      if (icgsolver == 4) then
          if (nocg > 10 .or. Noderivedtypes == 5) then
-            if (icgsolver == 4) then ! thread-safe
-               call conjugategradientSAAD(ddr, s1, ndx, nocgiter, 1, 1, ierror) ! Saad, always using omp and ILUD preconditioner
-            else
-               call conjugategradientSAAD(ddr, s1, ndx, nocgiter, 1, 0, ierror) ! Saad, always using omp and ILUD preconditioner
-            end if
+            call conjugategradientSAAD(ddr, s1, ndx, nocgiter, 1, ierror) ! Saad, always using omp and ILUD preconditioner
             if (ierror == 1) then
                goto 1234
             end if
          else
 !      do *not* use Saad solver when nocg < 3
-            call conjugategradient(s1, ndx, ipre) ! ipre = 0,1,2  ! no omp
+            call conjugategradient(s1, ndx)
          end if
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-         call conjugategradientPETSC(s1, ndx, nocgiter, 1, ipre) ! 1:always compute preconditioner
+         call conjugategradientPETSC(s1, ndx, nocgiter)
          if (nocgiter == -999) then
             ierror = 1
             goto 1234
@@ -649,9 +633,9 @@ contains
 
    end subroutine solve_matrix
 
-   subroutine conjugategradientSAAD(righthandside, s1, ndx, its, jaini, jadosafe, ierror)
+   subroutine conjugategradientSAAD(righthandside, s1, ndx, its, jaini, ierror)
       use m_reduce
-      use m_saad, only: jasafe, nn, ngs, iao, sol, rhs, ao, jao, cgsaad
+      use m_saad, only: nn, ngs, iao, sol, rhs, ao, jao, cgsaad
       use m_flowgeom, only: kfs
       use MessageHandling
       use m_flowparameters, only: Noderivedtypes
@@ -665,7 +649,6 @@ contains
       real(kind=dp) :: s1(ndx)
       real(kind=dp), dimension(Ndx), intent(in) :: righthandside !< right-hand side, all cells
       integer, intent(in) :: jaini !< compute preconditioner and permutation (1) or not (0), or initialization only (-1), or ILU solve only (2)
-      integer, intent(in) :: jadosafe !< thread-safe (1) or not (0), will set jasafe module variable
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       integer :: i, j, jj, n, ntot, na, nietnul, m
@@ -682,9 +665,6 @@ contains
       if (nocg <= 0) then
          return
       end if
-
-! set jasafe module variable
-      jasafe = jadosafe
 
       if (jaini == -1 .or. jaini == 1) then
 
@@ -980,12 +960,12 @@ contains
 
    end subroutine conjugategradientSAAD
 
-   subroutine conjugategradient(s1, ndx, ipre)
+   subroutine conjugategradient(s1, ndx)
       use m_reduce
       use messagehandling, only: LEVEL_ERROR, mess
 
       implicit none
-      integer :: ndx, ipre
+      integer :: ndx
       real(kind=dp) :: s1(ndx)
 
       integer :: i, j, jj, n, ntot
@@ -1000,22 +980,6 @@ contains
       nocgiter = 0
       eps = 0.0_dp
       rkzki = 0.0_dp
-
-      ! make matrix L
-      if (ipre == 2) then ! make L
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            bbl(ndn) = bbr(ndn)
-            ntot = row(ndn)%l
-            do j = 1, ntot
-               i = row(ndn)%j(j)
-               if (i < ndn) then
-                  jj = row(ndn)%a(j)
-                  bbl(ndn) = bbl(ndn) - ccr(jj) * ccr(jj) / bbl(i)
-               end if
-            end do
-         end do
-      end if
 
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -1061,55 +1025,10 @@ contains
             eps = abs(rk(ndn))
          end if
       end do
-      if (ipre == 0) then ! row scaling
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn) / bbr(ndn)
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-      else ! GS,  incomplete Choleski
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn)
-            ntot = row(ndn)%l
-            do j = 1, ntot
-               i = row(ndn)%j(j)
-               if (i < ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-            if (ipre == 1) then
-               zkr(ndn) = zkr(ndn) / bbr(ndn) ! GS
-            else
-               zkr(ndn) = zkr(ndn) / bbl(ndn) ! Chol
-            end if
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-         do n = nogauss + nocg, nogauss + 1, -1
-            ndn = noel(n)
-            if (ipre < 2) then
-               zkr(ndn) = bbr(ndn) * zkr(ndn)
-            else
-               zkr(ndn) = bbl(ndn) * zkr(ndn)
-            end if
-            ntot = row(ndn)%l
-            do j = 1, ntot
-               i = row(ndn)%j(j)
-               jj = row(ndn)%a(j)
-               if (i > ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-            if (ipre == 1) then
-               zkr(ndn) = zkr(ndn) / bbr(ndn) ! Gs
-            else
-               zkr(ndn) = zkr(ndn) / bbl(ndn) ! Chol
-            end if
-            ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-      end if
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         zkr(ndn) = rk(ndn) / bbr(ndn)
+      end do
       if (eps < epscg) then
          return
       end if
@@ -1132,330 +1051,6 @@ contains
       end do
       goto 10
    end subroutine conjugategradient
-
-   subroutine conjugategradient_omp_threadsafe(s1, ndx, ipre)
-      use m_reduce
-      use messagehandling, only: LEVEL_ERROR, mess
-
-      implicit none
-      integer :: ndx
-      real(kind=dp) :: s1(ndx)
-
-      integer i, ipre, j, jj, n
-      real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
-      real(kind=dp) :: eps
-
-      if (nocg <= 0) then
-         return
-      end if
-
-      nocgiter = 0
-      eps = 0.0_dp
-      rkzki = 0.0_dp
-
-      !$xxOMP PARALLEL DO                                           &
-      !$xxOMP PRIVATE(n,ndn,j)                                      &
-      !$xxOMP REDUCTION(+:rkzki)                                    &
-      !$xxOMP REDUCTION(MAX:eps)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rk(ndn) = ddr(ndn) - bbr(ndn) * s1(ndn)
-         do j = 1, row(ndn)%l
-            rk(ndn) = rk(ndn) - ccr(row(ndn)%a(j)) * s1(row(ndn)%j(j))
-         end do
-         eps = max(eps, abs(rk(ndn))) ! if (abs(rk(ndn)).gt.eps) eps=abs(rk(ndn)) abs abs
-         pk(ndn) = rk(ndn) / bbr(ndn)
-         zkr(ndn) = pk(ndn)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-      !$xxOMP END PARALLEL DO
-
-      if (eps < epscg) then
-         return
-      end if
-
-10    continue
-
-      pkapki = 0.0_dp
-!$xxOMP PARALLEL DO                                           &
-!$xxOMP PRIVATE(n,ndn,j)                                      &
-!$xxOMP REDUCTION(+:pkapki)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         apk(ndn) = bbr(ndn) * pk(ndn)
-         do j = 1, row(ndn)%l
-            apk(ndn) = apk(ndn) + ccr(row(ndn)%a(j)) * pk(row(ndn)%j(j))
-         end do
-         pkapki = pkapki + pk(ndn) * apk(ndn)
-      end do
-!$xxOMP END PARALLEL DO
-
-      alfak = rkzki / pkapki
-
-      !$OMP PARALLEL DO                                           &
-      !$OMP PRIVATE(n,ndn)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         s1(ndn) = s1(ndn) + alfak * pk(ndn)
-         rk(ndn) = rk(ndn) - alfak * apk(ndn)
-      end do
-      !$OMP END PARALLEL DO
-
-      eps = 0.0_dp
-
-      if (ipre == 0) then
-         !$OMP PARALLEL DO                                  &
-         !$OMP PRIVATE(n,ndn)                               &
-         !$OMP REDUCTION(MAX:eps)
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn) / bbr(ndn)
-            eps = max(eps, abs(zkr(ndn))) ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-         !$OMP END PARALLEL DO
-      else
-
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn)
-            do j = 1, row(ndn)%l ! ntot
-               i = row(ndn)%j(j)
-               if (i < ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-
-            zkr(ndn) = zkr(ndn) / bbr(ndn)
-
-            eps = max(eps, abs(zkr(ndn)))
-         end do
-
-         do n = nogauss + nocg, nogauss + 1, -1
-            ndn = noel(n)
-            zkr(ndn) = bbr(ndn) * zkr(ndn)
-            do j = 1, row(ndn)%l
-               i = row(ndn)%j(j)
-               jj = row(ndn)%a(j)
-               if (i > ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-
-            !if (ieee_is_nan(bbr(ndn) ) ) then
-            !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
-            !endif
-
-            zkr(ndn) = zkr(ndn) / bbr(ndn)
-
-            !if (ieee_is_nan(zkr(ndn) ) ) then
-            !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
-            !endif
-
-            if (abs(zkr(ndn)) > eps) then
-               eps = abs(zkr(ndn))
-            end if
-         end do
-      end if
-
-      !if (eps.lt.epscg) then
-      !  return
-      !endif
-
-      if (eps < epscg) then
-!   write(message,*) 'Solver converged in ', nocgiter,' iterations'
-!   call mess(LEVEL_INFO, message)
-         return
-      end if
-
-      nocgiter = nocgiter + 1
-      if (nocgiter > 1000) then
-         call mess(LEVEL_ERROR, ' no convergence for CG method, nr of iterations, eps : ', nocgiter, eps)
-      end if
-
-      rkzki0 = rkzki
-      rkzki = 0.0_dp
-      !$xOMP PARALLEL DO                              &
-      !$xOMP PRIVATE(n,ndn)                           &
-      !$xOMP REDUCTION(+:rkzki)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-      !$xOMP END PARALLEL DO       ! todo omp onbegrijpelijk dat dit verschil geeft
-
-      betak = rkzki / rkzki0
-
-      !$OMP PARALLEL DO                              &
-      !$OMP PRIVATE(n,ndn)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         pk(ndn) = zkr(ndn) + betak * pk(ndn)
-      end do
-      !$OMP END PARALLEL DO
-
-      goto 10
-   end subroutine conjugategradient_omp_threadsafe
-
-   subroutine conjugategradient_omp(s1, ndx, ipre)
-      use m_reduce
-      use messagehandling, only: LEVEL_ERROR, mess
-
-      implicit none
-      integer :: ndx
-      real(kind=dp) :: s1(ndx)
-
-      integer i, ipre, j, jj, n
-      real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
-      real(kind=dp) :: eps
-
-      if (nocg <= 0) then
-         return
-      end if
-
-      nocgiter = 0
-      eps = 0.0_dp
-      rkzki = 0.0_dp
-
-      !$OMP PARALLEL DO                                           &
-      !$OMP PRIVATE(n,ndn,j)                                      &
-      !$OMP REDUCTION(+:rkzki)                                    &
-      !$OMP REDUCTION(MAX:eps)
-
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rk(ndn) = ddr(ndn) - bbr(ndn) * s1(ndn)
-         do j = 1, row(ndn)%l
-            rk(ndn) = rk(ndn) - ccr(row(ndn)%a(j)) * s1(row(ndn)%j(j))
-         end do
-         eps = max(eps, abs(rk(ndn))) ! if (abs(rk(ndn)).gt.eps) eps=abs(rk(ndn)) abs abs
-         pk(ndn) = rk(ndn) / bbr(ndn)
-         zkr(ndn) = pk(ndn)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-      !$OMP END PARALLEL DO
-
-      if (eps < epscg) then
-         return
-      end if
-
-10    continue
-
-      pkapki = 0.0_dp
-!$OMP PARALLEL DO                                           &
-!$OMP PRIVATE(n,ndn,j)                                      &
-!$OMP REDUCTION(+:pkapki)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         apk(ndn) = bbr(ndn) * pk(ndn)
-         do j = 1, row(ndn)%l
-            apk(ndn) = apk(ndn) + ccr(row(ndn)%a(j)) * pk(row(ndn)%j(j))
-         end do
-         pkapki = pkapki + pk(ndn) * apk(ndn)
-      end do
-!$OMP END PARALLEL DO
-
-      alfak = rkzki / pkapki
-
-      !$OMP PARALLEL DO                                           &
-      !$OMP PRIVATE(n,ndn)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         s1(ndn) = s1(ndn) + alfak * pk(ndn)
-         rk(ndn) = rk(ndn) - alfak * apk(ndn)
-      end do
-      !$OMP END PARALLEL DO
-
-      eps = 0.0_dp
-
-      if (ipre == 0) then
-         !$OMP PARALLEL DO                                  &
-         !$OMP PRIVATE(n,ndn)                               &
-         !$OMP REDUCTION(MAX:eps)
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn) / bbr(ndn)
-            eps = max(eps, abs(zkr(ndn))) ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
-         end do
-         !$OMP END PARALLEL DO
-      else
-
-         do n = nogauss + 1, nogauss + nocg
-            ndn = noel(n)
-            zkr(ndn) = rk(ndn)
-            do j = 1, row(ndn)%l ! ntot
-               i = row(ndn)%j(j)
-               if (i < ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-
-            zkr(ndn) = zkr(ndn) / bbr(ndn)
-
-            eps = max(eps, abs(zkr(ndn)))
-         end do
-
-         do n = nogauss + nocg, nogauss + 1, -1
-            ndn = noel(n)
-            zkr(ndn) = bbr(ndn) * zkr(ndn)
-            do j = 1, row(ndn)%l
-               i = row(ndn)%j(j)
-               jj = row(ndn)%a(j)
-               if (i > ndn) then
-                  jj = row(ndn)%a(j)
-                  zkr(ndn) = zkr(ndn) - ccr(jj) * zkr(i)
-               end if
-            end do
-
-            !if (ieee_is_nan(bbr(ndn) ) ) then
-            !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
-            !endif
-
-            zkr(ndn) = zkr(ndn) / bbr(ndn)
-
-            !if (ieee_is_nan(zkr(ndn) ) ) then
-            !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
-            !endif
-
-            if (abs(zkr(ndn)) > eps) then
-               eps = abs(zkr(ndn))
-            end if
-         end do
-      end if
-
-      if (eps < epscg) then
-         return
-      end if
-      nocgiter = nocgiter + 1
-      if (nocgiter > 1000) then
-         call mess(LEVEL_ERROR, ' no convergence for CG method, nr of iterations, eps : ', nocgiter, eps)
-      end if
-
-      rkzki0 = rkzki
-      rkzki = 0.0_dp
-      !$OMP PARALLEL DO                              &
-      !$OMP PRIVATE(n,ndn)                           &
-      !$OMP REDUCTION(+:rkzki)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         rkzki = rkzki + rk(ndn) * zkr(ndn)
-      end do
-      !$OMP END PARALLEL DO       ! todo omp onbegrijpelijk dat dit verschil geeft
-
-      betak = rkzki / rkzki0
-
-      !$OMP PARALLEL DO                              &
-      !$OMP PRIVATE(n,ndn)
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         pk(ndn) = zkr(ndn) + betak * pk(ndn)
-      end do
-      !$OMP END PARALLEL DO
-
-      goto 10
-   end subroutine conjugategradient_omp
 
    subroutine gauss_substitution(s1, ndx)
       use m_reduce
@@ -1821,7 +1416,7 @@ contains
       call mess(LEVEL_INFO, 'nogauss , nocg : ', nogauss, nocg)
       call readyy('ini Gauss/CG', -1.0_dp)
 
-      if (icgsolver == 4 .or. icgsolver == 44) then
+      if (icgsolver == 4) then
          call inisaad(epscg, maxmatvecs, 1.0_dp) ! 1d0: with MILU preconditioner
       else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
@@ -1846,13 +1441,6 @@ contains
       allocate (ccr(0:ijstck), STAT=allocErr)
       ccr = 0
       call aerr('ccr(0:ijstck)', allocerr, ijstck)
-
-      if (allocated(bbl)) then
-         deallocate (bbl)
-      end if
-      allocate (bbl(0:ijstck), STAT=allocErr)
-      bbl = 0
-      call aerr('bbl(0:ijstck)', allocerr, ijstck)
 
       if (nonlin > 0) then
          if (allocated(ccrsav)) then
@@ -1945,21 +1533,6 @@ contains
       end if
 
       write (mout, *) 'N = ', maxval(noel(nogauss + 1:nogauss + nocg))
-
-      write (mout, '(A)') 'bbl=['
-      do n = nogauss + 1, nogauss + nocg
-         ndn = noel(n)
-         ntot = row(ndn)%l
-         write (mout, *) ndn, ndn, bbl(ndn)
-         do j = 1, ntot
-            i = row(ndn)%j(j)
-            jj = row(ndn)%a(j)
-            if (i < ndn) then
-               write (mout, *) ndn, i, ccr(jj)
-            end if
-         end do
-      end do
-      write (mout, '(A)') ';]'
 
       write (mout, '(A)') 'bbr=['
       do n = nogauss + 1, nogauss + nocg

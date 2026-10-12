@@ -968,7 +968,13 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
-      if (icgsolver == 5) then
+      if (icgsolver == 1) then
+         call mess(LEVEL_ERROR, 'Icgsolver 1, the non-thread-safe OpenMP Sobek Guus Stelling solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver == 2) then
+         call mess(LEVEL_ERROR, 'Icgsolver 2, the thread-safe OpenMP Sobek Guus Stelling solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver == 3) then
+         call mess(LEVEL_ERROR, 'Icgsolver 3, the serial Sobek Guus Stelling solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver == 5) then
          call mess(LEVEL_ERROR, 'Icgsolver 5, the parallel/global Saad solver, is no longer supported.')
       else if (icgsolver == 7) then
          call mess(LEVEL_WARN, 'Icgsolver 7 is no longer supported; using Icgsolver 6 (PETSc).')
@@ -979,6 +985,11 @@ contains
          call mess(LEVEL_ERROR, 'Icgsolver 9 and values greater than 90 are no longer supported.')
       else if (icgsolver == 10) then
          call mess(LEVEL_ERROR, 'Icgsolver 10, the experimental Jacobi solver, is no longer supported.')
+      else if (icgsolver == 44) then
+         call mess(LEVEL_ERROR, 'Icgsolver 44, the non-thread-safe Sobek Guus Stelling + Saadilud solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver /= 4 .and. icgsolver /= 6) then
+         write (msgbuf, '(a,i0,a)') 'Unknown Icgsolver value: ', icgsolver, '. Supported values are 4 and 6.'
+         call mess(LEVEL_ERROR, trim(msgbuf))
       end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
       if (icgsolver == 6) then
@@ -3109,7 +3120,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Structurelayersactive', JaStructurelayersactive, '0=structure flow through all layers, 1=structure flow only through open layers ')
       end if
 
-      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 6: parallel/Petsc)')
+      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
