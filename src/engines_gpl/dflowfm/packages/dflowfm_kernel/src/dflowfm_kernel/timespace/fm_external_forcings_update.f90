@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_update
+module fm_external_forcings_update
    use timers, only: timstrt, timstop
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
    use m_flowgeom, only: ndx, lnx
@@ -72,6 +72,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
 
    implicit none(type, external)
 
+   private
+
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION = 2
    integer, parameter :: DEWPOINT_AIRTEMPERATURE_CLOUDINESS = 3
@@ -87,10 +89,14 @@ submodule(fm_external_forcings) fm_external_forcings_update
    ! variables for processing the pump with levels, SOBEK style
    logical :: success_copy
 
+   public :: set_external_forcings
+   public :: compute_air_water_interaction_most_fluxes
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+
 contains
 
    !> set field oriented boundary conditions
-   module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
+   subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       use m_calibration_update, only: calibration_update
       use m_flow_settidepotential, only: flow_settidepotential
       use precision, only: dp
@@ -109,6 +115,7 @@ contains
       use m_missing, only: dmiss
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
+      use fm_external_forcings_utils, only: prepare_wind, print_error_message, calculate_wind_stresses
       use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
 
       ! Arguments
@@ -355,7 +362,7 @@ contains
    end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
    !> compute fluxes based on Monin-Obukhov Stability Theory
-   module subroutine compute_air_water_interaction_most_fluxes(initialization)
+   subroutine compute_air_water_interaction_most_fluxes(initialization)
       use precision, only: dp
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx, lnx, csu, snu
@@ -558,6 +565,7 @@ contains
       use m_compute_wave_parameters, only: compute_wave_parameters
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush, err_flush
+      use fm_external_forcings_utils, only: select_wave_variables_subgroup, fill_open_boundary_cells_with_inner_values
 
       ! Arguments
       logical, intent(in) :: initialization !< initialization phase
@@ -940,7 +948,7 @@ contains
    end subroutine update_subsidence_and_uplift_data
 
    !> prepare_air_pressure_temperature_dew_point_temperature
-   module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+   subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       use m_meteo, only: item_apwxwy_p, item_airpressure, item_hac_air_temperature, item_hacs_air_temperature, &
          item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
          item_dacs_dew_point_temperature, item_dew_point_temperature
@@ -966,4 +974,4 @@ contains
       
    end subroutine prepare_air_pressure_temperature_dew_point_temperature
 
-end submodule fm_external_forcings_update
+end module fm_external_forcings_update
