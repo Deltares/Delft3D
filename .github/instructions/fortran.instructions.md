@@ -41,6 +41,8 @@ pain.
   local variables, derived-type components, allocatables, pointers, and fixed-size arrays.
   For example, use `real(kind=dp), dimension(:), intent(in) :: values` instead of
   `real(kind=dp), intent(in) :: values(:)`.
+- Do not use single-line `if` statements. Use a block `if ... then` construct terminated
+  by `end if`, even when the body contains only one statement.
 
 ## Documentation
 

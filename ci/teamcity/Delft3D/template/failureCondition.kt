@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object TemplateFailureCondition : Template({
 
-    name = "Failure Conditions"
-    description = "General template with conditions on which builds should fail."
+    name = "Failure conditions"
+    description = "Shared failure conditions."
 
     failureConditions {
         executionTimeoutMin = 60

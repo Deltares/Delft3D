@@ -24,11 +24,13 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description-----------------------------------------------------------------
-!
+
 module m_mormerge
+   implicit none
+   private
+   public initialize_mormerge
+   public put_get_time_step
+   public put_get_mergebuffer
 
 contains
 
@@ -141,8 +143,7 @@ end subroutine initialize_mormerge
 
 !> send to stream and receives back time step
 subroutine put_get_time_step(mergehandle, time_step)
-    use precision
-   implicit none
+   use precision
 
    integer,          intent(in)           :: mergehandle !<  stream handle for communication with mormerge
    double precision, intent(inout)        :: time_step   !< User specified or internal time step (s) for external forcing update.
@@ -158,7 +159,6 @@ end subroutine put_get_time_step
 !> put merge buffer to mormerge then gets it back
 subroutine put_get_mergebuffer(mergehandle, buffer_size, mergebuffer)
    use precision
-   implicit none
 
    integer,          intent(in)      :: mergehandle              !<  stream handle for communication with mormerge
    integer        ,  intent(in)      :: buffer_size              !< size of merge buffer

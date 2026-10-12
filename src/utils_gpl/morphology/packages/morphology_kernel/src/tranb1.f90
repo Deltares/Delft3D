@@ -1,10 +1,3 @@
-module m_tranb1
-   implicit none
-
-contains
-
-   subroutine tranb1(utot, d50, chezy, npar, &
-                   & par, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,14 +24,19 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tranb1
+   implicit none
+   private
+   public tranb1
+
+contains
+
+   subroutine tranb1(utot, d50, chezy, npar, &
+                   & par, sbot, ssus)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! engelund hansen
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module, only: MISSING_VALUE

@@ -171,8 +171,9 @@ namespace
      * @return std::expected containing parsed records or the first parse error.
      */
     template <typename TItem, typename TExtractor>
-    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(
-        const std::string_view text, const std::string_view element_name, TExtractor extractor)
+    std::expected<std::vector<TItem>, parsing_utils::ParseError> parseBlockVector(const std::string_view text,
+                                                                                  const std::string_view element_name,
+                                                                                  TExtractor extractor)
     {
         std::vector<std::string> newline_separated_tokens;
         boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
@@ -181,8 +182,8 @@ namespace
         auto is_non_empty = [](const std::string_view token) {
             return token.find_first_not_of(" \t\r") != std::string_view::npos;
         };
-        auto to_item = [element_name, extractor](const std::string_view token)
-            -> std::expected<TItem, parsing_utils::ParseError> {
+        auto to_item = [element_name,
+                        extractor](const std::string_view token) -> std::expected<TItem, parsing_utils::ParseError> {
             ASSIGN_OR_RETURN(auto values, parsing_utils::parseDoubleVector(token, element_name));
             return extractor(values);
         };
@@ -239,19 +240,19 @@ namespace
     }
 
     /**
-     * @brief Parse intake rows from the <intakes> block.
+     * @brief Parse intake rows from the &lt;intakes&gt; block.
      *
      * Expected per-line format is handled by extractIntakeData.
      * This wrapper delegates common line parsing mechanics to parseBlockVector.
      *
-     * @param text Contents of the <intakes> element.
+     * @param text Contents of the &lt;intakes&gt; element.
      * @return std::expected containing parsed intake records or a ParseError.
      */
     std::expected<std::vector<pre_c_sumo::IntakeData>, parsing_utils::ParseError> parseIntakeVector(
         const std::string_view text)
     {
-        auto extractor = [](const std::vector<double>& values)
-            -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
+        auto extractor =
+            [](const std::vector<double>& values) -> std::expected<pre_c_sumo::IntakeData, parsing_utils::ParseError> {
             return extractIntakeData(values);
         };
         return parseBlockVector<pre_c_sumo::IntakeData>(text, "intakes", extractor);
@@ -261,11 +262,6 @@ namespace
 
 namespace pre_c_sumo
 {
-    /**
-     * @brief Reads NF2FF XML content from a file.
-     * @param file_path The path to the input file.
-     * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-     */
     std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromFile(const std::filesystem::path& file_path)
     {
         std::ifstream file(file_path);
@@ -278,11 +274,6 @@ namespace pre_c_sumo
         return fromString(buffer.str());
     }
 
-    /**
-     * @brief Reads NF2FF XML content from a string.
-     * @param xml input string.
-     * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-     */
     std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;

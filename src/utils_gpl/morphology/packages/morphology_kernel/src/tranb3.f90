@@ -1,10 +1,3 @@
-module m_tranb3
-   implicit none
-
-contains
-
-   subroutine tranb3(utot, d35, chezy, water_depth, npar, &
-                   & par, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,14 +24,19 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tranb3
+   implicit none
+   private
+   public tranb3
+
+contains
+
+   subroutine tranb3(utot, d35, chezy, water_depth, npar, &
+                   & par, sbot, ssus)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! swanby (ackers white)
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module, only: MISSING_VALUE

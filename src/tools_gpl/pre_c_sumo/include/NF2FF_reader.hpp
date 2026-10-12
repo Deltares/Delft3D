@@ -11,33 +11,34 @@
 #include <vector>
 
 /*** Example input file.
- * <NF2FF>
- *    <fileVersion>0.3</fileVersion>
- *    <discharge>
- *       <Qintake>10.0</Qintake>
- *       <Qsource>10.0</Qsource>
+ * &lt;NF2FF&gt;
+ *    &lt;fileVersion&gt;0.3&lt;/fileVersion&gt;
+ *    &lt;discharge&gt;
+ *       &lt;Qintake&gt;10.0&lt;/Qintake&gt;
+ *       &lt;Qsource&gt;10.0&lt;/Qsource&gt;
  *       <!--  Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
  *             Operator: "absolute" values or "excess" (dT,dS,d..)  -->
- *       <constituentsOperator>excess</constituentsOperator>
- *       <constituents>10.0 0.0</constituents>
- *    </discharge>
- *    <NFResult>
- *       <sinks>
+ *       &lt;constituentsOperator&gt;excess&lt;/constituentsOperator&gt;
+ *       &lt;constituents&gt;10.0 0.0&lt;/constituents&gt;
+ *    &lt;/discharge&gt;
+ *    &lt;NFResult&gt;
+ *       &lt;sinks&gt;
  *          250.000 350.087 9.700 1.000 0.000 0.000
  *          252.500 350.048 9.700 5     0.250 0.380
- *       </sinks>
- *       <sources>
+ *       &lt;/sinks&gt;
+ *       &lt;sources&gt;
  *          1050.000 350.365 5.000 5.000 5 15.000
  *          1050.500 350.365 5.000 5.000 5 15.000
- *       </sources>
- *    </NFResult>
- * </NF2FF>
+ *       &lt;/sources&gt;
+ *    &lt;/NFResult&gt;
+ * &lt;/NF2FF&gt;
  ***/
 
 namespace pre_c_sumo
 {
     /**
-     * @brief SourceOrSinkData structure. Holds parameters for sources and sinks.
+     * @anchor pre_c_sumo_source_or_sink_data
+     * @brief Source or sink data parsed from NF2FF content.
      */
     struct SourceOrSinkData
     {
@@ -55,7 +56,8 @@ namespace pre_c_sumo
     };
 
     /**
-     * @brief IntakeData structure. Holds parameters for intake points.
+     * @anchor pre_c_sumo_intake_data
+     * @brief Intake point data parsed from NF2FF content.
      */
     struct IntakeData
     {
@@ -67,34 +69,84 @@ namespace pre_c_sumo
     };
 
     /**
-     * @brief Reader for FF2NF XML files.
+     * @anchor pre_c_sumo_nf2ff_reader
+     * @brief Reader for NF2FF XML files.
      */
     class NF2FFReader
     {
     public:
         /**
+         * @anchor pre_c_sumo_nf2ff_reader_from_file
          * @brief Reads NF2FF XML content from a file.
-         * @param file_path The path to the input file.
-         * @return std::expected containing void on success or parsing_utils::ParseError on failure.
+         * @param file_path Path to the input file.
+         * @return Parsed reader on success, or a parsing_utils::ParseError on failure.
          */
         [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromFile(
             const std::filesystem::path& file_path);
 
         /**
+         * @anchor pre_c_sumo_nf2ff_reader_from_string
          * @brief Reads NF2FF XML content from a string.
-         * @param xml input string.
-         * @return std::expected containing void on success or parsing_utils::ParseError on failure.
+         * @param xml XML input string.
+         * @return Parsed reader on success, or a parsing_utils::ParseError on failure.
          */
         [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromString(
             const std::string_view xml);
 
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_file_version
+         * @brief Returns the NF2FF file version.
+         * @return File version string.
+         */
         std::string_view fileVersion() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_intake_flow_rate
+         * @brief Returns the intake flow rate from the XML.
+         * @return Intake flow rate [m³/s].
+         */
         double intakeFlowRate() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_source_flow_rate
+         * @brief Returns the source flow rate from the XML.
+         * @return Source flow rate [m³/s].
+         */
         double sourceFlowRate() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_constituents_operator
+         * @brief Returns the constituent operator used in the NF2FF file.
+         * @return Concentration operator for the constituent values.
+         */
         ConstituentsOperator constituentsOperator() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_constituents
+         * @brief Returns the constituent concentrations included in the XML.
+         * @return Vector of constituent values.
+         */
         std::vector<double> constituents() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_intakes
+         * @brief Returns all intake entries parsed from the XML.
+         * @return Intake records.
+         */
         std::vector<pre_c_sumo::IntakeData> intakes() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_sources
+         * @brief Returns all source entries parsed from the XML.
+         * @return Source records.
+         */
         std::vector<pre_c_sumo::SourceOrSinkData> sources() const;
+
+        /**
+         * @anchor pre_c_sumo_nf2ff_reader_sinks
+         * @brief Returns all sink entries parsed from the XML.
+         * @return Sink records.
+         */
         std::vector<pre_c_sumo::SourceOrSinkData> sinks() const;
 
     private:

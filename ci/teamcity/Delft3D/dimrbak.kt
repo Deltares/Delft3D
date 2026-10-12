@@ -13,7 +13,7 @@ object DIMRbak : BuildType({
     )
 
     name = "Publish DIMRset"
-    description = "Distribute to P-drive, publish release notes, and prepare email for DIMRset releases."
+    description = "Distribute to P-drive, publish release notes, and prepare the DIMRset email."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 

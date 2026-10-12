@@ -17,7 +17,7 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
     )
 
     name = "Submit"
-    description = "Submit H7 container smoke tests."
+    description = "Submit container smoke tests to H7."
     buildNumberPattern = "%build.vcs.number%"
 
     params {

@@ -82,7 +82,8 @@ contains
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
                                   TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
-      use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
+      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, &
+         TURBULENCE_MODEL_KTAU, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
@@ -418,7 +419,7 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
-         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
+         if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)
@@ -586,6 +587,8 @@ contains
       IVAL_ICE_TEMPERATURE = conditional_next_index(hisout%ice_temperature, i)
       IVAL_SNOW_THICKNESS = conditional_next_index(hisout%snow_thickness, i)
       IVAL_SNOW_TEMPERATURE = conditional_next_index(hisout%snow_temperature, i)
+      IVAL_QH_AIR2ICE = conditional_next_index(hisout%qh_air2ice, i)
+      IVAL_QH_ICE2WAT = conditional_next_index(hisout%qh_ice2wat, i)
    end subroutine set_value_indices_for_ice
 
    !> increment the current index and returns it
@@ -629,6 +632,8 @@ contains
       IPNT_ICE_TEMPERATURE = conditional_ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
       IPNT_SNOW_THICKNESS = conditional_ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
       IPNT_SNOW_TEMPERATURE = conditional_ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+      IPNT_QH_AIR2ICE = conditional_ivalpoint(IVAL_QH_AIR2ICE, kmx, nlyrs)
+      IPNT_QH_ICE2WAT = conditional_ivalpoint(IVAL_QH_ICE2WAT, kmx, nlyrs)
    end subroutine set_valobs_pointers_for_ice
 
    !> retrieve pointer of variable in valobs work array

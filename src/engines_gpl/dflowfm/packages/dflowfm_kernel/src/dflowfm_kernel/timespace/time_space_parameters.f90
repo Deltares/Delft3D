@@ -171,8 +171,12 @@ contains
          file_type = BCASCII
       case ('curvigrid')
          file_type = CURVI
+      case ('map')
+         file_type = NCFLOW
       case ('geotiff')
          file_type = GEOTIFF
+      case ('datavalue')
+         file_type = DATAVALUE
       case ('netcdf')
          file_type = NCGRID
       case ('polygon')
@@ -226,6 +230,14 @@ contains
       select case (str_tolower(trim(string)))
       case ('bcascii')
          method = SPACEANDTIME
+      case ('unimagdir')
+         method = SPACEANDTIME
+      case ('curvigrid')
+         method = WEIGHTFACTORS
+      case ('geotiff')
+         method = METHOD_TRIANGULATION
+      case ('map')
+         method = METHOD_TRIANGULATION
       case ('netcdf')
          method = WEIGHTFACTORS
       case ('sample')
@@ -238,8 +250,10 @@ contains
          method = METHOD_CONSTANT
       case ('1dfield')
          method = JUSTUPDATE
+      case ('spiderweb')
+         method = WEIGHTFACTORS
       case ('datavalue')
-         method = JUSTUPDATE
+         method = METHOD_CONSTANT
       case default
          method = METHOD_UNKNOWN
       end select

@@ -36,7 +36,7 @@ module m_extract_constituents
    public :: extract_constituents, print_extract_constituents_message
 
    integer, parameter :: MAX_NUMBER_OF_MESSAGES = 10 ! maximum number of warning messages
-   integer, dimension(6) :: number_of_printed_messages = 0
+   integer, dimension(8) :: number_of_printed_messages = 0
 
 contains
 
@@ -48,7 +48,7 @@ contains
          msgbuf = ' '
          call msg_flush()
          write (msgbuf, '(a)') &
-            'Salinity, temperature and/or suspended sediment concentration (SSC) were limited in some cells during the simulation.'
+            'Salinity, temperature, tracer and/or suspended sediment concentration (SSC) were limited in some cells during the simulation.'
          call msg_flush()
       end if
 
@@ -57,9 +57,9 @@ contains
    !> extract constituent array and limits values if needed
    subroutine extract_constituents()
       use precision, only: dp, fp
-      use m_vertical_forester_filter_dflowfm, only: apply_vertical_forester_filter_to_all_constituents
+      use m_vertical_forester_filter_dflowfm, only: apply_vertical_forester_filter_to_salinity, apply_vertical_forester_filter_to_temperature
       use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
-                                  TEMPERATURE_MODEL_NONE, max_iterations_vertical_forester
+                                  TEMPERATURE_MODEL_NONE, max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
       use m_flowtimes, only: dts
@@ -67,14 +67,15 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
       use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
-                            temperature_min
+                            temperature_min, tracer_concentration_min, tracer_concentration_min_enabled, tracer_concentration_max, &
+                            tracer_concentration_max_enabled
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
-      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
+      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed, tracer_limiter_mass_error, itra1, itran, const_names
 
       use timers, only: timon, timstop, timstrt
 
-      integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
+      integer :: constituent_index, grain, tracer_index, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
       real(kind=dp) :: salinity ! salinity [psu]
@@ -86,6 +87,8 @@ contains
       integer, parameter :: IDX_SAL_MAX = 4 ! index of salinity messages for max limits
       integer, parameter :: IDX_TEMP_MIN = 5 ! index of temperature messages for min limits
       integer, parameter :: IDX_TEMP_MAX = 6 ! index of temperature messages for max limits
+      integer, parameter :: IDX_TRA_MIN = 7 ! index of tracer messages for min limits
+      integer, parameter :: IDX_TRA_MAX = 8 ! index of tracer messages for max limits
 
       if (timon) then
          call timstrt("extract_constituents", ithndl)
@@ -100,20 +103,20 @@ contains
          cells_with_min_limit = 0
          do k = 1, ndkx
             do grain = 1, mxgr
-               iconst = ised1 + grain - 1
-               if (constituents(iconst, k) < 0.0_dp) then
+               constituent_index = ised1 + grain - 1
+               if (constituents(constituent_index, k) < 0.0_dp) then
                   cells_with_min_limit = cells_with_min_limit + 1
-                  constituents(iconst, k) = 0.0_dp
+                  constituents(constituent_index, k) = 0.0_dp
                end if
 
                ! keep track of mass error because of concentration limitation
-               if (constituents(iconst, k) > upperlimitssc) then
+               if (constituents(constituent_index, k) > upperlimitssc) then
                   cells_with_max_limit = cells_with_max_limit + 1
-                  maserrsed = maserrsed + vol1(k) * (constituents(iconst, k) - upperlimitssc)
-                  constituents(iconst, k) = upperlimitssc
+                  maserrsed = maserrsed + vol1(k) * (constituents(constituent_index, k) - upperlimitssc)
+                  constituents(constituent_index, k) = upperlimitssc
                end if
                if (.not. stm_included) then
-                  sed(grain, k) = constituents(iconst, k)
+                  sed(grain, k) = constituents(constituent_index, k)
                end if
             end do
          end do
@@ -122,6 +125,52 @@ contains
             call print_message(IDX_SSC_MIN, 'Negative SSC', cells_with_min_limit)
             call print_message(IDX_SSC_MAX, 'SSC overshoots', cells_with_max_limit, max_limit=upperlimitssc)
          end if
+      end if
+
+      if (itra1 > 0 .and. tracer_concentration_min_enabled) then
+         do constituent_index = ITRA1, ITRAN
+            cells_with_min_limit = 0
+            tracer_index = constituent_index - ITRA1 + 1
+            do kk = 1, ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  ! keep track of mass error(s) because of concentration limitation
+                  if (constituents(constituent_index, k) < tracer_concentration_min) then
+                     cells_with_min_limit = cells_with_min_limit + 1
+                     tracer_limiter_mass_error(tracer_index, 1) = tracer_limiter_mass_error(tracer_index, 1) + vol1(k) * &
+                                                                  (tracer_concentration_min - constituents(constituent_index, k))
+                     constituents(constituent_index, k) = tracer_concentration_min
+                  end if
+               end do
+            end do
+            if (jalogtransportsolverlimiting > 0) then
+               call print_message(IDX_TRA_MIN, '"'//trim(const_names(constituent_index))//'" concentration below minimum', &
+                                  cells_with_min_limit, min_limit=tracer_concentration_min)
+            end if
+         end do
+      end if
+
+      if (itra1 > 0 .and. tracer_concentration_max_enabled) then
+         do constituent_index = ITRA1, ITRAN
+            cells_with_max_limit = 0
+            tracer_index = constituent_index - ITRA1 + 1
+            do kk = 1, ndxi
+               call getkbotktop(kk, kb, kt)
+               do k = kb, kt
+                  ! keep track of mass error(s) because of concentration limitation
+                  if (constituents(constituent_index, k) > tracer_concentration_max) then
+                     cells_with_max_limit = cells_with_max_limit + 1
+                     tracer_limiter_mass_error(tracer_index, 2) = tracer_limiter_mass_error(tracer_index, 2) + vol1(k) * &
+                                                                  (constituents(constituent_index, k) - tracer_concentration_max)
+                     constituents(constituent_index, k) = tracer_concentration_max
+                  end if
+               end do
+            end do
+            if (jalogtransportsolverlimiting > 0) then
+               call print_message(IDX_TRA_MAX, '"'//trim(const_names(constituent_index))//'" concentration above maximum', &
+                                  cells_with_max_limit, max_limit=tracer_concentration_max)
+            end if
+         end do
       end if
 
       if (temperature_model /= TEMPERATURE_MODEL_NONE) then
@@ -204,8 +253,12 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (max_iterations_vertical_forester > 0) then
-         call apply_vertical_forester_filter_to_all_constituents()
+      if (max_iterations_vertical_forester_sal > 0 .and. jasal > 0) then
+         call apply_vertical_forester_filter_to_salinity()
+      end if
+
+      if (max_iterations_vertical_forester_tem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
+         call apply_vertical_forester_filter_to_temperature()
       end if
 
       ! When a cell become dry, keep track of the mass in the water column in ssccum array. This will be accounted
@@ -231,7 +284,7 @@ contains
 
    end subroutine extract_constituents
 
-   subroutine print_message(index, text, cells_with_limit, max_limit, minimum_salinity_value)
+   subroutine print_message(index, text, cells_with_limit, max_limit, min_limit, minimum_salinity_value)
       use messageHandling, only: msgbuf, msg_flush
       use precision, only: dp
 
@@ -239,12 +292,16 @@ contains
       character(len=*), intent(in) :: text !< text of the message to print
       integer, intent(in) :: cells_with_limit !< cells_with_limit
       real(kind=dp), optional, intent(in) :: max_limit !< optional max limit value for the message
+      real(kind=dp), optional, intent(in) :: min_limit !< optional min limit value for the message
       real(kind=dp), optional, intent(in) :: minimum_salinity_value !< optional minimum_salinity_value
 
       if (cells_with_limit > 0 .and. number_of_printed_messages(index) < MAX_NUMBER_OF_MESSAGES) then
          number_of_printed_messages(index) = number_of_printed_messages(index) + 1
          if (present(max_limit)) then
             write (msgbuf, *) text, ' encountered and limited to ', max_limit, ' in ', &
+               cells_with_limit, ' cell(s).'
+         else if (present(min_limit)) then
+            write (msgbuf, *) text, ' encountered and limited to ', min_limit, ' in ', &
                cells_with_limit, ' cell(s).'
          else
             write (msgbuf, *) text, ' encountered and limited in ', cells_with_limit, ' cell(s).'

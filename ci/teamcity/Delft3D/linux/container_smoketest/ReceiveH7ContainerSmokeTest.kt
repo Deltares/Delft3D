@@ -18,7 +18,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
     )
 
     name = "Receive"
-    description = "Receive H7 container smoke tests."
+    description = "Collect container smoke test results from H7."
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """

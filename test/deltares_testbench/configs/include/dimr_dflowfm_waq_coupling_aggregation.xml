@@ -3,6 +3,7 @@
   <!-- ONLINE AGGREGATION, ONE DOMAIN -->
   <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+    <maxRunTime>600</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
@@ -280,6 +281,7 @@
   </testCase>
   <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
+    <maxRunTime>720</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
@@ -348,6 +350,7 @@
   </testCase>
   <testCase name="e02_f029_c206_hyd_file_westerschelde_3d_z_vag" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
+    <maxRunTime>480</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
@@ -416,6 +419,7 @@
   </testCase>
   <testCase name="e02_f029_c207_hyd_file_westerschelde_3d_z_hvag" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
+    <maxRunTime>480</maxRunTime>
     <programs>
       <program ref="dimr" seq="1">
     </program>
@@ -485,6 +489,7 @@
   <!-- ONLINE AGGREGATION, THREE DOMAINS -->
   <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
+    <maxRunTime>660</maxRunTime>
     <programs>
       <program ref="dimr-mpi" seq="1">
     </program>
@@ -559,6 +564,7 @@
   </testCase>
   <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
+    <maxRunTime>540</maxRunTime>
     <programs>
       <program ref="dimr-mpi" seq="1">
     </program>
@@ -633,6 +639,7 @@
   </testCase>
   <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_platform_specific_refs">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
+    <maxRunTime>420</maxRunTime>
     <programs>
       <program ref="dimr-mpi" seq="1">
     </program>
@@ -781,6 +788,7 @@
   </testCase>
   <testCase name="e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
+    <maxRunTime>360</maxRunTime>
     <programs>
       <program ref="dimr-mpi" seq="1">
     </program>
