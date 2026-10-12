@@ -202,7 +202,7 @@ contains
             else
                hh = max(epshs, 0.5_dp * (hs(kb) + hs(k2)))
                dtgh = dts * (sqrt(ag * hh))
-               water_level_boundary = s1(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
+               water_level_boundary = s0(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
             end if
          else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then ! qhbnd
             water_level_boundary = zbndz(n)

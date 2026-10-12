@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
+
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
    use m_missing, only: dmiss, imiss
@@ -273,15 +273,19 @@ contains
       use tree_structures, only: tree_get_name, tree_num_nodes
       use timespace_parameters, only: METHOD_UNKNOWN
 
+      ! Arguments
       type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
 
+      ! Local variables
       type(tree_data), pointer :: bnd_ptr
       type(tree_data), pointer :: block_ptr
       type(t_spatial_field_input) :: input
       integer :: i, i_ext, max_num_quantities, num_items
       character(len=:), allocatable :: group_name
 
+      ! Initialization
       max_num_quantities = 0
+
       do i_ext = 1, size(bnd_ptrs)
          max_num_quantities = max_num_quantities + tree_num_nodes(bnd_ptrs(i_ext)%node_ptr)
       end do
@@ -465,6 +469,7 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
@@ -475,6 +480,7 @@ contains
       integer, intent(inout) :: ibqh !< block counter for qh boundaries
       logical :: res
 
+      ! Local variables
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
@@ -483,6 +489,7 @@ contains
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
+      ! Initialization
       res = .true.
 
       ! First check for required input:
@@ -607,6 +614,7 @@ contains
             end if
          end if
       end do
+
       if (.not. is_successful) then ! This addtimespace was not successful
          error_message = getmeteoerror()
          if (len_trim(error_message) > 0) then
@@ -630,6 +638,7 @@ contains
       use fm_location_types, only: SPATIAL_LOCATION_1D
       use unstruc_files, only: resolvePath
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: loc_id !< The id of the lateral
       character(len=*), intent(in) :: base_dir !< The base directory of the lateral
@@ -643,10 +652,12 @@ contains
       character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
       logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
+      ! Local variables
       logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
-      integer, parameter :: maximum_number_of_discharge_specifications = 4
+      integer, parameter :: MAXIMUM_NUMBER_OF_DISCHARGE_SPECIFICATIONS = 4
 
+      ! Initialization
       loc_spec_type = imiss
       node_id = ''
       branch_id = ''
@@ -664,7 +675,7 @@ contains
       has_location_file = has_key(block_ptr, 'Lateral', 'locationFile')
 
       ! Test if multiple discharge methods were set
-      number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+      number_of_discharge_specifications = sum([(1, integer :: i=1, MAXIMUM_NUMBER_OF_DISCHARGE_SPECIFICATIONS)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
 
       if (number_of_discharge_specifications < 1) then
          call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
@@ -737,6 +748,7 @@ contains
          return
       end if
       call err('Programming error, please report: read_lateral_discharge_definition failed to read lateral '''//trim(loc_id)//'''')
+
    end subroutine read_lateral_discharge_definition
 
    !> Read lateral blocks from new external forcings file and makes required initialisations
@@ -757,11 +769,13 @@ contains
       use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       integer, intent(in) :: block_number !< Number of the block, only used in error message
       integer, intent(in) :: major !< Major version number of ext-file
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: loc_id
       integer :: loc_spec_type, num_coordinates
       character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
@@ -771,9 +785,10 @@ contains
       character(len=300) :: rec
       integer :: ilattype, nlat, ierr
 
+      ! Initialization
       is_successful = .false.
-
       loc_id = ' '
+
       call prop_get(block_ptr, 'Lateral', 'id', loc_id, is_read)
       if (.not. is_read .or. len_trim(loc_id) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in lateral (block #', block_number, ').'
@@ -857,7 +872,7 @@ contains
    !! Handles allocation and flag setup for all meteo quantities.
    !! target_array remains null for most quantities (EC module writes directly
    !! into named arrays); only set for quantities that need an explicit target pointer (e.g. qext).
-   function resolve_meteo_target(quantity, file_name, target_location_type, target_array) result(success)
+   function resolve_meteo_target(quantity, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -868,20 +883,19 @@ contains
       use m_flowgeom, only: ndx, lnx
       use string_module, only: str_tolower
 
-      implicit none
-
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the quantity.
-      character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
       logical :: success
 
+      ! Local variables
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
-      associate (dummy => file_name)
-      end associate
+
       target_array => null()
       target_location_type = UNC_LOC_S ! default for all meteo quantities except wind
       success = .true.
+      
       select case (str_tolower(quantity))
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
@@ -952,7 +966,8 @@ contains
       real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target data storage for the static field.
       logical :: res !< Whether or not relation was succesfully created.
 
-      integer, pointer :: pkbot(:), pktop(:)
+      ! Local variables
+      integer, dimension(:), pointer :: pkbot, pktop
 
       if (.not. associated(target_data)) then
          call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
@@ -1052,15 +1067,16 @@ contains
       use string_module, only: str_tolower
       use m_alloc, only: realloc
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Quantity name as it appears in the ext block.
       character(len=*), intent(in) :: forcing_file !< Path to the 1dField .ini file.
       character(len=*), intent(in) :: file_name !< Path to the ext file, used in error messages.
-
       logical :: res
 
+      ! Local variables
       character(len=256) :: source_quantity_name
-      logical(kind=c_bool), allocatable :: specified_indices(:)
-      real(dp) :: global_value
+      logical(kind=c_bool), dimension(:), allocatable :: specified_indices
+      real(kind=dp) :: global_value
       logical :: global_value_provided
       integer :: ierr
 
@@ -1140,18 +1156,19 @@ contains
 
       logical :: res !< .true. if the field block was initialized successfully.
 
-      integer, allocatable :: mask(:)
+      ! Local variables
+      integer, dimension(:), allocatable :: mask
       integer :: target_location_type
       integer :: target_num_points
-      real(dp), dimension(:), pointer :: target_x
-      real(dp), dimension(:), pointer :: target_y
+      real(kind=dp), dimension(:), pointer :: target_x
+      real(kind=dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
-      real(dp), dimension(:), pointer :: target_data
+      real(kind=dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_rank_2
       real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
@@ -1213,7 +1230,7 @@ contains
             res = resolve_initial_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_meteo_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
             res = resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer=target_layer)
@@ -1375,11 +1392,13 @@ contains
       use unstruc_inifields, only: set_friction_type_values_explicit
       use string_module, only: str_tolower
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
       type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
       integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
       logical :: success
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
 
       call split_qid(quantity, quantity_base, quantity_specific)
@@ -1389,6 +1408,7 @@ contains
       case default
          success = .false.
       end select
+
    end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
@@ -1404,26 +1424,21 @@ contains
       use tree_structures
       use m_alloc, only: realloc
       use messageHandling
-
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use unstruc_files, only: resolvePath
       use system_utils, only: split_filename
-
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-
       use m_flow, only: s1, hs, h_unsat
       use m_flowparameters, only: janudge
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
-
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
-
       use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
       use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
@@ -1432,14 +1447,15 @@ contains
       use m_subsidence, only: jasubsupl
       use string_module, only: str_tolower
       use m_find_name, only: find_name
-
       use fm_external_forcings_utils, only: split_qid
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< The quantity name as read from the [Meteo] block.
-      character(len=idlen) :: qid_base, qid_specific
-
-      integer n
       logical :: success
+
+      ! Local variables
+      integer :: n
+      character(len=idlen) :: qid_base, qid_specific
 
       success = .true.
       call split_qid(quantity, qid_base, qid_specific)
@@ -1582,6 +1598,8 @@ contains
       use properties, only: prop_get
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
+
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
@@ -1593,6 +1611,7 @@ contains
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source !< Two-point source vertical range; dmiss when unspecified.
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink !< Two-point sink vertical range; dmiss when unspecified.
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
       real(kind=dp), dimension(:), allocatable :: fourth_coordinates
@@ -1603,6 +1622,7 @@ contains
       logical :: have_location_file
       integer :: npts
 
+      ! Initialization
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
@@ -1670,18 +1690,20 @@ contains
       use m_polygon, only: xpl, ypl, zpl, dzL
       use m_reapol, only: reapol
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+      logical :: is_successful
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: sourcesink_id
       character(len=INI_VALUE_LEN) :: sourcesink_name
       character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
       character(len=NAMLEN) :: const_name_with_prefix
       character(len=INI_VALUE_LEN) :: quantity_id, property_name
-
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
       integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
@@ -1690,14 +1712,14 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
-      logical :: is_successful
       logical :: is_read
 
+      ! Initialization
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-
       sourcesink_id = ' '
+
       call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
       if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
          write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Field ''id'' is missing.'
@@ -2057,6 +2079,7 @@ contains
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
 
+      ! Arguments
       integer, intent(in) :: target_location_type
       integer, intent(out) :: target_num_points
       real(dp), dimension(:), pointer, intent(out) :: target_x
@@ -2064,6 +2087,7 @@ contains
       logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
+      ! Initialization
       ierr = DFM_NOERR
 
       select case (target_location_type)
@@ -2090,6 +2114,7 @@ contains
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
+
    end subroutine get_location_target_properties
 
    !> Scan the quantity name for heat relatede quantities.
@@ -2098,16 +2123,21 @@ contains
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
       use fm_location_types, only: UNC_LOC_S
+
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the data set.
       integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
       integer, intent(out) :: kx !< Number of individual quantities in the data set
       logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
+      ! Local variables
       integer :: ierr
 
+      ! Initialization
       kx = 1
       success = .true.
       target_location_type = UNC_LOC_S
+
       select case (quantity)
 
       case ('airtemperature')
@@ -2145,6 +2175,7 @@ contains
       case default
          success = .false.
       end select
+
    end function scan_for_heat_quantities
 
 end submodule fm_external_forcings_init

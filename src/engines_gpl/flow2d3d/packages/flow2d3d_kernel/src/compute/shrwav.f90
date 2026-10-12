@@ -37,7 +37,7 @@ subroutine shrwav(nmmax     ,kmax      ,icx       ,dfu       ,deltau    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none
