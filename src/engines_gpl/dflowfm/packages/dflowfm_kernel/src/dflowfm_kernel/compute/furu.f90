@@ -61,7 +61,7 @@ contains
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       use network_data, only: LINK_1D2D_INTERNAL
 
       implicit none

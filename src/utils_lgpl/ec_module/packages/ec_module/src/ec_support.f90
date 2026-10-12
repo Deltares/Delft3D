@@ -102,7 +102,7 @@ contains
 
    !> Calculate a Gregorian date and hour-minutes-seconds integer since reference date
    function ecTimeFrameRealHpTimestepsToDateTime(timestamp_mjd, yyyymmdd, hhmmss) result(success)
-      use mathconsts, only: daysec_hp
+      use m_mathconstants, only: daysec_hp
       logical :: success !< function status
       real(hp), intent(in) :: timestamp_mjd !< number of time steps
       integer, intent(out) :: yyyymmdd !< calculated Gregorian date
