@@ -439,10 +439,10 @@ contains
                   end if
                   call fill_valstruct_perlink(valweirgen(:, n), La, dir, ST_UNSET, 0, 0)
                end do
-               if (L1cgensg(i) <= L2cgensg(i)) then
-                  valweirgen(NUMVALS_WEIRGEN, n) = 1
-                  valweirgen(IVAL_CRESTW, n) = zcgen(4 * i)
-                  valweirgen(IVAL_CRESTL, n) = zcgen(4 * i - 3)
+               if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
+                  valweirgen(NUMVALS_WEIRGEN, n) = 1 ! add 1 to the global count for this weir, to be reduced later.
+                  valweirgen(IVAL_CRESTW, n) = zcgen(4 * i) ! id_weirgen_crestw.
+                  valweirgen(IVAL_CRESTL, n) = zcgen(4 * i - 3) ! id_weirgen_cresth.
                end if
             end do
          end if

@@ -1228,24 +1228,22 @@ contains
          integer, intent(in) :: it_his !< Timeframe to write to in the his file
 
          integer :: ierr !< Result status (NF90_NOERR if successful)
-         integer :: numobs_total
 
          integer, dimension(:), allocatable :: start, count
 
          ierr = DFM_NOERR
 
-         numobs_total = numobs + nummovobs
          ! If there are moving observation stations, include a time dimension for the lat/lon-coordinates
          if (model_has_moving_obs_stations()) then
             start = [1, it_his]
-            count = [numobs_total, 1]
+            count = [numobs + nummovobs, 1]
          else
             start = [1]
-            count = [numobs_total]
+            count = [numobs + nummovobs]
          end if
 
          call transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
-                                                   nccrs%proj_string, xobs(1:numobs_total), yobs(1:numobs_total), start=start, count=count)
+                                                   nccrs%proj_string, xobs, yobs, start=start, count=count)
       end function unc_put_his_station_coord_vars_latlon
 
       !> Write (put) the z-coordinate variables for the station type.
@@ -1411,7 +1409,7 @@ contains
 #ifdef HAVE_PROJ
          if (add_latlon) then
             call transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
-                                                      nccrs%proj_string, xobs(1:numobs), yobs(1:numobs))
+                                                      nccrs%proj_string, xobs, yobs)
          end if
 #endif
 
@@ -1542,97 +1540,195 @@ contains
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
 
       character(len=strlen_netcdf), dimension(:), allocatable :: structure_names
-      integer, dimension(:), allocatable :: indices
+      integer :: structure_index
 
       if (allocated(weir2cgen)) then
-         indices = [(weir2cgen(i), integer :: i=1, nweirgen)]
-         structure_names = [(trimexact(cgen_ids(indices(i)), strlen_netcdf), integer :: i=1, nweirgen)]
+         call set_structure_names_from_cgen_indices(weir2cgen, nweirgen, .true.)
       else if (network%sts%numWeirs > 0) then
-         indices = [(network%sts%weirIndices(i), integer :: i=1, nweirgen)]
-         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, nweirgen)]
+         call set_structure_names_from_structure_indices(network%sts%weirIndices, nweirgen)
       else
-         allocate (structure_names(0))
+         call allocate_structure_names(0)
       end if
       call unc_put_his_structure_names(ncid, his_write_settings%weir, id_weirgen_id, structure_names)
 
-      indices = [(network%sts%orificeIndices(i), integer :: i=1, network%sts%numOrifices)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
+      call set_structure_names_from_structure_indices(network%sts%orificeIndices, network%sts%numOrifices)
       call unc_put_his_structure_names(ncid, his_write_settings%orifice, id_orifgen_id, structure_names)
 
-      structure_names = [(pump_ids(i), integer :: i=1, npumpsg)]
+      if (npumpsg > 0) then
+         call set_structure_names_from_array(pump_ids, npumpsg)
+      else
+         call allocate_structure_names(0)
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%pump, id_pump_id, structure_names)
       call unc_put_his_structure_mid_points(ncid, ST_PUMP, his_write_settings%pump, npumpsg, 'line', id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
 
-      structure_names = [(gate_ids(i), integer :: i=1, ngatesg)]
+      if (ngatesg > 0) then
+         call set_structure_names_from_array(gate_ids, ngatesg)
+      else
+         call allocate_structure_names(0)
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%gate, id_gate_id, structure_names)
 
       if (jaoldstr == 1) then
-         structure_names = [(cgen_ids(i), integer :: i=1, ncgensg)]
+         if (ncgensg > 0) then
+            call set_structure_names_from_array(cgen_ids, ncgensg)
+         else
+            call allocate_structure_names(0)
+         end if
       else if (network%sts%numGeneralStructures > 0) then
-         indices = [(network%sts%generalStructureIndices(i), integer :: i=1, ngenstru)]
-         structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, ngenstru)]
+         call set_structure_names_from_structure_indices(network%sts%generalStructureIndices, ngenstru)
       else
-         indices = [(genstru2cgen(i), integer :: i=1, ngenstru)]
-         structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngenstru)]
+         call set_structure_names_from_cgen_indices(genstru2cgen, ngenstru, .false.)
       end if
       call unc_put_his_structure_names(ncid, his_write_settings%cgen, id_genstru_id, structure_names)
 
-      indices = [(network%sts%uniweirIndices(i), integer :: i=1, network%sts%numuniweirs)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
+      call set_structure_names_from_structure_indices(network%sts%uniweirIndices, network%sts%numuniweirs)
       call unc_put_his_structure_names(ncid, his_write_settings%universal_weir, id_uniweir_id, structure_names)
 
       structure_names = get_dambreak_names()
       call unc_put_his_structure_names(ncid, his_write_settings%dambreak, id_dambreak_id, structure_names)
 
-      indices = [(network%sts%culvertIndices(i), integer :: i=1, network%sts%numCulverts)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
+      call set_structure_names_from_structure_indices(network%sts%culvertIndices, network%sts%numCulverts)
       call unc_put_his_structure_names(ncid, his_write_settings%culvert, id_culvert_id, structure_names)
 
-      indices = [(network%sts%bridgeIndices(i), integer :: i=1, network%sts%numBridges)]
-      structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
+      call set_structure_names_from_structure_indices(network%sts%bridgeIndices, network%sts%numBridges)
       call unc_put_his_structure_names(ncid, his_write_settings%bridge, id_bridge_id, structure_names)
 
-      structure_names = [(network%cmps%compound(i)%id, integer :: i=1, network%cmps%count)]
+      call allocate_structure_names(network%cmps%count)
+      do structure_index = 1, network%cmps%count
+         structure_names(structure_index) = network%cmps%compound(structure_index)%id
+      end do
       call unc_put_his_structure_names(ncid, his_write_settings%compound_structure, id_cmpstru_id, structure_names)
 
-      structure_names = [(longculverts(i)%id, integer :: i=1, nlongculverts)]
+      call allocate_structure_names(nlongculverts)
+      do structure_index = 1, nlongculverts
+         structure_names(structure_index) = longculverts(structure_index)%id
+      end do
       call unc_put_his_structure_names(ncid, his_write_settings%long_culvert, id_longculvert_id, structure_names)
 
-      structure_names = [(cdam_ids(i), integer :: i=1, ncdamsg)]
+      if (ncdamsg > 0) then
+         call set_structure_names_from_array(cdam_ids, ncdamsg)
+      else
+         call allocate_structure_names(0)
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%cdam, id_cdam_id, structure_names)
 
-      structure_names = [(namobs(i), integer :: i=1, numobs + nummovobs)]
+      if (numobs + nummovobs > 0) then
+         call set_structure_names_from_array(namobs, numobs + nummovobs)
+      else
+         call allocate_structure_names(0)
+      end if
       call unc_put_his_structure_names(ncid, 1, id_statname, structure_names)
 
-      structure_names = [(crs(i)%name, integer :: i=1, ncrs)]
+      call allocate_structure_names(ncrs)
+      do structure_index = 1, ncrs
+         structure_names(structure_index) = crs(structure_index)%name
+      end do
       call unc_put_his_structure_names(ncid, 1, id_crs_id, structure_names)
 
-      structure_names = [(rug(i)%name, integer :: i=1, num_rugs)]
+      call allocate_structure_names(num_rugs)
+      do structure_index = 1, num_rugs
+         structure_names(structure_index) = rug(structure_index)%name
+      end do
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
-      if (allocated(source_sinks%name)) then
-         structure_names = pack(source_sinks%name, source_sinks%is_normal)
-      else
-         structure_names = [(source_sinks%name(i), integer :: i=1, source_sinks%num_total)]
-      end if
-      ! structure_names = pack(source_sink_name, is_source_sink_real)
+      call set_source_sink_names()
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
-      structure_names = [(bubblescreens(i)%id, integer :: i=1, size(bubblescreens))]
+      call allocate_structure_names(size(bubblescreens))
+      do structure_index = 1, size(bubblescreens)
+         structure_names(structure_index) = bubblescreens(structure_index)%id
+      end do
       call unc_put_his_structure_names(ncid, his_write_settings%bubblescreens, id_bubblescreen_name, structure_names)
 
       if (network%sts%numGates > 0) then
-         indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
-         structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%id, strlen_netcdf), integer :: i=1, ngategen)]
+         call set_structure_names_from_structure_indices(network%sts%gateIndices, ngategen)
       else
-         indices = [(gate2cgen(i), integer :: i=1, ngategen)]
-         structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
+         call set_structure_names_from_cgen_indices(gate2cgen, ngategen, .false.)
       end if
 
       call unc_put_his_structure_names(ncid, his_write_settings%gate, id_gategen_id, structure_names)
 
-      structure_names = [(lat_ids(i), integer :: i=1, numlatsg)]
+      if (numlatsg > 0) then
+         call set_structure_names_from_array(lat_ids, numlatsg)
+      else
+         call allocate_structure_names(0)
+      end if
       call unc_put_his_structure_names(ncid, his_write_settings%lateral, id_lat_id, structure_names)
+
+   contains
+
+      subroutine allocate_structure_names(number_of_names)
+         integer, intent(in) :: number_of_names
+
+         if (allocated(structure_names)) then
+            deallocate (structure_names)
+         end if
+         allocate (structure_names(number_of_names))
+      end subroutine allocate_structure_names
+
+      subroutine set_structure_names_from_array(names, number_of_names)
+         character(len=*), dimension(:), intent(in) :: names
+         integer, intent(in) :: number_of_names
+         integer :: name_index
+
+         call allocate_structure_names(number_of_names)
+         do name_index = 1, number_of_names
+            structure_names(name_index) = names(name_index)
+         end do
+      end subroutine set_structure_names_from_array
+
+      subroutine set_structure_names_from_structure_indices(structure_indices, number_of_names)
+         integer, pointer, dimension(:), intent(in) :: structure_indices
+         integer, intent(in) :: number_of_names
+         integer :: name_index
+
+         call allocate_structure_names(number_of_names)
+         do name_index = 1, number_of_names
+            structure_names(name_index) = trimexact(network%sts%struct(structure_indices(name_index))%id, strlen_netcdf)
+         end do
+      end subroutine set_structure_names_from_structure_indices
+
+      subroutine set_structure_names_from_cgen_indices(cgen_indices, number_of_names, trim_names)
+         integer, dimension(:), allocatable, intent(in) :: cgen_indices
+         integer, intent(in) :: number_of_names
+         logical, intent(in) :: trim_names
+         integer :: name_index
+
+         call allocate_structure_names(number_of_names)
+         if (trim_names) then
+            do name_index = 1, number_of_names
+               structure_names(name_index) = trimexact(cgen_ids(cgen_indices(name_index)), strlen_netcdf)
+            end do
+         else
+            do name_index = 1, number_of_names
+               structure_names(name_index) = cgen_ids(cgen_indices(name_index))
+            end do
+         end if
+      end subroutine set_structure_names_from_cgen_indices
+
+      subroutine set_source_sink_names()
+         integer :: normal_source_sink_count, source_sink_index, selected_name_index
+
+         if (allocated(source_sinks%name)) then
+            normal_source_sink_count = count(source_sinks%is_normal)
+            call allocate_structure_names(normal_source_sink_count)
+            selected_name_index = 0
+            do source_sink_index = 1, size(source_sinks%name)
+               if (source_sinks%is_normal(source_sink_index)) then
+                  selected_name_index = selected_name_index + 1
+                  structure_names(selected_name_index) = source_sinks%name(source_sink_index)
+               end if
+            end do
+         else
+            if (source_sinks%num_total > 0) then
+               call set_structure_names_from_array(source_sinks%name, source_sinks%num_total)
+            else
+               call allocate_structure_names(0)
+            end if
+         end if
+      end subroutine set_source_sink_names
+
    end subroutine unc_put_his_structure_static_vars
 
    !> Get the NetCDF variable prefix and human-readable name of a structure type from its type id

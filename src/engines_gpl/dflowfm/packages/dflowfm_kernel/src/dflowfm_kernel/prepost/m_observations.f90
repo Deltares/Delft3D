@@ -784,7 +784,7 @@ contains
       end if
 
       if (isize <= numobs + nummovobs) then
-         new_capacity = max(capacity_, 2 * isize, numobs + nummovobs + 1)
+         new_capacity = max(capacity_, 2 * isize, 2*(numobs + nummovobs))
          call realloc(xobs, new_capacity)
          call realloc(yobs, new_capacity)
          call realloc(xyobs, 2 * new_capacity)
