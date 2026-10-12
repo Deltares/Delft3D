@@ -50,7 +50,7 @@ contains
          idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, &
          idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
       use m_partitioninfo, only: jampi, idomain, my_rank
-      use m_drawthis, only: ndraw
+      !use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_sediment, only: jamorf, stm_included
@@ -58,6 +58,7 @@ contains
       use m_source_sink, only: source_sinks
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
+      REAL (kind=dp) :: foutje
 
       call a1vol1tot()
 
@@ -216,30 +217,29 @@ contains
          cumvolcur = cumvolcur + volcur
       end if
 
-      if (NDRAW(28) == 34) then ! Display values at flow nodes: volerror
-         if (kmx == 0) then
-            do kk = 1, ndxi
-               if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) then
-                     cycle
-                  end if
+      if (kmx == 0) then
+         do kk = 1, ndxi
+            if (jampi == 1) then
+               if (idomain(kk) /= my_rank) then
+                  cycle
                end if
-               volerror(kk) = vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk)) ! array transfer
-            end do
-         else
-            do kk = 1, ndxi
-               if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) then
-                     cycle
-                  end if
+            end if
+            volerror(kk) = volerror(kk) + abs(vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk))) ! array transfer
+            continue
+         end do
+      else
+         do kk = 1, ndxi
+            if (jampi == 1) then
+               if (idomain(kk) /= my_rank) then
+                  cycle
                end if
+            end if
 
-               call getkbotktop(kk, kb, kt)
-               do k = kb, kt
-                  volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
-               end do
+            call getkbotktop(kk, kb, kt)
+            do k = kb, kt
+               volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
             end do
-         end if
+         end do
       end if
 
       vol0 = vol1 ! array

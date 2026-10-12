@@ -164,6 +164,7 @@ module m_flow ! flow arrays-999
    ! node related, dim = ndx
    real(kind=dp), allocatable, target, dimension(:) :: s0 !< [m] waterlevel    (m ) at start of timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target, dimension(:) :: s1 !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: volume_error !< [m] volume error    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target, dimension(:) :: s1max !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, dimension(:) :: s00 !< waterlevel    (m ) for checking iteration in nonlin
    real(kind=dp), allocatable, target, dimension(:) :: a0 !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
@@ -175,7 +176,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: sqa !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
    real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, dimension(:) :: cfs !< dimensionless friction coefficient sag/C in cell centre
-   real(kind=dp), allocatable, dimension(:) :: volerror !< volume error
+   real(kind=dp), allocatable, target, dimension(:) :: volerror !< volume error
 
    real(kind=dp), allocatable, dimension(:) :: voldhu !< node volume based on downwind hu
 
