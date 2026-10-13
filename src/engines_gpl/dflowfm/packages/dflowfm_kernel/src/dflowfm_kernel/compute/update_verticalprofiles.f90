@@ -28,8 +28,9 @@
 !-------------------------------------------------------------------------------
 
 module m_update_verticalprofiles
+   use precision, only: dp, comparereal
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -45,15 +46,16 @@ contains
    subroutine update_verticalprofiles()
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
-      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
+      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
+                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
-      use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
+      use m_flowgeom, only: lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
       use m_flowtimes, only: dtprev, t_spinup_turb_log_prof, time1, tstart_tlfsmo_user
@@ -66,13 +68,10 @@ contains
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
       use m_vertical_profile_u0, only: vertical_profile_u0
-      use precision, only: dp, comparereal
       use m_alloc, only: aerr
       use m_waveconst
 
-      implicit none
-
-      real(kind=dp) :: tetm1, tkedisL
+      real(kind=dp) :: tetm1
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
@@ -84,7 +83,7 @@ contains
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
 
-      if (iturbulencemodel <= 0 .or. kmx == 0) then
+      if (iturbulencemodel <= TURBULENCE_MODEL_NONE .or. kmx == 0) then
          return
       end if
 
@@ -94,7 +93,9 @@ contains
       
       womegu = 0.0_dp
 
-      if (iturbulencemodel == 1) then ! 1=constant
+      select case (iturbulencemodel)
+
+      case (TURBULENCE_MODEL_CONSTANT)
 
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(LL,Lb,Lt,kxL,dzu,L,k,hdzb,z00,ac1,ac2,n1,n2,k1,k2,womegu,cfuhi3D)
@@ -121,27 +122,7 @@ contains
                end if
 
                if (javau > 0) then
-                  ac1 = acL(LL)
-                  ac2 = 1.0_dp - ac1
-                  n1 = ln(1, LL) !; zb1 = zws(kbot(n1)-1)
-                  n2 = ln(2, LL) !; zb2 = zws(kbot(n2)-1)
-                  do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
-                     k = L - Lb + 1
-
-                     if (n1 > ndxi) then ! open boundaries
-                        if (u1(LL) < 0.0_dp) then
-                           womegu(k) = qw(k2) / a1(n2)
-                        else
-                           womegu(k) = 0.0_dp
-                        end if
-                     else
-                        womegu(k) = (ac1 * qw(k1) + ac2 * qw(k2)) / (ac1 * a1(ln(1, LL)) + ac2 * a1(ln(2, LL)))
-                     end if
-
-                  end do
-                  womegu(Lt - Lb + 1) = 0.0_dp ! top layer : 0
+                  call calculate_womegu(womegu, LL)
                end if
 
                call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
@@ -152,7 +133,7 @@ contains
 
          !$OMP END PARALLEL DO
 
-      else if (iturbulencemodel == 2) then ! 2=algebraic , just testing 1D flow
+      case (TURBULENCE_MODEL_ALGEBRAIC) ! just testing 1D flow
 
          do LL = 1, lnx
 
@@ -176,29 +157,7 @@ contains
                end if
 
                if (javau > 0) then
-                  ac1 = acL(LL)
-                  ac2 = 1.0_dp - ac1
-                  n1 = ln(1, LL)
-                  !zb1 = zws(kbot(n1)-1)
-                  n2 = ln(2, LL)
-                  !zb2 = zws(kbot(n2)-1)
-                  do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
-                     k = L - Lb + 1
-
-                     if (n1 > ndxi) then ! open boundaries
-                        if (u1(LL) < 0.0_dp) then
-                           womegu(k) = qw(k2) / a1(n2)
-                        else
-                           womegu(k) = 0.0_dp
-                        end if
-                     else
-                        womegu(k) = (ac1 * qw(k1) + ac2 * qw(k2)) / (ac1 * a1(ln(1, LL)) + ac2 * a1(ln(2, LL)))
-                     end if
-
-                  end do
-                  womegu(Lt - Lb + 1) = 0.0_dp ! top layer : 0
+                  call calculate_womegu(womegu, LL)
                end if
 
                vicwwu(Lb - 1) = 0.0_dp
@@ -215,7 +174,7 @@ contains
 
          end do
 
-      else if (iturbulencemodel >= 3) then ! 3=k-epsilon, 4=k-tau
+      case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
 
          call calculate_drhodz(zws, drhodz)
 
@@ -392,7 +351,7 @@ contains
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
-                     if (iturbulencemodel == 3) then
+                     if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                         if (bruva(k) > 0.0_dp) then
                            dk(k) = dk(k) + buoflu(k)
                            bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
@@ -401,7 +360,7 @@ contains
                         elseif (bruva(k) < 0.0_dp) then
                            dk(k) = dk(k) - buoflu(k)
                         end if
-                     else if (iturbulencemodel == 4) then
+                     else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                         if (bruva(k) > 0.0_dp) then
                            bk(k) = bk(k) + buoflu(k) / turkin0(L)
                         else if (bruva(k) < 0.0_dp) then
@@ -409,11 +368,6 @@ contains
                         end if
                      end if
                   end if
-
-                  !c TKEPRO is the energy transfer flux from Internal Wave energy to
-                  !c Turbulent Kinetic energy and thus a source for the k-equation.
-                  !c TKEDIS is the energy transfer flux from Turbulent Kinetic energy to
-                  !c Internal Wave energy and thus a sink for the k-equation.
 
                   ! Production, dissipation, and buoyancy term in TKE equation;
                   ! dissipation and positive buoyancy are split by Newton linearization;
@@ -434,18 +388,15 @@ contains
 
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
 
-                  !
-                  if (iturbulencemodel == 3) then
-                     sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                     sinktu = tureps0(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
-                  else if (iturbulencemodel == 4) then
-                     sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
+                     sinktu = 1.0_dp / tureps0(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
                   end if
-
-                  ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
 
                end do ! Lb, Lt-1
 
@@ -489,31 +440,15 @@ contains
                dk(0) = tkebot
 
                if (javau > 0 .or. javakeps > 0) then
+                  call calculate_womegu(womegu, LL)
+
                   ac1 = acL(LL)
                   ac2 = 1.0_dp - ac1
                   n1 = ln(1, LL)
-                  !zb1 = zws(kbot(n1)-1)
                   n2 = ln(2, LL)
-                  !zb2 = zws(kbot(n2)-1)
-                  do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
-                     k = L - Lb + 1
-
-                     if (n1 > ndxi) then ! open boundaries
-                        if (u1(LL) < 0.0_dp) then
-                           womegu(k) = qw(k2) / a1(n2)
-                        else
-                           womegu(k) = 0.0_dp
-                        end if
-                     else
-                        womegu(k) = (ac1 * qw(k1) + ac2 * qw(k2)) / (ac1 * a1(ln(1, LL)) + ac2 * a1(ln(2, LL)))
-                     end if
-
-                  end do
-                  womegu(Lt - Lb + 1) = 0.0_dp ! top layer : 0
 
                   if (javakeps >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
+
                      arLL = ac1 * a1(n1) + ac2 * a1(n2)
                      do L = Lb, Lt - 1
                         k = L - Lb + 1
@@ -590,17 +525,17 @@ contains
                               tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
                               teps = 0.5_dp * (tureps0(L) + tureps0(L))
                               tkin = 0.5_dp * (turkin0(L) + turkin0(L))
-                              if (iturbulencemodel == 3) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  tauinf = c2e * teps / tkin !
-                              else if (iturbulencemodel == 4) then
+                              else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  tauinf = c2e / teps
                               end if
                               if (tauinf > tauinv) then ! turb damping not governed by plants => free flow damping only
                                  tauinv = 0.0_dp ! tauinv = max(tauinv, tauinf)
                               end if
-                              if (iturbulencemodel == 3) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  wke = wk * tauinv
-                              else if (iturbulencemodel == 4) then
+                              else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  wke = wk * (1.0_dp - tureps1(L) * tauinv) * tureps1(L) / turkin1(L)
                               end if
                               if (L < Lt) then
@@ -663,7 +598,7 @@ contains
                              + difd * (tureps0(L - 1) - tureps0(L)) * tetm1
                   end if
 
-                  if (iturbulencemodel == 3) then ! k-eps
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
 
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
@@ -672,19 +607,13 @@ contains
                         dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
                      end if
 
-                     ! Similar to the k-equation, in the eps-equation the net IWE to TKE
-                     ! transfer rate (TKEPRO-TKEDIS) is added to the eps-production term, but
-                     ! split for implicit treatment for avoiding negative epsilon.
-
                      sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
-                     !
                      ! Add wave dissipation production term
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
                      end if
 
-                     tkedisL = 0.0_dp ! tkedis(L)
-                     sinktu = c2e * (tureps0(L) + tkedisL) / turkin1(L)
+                     sinktu = c2e * tureps0(L) / turkin1(L)
 
                      !c Addition of production and of dissipation to matrix ;                               epsilon
                      !c observe implicit treatment by Newton linearization.
@@ -692,7 +621,7 @@ contains
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
 
-                  else if (iturbulencemodel == 4) then ! k-tau
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
 
                      if (bruva(k) < 0.0_dp) then ! instable
                         bk(k) = bk(k) + c3t_unstable * bruva(k) * tureps0(L)
@@ -726,7 +655,7 @@ contains
 
                end do
 
-               if (iturbulencemodel == 3) then ! Boundary conditions EPSILON:
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then ! Boundary conditions
 
                   ak(kxL) = -1.0_dp ! Flux at the free surface:
                   bk(kxL) = 1.0_dp
@@ -745,7 +674,7 @@ contains
                      dk(0) = 0.0_dp
                   end if
 
-               else if (iturbulencemodel == 4) then ! Boundary conditions tau:
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then ! Boundary conditions
 
                   ak(kxL) = 0.0_dp ! at the free surface:
                   bk(kxL) = 1.0_dp
@@ -865,9 +794,9 @@ contains
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
-               if (iturbulencemodel == 3) then ! k-eps
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * turkin1(Lb0:Lt) / tureps1(Lb0:Lt))
-               else if (iturbulencemodel == 4) then ! k-tau
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
                end if
 
@@ -889,7 +818,7 @@ contains
          turkin0 = turkin1
          tureps0 = tureps1
 
-      end if
+      end select
 
       call links_to_centers(vicwws, vicwwu)
       if (jarichardsononoutput > 0) then
@@ -966,4 +895,52 @@ contains
          !$OMP END PARALLEL DO
       end if
    end subroutine calculate_drhodz
+
+   !> Calculate the vertical omega velocity for a given flow link
+   pure subroutine calculate_womegu(womegu, flow_link)
+      use m_flow, only: lbot, ltop, u1, qw, a1
+      use m_flowgeom, only: acL, ln, ndxi
+
+      ! Arguments
+      real(kind=dp), dimension(:), intent(inout) :: womegu !< Vertical omega velocity array
+      integer, intent(in) :: flow_link !< Flow link to compute womegu for
+
+      ! Local variables
+      integer :: l !< Loop index over vertical flow link layers
+      integer :: k !< Loop index over vertical layer interfaces
+
+      real(kind=dp) :: ac1 !< Left dx fraction for linked cell 1
+      real(kind=dp) :: ac2 !< Left dx fraction for linked cell 2
+      integer :: n1 !< Flow cell index for linked cell 1
+      integer :: n2 !< Flow cell index for linked cell 2
+      integer :: l_bottom !< Bottom flow link layer index
+      integer :: l_top !< Top flow link layer index
+      integer :: k1 !< Vertical layer interface index for linked cell 1
+      integer :: k2 !< Vertical layer interface index for linked cell 2
+
+      ac1 = acL(flow_link)
+      ac2 = 1.0_dp - ac1
+      n1 = ln(1, flow_link)
+      n2 = ln(2, flow_link)
+      l_bottom = lbot(flow_link)
+      l_top = ltop(flow_link)
+
+      do l = l_bottom, l_top - 1 ! vertical omega velocity at layer interface u point
+         k1 = ln(1, l)
+         k2 = ln(2, l)
+         k = l - l_bottom + 1
+
+         if (n1 > ndxi) then ! open boundaries
+            if (u1(flow_link) < 0.0_dp) then
+               womegu(k) = qw(k2) / a1(n2)
+            else
+               womegu(k) = 0.0_dp
+            end if
+         else
+            womegu(k) = (ac1 * qw(k1) + ac2 * qw(k2)) / (ac1 * a1(n1) + ac2 * a1(n2))
+         end if
+      end do
+      womegu(l_top - l_bottom + 1) = 0.0_dp ! top layer : 0
+
+   end subroutine calculate_womegu
 end module m_update_verticalprofiles

@@ -55,7 +55,7 @@ contains
       use m_flowtimes, only: dts
       use m_sediment, only: jamorf, stm_included
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
 
@@ -111,11 +111,11 @@ contains
          qoutsrc = 0.0_dp
          do i = 1, source_sinks%num_total
             if (source_sinks%discharge(i) > 0.0_dp) then
-               k1 = source_sinks%indices(i, 1)
-               k2 = source_sinks%indices(i, 4)
+               k1 = source_sinks%indices(i, FLOWCELL_SINK)
+               k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
             else
-               k1 = source_sinks%indices(i, 4)
-               k2 = source_sinks%indices(i, 1)
+               k1 = source_sinks%indices(i, FLOWCELL_SOURCE)
+               k2 = source_sinks%indices(i, FLOWCELL_SINK)
             end if
 
             if (k1 > 0) then

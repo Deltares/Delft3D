@@ -37,7 +37,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                   & parloc, npar, wsloc, error)
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, ee
+    use m_mathconstants, only: pi, ee
     use sediment_basics_module, only: dgravel, dsand
     use morphology_data_module
     use flocculation, only: macro_floc_settling_manning, micro_floc_settling_manning, floc_manning, &

@@ -62,11 +62,11 @@ contains
    !! latitude and d^5 for longitude.
    !!
    !! Algorithm based on the inverse Transverse Mercator / UTM series conventionally published 
-   !! as the USGS/Snyder formulas. UTM zone definitions, false easting, false northing, and 6° zoning 
+   !! as the USGS/Snyder formulas. UTM zone definitions, false easting, false northing, and 6ï¿½ zoning 
    !! follow USGS Fact Sheet 077-01 and EPSG/IOGP Guidance Note 7-2. The inverse TM equations, 
    !! including meridional arc, footprint latitude from auxiliary latitude mu, curvature terms, 
    !! normalized easting D, and truncated latitude/longitude series, follow IOGP Guidance Note 7-2, 
-   !! 3.2.3 Transverse Mercator, “USGS formulas,” consistent with Snyder, J.P. (1987), Map Projections: 
+   !! 3.2.3 Transverse Mercator, ï¿½USGS formulas,ï¿½ consistent with Snyder, J.P. (1987), Map Projections: 
    !! A Working Manual, USGS Professional Paper 1395. WGS84 ellipsoid constants follow EPSG:7030 / NGA WGS84.
    !!
    !! @param[in]  xx       UTM easting in meters.
@@ -77,7 +77,7 @@ contains
    !! @param[out] success  Optional success flag.
    subroutine utm2deg(xx, yy, utmzone, lon, lat, success)
 
-      use mathconsts
+      use m_mathconstants
 
       real(kind=dp), intent(in) :: xx, yy
       character(len=*), intent(in) :: utmzone

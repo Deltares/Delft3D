@@ -41,7 +41,7 @@ subroutine santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only:sqrt2, pi
+    use m_mathconstants, only:sqrt2, pi
     use ieee_arithmetic, only: ieee_is_nan
 !
 ! arguments
