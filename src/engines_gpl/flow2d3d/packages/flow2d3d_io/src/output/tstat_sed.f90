@@ -45,7 +45,7 @@ subroutine tstat_sed(nostat    ,nmax      ,mmax      ,kmax      , &
     use precision
     !
     use globaldata
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
     !

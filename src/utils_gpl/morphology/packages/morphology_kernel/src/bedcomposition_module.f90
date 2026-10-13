@@ -4916,9 +4916,12 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
     real(fp)                                  :: frac
 
     real(fp)                                  :: critpor  !< critical porosity
-    real(fp)                                  :: thicks   !> thickness of sand only in an underlayer
-    real(fp)                                  :: thickm   !> thickness of mud only in an underlayer
-    real(fp)                                  :: cceff    !> consolidation rate effective
+    real(fp)                                  :: thicks   !< thickness of sand only in an underlayer
+    real(fp)                                  :: thickm   !< thickness of mud only in an underlayer
+    real(fp)                                  :: cceff    !< consolidation rate effective
+    real(fp) :: age_new !< age of the layer after time step dtmor
+    real(fp) :: age_old !< age of the layer before time step dtmor
+    real(fp) :: dlogage !< change in log of age of the layer after time step dtmor
 
     !! executable statements -------------------------------------------------------
     msed           => this%state%msed
@@ -4983,11 +4986,9 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
                 thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * (load - preload(k, nm)) * ag
             endif
             !
-            svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
-            if (svfrac(k,nm) > (1.0_fp - critpor)) then
-                thnew = thlyr(k,nm) * svfrac(k,nm) / (1 - critpor)
-            else
-                thnew = thnew
+            ! avoid compacting below critical porosity
+            if (svfrac(k, nm) * thlyr(k, nm) > thnew * (1.0_fp - critpor)) then
+                thnew = thlyr(k,nm) * svfrac(k,nm) / (1.0_fp - critpor)
             endif
             svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
             thlyr(k,nm) = thnew
@@ -5023,7 +5024,10 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
                         cceff =  cceff + frac * cc(l)
                     endif
                 enddo
-                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * this%settings%crmsec * (log(max(1.0_fp, real(morft,fp)) - depos_time(k,nm)) - (log(max(1.0_fp, real(morft,fp)) - depos_time(k,nm) - real(dtmor,hp)/86400.0_hp)))
+                age_new = real(morft, fp) - depos_time(k, nm)
+                age_old = age_new - dtmor / 86400.0_fp
+                dlogage = log(max(1.0_fp, age_new)) - log(max(1.0_fp, age_old))
+                thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * this%settings%crmsec * dlogage
             endif
             svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
             if (svfrac(k,nm) > (1.0_fp - critpor)) then

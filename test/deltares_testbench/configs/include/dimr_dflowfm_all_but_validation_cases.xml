@@ -1957,6 +1957,16 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f005_c161_outflow_boundary_absorption_45deg" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f005_boundary_conditions/c161_outflow_boundary_absorption_45deg</path>
+    <checks>
+      <file name="dflowfmoutput/triangular_rotated_grid_map.nc" type="netcdf">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.002"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
     <maxRunTime>360</maxRunTime>

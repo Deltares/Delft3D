@@ -44,7 +44,7 @@
     !!--pseudo code and references--------------------------------------------------
     ! NONE
     !!--declarations----------------------------------------------------------------
-    use mathconsts, only: twopi_hp, sqrt2_hp
+    use m_mathconstants, only: twopi_hp, sqrt2_hp
     use precision
     
     implicit none
