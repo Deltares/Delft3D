@@ -6,6 +6,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 
+import PinAndTag
 import Delft3D.verschilanalyse.ReportVerschilanalyse
 
 
@@ -37,6 +38,17 @@ object StartVerschilanalyse : BuildType({
             }
         }
     }   
+
+    // Set this snapshot dependency so va_harbor_image
+    // can use the values from dep.${Publish.id}.destination_image_specific
+    dependencies {
+        dependency(PinAndTag) {
+            snapshot {
+            onDependencyFailure = FailureAction.FAIL_TO_START
+            onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+    }
 
     params {
         param("va_harbor_protocol", "docker")
