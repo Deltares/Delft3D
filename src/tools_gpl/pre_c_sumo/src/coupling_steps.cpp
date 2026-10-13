@@ -115,6 +115,7 @@ namespace pre_c_sumo
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             const auto mapping_index = static_cast<std::size_t>(index);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
+            DiffuserMapping& mapping_3d = csumo_3d_mesh.forward_map[mapping_index];
 
             // Collect all data for the ambient points
             std::vector<FarFieldPoint2D> ambient_points{};
@@ -122,8 +123,9 @@ namespace pre_c_sumo
             {
                 const std::size_t ambient_index =
                     static_cast<std::size_t>(position_index) + mapping.first_ambient_point_index;
-                ambient_points.emplace_back(makePoint(
-                    ambient_index, (ambient_index)*csumo_3d_mesh.number_of_zcoordinates, csumo_2d_mesh, csumo_3d_mesh));
+                const std::size_t ambient_index_3d =
+                    static_cast<std::size_t>(position_index) + mapping_3d.first_ambient_point_index;
+                ambient_points.emplace_back(makePoint(ambient_index, ambient_index_3d, csumo_2d_mesh, csumo_3d_mesh));
             }
 
             const auto ff2nf_filename = diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds);
@@ -140,9 +142,9 @@ namespace pre_c_sumo
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
                 .diffuser = makePoint(0, 0, csumo_2d_mesh, csumo_3d_mesh),
-                .intake = diffuser.intake.has_value() ? std::optional{makePoint(1, csumo_3d_mesh.number_of_zcoordinates,
-                                                                                csumo_2d_mesh, csumo_3d_mesh)}
-                                                      : std::nullopt,
+                .intake = mapping.has_intake ? std::optional{makePoint(mapping.intake_index, mapping_3d.intake_index,
+                                                                       csumo_2d_mesh, csumo_3d_mesh)}
+                                             : std::nullopt,
                 .ambient_points = ambient_points,
                 .settings_xml_node = diffuser.settings_xml_node,
             };
