@@ -119,7 +119,7 @@ contains
 
 ! check solver applicability
       if (jampi == 0) then
-         if (icgsolver /= 4 .and. icgsolver /= 6) then
+         if (icgsolver /= 1 .and. icgsolver /= 2 .and. icgsolver /= 4 .and. icgsolver /= 6) then
             write (6, *) 'icgsolver=', icgsolver
             call qnerror('inireduce: inappropriate Krylov solver', ' ', ' ')
             icgsolver = 4
@@ -569,7 +569,11 @@ contains
          call starttimer(ICG)
       end if
 
-      if (icgsolver == 4) then
+      if (icgsolver == 1) then
+         call conjugategradient_omp(s1, ndx)
+      else if (icgsolver == 2) then
+         call conjugategradient_omp_threadsafe(s1, ndx)
+      else if (icgsolver == 4) then
          if (nocg > 10 .or. Noderivedtypes == 5) then
             call conjugategradientSAAD(ddr, s1, ndx, nocgiter, 1, ierror) ! Saad, always using omp and ILUD preconditioner
             if (ierror == 1) then
@@ -1051,6 +1055,238 @@ contains
       end do
       goto 10
    end subroutine conjugategradient
+
+   subroutine conjugategradient_omp_threadsafe(s1, ndx)
+      use m_reduce
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      implicit none
+      integer, intent(in) :: ndx
+      real(kind=dp), dimension(ndx), intent(inout) :: s1
+
+      integer :: j, n
+      real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
+      real(kind=dp) :: eps
+
+      if (nocg <= 0) then
+         return
+      end if
+
+      nocgiter = 0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
+
+      !$xxOMP PARALLEL DO                                           &
+      !$xxOMP PRIVATE(n,ndn,j)                                      &
+      !$xxOMP REDUCTION(+:rkzki)                                    &
+      !$xxOMP REDUCTION(MAX:eps)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         rk(ndn) = ddr(ndn) - bbr(ndn) * s1(ndn)
+         do j = 1, row(ndn)%l
+            rk(ndn) = rk(ndn) - ccr(row(ndn)%a(j)) * s1(row(ndn)%j(j))
+         end do
+         eps = max(eps, abs(rk(ndn))) ! if (abs(rk(ndn)).gt.eps) eps=abs(rk(ndn)) abs abs
+         pk(ndn) = rk(ndn) / bbr(ndn)
+         zkr(ndn) = pk(ndn)
+         rkzki = rkzki + rk(ndn) * zkr(ndn)
+      end do
+      !$xxOMP END PARALLEL DO
+
+      if (eps < epscg) then
+         return
+      end if
+
+10    continue
+
+      pkapki = 0.0_dp
+!$xxOMP PARALLEL DO                                           &
+!$xxOMP PRIVATE(n,ndn,j)                                      &
+!$xxOMP REDUCTION(+:pkapki)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         apk(ndn) = bbr(ndn) * pk(ndn)
+         do j = 1, row(ndn)%l
+            apk(ndn) = apk(ndn) + ccr(row(ndn)%a(j)) * pk(row(ndn)%j(j))
+         end do
+         pkapki = pkapki + pk(ndn) * apk(ndn)
+      end do
+!$xxOMP END PARALLEL DO
+
+      alfak = rkzki / pkapki
+
+      !$OMP PARALLEL DO                                           &
+      !$OMP PRIVATE(n,ndn)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         s1(ndn) = s1(ndn) + alfak * pk(ndn)
+         rk(ndn) = rk(ndn) - alfak * apk(ndn)
+      end do
+      !$OMP END PARALLEL DO
+
+      eps = 0.0_dp
+
+      !$OMP PARALLEL DO                                  &
+      !$OMP PRIVATE(n,ndn)                               &
+      !$OMP REDUCTION(MAX:eps)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         zkr(ndn) = rk(ndn) / bbr(ndn)
+         eps = max(eps, abs(zkr(ndn))) ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
+      end do
+      !$OMP END PARALLEL DO
+
+      !if (eps.lt.epscg) then
+      !  return
+      !endif
+
+      if (eps < epscg) then
+!   write(message,*) 'Solver converged in ', nocgiter,' iterations'
+!   call mess(LEVEL_INFO, message)
+         return
+      end if
+
+      nocgiter = nocgiter + 1
+      if (nocgiter > 1000) then
+         call mess(LEVEL_ERROR, ' no convergence for CG method, nr of iterations, eps : ', nocgiter, eps)
+      end if
+
+      rkzki0 = rkzki
+      rkzki = 0.0_dp
+      !$xOMP PARALLEL DO                              &
+      !$xOMP PRIVATE(n,ndn)                           &
+      !$xOMP REDUCTION(+:rkzki)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         rkzki = rkzki + rk(ndn) * zkr(ndn)
+      end do
+      !$xOMP END PARALLEL DO       ! todo omp onbegrijpelijk dat dit verschil geeft
+
+      betak = rkzki / rkzki0
+
+      !$OMP PARALLEL DO                              &
+      !$OMP PRIVATE(n,ndn)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         pk(ndn) = zkr(ndn) + betak * pk(ndn)
+      end do
+      !$OMP END PARALLEL DO
+
+      goto 10
+   end subroutine conjugategradient_omp_threadsafe
+
+   subroutine conjugategradient_omp(s1, ndx)
+      use m_reduce
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      implicit none
+      integer, intent(in) :: ndx
+      real(kind=dp), dimension(ndx), intent(inout) :: s1
+
+      integer :: j, n
+      real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
+      real(kind=dp) :: eps
+
+      if (nocg <= 0) then
+         return
+      end if
+
+      nocgiter = 0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
+
+      !$OMP PARALLEL DO                                           &
+      !$OMP PRIVATE(n,ndn,j)                                      &
+      !$OMP REDUCTION(+:rkzki)                                    &
+      !$OMP REDUCTION(MAX:eps)
+
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         rk(ndn) = ddr(ndn) - bbr(ndn) * s1(ndn)
+         do j = 1, row(ndn)%l
+            rk(ndn) = rk(ndn) - ccr(row(ndn)%a(j)) * s1(row(ndn)%j(j))
+         end do
+         eps = max(eps, abs(rk(ndn))) ! if (abs(rk(ndn)).gt.eps) eps=abs(rk(ndn)) abs abs
+         pk(ndn) = rk(ndn) / bbr(ndn)
+         zkr(ndn) = pk(ndn)
+         rkzki = rkzki + rk(ndn) * zkr(ndn)
+      end do
+      !$OMP END PARALLEL DO
+
+      if (eps < epscg) then
+         return
+      end if
+
+10    continue
+
+      pkapki = 0.0_dp
+!$OMP PARALLEL DO                                           &
+!$OMP PRIVATE(n,ndn,j)                                      &
+!$OMP REDUCTION(+:pkapki)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         apk(ndn) = bbr(ndn) * pk(ndn)
+         do j = 1, row(ndn)%l
+            apk(ndn) = apk(ndn) + ccr(row(ndn)%a(j)) * pk(row(ndn)%j(j))
+         end do
+         pkapki = pkapki + pk(ndn) * apk(ndn)
+      end do
+!$OMP END PARALLEL DO
+
+      alfak = rkzki / pkapki
+
+      !$OMP PARALLEL DO                                           &
+      !$OMP PRIVATE(n,ndn)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         s1(ndn) = s1(ndn) + alfak * pk(ndn)
+         rk(ndn) = rk(ndn) - alfak * apk(ndn)
+      end do
+      !$OMP END PARALLEL DO
+
+      eps = 0.0_dp
+
+      !$OMP PARALLEL DO                                  &
+      !$OMP PRIVATE(n,ndn)                               &
+      !$OMP REDUCTION(MAX:eps)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         zkr(ndn) = rk(ndn) / bbr(ndn)
+         eps = max(eps, abs(zkr(ndn))) ! if (abs(zkr(ndn)).gt.eps) eps=abs(zkr(ndn))
+      end do
+      !$OMP END PARALLEL DO
+
+      if (eps < epscg) then
+         return
+      end if
+      nocgiter = nocgiter + 1
+      if (nocgiter > 1000) then
+         call mess(LEVEL_ERROR, ' no convergence for CG method, nr of iterations, eps : ', nocgiter, eps)
+      end if
+
+      rkzki0 = rkzki
+      rkzki = 0.0_dp
+      !$OMP PARALLEL DO                              &
+      !$OMP PRIVATE(n,ndn)                           &
+      !$OMP REDUCTION(+:rkzki)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         rkzki = rkzki + rk(ndn) * zkr(ndn)
+      end do
+      !$OMP END PARALLEL DO       ! todo omp onbegrijpelijk dat dit verschil geeft
+
+      betak = rkzki / rkzki0
+
+      !$OMP PARALLEL DO                              &
+      !$OMP PRIVATE(n,ndn)
+      do n = nogauss + 1, nogauss + nocg
+         ndn = noel(n)
+         pk(ndn) = zkr(ndn) + betak * pk(ndn)
+      end do
+      !$OMP END PARALLEL DO
+
+      goto 10
+   end subroutine conjugategradient_omp
 
    subroutine gauss_substitution(s1, ndx)
       use m_reduce

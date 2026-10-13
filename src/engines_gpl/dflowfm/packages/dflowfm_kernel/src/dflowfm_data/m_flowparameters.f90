@@ -369,7 +369,7 @@ module m_flowparameters
    !                                                     4 = 1.0*dts, reduce au
    !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
-   integer :: Icgsolver !< Solver type: 4 = Sobek Guus Stelling + Saadilud, 6 = parallel/PETSc
+   integer :: Icgsolver !< Solver type: 1 = Sobek Guus Stelling OMP, 2 = Sobek Guus Stelling OMP (thread-safe), 4 = Sobek Guus Stelling + Saadilud, 6 = parallel/PETSc
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
