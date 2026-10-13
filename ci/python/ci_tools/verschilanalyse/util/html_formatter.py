@@ -148,9 +148,7 @@ class HtmlFormatter:
             if model_name in flow_vel_exceeded:
                 flow_tolerance = "❌ Exceeded"
 
-            has_3d_output = isinstance(
-                his_outputs.get(model_name), VerschillentoolOutput3D
-            ) and isinstance(
+            has_3d_output = isinstance(his_outputs.get(model_name), VerschillentoolOutput3D) and isinstance(
                 map_outputs.get(model_name), VerschillentoolOutput3D
             )
 
