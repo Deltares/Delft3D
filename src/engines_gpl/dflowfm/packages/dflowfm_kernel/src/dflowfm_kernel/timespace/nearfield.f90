@@ -253,11 +253,8 @@ contains
 !>            source_sink_area : area of discharge. Velocity = qstss_volume / source_sink_area
 !>            source_sink_discharge_cosine : cosine of angle of discharge
 !>            source_sink_discharge_sine : sinus  of angle of discharge
-   subroutine nearfieldToFM()
-      use m_physcoef, only: NFEntrainmentMomentum
-      
+   subroutine nearfieldToFM()     
       ! Local variables
-      integer :: i
       integer :: idif
       real(kind=dp) :: sum_weight_intakes
 
