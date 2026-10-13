@@ -34,7 +34,7 @@ module m_nearfield_data
 
    public
 
-   ! constants
+   ! Constants
    integer, parameter :: NEARFIELD_DISABLED = 0 !< If nearfield_mode is NEARFIELD_DISABLED (default), then nearfield/COSUMO is disabled
    integer, parameter :: NEARFIELD_ENABLED = 1 !< After call addNearfieldData, nearfield_mode is set to NEARFIELD_ENABLED. This ensures:
    !< - addNearfieldData does not need to be called again, until the data is updated and passes the pointers again.
@@ -56,7 +56,7 @@ module m_nearfield_data
    integer, parameter :: CONST_OPERATOR_EXCESS = 1
    integer, parameter :: CONST_OPERATOR_ABSOLUTE = 2
    
-   ! integers
+   ! Integers
    integer :: nearfield_mode !< Switch to enable/disable COSUMO
    integer :: nf_num_dif !< Number of diffusers     as obtained from COSUMO_BMI
    integer :: nf_numconst !< Number of constituents  as obtained from COSUMO_BMI
