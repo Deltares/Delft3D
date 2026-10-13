@@ -15,10 +15,6 @@ set(oss_dependencies    wave_data
                         SWAN_MPI::SWAN_MPI)
 target_link_libraries(${library_name} ${oss_dependencies})
 
-if(UNIX)
-    target_link_libraries(${library_name} MPI::MPI_Fortran)
-endif()
-
 include_directories(${mpi_module_path})
 
 

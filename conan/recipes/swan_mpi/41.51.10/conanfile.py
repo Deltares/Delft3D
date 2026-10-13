@@ -15,7 +15,7 @@ class swan_mpiRecipe(ConanFile):
 
     # Optional metadata
     license = ("swan", "GNU General Public License v3.0")
-    author = "Deltares"
+    author = "TU Delft, modified by Deltares"
     url = "https://github.com/Deltares/SWAN"
     description = "SWAN (Simulating WAves Nearshore) is a numerical wave model."
     topics = ("swan", "waves", "numerical", "model")
