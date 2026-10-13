@@ -519,6 +519,7 @@ contains
 
    end subroutine add_source_sink
 
+   !> Add the nearfield source/sinks to the source_sinks object
    subroutine add_nearfield_source_sinks(self)
       use m_nearfield_data, only: nf_num_dif, nf_entr_start, nf_entr_end, nf_sinkid, nf_numintake_idif
       use m_physcoef, only: NFEntrainmentMomentum

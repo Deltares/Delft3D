@@ -255,32 +255,14 @@ contains
 !>            source_sink_discharge_sine : sinus  of angle of discharge
    subroutine nearfieldToFM()
       use m_physcoef, only: NFEntrainmentMomentum
-      !
-      ! Locals
+      
+      ! Local variables
       integer :: i
       integer :: idif
       real(kind=dp) :: sum_weight_intakes
-      !
-      ! Body
-      !
-      ! Reset the FM dimensions:
-      !     source_sinks%num_total   : without source_sinks%num_nearfield
-      !     source_sinks%num_nearfield: 0
-      ! They will be redefined in this subroutine
-      do i = source_sinks%num_total + 1, source_sinks%num_nearfield
-         source_sinks%area(i) = 0.0_dp
-      end do
-      source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
-      source_sinks%num_nearfield = 0
-      nf_entr_max = 0
-      if (NFEntrainmentMomentum > 0) then
-         call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
-         call realloc(nf_entr_end, nf_num_dif, keepExisting=.false., fill=0)
-      end if
-      if (allocated(nf_sinkid)) then
-         nf_sinkid = 0
-      end if
-      !
+
+      call source_sinks%add_nearfield()
+      
       ! For each diffuser
       do idif = 1, nf_num_dif
          !
@@ -289,7 +271,7 @@ contains
          sum_weight_intakes = real(nf_numintake_idif(idif), kind=dp)
          !
          ! ENTRAINMENT:
-         call entrainmentToSrc(idif)
+         ! call entrainmentToSrc(idif)
          !
          ! DISCHARGE ITSELF:
          call dischargeToSrc(idif, sum_weight_intakes)
