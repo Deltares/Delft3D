@@ -48,7 +48,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
 !!--declarations----------------------------------------------------------------
     use meteo
     use precision
-    use mathconsts
+    use m_mathconstants
     use physicalconsts, only: celsius_to_kelvin
     !
     use globaldata

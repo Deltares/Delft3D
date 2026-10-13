@@ -6045,7 +6045,7 @@ contains
       use m_xbeach_data
       use m_waves
       use m_flowgeom, only: ndx
-      use mathconsts, only: degrad
+      use m_mathconstants, only: degrad
       use fm_external_forcings_data
       use m_alloc
 
