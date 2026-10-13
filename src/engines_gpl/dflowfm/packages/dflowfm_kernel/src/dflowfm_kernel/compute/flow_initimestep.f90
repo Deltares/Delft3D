@@ -62,7 +62,8 @@ contains
       use unstruc_model, only: md_restartfile
       use unstruc_channel_flow
       use m_1d_structures, only: initialize_structures_actual_params, set_u0isu1_structures
-      use m_nearfield, only: nearfield_mode, NEARFIELD_DISABLED, setNFEntrainmentMomentum
+      use m_nearfield, only: setNFEntrainmentMomentum
+      use m_nearfield_data, only: nearfield_mode, NEARFIELD_DISABLED
       use dfm_error
       use MessageHandling
       use m_partitioninfo

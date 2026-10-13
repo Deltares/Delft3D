@@ -84,7 +84,8 @@ module bmi
    use m_fm_erosed, only: taucr, tetacr
    use m_heatfluxes, only: Qsunmap
    use m_longculverts
-   use m_nearfield
+   use m_nearfield_data, only: nf_num_dif, nf_q_source, NEARFIELD_MODE, NEARFIELD_UPDATED, nf_numconst, nf_numintake, nf_const, &
+      nf_const_operator, nf_intake, nf_namlen, nf_numsink, nf_numsour, nf_q_intake, nf_sink, nf_sour, nf_src_mom
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
    use m_find_name, only: find_name

@@ -429,7 +429,7 @@ contains
       use MessageHandling, only: FinalizeMessageHandling
       use m_ec_module
       use m_meteo, only: ecInstancePtr
-      use m_nearfield
+      use m_nearfield, only: dealloc_nfarrays
       use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, &

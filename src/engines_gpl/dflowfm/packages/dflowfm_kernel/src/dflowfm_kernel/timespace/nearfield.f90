@@ -49,32 +49,6 @@ module m_nearfield
    public :: addNearfieldData
    public :: dealloc_nfarrays
 
-   ! m_nearfield_data variables made public through m_nearfield:
-
-   ! constants
-   public :: NEARFIELD_DISABLED
-   public :: NEARFIELD_ENABLED
-   public :: NEARFIELD_UPDATED
-   
-   ! integers
-   public :: nearfield_mode
-   public :: nf_num_dif
-   public :: nf_numconst
-   public :: nf_numintake
-   public :: nf_numsour
-   public :: nf_numsink
-   public :: nf_namlen
-   
-   ! Pointers to data inside COSUMO_BMI, allocated in COSUMO_BMI
-   public :: nf_q_source
-   public :: nf_q_intake
-   public :: nf_const
-   public :: nf_intake
-   public :: nf_sink
-   public :: nf_sour
-   public :: nf_const_operator
-   public :: nf_src_mom
-
 contains
 !
 !

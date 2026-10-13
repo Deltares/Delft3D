@@ -61,7 +61,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use unstruc_channel_flow, only: network
    use time_class, only: c_time, ecgetvalues
    use m_longculverts_data, only: nlongculverts
-   use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
+   use m_nearfield, only: addNearfieldData
+   use m_nearfield_data, only: nearfield_mode, NEARFIELD_UPDATED
    use m_airdensity, only: get_airdensity
    use m_laterals, only: numlatsg
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
