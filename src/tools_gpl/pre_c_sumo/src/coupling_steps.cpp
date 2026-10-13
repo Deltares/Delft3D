@@ -53,12 +53,12 @@ namespace pre_c_sumo
         };
     }
 
-    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d)
+    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index)
     {
         std::vector<double> constituents(max_number_of_consituents);
         const std::vector<std::string_view> constituent_ids = {c01_id, c02_id, c03_id, c04_id, c05_id,
                                                                c06_id, c07_id, c08_id, c09_id, c10_id};
-        const std::size_t index_3d = mesh_3d.number_of_zcoordinates;
+        const std::size_t index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
         const double number_of_layers = static_cast<double>(mesh_3d.number_of_zcoordinates);
         for (std::size_t c = 0; c < max_number_of_consituents; c++)
         {
@@ -321,7 +321,7 @@ namespace pre_c_sumo
                     // Update constituents from diffuser with weighted intake constituents if operator is excess.
                     if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
                     {
-                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh);
+                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh, diffuser_index);
                         for (const auto& intake : intakes)
                         {
                             for (std::size_t constituent_index = 0; constituent_index < constituents.size();
