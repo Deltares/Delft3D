@@ -64,7 +64,7 @@ contains
       use m_mathconstants, only: ee
       use network_data, only: LINK_1D2D_INTERNAL
       use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
-                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_VELOCITY_RIEMANN
+                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_ABSORBING_GENERATING
 
       implicit none
 
@@ -290,7 +290,7 @@ contains
          !Original:  !zbndun = zbndu( (n-1)*kmxd + 1 )
          if (boundary_type == BOUNDARY_VELOCITY_FLUX) then
             zbndun = zbndq(n)
-         else if (boundary_type == BOUNDARY_VELOCITY_RIEMANN) then 
+         else if (boundary_type == BOUNDARY_ABSORBING_GENERATING) then 
             zbndun = u1(LL) ! set in xbeach_absgen_bc
          else ! other types that use alfsmo
             zbndun = zbndu((n - 1) * kmxd + 1)
