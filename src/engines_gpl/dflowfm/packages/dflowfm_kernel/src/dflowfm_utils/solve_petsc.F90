@@ -66,13 +66,8 @@ module m_petsc
    Vec :: sol ! solution vector
    Mat :: Amat ! PETSc-type matrix (will include dry nodes, set to zero)
    KSP :: Solver ! Solver for the equation Amat * sol = rhs
-   logical :: isKSPCreated = .false. ! A flag to determine whether KSP is created
-
-   ! preconditioner
-   PC :: Preconditioner
-   KSP :: SubSolver
-   PC :: SubPrec
-   PCType :: PreconditioningType
+   logical :: is_ksp_created = .false. ! A flag to determine whether KSP is created
+   integer :: preconditioner_reuses = -1 !< Reuses since the last rebuild; -1 requires a fresh preconditioner.
 
    PetscErrorCode, parameter :: PETSC_OK = 0
 end module m_petsc
@@ -512,88 +507,20 @@ contains
    end subroutine setPETSCmatrixEntries
 
    !> Configure the preconditioner for the PETSc KSP solver
-   subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: KSPGetPC, PCSetType, PCASMSetOverlap, KSPSetUp, PCASMGetSubKSP, PCASMRestoreSubKSP, PETSC_NULL_INTEGER, tKSP, KSPSetReusePreconditioner, PETSC_FALSE
-      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
+   subroutine createPETSCPreconditioner(ierr)
+      use petsc, only: KSPSetUp, KSPSetReusePreconditioner, PETSC_FALSE
+      use m_petsc, only: PETSC_OK, Solver, preconditioner_reuses
       use MessageHandling, only: mess, level_error
 
-      integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
+      PetscErrorCode, intent(out) :: ierr !< PETSc error code.
 
-      integer :: jasucces
-
-      PetscErrorCode :: ierr = PETSC_OK
-      KSP, pointer, dimension(:) :: sub_solvers
-      character(len=8) :: preconditioning_type
-
-      jasucces = 0
-
-      ! Ensure preconditioner will be recomputed with new matrix values
       call KSPSetReusePreconditioner(Solver, PETSC_FALSE, ierr)
-      if (ierr /= PETSC_OK) then
-         goto 1234
+      if (ierr == PETSC_OK) then
+         call KSPSetUp(Solver, ierr)
       end if
-
-      call KSPGetPC(Solver, Preconditioner, ierr)
-      if (ierr /= PETSC_OK) then
-         goto 1234
+      if (ierr == PETSC_OK) then
+         preconditioner_reuses = 0
       end if
-
-      ! Configure the preconditioner type
-      if (iprecnd == 0) then
-         ! Use default preconditioner, just set up with current matrix
-         call KSPSetUp(Solver, ierr)
-      else if (iprecnd == 1) then
-         ! No preconditioner
-         call PCSetType(Preconditioner, 'none', ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call KSPSetUp(Solver, ierr)
-      else if (iprecnd == 2 .or. iprecnd == 3) then
-         ! Incomplete Cholesky with ASM (2) or Cholesky with ASM (3)
-         if (iprecnd == 2) then
-            preconditioning_type = 'icc'
-         else
-            preconditioning_type = 'cholesky'
-         end if
-         call PCSetType(Preconditioner, 'asm', ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call PCASMSetOverlap(Preconditioner, 2, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call KSPSetUp(Solver, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         SubSolver = sub_solvers(1)
-         call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call KSPGetPC(SubSolver, SubPrec, ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call PCSetType(SubPrec, trim(preconditioning_type), ierr)
-      else if (iprecnd == 4) then
-         call PCSetType(Preconditioner, 'gamg', ierr)
-         if (ierr /= PETSC_OK) then
-            goto 1234
-         end if
-         call KSPSetUp(Solver, ierr)
-      else
-         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
-         return
-      end if
-
-1234  continue
 
       if (ierr /= PETSC_OK) then
          call mess(LEVEL_ERROR, 'createPETSCPreconditioner: error')
@@ -601,17 +528,24 @@ contains
    end subroutine createPETSCPreconditioner
 
    !> Compose the global matrix and solver for PETSc.
-   !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
-   !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
-   module subroutine preparePETSCsolver(japipe)
-      use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
+   !! It is assumed that the global cell numbers iglobal, dim(Ndx) are available.
+   !! NO GLOBAL RENUMBERING, so the matrix may contain zero rows.
+   !! Read default PETSc settings but let user override them through command line arguments or environment variables.
+   module subroutine preparePETSCsolver()
+      use iso_c_binding, only: c_bool
+      use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsetinitialguessnonzero, petsc_true, kspsettolerances, KSPSetFromOptions, PetscOptionsHasName, PetscOptionsSetValue, PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER
       use m_reduce, only: dp
       use m_partitioninfo, only: ndomains
-      use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
-
-      integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
+      use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, is_ksp_created, preconditioner_reuses
+      use MessageHandling, only: mess, level_error
 
       integer :: jasucces
+      integer :: option_index
+      PetscBool :: option_is_set
+      character(len=32), dimension(6), parameter :: default_option_names = [character(len=32) :: &
+         '-ksp_type', '-pc_type', '-pc_asm_overlap', '-sub_ksp_type', '-sub_pc_type', '-sub_pc_factor_levels']
+      character(len=8), dimension(6), parameter :: default_option_values = [character(len=8) :: &
+         'gmres', 'asm', '2', 'preonly', 'ilu', '2']
 
       PetscErrorCode :: ierr = PETSC_OK
       PetscInt, parameter :: maxits = 4000
@@ -646,26 +580,16 @@ contains
       if (ierr == PETSC_OK) then
          call MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY, ierr)
       end if
-      if (ierr /= PETSC_OK) then
-         print *, 'conjugategradientPETSC: PETSC_ERROR (1)'
-      end if
-      if (ierr /= PETSC_OK) then
-         go to 1234
-      end if
 
       if (ierr == PETSC_OK) then
          call KSPCreate(PETSC_COMM_WORLD, Solver, ierr)
-         isKSPCreated = .true.
+      end if
+      if (ierr == PETSC_OK) then
+         is_ksp_created = .true.
+         preconditioner_reuses = -1
       end if
       if (ierr == PETSC_OK) then
          call KSPSetOperators(Solver, Amat, Amat, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         if (japipe /= 1) then
-            call KSPSetType(Solver, 'cg', ierr)
-         else
-            call KSPSetType(Solver, 'pipecg', ierr)
-         end if
       end if
       if (ierr == PETSC_OK) then
          call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)
@@ -673,34 +597,47 @@ contains
       if (ierr == PETSC_OK) then
          call KSPSetTolerances(Solver, RelTol, AbsTol, dTol, maxits, ierr)
       end if
+      do option_index = 1, size(default_option_names)
+         if (ierr /= PETSC_OK) then
+            exit
+         end if
+         call PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, trim(default_option_names(option_index)), option_is_set, ierr)
+         if (ierr /= PETSC_OK) then
+            exit
+         end if
+         if (.not. option_is_set) then
+            call PetscOptionsSetValue(PETSC_NULL_OPTIONS, trim(default_option_names(option_index)), trim(default_option_values(option_index)), ierr)
+         end if
+      end do
+      if (ierr == PETSC_OK) then
+         call KSPSetFromOptions(Solver, ierr)
+      end if
 
-      ! Soheil: for imaginairy matrix entries use KSPCGSetType(Solver, ... )
-
-1234  continue
-
+      if (ierr /= PETSC_OK) then
+         call mess(LEVEL_ERROR, 'preparePETSCsolver: PETSC_ERROR')
+      end if
    end subroutine preparePETSCsolver
 
    !> Solve the linear system with PETSc KSP solver
-   module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
+   module subroutine conjugategradientPETSC(s1, ndx, its)
       use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, &
-                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
+                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MAT_FINAL_ASSEMBLY, KSPSetReusePreconditioner, PETSC_TRUE
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
-      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat
+      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat, preconditioner_reuses
       use MessageHandling, only: mess, level_info, level_warn, level_error, level_debug
       use m_flowgeom, only: kfs
       use m_flowtimes, only: dts ! for logging
-      use m_flowparameters, only: jalogsolverconvergence
+      use m_flowparameters, only: jalogsolverconvergence, max_preconditioner_reuses
 
       integer, intent(in) :: ndx
       real(kind=dp), dimension(ndx), intent(inout) :: s1
       integer, intent(out) :: its
-      integer, intent(in) :: jacompprecond !< compute preconditioner (1) or not (0)
-      integer, intent(in) :: iprecond !< preconditioner type
 
       real(kind=dp) :: rnorm ! residual norm
 
       integer :: i, n, jasucces
+      logical :: reuse_preconditioner
 
       PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
@@ -752,9 +689,14 @@ contains
          go to 1234
       end if
 
-      if (jacompprecond == 1) then
-         ! compute preconditioner
-         call createPETSCPreconditioner(iprecond)
+      reuse_preconditioner = (preconditioner_reuses >= 0) .and. (preconditioner_reuses < max_preconditioner_reuses)
+      if (reuse_preconditioner) then
+         call KSPSetReusePreconditioner(Solver, PETSC_TRUE, ierr)
+      else
+         call createPETSCPreconditioner(ierr)
+      end if
+      if (ierr /= PETSC_OK) then
+         go to 1234
       end if
 
       ! solve system
@@ -794,11 +736,12 @@ contains
             end if
          end if
          jasucces = 1
+         if (reuse_preconditioner) then
+            preconditioner_reuses = preconditioner_reuses + 1
+         end if
       end if
       if (ierr /= PETSC_OK) then
          call mess(LEVEL_ERROR, 'conjugategradientPETSC: PETSC_ERROR (after solve)')
-      end if
-      if (ierr /= PETSC_OK) then
          go to 1234
       end if
 
@@ -815,6 +758,7 @@ contains
 
       ! mark fail by setting number of iterations to -999
       if (jasucces /= 1) then
+         preconditioner_reuses = -1
          its = -999
          call mess(LEVEL_DEBUG, 'conjugategradientPETSC: error.')
       end if
@@ -823,13 +767,17 @@ contains
 
    subroutine killSolverPETSC()
       use petsc, only: kspdestroy
-      use m_petsc, only: PETSC_OK, isKSPCreated, Solver
+      use m_petsc, only: PETSC_OK, is_ksp_created, Solver, preconditioner_reuses
 
       PetscErrorCode :: ierr
 
       ierr = PETSC_OK
-      if (isKSPCreated) then
+      if (is_ksp_created) then
          call KSPDestroy(Solver, ierr)
+         if (ierr == PETSC_OK) then
+            is_ksp_created = .false.
+            preconditioner_reuses = -1
+         end if
       end if
    end subroutine killSolverPETSC
 end submodule m_solve_petsc_
