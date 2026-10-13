@@ -48,7 +48,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: ee
+    use m_mathconstants, only: ee
     use sediment_basics_module, only: SEDTYP_CLAY
     use morphology_data_module
     use flocculation, only: get_tshear_tdiss

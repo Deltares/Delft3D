@@ -43,7 +43,7 @@ subroutine usrdef(lundia    ,error     ,grdang    ,secflo    ,gdp       )
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

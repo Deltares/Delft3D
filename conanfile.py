@@ -1,6 +1,7 @@
 from conan import ConanFile
 from conan.tools.files import save
 
+
 class Delft3DRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch", "fortran_compiler"
     generators = "CMakeDeps"
@@ -23,9 +24,14 @@ class Delft3DRecipe(ConanFile):
         self.requires("gtest/1.18.0")
         self.requires("swan_mpi/41.51.10")
         self.requires("swan_omp/41.51.10")
+        self.requires("inja/3.5.0")
 
     def generate(self):
-        save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")
+        save(
+            self,
+            "conan.stamp",
+            "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.",
+        )
 
     def layout(self):
         self.folders.generators = "generators"

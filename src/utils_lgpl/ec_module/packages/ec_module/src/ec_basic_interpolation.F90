@@ -112,7 +112,7 @@ module m_ec_basic_interpolation
    use geometry_module
    use m_ec_triangle
    use m_ec_interpolationsettings
-   use mathconsts, only: degrad_hp
+   use m_mathconstants, only: degrad_hp
    use kdtree2Factory
    use m_alloc, only: aerr, realloc
 
