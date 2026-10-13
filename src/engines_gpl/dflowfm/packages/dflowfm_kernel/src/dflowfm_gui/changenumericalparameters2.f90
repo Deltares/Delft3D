@@ -51,7 +51,7 @@ contains
       use dflowfm_version_module, only: company, product_name
       use m_add_baroclinic_pressure, only: rhointerfaces
 
-      integer, parameter :: NUMPAR = 24
+      integer, parameter :: NUMPAR = 23
       integer, parameter :: NUMFLD = 2 * NUMPAR
       integer :: numparactual, numfldactual
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
@@ -59,7 +59,7 @@ contains
       integer, external :: infoinput
       integer :: temp_source_sink_add_k_to_turkin
 !
-      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
+      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ihelp
       integer :: nbut, imp, inp
 
       NLEVEL = 4
@@ -161,8 +161,6 @@ contains
       HELPM(i) = '0=never switch off ho term hor mom                          '
       i = i + 1
       HELPM(i) = '0=exp of                                                    '
-      i = i + 1
-      HELPM(i) = '0=constant to be added to                                   '
       i = i + 1
       HELPM(i) = '0=No, 1=Upwe, 2=Cente, 3=Upwi, 4=Centi, 5=4,3, 6=MCexpl     '
       i = i + 1
@@ -398,8 +396,9 @@ contains
          call RESTOREKEYS()
          return
       else if (KEY == 21) then
-         if (IFEXIT == 1 .or. IFEXIT == 3) then
-            WRDKEY = HELPM(IFEXIT)
+         ihelp = (IFEXIT + 1) / 2
+         if (ihelp >= 1 .and. ihelp <= NUMPARACTUAL) then
+            WRDKEY = HELPM(ihelp)
             call HELP(WRDKEY, NLEVEL)
          end if
       end if
