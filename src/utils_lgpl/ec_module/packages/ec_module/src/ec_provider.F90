@@ -2733,7 +2733,8 @@ contains
       integer :: timeint
       integer :: num_variables
       character(len=:), allocatable :: nameVar ! variable name in error message
-      character(len=:), allocatable :: sourceQuantityName
+      character(len=:), allocatable :: sourceItemQuantityName
+      character(len=NF90_MAX_NAME) :: sourceVariableName
       character(len=2) :: cnum1, cnum2 ! 1st and 2nd number converted to string for error message
       integer :: nrow, ncol, nlay
       logical :: is_scalar_source
@@ -2827,9 +2828,9 @@ contains
       end if
 
       do i = 1, num_variables
-         sourceQuantityName = trim(quantityName)
+         sourceItemQuantityName = trim(quantityName)
          if (allocated(ncstdnames)) then
-            sourceQuantityName = trim(ncstdnames(i))
+            sourceItemQuantityName = trim(ncstdnames(i))
          end if
 
          ! Search custom names first, then the mapped standard and variable names.
@@ -2855,7 +2856,10 @@ contains
             fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
          end if
 
-         ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims) ! get the number of dimensions
+         ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims, name=sourceVariableName)
+         if (.not. ecSupportNetcdfCheckError(ierror, "inquiring source variable", fileReaderPtr%filename)) then
+            return
+         end if
          if (allocated(coordids)) then
             deallocate (coordids) ! allocate space for the variable id's
          end if
@@ -2947,7 +2951,7 @@ contains
                if (len_trim(coord_names(j)) > 0) then
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
-                     call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+                     call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                        //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
@@ -2977,7 +2981,7 @@ contains
 
          is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
          if (is_scalar_source .and. has_horizontal_coordinates) then
-            call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+            call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                               //"' declares horizontal coordinates but has only a time dimension. " &
                               //"data with coordinates must include a station or grid dimension.")
             return
@@ -2986,11 +2990,11 @@ contains
             grid_type = elmSetType_scalar
          else if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
-               call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
-               call set_ec_message("Variable '"//sourceQuantityName//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
@@ -3263,7 +3267,7 @@ contains
          case default
             timeint = timeint_lin
          end select
-         if (.not. (ecQuantitySet(instancePtr, quantityId, name=sourceQuantityName, ncid=idvar, timeint=timeint))) return
+         if (.not. (ecQuantitySet(instancePtr, quantityId, name=sourceItemQuantityName, ncid=idvar, timeint=timeint))) return
          if (.not. (ecQuantitySetUnitsFillScaleOffsetFromNcidVarid(instancePtr, quantityId, fileReaderPtr%fileHandle, idvar))) return
 
          ! ========================

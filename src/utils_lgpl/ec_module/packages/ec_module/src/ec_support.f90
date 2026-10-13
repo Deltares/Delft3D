@@ -520,6 +520,20 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'thetao'
          ncstdnames(1) = 'sea_water_potential_temperature'
+      case ('initialvelocityx')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'uo'
+         ncstdnames(1) = 'sea_water_x_velocity'
+         ncstdnames_fallback(1) = 'eastward_sea_water_velocity'
+      case ('initialvelocityy')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'vo'
+         ncstdnames(1) = 'sea_water_y_velocity'
+         ncstdnames_fallback(1) = 'northward_sea_water_velocity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          allocate (ncstdnames(1))
          ncstdnames(1) = quantityName

@@ -7,6 +7,38 @@ module test_ec_module
 
 contains
 
+   !$f90tw TESTCODE(TEST, test_ec_module, test_initial_velocity_netcdf_candidates, test_initial_velocity_netcdf_candidates,
+   subroutine test_initial_velocity_netcdf_candidates() bind(C)
+      use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
+      use iso_c_utils, only: cstr
+
+      character(len=256), dimension(:), allocatable :: variable_names, standard_names, fallback_names
+
+      call ecSupportNetcdfGetQuantityCandidateNames('initialvelocityx', standard_names, variable_names, fallback_names)
+      call f90_assert_true(allocated(variable_names))
+      call f90_assert_true(allocated(standard_names))
+      call f90_assert_true(allocated(fallback_names))
+      call f90_expect_eq(size(variable_names), 1)
+      call f90_expect_eq(size(standard_names), 1)
+      call f90_expect_eq(size(fallback_names), 1)
+      call f90_expect_streq(cstr(variable_names(1)), cstr('uo'))
+      call f90_expect_streq(cstr(standard_names(1)), cstr('sea_water_x_velocity'))
+      call f90_expect_streq(cstr(fallback_names(1)), cstr('eastward_sea_water_velocity'))
+
+      deallocate (variable_names, standard_names, fallback_names)
+      call ecSupportNetcdfGetQuantityCandidateNames('initialvelocityy', standard_names, variable_names, fallback_names)
+      call f90_assert_true(allocated(variable_names))
+      call f90_assert_true(allocated(standard_names))
+      call f90_assert_true(allocated(fallback_names))
+      call f90_expect_eq(size(variable_names), 1)
+      call f90_expect_eq(size(standard_names), 1)
+      call f90_expect_eq(size(fallback_names), 1)
+      call f90_expect_streq(cstr(variable_names(1)), cstr('vo'))
+      call f90_expect_streq(cstr(standard_names(1)), cstr('sea_water_y_velocity'))
+      call f90_expect_streq(cstr(fallback_names(1)), cstr('northward_sea_water_velocity'))
+   end subroutine test_initial_velocity_netcdf_candidates
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ec_module, test_interpolate_linear_from_triangle, test_interpolate_linear_from_triangle,
    subroutine test_interpolate_linear_from_triangle() bind(C)
 
