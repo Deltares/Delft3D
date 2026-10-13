@@ -1411,7 +1411,7 @@ contains
 #ifdef HAVE_PROJ
          if (add_latlon) then
             call transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
-                                                      nccrs%proj_string, xobs, yobs)
+                                                      nccrs%proj_string, xobs(1:numobs), yobs(1:numobs))
          end if
 #endif
 
