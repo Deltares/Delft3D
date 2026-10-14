@@ -14,7 +14,8 @@ module m_bilinear_interpolation
       real(kind=dp), dimension(2) :: spacing = 0.0_dp !< Nonzero signed coordinate increments along the array dimensions when populated.
       real(kind=dp) :: missing_value = -999.0_dp !< Missing-value marker used in values.
    contains
-      procedure :: interpolate => bilinear_rectangular_point
+      procedure :: interpolate => interpolate_bilinear_legacy
+      procedure :: interpolate_refactored => interpolate_bilinear !< Candidate implementation for comparison with the legacy binding.
    end type bilinear_data
 
    type(bilinear_data) :: arcinfo_data !< Shared interpolation data refreshed from the legacy ArcInfo globals for refinement.
@@ -72,11 +73,11 @@ contains
       end if
    end function read_bilinear_data
 
-   !> Bilinear interpolation of one point from a uniform rectangular raster with explicit inputs.
-   elemental function bilinear_rectangular_point(raster, x, y) result(z)
+   !> Legacy bilinear interpolation retained as the active implementation and comparison baseline.
+   elemental function interpolate_bilinear_legacy(raster, x, y) result(res)
       real(kind=dp), intent(in) :: x, y !< Target coordinates.
       class(bilinear_data), intent(in) :: raster !< Populated data with nonzero signed spacing.
-      real(kind=dp) :: z !< Interpolated value or the raster's missing-value marker.
+      real(kind=dp) :: res !< Interpolated value or the raster's missing-value marker.
 
       real(kind=dp) :: dm, dn, am, an
       integer :: column_index, row_index
@@ -89,19 +90,63 @@ contains
       row_index = int(dn)
       an = dn - row_index
       row_index = row_index + 1
-      z = raster%missing_value
+      res = raster%missing_value
       if (column_index < size(raster%values, 1) .and. row_index < size(raster%values, 2) .and. &
           column_index >= 1 .and. row_index >= 1) then
          if (raster%values(column_index, row_index) /= raster%missing_value .and. &
              raster%values(column_index + 1, row_index) /= raster%missing_value .and. &
              raster%values(column_index, row_index + 1) /= raster%missing_value .and. &
              raster%values(column_index + 1, row_index + 1) /= raster%missing_value) then
-            z = am * an * raster%values(column_index + 1, row_index + 1) + &
-                (1.0_dp - am) * an * raster%values(column_index, row_index + 1) + &
-                (1.0_dp - am) * (1.0_dp - an) * raster%values(column_index, row_index) + &
-                am * (1.0_dp - an) * raster%values(column_index + 1, row_index)
+            res = am * an * raster%values(column_index + 1, row_index + 1) + &
+                  (1.0_dp - am) * an * raster%values(column_index, row_index + 1) + &
+                  (1.0_dp - am) * (1.0_dp - an) * raster%values(column_index, row_index) + &
+                  am * (1.0_dp - an) * raster%values(column_index + 1, row_index)
          end if
       end if
-   end function bilinear_rectangular_point
+   end function interpolate_bilinear_legacy
+
+   !> Refactored bilinear interpolation candidate, not yet used by the active binding.
+   elemental function interpolate_bilinear(raster, x, y) result(res)
+      real(kind=dp), intent(in) :: x, y !< Target coordinates.
+      class(bilinear_data), intent(in) :: raster !< bilinear_data raster object
+      real(kind=dp) :: res !< Interpolated value or the raster's missing-value marker.
+
+      real(kind=dp) :: grid_x, grid_y, x_fraction, y_fraction
+      real(kind=dp) :: x_complement, y_complement
+      real(kind=dp) :: value00, value10, value01, value11
+      integer :: column_index, row_index
+
+      grid_x = (x - raster%origin(1)) / raster%spacing(1)
+      grid_y = (y - raster%origin(2)) / raster%spacing(2)
+      column_index = int(grid_x)
+      row_index = int(grid_y)
+      x_fraction = grid_x - column_index
+      y_fraction = grid_y - row_index
+      column_index = column_index + 1
+      row_index = row_index + 1
+
+      res = raster%missing_value
+      if (column_index < 1 .or. column_index >= size(raster%values, 1) .or. &
+          row_index < 1 .or. row_index >= size(raster%values, 2)) then
+         return
+      end if
+
+      value00 = raster%values(column_index, row_index)
+      value10 = raster%values(column_index + 1, row_index)
+      value01 = raster%values(column_index, row_index + 1)
+      value11 = raster%values(column_index + 1, row_index + 1)
+      if (value00 == raster%missing_value .or. value10 == raster%missing_value .or. &
+          value01 == raster%missing_value .or. value11 == raster%missing_value) then
+         return
+      end if
+
+      x_complement = 1.0_dp - x_fraction
+      y_complement = 1.0_dp - y_fraction
+      res = x_fraction * y_fraction * value11 + &
+          x_complement * y_fraction * value01 + &
+          x_complement * y_complement * value00 + &
+          x_fraction * y_complement * value10
+
+   end function interpolate_bilinear
 
 end module m_bilinear_interpolation

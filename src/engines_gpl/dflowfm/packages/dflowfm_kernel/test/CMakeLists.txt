@@ -32,6 +32,7 @@ f90twtest(${test_target}
         src/test_getprof_1d.f90
         src/test_dflowfm_dambreak.f90
         src/test_init_spatial_field.f90
+        src/test_bilinear_interpolation.f90
         src/test_init_spatial_field_integration.f90
         src/test_offline_wave_external_forcing.f90
         src/test_atmospheric_stability.f90
@@ -56,6 +57,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_getprof_1d.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bilinear_interpolation.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field_integration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_offline_wave_external_forcing.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
