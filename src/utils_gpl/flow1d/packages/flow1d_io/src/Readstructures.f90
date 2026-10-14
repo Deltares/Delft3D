@@ -132,6 +132,7 @@ contains
       logical, intent(in) :: is_path_relative !< if true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical :: success, success1
+      logical :: check_unused_settings
       type(tree_data), pointer :: md_ptr
       integer :: istat
       integer :: numstr
@@ -278,6 +279,7 @@ contains
             end if
             pstru%compound = 0
 
+            check_unused_settings = .true.
             select case (iStrucType)
             case (ST_WEIR)
                ! support for version >= 2.0 structure files weirs as general structure
@@ -290,6 +292,7 @@ contains
                if (major /= StructureFileMajorVersion) then
                   call SetMessage(LEVEL_ERROR, 'The file version in '//structurefile//' should be at least 3.0 or higher')
                   call SetMessage(-LEVEL_ERROR, 'when using bridges (parameter bedLevel must be changed to a shift).')
+                  check_unused_settings = .false.
                else
                   call readBridge(pstru%bridge, network, md_ptr%child_nodes(i)%node_ptr, st_id, success)
                end if
@@ -315,8 +318,13 @@ contains
                else
                   call setmessage(LEVEL_ERROR, 'Structure type: '//trim(typestr)//' not supported, see '//trim(pstru%id))
                   success = .false.
+                  check_unused_settings = .false.
                end if
             end select
+
+            if (check_unused_settings) then
+               call warn_unknown_structure_settings(md_ptr%child_nodes(i)%node_ptr, structurefile, st_id)
+            end if
 
             if (success) then
                network%sts%Count = network%sts%Count + 1
@@ -1473,13 +1481,11 @@ contains
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
 
-      call warn_unknown_general_structure_settings(md_ptr, structurefile, st_id)
-
    end subroutine readGeneralStructure
 
-   !> Warns about unknown or unused settings in a general-structure property block.
+   !> Warns about unknown or unused settings in a structure property block.
    !! Each warning identifies the setting, structure, and source file.
-   subroutine warn_unknown_general_structure_settings(md_ptr, structurefile, st_id)
+   subroutine warn_unknown_structure_settings(md_ptr, structurefile, st_id)
       type(tree_data), pointer, intent(in) :: md_ptr !< Property tree for the structure.
       character(len=*), intent(in) :: structurefile !< Structure file containing the property block.
       character(len=*), intent(in) :: st_id !< Identifier of the structure being read.
@@ -1501,7 +1507,7 @@ contains
             call warn_flush()
          end if
       end do
-   end subroutine warn_unknown_general_structure_settings
+   end subroutine warn_unknown_structure_settings
 
    !> Parses a (pump's) orientation string into an integer
    !! that can be used in its direction field.
