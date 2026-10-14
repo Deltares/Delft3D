@@ -418,7 +418,7 @@ contains
       jakdtree = 0
       dummy_flowcell_index(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, .true.)
          source_flowcell_index = dummy_flowcell_index(1)
       end if
 
@@ -434,11 +434,11 @@ contains
          self%area(self%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
-         temporary_name = name//' sink'
-         dummy_flowcell_index(1) = 0
-         if (self%x(self%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
-            sink_flowcell_index = dummy_flowcell_index(1)
+         tmpname = name//' sink'
+         kdum(1) = 0
+         if (source_sinks%x(source_sinks%num_total, 1) /= dmiss) then
+            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+            kk = kdum(1)
          end if
 
          if (sink_flowcell_index /= 0 .or. source_flowcell_index /= 0) then
