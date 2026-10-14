@@ -471,7 +471,7 @@ contains
       jakdtree = 0
       kdum(1) = 0
       if (source_sinks%x(source_sinks%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL, .true.)
          kk2 = kdum(1)
       end if
 
@@ -490,7 +490,7 @@ contains
          tmpname = name//' sink'
          kdum(1) = 0
          if (source_sinks%x(source_sinks%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL, .true.)
             kk = kdum(1)
          end if
 
