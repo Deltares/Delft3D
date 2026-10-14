@@ -235,7 +235,7 @@ contains
       case ('curvigrid')
          method = WEIGHTFACTORS
       case ('geotiff')
-         method = METHOD_BILINEAR
+         method = METHOD_TRIANGULATION
       case ('map')
          method = METHOD_TRIANGULATION
       case ('netcdf')

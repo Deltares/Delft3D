@@ -17,6 +17,7 @@ module test_bilinear_geotiff
    private
    public :: test_geotiff_numeric_bands, test_geotiff_missing_values
    public :: test_geotiff_pixel_coordinates, test_geotiff_rejects_invalid_geometry
+   public :: test_geotiff_rotation_tolerance
    public :: test_bilinear_arcinfo_geotiff_initial_field
 
 contains
@@ -128,6 +129,46 @@ contains
          end do
       end do
    end subroutine test_geotiff_pixel_coordinates
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_rotation_tolerance, test_geotiff_rotation_tolerance,
+   !> Match the legacy rotation tolerance for both signs and both geotransform terms.
+   subroutine test_geotiff_rotation_tolerance() bind(C)
+      character(len=*), parameter :: filename = 'test_bilinear_rotation.tif'
+      integer, dimension(2), parameter :: rotation_terms = [3, 5]
+      real(kind=dp), dimension(3), parameter :: rotations = [0.5e-6_dp, 1.0e-6_dp, 1.0001e-6_dp]
+      real(kind=c_double), dimension(2, 2, 1) :: values
+      real(kind=c_double), dimension(6) :: transform
+      type(bilinear_data) :: data
+      integer :: term_index, rotation_index, direction, status
+
+      values = reshape([2.0_dp, 6.0_dp, 10.0_dp, 22.0_dp], shape(values))
+      do term_index = 1, size(rotation_terms)
+         do direction = -1, 1, 2
+            do rotation_index = 1, size(rotations)
+               transform = [20.0_dp, 2.0_dp, 0.0_dp, 30.0_dp, 0.0_dp, -4.0_dp]
+               transform(rotation_terms(term_index)) = direction * rotations(rotation_index)
+               if (.not. create_test_geotiff(filename, values, transform, gdt_float64)) then
+                  return
+               end if
+               data = bilinear_data(filename, GEOTIFF, status)
+               call delete_test_geotiff(filename)
+               if (rotation_index <= 2) then
+                  call f90_expect_eq(status, 0)
+                  call f90_expect_true(allocated(data%values))
+                  if (allocated(data%values)) then
+                     call f90_expect_near(data%origin(1), 21.0_dp, 0.0_dp)
+                     call f90_expect_near(data%origin(2), 28.0_dp, 0.0_dp)
+                     call f90_expect_near(data%interpolate(22.0_dp, 26.0_dp), 10.0_dp, 1.0e-12_dp)
+                  end if
+               else
+                  call f90_expect_true(status /= 0)
+                  call f90_expect_false(allocated(data%values))
+               end if
+            end do
+         end do
+      end do
+   end subroutine test_geotiff_rotation_tolerance
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_rejects_invalid_geometry, test_geotiff_rejects_invalid_geometry,

@@ -73,6 +73,7 @@ contains
    end function read_bilinear_data
 
    !> Read bilinear raster values and pixel-centre geometry without modifying global samples.
+   !! Rotation terms up to 1e-6 are ignored, matching the legacy sample reader.
    subroutine read_bilinear_geotiff(filename, values, origin, spacing, missing_value, status)
 #ifdef HAVE_GDAL
       use iso_c_binding, only: c_int, c_double, c_null_char
@@ -89,6 +90,7 @@ contains
       real(kind=dp), intent(in) :: missing_value !< Internal missing marker used to normalize NoData and nonfinite values.
       integer, intent(out) :: status !< Zero on success; nonzero on unsupported geometry, read failure, or missing GDAL.
 #ifdef HAVE_GDAL
+   real(kind=dp), parameter :: rotation_tolerance = 1.0e-6_dp
       type(gdaldataseth) :: dataset
       real(kind=c_double), dimension(:, :, :), allocatable :: buffer
       real(kind=c_double), dimension(6) :: geotransform
