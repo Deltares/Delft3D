@@ -46,7 +46,7 @@ module m_partition_from_commandline
 
 contains
 
-   subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
+   subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
 
       use network_data
       use m_partitioninfo
@@ -57,7 +57,6 @@ contains
       character(len=255), intent(in) :: fnam !< filename
       integer, intent(in) :: md_Ndomains !< number of subdomains, Metis (>0) or polygon (0)
       integer, intent(in) :: md_jacontiguous !< contiguous domains, Metis (1) or not (0)
-      integer, intent(in) :: md_icgsolver !< intended solver
       integer, intent(in) :: md_pmethod !< partition method: K-way (=1, default), Recursive Bisection(=2), Mesh-dual(=3)
       integer, intent(in) :: md_genpolygon !< make partition file (1) or not (0)
       integer, intent(in) :: md_partugrid !< write partitioning in ugrid format (1) or not (0)
@@ -107,7 +106,7 @@ contains
 
       netstat = NETSTAT_OK !> reset netstat before writing partitions
       if (ndomains > 1) then
-         call partition_write_domains(trim(fnam), md_icgsolver, jacells, japolygon, md_partugrid)
+         call partition_write_domains(trim(fnam), jacells, japolygon, md_partugrid)
       end if
 
       return

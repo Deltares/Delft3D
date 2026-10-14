@@ -329,7 +329,7 @@ contains
       use m_alloc
       use string_module, only: strcmpi, istarts_with
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
-      use unstruc_inifields, only: resolve_initial_3d_target
+      use unstruc_inifields, only: resolve_constituent_target
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush
 
@@ -417,7 +417,7 @@ contains
    end subroutine read_initialtracer_properties
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, numz, numu, nums, numtm, numsd, &
-         numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
       use timespace, only: NODE_ID, POLY_TIM
       use tree_data_types
@@ -628,9 +628,10 @@ contains
       use m_qnerror
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, msg_flush, err_flush
-      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
-                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
-                                           BOUNDARY_DISCHARGE_HEAD
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, BOUNDARY_VELOCITY_NORMAL_INFLOW, &
+                                           BOUNDARY_VELOCITY_FLUX, BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD, BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, &
+                                           BOUNDARY_ABSORBING_GENERATING
 
       ! Arguments
       character(len=256), intent(in) :: qid
@@ -649,7 +650,7 @@ contains
 
       ! Local variables
       character(len=256) :: qidfm
-      integer :: itpbn
+      integer :: boundary_type
       character(len=NAMTRACLEN) :: tracnam, sfnam, qidnam
       character(len=20) :: tracunit
       integer :: itrac, isf
@@ -668,23 +669,23 @@ contains
          nzbnd = nzbnd + 1
 
          if (qidfm == 'waterlevelbnd') then
-            itpbn = BOUNDARY_WATER_LEVEL
+            boundary_type = BOUNDARY_WATER_LEVEL
          end if
          if (qidfm == 'neumannbnd') then
-            itpbn = BOUNDARY_WATER_LEVEL_NEUMANN
+            boundary_type = BOUNDARY_WATER_LEVEL_NEUMANN
          end if
          if (qidfm == 'riemannbnd') then
-            itpbn = BOUNDARY_VELOCITY_RIEMANN
+            boundary_type = BOUNDARY_VELOCITY_RIEMANN
             if (present(tfc)) then
                ftpet(nbndz + 1:nbndz + numz) = tfc(7) ! relaxation time riemann from ext file
             end if
          end if
          if (qidfm == 'outflowbnd') then
-            itpbn = BOUNDARY_WATER_LEVEL_OUTFLOW
+            boundary_type = BOUNDARY_WATER_LEVEL_OUTFLOW
          end if
 
          if (qidfm == 'qhbnd') then
-            itpbn = BOUNDARY_DISCHARGE_HEAD
+            boundary_type = BOUNDARY_DISCHARGE_HEAD
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
@@ -711,7 +712,7 @@ contains
             call realloc(q_org, nqhbnd)
             q_org = 0.0_dp
          end if
-         itpez(nbndz + 1:nbndz + numz) = itpbn
+         itpez(nbndz + 1:nbndz + numz) = boundary_type
 
          call addopenbndsection(numz, kez(nbndz + 1:nbndz + numz), filename, IBNDTP_ZETA)
 
@@ -738,9 +739,9 @@ contains
          nubnd = nubnd + 1
 
          if (qidfm == 'velocitybnd') then
-            itpbn = 3
+            boundary_type = BOUNDARY_VELOCITY_NORMAL_INFLOW
          else if (qidfm == 'dischargebnd') then
-            itpbn = 4
+            boundary_type = BOUNDARY_VELOCITY_FLUX
             nqbnd = nqbnd + 1
             call realloc(L1qbnd, nqbnd)
             L1qbnd(nqbnd) = nbndu + 1
@@ -760,16 +761,16 @@ contains
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
             end if
-            itpbn = 5
+            boundary_type = BOUNDARY_ABSORBING_GENERATING
          else if (qidfm == 'qhubnd') then
-            itpbn = 6
+            boundary_type = BOUNDARY_DISCHARGE_HEAD
          else if (qidfm == 'criticaloutflowbnd') then
-            itpbn = 8
+            boundary_type = BOUNDARY_CRITICAL_OUTFLOW
          else if (qidfm == 'weiroutflowbnd') then
-            itpbn = 9
+            boundary_type = BOUNDARY_WEIR_OUTFLOW
          end if
 
-         itpeu(nbndu + 1:nbndu + numu) = itpbn
+         itpeu(nbndu + 1:nbndu + numu) = boundary_type
 
          call addopenbndsection(numu, keu(nbndu + 1:nbndu + numu), filename, IBNDTP_U)
 
@@ -1225,7 +1226,7 @@ contains
       integer, intent(inout) :: iresult
 
       if (sensible_heat_flux_available .neqv. latent_heat_flux_available) then
-         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be ' // &
+         call mess(LEVEL_ERROR, 'Quantities ''sensibleheatflux'' and ''latentheatflux'' must both be '// &
                    'provided together or both be omitted; only one of them was found in the external forcings.')
          iresult = DFM_WRONGINPUT
       end if
