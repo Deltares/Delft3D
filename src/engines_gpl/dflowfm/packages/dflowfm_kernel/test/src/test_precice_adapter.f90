@@ -45,6 +45,82 @@ contains
    end subroutine cleanup_netcells
 
 
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_pack_3d_sigma_fields, test_pack_3d_sigma_fields,
+   subroutine test_pack_3d_sigma_fields() bind(C)
+      use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, LAYTP_SIGMA
+      use precice_adapter_utils, only: pack_cell_center_mesh_data
+
+      real(kind=dp), dimension(10) :: flow_values
+      real(kind=dp), dimension(6) :: scalar_values
+      real(kind=dp), dimension(18) :: vector_values
+      real(kind=dp), dimension(6), parameter :: expected = [104.0_dp, 105.0_dp, 106.0_dp, 108.0_dp, 109.0_dp, 110.0_dp]
+      integer :: i
+
+      kmx = 3
+      call realloc(kbot, 2)
+      call realloc(ktop, 2)
+      call realloc(laydefnr, 2)
+      call realloc(laytyp, 1)
+      call realloc(laymx, 1)
+      kbot = [4, 8]
+      ktop = [6, 10]
+      laydefnr = 1
+      laytyp(1) = LAYTP_SIGMA
+      laymx(1) = kmx
+      flow_values = [(100.0_dp + real(i, dp), i=1, 10)]
+
+      call pack_cell_center_mesh_data(2, kmx, flow_values, scalar_values)
+      call f90_expect_near(scalar_values, expected, 1e-12_dp, "Exclude 2D prefix and column ghosts")
+
+      call pack_cell_center_mesh_data(2, kmx, flow_values, vector_values(1::3))
+      call pack_cell_center_mesh_data(2, kmx, 2.0_dp * flow_values, vector_values(2::3))
+      call pack_cell_center_mesh_data(2, kmx, 3.0_dp * flow_values, vector_values(3::3))
+      call f90_expect_near(vector_values(1::3), expected, 1e-12_dp, "Packed x velocity")
+      call f90_expect_near(vector_values(2::3), 2.0_dp * expected, 1e-12_dp, "Packed y velocity")
+      call f90_expect_near(vector_values(3::3), 3.0_dp * expected, 1e-12_dp, "Packed z velocity")
+   end subroutine test_pack_3d_sigma_fields
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_pack_3d_inactive_layers, test_pack_3d_inactive_layers,
+   subroutine test_pack_3d_inactive_layers() bind(C)
+      use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
+      use precice_adapter_utils, only: pack_cell_center_mesh_data, set_cell_center_mesh_zcoords
+
+      real(kind=dp), dimension(8) :: flow_values
+      real(kind=dp), dimension(8) :: mesh_values
+      real(kind=dp), dimension(24) :: coordinates
+      real(kind=dp), dimension(8), parameter :: expected = [0.0_dp, 0.0_dp, 4.0_dp, 5.0_dp, &
+                                                          0.0_dp, 7.0_dp, 8.0_dp, 0.0_dp]
+      real(kind=dp), dimension(8), parameter :: expected_z = [-999.0_dp, -999.0_dp, 3.5_dp, 4.5_dp, &
+                                                            -999.0_dp, 6.5_dp, 7.5_dp, -999.0_dp]
+      integer :: i
+
+      kmx = 4
+      call realloc(kbot, 2)
+      call realloc(ktop, 2)
+      call realloc(laydefnr, 2)
+      call realloc(laytyp, 1)
+      call realloc(laymx, 1)
+      call realloc(nlaybn, 2)
+      call realloc(nrlayn, 2)
+      kbot = [4, 7]
+      ktop = [5, 8]
+      laydefnr = 1
+      laytyp(1) = LAYTP_Z
+      laymx(1) = kmx
+      nlaybn = [3, 2]
+      nrlayn = [2, 3]
+      flow_values = [(real(i, dp), i=1, 8)]
+      mesh_values = -1.0_dp
+      coordinates = 0.0_dp
+
+      call pack_cell_center_mesh_data(2, kmx, flow_values, mesh_values)
+      call set_cell_center_mesh_zcoords(2, kmx, flow_values, coordinates)
+      call f90_expect_near(mesh_values, expected, 1e-12_dp, "Only active z-layers receive data")
+      call f90_expect_near(coordinates(3::3), expected_z, 1e-12_dp, "Coordinates and data use the same layer slots")
+   end subroutine test_pack_3d_inactive_layers
+   !$f90tw )
+
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
    subroutine test_adapter_add_to_fm_administration() bind(C)
       use m_flow_geominit, only: flow_geominit
