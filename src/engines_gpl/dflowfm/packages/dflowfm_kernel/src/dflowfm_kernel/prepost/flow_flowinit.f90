@@ -102,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
