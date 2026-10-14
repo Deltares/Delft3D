@@ -264,7 +264,8 @@ contains
                   ! For backward compatibility: if locationfile is not found, try polylinefile.
                   call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'polylineFile', filename, success1)
                   if (success1) then
-                     msgbuf = 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', polylineFile is found. Please use locationFile instead.'
+                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structureFile)// &
+                              & ''' uses deprecated ''polylineFile''. Replace it with ''locationFile''.'
                      call warn_flush()
                   end if
 
@@ -301,7 +302,8 @@ contains
                ! support for version >= 2.0 structure files weirs as general structure
                call readGateAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
-               call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
+               call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, &
+                                         structureFile, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
                call readDambreak(pstru%dambreak, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_COMPOUND)
@@ -1387,12 +1389,13 @@ contains
 
    !> Read the general structure parameters.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
-   subroutine readGeneralStructure(generalst, md_ptr, st_id, forcinglist, success)
+   subroutine readGeneralStructure(generalst, md_ptr, structureFile, st_id, forcinglist, success)
 
       use messageHandling
 
       type(t_GeneralStructure), pointer, intent(inout) :: generalst !< General structure to be read into.
       type(tree_data), pointer, intent(in) :: md_ptr !< ini tree pointer with user input.
+      character(len=*), intent(in) :: structureFile
       character(IdLen), intent(in) :: st_id !< Structure character Id.
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters, to which general structure forcing will be added if needed.
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
@@ -1470,7 +1473,33 @@ contains
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
 
+      call warn_unknown_general_structure_settings(md_ptr, structureFile, st_id)
+
    end subroutine readGeneralStructure
+
+   subroutine warn_unknown_general_structure_settings(md_ptr, structureFile, st_id)
+      type(tree_data), pointer, intent(in) :: md_ptr
+      character(len=*), intent(in) :: structureFile
+      character(len=*), intent(in) :: st_id
+
+      integer :: i
+      character(len=IdLen) :: key
+      type(tree_data), pointer :: setting
+
+      if (.not. associated(md_ptr%child_nodes)) then
+         return
+      end if
+
+      do i = 1, size(md_ptr%child_nodes)
+         setting => md_ptr%child_nodes(i)%node_ptr
+         if (setting%node_visit < 1) then
+            key = tree_get_name(setting)
+            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structureFile), &
+                                   ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
+            call warn_flush()
+         end if
+      end do
+   end subroutine warn_unknown_general_structure_settings
 
    !> Parses a (pump's) orientation string into an integer
    !! that can be used in its direction field.
