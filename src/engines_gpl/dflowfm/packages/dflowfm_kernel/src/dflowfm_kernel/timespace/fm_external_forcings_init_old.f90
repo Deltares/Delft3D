@@ -29,8 +29,9 @@
 
 module fm_external_forcings_init_old
    use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
-   use fm_external_forcings_init, only: addtimespacerelation_boundaries, adduniformtimerelation_objects
+   use fm_external_forcings_init, only: adduniformtimerelation_objects
    use fm_external_forcings_utils, only: ini_alloc_laterals, allocatewindarrays
+   use fm_external_forcings_update_boundaries, only: addtimespacerelation_boundaries
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
    implicit none(type, external)

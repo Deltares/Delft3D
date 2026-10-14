@@ -35,11 +35,11 @@ module fm_external_forcings
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name, ini_alloc_laterals, allocatewindarrays
-   use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, addtimespacerelation_boundaries, adduniformtimerelation_objects
+   use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, adduniformtimerelation_objects
    use fm_external_forcings_init_old, only: init_old
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
       prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
-   use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries
+   use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries, addtimespacerelation_boundaries
    use m_waveconst
 
    implicit none(type, external)
@@ -57,7 +57,6 @@ module fm_external_forcings
    public :: init_new
    public :: init_spatial_fields
    public :: sourcesink_parse_coordinates
-   public :: addtimespacerelation_boundaries
    public :: adduniformtimerelation_objects
 
    ! Expose fm_external_forcings_update functions
@@ -69,6 +68,7 @@ module fm_external_forcings
 
    ! Expose fm_external_forcings_update_boundaries functions
    public :: set_external_forcings_boundaries
+   public :: addtimespacerelation_boundaries
 
 contains
 
