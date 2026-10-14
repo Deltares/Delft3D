@@ -1283,11 +1283,8 @@
                     "enum_values": {
                         "1": "sobekGS_OMP",
                         "2": "sobekGS_OMPthreadsafe",
-                        "3": "sobekGS",
                         "4": "sobekGS + Saad-ILUD (default sequential)",
-                        "5": "parallel/global Saad",
-                        "6": "PETSc (default parallel)",
-                        "7": "CG+MILU (parallel)"
+                        "6": "PETSc (default parallel)"
                     }
                 },
                 {
