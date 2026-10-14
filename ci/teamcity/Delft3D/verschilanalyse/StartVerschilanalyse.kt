@@ -72,7 +72,12 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
-        text("current_prefix", "output/weekly/development", display = ParameterDisplay.PROMPT)
+        text(
+            "current_prefix",
+            "output/weekly/%dep.${Publish.id}.new_tag%",
+            display = ParameterDisplay.PROMPT,
+            description = "Define the path in s3.deltares.nl where the verschilanalyse output will be stored"
+        )
         text("models_path", "input", display = ParameterDisplay.PROMPT)
         text("model_filter", "", display = ParameterDisplay.PROMPT)
         text("json_configs_path", "config", display = ParameterDisplay.PROMPT)
@@ -159,7 +164,7 @@ object StartVerschilanalyse : BuildType({
                 rm -f bundle-%teamcity.build.id%.tar.gz
 
                 # start the VA, use dep. variables from the upstream Publish build to
-                # define what apptainer image we should use. 
+                # define what apptainer image we should use and what the current_prefix is.
                 # The above PinAndTag finishBuildTrigger depends on the Publish build
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
