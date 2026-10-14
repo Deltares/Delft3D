@@ -59,6 +59,8 @@ contains
       type(t_structure), pointer :: pstru
       type(t_compound), pointer :: pcmp
 
+      jaghostexist = 0
+
       if (jampi > 0) then
          if (.not. allocated(reducebuf)) then
             nreducebuf = npumpsg * NUMVALS_PUMP + ngatesg * NUMVALS_GATE + ncdamsg * NUMVALS_CDAM + ncgensg * NUMVALS_CGEN &

@@ -54,7 +54,7 @@ contains
       integer :: ii
       character(len=255) :: str
       real(dp), dimension(:), allocatable :: distances
-      integer, dimension(:), allocatable :: cell_nrs
+      integer, dimension(:), allocatable :: cell_numbers
       type(t_netcell_set) :: netcell_cache
       integer :: ierror
 
@@ -62,23 +62,23 @@ contains
          call mess(LEVEL_ERROR, 'find_flowlinks: unmatched input array size')
       end if
 
-      allocate (distances(size(xx)), cell_nrs(size(xx)))
+      allocate (distances(size(xx)), cell_numbers(size(xx)))
       netcell_cache = t_netcell_set()
-      cell_nrs = netcell_cache%find_netcell(xx, yy)
+      cell_numbers = netcell_cache%find_netcell(xx, yy)
       do ii = 1, size(xx)
-         if (cell_nrs(ii) == 0) then
-            call inflowcell(xx(ii), yy(ii), cell_nrs(ii), -1, INDTP_1D)
+         if (cell_numbers(ii) == 0) then
+            call inflowcell(xx(ii), yy(ii), cell_numbers(ii), -1, INDTP_1D)
          end if
       end do
       if (jampi == 1 .and. size(xx) > 0) then
-         call mpi_allreduce(mpi_in_place, cell_nrs, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
+         call mpi_allreduce(mpi_in_place, cell_numbers, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
          if (ierror /= MPI_SUCCESS) then
             call mess(LEVEL_ERROR, 'find_flowlinks: mpi_allreduce failed')
          end if
       end if
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)
-         if (cell_nrs(ii) == 0) then
+         if (cell_numbers(ii) == 0) then
             write (str, '(A,I6,A,F14.4,A,F14.4,A)') 'find_flowlinks: point ', ii, '([x, y] = [', xx(ii), ',', yy(ii), &
                ']) lies outside of the model grid; closest flowlink might be inaccurate'
             call mess(LEVEL_WARN, trim(str))
