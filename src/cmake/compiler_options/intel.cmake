@@ -10,8 +10,8 @@ if (WIN32)
     # Set global linker flags for Fortran
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:${DFLOWFM_STACK_SIZE_BYTES}")
     # Set global C/C++ compiler flags that apply for each C/C++ project
-    string(APPEND CMAKE_C_FLAGS " /MP")
-    string(APPEND CMAKE_CXX_FLAGS " /MP")
+    string(APPEND CMAKE_C_FLAGS " /MP /fp:precise")
+    string(APPEND CMAKE_CXX_FLAGS " /MP /fp:precise")
 
     # Set optional flags:
     message(STATUS "Setting optional Intel Fortran compiler flags in Windows")
@@ -72,11 +72,11 @@ if (UNIX)
     # On Linux preprocessing is on by default, but the flag is inserted for
     # at least one C file as well (netCDF). Use a neutral flag to avoid problems
     # Disable diagnostic indicating that ifort is deprecated (10448)
-    set(CMAKE_CXX_FLAGS                          "-fPIC")
+    set(CMAKE_CXX_FLAGS                          "-fPIC -fp-model precise")
     set(CMAKE_CXX_FLAGS_DEBUG                    "-g -O0")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO           "-g -O2")
     set(CMAKE_CXX_FLAGS_RELEASE                  "-O2")
-    set(CMAKE_C_FLAGS                            "-fPIC")
+    set(CMAKE_C_FLAGS                            "-fPIC -fp-model precise")
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO             "-g -O2")
     set(CMAKE_C_FLAGS_RELEASE                    "-O2")
