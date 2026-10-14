@@ -31,7 +31,6 @@
 !
 
 module m_s1nod
-   use m_update_matrix, only: update_matrix
 
    implicit none
 
@@ -51,7 +50,7 @@ contains
       use m_flowgeom, only: ndx, ndx2d, xz, yz, nd, lnx1d, kfs, dx, dxi, bl, ndxi
       use m_flowtimes, only: dti, refdat, time1, alfsmo, dts
       use m_reduce, only: bbr, ddr, ccr, lv2
-      use m_partitioninfo, only: jampi, idomain, my_rank, qnerror, jaoverlap
+      use m_partitioninfo, only: jampi, idomain, my_rank, qnerror
       use m_sobekdfm, only: nbnd1d2d, compute_1d2d_boundaries
       use unstruc_channel_flow, only: network
       use time_module, only: seconds_to_datetimestring
@@ -67,7 +66,7 @@ contains
       integer :: ibr
       real(kind=dp) :: dtiba, hh, water_level_boundary, dtgh
       real(kind=dp) :: sqrtgfh, cffu, rowsum, fuL, ruL, huL, hep
-      integer :: i, ierr
+      integer :: i
       character(len=2) :: dim_text
       real(kind=dp), parameter :: HBMIN = 1.0e-3_dp
       real(kind=dp), pointer, dimension(:) :: gridPointsChainages
@@ -292,11 +291,6 @@ contains
                call qnerror('checkmatrix = nocheck', ' ', ' ')
             end if
          end do
-      end if
-
-! update overlapping ghost-parts of matrix
-      if (jampi == 1 .and. jaoverlap == 1) then
-         call update_matrix(ierr)
       end if
 
    end subroutine s1nod
