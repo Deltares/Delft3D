@@ -87,7 +87,7 @@ module m_readstructures
 contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structureFiles, is_path_relative)
+   subroutine readStructures(network, structurefiles, is_path_relative)
       use string_module, only: str_token
 
       type(t_network), intent(inout) :: network !< The network data structure into whose Structure Set the file(s) will be read.
@@ -118,7 +118,7 @@ contains
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structureFile, is_path_relative)
+   subroutine readStructureFile(network, structurefile, is_path_relative)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
@@ -128,7 +128,7 @@ contains
       implicit none
 
       type(t_network), intent(inout) :: network !< Network pointer
-      character(len=*), intent(in) :: structureFile !< Name of the structure file
+      character(len=*), intent(in) :: structurefile !< Name of the structure file
       logical, intent(in) :: is_path_relative !< if true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical :: success, success1
@@ -151,7 +151,7 @@ contains
       success = .true.
 
       if (is_path_relative) then
-         call get_filepath(structureFile, structure_file_directory)
+         call get_filepath(structurefile, structure_file_directory)
       else
          structure_file_directory = ''
       end if
@@ -166,7 +166,7 @@ contains
       major = 1
       minor = 0
       call get_version_number(md_ptr, major=major, minor=minor, success=success1)
-      if (.not. success1 .OR. major == 1) then
+      if (.not. success1 .or. major == 1) then
          msgbuf = 'Early return, file '//trim(structurefile)//' is a 2D3D structure file (version 1.0).'
          call msg_flush()
          ! TODO: UNST-8867: re-enable the warning below after support for old structure files is dropped/differences have been explained.
@@ -237,7 +237,7 @@ contains
             if (success1 .and. network%loaded) then
                pstru%ibran = hashsearch(network%brs%hashlist, branchID)
                if (pstru%ibran <= 0) then
-                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', branchId '''//trim(branchID)//''' not found.'
+                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structurefile)//''', branchId '''//trim(branchID)//''' not found.'
                   call err_flush()
                   success = .false.
                end if
@@ -264,7 +264,7 @@ contains
                   ! For backward compatibility: if locationfile is not found, try polylinefile.
                   call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'polylineFile', filename, success1)
                   if (success1) then
-                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structureFile)// &
+                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structurefile)// &
                               & ''' uses deprecated ''polylineFile''. Replace it with ''locationFile''.'
                      call warn_flush()
                   end if
@@ -288,7 +288,7 @@ contains
                call readCulvert(pstru%culvert, network, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_BRIDGE)
                if (major /= StructureFileMajorVersion) then
-                  call SetMessage(LEVEL_ERROR, 'The file version in '//structureFile//' should be at least 3.0 or higher')
+                  call SetMessage(LEVEL_ERROR, 'The file version in '//structurefile//' should be at least 3.0 or higher')
                   call SetMessage(-LEVEL_ERROR, 'when using bridges (parameter bedLevel must be changed to a shift).')
                else
                   call readBridge(pstru%bridge, network, md_ptr%child_nodes(i)%node_ptr, st_id, success)
@@ -303,7 +303,7 @@ contains
                call readGateAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
                call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, &
-                                         structureFile, st_id, network%forcinglist, success)
+                                         structurefile, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
                call readDambreak(pstru%dambreak, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_COMPOUND)
@@ -923,7 +923,7 @@ contains
          ! UNST-8759: Try new separate crestLevel and breachWidth keywords first.
          call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', dambr%crest_level_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess)
          call get_value_or_addto_forcinglist(md_ptr, 'breachWidth', dambr%breach_width_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess2)
-         
+
          ! NOTE: only when we declare dambreakLevelsAndWidth obsolete, fully enable the required checks below (i.e., remove if):
          ! If *either* of crestLevel and breachWidth is present, assume new input and validate as usual, don't fall back to legacy.
          if (localsuccess .or. localsuccess2) then
@@ -1389,13 +1389,13 @@ contains
 
    !> Read the general structure parameters.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
-   subroutine readGeneralStructure(generalst, md_ptr, structureFile, st_id, forcinglist, success)
+   subroutine readGeneralStructure(generalst, md_ptr, structurefile, st_id, forcinglist, success)
 
       use messageHandling
 
       type(t_GeneralStructure), pointer, intent(inout) :: generalst !< General structure to be read into.
       type(tree_data), pointer, intent(in) :: md_ptr !< ini tree pointer with user input.
-      character(len=*), intent(in) :: structureFile
+      character(len=*), intent(in) :: structurefile
       character(IdLen), intent(in) :: st_id !< Structure character Id.
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters, to which general structure forcing will be added if needed.
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
@@ -1473,13 +1473,13 @@ contains
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
 
-      call warn_unknown_general_structure_settings(md_ptr, structureFile, st_id)
+      call warn_unknown_general_structure_settings(md_ptr, structurefile, st_id)
 
    end subroutine readGeneralStructure
 
-   subroutine warn_unknown_general_structure_settings(md_ptr, structureFile, st_id)
+   subroutine warn_unknown_general_structure_settings(md_ptr, structurefile, st_id)
       type(tree_data), pointer, intent(in) :: md_ptr
-      character(len=*), intent(in) :: structureFile
+      character(len=*), intent(in) :: structurefile
       character(len=*), intent(in) :: st_id
 
       integer :: i
@@ -1494,8 +1494,8 @@ contains
          setting => md_ptr%child_nodes(i)%node_ptr
          if (setting%node_visit < 1) then
             key = tree_get_name(setting)
-            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structureFile), &
-                                   ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
+            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structurefile), &
+               ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
             call warn_flush()
          end if
       end do
