@@ -3259,6 +3259,7 @@ contains
       use m_reasam
       use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
+      use m_bilinear_interpolation, only: bilinear_data
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
@@ -3301,6 +3302,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: zh
       real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
+      type(bilinear_data) :: data
       character(len=5) :: sd
       type(TerrorInfo) :: errorInfo
 
@@ -3392,7 +3394,16 @@ contains
 
          case (ARCINFO)
 
-            call read_samples_from_arcinfo(filename, 0, 0)
+            if (local_method == METHOD_BILINEAR) then
+               data = bilinear_data(filename, ARCINFO, ierr)
+               if (ierr /= 0) then
+                  msgbuf = 'timespace::timespaceinitialfield: could not read bilinear interpolation data from '''//trim(filename)//'''.'
+                  call err_flush()
+                  return
+               end if
+            else
+               call read_samples_from_arcinfo(filename, 0, 0)
+            end if
 
          case (GEOTIFF)
 
@@ -3417,7 +3428,9 @@ contains
 
          case (METHOD_BILINEAR)
 
-            call bilinarc(xu, yu, zh, nx)
+            where (zh == data%missing_value)
+               zh = data%interpolate(xu, yu)
+            end where
 
          case (METHOD_AVERAGING)
 
@@ -3594,53 +3607,6 @@ contains
 
    end function timespaceinitialfield
 
-   !> Bilinear interpolation for uniform rectangular.
-   !! TODO: move to ec_basic_interpolation or bilin5
-   subroutine bilinarc(xk, yk, zk, n)
-      use m_missing
-      integer, intent(in) :: n
-      real(kind=dp), intent(in) :: xk(:), yk(:)
-      real(kind=dp), intent(out) :: zk(:)
-
-      integer :: k
-
-      do k = 1, n
-         if (zk(k) == dmiss) then
-            call bilinarcinfo(xk(k), yk(k), zk(k))
-         end if
-      end do
-   end subroutine bilinarc
-
-   !> Bilinear interpolation for uniform rectangular for 1 point
-   !! TODO: move to ec_basic_interpolation or bilin5
-   subroutine bilinarcinfo(x, y, z)
-      use m_arcinfo
-      use m_missing
-      real(kind=dp), intent(in) :: x, y
-      real(kind=dp), intent(out) :: z
-
-      real(kind=dp) :: dm, dn, am, an
-      integer :: m, n
-
-      dm = (x - x0) / dxa
-      m = int(dm)
-      am = dm - m
-      m = m + 1
-      dn = (y - y0) / dya
-      n = int(dn)
-      an = dn - n
-      n = n + 1
-      z = dmiss
-      if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
-         if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
-            z = am * an * d(m + 1, n + 1) + &
-                (1.0_dp - am) * an * d(m, n + 1) + &
-                (1.0_dp - am) * (1.0_dp - an) * d(m, n) + &
-                am * (1.0_dp - an) * d(m + 1, n)
-         end if
-      end if
-
-   end subroutine bilinarcinfo
    !
    !
    ! ==========================================================================
