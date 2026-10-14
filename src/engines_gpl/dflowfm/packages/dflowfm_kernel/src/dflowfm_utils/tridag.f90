@@ -36,13 +36,14 @@ module m_tridag
 
    private
 
-   public :: tridag, tridag_two_rhs
+   public :: tridag
 
    real(kind=dp), parameter :: pivot_floor = 1.0e-15_dp
 
 contains
 
-   !> Solve a tridiagonal system with the Thomas algorithm and small-pivot regularization.
+   !> Solve a tridiagonal system with the Thomas algorithm, regularizing small pivots after the first row.
+   !! The first pivot is used unchanged, preserving the original solver behaviour.
    !! Provide normalized_upper as function parameter such that its memory is handled by the caller.
    !! A local array may cause stack overflows and a local save array may cause race conditions.
    subroutine tridag(lower, diagonal, upper, rhs, normalized_upper, solution, n)
@@ -51,77 +52,26 @@ contains
       real(kind=dp), dimension(n), intent(in) :: diagonal !< Main diagonal.
       real(kind=dp), dimension(n), intent(in) :: upper !< Upper diagonal; upper(n) is unused.
       real(kind=dp), dimension(n), intent(in) :: rhs !< Right-hand side.
-      real(kind=dp), dimension(n), intent(out) :: normalized_upper !< Normalized upper-diagonal scratch coefficients.
+      real(kind=dp), dimension(n), intent(out) :: normalized_upper !< Normalized upper-diagonal scratch coefficients; entry 1 is unused.
       real(kind=dp), dimension(n), intent(out) :: solution !< Solution.
 
       integer :: row
-      real(kind=dp) :: pivot, inverse_pivot
+      real(kind=dp) :: pivot
 
-      normalized_upper(1) = 0.0_dp
       pivot = diagonal(1)
-      if (abs(pivot) < pivot_floor) then
-         pivot = sign(pivot_floor, pivot)
-      end if
-      inverse_pivot = 1.0_dp / pivot
-      solution(1) = rhs(1) * inverse_pivot
+      solution(1) = rhs(1) / pivot
       do row = 2, n
-         normalized_upper(row) = upper(row - 1) * inverse_pivot
+         normalized_upper(row) = upper(row - 1) / pivot
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
          if (abs(pivot) < pivot_floor) then
             pivot = sign(pivot_floor, pivot)
          end if
-         inverse_pivot = 1.0_dp / pivot
-         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) / pivot
       end do
 
       do row = n - 1, 1, -1
          solution(row) = solution(row) - normalized_upper(row + 1) * solution(row + 1)
       end do
    end subroutine tridag
-
-   !> Solve two systems with the same tridiagonal matrix, sharing the Thomas elimination.
-   !! The second right-hand side has the same value in every row. Reciprocal pivots
-   !! are shared by both solutions. Results need not be bitwise identical to tridag.
-   !! Provide normalized_upper as function parameter such that its memory is handled by the caller.
-   !! A local array may cause stack overflows and a local save array may cause race conditions.
-   subroutine tridag_two_rhs(lower, diagonal, upper, rhs, constant_rhs, normalized_upper, solution, constant_solution, n)
-      integer, intent(in) :: n !< Number of rows; must be at least one.
-      real(kind=dp), dimension(n), intent(in) :: lower !< Lower diagonal; lower(1) is unused.
-      real(kind=dp), dimension(n), intent(in) :: diagonal !< Main diagonal.
-      real(kind=dp), dimension(n), intent(in) :: upper !< Upper diagonal; upper(n) is unused.
-      real(kind=dp), dimension(n), intent(in) :: rhs !< First right-hand side.
-      real(kind=dp), intent(in) :: constant_rhs !< Value in every row of the second right-hand side.
-      real(kind=dp), dimension(n), intent(out) :: normalized_upper !< Normalized upper-diagonal scratch coefficients.
-      real(kind=dp), dimension(n), intent(out) :: solution !< Solution for rhs.
-      real(kind=dp), dimension(n), intent(out) :: constant_solution !< Solution for constant_rhs.
-
-      integer :: row
-      real(kind=dp) :: pivot, inverse_pivot
-
-      normalized_upper(1) = 0.0_dp
-      pivot = diagonal(1)
-      if (abs(pivot) < pivot_floor) then
-         pivot = sign(pivot_floor, pivot)
-      end if
-      inverse_pivot = 1.0_dp / pivot
-      solution(1) = rhs(1) * inverse_pivot
-      constant_solution(1) = constant_rhs * inverse_pivot
-
-      do row = 2, n
-         normalized_upper(row) = upper(row - 1) * inverse_pivot
-         pivot = diagonal(row) - lower(row) * normalized_upper(row)
-         if (abs(pivot) < pivot_floor) then
-            pivot = sign(pivot_floor, pivot)
-         end if
-         inverse_pivot = 1.0_dp / pivot
-         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
-         constant_solution(row) = (constant_rhs - lower(row) * constant_solution(row - 1)) * inverse_pivot
-      end do
-
-      do row = n - 1, 1, -1
-         solution(row) = solution(row) - normalized_upper(row + 1) * solution(row + 1)
-         constant_solution(row) = constant_solution(row) - normalized_upper(row + 1) * constant_solution(row + 1)
-      end do
-   end subroutine tridag_two_rhs
 
 end module m_tridag
