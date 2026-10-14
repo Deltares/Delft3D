@@ -119,7 +119,7 @@ namespace
      *
      * Test helper to build a simple Mesh instance for use in unittests.
      *
-     * @return Valis 3d Mesh
+     * @return Valid 3d Mesh with 1 diffuser, 1 intake, 8 ambient points and 2 z-layers.
      */
     pre_c_sumo::Mesh make_test_3d_mesh()
     {
@@ -213,6 +213,20 @@ namespace
     }
 
 } // namespace
+
+// Test getIntakeConstituents
+TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
+{
+    pre_c_sumo::Mesh mesh_3d = make_test_3d_mesh();
+    ASSERT_EQ(mesh_3d.number_of_nodes, 12);
+    ASSERT_TRUE(mesh_3d.forward_map[0].has_intake);
+    const auto intake_index = mesh_3d.forward_map[0].intake_index;
+    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index] = 1.0;
+    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index + 1] = 5.0;
+    auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
+    EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_consituents);
+    EXPECT_DOUBLE_EQ(constituents[0], 3.0);
+}
 
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
 TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
