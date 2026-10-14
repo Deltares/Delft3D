@@ -44,6 +44,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
    use m_rdmor
    use m_rdsed
    use m_rdtrafrm
+   use m_combinepaths, only: combinepaths
    !
    use globaldata
    !
@@ -123,6 +124,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       !
       filsed = ' '
       call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+      filsed = combinepaths(gdp%gdtricom%filmd, filsed)
       !
       ! Sediment input has been placed in input_tree in subroutine dimsedconst
       ! get pointer
@@ -142,6 +144,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       !
       filmor = ' '
       call prop_get(gdp%mdfile_ptr, '*', 'Filmor', filmor)
+      filmor = combinepaths(gdp%gdtricom%filmd, filmor)
       !
       ! Create Morphology branch in input tree
       !

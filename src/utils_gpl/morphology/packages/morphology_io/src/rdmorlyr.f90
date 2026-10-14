@@ -52,6 +52,7 @@ contains
       use grid_dimens_module, only: griddimtype
       use dfparall, only: parll
       use m_scannr, only: scannr
+      use m_combinepaths, only: combinepaths
       !
       implicit none
 !
@@ -784,38 +785,36 @@ contains
                ! uniform or spatially varying thickness
                !
                txtput1 = 'Thickness coarse layer'
-               telfil = ''
-               call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', telfil)
-               !
-               ! Intel 7.0 crashes on an inquire statement when file = ' '
-               !
-               if (telfil == ' ') telfil = 'dummyname'
-               inquire (file=telfil, exist=ex)
-               !
-               if (ex) then
-                  write (lundia, '(3a)') txtput1, ':', telfil
+               call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', filmor, is_float, thclyr(1), filename)
+               if (is_float) then
+                  write (lundia, '(2a,e20.4)') txtput1, ':', thclyr(1)
                   !
-                  ! read data from file
-                  !
-                  call depfil(lundia, error, telfil, fmttmp, &
-                            & thclyr, 1, 1, griddim)
-                  if (error) then
-                     errmsg = 'Unable to read transport layer thickness from '//trim(telfil)
-                     call write_error(errmsg, unit=lundia)
-                     return
-                  end if
-               else
-                  telfil = ' '
-                  call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', thclyr(1))
-                  if (thclyr(1) <= 0) then
-                     errmsg = 'ThCLyr should be positive in '//trim(filmor)
-                     call write_error(errmsg, unit=lundia)
+                  if (thclyr(1) <= 0.0_fp) then
+                     call write_error('ThCLyr should be positive in '//trim(filmor), unit=lundia)
                      error = .true.
                      return
                   end if
-                  thclyr(:) = thclyr(1)
-                  !
-                  write (lundia, '(2a,e20.4)') txtput1, ':', thclyr(1)
+                  do it = nmlb, nmub
+                     thclyr(it) = thclyr(1)
+                  end do
+               else
+                  inquire (file=filename, exist=ex)
+                  if (ex) then
+                     write (lundia, '(3a)') txtput1, ':', filename
+                     telfil = filename
+                     !
+                     call depfil_stm(lundia, error, filename, fmttmp, &
+                                   & thclyr, 1, 1, griddim, errmsg)
+                     if (error) then
+                        call write_error(errmsg, unit=lundia)
+                        call write_error('Unable to read coarse layer thickness from '//filename, unit=lundia)
+                        return
+                     end if
+                  else
+                     call write_error('Coarse layer thickness file '//filename//' does not exist', unit=lundia)
+                     error = .true.
+                     return
+                  end if
                end if
             end associate !telfil
          end if
@@ -1069,6 +1068,8 @@ contains
          if (iunderlyr /= 2 .and. flcomp /= ' ') then
             write (lundia, '(a)') 'WARNING: IniComp keyword only supported for IUnderLyr=2'
             flcomp = ' '
+         else
+            flcomp = combinepaths(filmor, flcomp)
          end if
          txtput1 = 'Initial bed composition'
          if (flcomp == ' ') then

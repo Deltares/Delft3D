@@ -46,7 +46,7 @@ contains
                        & array, nfld, ifld, dims, &
                        & errmsg)
       use precision
-      use grid_dimens_module
+      use grid_dimens_module, only: griddimtype, MESH_UNSTRUCTURED
 ! MOR_USE_ECMODULE macro used from global_config.h to enable/disable EC-module for space-varying input in sed/mor.
 #if MOR_USE_ECMODULE
       use m_ec_module
@@ -94,9 +94,6 @@ contains
       integer :: jsferic
       integer :: jasfer3D
       integer :: jins
-      character(256) :: path
-      character(256) :: file
-      character(256) :: ext
       character(20) :: xlocstring
       character(20) :: ylocstring
 
@@ -111,14 +108,8 @@ contains
       error = .false.
       if (present(errmsg)) errmsg = ' '
       !
-      path = ' '
-      file = ' '
-      ext = ' '
-      call split_filename(fildep, path, file, ext)
 #if MOR_USE_ECMODULE
-      if (ext(1:3) == '.xy') then
-         ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
-         !
+      if (dims%meshtype == MESH_UNSTRUCTURED) then
          ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
          open (newunit=minp0, file=fildep, form=fmttmp, status='old', iostat=ios)
          if (ios /= 0) then
@@ -208,7 +199,7 @@ contains
                               & array, nfld, ifld, dims, &
                               & errmsg)
       use precision
-      use grid_dimens_module
+      use grid_dimens_module, only: griddimtype, MESH_UNSTRUCTURED
 #if MOR_USE_ECMODULE
       use m_ec_module
       use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
@@ -254,9 +245,6 @@ contains
       integer :: jsferic
       integer :: jasfer3D
       integer :: jins
-      character(256) :: path
-      character(256) :: file
-      character(256) :: ext
       character(20) :: xlocstring
       character(20) :: ylocstring
 
@@ -270,14 +258,8 @@ contains
       transformcoef = 0.0_hp
       error = .false.
       if (present(errmsg)) errmsg = ' '
-      path = ' '
-      file = ' '
-      ext = ' '
-      call split_filename(fildep, path, file, ext)
 #if MOR_USE_ECMODULE
-      if (ext(1:3) == '.xy') then
-         ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
-         !
+      if (dims%meshtype == MESH_UNSTRUCTURED) then
          ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
          open (newunit=minp0, file=fildep, form=fmttmp, status='old')
          if (ios /= 0) then

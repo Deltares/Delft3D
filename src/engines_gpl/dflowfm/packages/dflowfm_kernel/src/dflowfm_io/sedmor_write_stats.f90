@@ -51,7 +51,6 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: tim
-      integer :: ierr
       real(kind=dp) :: tem_dif
 
       if (.not. stm_included) then
@@ -61,7 +60,6 @@ contains
          return
       end if
 
-      ierr = 1
       if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0) then
          if (comparereal(tim, time_sed, EPS10) >= 0) then
             call unc_write_sed(tim)
@@ -79,11 +77,6 @@ contains
             end if
          end if
       end if
-
-      ierr = 0
-
-1234  continue
-      return
    end subroutine sedmor_write_stats
 
 end module m_sedmor_write_stats
