@@ -1491,10 +1491,9 @@ contains
       character(len=*), intent(in) :: structurefile !< Structure file containing the property block.
       character(len=*), intent(in) :: st_id !< Identifier of the structure being read.
 
-      integer :: i, j
+      integer :: i
       character(len=IdLen) :: key
       type(tree_data), pointer :: setting
-      logical :: setting_visited
 
       if (.not. associated(md_ptr%child_nodes)) then
          return
@@ -1502,27 +1501,11 @@ contains
 
       do i = 1, size(md_ptr%child_nodes)
          setting => md_ptr%child_nodes(i)%node_ptr
-         key = tree_get_name(setting)
-         if (len_trim(key) == 0) then
-            cycle
-         end if
-
          if (setting%node_visit < 1) then
-            setting_visited = .false.
-            j = i + 1
-            do while (j <= size(md_ptr%child_nodes))
-               if (len_trim(tree_get_name(md_ptr%child_nodes(j)%node_ptr)) > 0) then
-                  exit
-               end if
-               setting_visited = setting_visited .or. md_ptr%child_nodes(j)%node_ptr%node_visit > 0
-               j = j + 1
-            end do
-
-            if (.not. setting_visited) then
-               write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structurefile), &
-                  ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
-               call warn_flush()
-            end if
+            key = tree_get_name(setting)
+            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structurefile), &
+               ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
+            call warn_flush()
          end if
       end do
    end subroutine warn_unknown_structure_settings
