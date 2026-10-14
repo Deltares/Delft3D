@@ -377,8 +377,6 @@ contains
 
       ! Local variables
       integer :: source_sink_index !< Source/sink index
-      integer :: sink_flowcell_index !< Flowcell index of sink
-      integer :: source_flowcell_index !< Flowcell index of source
       integer, dimension(2) :: flowcell_indices !< Flowcell indices for the source and sink.
       integer, dimension(1) :: dummy_flowcell_index !< Dummy flowcell index for readout
       real(kind=dp), dimension(2) :: discharge_cosine !< Discharge cosine for sink (1) and source (2) side.
@@ -456,7 +454,7 @@ contains
          return
       end if
 
-      if (sink_flowcell_index > 0) then
+      if (flowcell_indices(1) > 0) then
          if (z_sink(2) /= dmiss) then
             self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
          end if
@@ -487,7 +485,7 @@ contains
 
       end if
 
-      if (source_flowcell_index > 0) then
+      if (flowcell_indices(2) > 0) then
          if (z_source(2) /= dmiss) then
             self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
