@@ -904,12 +904,8 @@ contains
                if (valgategen(IVAL_GATE_WIDTHWET, n) == 0.0_dp) then
                   valgategen(IVAL_GATE_FLOWH, n) = dmiss
                else
-                  if (network%sts%numGates > 0) then
-                     i = network%sts%gateIndices(n)
-                  else
-                     i = gate2cgen(n)
-                  end if
-                  valgategen(IVAL_GATE_FLOWH, n) = max(min(zcgen(4 * i - 2) - zcgen(4 * i - 3), valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - zcgen(4 * i - 3)), 0.0_dp) ! flow through height is always positive
+                  valgategen(IVAL_GATE_FLOWH, n) = max(min(valgategen(IVAL_GATE_EDGEL, n) - valgategen(IVAL_GATE_SILLH, n), &
+                                                         valgategen(IVAL_GATE_FLOWH, n) / valgategen(IVAL_GATE_WIDTHWET, n) - valgategen(IVAL_GATE_SILLH, n)), 0.0_dp) ! flow through height is always positive
                end if
             end do
          end if
