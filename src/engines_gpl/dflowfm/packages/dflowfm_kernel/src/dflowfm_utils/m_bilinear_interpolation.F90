@@ -27,12 +27,12 @@ contains
 
    !> Construct bilinear interpolation data from a file without changing global sample data.
    function read_bilinear_data(filename, filetype, status) result(data)
-      use timespace_parameters, only: ARCINFO
+      use timespace_parameters, only: ARCINFO, GEOTIFF
       use m_read_arcinfo, only: readarcinfoheader, readarcinfoblock
       use m_missing, only: dmiss
 
       character(len=*), intent(in) :: filename !< Input raster filename.
-      integer, intent(in) :: filetype !< Input format; currently only ARCINFO is supported.
+      integer, intent(in) :: filetype !< Input format: ARCINFO or GEOTIFF.
       integer, intent(out) :: status !< Zero on success, nonzero on unsupported format or read failure.
       type(bilinear_data) :: data !< Loaded interpolation data; values remain unallocated on failure.
 
@@ -41,36 +41,127 @@ contains
 
       data%missing_value = dmiss
       status = 1
-      if (filetype /= ARCINFO) then
-         return
-      end if
+      if (filetype == GEOTIFF) then
+         call read_bilinear_geotiff(filename, data%values, data%origin, data%spacing, data%missing_value, status)
+      else if (filetype == ARCINFO) then
+         open (newunit=file_unit, file=filename, status='old', action='read', iostat=status)
+         if (status /= 0) then
+            return
+         end if
 
-      open (newunit=file_unit, file=filename, status='old', action='read', iostat=status)
-      if (status /= 0) then
-         return
-      end if
-
-      call readarcinfoheader(file_unit, num_columns, num_rows, data%origin(1), data%origin(2), &
-                             data%spacing(1), data%spacing(2), file_missing, status)
-      if (status == 0) then
-         if (num_columns <= 0 .or. num_rows <= 0 .or. any(data%spacing == 0.0_dp)) then
-            status = 1
-         else
-            allocate (data%values(num_columns, num_rows), stat=status)
-            if (status == 0) then
-               call readarcinfoblock(file_unit, data%values, num_columns, num_rows, file_missing, status)
+         call readarcinfoheader(file_unit, num_columns, num_rows, data%origin(1), data%origin(2), &
+                                data%spacing(1), data%spacing(2), file_missing, status)
+         if (status == 0) then
+            if (num_columns <= 0 .or. num_rows <= 0 .or. any(data%spacing == 0.0_dp)) then
+               status = 1
+            else
+               allocate (data%values(num_columns, num_rows), stat=status)
+               if (status == 0) then
+                  call readarcinfoblock(file_unit, data%values, num_columns, num_rows, file_missing, status)
+               end if
             end if
          end if
-      end if
 
-      close (file_unit, iostat=close_status)
-      if (status == 0) then
-         status = close_status
-      end if
-      if (status /= 0 .and. allocated(data%values)) then
-         deallocate (data%values)
+         close (file_unit, iostat=close_status)
+         if (status == 0) then
+            status = close_status
+         end if
+         if (status /= 0 .and. allocated(data%values)) then
+            deallocate (data%values)
+         end if
       end if
    end function read_bilinear_data
+
+   !> Read bilinear raster values and pixel-centre geometry without modifying global samples.
+   subroutine read_bilinear_geotiff(filename, values, origin, spacing, missing_value, status)
+#ifdef HAVE_GDAL
+      use iso_c_binding, only: c_int, c_double, c_null_char
+      use ieee_arithmetic, only: ieee_is_finite, ieee_is_nan
+      use gdal, only: gdaldataseth, gdalallregister, gdalopen, ga_readonly, gdalassociated, gdalclose, &
+                      gdalgetrasterxsize, gdalgetrasterysize, gdalgetrastercount, gdalgetrasterband, &
+                      gdalgetgeotransform, gdaldatasetrasterio_f, gf_read, gdalgetrasternodatavalue, &
+                      gdalgetrasterdatatype, gdt_byte, gdt_uint16, gdt_int16, gdt_uint32, gdt_int32, gdt_float32, gdt_float64
+#endif
+      character(len=*), intent(in) :: filename !< GeoTIFF filename.
+      real(kind=dp), dimension(:, :), allocatable, intent(out) :: values !< Raster values in GDAL column/row order.
+      real(kind=dp), dimension(2), intent(out) :: origin !< Coordinates of the first pixel centre.
+      real(kind=dp), dimension(2), intent(out) :: spacing !< Signed coordinate increments.
+      real(kind=dp), intent(in) :: missing_value !< Internal missing marker used to normalize NoData and nonfinite values.
+      integer, intent(out) :: status !< Zero on success; nonzero on unsupported geometry, read failure, or missing GDAL.
+#ifdef HAVE_GDAL
+      type(gdaldataseth) :: dataset
+      real(kind=c_double), dimension(:, :, :), allocatable :: buffer
+      real(kind=c_double), dimension(6) :: geotransform
+      real(kind=c_double) :: file_missing
+      integer(kind=c_int) :: num_columns, num_rows, has_missing
+#endif
+
+      status = 1
+      origin = 0.0_dp
+      spacing = 0.0_dp
+#ifdef HAVE_GDAL
+      call gdalallregister()
+      dataset = gdalopen(trim(filename)//c_null_char, ga_readonly)
+      if (.not. gdalassociated(dataset)) then
+         return
+      end if
+
+      do
+         num_columns = gdalgetrasterxsize(dataset)
+         num_rows = gdalgetrasterysize(dataset)
+         if (num_columns <= 0 .or. num_rows <= 0 .or. gdalgetrastercount(dataset) /= 1) then
+            exit
+         end if
+         select case (gdalgetrasterdatatype(gdalgetrasterband(dataset, 1)))
+         case (gdt_byte, gdt_uint16, gdt_int16, gdt_uint32, gdt_int32, gdt_float32, gdt_float64)
+         case default
+            exit
+         end select
+         if (gdalgetgeotransform(dataset, geotransform) /= 0) then
+            exit
+         end if
+         if (.not. all(ieee_is_finite(geotransform))) then
+            exit
+         end if
+         if (geotransform(3) /= 0.0_dp .or. geotransform(5) /= 0.0_dp .or. &
+             geotransform(2) == 0.0_dp .or. geotransform(6) == 0.0_dp) then
+            exit
+         end if
+
+         allocate (buffer(num_columns, num_rows, 1), stat=status)
+         if (status /= 0) then
+            exit
+         end if
+         status = 1
+         if (gdaldatasetrasterio_f(dataset, gf_read, 0_c_int, 0_c_int, buffer) /= 0) then
+            exit
+         end if
+         allocate (values(num_columns, num_rows), stat=status)
+         if (status /= 0) then
+            exit
+         end if
+         values = buffer(:, :, 1)
+         has_missing = 0
+         file_missing = gdalgetrasternodatavalue(gdalgetrasterband(dataset, 1), has_missing)
+         if (has_missing /= 0 .and. .not. ieee_is_nan(file_missing)) then
+            where (values == file_missing)
+               values = missing_value
+            end where
+         end if
+         where (.not. ieee_is_finite(values))
+            values = missing_value
+         end where
+         spacing = [geotransform(2), geotransform(6)]
+         origin = [geotransform(1), geotransform(4)] + 0.5_dp * spacing
+         status = 0
+         exit
+      end do
+      call gdalclose(dataset)
+      if (status /= 0 .and. allocated(values)) then
+         deallocate (values)
+      end if
+#endif
+   end subroutine read_bilinear_geotiff
 
    !> Bilinear interpolation of coordinates from a uniform rectangular raster.
    elemental function interpolate_bilinear(raster, x, y) result(res)

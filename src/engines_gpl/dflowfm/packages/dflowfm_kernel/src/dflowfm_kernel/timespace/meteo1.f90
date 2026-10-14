@@ -3345,10 +3345,9 @@ contains
             call warn_flush()
          end if
 
-      else if (local_method == METHOD_BILINEAR) then
+      else if (local_method == METHOD_BILINEAR .and. filetype /= GEOTIFF) then
 
-         ! If method is bilinear, but filetype is not ArcInfo, raise error.
-         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for ArcInfo and GeoTIFF.'
          call err_flush()
          return
 
@@ -3392,24 +3391,22 @@ contains
             call warn_flush()
             return
 
-         case (ARCINFO)
+            case (ARCINFO, GEOTIFF)
 
             if (local_method == METHOD_BILINEAR) then
-               data = bilinear_data(filename, ARCINFO, ierr)
+               data = bilinear_data(filename, filetype, ierr)
                if (ierr /= 0) then
                   msgbuf = 'timespace::timespaceinitialfield: could not read bilinear interpolation data from '''//trim(filename)//'''.'
                   call err_flush()
                   return
                end if
-            else
+            else if (filetype == ARCINFO) then
                call read_samples_from_arcinfo(filename, 0, 0)
-            end if
-
-         case (GEOTIFF)
-
-            success = read_samples_from_geotiff(filename)
-            if (.not. success) then
-               return
+            else
+               success = read_samples_from_geotiff(filename)
+               if (.not. success) then
+                  return
+               end if
             end if
 
          case default

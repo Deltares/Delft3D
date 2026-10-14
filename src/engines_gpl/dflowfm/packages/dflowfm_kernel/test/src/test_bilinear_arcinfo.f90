@@ -1,5 +1,5 @@
-!> Isolated tests of raster loading and bilinear interpolation.
-module test_bilinear_interpolation
+!> Tests of ArcInfo raster loading and in-memory bilinear interpolation.
+module test_bilinear_arcinfo
    use assertions_gtest
    use precision, only: dp
    use m_bilinear_interpolation, only: bilinear_data
@@ -14,7 +14,7 @@ module test_bilinear_interpolation
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_arcinfo_read, test_bilinear_arcinfo_read,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_arcinfo_read, test_bilinear_arcinfo_read,
    !> Read geometry, row order, and missing values from an ArcInfo file, then interpolate.
    subroutine test_bilinear_arcinfo_read() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_arcinfo.asc'
@@ -56,7 +56,7 @@ contains
    end subroutine test_bilinear_arcinfo_read
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_weights, test_bilinear_weights,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_weights, test_bilinear_weights,
    !> Verify corner weights, exact sample coordinates, and elemental vector calls.
    subroutine test_bilinear_weights() bind(C)
       type(bilinear_data) :: data
@@ -69,7 +69,7 @@ contains
    end subroutine test_bilinear_weights
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_boundaries, test_bilinear_boundaries,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_boundaries, test_bilinear_boundaries,
    !> Preserve truncation below the origin and exclusion of the last row and column.
    subroutine test_bilinear_boundaries() bind(C)
       type(bilinear_data) :: data
@@ -83,7 +83,7 @@ contains
    end subroutine test_bilinear_boundaries
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_missing_corners, test_bilinear_missing_corners,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_missing_corners, test_bilinear_missing_corners,
    !> Every missing corner rejects interpolation, even when its weight would be zero.
    subroutine test_bilinear_missing_corners() bind(C)
       type(bilinear_data) :: data
@@ -100,7 +100,7 @@ contains
    end subroutine test_bilinear_missing_corners
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_signed_spacing, test_bilinear_signed_spacing,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_signed_spacing, test_bilinear_signed_spacing,
    !> Coordinate mapping supports unequal spacing and either signed axis direction.
    subroutine test_bilinear_signed_spacing() bind(C)
       type(bilinear_data) :: data
@@ -118,7 +118,7 @@ contains
    end subroutine test_bilinear_signed_spacing
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_interpolation, test_bilinear_thin_grids, test_bilinear_thin_grids,
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_thin_grids, test_bilinear_thin_grids,
    !> Grids without a two-by-two neighborhood return the configured missing marker.
    subroutine test_bilinear_thin_grids() bind(C)
       integer, dimension(3), parameter :: num_columns = [1, 1, 2]
@@ -160,4 +160,4 @@ contains
       end do
    end subroutine check_bilinear_results
 
-end module test_bilinear_interpolation
+end module test_bilinear_arcinfo

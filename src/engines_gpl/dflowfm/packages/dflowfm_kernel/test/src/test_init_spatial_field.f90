@@ -4,7 +4,7 @@ module test_init_spatial_field
    use fm_location_types, only: TARGET_LAYER_ALL_3D, TARGET_LAYER_UNIFORM
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
-                                  WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE
+                                  WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE, METHOD_BILINEAR
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -388,6 +388,12 @@ contains
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
          call f90_expect_eq(input%method, expected_methods(i), trim(file_types(i))//' should select the expected effective method')
       end do
+
+      call make_test_input(input, forcing_file='dummy.tif', forcing_file_type='geotiff', &
+                           interpolation_method='bilinear')
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                           'GeoTIFF should accept explicit bilinear interpolation')
+      call f90_expect_eq(input%method, METHOD_BILINEAR, 'GeoTIFF should retain the explicit bilinear method')
    end subroutine test_validate_supported_extensions_select_effective_methods
    !$f90tw)
 
