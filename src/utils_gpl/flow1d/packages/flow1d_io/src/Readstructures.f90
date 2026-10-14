@@ -1477,10 +1477,12 @@ contains
 
    end subroutine readGeneralStructure
 
+   !> Warns about unknown or unused settings in a general-structure property block.
+   !! Each warning identifies the setting, structure, and source file.
    subroutine warn_unknown_general_structure_settings(md_ptr, structurefile, st_id)
-      type(tree_data), pointer, intent(in) :: md_ptr
-      character(len=*), intent(in) :: structurefile
-      character(len=*), intent(in) :: st_id
+      type(tree_data), pointer, intent(in) :: md_ptr !< Property tree for the structure.
+      character(len=*), intent(in) :: structurefile !< Structure file containing the property block.
+      character(len=*), intent(in) :: st_id !< Identifier of the structure being read.
 
       integer :: i
       character(len=IdLen) :: key
