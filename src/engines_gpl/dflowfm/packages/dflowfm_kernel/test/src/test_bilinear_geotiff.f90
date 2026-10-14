@@ -2,7 +2,7 @@
 module test_bilinear_geotiff
    use assertions_gtest
    use precision, only: dp
-   use iso_c_binding, only: c_double, c_null_char, c_null_ptr
+   use iso_c_binding, only: c_float, c_double, c_null_char, c_null_ptr
    use ieee_arithmetic, only: ieee_value, ieee_quiet_nan
    use gdal, only: gdaldriverh, gdaldataseth, gdalallregister, gdalgetdriverbyname, gdalcreate, gdalassociated, &
                    gdalsetgeotransform, gdaldatasetrasterio_f, gf_write, gdalgetrasterband, &
@@ -72,17 +72,27 @@ contains
       real(kind=c_double), dimension(6) :: transform
       real(kind=c_double) :: file_missing
       type(bilinear_data) :: data
-      integer :: status, missing_case
+      integer :: status, missing_case, data_type
 
       transform = [20.0_dp, 2.0_dp, 0.0_dp, 30.0_dp, 0.0_dp, -4.0_dp]
-      do missing_case = 1, 2
-         if (missing_case == 1) then
+      do missing_case = 1, 5
+         data_type = gdt_float64
+         select case (missing_case)
+         case (1)
             file_missing = -9999.0_dp
-         else
+         case (2, 5)
             file_missing = ieee_value(0.0_dp, ieee_quiet_nan)
+         case (3, 4)
+            file_missing = -3.4_dp
+         end select
+         if (missing_case == 3 .or. missing_case == 5) then
+            data_type = gdt_float32
          end if
          values = reshape([2.0_dp, 6.0_dp, 10.0_dp, file_missing], shape(values))
-         if (.not. create_test_geotiff(filename, values, transform, gdt_float64, file_missing)) then
+         if (missing_case == 3) then
+            values(1, 1, 1) = real(nearest(real(file_missing, c_float), 1.0_c_float), c_double)
+         end if
+         if (.not. create_test_geotiff(filename, values, transform, data_type, file_missing)) then
             return
          end if
          data = bilinear_data(filename, GEOTIFF, status)
@@ -91,6 +101,7 @@ contains
          if (.not. allocated(data%values)) then
             return
          end if
+         call f90_expect_near(data%values(1, 1), values(1, 1, 1), 0.0_dp)
          call f90_expect_near(data%values(2, 2), dmiss, 0.0_dp)
          call f90_expect_near(data%interpolate(22.0_dp, 26.0_dp), dmiss, 0.0_dp)
          call f90_expect_near(data%interpolate(21.0_dp, 28.0_dp), dmiss, 0.0_dp)

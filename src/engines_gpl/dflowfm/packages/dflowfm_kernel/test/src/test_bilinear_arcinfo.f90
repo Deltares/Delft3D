@@ -11,6 +11,7 @@ module test_bilinear_arcinfo
    public :: test_bilinear_arcinfo_read, test_bilinear_weights, test_bilinear_boundaries
    public :: test_bilinear_missing_corners, test_bilinear_signed_spacing
    public :: test_bilinear_thin_grids
+   public :: test_bilinear_arcinfo_rectangular
 
 contains
 
@@ -54,6 +55,50 @@ contains
       call f90_expect_near(data%values(3, 2), dmiss, 0.0_dp)
       call check_bilinear_results(data, [0.5_dp, 1.5_dp], [0.5_dp, 0.5_dp], [3.0_dp, dmiss])
    end subroutine test_bilinear_arcinfo_read
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_arcinfo_rectangular, test_bilinear_arcinfo_rectangular,
+   !> Non-square rasters shift corner coordinates by their own axis spacing, but not centre coordinates.
+   subroutine test_bilinear_arcinfo_rectangular() bind(C)
+      character(len=*), parameter :: filename = 'test_bilinear_rectangular.asc'
+      type(bilinear_data) :: data
+      real(kind=dp), dimension(2) :: expected_origin
+      integer :: file_unit, status, coordinate_case
+
+      do coordinate_case = 1, 2
+         open (newunit=file_unit, file=filename, status='replace', action='write', iostat=status)
+         call f90_expect_eq(status, 0)
+         if (status /= 0) then
+            return
+         end if
+         write (file_unit, '(a)') 'ncols 2', 'nrows 2'
+         if (coordinate_case == 1) then
+            write (file_unit, '(a)') 'xllcorner 10', 'yllcorner 20'
+            expected_origin = [11.0_dp, 22.0_dp]
+         else
+            write (file_unit, '(a)') 'xllcenter 10', 'yllcenter 20'
+            expected_origin = [10.0_dp, 20.0_dp]
+         end if
+         write (file_unit, '(a)') 'cellsize 2 4', 'NODATA_value -9999', '10 22', '2 6'
+         close (file_unit)
+         data = bilinear_data(filename, ARCINFO, status)
+         call f90_expect_eq(status, 0)
+         open (newunit=file_unit, file=filename, status='old', iostat=status)
+         call f90_expect_eq(status, 0)
+         if (status == 0) then
+            close (file_unit, status='delete')
+         end if
+         if (.not. allocated(data%values)) then
+            return
+         end if
+         call f90_expect_near(data%origin(1), expected_origin(1), 0.0_dp)
+         call f90_expect_near(data%origin(2), expected_origin(2), 0.0_dp)
+         call f90_expect_near(data%spacing(1), 2.0_dp, 0.0_dp)
+         call f90_expect_near(data%spacing(2), 4.0_dp, 0.0_dp)
+         call f90_expect_near(data%interpolate(expected_origin(1) + 1.0_dp, expected_origin(2) + 2.0_dp), &
+                              10.0_dp, 1.0e-12_dp)
+      end do
+   end subroutine test_bilinear_arcinfo_rectangular
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_bilinear_arcinfo, test_bilinear_weights, test_bilinear_weights,

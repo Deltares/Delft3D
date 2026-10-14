@@ -67,7 +67,7 @@ contains
          X0 = X0 + DX / 2
       end if
       if (JACORNERy == 1) then
-         Y0 = Y0 + DX / 2
+         Y0 = Y0 + DY / 2.0_dp
       end if
       if (present(status)) then
          status = 0

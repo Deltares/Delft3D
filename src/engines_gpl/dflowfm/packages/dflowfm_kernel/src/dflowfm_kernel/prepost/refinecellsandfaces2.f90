@@ -365,6 +365,9 @@ contains
 !  error handling
 
 1234  continue
+   if (allocated(arcinfo_data%values)) then
+      deallocate (arcinfo_data%values)
+   end if
 
 !  deallocate
       if (allocated(jarefine)) then
