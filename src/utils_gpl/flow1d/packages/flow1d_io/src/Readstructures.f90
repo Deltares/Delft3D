@@ -209,6 +209,7 @@ contains
 
             ! TODO: UNST-2799: temporary check on polylinefile to prevent stopping on old (1.00) structure files. They will be read by dflowfm kernel itself.
 
+            st_id = ''
             call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'id', st_id, success1)
             if (.not. success1) then
                write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ', id is missing.'
