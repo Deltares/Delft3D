@@ -44,8 +44,8 @@ object StartVerschilanalyse : BuildType({
     dependencies {
         dependency(PinAndTag) {
             snapshot {
-            onDependencyFailure = FailureAction.FAIL_TO_START
-            onDependencyCancel = FailureAction.CANCEL
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }
@@ -99,6 +99,13 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
+        param("teamcity.configuration.tags", "va")
+        select("teamcity.build.chain.onlyTags", "va",
+            label = "Which build chains to trigger for VA",
+            display = ParameterDisplay.PROMPT,
+            options = listOf(
+                "va only" to "va",
+                "run all" to ""))
     }
 
     steps {
