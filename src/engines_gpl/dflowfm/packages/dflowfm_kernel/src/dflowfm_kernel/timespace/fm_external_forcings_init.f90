@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
+
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
    use m_missing, only: dmiss, imiss
@@ -265,7 +265,7 @@ contains
    subroutine scan_time_dependent_spatial_inputs(bnd_ptrs)
       use m_meteo, only: quantity_name_config_file_to_internal_name
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, select_spatial_field_method, &
-                                 is_static_file_type, allocate_time_dependent_spatial_quantities, &
+                                 is_static_spatial_input, allocate_time_dependent_spatial_quantities, &
                                  register_time_dependent_spatial_quantity
       use precision_basics, only: comparereal
       use string_module, only: str_tolower
@@ -273,15 +273,19 @@ contains
       use tree_structures, only: tree_get_name, tree_num_nodes
       use timespace_parameters, only: METHOD_UNKNOWN
 
+      ! Arguments
       type(tree_data_ptr), dimension(:), intent(in) :: bnd_ptrs !< List of already loaded external forcings files.
 
+      ! Local variables
       type(tree_data), pointer :: bnd_ptr
       type(tree_data), pointer :: block_ptr
       type(t_spatial_field_input) :: input
       integer :: i, i_ext, max_num_quantities, num_items
       character(len=:), allocatable :: group_name
 
+      ! Initialization
       max_num_quantities = 0
+
       do i_ext = 1, size(bnd_ptrs)
          max_num_quantities = max_num_quantities + tree_num_nodes(bnd_ptrs(i_ext)%node_ptr)
       end do
@@ -312,7 +316,7 @@ contains
                cycle
             end if
 
-            if (.not. is_static_file_type(input%forcing_file_type, input%method)) then
+            if (.not. is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)) then
                call register_time_dependent_spatial_quantity(input%quantity)
             end if
          end do
@@ -465,6 +469,7 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
@@ -475,6 +480,7 @@ contains
       integer, intent(inout) :: ibqh !< block counter for qh boundaries
       logical :: res
 
+      ! Local variables
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
@@ -483,6 +489,7 @@ contains
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
+      ! Initialization
       res = .true.
 
       ! First check for required input:
@@ -607,6 +614,7 @@ contains
             end if
          end if
       end do
+
       if (.not. is_successful) then ! This addtimespace was not successful
          error_message = getmeteoerror()
          if (len_trim(error_message) > 0) then
@@ -630,6 +638,7 @@ contains
       use fm_location_types, only: SPATIAL_LOCATION_1D
       use unstruc_files, only: resolvePath
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: loc_id !< The id of the lateral
       character(len=*), intent(in) :: base_dir !< The base directory of the lateral
@@ -643,10 +652,12 @@ contains
       character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
       logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
+      ! Local variables
       logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
-      integer, parameter :: maximum_number_of_discharge_specifications = 4
+      integer, parameter :: MAXIMUM_NUMBER_OF_DISCHARGE_SPECIFICATIONS = 4
 
+      ! Initialization
       loc_spec_type = imiss
       node_id = ''
       branch_id = ''
@@ -664,7 +675,7 @@ contains
       has_location_file = has_key(block_ptr, 'Lateral', 'locationFile')
 
       ! Test if multiple discharge methods were set
-      number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+      number_of_discharge_specifications = sum([(1, integer :: i=1, MAXIMUM_NUMBER_OF_DISCHARGE_SPECIFICATIONS)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
 
       if (number_of_discharge_specifications < 1) then
          call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
@@ -737,6 +748,7 @@ contains
          return
       end if
       call err('Programming error, please report: read_lateral_discharge_definition failed to read lateral '''//trim(loc_id)//'''')
+
    end subroutine read_lateral_discharge_definition
 
    !> Read lateral blocks from new external forcings file and makes required initialisations
@@ -757,11 +769,13 @@ contains
       use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       integer, intent(in) :: block_number !< Number of the block, only used in error message
       integer, intent(in) :: major !< Major version number of ext-file
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: loc_id
       integer :: loc_spec_type, num_coordinates
       character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
@@ -771,9 +785,10 @@ contains
       character(len=300) :: rec
       integer :: ilattype, nlat, ierr
 
+      ! Initialization
       is_successful = .false.
-
       loc_id = ' '
+
       call prop_get(block_ptr, 'Lateral', 'id', loc_id, is_read)
       if (.not. is_read .or. len_trim(loc_id) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in lateral (block #', block_number, ').'
@@ -857,7 +872,7 @@ contains
    !! Handles allocation and flag setup for all meteo quantities.
    !! target_array remains null for most quantities (EC module writes directly
    !! into named arrays); only set for quantities that need an explicit target pointer (e.g. qext).
-   function resolve_meteo_target(quantity, file_name, target_location_type, target_array) result(success)
+   function resolve_meteo_target(quantity, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -868,20 +883,19 @@ contains
       use m_flowgeom, only: ndx, lnx
       use string_module, only: str_tolower
 
-      implicit none
-
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the quantity.
-      character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
       logical :: success
 
+      ! Local variables
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
-      associate (dummy => file_name)
-      end associate
+
       target_array => null()
       target_location_type = UNC_LOC_S ! default for all meteo quantities except wind
       success = .true.
+      
       select case (str_tolower(quantity))
       case ('airdensity')
          call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
@@ -929,48 +943,117 @@ contains
 
    end function resolve_meteo_target
 
-!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
-!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
-   function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data, is_static_field) result(res)
+   !> Read a static 3D field using EC. Separate routine to avoid binding a temporary array to the EC module's target array.
+   function initialize_static_3d_field(quantity, target_x, target_y, mask, vector_max, forcing_file, &
+                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-      use m_ec_parameters, only: ec_undef_int
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_alloc, only: reallocP
 
-      character(len=*), intent(in) :: quantity, forcing_file, variable_name
-      real(dp), intent(in) :: target_x(:), target_y(:)
-      integer, intent(in) :: mask(:), kx, filetype, method, oper
-      integer, intent(inout) :: ec_item
-      real(dp), pointer, intent(out) :: target_data(:)
-      logical, intent(in) :: is_static_field
-      logical :: res
+      character(len=*), intent(in) :: quantity !< Quantity id (often coming from external forcings file)
+      character(len=*), intent(in) :: forcing_file !< File containing the source data values.
+      character(len=*), intent(in) :: variable_name !< Variable name with the forcing_file (e.g., for NetCDF files).
+      real(dp), intent(in) :: target_x(:) !< Array of x-coordinates for the target ElementSet.
+      real(dp), intent(in) :: target_y(:) !< Array of y-coordinates for the target ElementSet.
+      integer, intent(in) :: mask(:) !< Array of masking values for the target ElementSet.
+      integer, intent(in) :: vector_max !< Vector max (length of data values at each element location).
+      integer, intent(in) :: filetype !< FM's filetype enumeration.
+      integer, intent(in) :: method !< FM's method enumeration.
+      integer, intent(in) :: oper !< FM's operand enumeration.
+      integer, intent(inout) :: ec_item !< Target item id for the created relation.
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target data storage for the static field.
+      logical :: res !< Whether or not relation was succesfully created.
 
-      integer, pointer :: pkbot(:), pktop(:)
+      ! Local variables
+      integer, dimension(:), pointer :: pkbot, pktop
 
-      if (is_static_field) then
+      if (.not. associated(target_data)) then
          call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
-      else
-         ! target data must be null to avoid binding the pointer to the wrong array.
-         ! this has as a consequence we only support non-static  3D sigma fields for quantities that are recognized by
-         ! fm_ext_force_name_to_ec_item
-         target_data => null()
       end if
       call setzcs()
       pkbot => kbot
       pktop => ktop
 
-      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                    varname=variable_name, tgt_item1=ec_item)
-      if (is_static_field) then ! non-static targets will get their updates at fm_external_forcings_update().
-         res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                        tunit, tstart_user, target_data)
+                                    varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+      if (res) then
+         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
       end if
 
-   end function read_3d_sigma_field
+   end function initialize_static_3d_field
+
+   !> Register an EC time-space relation for a spatial field.
+   !! BCASCII uses the forcing-file argument; other file types use a variable name or data value.
+   function add_timespace_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
+                                         forcing_file_type, filetype, method, oper, variable_name, data_value, ec_item, target_data) result(res)
+      use m_meteo, only: ec_addtimespacerelation
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< Quantity identifier for the EC item.
+      character(len=*), intent(in) :: forcing_file !< File containing the forcing data.
+      character(len=*), intent(in) :: forcing_file_type !< File type string; selects the BCASCII call variant.
+      character(len=*), intent(in) :: variable_name !< Optional variable name in the forcing file.
+      real(dp), dimension(:), intent(in) :: target_x !< X-coordinates of the target element set.
+      real(dp), dimension(:), intent(in) :: target_y !< Y-coordinates of the target element set.
+      real(dp), intent(in) :: data_value !< Constant value used when no variable name is provided.
+      integer, dimension(:), intent(in) :: mask !< Target element mask.
+      integer, intent(in) :: vector_max !< Maximum number of values per target location.
+      integer, intent(in) :: filetype !< FM forcing file type enumeration.
+      integer, intent(in) :: method !< Spatial and temporal interpolation method.
+      integer, intent(in) :: oper !< Operand applied to the forcing values.
+      integer, intent(inout) :: ec_item !< EC item identifier, set when the relation is registered.
+      real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target array associated with the EC relation.
+      logical :: res !< .true. if the EC relation was registered successfully.
+
+      select case (trim(str_tolower(forcing_file_type)))
+      case ('bcascii')
+         res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, 'global', filetype, &
+                                       method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+      case default
+         if (len_trim(variable_name) > 0) then
+            res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
+                                          method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+         else
+            res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
+                                          method, oper, data_value=data_value, tgt_item1=ec_item, tgt_data1=target_data)
+         end if
+      end select
+   end function add_timespace_field_relation
+
+!> Register the time-and-space dependent 3D field relation.
+!! No values are ready/set yet, that should be done by ec_gettimespacevalues in the timeloop.
+   function add_timespace_3D_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
+                                                        filetype, method, oper, variable_name, ec_item) result(res)
+      use m_setzcs, only: setzcs
+      use m_flow, only: zcs, kbot, ktop
+      use m_meteo, only: ec_addtimespacerelation
+
+      character(len=*), intent(in) :: quantity !< Quantity id (often coming from external forcings file)
+      character(len=*), intent(in) :: forcing_file !< File containing the source data values.
+      character(len=*), intent(in) :: variable_name !< Variable name with the forcing_file (e.g., for NetCDF files).
+      real(dp), intent(in) :: target_x(:) !< Array of x-coordinates for the target ElementSet.
+      real(dp), intent(in) :: target_y(:) !< Array of y-coordinates for the target ElementSet.
+      integer, intent(in) :: mask(:) !< Array of masking values for the target ElementSet.
+      integer, intent(in) :: vector_max !< Vector max (length of data values at each element location).
+      integer, intent(in) :: filetype !< FM's filetype enumeration.
+      integer, intent(in) :: method !< FM's method enumeration.
+      integer, intent(in) :: oper !< FM's operand enumeration.
+      integer, intent(inout) :: ec_item !< Target item id for the created relation.
+      logical :: res !< Whether or not relation was succesfully created.
+
+      integer, pointer :: pkbot(:), pktop(:)
+
+      call setzcs()
+      pkbot => kbot
+      pktop => ktop
+
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
+                                    filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
+                                    varname=variable_name, tgt_item1=ec_item)
+   end function add_timespace_3D_field_relation
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
    function init_field1d_block(quantity, forcing_file, file_name) result(res)
@@ -984,15 +1067,16 @@ contains
       use string_module, only: str_tolower
       use m_alloc, only: realloc
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Quantity name as it appears in the ext block.
       character(len=*), intent(in) :: forcing_file !< Path to the 1dField .ini file.
       character(len=*), intent(in) :: file_name !< Path to the ext file, used in error messages.
-
       logical :: res
 
+      ! Local variables
       character(len=256) :: source_quantity_name
-      logical(kind=c_bool), allocatable :: specified_indices(:)
-      real(dp) :: global_value
+      logical(kind=c_bool), dimension(:), allocatable :: specified_indices
+      real(kind=dp) :: global_value
       logical :: global_value_provided
       integer :: ierr
 
@@ -1035,22 +1119,25 @@ contains
 
    end function init_field1d_block
 
+   !> Initialize a spatial block.
+   !! Static inputs are applied during initialization; dynamic inputs are registered as time-dependent forcings.
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower
+      use string_module, only: istarts_with, str_tolower
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
-      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, &
+                       SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, TARGET_LAYER_ALL_3D
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_initial_3D_target, resolve_integer_target, &
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, resolve_constituent_target, resolve_integer_target, &
                                    initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
@@ -1062,40 +1149,38 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use precision_basics, only: comparereal
 
-      type(tree_data), pointer, intent(in) :: block_ptr
-      character(len=*), intent(in) :: base_dir
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node for the field block.
+      character(len=*), intent(in) :: base_dir !< Base directory used to resolve relative paths.
+      character(len=*), intent(in) :: file_name !< Name of the enclosing input file, used in diagnostics.
+      character(len=*), intent(in) :: group_name !< Name of the field block, used in diagnostics.
 
-      logical :: res
+      logical :: res !< .true. if the field block was initialized successfully.
 
-      integer, allocatable :: mask(:)
+      ! Local variables
+      integer, dimension(:), allocatable :: mask
       integer :: target_location_type
       integer :: target_num_points
-      real(dp), dimension(:), pointer :: target_x
-      real(dp), dimension(:), pointer :: target_y
+      real(kind=dp), dimension(:), pointer :: target_x
+      real(kind=dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
-      character(len=256) :: target_layer
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
-      real(dp), dimension(:), pointer :: target_data
+      real(kind=dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
-      real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      real(kind=dp), dimension(:, :), pointer :: target_array_rank_2
       real(dp), dimension(:), pointer :: mapped_data1, mapped_data2, mapped_data3, mapped_data4
       integer, pointer :: mapped_item1, mapped_item2, mapped_item3, mapped_item4
       logical :: mapped
       integer :: oper_backup
 
-      target_layer = ''
-
       res = .false.
       ec_item = ec_undef_int
       target_data => null()
       target_data_integer => null()
-      target_array_3d => null()
+      target_array_rank_2 => null()
       mapped_item1 => null()
 
       input = read_spatial_field_block(block_ptr)
@@ -1116,6 +1201,7 @@ contains
                  forcing_file => input%forcing_file, &
                  forcing_file_type => input%forcing_file_type, &
                  target_mask_file => input%target_mask_file, &
+                 target_layer => input%target_layer, &
                  filetype => input%filetype, &
                  invert_mask => input%invert_mask, &
                  oper => input%oper, &
@@ -1129,6 +1215,7 @@ contains
          end if
 
          kx = 1
+         first_index = 1
          ec_item = ec_undef_int
          target_data => null()
 
@@ -1140,15 +1227,15 @@ contains
             res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
-            res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_initial_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_meteo_target(quantity, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
-            if (res .and. target_location_type == UNC_LOC_3DV .and. associated(target_array_3d)) then
-               target_data => target_array_3d(first_index, :)
+            res = resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer=target_layer)
+            if (res .and. any(target_location_type == [UNC_LOC_3DV, UNC_LOC_S3D]) .and. associated(target_array_rank_2)) then
+               target_data => target_array_rank_2(first_index, :)
             end if
          end if
          if (.not. res) then
@@ -1165,6 +1252,15 @@ contains
             write (msgbuf, '(a)') 'Could not initialize quantity '''//trim(quantity)//' from file '''//trim(file_name)//''': ['//trim(group_name)//']. It is either unknown or invalid.'
             call err_flush()
             return
+         end if
+
+         if (target_layer == TARGET_LAYER_ALL_3D) then
+            if (target_location_type /= UNC_LOC_S3D .or. .not. associated(target_data) .or. kx /= 1) then
+               write (msgbuf, '(a)') 'targetLayer=3d is not supported for quantity '//trim(quantity)//'.'
+               call err_flush()
+               res = .false.
+               return
+            end if
          end if
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
@@ -1186,46 +1282,47 @@ contains
                   call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
-                  call prop_get(block_ptr, '', 'targetLayer', target_layer)
 
-                  if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
+                  if (associated(target_array_rank_2) .and. target_location_type /= UNC_LOC_S3D) then ! allocate horizontal staging buffer for 2D-to-3D expansion
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                      oper_backup = oper
                      oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
-                  ! if the resolve functions did not find a target array, try to map the quantity to an EC item and get the target array from there.
+                  ! Find the registered item for one-shot cleanup; use its data only if target resolution did not find an array.
                   !TODO: resolve functions should always find a target array for single target quantities.
-                  if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_3d)) then
-                     mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
-                                                           mapped_data1, mapped_data2, mapped_data3, mapped_data4)
-                     if (mapped) then
-                        if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
-                           write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
-                              trim(file_name)//''': multiple target arrays are not supported.'
-                           call err_flush()
-                           res = .false.
-                           return
-                        end if
+                  mapped = fm_ext_force_name_to_ec_item('', '', '', '', quantity, mapped_item1, mapped_item2, mapped_item3, mapped_item4, &
+                                                        mapped_data1, mapped_data2, mapped_data3, mapped_data4)
+                  if (mapped) then
+                     if (associated(mapped_item2) .or. associated(mapped_data2)) then ! or more
+                        write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' from file '''// &
+                           trim(file_name)//''': multiple target arrays are not supported.'
+                        call err_flush()
+                        res = .false.
+                        return
+                     end if
+                     if (.not. associated(target_data) .and. .not. associated(target_data_integer) .and. .not. associated(target_array_rank_2)) then
                         if (associated(mapped_item1) .and. associated(mapped_data1)) then
                            target_data => mapped_data1
                         end if
                      end if
                   end if
 
-                  if (filetype == DATAVALUE) then
-                     res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                   method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                  if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
+                     res = initialize_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     ec_item = ec_undef_int
+                  ! TODO: support other time-dependent filetypes as an initial field
+                  else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
+                     res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                        forcing_file_type, filetype, method, oper, variable_name, &
+                                                        input%data_value, ec_item, target_data)
                      if (res) then
                         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
                      end if
-                     ec_item = ec_undef_int
-                  else if (associated(target_data)) then
+                  else if (associated(target_data)) then ! normal timespaceinitialfield
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
                                                  forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
-                  else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
                   else
                      write (msgbuf, '(a)') 'Cannot initialize static quantity '''//trim(quantity)//''' with forcingFileType '''// &
                         trim(forcing_file_type)//''' from file '''//trim(file_name)//''': no target array is available.'
@@ -1234,17 +1331,17 @@ contains
                      return
                   end if
 
-                  if (associated(target_array_3d)) then !> 3D postprocessing
+                  if (associated(target_array_rank_2) .and. target_location_type /= UNC_LOC_S3D) then !> 2D to 3D expansion postprocessing
                      oper = oper_backup
-                     if (index(str_tolower(quantity), 'initialwaqbot') == 1) then
-                        res = apply_waqbot_target_layer(target_data, target_array_3d(first_index, :), target_layer, quantity, oper) .and. res
+                     if (istarts_with(quantity, 'initialwaqbot')) then
+                        res = apply_waqbot_target_layer(target_data, target_array_rank_2(first_index, :), target_layer, quantity, oper) .and. res
                      else
-                        call initialfield2Dto3D_dbl_slice(target_data, target_array_3d(first_index, :), transformcoef(13), transformcoef(14), oper)
+                        call initialfield2Dto3D_dbl_slice(target_data, target_array_rank_2(first_index, :), transformcoef(13), transformcoef(14), oper)
                      end if
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:16)) == 'waqsegmentnumber') then
-                        painp(first_index, :) = target_array_3d(first_index, :)
-                        deallocate (target_array_3D)
+                        painp(first_index, :) = target_array_rank_2(first_index, :)
+                        deallocate (target_array_rank_2)
                      end if
                      deallocate (target_data)
                   end if
@@ -1254,21 +1351,14 @@ contains
                mapped_item1 = ec_undef_int
             end if
          else
-            select case (trim(str_tolower(forcing_file_type)))
-            case ('bcascii')
-               res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                             method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
-            case default
-               if (len_trim(variable_name) > 0) then
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-               else if (target_location_type == UNC_LOC_S3D) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data, is_static_field)
-               else
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                method, oper, data_value=input%data_value, tgt_item1=ec_item, tgt_data1=target_data)
-               end if
-            end select
+            if (target_location_type == UNC_LOC_S3D) then
+               res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                     filetype, method, oper, variable_name, ec_item)
+            else
+               res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                                  forcing_file_type, filetype, method, oper, variable_name, &
+                                                  input%data_value, ec_item, target_data)
+            end if
          end if
 
          !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
@@ -1302,11 +1392,13 @@ contains
       use unstruc_inifields, only: set_friction_type_values_explicit
       use string_module, only: str_tolower
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< name of the quantity that needs special postprocessing
       type(tree_data), pointer, intent(in) :: block_ptr !< pointer to the block in the ext file that contains additional metadata for the quantity
       integer, intent(in) :: operand !< operand to be used for the quantity, for now only used for friction_coefficient (e.g. override, add, multiply)
       logical :: success
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: quantity_base, quantity_specific
 
       call split_qid(quantity, quantity_base, quantity_specific)
@@ -1316,6 +1408,7 @@ contains
       case default
          success = .false.
       end select
+
    end function enable_special_quantity
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
@@ -1331,26 +1424,21 @@ contains
       use tree_structures
       use m_alloc, only: realloc
       use messageHandling
-
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use unstruc_files, only: resolvePath
       use system_utils, only: split_filename
-
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-
       use m_flow, only: s1, hs, h_unsat
       use m_flowparameters, only: janudge
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
-
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
-
       use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
       use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
@@ -1359,14 +1447,15 @@ contains
       use m_subsidence, only: jasubsupl
       use string_module, only: str_tolower
       use m_find_name, only: find_name
-
       use fm_external_forcings_utils, only: split_qid
 
+      ! Arguments
       character(len=*), intent(in) :: quantity !< The quantity name as read from the [Meteo] block.
-      character(len=idlen) :: qid_base, qid_specific
-
-      integer n
       logical :: success
+
+      ! Local variables
+      integer :: n
+      character(len=idlen) :: qid_base, qid_specific
 
       success = .true.
       call split_qid(quantity, qid_base, qid_specific)
@@ -1509,27 +1598,31 @@ contains
       use properties, only: prop_get
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
+
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
-      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates !< Parsed X-coordinates.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates !< Parsed Y-coordinates.
       integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
-      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
-      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source !< Two-point source vertical range; dmiss when unspecified.
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink !< Two-point sink vertical range; dmiss when unspecified.
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: sourcesink_id
       real(kind=dp), dimension(:), allocatable :: z_coordinates
       real(kind=dp), dimension(:), allocatable :: fourth_coordinates
       integer :: num_columns
-      logical :: is_successful
+      logical :: is_successful !< .true. if the source/sink coordinates were parsed successfully.
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
       logical :: have_location_file
       integer :: npts
 
+      ! Initialization
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
@@ -1597,18 +1690,20 @@ contains
       use m_polygon, only: xpl, ypl, zpl, dzL
       use m_reapol, only: reapol
 
+      ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+      logical :: is_successful
 
+      ! Local variables
       character(len=INI_VALUE_LEN) :: sourcesink_id
       character(len=INI_VALUE_LEN) :: sourcesink_name
       character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
       character(len=NAMLEN) :: const_name_with_prefix
       character(len=INI_VALUE_LEN) :: quantity_id, property_name
-
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
       integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
@@ -1617,14 +1712,14 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
-      logical :: is_successful
       logical :: is_read
 
+      ! Initialization
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-
       sourcesink_id = ' '
+
       call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
       if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
          write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Field ''id'' is missing.'
@@ -1984,6 +2079,7 @@ contains
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
 
+      ! Arguments
       integer, intent(in) :: target_location_type
       integer, intent(out) :: target_num_points
       real(dp), dimension(:), pointer, intent(out) :: target_x
@@ -1991,6 +2087,7 @@ contains
       logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
+      ! Initialization
       ierr = DFM_NOERR
 
       select case (target_location_type)
@@ -2017,6 +2114,7 @@ contains
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
+
    end subroutine get_location_target_properties
 
    !> Scan the quantity name for heat relatede quantities.
@@ -2025,16 +2123,21 @@ contains
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
       use fm_location_types, only: UNC_LOC_S
+
+      ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the data set.
       integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
       integer, intent(out) :: kx !< Number of individual quantities in the data set
       logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
+      ! Local variables
       integer :: ierr
 
+      ! Initialization
       kx = 1
       success = .true.
       target_location_type = UNC_LOC_S
+
       select case (quantity)
 
       case ('airtemperature')
@@ -2072,6 +2175,7 @@ contains
       case default
          success = .false.
       end select
+
    end function scan_for_heat_quantities
 
 end submodule fm_external_forcings_init
