@@ -430,7 +430,6 @@ contains
       call realloc(id_netfacedim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_netfacemaxnodesdim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_bnddim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
-      
       call realloc(id_morft, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_morfac, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_strlendim, nfiles + 1, keepExisting=.false., fill=-1)
@@ -1835,7 +1834,6 @@ contains
                ierr = nf90_put_att(ncids(noutfile), varids_out(iv, itopo), '_FillValue', fill_value_int)
             end if
          end do
-      
       end do ! itopo
 
       ! copy the attrubutes of sedfrac_name and sussedfrac_name
@@ -1858,7 +1856,6 @@ contains
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
          end if
       end if
-            
       
       ! When both 1D and 2D meshes are present, the global numbering of 1D nodes (read from input files) includes the 2D faces.
       ! In merged map file, we make the global numbering of 1D nodes only for 1D nodes, not including 2D faces.
