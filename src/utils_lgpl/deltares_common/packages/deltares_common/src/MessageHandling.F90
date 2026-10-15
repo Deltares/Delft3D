@@ -164,6 +164,7 @@ module MessageHandling
    module procedure message2int1char
    module procedure message1char1int1double
    module procedure message1double1int1char
+   module procedure messagearraydbl
    end interface
 
    interface err
@@ -498,6 +499,77 @@ end function
 subroutine resetMaxerrorLevel()
    maxErrorLevel = 0
 end subroutine
+
+subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfirst)
+    integer, intent(in) :: level
+    double precision, dimension(:), intent(in) :: a
+    character(*), intent(in) :: name
+    integer, intent(in), optional :: splitsize
+    logical, intent(in), optional :: showonlynonnulls
+    logical, intent(in), optional :: columnfirst
+    character(MAXSTRINGLEN)                 :: rec
+    character(MAXSTRINGLEN)                 :: prefix
+
+    integer :: i, j, n, split
+    logical :: columnfirstloc
+
+    
+    if (present(columnfirst)) then
+        columnfirstloc = columnfirst
+    else
+        columnfirstloc = .false.
+    endif
+
+
+    if (present(showonlynonnulls)) then
+        if (showonlynonnulls) then 
+            i = 1
+            do while (i <= size(a))
+                if (a(i) /= 0.0d0) then
+                    write(prefix,'(A,"=[",I0,"]")')  name, i
+                    write(rec,'(A30,F18.15)') prefix, a(i)
+                    call SetMessage(level, rec)
+                end if
+                i = i + 1
+            end do
+            return
+        end if
+    endif
+    split = size(a)
+    if (present(splitsize)) then
+        split = splitsize
+    endif
+
+    if (columnfirstloc) then
+
+        block
+            double precision, dimension(split) :: b
+            integer :: nrows
+
+            nrows = ceiling(real(size(a))/real(split))
+            do i = 1, nrows
+                n = min(split, size(a) - (i-1)*split)
+                b = 0
+                do j = 1, n
+                    b(j) = a((j-1)*nrows + i)
+                end do
+                write(prefix,'(A,"[",I0,":",I0,"]=")')  name, (i-1)*split+1, (i-1)*split+n
+                write(rec,'(A30,*(F18.15))') prefix, b(1:n)
+                call SetMessage(level, rec)
+            end do
+        end block
+        return
+    end if
+
+    i = 1
+    do while (i <= size(a))
+        n = min(split, size(a) - i + 1)
+        write(prefix,'(A,"[",I0,":",I0,"]=")')  name, i, i+n-1
+        write(rec,'(A30,*(F18.15))') prefix, a(i:i+n-1)
+        call SetMessage(level, rec)
+        i = i + n
+    end do
+end subroutine messagearraydbl
 
 subroutine message1string(level, w1)
   use iso_c_utils
