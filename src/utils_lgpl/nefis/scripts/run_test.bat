@@ -12,7 +12,7 @@ if [%1] EQU [--usage] goto usage
 
 rem Set the directories containing the binaries and set PATH
 set testdir=%~dp0
-set libdir=%testdir%\..\..\lib
+set libdir=%testdir%\..\..\bin
 set PATH=%libdir%;%testdir%;%PATH%
 
 rem run nefis test

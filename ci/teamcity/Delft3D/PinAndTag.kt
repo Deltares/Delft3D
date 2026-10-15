@@ -8,11 +8,12 @@ import Delft3D.template.*
 object PinAndTag : BuildType({
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     name = "Pin and tag"
-    description = "Pin and tag all the builds in the chain."
+    description = "Pin and tag all builds in the chain."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
@@ -37,7 +38,7 @@ object PinAndTag : BuildType({
         param("DIMRset_ver", "%dep.${Publish.id}.release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
-        password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
+        password("dimrbakker_jira_pat", DslContext.getParameter("dimrbakker_jira_pat"))
         param("dry_run", if (DslContext.getParameter("enable_pin_and_tag").lowercase() == "true") "" else "--dry-run")
     }
 

@@ -46,10 +46,9 @@ set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%~dp0
 set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
 
     rem Run
-set PATH=%sharedir%;%libdir%
+set PATH=%sharedir%
 echo executing: "%exedir%dflowfm-cli.exe" %*
                 "%exedir%dflowfm-cli.exe" %*
 

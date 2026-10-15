@@ -33,6 +33,7 @@
 module m_wind
 
    use precision, only: dp
+   use m_array_or_scalar, only: t_array_or_scalar
 
    implicit none
 
@@ -42,7 +43,7 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_y !< Temporary array, for comparing EC-module to Meteo1.
    real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_c !< Temporary array, for comparing EC-module to Meteo1.
    real(kind=dp), dimension(:), allocatable, target :: ec_charnock !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), dimension(:), allocatable, target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
+   type(t_array_or_scalar), target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
    real(kind=dp), dimension(:), allocatable, target :: air_pressure !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
@@ -64,6 +65,8 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
    real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< net solar radiation (W/m2) incl. albedo correction
    real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable, target :: sensible_heat_flux !< sensible heat flux (W/m2)
+   real(kind=dp), dimension(:), allocatable, target :: latent_heat_flux !< latent heat flux (W/m2)
    real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
    real(kind=dp), dimension(:), allocatable :: tbed !< bed temperature (degC)
@@ -80,6 +83,8 @@ module m_wind
    logical :: solar_radiation_available = .false. !< solar radiation provided by user
    logical :: net_solar_radiation_available = .false. !< net solar radiation provided by user
    logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
+   logical :: sensible_heat_flux_available = .false. !< sensible heat flux provided by user
+   logical :: latent_heat_flux_available = .false. !< latent heat flux provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no
    integer :: jaqin !< use qin , sum of all in fluxes
@@ -155,6 +160,8 @@ contains
       jawind = 0 !< use wind yes or no
       jastresstowind = 0 !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
       ja_computed_airdensity = 0
+      wcharnock%scalar = 0.018_dp !< ecmwf default value of charnock coefficient when wave is not used
+      if (allocated(wcharnock%values)) deallocate (wcharnock%values)
       ! Remaining of variables is handled in reset_wind()
       call reset_wind()
    end subroutine default_wind

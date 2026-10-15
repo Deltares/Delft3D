@@ -1,8 +1,11 @@
 ﻿#include "load_phase_wise.h"
+#include "log/log.h"
 #include "sealock.h"
 #include "timestamp.h"
 #include "unity.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // defined in `load_phase_wise.c`
@@ -14,6 +17,39 @@ extern int init_time_averaged_timeseries_csv_context(csv_context_t *context);
 void setUp(void) {}
 
 void tearDown(void) {}
+
+// simple wrapper around fopen, fput, fclose to write a string to a file.
+static const char *write_textfile(const char *filename, const char *contents) {
+  FILE *fp = fopen(filename, "w");
+  TEST_ASSERT_NOT_NULL(fp);
+  fputs(contents, fp);
+  fclose(fp);
+  return filename;
+}
+
+// Capture sealock log output to a buffer so tests can assert on the message.
+// Pass NULL log_buf to discard output. log_buf is NUL-terminated on return.
+static int load_timeseries_and_get_log(sealock_state_t *lock, char *filepath, char *log_buf,
+                                         size_t log_buf_len) {
+  FILE *fp = tmpfile();
+  TEST_ASSERT_NOT_NULL(fp);
+  log_init("test", fp);
+  log_set_level(logERROR);
+  int result = sealock_load_timeseries(lock, filepath);
+  if (log_buf && log_buf_len) {
+    long size = ftell(fp);
+    if (size < 0)
+      size = 0;
+    if ((size_t)size >= log_buf_len)
+      size = (long)log_buf_len - 1;
+    rewind(fp);
+    size_t read = fread(log_buf, 1, (size_t)size, fp);
+    log_buf[read] = '\0';
+  }
+  log_init("dsle", NULL);
+  fclose(fp);
+  return result;
+}
 
 // Populates a lock with the equivalent of loading time_averaged.csv,
 // without touching the filesystem. Mirrors the two data rows in the file:
@@ -1194,6 +1230,88 @@ test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_conce
   TEST_ASSERT_DOUBLE_WITHIN(1e-6, expected, lock.constituent_lock[1]);
 }
 
+// New CSV header for time-averaged mode.
+#define TIME_AVERAGED_HEADER                                                                       \
+  "time; ship_volume_lake_to_sea; ship_volume_sea_to_lake; door_time_to_open; leveling_time; "    \
+  "density_current_factor_sea; density_current_factor_lake; num_cycle; flushing_discharge\n"
+
+// CSV header for phase-wise mode.
+#define PHASE_WISE_HEADER                                                                          \
+  "time; routine; ship_volume_lake_to_sea; ship_volume_sea_to_lake; t_flushing; t_level; "        \
+  "t_open_lake; t_open_sea; density_current_factor_lake; density_current_factor_sea; "             \
+  "distance_door_bubble_screen_lake; distance_door_bubble_screen_sea; flushing_discharge_high_"    \
+  "tide; flushing_discharge_low_tide; sill_height_lake; sill_height_sea\n"
+
+static void test_sealock_load_timeseries__non_increasing__reports_offending_row(void) {
+  const char *path = write_textfile(
+      "tmp_non_increasing.csv",
+      TIME_AVERAGED_HEADER "197001011200.0; 1.0; 2.0; 3.0; 4.0; 5.0; 6.0; 7.0; 8.0\n"
+                           "197001011200.0; 9.0; 10.0; 11.0; 12.0; 13.0; 14.0; 15.0; 16.0\n");
+  sealock_state_t lock = {
+      .id = "A", .computation_mode = cycle_average_mode, .current_row = NO_CURRENT_ROW};
+  char log_buf[512];
+
+  int result = load_timeseries_and_get_log(&lock, (char *)path, log_buf, sizeof(log_buf));
+
+  TEST_ASSERT_EQUAL(SEALOCK_ERROR, result);
+  TEST_ASSERT_NULL(lock.times);
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "row 2"));
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "not strictly increasing"));
+  remove(path);
+}
+
+static void test_sealock_load_timeseries__empty_file__reports_no_rows(void) {
+  const char *path = write_textfile("tmp_empty.csv", TIME_AVERAGED_HEADER);
+  sealock_state_t lock = {
+      .id = "A", .computation_mode = cycle_average_mode, .current_row = NO_CURRENT_ROW};
+  char log_buf[256];
+
+  int result = load_timeseries_and_get_log(&lock, (char *)path, log_buf, sizeof(log_buf));
+
+  TEST_ASSERT_EQUAL(SEALOCK_ERROR, result);
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "no data rows"));
+  remove(path);
+}
+
+static void test_sealock_load_timeseries__bad_file__reports_read_failure(void) {
+  sealock_state_t lock = {
+      .id = "A", .computation_mode = cycle_average_mode, .current_row = NO_CURRENT_ROW};
+  char log_buf[256];
+
+  int result =
+      load_timeseries_and_get_log(&lock, "tmp_does_not_exist.csv", log_buf, sizeof(log_buf));
+
+  TEST_ASSERT_EQUAL(SEALOCK_ERROR, result);
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "failed to read"));
+}
+
+static void test_sealock_set_parameters__phase_wise__invalid_routine_reports_row(void) {
+  const char *path =
+      write_textfile("tmp_bad_routine.csv",
+                     PHASE_WISE_HEADER "197001011200.0; 1; 0; 0; 0; 5; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n"
+                                       "197001021200.0; 7; 0; 0; 0; 5; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0\n");
+  sealock_state_t lock = {
+      .id = "A", .computation_mode = phase_wise_mode, .current_row = NO_CURRENT_ROW};
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_load_timeseries(&lock, (char *)path));
+
+  FILE *fp = tmpfile();
+  log_init("test", fp);
+  log_set_level(logERROR);
+  int result = sealock_set_parameters_for_time(&lock, lock.times[1]);
+  char log_buf[256] = {0};
+  long size = ftell(fp);
+  rewind(fp);
+  fread(log_buf, 1, size < (long)sizeof(log_buf) ? (size_t)size : sizeof(log_buf) - 1, fp);
+  log_init("dsle", NULL);
+  fclose(fp);
+
+  TEST_ASSERT_EQUAL(SEALOCK_ERROR, result);
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "invalid routine 7"));
+  TEST_ASSERT_NOT_NULL(strstr(log_buf, "row 2"));
+  free(lock.times);
+  remove(path);
+}
+
 int main(void) {
   UNITY_BEGIN();
 
@@ -1224,5 +1342,9 @@ int main(void) {
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed);
   RUN_TEST(test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_concentration);
   RUN_TEST(test_sealock_update__phase_wise__constituent_flush_doors_closed__uniform_concentration__no_perturbation);
+  RUN_TEST(test_sealock_load_timeseries__non_increasing__reports_offending_row);
+  RUN_TEST(test_sealock_load_timeseries__empty_file__reports_no_rows);
+  RUN_TEST(test_sealock_load_timeseries__bad_file__reports_read_failure);
+  RUN_TEST(test_sealock_set_parameters__phase_wise__invalid_routine_reports_row);
   return UNITY_END();
 }

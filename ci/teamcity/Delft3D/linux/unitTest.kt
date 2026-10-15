@@ -10,7 +10,7 @@ import Trigger
 
 object LinuxUnitTest : BuildType({
 
-    name = "Unit Test"
+    name = "Unit tests"
     description = "Run unit tests."
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
@@ -23,7 +23,8 @@ object LinuxUnitTest : BuildType({
         TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     params {
@@ -47,7 +48,6 @@ object LinuxUnitTest : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         script {
             name = "Extract artifact"

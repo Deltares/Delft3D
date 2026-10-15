@@ -33,6 +33,14 @@ add_library(${library_name} ${headers}
                             ${source}
                             ${ini_version_file})
 
+# The d3d4-suite also builds nefis_dll with OUTPUT_NAME nefis. On Windows,
+# that DLL's import library would otherwise overwrite this static archive
+# (nefis.lib) in a multi-configuration build directory. Keep the target name
+# unchanged so consumers still link to the static library target.
+if (WIN32)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME nefis_static)
+endif()
+
 # Set additional dependencies
 target_include_directories(${library_name}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" ${version_include_dir})
 
@@ -88,8 +96,13 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
     source_group("Version Files" FILES ${ini_version_file})
   
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
-    set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME nefis)
+    if(UNIX)
+        set_target_properties(${library_name} PROPERTIES PREFIX "")
+    endif()
   
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME nefis.${library_suffix} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                    LIBRARY DESTINATION lib
+    )
 endif()
-

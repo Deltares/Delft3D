@@ -53,9 +53,7 @@ class TestSaltLoadUnsteady(unittest.TestCase):
 
         # Flushing with 1.0 m3/s for 0.0 seconds
         duration = 0.0
-        c.step_flush_doors_closed(
-            duration, flushing_discharge_low_tide=1.0, flushing_discharge_high_tide=1.0
-        )
+        c.step_flush_doors_closed(duration, flushing_discharge_low_tide=1.0, flushing_discharge_high_tide=1.0)
         self.assert_allclose_tight(c.state["salinity_lock"], init_sal)
 
         # Continue flushing with 1.0 m3/s, but for an insanely long amount of time

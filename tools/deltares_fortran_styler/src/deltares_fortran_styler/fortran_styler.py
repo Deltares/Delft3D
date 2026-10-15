@@ -43,23 +43,23 @@ except ImportError:
 
 # Registry of available converters
 AVAILABLE_CONVERTERS = {
-    'double_precision': DoublePrecisionConverter,
-    'array_delimiter': ArrayDelimiterConverter,
-    'semicolon_separator': SemicolonSeparatorConverter,
-    'single_line_if': SingleLineIfConverter,
+    "double_precision": DoublePrecisionConverter,
+    "array_delimiter": ArrayDelimiterConverter,
+    "semicolon_separator": SemicolonSeparatorConverter,
+    "single_line_if": SingleLineIfConverter,
 }
 
 # Fast converters that run quickly on large codebases (default)
 FAST_CONVERTERS = [
-    'double_precision',
-    'array_delimiter',
-    'semicolon_separator',
+    "double_precision",
+    "array_delimiter",
+    "semicolon_separator",
 ]
 
 # Special converter groups
 CONVERTER_GROUPS = {
-    'fast': FAST_CONVERTERS,
-    'all': list(AVAILABLE_CONVERTERS.keys()),
+    "fast": FAST_CONVERTERS,
+    "all": list(AVAILABLE_CONVERTERS.keys()),
 }
 
 
@@ -93,7 +93,9 @@ def get_converters(converter_names: List[str]):
     converters = []
     for name in unique_names:
         if name not in AVAILABLE_CONVERTERS:
-            print(f"Warning: Unknown converter '{name}'. Available: {', '.join(AVAILABLE_CONVERTERS.keys())}, {', '.join(CONVERTER_GROUPS.keys())}")
+            print(
+                f"Warning: Unknown converter '{name}'. Available: {', '.join(AVAILABLE_CONVERTERS.keys())}, {', '.join(CONVERTER_GROUPS.keys())}"
+            )
             continue
         converters.append(AVAILABLE_CONVERTERS[name]())
     return converters
@@ -126,21 +128,30 @@ Converter groups:
 By default, the 'fast' converters are enabled. Use --converters to specify different converters.
 
 Note: All conversions are done in-place. Use git for version control safety.
-        """
+        """,
     )
 
-    parser.add_argument('files', nargs='*', help='Input Fortran files to process')
-    parser.add_argument('-d', '--directory', type=Path,
-                       help='Process all Fortran files in directory recursively')
-    parser.add_argument('-c', '--check', action='store_true',
-                       help='Check if files need conversion without modifying them (returns error code if conversion needed)')
-    parser.add_argument('--extensions', nargs='+',
-                       default=['.f90', '.f95', '.f03', '.f08', '.F90', '.F95', '.F03', '.F08'],
-                       help='File extensions to process (default: Fortran extensions)')
-    parser.add_argument('--converters', nargs='+',
-                       choices=list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()),
-                       metavar='CONVERTER',
-                       help=f'Specify which converters to enable. Choices: {", ".join(list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()))} (default: fast)')
+    parser.add_argument("files", nargs="*", help="Input Fortran files to process")
+    parser.add_argument("-d", "--directory", type=Path, help="Process all Fortran files in directory recursively")
+    parser.add_argument(
+        "-c",
+        "--check",
+        action="store_true",
+        help="Check if files need conversion without modifying them (returns error code if conversion needed)",
+    )
+    parser.add_argument(
+        "--extensions",
+        nargs="+",
+        default=[".f90", ".f95", ".f03", ".f08", ".F90", ".F95", ".F03", ".F08"],
+        help="File extensions to process (default: Fortran extensions)",
+    )
+    parser.add_argument(
+        "--converters",
+        nargs="+",
+        choices=list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()),
+        metavar="CONVERTER",
+        help=f"Specify which converters to enable. Choices: {', '.join(list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()))} (default: fast)",
+    )
 
     args = parser.parse_args()
 
@@ -149,7 +160,7 @@ Note: All conversions are done in-place. Use git for version control safety.
         converter_names = args.converters
     else:
         # Default: enable fast converters only
-        converter_names = ['fast']
+        converter_names = ["fast"]
 
     converters = get_converters(converter_names)
 

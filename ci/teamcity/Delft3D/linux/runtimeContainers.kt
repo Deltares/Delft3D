@@ -9,7 +9,7 @@ import Delft3D.linux.containers.*
 
 object LinuxRuntimeContainers : BuildType({
 
-    description = "Build two separate container images: one for running the Delft3D software and the other for executing its tests."
+    description = "Build Runtime and TestBench images; runtime is the Harbor release image."
 
     templates(
         TemplateLinuxAgent,
@@ -19,7 +19,7 @@ object LinuxRuntimeContainers : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Runtime Containers"
+    name = "Runtime containers"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     params {
@@ -56,7 +56,6 @@ object LinuxRuntimeContainers : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         script {
             name = "Extract artifact"

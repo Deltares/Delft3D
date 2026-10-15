@@ -201,9 +201,7 @@ class DSLEUnsteady:
 
         self._set_parameters(**parameters)
 
-        err = lib.dsle_step_flush_doors_closed(
-            self._param_t, t_flushing, self._state_t, self._results_t
-        )
+        err = lib.dsle_step_flush_doors_closed(self._param_t, t_flushing, self._state_t, self._results_t)
         if err:
             raise RuntimeError(_dsle_error_message(err))
 

@@ -11,8 +11,10 @@ EXTENSIONS = {".h", ".hpp", ".c", ".cpp"}
 # TODO: Remove filtering logic when third party code is no longer in <repo_root>/src
 IGNORE_DIRS = {"third_party", "third_party_open", "thirdParty"}
 
+
 def should_format(path: Path) -> bool:
     return path.suffix.lower() in EXTENSIONS
+
 
 def run_clang_format(file_path: Path):
     try:
@@ -20,6 +22,7 @@ def run_clang_format(file_path: Path):
         return None
     except subprocess.CalledProcessError as e:
         return f"Error formatting {file_path}: {e}"
+
 
 def find_source_files(root: Path):
     def recurse(directory: Path):
@@ -33,23 +36,22 @@ def find_source_files(root: Path):
                     yield entry
 
     yield from recurse(root)
-                
+
+
 def is_clang_format_available():
     try:
-        subprocess.run(
-            ["clang-format", "--version"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=True
-        )
+        subprocess.run(["clang-format", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
+
 def main():
-    if (is_clang_format_available() == False):
-        raise Exception("clang-format not available. Make sure it is in your path or make it available using pip install clang-format.")
-    
+    if is_clang_format_available() == False:
+        raise Exception(
+            "clang-format not available. Make sure it is in your path or make it available using pip install clang-format."
+        )
+
     # Execute clang-format in <repo_root>/src dir
     script_dir = Path(__file__).resolve().parent
     src_dir = (script_dir / ".." / ".." / "src").resolve()
@@ -64,7 +66,8 @@ def main():
         futures = {executor.submit(run_clang_format, f): f for f in files}
         for future in as_completed(futures):
             result = future.result()
-            print('.', end='', flush='true') if result == None else print(f"\n{result}")
+            print(".", end="", flush="true") if result == None else print(f"\n{result}")
+
 
 if __name__ == "__main__":
     main()

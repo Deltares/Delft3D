@@ -76,7 +76,7 @@
             <location ref="dsctestbench_reference_results" type="reference">
                 <from>\win32\</from>
             </location>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!--
@@ -100,7 +100,7 @@
                 <file name="waq_test_01.dwq" type="NUMBERTEXT"/>
                 <file name="waq_test_01.rep" type="NUMBERTEXT"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="e52_f01_c02" ref="coupsds_default">
             <path version="2024-01-11T11:10:00">e52_coupsds/f01_general/c02_test_02</path>
@@ -120,7 +120,7 @@
                 <file name="waq_test_02.rep" type="NUMBERTEXT"/>
                 <file name="waq_test_02.src" type="NUMBERTEXT"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 		<!--- Case e52_f01_c03 seems to be invallid (sds-file doesn't contain the right information)
         <testCase name="e52_f01_c03" ref="coupsds_default">
@@ -139,7 +139,7 @@
                 <file name="waq_test_03.hyd" type="NUMBERTEXT"/>
                 <file name="waq_test_03.dwq" type="NUMBERTEXT"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> 
+             
         </testCase>
 		-->
         <testCase name="e52_f01_c04" ref="coupsds_default">
@@ -158,7 +158,7 @@
                 <file name="waq_test_04.hyd" type="NUMBERTEXT"/>
                 <file name="waq_test_04.dwq" type="NUMBERTEXT"/>
             </checks>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </testCases>
 </deltaresTestbench_v3>

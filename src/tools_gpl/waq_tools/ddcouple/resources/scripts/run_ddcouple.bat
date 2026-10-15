@@ -12,8 +12,7 @@ if [%1] EQU [--usage] goto usage
 
 rem Set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%\..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
 if NOT [%1] EQU [] goto pass_arguments
 

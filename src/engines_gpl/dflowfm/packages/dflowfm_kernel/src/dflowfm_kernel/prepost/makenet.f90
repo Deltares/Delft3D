@@ -62,6 +62,7 @@ contains
       use m_set_nod_adm
       use m_increase_grid
       use m_dbdistance_hk
+      use network_data, only: LINK_1D
       use m_filez, only: doclose, newfil
 
       integer, intent(in) :: japaramscreen !< Load parameter screen or not (1/0)
@@ -393,7 +394,7 @@ contains
                dxt = dxt + dx0
                kn(1, L + L0) = k - 1
                kn(2, L + L0) = k
-               kn(3, L + L0) = 1
+               kn(3, L + L0) = LINK_1D
             end do
             dxt = dxt + dx0
             f = pi * radius / dxt
@@ -415,7 +416,7 @@ contains
             zk(k) = zk(k - 1) - bedslope * dx0
             kn(1, L + L0) = k - 1
             kn(2, L + L0) = k
-            kn(3, L + L0) = 1
+            kn(3, L + L0) = LINK_1D
          end do
 
          numk = k
@@ -458,7 +459,7 @@ contains
             zk(k) = zk(k - 1) - bedslope * dx0
             kn(1, L) = k - 1
             kn(2, L) = k
-            kn(3, L) = 1
+            kn(3, L) = LINK_1D
          end do
 
          numk = k

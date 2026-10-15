@@ -6,14 +6,26 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
-if (WIN32)
+if(WIN32)
     add_compile_definitions(NOMINMAX)
+
+    if(NOT DEFINED ENV{ONEAPI_ROOT} OR "$ENV{ONEAPI_ROOT}" STREQUAL "")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT is not set. Configure from an Intel OneApi command prompt or manually set the environment."
+        )
+    endif()
+
+    if(NOT IS_DIRECTORY "$ENV{ONEAPI_ROOT}")
+        message(FATAL_ERROR
+            "ONEAPI_ROOT does not point to an existing directory: '$ENV{ONEAPI_ROOT}'."
+        )
+    endif()
 endif()
 
 message(STATUS "Configuring")
-if (UNIX)
+if(UNIX)
     include(linux_scripts.cmake)
     add_definitions(-DCOMMIT_VERSION=${COMMIT_VERSION})
 endif(UNIX)
@@ -22,6 +34,42 @@ include(functions.cmake)
 
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
+set(checkout_root ${checkout_src_root}/..)
+
+# Conan: check if conan.lock or conanfile.py have changed since last conan install.
+# If so, configuration is stopped and conan must be rerun. This doesn't catch all conan changes
+# (e.g. profile changes aren't taken into account), but it is a good basic safety net.
+set(conan_lock_source "${checkout_root}/conan.lock")
+set(conan_file_source "${checkout_root}/conanfile.py")
+set(conan_stamp "${CMAKE_BINARY_DIR}/conan/generators/conan.stamp")
+if("${conan_lock_source}" IS_NEWER_THAN "${conan_stamp}" OR
+    "${conan_file_source}" IS_NEWER_THAN "${conan_stamp}")
+    message(FATAL_ERROR
+        "The conan configuration has been updated since the last conan install. "
+        "Please do a clean build using build.py to ensure dependencies are up to date."
+    )
+endif()
+
+# Conan: add the CMakeDeps generator output to the search path and find all explicit dependencies.
+# In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
+# because we need to install the dll and deliver it to a user.
+list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/generators")
+find_package(ZLIB CONFIG REQUIRED)
+find_package(HDF5 CONFIG REQUIRED)
+find_package(netCDF CONFIG REQUIRED)
+find_package(netCDF-Fortran CONFIG REQUIRED)
+find_package(expat CONFIG REQUIRED)
+find_package(TIFF CONFIG REQUIRED)
+find_package(PROJ CONFIG REQUIRED)
+find_package(GDAL CONFIG REQUIRED)
+find_package(PETSc CONFIG REQUIRED)
+find_package(triangle CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED)
+find_package(precice CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
+find_package(SWAN_MPI CONFIG REQUIRED)
+find_package(SWAN_OMP CONFIG REQUIRED)
+find_package(inja CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -53,7 +101,6 @@ set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes"
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    get_intel_version()
     include(compiler_options/intel.cmake)
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
@@ -62,7 +109,7 @@ include(compiler_options/compiler_warning_targets.cmake)
 include(compiler_options/fortran_styler.cmake)
 
 # Set available build configurations
-set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -70,7 +117,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 
-if (WIN32)
+if(WIN32)
     message(CHECK_START "Setting paths for windows")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
@@ -79,21 +126,13 @@ if (WIN32)
     message(STATUS "pthreads set to ${pthreads_path}")
 
     # Set mpi_include_path
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
+    if("${OSS_MPI}" STREQUAL "IntelMPI")
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        if(intel_version GREATER_EQUAL 24)
-            message(STATUS "Using Intel 2024 folder structure.")
-            set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
-            set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
-        else()
-            message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
-            set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
-            set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
-        endif()
+        set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
+        set(mpi_module_path ${mpi_include_path}/mpi)
+        set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
@@ -108,24 +147,12 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
-    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
-    message(STATUS "PETSC")
-    list(APPEND CMAKE_MESSAGE_INDENT "  ")
-    message(STATUS "path ${petsc_path}")
-    message(STATUS "library directory ${petsc_libdir}")
-    list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-    # Set the SQLITE3 path
-    set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
-    message(STATUS "sqlite3 set to ${sqlite3_path}")
-
     add_definitions(-DHAVE_MPI=1)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif()
 
-if (UNIX)
+if(UNIX)
     #Packages
     find_package(Threads REQUIRED)
     find_package(PkgConfig REQUIRED)
@@ -134,55 +161,26 @@ if (UNIX)
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
-
-    #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED netcdf-fortran)
-
-    # Create two separate targets, because the targets created by pkg_check_modules with IMPORTED_TARGET
-    # mix variables for both static and dynamic linking of netcdf, and the C library is not explicitly
-    # linked by the Fortran target. Use the same names as on windows.
-    add_library(netcdf INTERFACE)
-    target_include_directories(netcdf INTERFACE ${NETCDF_INCLUDE_DIRS})
-    target_link_libraries(netcdf INTERFACE ${NETCDF_LINK_LIBRARIES})
-
-    add_library(netcdff INTERFACE)
-    target_include_directories(netcdff INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
-    target_link_libraries(netcdff INTERFACE ${NETCDF_FTN_LINK_LIBRARIES} netcdf)
-
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
-
-    # Proj
-    pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
 
-if (UNIX)
+if(UNIX)
     set(platform_extension sh)
     set(library_suffix so)
     set(library_prefix lib)
-elseif (WIN32)
+elseif(WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
-    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_NO_WARNINGS TRUE) # Ignore warnings about missing ifort libs, we use ifx
     set(library_prefix "")
     include(InstallRequiredSystemLibraries)
 endif()
-
-# Expat:
-#     Windows: use prebuild library in ".../expat/x64/x64"
-#     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
-set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
-if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
-endif(WIN32)
 
 # getopt:
 #     Windows: use prebuild library in ".../getopt/x64"
 #     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
 set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
-if (WIN32)
+if(WIN32)
     set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
@@ -192,11 +190,11 @@ string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(installdir "install_${configuration_type_lower}")
-  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+    set(installdir "install_${configuration_type_lower}")
+    SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-if (CMAKE_GENERATOR MATCHES "Visual Studio")
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
     # Set root name of the projects in the root UI of Visual Studio
     set(visual_studio_source_group_name "Source Files")
     # auto-install debug
@@ -213,7 +211,6 @@ set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
-set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
@@ -233,41 +230,43 @@ set(testbench-waq_configuration "WAQ-TESTBENCH")
 set(testbench-part_configuration "PART-TESTBENCH")
 set(testbench-wave_configuration "WAVE-TESTBENCH")
 set(testbench-tc_configuration "TC-TESTBENCH")
-set(testbench-qp_configuration "QP-TESTBENCH")
 
 # Combined (multi-component) configurations
 # For products that we release
 set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
 
+# Research branches do not specify a product scope, so build and test everything.
+if(${configuration_type} STREQUAL "RESEARCH-TESTBENCH")
+    set(configuration_type ${testbench-all_configuration})
+endif()
+
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
-     OR ${configuration_type} STREQUAL ${dimr_configuration}
-     OR ${configuration_type} STREQUAL ${dwaq_configuration}
-     OR ${configuration_type} STREQUAL ${dwaves_configuration}
-     OR ${configuration_type} STREQUAL ${swan_configuration}
-     OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
-     OR ${configuration_type} STREQUAL ${tools_configuration}
-     OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
-     OR ${configuration_type} STREQUAL ${drr_configuration}
-     OR ${configuration_type} STREQUAL ${rtc_configuration}
-     OR ${configuration_type} STREQUAL ${fbc_configuration}
-     OR ${configuration_type} STREQUAL ${dsle_configuration}
-     OR ${configuration_type} STREQUAL ${fm-suite_configuration}
-     OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
-     OR ${configuration_type} STREQUAL ${all_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-none_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-part_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-qp_configuration}))
-   message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
+         OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
+         OR ${configuration_type} STREQUAL ${dimr_configuration}
+         OR ${configuration_type} STREQUAL ${dwaq_configuration}
+         OR ${configuration_type} STREQUAL ${dwaves_configuration}
+         OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
+         OR ${configuration_type} STREQUAL ${tools_configuration}
+         OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
+         OR ${configuration_type} STREQUAL ${drr_configuration}
+         OR ${configuration_type} STREQUAL ${rtc_configuration}
+         OR ${configuration_type} STREQUAL ${fbc_configuration}
+         OR ${configuration_type} STREQUAL ${dsle_configuration}
+         OR ${configuration_type} STREQUAL ${fm-suite_configuration}
+         OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
+         OR ${configuration_type} STREQUAL ${all_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-all_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-none_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-part_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
+    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
 ### Component configurations
@@ -304,12 +303,6 @@ endif()
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
     include(configurations/components/dwaves_configuration.cmake)
-endif()
-
-# SWAN configuration
-if(${configuration_type} STREQUAL ${swan_configuration})
-    message(STATUS "Generating solution for SWAN ...")
-    include(configurations/components/swan_configuration.cmake)
 endif()
 
 # Flow2D3D (Delft3D4) configuration
@@ -403,12 +396,6 @@ if(${configuration_type} STREQUAL ${testbench-tc_configuration})
     include(configurations/testbench/waq_configuration.cmake)
 endif()
 
-# QUICKPLOT configuration
-if(${configuration_type} STREQUAL ${testbench-qp_configuration})
-    message(STATUS "Generating solution for QUICKPLOT testbench ...")
-    include(configurations/testbench/waq_configuration.cmake)
-endif()
-
 ### Composed configurations for releases
 
 # Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
@@ -424,12 +411,18 @@ if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
 endif()
 
 if(UNIX)
-    add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
+    add_subdirectory(${checkout_src_root}/${install_linux_libs_module} install_linux_libs)
 endif()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
-              DESTINATION share)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+    DESTINATION share)
+
+# Install proj.db only if PROJ library is found and being used
+if(TARGET PROJ::proj)
+    install(FILES "$<IF:$<CONFIG:Debug>,${proj_PACKAGE_FOLDER_DEBUG},$<IF:$<CONFIG:RelWithDebInfo>,${proj_PACKAGE_FOLDER_RELWITHDEBINFO},${proj_PACKAGE_FOLDER_RELEASE}>>/res/proj.db"
+        DESTINATION share/proj)
+endif()

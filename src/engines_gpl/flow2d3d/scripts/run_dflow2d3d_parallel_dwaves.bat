@@ -78,7 +78,6 @@ set dflow2d3ddir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 set swanbatdir=%D3D_HOME%\bin
 set waveexedir=%D3D_HOME%\bin
-set libdir=%D3D_HOME%\lib
 
 if  %debugLevel% EQU 0 (
     echo.
@@ -100,14 +99,14 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
+set PATH=%dflow2d3ddir%;%sharedir%
 
 echo executing in separate window: "mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
               start "Delft3D-FLOW" "mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 
     rem Start WAVE
 title Delft3D-WAVE simulation
-set PATH=%waveexedir%;%swanbatdir%;%sharedir%;;%libdir%
+set PATH=%waveexedir%;%swanbatdir%;%sharedir%
 echo executing in this window: "%waveexedir%\wave.exe" %mdwfile% 1
 "%waveexedir%\wave.exe" %mdwfile% 1
 title %CD%

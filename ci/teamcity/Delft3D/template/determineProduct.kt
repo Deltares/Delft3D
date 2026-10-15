@@ -5,8 +5,8 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
 object TemplateDetermineProduct : Template({
 
-    name = "Determine product to build and test."
-    description = "Determine branch prefix for selecting testbenches to run."
+    name = "Determine product"
+    description = "Set the branch prefix used to select TestBench cases."
 
     params {
         param("product", "auto-select")

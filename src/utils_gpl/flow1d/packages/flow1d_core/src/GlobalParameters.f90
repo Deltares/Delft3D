@@ -85,8 +85,9 @@ module m_GlobalParameters
    integer, public, parameter              :: ST_SOURCE_SINK   = 17
    integer, public, parameter              :: ST_GATEGEN       = 18
    integer, public, parameter              :: ST_LATERAL       = 19
+   integer, public, parameter              :: ST_BUBBLE_SCREEN = 20
 
-   integer, public, parameter              :: ST_MAX_TYPE      = 19 !< Max id of structure types. The preceding ids must be lower than or equal to this.
+   integer, public, parameter              :: ST_MAX_TYPE      = 20 !< Max id of structure types. The preceding ids must be lower than or equal to this.
 
    ! Flow geometry / computational grid
    integer, public, parameter              :: INDTP_1D      = 1  !< Type code for flow nodes that are 1D

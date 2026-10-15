@@ -162,7 +162,9 @@ module m_dambreak_breach
       integer :: algorithm = 0 !< algorithm for the dambreak breach growth
       integer :: breach_start_link = -1 !< index of the starting link in the breach growth
       integer :: index_structure = 0 !< index of the structure
-      integer :: ec_item = ec_undef_int !< item for EC module to get crest level and width from a tim file
+      integer :: ec_item_legacy = ec_undef_int !< Legacy item for EC module. Only legacy .tim based dambreaks receive an ec-item in
+                                               !< the reader to get crest level and width from a tim file.
+                                               !< Superseded by m_meteo::item_dambreak_*.
       integer :: number_of_links = 0 !< number of links in the dambreak
       integer :: link_map_offset = 0 !< offset of the local array in the global link array
       integer, dimension(:), allocatable :: link_indices !< link indices of the dambreak

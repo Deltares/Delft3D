@@ -51,6 +51,7 @@ contains
       use m_laterals, only: qlatwaq, qlatwaq0
       use precision, only: dp
       use m_flowgeom
+      use m_source_sink, only: source_sinks
       use Timers
       use m_flowtimes
       use m_sferic
@@ -71,7 +72,7 @@ contains
 
       implicit none
 
-      integer :: key, jposhchk_sav, itype
+      integer :: key, jposhchk_sav
       integer :: k, ierror, noddifmaxlevm
       logical :: firstnniteration, last_iteration
       real(kind=dp) :: dif, difmaxlevm
@@ -82,8 +83,8 @@ contains
 
       if (wrwaqon) then
          ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
-         if (allocated(source_sink_cumulative_discharge_waq)) then
-            source_sink_cumulative_discharge_waq_previous = source_sink_cumulative_discharge_waq
+         if (allocated(source_sinks%cumulative_discharge_waq)) then
+            source_sinks%cumulative_discharge_waq_previous = source_sinks%cumulative_discharge_waq
          end if
          if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq
@@ -150,8 +151,7 @@ contains
                      if (jatimer == 1) then
                         call starttimer(IUPDSALL)
                      end if
-                     itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
-                     call update_ghosts(itype, 1, Ndx, s1, ierror)
+                     call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
                      if (jatimer == 1) then
                         call stoptimer(IUPDSALL)
                      end if
@@ -183,8 +183,8 @@ contains
                      if (wrwaqon) then
                         ! restore cumulative source_sink_water_discharge and qlat for waq from start of this time step to avoid
                         ! double accumulation and use of incorrect dts in case of time step reduction
-                        if (allocated(source_sink_cumulative_discharge_waq)) then
-                           source_sink_cumulative_discharge_waq = source_sink_cumulative_discharge_waq_previous
+                        if (allocated(source_sinks%cumulative_discharge_waq)) then
+                           source_sinks%cumulative_discharge_waq = source_sinks%cumulative_discharge_waq_previous
                         end if
                         if (allocated(qlatwaq)) then
                            qlatwaq = qlatwaq0

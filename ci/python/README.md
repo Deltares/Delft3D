@@ -4,9 +4,9 @@ A Python package that contains Python scripts used in the Delft3D TeamCity proje
 
 ## Installation with uv (recommended)
 
-If you don't have [`uv`](https://docs.astral.sh/uv/) installed, you can go 
-[here](https://docs.astral.sh/uv/getting-started/installation/) 
-and select your preferred method to install it. 
+If you don't have [`uv`](https://docs.astral.sh/uv/) installed, you can go
+[here](https://docs.astral.sh/uv/getting-started/installation/)
+and select your preferred method to install it.
 ```bash
 # From this directory
 uv sync --extra all
@@ -18,7 +18,7 @@ Unfortunately, the `--extra all` is necessary because we make use of the
 `[project.optional-dependencies]` section in `pyproject.toml`, which `pip` also understands.
 
 `uv` can manage your installed Python versions and virtual environments for you. If you don't
-have Python 3.11 or higher installed, you can install it with 
+have Python 3.11 or higher installed, you can install it with
 `uv python install 3.11`. You can
 see which versions of python you have installed on your system with `uv python list`.
 `uv` also creates a virtual environment or "venv" for you in this directory. You can either
@@ -48,15 +48,15 @@ pip install --editable ./ci/python[all]
 
 The `[all]` part in the above command instructs pip to install all of the optional dependencies.
 You can see exactly what dependencies by reading the `[project.optional-dependencies]` section
-in `pyproject.toml`. It includes the dependencies of all python scripts, including the 
+in `pyproject.toml`. It includes the dependencies of all python scripts, including the
 "development" dependencies that you need to run the unit tests, the linter, type checker and
 the formatter.
 
 ## Running tools
 
-In our CI we enforce automatic quality control checks for the Python code in this package. 
-We use `ruff`, a formatter and linter. `mypy`, a type checker. Finally we write unit tests 
-for our code, which we run using `pytest`. All of these tools can read their 
+In our CI we enforce automatic quality control checks for the Python code in this package.
+We use `ruff`, a formatter and linter. `mypy`, a type checker. Finally we write unit tests
+for our code, which we run using `pytest`. All of these tools can read their
 options from the `pyproject.toml` file in this directory. To use them from the command line,
 navigate to the `ci/python` directory and do one of the following:
 - Activate the virtual environment where you installed the "development" dependencies and run
@@ -78,18 +78,18 @@ pytest
 
 ## Configuring your editor
 I highly recommended you configure your editor to format your code when saving Python
-files. And to highlight linter warnings and type errors. This should be possible with any 
+files. And to highlight linter warnings and type errors. This should be possible with any
 modern editor. But of course you only have room for one of
-those in your life at any given time. Currently, mine is VS Code, so I can only tell you how to 
+those in your life at any given time. Currently, mine is VS Code, so I can only tell you how to
 configure that one.
 
 Beware that these kind of instructions are prone to get outdated, so let us know if you run
 into any problems. At some point in the future we can figure out how to set up development
-containers, store all of the configuration in git and all of this stuff will be taken care off 
+containers, store all of the configuration in git and all of this stuff will be taken care off
 automatically. But until then these steps should help you on your way.
 
 ### Configuring VS code
-You should download the recommended Python extensions from Microsoft, the 
+You should download the recommended Python extensions from Microsoft, the
 "mypy-type-checker" extension from Microsoft, and the 'Ruff' extension from 'Charliermarsh'.
 Then you can use the following template for your
 `.vscode/settings.json`:
@@ -113,7 +113,7 @@ environments, you may need to customize this file. I recommend you to create you
 and a `.vscode/settings.json` in the `ci` directory. If you're not already using
 VS Code "workspaces", I recommend selecting the `ci` directory as a separate
 workspace. That way, all the settings in the `.vscode/settings.json` in the `ci`
-apply only to that directory. 
+apply only to that directory.
 [Check out VS code workspace here](https://code.visualstudio.com/docs/editor/workspaces/workspaces).
 
 
@@ -149,8 +149,8 @@ minio-sync --source ./path/to/files/ --destination s3://my-bucket/path/to/object
 ```
 The command above will copy the files in `./path/to/files` to the `my-bucket` MinIO
 bucket, under the prefix `/path/to/objects`. If the `./path/to/files` directory
-contains subdirecties, `minio-sync` will keep the directory structure intact. So for 
-example: It will upload `./path/to/files/sub/dir/README.md` as 
+contains subdirecties, `minio-sync` will keep the directory structure intact. So for
+example: It will upload `./path/to/files/sub/dir/README.md` as
 `s3://my-bucket/path/to/objects/sub/dir/README.md`. When `minio-sync` is done,
 the contents of the source and destination should be the same.
 
@@ -164,9 +164,9 @@ minio-sync --source s3://my-bucket/path/to/objects/ --destination ./path/to/file
 Again, `minio-sync` will try to keep the directory structure intact. So it will
 create subdirectories in `./path/to/files` if necessary.
 
-In addition, if the source is a prefix in MinIO (so you're downloading the files), 
-you can specify a `timestamp` to recover the files in MinIO from a specific point of 
-time in the past. This is called "point in time recovery". This will only work for 
+In addition, if the source is a prefix in MinIO (so you're downloading the files),
+you can specify a `timestamp` to recover the files in MinIO from a specific point of
+time in the past. This is called "point in time recovery". This will only work for
 MinIO buckets that have versioning enabled:
 ```bash
 minio-sync --source s3://my-bucket/objects --destination ./files --timestamp 2025-05-10
@@ -198,7 +198,7 @@ For example:
 minio-sync --source s3://my-bucket/objects --destination ./files --glob '*.png'
 ```
 Suppose the MinIO bucket contains the object `s3://my-bucket/object/cat_pictures/meow.png`.
-The command above will apply the `*.png` glob pattern on `cat_pictures/meow.png`. It matches, 
+The command above will apply the `*.png` glob pattern on `cat_pictures/meow.png`. It matches,
 so the file is downloaded to `./files/cat_pictures/meow.png`.
 
 *NOTE*: Please always surround your glob patterns with single quotes (').

@@ -31,22 +31,32 @@
 !> Struct definitions and block readers for spatial/meteo and initial/parameter fields.
 module m_spatial_field
    use precision, only: dp
+   use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM, TARGET_LAYER_ALL_3D
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   use m_missing, only: dmiss
+
    implicit none(type, external)
 
    private
 
    public :: t_spatial_field_input, t_averaging_input
-   public :: read_spatial_field_block, validate_spatial_field_input
+   public :: read_spatial_field_block, validate_spatial_field_input, select_spatial_field_method
    public :: read_averaging_input, averaging_params_to_transformcoef
-   public :: parse_location_type
+   public :: allocate_time_dependent_spatial_quantities, deallocate_time_dependent_spatial_quantities, &
+             register_time_dependent_spatial_quantity
+   public :: is_static_spatial_input
 
    integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: TARGET_LAYER_INVALID = -4
+
+   character(len=INI_VALUE_LEN), dimension(:), allocatable :: time_dependent_spatial_quantities
+   integer :: num_time_dependent_spatial_quantities = 0
 
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -61,26 +71,33 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
       character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
       character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
+      character(len=INI_VALUE_LEN) :: target_layer_string = ' ' !< Original targetLayer= value, retained for input diagnostics.
+      integer :: target_layer = TARGET_LAYER_BOTTOM !< Target layer enum or positive layer number.
       integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
+      real(dp) :: data_value !< Time and space independent value, used for multiplying quantities with a constant factor.
       real(dp) :: max_search_radius = -1.0_dp !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
       logical :: is_extrapolation_allowed = .false. !< .true. when extrapolation beyond the source data extent is permitted.
-      logical :: is_static_field = .false. !< .true. when the forcingFileType= describes a static field (no time dimension). Static fields are read once at initialisation; the EC relation is never updated during the time loop.
+      logical :: is_static_field = .false. !< .true. when the spatial field input describes an initialfield that should be applied exactly once at initialisation.
       type(t_averaging_input) :: averaging_input = t_averaging_input() !< Averaging parameters, only meaningful when method = averaging.
    end type t_spatial_field_input
 
 contains
 
-   !> Read all keyword values from a [Spatial] or [Meteo] block.
+   !> Read all keyword values from a [Spatial] block.
    function read_spatial_field_block(block_ptr) result(res)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use m_missing, only: dmiss
 
-      type(tree_data), pointer, intent(in) :: block_ptr
-      type(t_spatial_field_input) :: res
+      integer :: extrapolation_method_legacy
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing the spatial field block.
+      type(t_spatial_field_input) :: res !< Parsed spatial field input.
+      logical :: success
+      extrapolation_method_legacy = 0
 
       call prop_get(block_ptr, '', 'quantity', res%quantity)
       call prop_get(block_ptr, '', 'forcingFileType', res%forcing_file_type)
@@ -93,35 +110,82 @@ contains
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
+      call prop_get(block_ptr, '', 'targetLayer', res%target_layer_string)
+      call prop_get(block_ptr, '', 'dataValue', res%data_value, success=success)
+      if (.not. success) then
+         res%data_value = dmiss
+      end if
       call read_averaging_input(block_ptr, res%averaging_input)
 
+      ! Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
+      if (len_trim(res%forcing_file_type) == 0) then
+         call prop_get(block_ptr, '', 'dataFileType', res%forcing_file_type)
+      end if
+      if (len_trim(res%forcing_file) == 0) then
+         call prop_get(block_ptr, '', 'dataFile', res%forcing_file)
+      end if
+      if (len_trim(res%variable_name) == 0) then
+         call prop_get(block_ptr, '', 'dataVariableName', res%variable_name)
+      end if
+
+      call prop_get(block_ptr, '', 'extrapolationMethod', extrapolation_method_legacy)
+      if (extrapolation_method_legacy /= 0) then
+         res%is_extrapolation_allowed = .true.
+      end if
+
    end function read_spatial_field_block
+
+   !> Convert targetLayer text to its integer representation.
+   function parse_target_layer(target_layer_string) result(target_layer)
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: target_layer_string
+      integer :: target_layer
+      integer :: read_status
+
+      select case (str_tolower(trim(target_layer_string)))
+      case ('')
+         target_layer = TARGET_LAYER_BOTTOM
+      case ('bottom')
+         target_layer = TARGET_LAYER_BOTTOM
+      case ('top', 'surface')
+         target_layer = TARGET_LAYER_TOP
+      case ('all')
+         target_layer = TARGET_LAYER_UNIFORM
+      case ('3d')
+         target_layer = TARGET_LAYER_ALL_3D
+      case default
+         target_layer = TARGET_LAYER_INVALID
+         read (target_layer_string, *, iostat=read_status) target_layer
+         if (read_status /= 0 .or. target_layer <= 0) then
+            target_layer = TARGET_LAYER_INVALID
+         end if
+      end select
+   end function parse_target_layer
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
    !! averagingType is read as an integer matching the EC enum.
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
 
-      type(tree_data), pointer, intent(in) :: block_ptr
-      type(t_averaging_input), intent(out) :: avg
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing averaging keywords.
+      type(t_averaging_input), intent(out) :: avg !< Parsed averaging parameters.
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
@@ -130,8 +194,8 @@ contains
    subroutine averaging_params_to_transformcoef(avg, transformcoef)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
 
-      type(t_averaging_input), intent(in) :: avg
-      real(dp), intent(inout) :: transformcoef(NTRANSFORMCOEF)
+      type(t_averaging_input), intent(in) :: avg !< Averaging parameters to copy.
+      real(dp), intent(inout) :: transformcoef(NTRANSFORMCOEF) !< Transform coefficients updated with averaging parameters.
 
       transformcoef(4) = real(avg%averaging_type, dp) !< averagingType  (slot 4)
       transformcoef(5) = avg%rel_size !< relSize        (slot 5)
@@ -140,152 +204,256 @@ contains
 
    end subroutine averaging_params_to_transformcoef
 
-   !> Returns .true. when the given forcingFileType string describes a static
-   !! spatial field (no time dimension). Static fields are read once at
-   !! initialisation; the EC relation is never updated during the time loop.
-   pure function is_static_file_type(forcing_file_type) result(is_static)
-      use string_module, only: str_tolower
-      character(len=*), intent(in) :: forcing_file_type
-      logical :: is_static
+   !> Determine whether the spatial input describes a field that should be applied once at initialisation. 
+   !! Quantity ids starting with 'initial' are always deemed static, regardless of method or file type.
+   !! (This allows using NetCDF files with or without time-dimension as initial fields.)
+   !! For all other quantities, the (non-)static nature is detected from the file type and possibly the method.
+   function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
+      use string_module, only: istarts_with, str_tolower
+      use fm_external_forcings_utils, only: split_qid
+      use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
+
+      character(len=*), intent(in) :: forcing_file_type !< Most forcing file types uniquely determine time-dependence.
+      integer, intent(in) :: method !< arcinfo time-dependence is determined by method (currently)
+      character(len=*), intent(inout) :: quantity !< Quantity identifier; the generic initial modifier is removed.
+      logical :: is_static !< .true. when the input should be applied once during initialization.
+      character(len=len(quantity)) :: qid_base, qid_specific
+
+      if (istarts_with(quantity, 'initial')) then
+         is_static = .true.
+         if (istarts_with(quantity, 'initialvertical') .or. &
+             istarts_with(quantity, 'initialtracer') .or. &
+             istarts_with(quantity, 'initialsedfrac') .or. &
+             istarts_with(quantity, 'initialwaqbot')) then
+            ! These prefixes identify quantity families, not a generic initial modifier.
+         else
+            select case (str_tolower(trim(quantity))) ! previous initial-only quantities keep their original name
+            case ('initialvelocity', 'initialvelocityx', 'initialvelocityy', 'initialwaterlevel', 'initialwaterdepth', &
+               'initialsalinity', 'initialtemperature', 'initialsediment', 'initialsalinitytop', 'initialsalinitybot', &
+               'initialunsaturedzonethickness')
+            case default
+               quantity = quantity(8:) ! we shave off 'initial'
+               call split_qid(quantity, qid_base, qid_specific)
+               quantity = trim(str_tolower(qid_base))//trim(qid_specific)
+            end select
+         end if
+         return
+      end if
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff')
+      case ('sample', 'geotiff', 'polygon', '1dfield', 'map')
          is_static = .true.
+      case ('datavalue')
+         is_static = .not. quantity_has_time_dependent_input(quantity)
+      case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
+         is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
          is_static = .false.
       end select
 
-   end function is_static_file_type
+   end function is_static_spatial_input
 
-   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
-   !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns ILATTP_ALL when the string is absent or unrecognized.
-   function parse_location_type(location_type_string) result(ilattype)
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use string_module, only: str_tolower
+   !> Select the interpolation method for a spatial field input.
+   function select_spatial_field_method(forcing_file_type, interpolation_method, is_extrapolation_allowed) result(method)
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation
+      use timespace_parameters, only: METHOD_UNKNOWN
 
-      character(len=*), intent(in) :: location_type_string
-      integer :: ilattype
+      character(len=*), intent(in) :: forcing_file_type !< File type used to select the default method and apply fallbacks.
+      character(len=*), intent(in) :: interpolation_method !< Explicit interpolation method, or empty to use the file type default.
+      logical, intent(in) :: is_extrapolation_allowed !< Whether to select the extrapolating variant of the method.
+      integer :: method !< Selected FM interpolation method enum.
 
-      select case (str_tolower(trim(location_type_string)))
-      case ('1d')
-         ilattype = ILATTP_1D
-      case ('2d')
-         ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
-      case default
-         ilattype = ILATTP_ALL
-      end select
-
-   end function parse_location_type
+      if (len_trim(interpolation_method) > 0) then
+         method = convert_method_string_to_integer(interpolation_method)
+         call update_method_with_weightfactor_fallback(forcing_file_type, method)
+      else
+         method = get_default_method_for_file_type(forcing_file_type)
+      end if
+      if (method /= METHOD_UNKNOWN) then
+         call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+      end if
+   end function select_spatial_field_method
 
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.
    function validate_spatial_field_input(input, file_name, group_name, base_dir) result(is_successful)
       use messageHandling, only: err_flush, warn_flush, msgbuf
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
-                           convert_file_type_string_to_integer
+      use timespace, only: convert_file_type_string_to_integer
+      use timespace_parameters, only: DATAVALUE, NCGRID, FILE_TYPE_UNKNOWN
       use m_wind, only: jaQext
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, str_tolower
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
+      use m_meteo, only: quantity_name_config_file_to_internal_name
+      use precision_basics, only: comparereal
+      use m_missing, only: dmiss
 
-      type(t_spatial_field_input), intent(inout) :: input
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
-      character(len=*), intent(in) :: base_dir
+      ! Arguments
+      type(t_spatial_field_input), intent(inout) :: input !< Parsed input to validate and complete with derived values.
+      character(len=*), intent(in) :: file_name !< Name of the enclosing input file, used in diagnostics.
+      character(len=*), intent(in) :: group_name !< Name of the input block, used in diagnostics.
+      character(len=*), intent(in) :: base_dir !< Base directory used to resolve relative paths.
 
-      logical :: is_successful
-      logical :: has_interpolation_method, target_mask_file_exists
+      ! Local variables
+      logical :: is_successful !< .true. if the input is valid.
+      logical :: has_interpolation_method
+      logical :: is_valid_method_filetype
+      logical :: target_mask_file_exists
+      character(len=:), allocatable :: trimmed_file_name
+      character(len=:), allocatable :: trimmed_group_name
+      character(len=:), allocatable :: valid_extensions
 
       is_successful = .false.
+      trimmed_file_name = trim(file_name)
+      trimmed_group_name = trim(group_name)
 
+      input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
       if (len_trim(input%quantity) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
 
-      if (len_trim(input%forcing_file_type) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFileType'' is missing.'
+      input%target_layer = parse_target_layer(input%target_layer_string)
+      if (input%target_layer == TARGET_LAYER_INVALID) then
+         write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(input%target_layer_string)//''' in file '''//trimmed_file_name//''': ['// &
+            trimmed_group_name//']. Expected bottom, top/surface, all, 3d, or a positive layer number.'
          call err_flush()
          return
       end if
 
-      if (len_trim(input%forcing_file) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
-         call err_flush()
-         return
+      if (comparereal(input%data_value, dmiss) /= 0) then
+         if (len_trim(input%forcing_file) > 0) then
+            write (msgbuf, '(5a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+               ']. Fields ''dataFile'' and ''dataValue'' cannot be combined.'
+            call err_flush()
+            return
+         end if
+
+         if (len_trim(input%forcing_file_type) > 0) then ! Filetype is optional, but if supplied must equal datavalue
+            input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+            if (input%filetype /= DATAVALUE) then
+               write (msgbuf, '(7a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+                  ']. dataFileType ''', trim(input%forcing_file_type), ''' cannot be used with ''dataValue''; expected ''datavalue''.'
+               call err_flush()
+               return
+            end if
+         end if
+
+         input%forcing_file_type = "datavalue"
+         input%filetype = DATAVALUE
+      else
+         ! dataFileType is required only if `dataValue` is not present.
+         ! Do all dataFile related validation and option setting in this branch.
+         if (len_trim(input%forcing_file_type) == 0) then
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, ']. Field ''dataFileType'' is missing.'
+            call err_flush()
+            return
+         end if
+
+         input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+         if (input%filetype == FILE_TYPE_UNKNOWN) then
+            write (msgbuf, '(7a)') 'Field ''dataFileType'' has unknown value ''', trim(input%forcing_file_type), ''' in file ''', &
+               trimmed_file_name, ''': [', trimmed_group_name, '].'
+            call err_flush()
+            return
+         end if
+
+         if (input%filetype == DATAVALUE) then ! if we are in this block datavalue is not present, so this is an error
+            write (msgbuf, '(5a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
+               ']. dataFileType ''dataValue'' requires field ''dataValue'' to be present.'
+            call err_flush()
+            return
+         end if
+
+         if (len_trim(input%forcing_file) == 0) then
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''dataFile'' is missing.'
+            call err_flush()
+            return
+         end if
+
+         if (file_extension_conflicts_with_type(input%forcing_file, input%filetype, valid_extensions)) then
+            write (msgbuf, '(11a)') 'Invalid block in file ''', trim(file_name), ''': [', trim(group_name), &
+               ']. dataFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with dataFileType ''', &
+               trim(input%forcing_file_type), '''. Accepted extensions: ', valid_extensions, '.'
+            call err_flush()
+            return
+         end if
+
+         call resolvePath(input%forcing_file, base_dir)
       end if
 
-      call resolvePath(input%forcing_file, base_dir)
       if (len_trim(input%target_mask_file) > 0) then
          call resolvePath(input%target_mask_file, base_dir)
          inquire (file=trim(input%target_mask_file), exist=target_mask_file_exists)
          if (.not. target_mask_file_exists) then
-            write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(7a)') 'Invalid block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
                ']. targetMaskFile ''', trim(input%target_mask_file), ''' does not exist.'
             call err_flush()
             return
          end if
       end if
 
-      if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
-         write (msgbuf, '(9a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
-            ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', &
-            trim(input%forcing_file_type), '''.'
-         call err_flush()
-         return
-      end if
-
-      input%is_static_field = is_static_file_type(input%forcing_file_type)
-
       ! Parse operand. Legacy single-character values are supported but will trigger a warning.
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'Invalid block in file ''' // file_name // ''': [' // group_name // ']. Unknown operand ''' // input%operand_string // '''.'
+            write (msgbuf, '(a)') 'Invalid block in file '''//trimmed_file_name//''': ['//trimmed_group_name//']. Unknown operand '''//trim(input%operand_string)//'''.'
             call err_flush()
             return
          end if
-         
+
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file ''' // file_name // ''': [' // group_name // ']. Operand value ''' // input%operand_string // '''. is deprecated, ' &
-               // 'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            write (msgbuf, '(a)') 'In ['//trimmed_group_name//'] block in file '''//trimmed_file_name//''': operand value '''//trim(input%operand_string)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
       end if
 
       has_interpolation_method = len_trim(input%interpolation_method) > 0
-      if (has_interpolation_method) then
-         input%method = convert_method_string_to_integer(input%interpolation_method)
-         call update_method_with_weightfactor_fallback(input%forcing_file_type, input%method)
-      else
-         input%method = get_default_method_for_file_type(input%forcing_file_type)
-      end if
+      input%method = select_spatial_field_method(input%forcing_file_type, input%interpolation_method, input%is_extrapolation_allowed)
 
       if (input%method == -1) then
          if (has_interpolation_method) then
             write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', &
-               trim(input%interpolation_method), ' in block in file ''', file_name, ''': [', group_name, '].'
+               trim(input%interpolation_method), ' in block in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
          else
-            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
-               '] nor an internal value associated with given ''forcingFileType'':', trim(input%forcing_file_type), '.'
+            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
+               '] nor an internal value associated with given ''dataFileType'':', trim(input%forcing_file_type), '.'
          end if
          call err_flush()
          return
       end if
+      input%is_static_field = is_static_spatial_input(input%forcing_file_type, input%method, input%quantity)
+      input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
-      call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
+      if (input%target_layer == TARGET_LAYER_ALL_3D) then
+         if (input%filetype /= NCGRID .or. .not. input%is_static_field) then
+            write (msgbuf, '(5a)') 'targetLayer=3d requires either a NetCDF field or a time-independent field in file ''', trimmed_file_name, ''': [', trimmed_group_name, '].'
+            call err_flush()
+            return
+         end if
+      end if
 
-      input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+      if (any(input%filetype == [DATAVALUE, NCGRID]) .or. .not. input%is_static_field) then
+         is_valid_method_filetype = is_valid_ec_method_filetype(input%method, input%filetype)
+      else
+         is_valid_method_filetype = is_valid_static_field_method_filetype(input%method, input%filetype)
+      end if
+
+      if (.not. is_valid_method_filetype) then
+         write (msgbuf, '(9a)') 'Invalid method/filetype combination in file ''', trimmed_file_name, ''': [', &
+            trimmed_group_name, ']. interpolationMethod ''', trim(input%interpolation_method), &
+            ''' is not supported for dataFileType ''', trim(input%forcing_file_type), '''.'
+         call err_flush()
+         return
+      end if
 
       select case (trim(input%quantity))
       case ('qext')
          if (jaQext == 0) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trimmed_file_name, ''': [', trimmed_group_name, &
                ']. quantity ''qext'' requires QExt=1 in MDU.'
             call err_flush()
             return
@@ -296,30 +464,154 @@ contains
 
    end function validate_spatial_field_input
 
-   function file_extension_conflicts_with_type(forcing_file, forcing_file_type) result(conflicts)
+   !> Determines whether a method is accepted for a static forcing file type.
+   function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
+                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
+
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
+
+      select case (filetype)
+      case (INSIDE_POLYGON)
+         is_valid = method == METHOD_CONSTANT
+      case (TRIANGULATION, GEOTIFF, NCFLOW)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
+      case (ARCINFO)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
+      case (FIELD1D)
+         is_valid = method == JUSTUPDATE
+      case default
+         is_valid = .false.
+      end select
+   end function is_valid_static_field_method_filetype
+
+   !> Determines whether a method is accepted for an EC-backed forcing file type.
+   !! Method and file type are FM enumeration values derived from the input strings.
+   function is_valid_ec_method_filetype(method, filetype) result(is_valid)
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
+                                      METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
+                                      NEAREST_NEIGHBOUR
+
+      integer, intent(in) :: method !< Method, result of select_spatial_field_method.
+      integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
+      logical :: is_valid !< `.true.` when the method is valid for the file type.
+
+      is_valid = .false.
+
+      select case (filetype)
+      case (UNIFORM, BCASCII)
+         is_valid = method == SPACEANDTIME
+      case (UNIMAGDIR)
+         is_valid = method == SPACEANDTIME
+      case (ARCINFO)
+         is_valid = method == SPACEANDTIME
+      case (SPIDERWEB)
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION])
+      case (CURVI)
+         is_valid = method == WEIGHTFACTORS
+      case (NCGRID)
+         is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR])
+      case (DATAVALUE)
+         is_valid = method == METHOD_CONSTANT
+      end select
+   end function is_valid_ec_method_filetype
+
+   !> Checks whether a forcing file extension is compatible with its file type.
+   function file_extension_conflicts_with_type(forcing_file, file_type, valid_extensions) result(conflicts)
+      use m_string_utils, only: join_strings
       use string_module, only: str_tolower
-      character(len=*), intent(in) :: forcing_file
-      character(len=*), intent(in) :: forcing_file_type
-      logical :: conflicts
+      use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
+                                      SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
+      character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
+      integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
+      character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
+      logical :: conflicts !< `.true.` when the file extension is incompatible with file_type.
 
       integer :: dot_pos
       character(len=16) :: ext
+      character(len=:), allocatable, dimension(:) :: valid_extensions_array
 
-      conflicts = .false.
+      ext = ''
       dot_pos = index(trim(forcing_file), '.', back=.true.)
-      if (dot_pos == 0) return
+      if (dot_pos > 0) then
+         ext = str_tolower(trim(forcing_file(dot_pos:)))
+      end if
 
-      ext = str_tolower(trim(forcing_file(dot_pos:)))
+      conflicts = .true.
+      valid_extensions = ''
 
-      select case (ext)
-      case ('.nc')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'netcdf'
-      case ('.tif', '.tiff')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
-      case ('.spw')
-         conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
+      select case (file_type)
+      case (FIELD1D)
+         valid_extensions_array = [character(len=16) :: '.ini']
+      case (ARCINFO)
+         conflicts = .false. !.not. any(ext == [character(len=16) :: '.asc', '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', '.amr', '.sdu', '.aice', '.hice'])
+      case (BCASCII)
+         valid_extensions_array = [character(len=16) :: '.bc']
+      case (CURVI)
+         conflicts = .false. !.not. any(ext == [character(len=16) :: '.amu', '.amv', '.amp', '.amh', '.amt', '.amc', '.ams', '.amr', '.sdu', '.aice', '.hice', '.apwxwy', '.hac', '.tem'])
+      case (GEOTIFF)
+         valid_extensions_array = [character(len=16) :: '.tif', '.tiff']
+      case (NCGRID, NCFLOW)
+         valid_extensions_array = [character(len=16) :: '.nc']
+      case (INSIDE_POLYGON)
+         valid_extensions_array = [character(len=16) :: '.pol', '.pli', '.pliz']
+      case (SAMPLE)
+         valid_extensions_array = [character(len=16) :: '.xyz', '.xyb']
+      case (SPIDERWEB)
+         valid_extensions_array = [character(len=16) :: '.spw']
+      case (UNIFORM)
+         valid_extensions_array = [character(len=16) :: '.tim', '.tem', '.wnd']
+      case (UNIMAGDIR)
+         valid_extensions_array = [character(len=16) :: '.tim', '.wnd']
       end select
 
+      if (allocated(valid_extensions_array)) then
+         conflicts = .not. any(ext == valid_extensions_array)
+         valid_extensions = join_strings(valid_extensions_array, ', ')
+      end if
+
    end function file_extension_conflicts_with_type
+
+   !> Helper routine to avoid cyclic dependencies
+   subroutine allocate_time_dependent_spatial_quantities(size)
+      integer, intent(in) :: size !< Maximum number of quantities to register.
+
+      call deallocate_time_dependent_spatial_quantities()
+      allocate (time_dependent_spatial_quantities(size))
+      time_dependent_spatial_quantities = ''
+   end subroutine allocate_time_dependent_spatial_quantities
+
+   !> Helper routine to avoid cyclic dependencies
+   subroutine deallocate_time_dependent_spatial_quantities()
+      if (allocated(time_dependent_spatial_quantities)) then
+         deallocate (time_dependent_spatial_quantities)
+      end if
+      num_time_dependent_spatial_quantities = 0
+   end subroutine deallocate_time_dependent_spatial_quantities
+
+   !> Register a quantity that has at least one time-dependent spatial input.
+   subroutine register_time_dependent_spatial_quantity(quantity)
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: quantity !< Canonical spatial quantity name.
+
+      if (any(strcmpi(time_dependent_spatial_quantities, quantity))) return
+      num_time_dependent_spatial_quantities = num_time_dependent_spatial_quantities + 1
+      time_dependent_spatial_quantities(num_time_dependent_spatial_quantities) = quantity
+   end subroutine register_time_dependent_spatial_quantity
+
+   function quantity_has_time_dependent_input(quantity) result(has_time_dependent_input)
+      use string_module, only: strcmpi
+
+      character(len=*), intent(in) :: quantity
+      logical :: has_time_dependent_input
+
+      has_time_dependent_input = .false.
+      if (allocated(time_dependent_spatial_quantities)) then
+         has_time_dependent_input = any(strcmpi(time_dependent_spatial_quantities, quantity))
+      end if
+   end function quantity_has_time_dependent_input
 
 end module m_spatial_field

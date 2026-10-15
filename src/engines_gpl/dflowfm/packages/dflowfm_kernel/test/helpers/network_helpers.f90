@@ -48,6 +48,14 @@ contains
         call realloc(zk, numk + array_size_margin_, stat=istat, fill=0.0_dp)
         call realloc(kc, numk + array_size_margin_, stat=istat, fill=1)
         call realloc(nmk, numk + array_size_margin_, stat=istat, fill=2)
+        if(allocated(nod)) then
+            do i = 1, size(nod)
+                if (allocated(nod(i)%lin)) then
+                    deallocate(nod(i)%lin)
+                end if
+            end do
+            deallocate(nod)
+        end if
         allocate(nod(numk + array_size_margin_))
 
         ! Place (rows+1)x(columns+1) grid nodes (the cell corners).
@@ -96,7 +104,7 @@ contains
 
     !> Cleanup network_data arrays allocated by network helper.
     subroutine cleanup_grid(self)
-        use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod
+        use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, rlin
         use m_cell_geometry, only: xz, yz, ndx
 
         type(t_grid_helper), intent(in) :: self
@@ -142,6 +150,9 @@ contains
         if (allocated(rnod)) then
             deallocate(rnod)
         end if
+        if (allocated(rlin)) then
+            deallocate(rlin)
+        end if
 
         ! Deallocate cell arrays
         if (allocated(netcell)) then
@@ -172,6 +183,9 @@ contains
         ! Reset flow administration
         if (allocated(xz)) then
             deallocate(xz)
+        end if
+        if (allocated(yz)) then
+            deallocate(yz)
         end if
         ndx = 0
     end subroutine cleanup_grid

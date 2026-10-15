@@ -62,7 +62,7 @@ contains
       use m_gui
       use dfm_error
       use dfm_signals
-      use m_mass_balance_areas, only: jamba
+      use m_mass_balance_area_data, only: jamba
       use m_partitioninfo, only: jampi, my_rank
       use m_integralstats, is_is_numndvals => is_numndvals
       use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, updateTotalInflowLat, &
@@ -81,6 +81,7 @@ contains
       use m_fm_icecover, only: fm_icecover_prepare_output
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_wrimap, only: wrimap
+      use m_source_sink, only: source_sinks
 
       integer, intent(out) :: iresult
 
@@ -164,7 +165,7 @@ contains
       call update_values_on_cross_sections
       call updateValuesOnRunupGauges()
       if (jampi == 0 .or. (jampi == 1 .and. my_rank == 0)) then
-         if (num_source_sink > 0) then
+         if (source_sinks%num_total > 0) then
             call updateValuesonSourceSinks(time1) ! Compute discharge and volume on sources and sinks
          end if
       end if

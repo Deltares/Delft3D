@@ -27,12 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_doaddksources
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -42,40 +39,41 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_flow, only: num_source_sink, source_sink_indices, source_sink_area, source_sink_water_discharge, vol1, turkinws
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, BOTTOM_LAYER_SOURCE
+      use m_flow, only: vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
 
       integer :: n, k, kk, kk2
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
-      do n = 1, num_source_sink
-         if (source_sink_indices(2, n) == 0 .and. source_sink_indices(5, n) == 0) then
+      do n = 1, source_sinks%num_total
+         if (source_sinks%indices(n, BOTTOM_LAYER_SINK) == 0 .and. source_sinks%indices(n, BOTTOM_LAYER_SOURCE) == 0) then
             cycle ! due to initialisation
          end if
 
-         if (source_sink_area(n) == 0) then
+         if (source_sinks%area(n) == 0) then
             cycle
          end if
-         kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
-         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr TO
-         qsrck = source_sink_water_discharge(n)
+         kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
+         qsrck = source_sinks%discharge(n)
 
          if (kk > 0) then ! FROM Point
-            k = source_sink_indices(2, n)
+            k = source_sinks%indices(n, BOTTOM_LAYER_SINK)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
             else if (qsrck < 0) then ! FROM k2 to k
-               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sink_area(n))**2
+               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
             end if
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = source_sink_indices(5, n)
+            k = source_sinks%indices(n, BOTTOM_LAYER_SOURCE)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
-               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sink_area(n))**2
+               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
             else if (qsrck < 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * turkinws(k)
             end if

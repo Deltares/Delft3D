@@ -34,7 +34,7 @@ module m_ug_meshgeom
    !> This is general data structures shared also by gridgeom
    type t_ug_meshgeom
    ! TODO: AvD: extend this to 3D (volumes)
-      character(len=ug_nameLen) :: meshname                !< Name of this mesh ! TODO: AvD: should this be in this data type?
+      character(len=ug_nameLen) :: meshname        = ''    !< Name of this mesh ! TODO: AvD: should this be in this data type?
       integer                   :: dim             = -1    !< Dimensionality of the mesh (1/2/3)
       integer                   :: numnode         = -1    !< Number of mesh nodes.
       integer                   :: numedge         = -1    !< Number of mesh edges (size of kn)

@@ -20,7 +20,7 @@ set(oss_dependencies deltares_common
                      waq_hyd_data
                      waq_utils_f)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/ddcouple)

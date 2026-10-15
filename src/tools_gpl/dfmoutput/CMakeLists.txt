@@ -15,7 +15,9 @@ get_fortran_source_files(${src_path} sources)
 
 # Define the executable
 set(executable_name dfmoutput)
-add_executable(${executable_name} ${sources} ${rc_version_file})
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${res_path}")
+add_executable(${executable_name} ${sources})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Add dependencies
 if (UNIX)
@@ -27,7 +29,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${executable_name} PRIVATE
                           ${oss_dependencies})
@@ -39,7 +41,7 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
@@ -59,34 +61,9 @@ endif(WIN32)
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-#target_link_libraries(${executable_name} PRIVATE netcdf)
-
 if (WIN32)
     include_directories(${version_include_dir}
                         ${res_path}
-    )
-
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-    )
-
-    target_link_libraries(${executable_name} PRIVATE
-                          "comctl32.lib"
-                          "wsock32.lib"
-                          "netapi32.lib"
-                          "kernel32.lib"
-                          "user32.lib"
-                          "Shlwapi.lib"
-                          "Gdi32.lib"
-                          "Winspool.lib"
-                          "netcdf.lib"
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
     )
 
     message(STATUS "Setting target_compile_definitions in windows")

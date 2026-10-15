@@ -5,8 +5,13 @@
 # See: https://code.visualstudio.com/docs/devcontainers/create-dev-container#_rebuild
 set -exo pipefail
 
+VSCODE_EXAMPLE='.devcontainer/delft3d/examples/.vscode-example'
 TESTBENCH_HOME='./test/deltares_testbench'
 TESTBENCH_ARTIFACTS="${TESTBENCH_HOME}/data/engines/teamcity_artifacts/lnx64"
+
+# If the user doesn't have a `tasks.json` already. Create it with tasks to configure and build.
+mkdir -p .vscode
+[[ ! -e ".vscode/tasks.json" ]] && cp ${VSCODE_EXAMPLE}/tasks.json .vscode/tasks.json
 
 # Create virtual environment for TestBench.py and install the dependencies.
 pushd "$TESTBENCH_HOME"

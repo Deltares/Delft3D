@@ -70,7 +70,7 @@
 			<location ref="dsctestbench_references" type="reference">
 				<from>\win32\</from>
 			</location>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 		</testCase>
 	</defaultTestCases>
 	<!--
@@ -89,7 +89,7 @@
 			<checks>
 				<file name="lint_tst_01.out" type="ASCII"/>
 			</checks>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 		</testCase>
 		<testCase name="e56_f01_c02_test" ref="lint_default">
 			<path version="2024-01-11T11:10:00">e56_lint/f01_general/c02_test</path>
@@ -103,7 +103,7 @@
 			<checks>
 				<file name="lint_tst_02.out" type="ASCII"/>
 			</checks>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 		</testCase>
 		<testCase name="e56_f01_c03_test" ref="lint_default">
 			<path version="2024-01-11T11:10:00">e56_lint/f01_general/c03_test</path>
@@ -117,7 +117,7 @@
 			<checks>
 				<file name="lint_tst_03.out" type="ASCII"/>
 			</checks>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 		</testCase>
 </testCases>
 </deltaresTestbench_v3>

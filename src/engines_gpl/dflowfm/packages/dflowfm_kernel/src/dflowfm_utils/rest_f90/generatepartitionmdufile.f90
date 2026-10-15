@@ -43,7 +43,7 @@ contains
    !> Generate *.mdu files for partitions from the main *.mdu file.
    subroutine generate_partition_mdu_file(filename_main, filename_partition)
       use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, &
-      md_netfile, md_partitionfile, md_1dfiles, md_convertlongculverts, mess, level_error
+      md_netfile, md_partitionfile, md_1dfiles, mess, level_error
       use string_module, only: strcmpi, str_lower
 
       ! Parameters
@@ -97,7 +97,7 @@ contains
          elseif (mdu_line_main(1:1) == '[' .and. in_numerics) then ! About to close [numerics] block
             if (.not. icgsolver_present) then
                write (string_icgsolver, "(I5)") md_icgsolver
-               mdu_line_partition = "Icgsolver = "//trim(adjustl(string_icgsolver))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
+               mdu_line_partition = "Icgsolver = "//trim(adjustl(string_icgsolver))//"          # Solver type , 4 = Sobek Guus Stelling + Saadilud, 6 = PETSc (required by parallel)"
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
             in_numerics = .false.
@@ -153,7 +153,7 @@ contains
                write (unit_partition, "(a)") trim(mdu_line_partition)
             else if (keyword_present(2)) then ! Modify IcgSolver
                write (string_icgsolver, "(I5)") md_icgsolver
-               mdu_line_partition = trim(keyword)//" "//trim(adjustl(string_icgsolver))//"          # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS"
+               mdu_line_partition = trim(keyword)//" "//trim(adjustl(string_icgsolver))//"          # Solver type , 4 = Sobek Guus Stelling + Saadilud, 6 = PETSc (required by parallel)"
                write (unit_partition, "(a)") trim(mdu_line_partition)
                icgsolver_present = .true.
             else if (keyword_present(3)) then ! Modify RestartFile

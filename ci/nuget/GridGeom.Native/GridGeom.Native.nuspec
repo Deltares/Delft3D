@@ -14,10 +14,10 @@
         <tags>native</tags>
     </metadata>
     <files>
-        <file src="..\..\..\source\x64\lib\gridgeom.dll" target="runtimes\win-x64\native\" />
-        <file src="..\..\..\source\x64\lib\libifcoremd.dll" target="runtimes\win-x64\native\" />
-        <file src="..\..\..\source\x64\lib\libmmd.dll" target="runtimes\win-x64\native\" />
-        <file src="..\..\..\source\x64\lib\svml_dispmd.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\bin\gridgeom.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\bin\libifcoremd.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\bin\libmmd.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\bin\svml_dispmd.dll" target="runtimes\win-x64\native\" />
         <file src="build\**\*" target="build"/>
     </files>
 </package>

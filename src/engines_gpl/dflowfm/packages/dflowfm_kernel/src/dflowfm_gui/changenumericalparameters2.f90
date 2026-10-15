@@ -38,8 +38,9 @@ contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
       use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, &
-         cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, source_sink_add_k_to_turkin, jalogprofatubndin, &
+         cffachormom, cfexphormom, cfconhormom, javatem, jaqaisq1, jalogprofatubndin, &
          javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
+      use m_source_sink, only: source_sinks
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -50,7 +51,7 @@ contains
       use dflowfm_version_module, only: company, product_name
       use m_add_baroclinic_pressure, only: rhointerfaces
 
-      integer, parameter :: NUMPAR = 24
+      integer, parameter :: NUMPAR = 23
       integer, parameter :: NUMFLD = 2 * NUMPAR
       integer :: numparactual, numfldactual
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
@@ -58,7 +59,7 @@ contains
       integer, external :: infoinput
       integer :: temp_source_sink_add_k_to_turkin
 !
-      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
+      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ihelp
       integer :: nbut, imp, inp
 
       NLEVEL = 4
@@ -100,9 +101,6 @@ contains
       it(2 * i) = 6
       i = i + 1
       OPTION(i) = 'Javatem                                 '
-      it(2 * i) = 2
-      i = i + 1
-      OPTION(i) = 'Javiuplus3D                             '
       it(2 * i) = 2
       i = i + 1
       OPTION(i) = 'Jaqaisq1                                '
@@ -163,8 +161,6 @@ contains
       HELPM(i) = '0=never switch off ho term hor mom                          '
       i = i + 1
       HELPM(i) = '0=exp of                                                    '
-      i = i + 1
-      HELPM(i) = '0=constant to be added to                                   '
       i = i + 1
       HELPM(i) = '0=No, 1=Upwe, 2=Cente, 3=Upwi, 4=Centi, 5=4,3, 6=MCexpl     '
       i = i + 1
@@ -282,11 +278,9 @@ contains
       i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVATEM)
       i = i + 1
-      call IFORMputINTEGER(2 * i, javiuplus3D)
-      i = i + 1
       call IFORMputINTEGER(2 * i, jaqaisq1)
       i = i + 1
-      if (source_sink_add_k_to_turkin) then
+      if (source_sinks%add_k_to_turkin) then
          temp_source_sink_add_k_to_turkin = 1
       else 
          temp_source_sink_add_k_to_turkin = 0
@@ -374,12 +368,10 @@ contains
             i = i + 1
             call IFORMGETINTEGER(2 * i, JAVATEM)
             i = i + 1
-            call IFORMGETINTEGER(2 * i, javiuplus3D)
-            i = i + 1
             call IFORMGETINTEGER(2 * i, jaqaisq1)
             i = i + 1
             call IFORMGETINTEGER(2 * i, temp_source_sink_add_k_to_turkin)
-            source_sink_add_k_to_turkin = (temp_source_sink_add_k_to_turkin == 1)
+            source_sinks%add_k_to_turkin = (temp_source_sink_add_k_to_turkin == 1)
             i = i + 1
             call IFORMGETINTEGER(2 * i, jaLogprofatubndin)
             i = i + 1
@@ -404,8 +396,9 @@ contains
          call RESTOREKEYS()
          return
       else if (KEY == 21) then
-         if (IFEXIT == 1 .or. IFEXIT == 3) then
-            WRDKEY = HELPM(IFEXIT)
+         ihelp = (IFEXIT + 1) / 2
+         if (ihelp >= 1 .and. ihelp <= NUMPARACTUAL) then
+            WRDKEY = HELPM(ihelp)
             call HELP(WRDKEY, NLEVEL)
          end if
       end if

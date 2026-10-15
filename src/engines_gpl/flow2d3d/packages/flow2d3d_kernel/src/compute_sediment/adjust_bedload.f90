@@ -43,7 +43,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use sediment_basics_module
     use globaldata
     !

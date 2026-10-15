@@ -1,3 +1,5 @@
+module m_fallve
+contains
 subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & kcs       ,kfs       ,u0        ,v0        , &
                 & wphy      ,r0        ,rtur0     ,ltur      ,thick     , &
@@ -46,11 +48,12 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: ee
+    use m_mathconstants, only: ee
     use sediment_basics_module, only: SEDTYP_CLAY
     use morphology_data_module
     use flocculation, only: get_tshear_tdiss
     use globaldata
+    use m_eqsettle, only: eqsettle
     !
     implicit none
     !
@@ -374,7 +377,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_strings(WS_SP_RUNID) = gdp%runid
              dll_strings(WS_SP_USRFL) = dll_usrfil(l)
              !
-             call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings, &
+             call eqsettle(dll_function(l), dll_handle(l), max_integers, max_reals, max_strings, &
                          & dll_integers, dll_reals, dll_strings, lundia, iform_settle(l),  &
                          & localpar, gdp%gdtrapar%npar, wsloc, error)
              if (error) call d3stop(1, gdp)
@@ -385,3 +388,5 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     enddo           ! nm
     deallocate (localpar, stat = istat)
 end subroutine fallve          
+
+end module m_fallve

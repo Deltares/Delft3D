@@ -53,7 +53,7 @@ contains
       use m_flowgeom, only: Ndxi, kfs, ba, ndx ! static mesh information
       use m_flowtimes, only: dts
       use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
-      use m_turbulence, only: difwws
+      use m_turbulence, only: difwws, difwws_total
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
       use m_fm_erosed, only: tpsnumber
@@ -107,6 +107,8 @@ contains
       bc = 0.0_dp
       cc = 0.0_dp
       dc = 0.0_dp
+      difwws(:) = 0.0_dp
+      difwws_total(:) = 0.0_dp
 
       call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
@@ -180,7 +182,8 @@ contains
                else
                   fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
                   if (j == ISALT) then
-                     difwws(k) = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid)
+                     difwws(k) = sigdifi(j) * vicwws(k) + ozmid
+                     difwws_total(k) = difwws(k) + get_difsedw(kk, j)
                   end if
                end if
 
@@ -192,7 +195,7 @@ contains
 
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
-                  if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
+                  if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
                         qw_loc = qw(k) - wsf(j) * a1(kk)
                      else if (j >= ISED1 .and. j <= ISEDN) then
@@ -210,7 +213,7 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if (jased > 0 .and. jaimplicitfallvelocity == 1) then
+               if (jaimplicitfallvelocity == 1) then ! implicit fallvelocity
                   fluxfac = 0.0_dp
                   if (jased == 4) then
                      if (j >= ISED1 .and. j <= ISEDN) then

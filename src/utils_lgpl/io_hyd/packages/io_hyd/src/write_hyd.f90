@@ -65,6 +65,7 @@
       character,parameter :: cq = ''''              ! quote
       character(len=2),parameter :: cqs = ''' '     ! quote with space
       character(len=2),parameter :: csq = ' '''     ! space with quote
+      character(len=10)   :: layer_type
 
 
       call get_log_unit_number(lunrep)
@@ -79,13 +80,15 @@
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 
       write(lunhyd,'(a,'' '',a)') task, full_coupling
-      if ( hyd%geometry .eq. HYD_GEOM_CURVI ) then
-         write(lunhyd,'(a,'' '',a)') geometry, curvilinear_grid
-      elseif ( hyd%geometry .eq. HYD_GEOM_UNSTRUC ) then
-         write(lunhyd,'(a,'' '',a)') geometry, unstructured
-      else
-         write(lunhyd,'(a,'' '',a)') geometry, 'unknown'
-      endif
+      layer_type = merge( "z-layers", "        ", hyd%layer_type == HYD_LAYERS_Z )
+      select case ( hyd%geometry )
+         case( HYD_GEOM_CURVI )
+            write(lunhyd,'(a,'' '',a, '' '',a)') geometry, curvilinear_grid, layer_type
+         case( HYD_GEOM_UNSTRUC )
+            write(lunhyd,'(a,'' '',a, '' '',a)') geometry, unstructured, layer_type
+         case default
+            write(lunhyd,'(a,'' '',a)') geometry, 'unknown'
+      end select
       write(lunhyd,'(a,'' '',a)') horizontal_aggregation, "automatic"
       write(lunhyd,'(a,'' '',a)') minimum_vert_diffusion_used, "no"
       write(lunhyd,'(a,'' '',a)') vertical_diffusion, calculated

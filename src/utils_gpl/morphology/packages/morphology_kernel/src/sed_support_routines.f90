@@ -1,50 +1,46 @@
-module sed_support_routines
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2026.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
-!-------------------------------------------------------------------------------
-!  
-!  
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
-implicit none
+module sed_support_routines
+   implicit none
 
-private
+   private
 
-public shld
-public ruessink_etal_2012
-public calculate_critical_velocities
-public calculate_velocity_asymmetry
-public calculate_urms
+   public shld
+   public ruessink_etal_2012
+   public calculate_critical_velocities
+   public calculate_velocity_asymmetry
+   public calculate_urms
 
 contains
 
 !> determines Shields parameter according to Shields curve
 function shld(dstar)
     use precision
-    implicit none
 !
 ! arguments
 !
@@ -68,8 +64,7 @@ end function shld
 
 subroutine ruessink_etal_2012(k, hs, h, sk, as, phi_phase, urs, bm)
     use precision
-    use mathconsts, only: pi
-    implicit none
+    use m_mathconstants, only: pi
 !
 ! arguments
 !
@@ -130,8 +125,7 @@ end subroutine ruessink_etal_2012
 subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vicmol, d15, poros, pormax, rheea, delta, u, v, &
     dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
     use precision
-    use mathconsts
-    implicit none
+    use m_mathconstants
     
     integer                  , intent(in)    :: dilatancy
     integer                  , intent(in)    :: bedslpeffini
@@ -213,8 +207,9 @@ end subroutine calculate_critical_velocities
 
 subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
     use precision
-    use mathconsts
-    implicit none
+    use m_mathconstants
+    use m_ua_rvr, only: ua_rvr
+    use m_ua_vt, only: ua_vt
     
     integer                     , intent(in)     :: waveform
     integer                     , intent(in)     :: sws
@@ -242,9 +237,7 @@ end subroutine calculate_velocity_asymmetry
 
 subroutine calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
     use precision
-    use mathconsts
-
-    implicit none
+    use m_mathconstants
 
     logical , intent(in)           :: ubot_from_com
     real(fp), intent(in)           :: hrms

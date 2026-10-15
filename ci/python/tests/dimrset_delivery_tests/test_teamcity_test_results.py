@@ -48,7 +48,7 @@ class TestResultInfo:
         test_result = ResultInfo(10, 9, 8, 7, 6, 5)
 
         # Assert
-        assert test_result.get_total() == 35
+        assert test_result.get_total() == 27
 
     def test_get_total_with_muted_exception(self) -> None:
         """Test get_total method with muted exceptions."""
@@ -56,7 +56,7 @@ class TestResultInfo:
         test_result = ResultInfo(10, 9, 8, 7, 6, 5)
 
         # Act & Assert
-        assert test_result.get_total() == 35
+        assert test_result.get_total() == 27
 
     def test_get_not_passed_total(self) -> None:
         """Test get_not_passed_total method."""
@@ -64,7 +64,14 @@ class TestResultInfo:
         test_result = ResultInfo(10, 9, 8, 7, 6, 5)
 
         # Act & Assert
-        assert test_result.get_not_passed_total() == 30
+        assert test_result.get_not_passed_total() == 22
+
+    def test_ignored_tests_are_excluded_from_release_totals(self) -> None:
+        """Ignored tests must not affect totals or pass/fail in the release pipeline."""
+        test_result = ResultInfo(passed=100, failed=0, ignored=5, muted=0, exception=0, muted_exception=0)
+
+        assert test_result.get_total() == 100
+        assert test_result.get_not_passed_total() == 0
 
 
 class TestConfigurationTestResult:
@@ -88,8 +95,8 @@ class TestConfigurationTestResult:
         assert config_result.test_result.exception == 0
         assert config_result.test_result.muted_exception == 0
         assert config_result.exceptions == []
-        assert config_result.get_total() == 16
-        assert config_result.get_not_passed_total() == 6
+        assert config_result.get_total() == 14
+        assert config_result.get_not_passed_total() == 4
 
 
 class TestTeamcityTestResults:
@@ -152,14 +159,14 @@ class TestTeamcityTestResults:
         output = mock_file.getvalue()
         assert "Testbench root: DIMR Test Results" in output
         assert "Summary: Windows Tests" in output
-        assert "Total tests   :    100" in output
+        assert "Total tests   :     98" in output
         assert "    Passed    :     85" in output
-        assert "    Not passed:     15" in output
+        assert "    Not passed:     13" in output
         assert "    Failed    :     10" in output
         assert "    Exception :      3" in output
         assert "    Ignored   :      2" in output
         assert "    Muted     :      0" in output
-        assert "    Percentage:  85.00" in output
+        assert "    Percentage:  86.73" in output
 
     def test_log_executive_summary_multiple_summaries(self) -> None:
         """Test logging executive summary with multiple summaries."""
@@ -190,8 +197,8 @@ class TestTeamcityTestResults:
         assert "Testbench root: DIMR Test Results" in output
         assert "Summary: Windows Tests" in output
         assert "Summary: Linux Tests" in output
-        assert "    Percentage:  85.00" in output  # Windows percentage
-        assert "    Percentage:  90.00" in output  # Linux percentage
+        assert "    Percentage:  86.73" in output  # Windows percentage
+        assert "    Percentage:  90.91" in output  # Linux percentage
 
     def test_log_executive_summary_zero_total(self) -> None:
         """Test logging executive summary with zero total tests."""
@@ -250,10 +257,10 @@ class TestTeamcityTestResults:
             "total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)"
             in output
         )
-        assert "          60       50        5        0        3        2    83.33  ---  Test Config" in output
-        assert "    Total     :     60" in output
+        assert "          57       50        5        0        3        2    87.72  ---  Test Config" in output
+        assert "    Total     :     57" in output
         assert "    Passed    :     50" in output
-        assert "    Percentage:  83.33" in output
+        assert "    Percentage:  87.72" in output
 
     def test_log_result_list_multiple_engines(self) -> None:
         """Test log_result_list with multiple engines."""
@@ -275,9 +282,9 @@ class TestTeamcityTestResults:
         )
         assert "Windows Tests" in output
         assert "Linux Tests" in output
-        assert "    Total     :    130" in output
+        assert "    Total     :    122" in output
         assert "    Passed    :    100" in output
-        assert "    Percentage:  76.92" in output
+        assert "    Percentage:  81.97" in output
 
     def test_log_result_list_engine_with_zero_total(self) -> None:
         """Test log_result_list with engine having zero total tests."""

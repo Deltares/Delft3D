@@ -976,6 +976,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
+      use m_source_sink, only: source_sinks
       use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1051,7 +1052,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = num_source_sink
+         shape(1) = source_sinks%num_total
          shape(2) = 3
          return
       case ("observations")
@@ -2017,6 +2018,7 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_source_sink, only: source_sink_all_discharges
       use m_dambreak_breach, only: get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
                                    get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
       use m_observations
@@ -2082,7 +2084,7 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("lat_contr_coeff")
@@ -2121,24 +2123,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
-            x = c_loc(generalstruc(item_index)%gatedoorheight)
+            if (is_in_network) then
+               x = get_gate_door_height_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
+            end if
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2158,29 +2164,28 @@ contains
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+               x = c_loc(zcgen((item_index - 1) * 4 + 1))
             end if
             return
          case ("gateheight")
             if (is_in_network) then
                x = get_gate_door_height_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(generalstruc(item_index)%gatedoorheight)
+               x = c_loc(zcgen((item_index - 1) * 4 + 3))
             end if
-
             return
          case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+               x = c_loc(zcgen((item_index - 1) * 4 + 2))
             end if
             return
          case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
-               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+               x = c_loc(zcgen((item_index - 1) * 4 + 4))
             end if
             return
          case ("gateopeninghorizontaldirection")
@@ -2464,10 +2469,10 @@ contains
 
       select case (str_tolower(field_name))
       case ("water_discharge")
-         if (apply_transport(item_index) == 1 .or. kmx == 0) then
+         if (apply_transport(item_index) == 1) then
             c_lateral_pointer = c_loc(qplat(1:num_layers, item_index))
          else
-            c_lateral_pointer = c_loc(qplat(kmx, item_index))
+            c_lateral_pointer = c_loc(qplat(max(1, kmx), item_index))
          end if
          return
       case ("water_level")
@@ -2557,6 +2562,7 @@ contains
       use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
+      use m_source_sink, only: source_sink_all_discharges
       use string_module, only: str_token
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
@@ -2628,7 +2634,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("lat_contr_coeff")
@@ -2661,20 +2667,40 @@ contains
          end if
          select case (field_name)
          case ("sill_level", "CrestLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_crest_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
+            end if
             return
          case ("door_height", "GateHeight")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+            if (is_in_network) then
+               fieldptr = get_gate_door_height_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
+            end if
             return
          case ("lower_edge_level", "GateLowerEdgeLevel")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
+            end if
             return
          case ("opening_width", "GateOpeningWidth")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+            if (is_in_network) then
+               fieldptr = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+            else
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
+            end if
             return
          case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
             ! TODO: RTC: AvD: set this once it's used
@@ -2696,7 +2722,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 1) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 1) = x_0d_double_ptr
             end if
             return
          case ("GateHeight", "gateHeight")
@@ -2705,9 +2731,8 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               generalstruc(item_index)%gatedoorheight = x_0d_double_ptr ! Not time-controlled, set directly in generalstruc.
+               zcgen((item_index - 1) * 4 + 3) = x_0d_double_ptr
             end if
-
             return
          case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
             if (is_in_network) then
@@ -2715,7 +2740,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 2) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningWidth", "gateOpeningWidth")
@@ -2724,7 +2749,7 @@ contains
                fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
-               zcgen((item_index - 1) * 3 + 3) = x_0d_double_ptr
+               zcgen((item_index - 1) * 4 + 4) = x_0d_double_ptr
             end if
             return
          case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")
@@ -3695,7 +3720,7 @@ contains
       netfile_out = char_array_to_string(c_netfile_out, strlen(c_netfile_out))
 
       if (ndomains > 1) then
-         call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
+         call partition_write_domains(netfile_out, 1, 0, md_partugrid)
       end if
 
    end subroutine write_partition_metis
@@ -3749,7 +3774,7 @@ contains
       netfile_out = char_array_to_string(c_netfile_out, strlen(c_netfile_out))
 
       if (ndomains > 1) then
-         call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
+         call partition_write_domains(netfile_out, 1, 0, md_partugrid)
       end if
 
    end subroutine write_partition_pol

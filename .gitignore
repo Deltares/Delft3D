@@ -47,22 +47,18 @@ src/engines_gpl/waq/resources/process_lib/coefedit.dat
 src/**/config.h
 src/**/FortranCInterface.h
 
-# ignore copied files from failed_test.py teamcity script
-/test/deltares_testbench/failed/**
-/test/deltares_testbench/.vscode/**
-
 # ignore generated doxygen documentation
 /doxy_output
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
-
-# dvc: ignore data but allow .dvc files
-test/deltares_testbench/data/cases/*
-!test/deltares_testbench/data/cases/**/*.dvc
 /src/delft3d-apidoc
+/src/delwaq-apidoc
 
 # precice
 examples/dflowfm/**/precice_debug_output.txt
 examples/dflowfm/**/precice-run/**
+
+# conan
+conan/**/test_package/**

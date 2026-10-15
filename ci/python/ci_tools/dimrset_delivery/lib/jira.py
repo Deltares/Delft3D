@@ -12,6 +12,8 @@ class Jira(ConnectionServiceInterface):
     Atlassian Jira REST API wrapper.
 
     Provides methods to interact with the Jira API, including connection testing and fetching issue details.
+    Authentication uses a Personal Access Token (PAT) via the Authorization: Bearer header
+    (required after basic authentication was disabled on https://issuetracker.deltares.nl).
 
     Usage:
         client = Jira(credentials, context)
@@ -25,17 +27,25 @@ class Jira(ConnectionServiceInterface):
         Parameters
         ----------
         credentials : Credentials
-            Username and API token for authentication.
+            Username (for compatibility/logging) and Personal Access Token (PAT) as password
+            for Bearer token authentication against Jira.
         context : DimrAutomationContext
             Automation context for logging and configuration.
         """
-        self.__auth = (credentials.username, credentials.password)
+        self.__token = credentials.password or ""
         self.__rest_uri = "https://issuetracker.deltares.nl/rest/api/latest"
         self.__default_headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
         self.__context = context
+
+    def _get_headers(self) -> dict:
+        """Return request headers, including Bearer auth if a PAT token is present."""
+        headers = dict(self.__default_headers)
+        if self.__token:
+            headers["Authorization"] = f"Bearer {self.__token}"
+        return headers
 
     def test_connection(self) -> bool:
         """
@@ -55,9 +65,7 @@ class Jira(ConnectionServiceInterface):
                 status_code=200, content=b"dry-run mock"
             )
         else:
-            result = requests.get(
-                url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=True, timeout=(5, 30)
-            )
+            result = requests.get(url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30))
 
         if result.status_code == 200:
             self.__context.log("Successfully connected to the Jira API.")
@@ -87,9 +95,7 @@ class Jira(ConnectionServiceInterface):
             self.__context.log(f"GET request: {endpoint}")
             return {"key": issue_number, "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}}
 
-        result = requests.get(
-            url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=True, timeout=(5, 30)
-        )
+        result = requests.get(url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30))
 
         if result.status_code == 200:
             return cast(Dict[str, Any], result.json())

@@ -16,11 +16,6 @@ if(NOT TARGET deltares_common_mpi)
 endif()
 
 # Third party libraries
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
 # gridgeom
 if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
@@ -37,10 +32,6 @@ endif()
 
 if(NOT TARGET kdtree_wrapper)
     add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
-endif()
-
-if(NOT TARGET precice::precice)
-    add_subdirectory(${checkout_src_root}/${precice_module} precice)
 endif()
 
 if (NOT TARGET pugixml::pugixml)
@@ -97,20 +88,6 @@ endif()
 if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
-
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif(WIN32)
 
 # io_netcdf
 if(NOT TARGET io_netcdf)

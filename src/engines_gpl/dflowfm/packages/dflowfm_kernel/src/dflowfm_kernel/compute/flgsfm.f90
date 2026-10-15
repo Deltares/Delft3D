@@ -151,9 +151,9 @@ contains
       ir = k2
       L0 = n - L1cgensg(ng) + 1
 
-      zs = min(bob(1, Lf), bob(2, Lf)) ! == zcgen(3*ng - 2) crest/silllevel
+      zs = min(bob(1, Lf), bob(2, Lf)) ! == zcgen(4*ng - 3) crest/silllevel
       zbi(1) = zs
-      gateloweredgelevel = generalstruc(ng)%gateheightonlink(L0) ! == zcgen(3*ng - 1) under gate door and infinity in open part.
+      gateloweredgelevel = generalstruc(ng)%gateheightonlink(L0) ! == zcgen(4*ng - 2) under gate door and infinity in open part.
       gatefraction = generalstruc(ng)%gateclosedfractiononlink(L0)
       DsL = s1(k2) - s1(k1)
 
@@ -228,7 +228,7 @@ contains
          ausav(2, n) = 0.0_dp
       end if
 
-      zs = min(bob(1, Lf), bob(2, Lf)) ! == zcgen(3*ng - 2) crest/silllevel
+      zs = min(bob(1, Lf), bob(2, Lf)) ! == zcgen(4*ng - 3) crest/silllevel
       if (husb > zs .and. (1.0_dp - gatefraction) > 1.0e-9_dp) then ! and add flow around the tip of the floating gate (e.g. for SVKW)
          zbi(3) = zs ! 1d-9 prevents unneccesary evaluation
          dg = huge(1.0_dp)

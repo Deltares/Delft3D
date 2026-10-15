@@ -31,23 +31,23 @@ class SemicolonSeparatorConverter(FortranConverter):
 
     def _get_line_indentation(self, line: str) -> str:
         """Extract the indentation (leading whitespace) from a line."""
-        match = re.match(r'^(\s*)', line)
-        return match.group(1) if match else ''
+        match = re.match(r"^(\s*)", line)
+        return match.group(1) if match else ""
 
     def convert_text(self, text: str) -> Tuple[str, bool]:
         """Split semicolon-separated statements onto separate lines."""
-        lines = text.split('\n')
+        lines = text.split("\n")
         result_lines = []
         conversions_made = False
 
         for line_num, line in enumerate(lines):
             # Skip preprocessor directives (lines starting with #)
-            if line.lstrip().startswith('#'):
+            if line.lstrip().startswith("#"):
                 result_lines.append(line)
                 continue
 
             # Check if line contains semicolons
-            if ';' not in line:
+            if ";" not in line:
                 result_lines.append(line)
                 continue
 
@@ -64,7 +64,7 @@ class SemicolonSeparatorConverter(FortranConverter):
                 char = line[i]
 
                 # Handle comment - rest of line is comment
-                if char == '!' and not in_single_quote and not in_double_quote:
+                if char == "!" and not in_single_quote and not in_double_quote:
                     in_comment = True
                     current_segment.append(char)
                     i += 1
@@ -102,11 +102,11 @@ class SemicolonSeparatorConverter(FortranConverter):
                     continue
 
                 # Handle semicolon (only outside strings and comments)
-                if char == ';' and not in_single_quote and not in_double_quote:
+                if char == ";" and not in_single_quote and not in_double_quote:
                     # Mark that we found a semicolon
                     found_semicolon = True
                     # Save current segment
-                    segment_text = ''.join(current_segment).strip()
+                    segment_text = "".join(current_segment).strip()
                     if segment_text:
                         segments.append(segment_text)
                     current_segment = []
@@ -118,7 +118,7 @@ class SemicolonSeparatorConverter(FortranConverter):
                 i += 1
 
             # Add final segment (including any comment)
-            segment_text = ''.join(current_segment).strip()
+            segment_text = "".join(current_segment).strip()
             if segment_text:
                 segments.append(segment_text)
 
@@ -135,21 +135,21 @@ class SemicolonSeparatorConverter(FortranConverter):
                 # No semicolons found
                 result_lines.append(line)
 
-        converted_text = '\n'.join(result_lines)
+        converted_text = "\n".join(result_lines)
         return converted_text, conversions_made
 
     def check_text(self, text: str) -> List[ConversionIssue]:
         """Check for semicolon-separated statements."""
         issues = []
-        lines = text.split('\n')
+        lines = text.split("\n")
 
         for line_num, line in enumerate(lines, 1):
             # Skip preprocessor directives (lines starting with #)
-            if line.lstrip().startswith('#'):
+            if line.lstrip().startswith("#"):
                 continue
 
             # Quick check if line has semicolons
-            if ';' not in line:
+            if ";" not in line:
                 continue
 
             # Parse line to find semicolons outside strings and comments
@@ -163,7 +163,7 @@ class SemicolonSeparatorConverter(FortranConverter):
                 char = line[i]
 
                 # Handle comment
-                if char == '!' and not in_single_quote and not in_double_quote:
+                if char == "!" and not in_single_quote and not in_double_quote:
                     in_comment = True
                     i += 1
                     continue
@@ -190,7 +190,7 @@ class SemicolonSeparatorConverter(FortranConverter):
                     continue
 
                 # Check for semicolon outside strings/comments
-                if char == ';' and not in_single_quote and not in_double_quote:
+                if char == ";" and not in_single_quote and not in_double_quote:
                     semicolons_found.append(i)
 
                 i += 1
@@ -201,12 +201,14 @@ class SemicolonSeparatorConverter(FortranConverter):
                 if len(snippet) > 60:
                     snippet = snippet[:57] + "..."
 
-                issues.append(ConversionIssue(
-                    line_number=line_num,
-                    error_code="STYLE005",
-                    message="Semicolon-separated statements found: each statement should be on a separate line",
-                    original_text=snippet
-                ))
+                issues.append(
+                    ConversionIssue(
+                        line_number=line_num,
+                        error_code="STYLE005",
+                        message="Semicolon-separated statements found: each statement should be on a separate line",
+                        original_text=snippet,
+                    )
+                )
 
         return issues
 
@@ -217,14 +219,14 @@ class SemicolonSeparatorConverter(FortranConverter):
     def get_conversion_stats(self, original_text: str) -> dict:
         """Get statistics about conversions that would be made."""
         count = 0
-        lines = original_text.split('\n')
+        lines = original_text.split("\n")
 
         for line in lines:
             # Skip preprocessor directives
-            if line.lstrip().startswith('#'):
+            if line.lstrip().startswith("#"):
                 continue
 
-            if ';' not in line:
+            if ";" not in line:
                 continue
 
             # Count semicolons outside strings and comments
@@ -233,7 +235,7 @@ class SemicolonSeparatorConverter(FortranConverter):
             in_comment = False
 
             for i, char in enumerate(line):
-                if char == '!' and not in_single_quote and not in_double_quote:
+                if char == "!" and not in_single_quote and not in_double_quote:
                     in_comment = True
                     continue
 
@@ -252,7 +254,7 @@ class SemicolonSeparatorConverter(FortranConverter):
                     in_double_quote = not in_double_quote
                     continue
 
-                if char == ';' and not in_single_quote and not in_double_quote:
+                if char == ";" and not in_single_quote and not in_double_quote:
                     count += 1
 
-        return {'semicolon_separators': count}
+        return {"semicolon_separators": count}

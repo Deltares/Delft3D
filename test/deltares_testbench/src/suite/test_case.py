@@ -10,6 +10,7 @@ from typing import ClassVar, Dict, List, Tuple
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
+from src.utils.constants import DEFAULT_MAX_RUNTIME_SECONDS
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
 
@@ -30,20 +31,6 @@ class TestCase:
         logger.debug(f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}")
 
         self.__config.run_file_name = os.path.join(self.__config.absolute_test_case_path, "_tb3_char.run")
-        refrunfile = os.path.join(config.absolute_test_case_reference_path, "_tb3_char.run")
-
-        if os.path.exists(refrunfile):
-            refruntime = self.__findCharacteristicsRunTime__(refrunfile)
-            if refruntime:
-                self.__config.ref_run_time = refruntime
-                if not self.__config.overrule_ref_max_run_time:
-                    # set maxRunTime to 1.5 * reference runtime and add a few seconds (some systems start slow)
-                    # The variation in runtimes vary a lot (different machines, other processes)
-                    self.__maxRunTime = refruntime * 1.5 + 10.0
-                    logger.info(f"Overwriting max run time via reference _tb3_char.run ({str(self.__maxRunTime)})")
-
-        self.__maxRunTime = max(self.__maxRunTime, 120.0) * 5.0 + 300.0
-        logger.debug(f"maxRunTime increased to {str(self.__maxRunTime)}")
 
     def run(self, programs: List[Program]) -> None:
         """Execute a Test Case.
@@ -143,19 +130,11 @@ class TestCase:
             program_config.shell = shell
             program_config.case_name = self.__config.name
             program_copy.overwriteConfiguration(program_config)
+            if self.__maxRunTime:
+                program_copy.max_run_time = self.__maxRunTime
+            else:
+                self.__logger.debug(f"no max runtime specified, defaulting to {DEFAULT_MAX_RUNTIME_SECONDS} seconds")
+                program_copy.max_run_time = DEFAULT_MAX_RUNTIME_SECONDS
 
             # add runner sequence number and runner configuration to local storage
             self.__programs.append((program_config.sequence, program_copy))
-
-    # retrieve runtime or none from _tb3_char.run file
-    # input: path to _tb3_char.run file
-    # output: actual runtime value (float)
-    def __findCharacteristicsRunTime__(self, filename):
-        with open(filename) as f:
-            retval = None
-            for line in f:
-                if "Runtime:" in line:
-                    _, value = line.split(":")
-                    retval = float(value)
-                    break
-            return retval

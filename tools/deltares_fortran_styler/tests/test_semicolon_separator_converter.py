@@ -1,6 +1,8 @@
 """Tests for the semicolon separator converter."""
+
 import pytest
 from deltares_fortran_styler.semicolon_separator_converter import SemicolonSeparatorConverter
+
 
 class TestSemicolonSeparatorConverter:
     """Test suite for SemicolonSeparatorConverter."""
@@ -230,7 +232,7 @@ f = 6"""
         stats = converter.get_conversion_stats(text)
 
         # Assert
-        assert stats['semicolon_separators'] == 3
+        assert stats["semicolon_separators"] == 3
 
     def test_needs_import_returns_false(self, converter):
         """Test that semicolon separator converter doesn't need imports."""

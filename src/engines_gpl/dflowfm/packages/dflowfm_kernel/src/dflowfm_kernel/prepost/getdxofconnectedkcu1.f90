@@ -49,6 +49,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_netw
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: Lf, L, LL, k, kk, n, k1, k2, k3, k4, n1, n2, n2d
       real(kind=dp) :: wu1, wu2, wuL
@@ -58,7 +59,7 @@ contains
       !if (kcs(ln(1,L) ) == 21)  k = ln(2,L)
       !if (kcs(ln(2,L) ) == 21)  k = ln(1,L)
       !do kk = 1,nd(k)%lnx
-      !   if (kcu(L) == 1) then
+      !   if (kcu(L) == LINK_1D) then
       !      n   = n + 1
       !      LL  = abs( nd(k)%ln(kk) )
       !      wu1 = wu1 + dx(L)
@@ -76,7 +77,7 @@ contains
       end if
       do kk = 1, nmk(k)
          LL = abs(nod(k)%lin(kk))
-         if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == 4) then
+         if (kn(3, LL) == LINK_1D .or. kn(3, LL) == LINK_1D_MAINBRANCH) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == LINK_1D2D_LONGITUDINAL) then
             n = n + 1
             wu1 = wu1 + dx(lne2ln(LL))
          end if

@@ -14,8 +14,7 @@ if [%1] EQU [--usage] goto usage
 
 rem set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
 rem process the arguments (name of the input file is always the first argument)
 set inputfile=%1

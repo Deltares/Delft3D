@@ -1,0 +1,102 @@
+graph DiffuserGeometry {
+  layout=neato;
+  splines=false;
+  overlap=true;
+  outputorder=edgesfirst;
+  notranslate=true;
+  bgcolor="white";
+  pad=0.5;
+
+  node [
+    shape=circle
+    fixedsize=true
+    pin=true
+    width=0.14
+    height=0.14
+    fontsize=10
+  ];
+
+  edge [
+    arrowhead=none
+    fontsize=10
+    color="#444444"
+  ];
+
+  // Geometry:
+  // Sink   = (0,0)
+  // Source = (6,3)
+  // Sink->Source direction = (6,3)
+  //
+  // A perpendicular direction is (-1,2), because:
+  // (6,3) . (-1,2) = -6 + 6 = 0
+  //
+  // Choose half-width vector = (-1,2)
+  // Start = Source - (-1,2) = (7,1)
+  // End   = Source + (-1,2) = (5,5)
+  //
+  // Therefore:
+  // 1. Start, Source, End are collinear
+  // 2. Source is the midpoint of Start-End
+  // 3. Start-End is perpendicular to Sink-Source
+
+  Sink   [pos="0,0!", label="", style=filled, fillcolor="white"];
+  XRef   [pos="2.2,0!", label="", style=filled, fillcolor="#999999"];
+
+  Start  [pos="7,1!", label="", style=filled, fillcolor="#2ca02c"];
+  Source [pos="6,3!", label="", style=filled, fillcolor="#d62728"];
+  End    [pos="5,5!", label="", style=filled, fillcolor="#2ca02c"];
+
+  // Sample points exactly on the Start-End line:
+  // P(t) = Start + t * (End - Start)
+  P0     [pos="7.0,1.0!", label="", width=0.08, height=0.08, style=filled, fillcolor="#1f77b4"];
+  P25    [pos="6.5,2.0!", label="", width=0.08, height=0.08, style=filled, fillcolor="#1f77b4"];
+  P50    [pos="6.0,3.0!", label="", width=0.08, height=0.08, style=filled, fillcolor="#1f77b4"];
+  P75    [pos="5.5,4.0!", label="", width=0.08, height=0.08, style=filled, fillcolor="#1f77b4"];
+  P100   [pos="5.0,5.0!", label="", width=0.08, height=0.08, style=filled, fillcolor="#1f77b4"];
+
+
+  // Angle arc near Sink
+  A1     [pos="1.00,0.00!", label="", width=0.05, height=0.05, style=filled, fillcolor="#ff7f0e"];
+  A2     [pos="0.94,0.22!", label="", width=0.05, height=0.05, style=filled, fillcolor="#ff7f0e"];
+  A3     [pos="0.83,0.42!", label="", width=0.05, height=0.05, style=filled, fillcolor="#ff7f0e"];
+
+  // Only draw the actual geometry lines
+  Sink -- XRef   [style=dashed, color="#888888", label="reference x-axis"];
+  Sink -- Source [color="#d62728", penwidth=2, label="sink-source line"];
+  Start -- End   [color="#2ca02c", penwidth=2, label="Start-End line through source"];
+
+  Source -- Start [style=dashed, color="#2ca02c", label="half_plume_width"];
+  Source -- End   [style=dashed, color="#2ca02c"];
+
+  A1 -- A2 [color="#ff7f0e", penwidth=2];
+  A2 -- A3 [color="#ff7f0e", penwidth=2];
+
+  // Labels
+  SinkText   [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="0.0,-0.38!", label="last sink"];
+  SourceText [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="6.45,3.20!", label="source"];
+  StartText  [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="7.55,0.55!", label="start"];
+  EndText    [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="5.25,5.45!", label="end"];
+
+  SampleText [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="4.1,4.15!", label="sample points P_i lie on Start-End"];
+  AngleText  [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="1.55,0.95!", label="ang_end"];
+  PerpText   [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="7.4,3.45!", label="Start-End is perpendicular to sink-source"];
+
+  Formula1 [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="9.2,4.2!",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+        <TR><TD>x_range = half_plume_width * cos(pi/2 - ang_end)</TD></TR>
+        <TR><TD>y_range = half_plume_width * sin(pi/2 - ang_end)</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Formula2 [shape=plaintext, fixedsize=false, width=0, height=0, margin=0, pos="9.25,1.8!",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+        <TR><TD>dx = 2 * x_range / (num_steps - 1)</TD></TR>
+        <TR><TD>dy = 2 * y_range / (num_steps - 1)</TD></TR>
+        <TR><TD>point_i = start + i * (dx, dy)</TD></TR>
+      </TABLE>
+    >
+  ];
+}

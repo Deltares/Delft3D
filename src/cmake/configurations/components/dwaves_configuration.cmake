@@ -75,18 +75,6 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
-# triangle
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
-# netcdf
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif()
-
 # kdtree2
 if(NOT TARGET kdtree2)
     add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)
@@ -102,19 +90,8 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
 # Swan
-if(NOT TARGET swan)
-    add_subdirectory(${checkout_src_root}/${swan_mpi_lib_module} swan_mpi_lib)
-    add_subdirectory(${checkout_src_root}/${swan_mpi_module} swan_mpi)
-    add_subdirectory(${checkout_src_root}/${swan_omp_module} swan_omp)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/install_swan.cmake)
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(dwaves)

@@ -53,6 +53,7 @@ contains
       use gridoperations
       use m_readyy
       use m_is_link
+      use network_data, only: LINK_2D
 
       real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
       integer, intent(in) :: L_ !< link number (set to 0 first time)
@@ -89,7 +90,7 @@ contains
       Nnext = 0
       Lnext = 0
 
-      if (kn(3, L) == 2) then
+      if (kn(3, L) == LINK_2D) then
          N2Dcells = lnn(L)
       else ! 1D
          N2Dcells = 0

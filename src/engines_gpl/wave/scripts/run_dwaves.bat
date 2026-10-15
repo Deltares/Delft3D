@@ -34,7 +34,6 @@ echo Working directory: %workdir%
 set scriptDir=%~dp0
 set D3D_HOME=%scriptDir%..
 
-set libdir=%D3D_HOME%\lib
 set bindir=%D3D_HOME%\bin
 
 
@@ -43,7 +42,7 @@ set bindir=%D3D_HOME%\bin
     rem
 
     rem Run
-set PATH=%bindir%;%libdir%
+set PATH=%bindir%
 echo executing in this window: "%bindir%\wave.exe" %argfile% 0
 "%bindir%\wave.exe" %argfile% 0
 

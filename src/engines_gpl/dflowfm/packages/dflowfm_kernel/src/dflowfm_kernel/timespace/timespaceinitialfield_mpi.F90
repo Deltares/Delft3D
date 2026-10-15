@@ -35,11 +35,12 @@ module m_timespaceinitialfield_mpi
 
 contains
    !> perform interpolation on rank 0 only (and save some memory with multiple ranks on one node)
-   !>   note: only methods "4" (in polygon) and "5" (trangulation) supported, averaging (method "6") not supported
+   !>   note: only methods "4" (in polygon), "5" (triangulation), and "7" (ArcInfo bilinear) supported, averaging (method "6") not supported
    function timespaceinitialfield_mpi(x, y, z, N, filename, filetype, method, operand, transformcoef, iprimpos, kc) result(success)
       use m_partitioninfo
       use timespace, only: timespaceinitialfield
       use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_BILINEAR
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -55,7 +56,7 @@ contains
 
       character(*), intent(in) :: filename !< name of data file
       integer, intent(in) :: filetype !< file type
-      integer, intent(in) :: method !< interpolation method, only "4" and "5" supported
+      integer, intent(in) :: method !< interpolation method, only constant/triangulation/bilinear supported
       integer, intent(in) :: operand !< override, add
       real(kind=dp), dimension(NTRANSFORMCOEF), intent(in) :: transformcoef !< Transformation coefficients
       integer, intent(in) :: iprimpos !< only needed for averaging, but not supported
@@ -68,8 +69,8 @@ contains
       integer :: i, ierror
 
 #ifdef HAVE_MPI
-      if ((method == 4 .or. method == 5) .and. (jampi == 1)) then
-!        ( inside polygon or triangulation ) and parallel run
+      if (any(method == [METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_BILINEAR]) .and. (jampi == 1)) then
+!        (inside polygon, triangulation, or ArcInfo bilinear) and parallel run
 
 !        allocate
          allocate (nums(0:ndomains - 1))

@@ -36,12 +36,31 @@ module m_setinitialverticalprofile
 
    private
 
+   public :: setinitialverticalprofilez
    public :: setinitialverticalprofile
 
 contains
 
+   !> Set an initial vertical profile using the coordinate system encoded in the quantity name.
+   subroutine setinitialverticalprofile(quantity, target_array, ndkx, filename)
+      use precision, only: dp
+      use string_module, only: str_tolower
+      use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
+
+      character(len=*), intent(in) :: quantity !< External-forcing quantity name.
+      real(kind=dp), dimension(ndkx), intent(inout) :: target_array !< Values at 3D flow nodes.
+      integer, intent(in) :: ndkx !< Number of 3D flow nodes.
+      character(len=*), intent(in) :: filename !< Name of the profile polygon file.
+
+      if (index(str_tolower(quantity), 'initialverticalsigma') == 1) then
+         call setinitialverticalprofilesigma(target_array, ndkx, filename)
+      else
+         call setinitialverticalprofilez(target_array, ndkx, filename)
+      end if
+   end subroutine setinitialverticalprofile
+
    !> Sets initial vertical profile of e.g., salinity and temperature
-   subroutine setinitialverticalprofile(target_array, ndkx, filename)
+   subroutine setinitialverticalprofilez(target_array, ndkx, filename)
       use precision, only: dp
       use m_flowgeom, only: ndxi
       use m_flow, only: zws, layertype, LAYTP_Z, keepzlayeringatbed, zslay, kmxx
@@ -52,7 +71,7 @@ contains
       use m_filez, only: oldfil
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
-      real(kind=dp), intent(in), dimension(ndkx) :: target_array !< Target array - e.g., sa1 (salinity) or tem1 (temperature)
+      real(kind=dp), dimension(ndkx), intent(inout) :: target_array !< Target array - e.g., sa1 (salinity) or tem1 (temperature)
       integer, intent(in) :: ndkx !< Dimension of 3d flow nodes (internal + boundary)
       character(len=*), intent(in) :: filename !< Filename of polygonfile
 
@@ -81,6 +100,6 @@ contains
 
       call restorepol()
 
-   end subroutine setinitialverticalprofile
+   end subroutine setinitialverticalprofilez
 
 end module m_setinitialverticalprofile

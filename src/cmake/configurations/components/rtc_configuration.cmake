@@ -57,21 +57,5 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
-# Third party
-# ===========
-if(WIN32)
-    if(NOT TARGET netcdff)
-        add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-    endif()
-endif()
-
-
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(rtc)

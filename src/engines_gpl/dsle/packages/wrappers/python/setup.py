@@ -3,6 +3,7 @@
 pydsle calculates the salt intrusion through shipping locks based on
 easy-to-estimate operational parameters.
 """
+
 import sys
 
 from setuptools import find_packages, setup

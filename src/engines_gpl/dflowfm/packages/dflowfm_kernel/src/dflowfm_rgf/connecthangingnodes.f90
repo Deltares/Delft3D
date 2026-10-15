@@ -46,6 +46,7 @@ contains
       use m_missing
       use gridoperations
       use m_filez, only: doclose, newfil
+      use network_data, only: LINK_2D
 
       integer :: mout, np, kk, k, kk3, kkx, lnu, km, kp
 
@@ -87,11 +88,11 @@ contains
                   lnu = lnu + 1
                   kn(1, lnu) = k
                   kn(2, lnu) = km
-                  kn(3, lnu) = 2
+                  kn(3, lnu) = LINK_2D
                   lnu = lnu + 1
                   kn(1, lnu) = k
                   kn(2, lnu) = kp
-                  kn(3, lnu) = 2
+                  kn(3, lnu) = LINK_2D
                   !call connectdbn(k,km,lnu)
                   !call connectdbn(k,kp,lnu)
                end if
@@ -119,7 +120,7 @@ contains
          if (abs(xk(k1) - xk(k2)) > 1.0e-10_dp .and. abs(yk(k1) - yk(k2)) > 1.0e-10_dp) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 

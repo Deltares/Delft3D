@@ -129,7 +129,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="dimr_trunk_4">
             <programs>
@@ -145,7 +145,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
         <testCase name="postproc">
             <programs>
@@ -158,7 +158,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
     </defaultTestCases>
     <!-- testCases -->

@@ -154,7 +154,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     real(fp)                             , pointer :: tunit
     real(fp)                             , pointer :: tzone
     logical                              , pointer :: sferic
-    character(20) , dimension(:)         , pointer :: namsed
     real(fp)                             , pointer :: zbot
     integer       , dimension(:)         , pointer :: order_sta
     integer       , dimension(:)         , pointer :: order_tra
@@ -304,7 +303,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     tunit               => gdp%gdexttim%tunit
     tzone               => gdp%gdexttim%tzone
     sferic              => gdp%gdtricom%sferic
-    namsed              => gdp%gdsedpar%namsed
     zbot                => gdp%gdzmodel%zbot
     order_sta           => gdp%gdparall%order_sta
     order_tra           => gdp%gdparall%order_tra
@@ -416,7 +414,7 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                     & itdate    ,tzone     ,tunit     ,dt        ,nostat    , &
                     & ntruv     ,nmax      ,mmax      ,kmax      ,lmax      , &
                     & lstsci    ,ltur      ,grdang    ,sferic    ,lsed      , &
-                    & lsedtot   ,zmodel    ,ch(namcon),namsed    ,r(xz)     , &
+                    & lsedtot   ,zmodel    ,ch(namcon),r(xz)     , &
                     & r(yz)     ,r(alfas)  ,d(dps)    ,r(thick)  ,r(sig)    , &
                     & r(sig)    ,irequest  ,fds       ,nostatto  ,nostatgl  , &
                     & order_sta ,ntruvto   ,ntruvgl   ,order_tra ,r(xcor)   , &

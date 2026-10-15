@@ -92,4 +92,4 @@ set(fbc_module_path "${engines_gpl_path}/fbc/packages/FBCTools")
 set(dsle_module_path "${engines_gpl_path}/dsle/packages")
 
 # Install
-set(install_all_module cmake/install_all)
+set(install_linux_libs_module cmake/install_linux_libs)

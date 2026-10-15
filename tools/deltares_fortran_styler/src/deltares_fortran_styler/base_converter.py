@@ -8,6 +8,7 @@ Each converter should be independent and handle a specific aspect of Fortran cod
 from abc import ABC, abstractmethod
 from typing import Tuple, List
 
+
 class ConversionIssue:
     """Represents a style issue found during checking."""
 
@@ -16,6 +17,7 @@ class ConversionIssue:
         self.error_code = error_code
         self.message = message
         self.original_text = original_text
+
 
 class FortranConverter(ABC):
     """
@@ -90,9 +92,9 @@ class FortranConverter(ABC):
         This is a common utility method that converters can use or override.
         """
         # Check for comments first (everything after ! to end of line)
-        lines = text[:pos].split('\n')
+        lines = text[:pos].split("\n")
         current_line = lines[-1] if lines else ""
-        comment_pos = current_line.find('!')
+        comment_pos = current_line.find("!")
         if comment_pos != -1:
             pos_in_line = len(current_line)
             if pos_in_line > comment_pos:
@@ -103,7 +105,7 @@ class FortranConverter(ABC):
         in_single_quote = False
         in_double_quote = False
         i = 0
-        line_start = text.rfind('\n', 0, pos) + 1
+        line_start = text.rfind("\n", 0, pos) + 1
 
         # Start from beginning of current line
         while i < pos:
@@ -114,9 +116,9 @@ class FortranConverter(ABC):
             char = text[i]
 
             # Check for comment on this line
-            if char == '!' and not in_single_quote and not in_double_quote:
+            if char == "!" and not in_single_quote and not in_double_quote:
                 # Rest of line is comment
-                line_end = text.find('\n', i)
+                line_end = text.find("\n", i)
                 if line_end == -1:
                     line_end = len(text)
                 if pos <= line_end:

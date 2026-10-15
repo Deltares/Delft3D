@@ -9,12 +9,13 @@ import Delft3D.windows.*
 
 object CopyExamples : BuildType({
     id("DHydro_ExampleCases_CopyDelft3dfmExampleCases")
-    name = "Copy delft3dfm example cases"
-    description = "Copy example files to P drive"
+    name = "Copy examples"
+    description = "Copy DIMRset example cases to the P-drive."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateBuildConcurrency
     )
 
     vcs {

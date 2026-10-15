@@ -49,14 +49,13 @@ set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\test
 set testdir=%D3D_HOME%\test
-set libdir=%D3D_HOME%\lib
 
 set workdir=testdir\test_data
 cd %D3D_HOME%\test\test_data\
 echo Working directory: %workdir%
 
     rem Run
-set PATH=%testdir%;%libdir%
+set PATH=%testdir%
 echo executing: "%exedir%\dflowfm_kernel_test.exe" 
 		"%exedir%\dflowfm_kernel_test.exe"
 
