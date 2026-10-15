@@ -33,11 +33,39 @@ module m_uitzicht_spectrum
     private
     public :: num_spectrum, uit_zi, planck
 
-    integer, parameter :: num_spectrum = 61
+    integer            :: num_spectrum
+    integer, parameter :: num_spectrum_std = 61
+
+    !
+    !     tabulated data that will be used
+    !
+    real(kind = dp), dimension(:), allocatable :: lambda
+    real(kind = dp), dimension(:), allocatable :: chlspe
+    real(kind = dp), dimension(:), allocatable :: planck
+    real(kind = dp), dimension(:), allocatable :: bwater
+    real(kind = dp), dimension(:), allocatable :: awater
+
+    !
+    !     default wavelengths
+    !
+    real(kind = dp), dimension(num_spectrum_std) :: lambda_std = &
+           [400.0, 405.0, 410.0, 415.0, 420.0, &
+            425.0, 430.0, 435.0, 440.0, 445.0, &
+            450.0, 455.0, 460.0, 465.0, 470.0, &
+            475.0, 480.0, 485.0, 490.0, 495.0, &
+            500.0, 505.0, 510.0, 515.0, 520.0, &
+            525.0, 530.0, 535.0, 540.0, 545.0, &
+            550.0, 555.0, 560.0, 565.0, 570.0, &
+            575.0, 580.0, 585.0, 590.0, 595.0, &
+            600.0, 605.0, 610.0, 615.0, 620.0, &
+            625.0, 630.0, 635.0, 640.0, 645.0, &
+            650.0, 655.0, 660.0, 665.0, 670.0, &
+            675.0, 680.0, 685.0, 690.0, 695.0, &
+            700.0]
     !
     !     specifieke absorptie algen
     !
-    real(kind = dp), dimension(num_spectrum) :: chlspe = &
+    real(kind = dp), dimension(num_spectrum_std) :: chlspe_std = &
            [0.685, 0.781, 0.828, 0.883, 0.913, &
             0.939, 0.973, 1.001, 1.000, 0.971, &
             0.944, 0.928, 0.917, 0.902, 0.870, &
@@ -54,7 +82,7 @@ module m_uitzicht_spectrum
     !
     !     spectrale verdeling invallend licht
     !
-    real(kind = dp), dimension(num_spectrum) :: planck = &
+    real(kind = dp), dimension(num_spectrum_std) :: planck_std = &
            [0.18380, 0.18836, 0.19280, 0.19710, 0.20134, &
             0.20542, 0.20937, 0.21320, 0.21689, 0.22046, &
             0.22389, 0.22720, 0.23037, 0.23342, 0.23630, &
@@ -71,7 +99,7 @@ module m_uitzicht_spectrum
     !
     !     verstrooiing water
     !
-    real(kind = dp), dimension(num_spectrum) :: bwater = &
+    real(kind = dp), dimension(num_spectrum_std) :: bwater_std = &
            [0.005290, 0.005025, 0.004776, 0.004543, 0.004323, &
             0.004117, 0.003922, 0.003739, 0.003567, 0.003404, &
             0.003250, 0.003105, 0.002968, 0.002838, 0.002715, &
@@ -88,7 +116,7 @@ module m_uitzicht_spectrum
     !
     !     absorptie water
     !
-    real(kind = dp), dimension(num_spectrum) :: awater = &
+    real(kind = dp), dimension(num_spectrum_std) :: awater_std = &
            [0.00576, 0.00617, 0.00669, 0.00727, 0.00790, &
             0.00854, 0.00918, 0.00980, 0.01039, 0.01093, &
             0.01144, 0.01193, 0.01241, 0.01293, 0.01353, &
@@ -206,10 +234,17 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
 
     real(kind = dp) :: m0, m1, m2, m3, m4, m5, cc, anglepi, sextdiep1, sextdiep2
 
-    integer(kind = int_wp) :: i_550, lambda, teller
+    integer(kind = int_wp) :: i_550, teller
     integer(kind = int_wp) :: dosecc, swspec, swkd
 
     real(kind = dp), parameter :: pi = 3.141592653589793_dp
+
+    logical, save :: init_uitzicht = .true.
+
+    if ( init_uitzicht ) then
+        init_uitzicht = .false.
+        call read_table
+    endif
 
     c_mu = cos (angle * 0.0174533)
 
@@ -231,11 +266,10 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
     som_h = 0.0
 
     do teller = 1,num_spectrum
-        lambda = 400 + (teller - 1) * 5
         !
         !           humuszuren abosorptie
         !
-        a_hum = ah_380 * exp (-helhum * (lambda - 380.0))
+        a_hum = ah_380 * exp (-helhum * (lambda(teller) - 380.0))
         !
         !           algen absoroptie en verstrooiing
         !
@@ -251,8 +285,8 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         !           gloeirest en detritus
         !
         zw_stf = gloeir + detrit
-        c_gl = c_gl1 * ((zw_stf**c_gl2)) * (400.0 / lambda)
-        a_det = c_det * detrit * (400.0 / lambda)
+        c_gl = c_gl1 * ((zw_stf**c_gl2)) * (400.0 / lambda(teller))
+        a_det = c_det * detrit * (400.0 / lambda(teller))
         b_gl = c_gl - a_det
         !
         !           totaal absorptie en verstrooiing bij lambda
@@ -444,9 +478,19 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
             c_gl, c_gl1, c_gl2, c_mu, chloro, &
             corchl, d_1, d_2, detrit, ext_ki, &
             gloeir, helhum, zw_stf
-    integer(kind = int_wp) :: i_550, lambda, teller
+    integer(kind = int_wp) :: i, i_550, i_560
+    real(kind = dp), parameter :: target_lambda = 550.0, target_lambda_2 = 560.0
 
-    i_550 = ((550 - 400) / 5) + 1
+    i_550 = num_spectrum ! Fall-back, should not occur
+    i_560 = num_spectrum ! Fall-back, should not occur
+    do i = 2,num_spectrum
+        if ( lambda(i-1) <= target_lambda   .and. lambda(i) < target_lambda   ) then
+            i_550 = i
+        endif
+        if ( lambda(i-1) <= target_lambda_2 .and. lambda(i) < target_lambda_2 ) then
+            i_560 = i
+        endif
+    enddo
 
     !
     !     beveiliging tegen negatieve waarde chloro (rs27jan97 voor maarten o.)
@@ -457,13 +501,11 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
     !
     c_chl = (0.058 + 0.018 * chloro) * chlspe (i_550)
     c_chl = (c_chl + 0.12 * (chloro**0.63)) * corchl
-    teller = ((560 - 400) / 5) + 1
-    lambda = 400 + (teller - 1) * 5
 
     !
     !     absorptie humuszuren
     !
-    a_hum = ah_380 * exp (-helhum * (lambda - 380))
+    a_hum = ah_380 * exp (-helhum * (lambda(i_560) - 380))
 
     !
     !     chlorofyl
@@ -472,7 +514,7 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
         a_chl = 0.0
         b_chl = 0.0
     else
-        a_chl = (0.058 + 0.018 * chloro) * chlspe (teller) * corchl
+        a_chl = (0.058 + 0.018 * chloro) * chlspe (i_560) * corchl
         b_chl = c_chl - a_chl
     endif
 
@@ -480,11 +522,11 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
     !     gloeirest en detritus
     !
     zw_stf = gloeir + detrit
-    c_gl = c_gl1 * (zw_stf**c_gl2) * (400.0 / lambda)
-    a_det = c_det * detrit * (400.0 / lambda)
+    c_gl = c_gl1 * (zw_stf**c_gl2) * (400.0 / lambda(i_560))
+    a_det = c_det * detrit * (400.0 / lambda(i_560))
     b_gl = c_gl - a_det
-    a = awater (teller) + a_hum + a_det + a_chl
-    b = bwater (teller) + b_gl + b_chl
+    a = awater (i_560) + a_hum + a_det + a_chl
+    b = bwater (i_560) + b_gl + b_chl
     ext_ki = 1 / c_mu * &
             sqrt ((a * a + (0.425 * c_mu - 0.19) * a * b))
 
@@ -495,5 +537,64 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
     d_2 = d_1 + 0.1
 
 end subroutine bep_d
+
+! Subroutine to read the external table, if there is one.
+! Otherwise it will return the "standard" table
+!
+! TODO: notification that we are using the table?
+!
+subroutine read_table
+    use m_logger_helper
+
+    logical            :: exists
+    integer            :: ierr, lunin, lumon
+    character(len=200) :: line
+    real(kind=dp)      :: lambda_in, chlspe_in, planck_in, bwater_in, awater_in
+
+    inquire( file = 'spectrum_data.table', exist = exists )
+
+    call get_log_unit_number(lumon)
+
+    if ( .not. exists ) then
+        write( lumon, * ) 'Information UITZICHT: using default table for coefficients'
+
+        num_spectrum = size(lambda_std)
+        lambda = lambda_std
+        chlspe = chlspe_std
+        planck = planck_std
+        bwater = bwater_std
+        awater = awater_std
+    else
+        write( lumon, * ) 'Information UITZICHT: using coefficients in file "spectrum_default.table"'
+
+        open( newunit = lunin, file = 'spectrum_default.table' )
+
+        ! Read the table, skip comment lines and extend the arrays
+        allocate( lambda(0), chlspe(0), planck(0), bwater(0), awater(0) )
+
+        do
+            read( lunin, '(a)', iostat = ierr ) line
+            if ( ierr /= 0  ) then
+                exit
+            endif
+            if ( line(1:1) == '#' ) then
+                cycle
+            endif
+
+            read( line, * ) lambda_in, planck_in, chlspe_in, bwater_in, awater_in
+
+            lambda = [lambda, lambda_in]
+            planck = [planck, planck_in]
+            chlspe = [chlspe, chlspe_in]
+            bwater = [bwater, bwater_in]
+            awater = [awater, awater_in]
+        enddo
+
+        num_spectrum = size(lambda)
+
+        close( lunin )
+     endif
+
+end subroutine read_table
 
 end module m_uitzicht_spectrum
