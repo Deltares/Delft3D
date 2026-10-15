@@ -62,3 +62,5 @@ examples/dflowfm/**/precice-run/**
 
 # conan
 conan/**/test_package/**
+/test/deltares_testbench/run_testbench.bat
+/test/deltares_testbench/update_case.bat
