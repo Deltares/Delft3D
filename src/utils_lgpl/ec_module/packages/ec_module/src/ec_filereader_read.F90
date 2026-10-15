@@ -739,7 +739,7 @@ contains
       end if
       !
       ! - Check for the presence of times, indicating the presence of further data blocks.
-      if (.not. has_time .and. .not. has_harmonics) then
+      if (.not. has_time .and. .not. has_harmonics .and. fileReaderPtr%tframe%nr_timesteps /= 0) then
          call set_ec_message("Empty NetCDF time dimension and no harmonic components in "//trim(fileReaderPtr%filename)//".")
          return
       end if
@@ -856,7 +856,7 @@ contains
             if (item%elementSetPtr%nCoordinates > 0) then
                if (issparse == 1) then
                   call read_data_sparse(fileReaderPtr%fileHandle, varid, n_cols, n_rows, item%elementSetPtr%n_layers, &
-                                        timesndx, is_column_major, fileReaderPtr%relndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror)
+                                        timesndx, is_column_major, fileReaderPtr%relndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror, has_time=has_time)
                   if (ecSupportNetcdfCheckError(ierror, 'Error reading quantity '//trim(item%quantityptr%name)//' from sparse data. ', fileReaderPtr%filename)) then
                      valid_field = .true.
                   else
@@ -865,13 +865,13 @@ contains
                else
                   if (item%elementSetPtr%n_layers == 0) then
                      if (item%elementSetPtr%ofType == elmSetType_samples) then
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0], count=[ncol])
                         else
                            ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, timesndx], count=[ncol, 1])
                         end if
                      else
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0], count=[nrow, ncol])
                            else
@@ -912,7 +912,7 @@ contains
                   else
                      ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
                      do k = 1, item%elementSetPtr%n_layers
-                        if (has_harmonics) then
+                        if (.not. has_time) then
                            if (is_column_major) then
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0, k], count=[nrow, ncol, 1])
                            else
@@ -953,7 +953,7 @@ contains
          if (has_time) then
             fieldPtr%timesteps = ecSupportTimeIndexToMJD(fileReaderPtr%tframe, timesndx)
             fieldPtr%timesndx = timesndx
-         else if (has_harmonics) then
+         else
             if (t0t1 == 0) then
                fieldPtr%timesteps = -ec_huge_hp
             else if (t0t1 == 1) then
@@ -2218,7 +2218,7 @@ contains
    end subroutine strip_comment
 
 !     read data and store in CRS format
-   subroutine read_data_sparse(filehandle, varid, n_cols, n_rows, n_layers, timesndx, is_column_major, relndx, ia, ja, Ndatasize, arr1d, ierror)
+   subroutine read_data_sparse(filehandle, varid, n_cols, n_rows, n_layers, timesndx, is_column_major, relndx, ia, ja, Ndatasize, arr1d, ierror, has_time)
       use netcdf
       use netcdf_utils, only: ncu_get_att
       use io_ugrid
@@ -2238,6 +2238,7 @@ contains
       integer, intent(in) :: Ndatasize !< dimension of sparse data
       real(dp), dimension(:), intent(inout) :: arr1d !< CRS data
       integer, intent(out) :: ierror !< error (!=0) or not (0)
+      logical, optional, intent(in) :: has_time !< whether the variable has a time dimension; defaults to true
 
       real(dp), dimension(:), allocatable :: data_block ! work array for reading
 
@@ -2255,8 +2256,13 @@ contains
       character(len=:), allocatable :: standard_name
       character(len=64) :: stringBuffer
       integer, allocatable :: start(:), cnt(:)
+      logical :: time_dependent
 
       ierror = 1
+      time_dependent = .true.
+      if (present(has_time)) then
+         time_dependent = has_time
+      end if
       allocate (character(len=0) :: standard_name)
 
       Nreadrow = n_rows
@@ -2313,7 +2319,7 @@ contains
                   start(1:2) = [mcolmin(j), nrowmin]
                   cnt(1:2) = [mcolmax(j) - mcolmin(j) + 1, nrowmax(j) - nrowmin + 1]
                end if
-               if (ndims > 2) then
+               if (time_dependent .and. ndims > 2) then
                   start(ndims) = timesndx
                end if
                if (relndx > 0 .and. ndims >= 4) then
@@ -2322,7 +2328,7 @@ contains
                   start(3) = relndx
                end if
                if (n_layers /= 0) then
-                  start(ndims - 1) = k
+                  start(ndims - merge(1, 0, time_dependent)) = k
                end if
 
                ierror = nf90_get_var(fileHandle, varid, data_block, start=start, count=cnt)

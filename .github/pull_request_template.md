@@ -9,7 +9,6 @@
  
 
 # Evidence of the work done 
-
 - [ ]	Video/figures \
 <add video/figures if applicable> 
 - [ ]	Clear from the issue description 

@@ -41,8 +41,31 @@ module fm_external_forcings_utils
    public :: get_constituent_name
    public :: read_tracer_properties
    public :: read_bubblescreen_forcing_attributes
+   public :: print_error_message
+   public :: select_wave_variables_subgroup
+   public :: quantity_pli_combination_is_registered
+   public :: register_quantity_pli_combination
+   public :: init_registered_items
+   public :: check_keyword_zerozbndinflowadvection
+   public :: ini_alloc_laterals
+   public :: allocatewindarrays
 
    integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: MAX_REGISTERED_ITEM_ID = 512
+   character(len=MAX_REGISTERED_ITEM_ID), allocatable :: registered_items(:)
+   integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
+   integer :: num_registered_items = 0
+
+   abstract interface
+      subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
+         integer, intent(in) :: number_of_links !< number of links
+         integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+      end subroutine
+   end interface
+
+   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
+
+   public :: fill_open_boundary_cells_with_inner_values
 
 contains
 
@@ -298,5 +321,261 @@ contains
       success = .true.
 
    end function read_bubblescreen_forcing_attributes
+
+   !> print_error_message
+   subroutine print_error_message(time_in_seconds)
+      use m_ec_message, only: dump_ec_message_stack
+      use unstruc_messages, only: callback_msg
+      use messagehandling, only: LEVEL_WARN, mess
+
+      ! Arguments
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
+
+      ! Local variables
+      character(len=255) :: tmpstr
+
+      write (tmpstr, '(f22.11)') time_in_seconds
+      call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+   end subroutine print_error_message
+
+   !> select_wave_variables_subgroup
+   !! select routine depending on whether all or a subgroup of wave variables are allocated
+   subroutine select_wave_variables_subgroup(all_wave_variables)
+      ! Arguments
+      logical, intent(in) :: all_wave_variables
+
+      if (all_wave_variables) then
+         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
+      else
+         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+      end if
+
+   end subroutine select_wave_variables_subgroup
+
+   !> fill_open_boundary_cells_with_inner_values_all
+   subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
+      use m_waves
+
+      ! Arguments
+      integer, intent(in) :: number_of_links !< number of links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+
+      ! Local variables
+      integer :: link !< link counter
+      integer :: kb !< cell index of boundary cell
+      integer :: ki !< cell index of internal cell
+
+      do link = 1, number_of_links
+         kb = link2cell(1, link)
+         ki = link2cell(2, link)
+         hwav(kb) = hwav(ki)
+         twav(kb) = twav(ki)
+         phiwav(kb) = phiwav(ki)
+         uorbwav(kb) = uorbwav(ki)
+         sxwav(kb) = sxwav(ki)
+         sywav(kb) = sywav(ki)
+         mxwav(kb) = mxwav(ki)
+         mywav(kb) = mywav(ki)
+         sbxwav(kb) = sbxwav(ki)
+         sbywav(kb) = sbywav(ki)
+         dsurf(kb) = dsurf(ki)
+         dwcap(kb) = dwcap(ki)
+      end do
+
+   end subroutine fill_open_boundary_cells_with_inner_values_all
+
+   !> fill_open_boundary_cells_with_inner_values_fewer
+   subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
+      use m_waves
+      use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+         WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, WAVE_INPUT_DISSIPATION_SURFACE, &
+         WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+
+      ! Arguments
+      integer, intent(in) :: number_of_links !< number of links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+
+      ! Local variables
+      integer :: link !< link counter
+      integer :: kb !< cell index of boundary cell
+      integer :: ki !< cell index of internal cell
+      logical :: significant_height_required
+      logical :: period_required
+      logical :: direction_required
+      logical :: force_x_required
+      logical :: force_y_required
+      logical :: dissipation_total_required
+      logical :: dissipation_surface_required
+      logical :: dissipation_white_capping_required
+      logical :: wave_kinematics_required
+
+      significant_height_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+      period_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      direction_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+      force_x_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)
+      force_y_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)
+      dissipation_total_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)
+      dissipation_surface_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+      dissipation_white_capping_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+      wave_kinematics_required = significant_height_required .and. period_required .and. direction_required
+
+      do link = 1, number_of_links
+         kb = link2cell(1, link)
+         ki = link2cell(2, link)
+         if (significant_height_required) then
+            hwav(kb) = hwav(ki)
+         end if
+         if (period_required) then
+            twav(kb) = twav(ki)
+         end if
+         if (direction_required) then
+            phiwav(kb) = phiwav(ki)
+         end if
+         if (force_x_required) then
+            sxwav(kb) = sxwav(ki)
+         end if
+         if (force_y_required) then
+            sywav(kb) = sywav(ki)
+         end if
+         if (dissipation_total_required) then
+            distot(kb) = distot(ki)
+         end if
+         if (dissipation_surface_required) then
+            dsurf(kb) = dsurf(ki)
+            sbxwav(kb) = sbxwav(ki)
+            sbywav(kb) = sbywav(ki)
+         end if
+         if (dissipation_white_capping_required) then
+            dwcap(kb) = dwcap(ki)
+         end if
+         if (wave_kinematics_required) then
+            uorbwav(kb) = uorbwav(ki)
+            mxwav(kb) = mxwav(ki)
+            mywav(kb) = mywav(ki)
+         end if
+      end do
+
+   end subroutine fill_open_boundary_cells_with_inner_values_fewer
+
+   function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+      logical :: is_registered
+
+      ! Local variables
+      integer :: i
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      is_registered = .false.
+
+      do i = 1, num_registered_items
+         if (item_id == registered_items(i)) then
+            is_registered = .true.
+            return
+         end if
+      end do
+
+   end function quantity_pli_combination_is_registered
+
+   subroutine register_quantity_pli_combination(quantity, location_file)
+      use m_alloc
+
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+
+      ! Local variables
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      if (num_registered_items >= max_ext_bnd_items) then
+         max_ext_bnd_items = ceiling(1.2 * num_registered_items)
+         call realloc(registered_items, max_ext_bnd_items, keepExisting=.true., fill='')
+      end if
+
+      num_registered_items = num_registered_items + 1
+      registered_items(num_registered_items) = item_id
+
+   end subroutine register_quantity_pli_combination
+
+   subroutine init_registered_items()
+      num_registered_items = 0
+
+      max_ext_bnd_items = 64 ! Default start size.
+      if (allocated(registered_items)) then
+         deallocate (registered_items)
+      end if
+      allocate (registered_items(max_ext_bnd_items))
+
+      registered_items(1:max_ext_bnd_items) = ''
+
+   end subroutine init_registered_items
+
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
+
+      ! Arguments
+      logical :: success
+
+      ! Initialization
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
+
+   !> Initializes memory for laterals on flow nodes.
+   subroutine ini_alloc_laterals()
+      use m_laterals, only: kclat, nnlat
+      use m_flowgeom, only: ndx2d, ndxi, ndx
+      use m_alloc
+
+      ! Local variables
+      integer :: ierr
+      integer :: nlatndguess
+
+      if (.not. allocated(nnlat)) then ! just once
+         nlatndguess = ndx2d + 2 * (ndxi - ndx2d) ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
+         allocate (nnLat(nlatndguess), stat=ierr)
+         call aerr('nnLat(nlatndguess)', ierr, nlatndguess)
+         nnLat = 0
+      end if
+      if (.not. allocated(kcLat)) then
+         allocate (kcLat(ndx), stat=ierr) ! only if needed
+         call aerr('kcLat(ndx)', ierr, ndx)
+      end if
+   end subroutine ini_alloc_laterals
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc, aerr
+
+      ! Arguments
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
+      end if
+
+   end subroutine allocatewindarrays
 
 end module fm_external_forcings_utils
