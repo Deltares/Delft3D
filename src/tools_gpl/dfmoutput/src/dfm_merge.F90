@@ -76,9 +76,9 @@ contains
       integer, parameter :: ikx0 = 1
 
       integer, allocatable :: id_facedim(:, :), id_edgedim(:, :), id_laydim(:, :), id_wdim(:, :), id_nodedim(:, :), id_sedtotdim(:, :), id_sedsusdim(:, :), id_nlyrdim(:, :), &
-                              id_netedgedim(:, :), id_netfacedim(:, :), id_netfacemaxnodesdim(:, :), id_bnddim(:, :), id_strlendim(:, :) !< dim and var ids, maintained for all input files + 1 output file.
+                              id_netedgedim(:, :), id_netfacedim(:, :), id_netfacemaxnodesdim(:, :), id_bnddim(:, :) !< dim and var ids, maintained for all input files + 1 output file.
       integer, dimension(nfiles + 1) :: ncids, id_time, id_timestep, id_mappingVar
-      integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:)
+      integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:), id_strlendim(:)
       double precision :: convversion
       integer :: jaugrid, iconvtype, formatCode, new_ndx, jasedmor, jamorfac
       integer, dimension(nfiles) :: jaugridi, ioncids
@@ -430,10 +430,10 @@ contains
       call realloc(id_netfacedim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_netfacemaxnodesdim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_bnddim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
-      call realloc(id_strlendim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       
       call realloc(id_morft, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_morfac, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_strlendim, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_frac_name, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_susfrac_name, nfiles + 1, keepExisting=.false., fill=-1)
 
@@ -1742,7 +1742,7 @@ contains
                end if
 
                if (ierr == nf90_noerr) then
-                     ierr = nf90_def_dim(ncids(noutfile), trim(dimname), nlen, dimids(id, itopo, noutfile))
+                  ierr = nf90_def_dim(ncids(noutfile), trim(dimname), nlen, dimids(id, itopo, noutfile))
                end if
                if (ierr /= nf90_noerr) then
                   write (*, '(a,i0,a,i0)') 'Error: mapmerge: Could not copy dimension #', dimids(id, itopo, ifileScan), &
@@ -1836,26 +1836,30 @@ contains
             end if
          end do
       
+      end do ! itopo
+
       ! copy the attrubutes of sedfrac_name and sussedfrac_name
       if (jasedmor == 1) then
+         ifileScan = ifile(minTopodim)
          ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
-         ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', 100, id_strlendim(itopo, noutfile))
-         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedtotdim(itopo, noutfile)/), id_frac_name(noutfile))
+         ierr = nf90_inquire_variable(ncids(ifileScan), id_frac_name(ifileScan), dimids=tmpdimids)
+         ierr = nf90_inquire_dimension(ncids(ifileScan), tmpdimids(1), len=nlen)
+         ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', nlen, id_strlendim(noutfile))
+         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(noutfile), id_sedtotdim(minTopodim, noutfile)/), id_frac_name(noutfile))
          ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
          if (isNetCDF4) then
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
          end if
       
          ierr = nf90_inq_varid(ncids(ifileScan), 'sussedfrac_name', id_susfrac_name(ifileScan))
-         ierr = nf90_def_var(ncids(noutfile), 'sussedfrac_name', nf90_char, (/id_strlendim(itopo, noutfile), id_sedsusdim(itopo, noutfile)/), id_susfrac_name(noutfile))
+         ierr = nf90_def_var(ncids(noutfile), 'sussedfrac_name', nf90_char, (/id_strlendim(noutfile), id_sedsusdim(minTopodim, noutfile)/), id_susfrac_name(noutfile))
          ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
          if (isNetCDF4) then
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
          end if
       end if
             
-      end do ! itopo
-
+      
       ! When both 1D and 2D meshes are present, the global numbering of 1D nodes (read from input files) includes the 2D faces.
       ! In merged map file, we make the global numbering of 1D nodes only for 1D nodes, not including 2D faces.
       if (minTopodim == 1 .and. maxTopodim == 2 .and. jareadglob == 1) then
@@ -2062,7 +2066,8 @@ contains
          nsedtot(noutfile) = nsedtotsel
          allocate (sedfrac_name(nsedtotsel))
          do it = 1, nsedtotsel
-             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it), start=(/1, it/), count=(/20, 1/))
+             nlen = len(trim(sedfrac_name(it)))
+             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it), start=(/1, it/), count=(/nlen, 1/))
          end do
          ierr = nf90_put_var(ncids(noutfile), id_frac_name(noutfile), sedfrac_name)
       
@@ -2070,7 +2075,8 @@ contains
          nsedsus(noutfile) = nsedsussel
          allocate (sussedfrac_name(nsedsussel))
          do it = 1, nsedsussel
-             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it), start=(/1, it/), count=(/20, 1/))
+             nlen = len(trim(sedfrac_name(it)))
+             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it), start=(/1, it/), count=(/nlen, 1/))
          end do
          ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
       end if
