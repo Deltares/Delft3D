@@ -87,17 +87,17 @@ module m_readstructures
 contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structurefiles, is_path_relative)
+   subroutine readStructures(network, structure_files, is_path_relative)
       use string_module, only: str_token
 
       type(t_network), intent(inout) :: network !< The network data structure into whose Structure Set the file(s) will be read.
-      character(len=*), intent(in) :: structurefiles !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
+      character(len=*), intent(in) :: structure_files !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
       logical, intent(in) :: is_path_relative !< whether the files in the structure file are relative to the structure file location or to the working directory.
 
       character(len=IdLen) :: file
       character(len=IdLen) :: inputFiles
 
-      inputFiles = structurefiles
+      inputFiles = structure_files
       do while (len_trim(inputfiles) > 0)
          call str_token(inputfiles, file, DELIMS=';')
          call readStructureFile(network, adjustl(trim(file)), is_path_relative)
