@@ -14,12 +14,12 @@ source is [DOT](./dwaves_code_pathways.dot).
 | Scenario | Entry point | Coordination and data path |
 |---|---|---|
 | Standalone | `wave` executable (`wave_exe`) | `wave_main` runs SWAN from the MDW schedule. Optional Flow data can be read from configured Flow files. |
-| Delft3D4 online | `wave` executable with mode `1`, launched alongside `d_hydro` | Flow and Wave rendezvous and exchange fields/status through DelftIO (`sync_flowwave`). |
+| Delft3D4 online | `wave` executable with mode `1`, launched alongside `d_hydro` | Flow and Wave rendezvous and exchange step commands/status through DelftIO (`sync_flowwave`); the model fields themselves are read from and written to FLOW communication (com) files. |
 | D-Flow FM / BMI | `wave` shared library, loaded as a DIMR component | DIMR initializes and advances the BMI components. D-Waves uses the MDW `FlowGridFile`/Flow-data path for configured Flow inputs; this is not direct field-array exchange through the Wave BMI `get_var` interface. |
 
 The `stand_alone`, `flow_online`, and `flow_mud_online` mode values are `0`,
 `1`, and `2`, respectively, in
-[wave_data.f90](../packages/data/src/wave_data.f90). The executable defaults
+[wave_data.f90](../../packages/data/src/wave_data.f90). The executable defaults
 to mode `0`; its optional second command-line argument overrides the mode.
 The BMI library starts with an unset mode and must be given a mode before its
 `initialize` entry point is called.
@@ -27,11 +27,11 @@ The BMI library starts with an unset mode and must be given a mode before its
 ## Standalone
 
 1. The `wave` executable in
-   [wave_exe.f90](../packages/wave/src/wave_exe.f90) parses the MDW filename
+   [wave_exe.f90](../../packages/wave/src/wave_exe.f90) parses the MDW filename
    and optional mode. With no mode argument it uses `0`.
 2. It calls `wave_main_init`, then `wave_main_step(-1)`, then
    `wave_main_finish` in
-   [wave_main.f90](../packages/manager/src/wave_main.f90).
+   [wave_main.f90](../../packages/manager/src/wave_main.f90).
 3. Initialization reads the MDW input, configures SWAN grids and grid maps,
    and prepares any configured external forcing. The manager calls
    `swan_tot` to stage SWAN input, run SWAN, and consume its results.
@@ -44,21 +44,25 @@ MDW options are set, `flow_init` can read the configured NetCDF Flow files
 even in standalone mode. This file-backed option is distinct from online
 Delft3D4 communication.
 
-Relevant implementation: [wave_exe.f90](../packages/wave/src/wave_exe.f90),
-[wave_main.f90](../packages/manager/src/wave_main.f90), and
-[flow_data.f90](../packages/data/src/flow_data.f90).
+Relevant implementation: [wave_exe.f90](../../packages/wave/src/wave_exe.f90),
+[wave_main.f90](../../packages/manager/src/wave_main.f90), and
+[flow_data.f90](../../packages/data/src/flow_data.f90).
+
+Detailed diagram (actual subroutine calls and module-level state):
+[dwaves_pathway_standalone_detailed.svg](./dwaves_pathway_standalone_detailed.svg)
+([DOT source](./dwaves_pathway_standalone_detailed.dot)).
 
 ## Coupling with Delft3D4
 
 The classic online path uses two processes. The
-[D-Waves run script](../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh) starts
+[D-Waves run script](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh) starts
 `d_hydro` and starts `wave <mdw-file> 1`; the latter selects `flow_online`.
 The Delft3D4 side initializes and steps the coupling from
-[tricom_init.F90](../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90)
+[tricom_init.F90](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90)
 and its FLOW time loop.
 
 The synchronization contract is implemented by
-[sync_flowwave.f90](../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90):
+[sync_flowwave.f90](../../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90):
 
 - FLOW initializes the connection and publishes its domain names, reference
   date, timestep, and coupling configuration.
@@ -66,28 +70,40 @@ The synchronization contract is implemented by
   `wave_from_flow_init` and records the connected FLOW domains.
 - On each step, D-Waves waits for FLOW's command and timestep, sets the WAVE
   time, calls `swan_tot`, then reports completion. FLOW and WAVE exchange
-  fields and status through DelftIO's `FLOW2WAVE_DATA` and `WAVE2FLOW_DATA`
-  streams. The synchronization module also defines the corresponding MUD
-  streams for the fluid-mud mode.
+  step commands and status flags through DelftIO's `FLOW2WAVE_DATA` and
+  `WAVE2FLOW_DATA` streams (`flow_to_wave_command`/`wave_from_flow_command`
+  and `wave_to_flow_status`/`flow_from_wave_status`). The synchronization
+  module also defines the corresponding MUD streams for the fluid-mud mode.
+- The model fields themselves (water levels, currents, bed levels, and wave
+  forcing) are not carried by these DelftIO streams: WAVE reads Flow fields
+  from the FLOW communication (com) file through `get_flow_fields`, and
+  writes its results back to the com-file through `wave2flow`, `wave2com`,
+  and `put_wave_fields` (all called from `swan_tot`). FLOW reads the wave
+  results back from the same com-file through `setwav` in `tricom_step.F90`.
 - The FLOW manager handles the coupling for serial or parallel FLOW runs;
-  the DelftIO layer carries the domain/partition information.
+  the DelftIO layer carries the domain/partition information for the control
+  channel described above.
 
 The online loop is in
-[wave_main.f90](../packages/manager/src/wave_main.f90), and the mode selection
-is defined in [wave_data.f90](../packages/data/src/wave_data.f90). This path
+[wave_main.f90](../../packages/manager/src/wave_main.f90), and the mode selection
+is defined in [wave_data.f90](../../packages/data/src/wave_data.f90). This path
 is not the D-Flow FM BMI path: it is a FLOW/WAVE process pair coordinated by
 DelftIO.
+
+Detailed diagram (both processes, the DelftIO sync points, and module-level
+state): [dwaves_pathway_delft3d4_detailed.svg](./dwaves_pathway_delft3d4_detailed.svg)
+([DOT source](./dwaves_pathway_delft3d4_detailed.dot)).
 
 ## Coupling with D-Flow FM through BMI
 
 The Wave target is built both as an executable and as a shared library. The
-library target includes [wave_bmi.f90](../packages/wave/src/wave_bmi.f90)
-through [wave_dll.cmake](../packages/wave/wave_dll.cmake).
+library target includes [wave_bmi.f90](../../packages/wave/src/wave_bmi.f90)
+through [wave_dll.cmake](../../packages/wave/wave_dll.cmake).
 The BMI `initialize`, `update`, and `finalize` wrappers delegate to
 `wave_main_init`, `wave_main_step(dt)`, and `wave_main_finish`.
 
 In DIMR's parallel component initialization,
-[dimr.cpp](../../dimr/packages/dimr_lib/src/dimr.cpp) initializes the master
+[dimr.cpp](../../../dimr/packages/dimr_lib/src/dimr.cpp) initializes the master
 component first (the code notes that Wave must be initialized after Flow).
 For a Wave component, DIMR obtains the BMI `mode` variable and sets it to
 `1` before calling Wave's BMI `initialize`. DIMR then advances the BMI
@@ -110,11 +126,16 @@ interface, while configured file-backed Flow input is a separate part of the
 D-Waves data path. Do not infer direct in-memory Flow-to-Wave array exchange
 from the BMI component registration alone.
 
-Relevant implementation: [wave_bmi.f90](../packages/wave/src/wave_bmi.f90),
-[wave_dll.cmake](../packages/wave/wave_dll.cmake),
-[dimr.cpp](../../dimr/packages/dimr_lib/src/dimr.cpp),
-[flow_data.f90](../packages/data/src/flow_data.f90), and
-[swan_tot.f90](../packages/manager/src/swan_tot.f90).
+Relevant implementation: [wave_bmi.f90](../../packages/wave/src/wave_bmi.f90),
+[wave_dll.cmake](../../packages/wave/wave_dll.cmake),
+[dimr.cpp](../../../dimr/packages/dimr_lib/src/dimr.cpp),
+[flow_data.f90](../../packages/data/src/flow_data.f90), and
+[swan_tot.f90](../../packages/manager/src/swan_tot.f90).
+
+Detailed diagram (DIMR, the BMI wrapper, the `swan_run%flowgridfile` branch
+decision, and module-level state):
+[dwaves_pathway_fm_bmi_detailed.svg](./dwaves_pathway_fm_bmi_detailed.svg)
+([DOT source](./dwaves_pathway_fm_bmi_detailed.dot)).
 
 ## Reference comparison: UNST-9075 preCICE proof of concept
 
@@ -141,8 +162,8 @@ are not themselves the preCICE adapter: the GitHub blobs for
 `wave_bmi.f90` and `wave_exe.f90` have the same IDs on the current branch and
 the proof-of-concept branch, while the proof-of-concept changes the manager
 and SWAN orchestration path. In the current checkout,
-[wave_main.f90](../packages/manager/src/wave_main.f90) and
-[swan_tot.f90](../packages/manager/src/swan_tot.f90) have no preCICE state
+[wave_main.f90](../../packages/manager/src/wave_main.f90) and
+[swan_tot.f90](../../packages/manager/src/swan_tot.f90) have no preCICE state
 or lifecycle calls. Treat the proof-of-concept as comparison material only,
 not as a current implementation or evidence that FM/BMI coupling uses
 preCICE.

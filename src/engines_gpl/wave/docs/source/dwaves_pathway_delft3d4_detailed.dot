@@ -1,0 +1,76 @@
+digraph dwaves_pathway_delft3d4 {
+    graph [
+        label="D-Waves pathway detail: Coupling with Delft3D4 (online)",
+        labelloc=t,
+        fontsize=18,
+        fontname="Helvetica",
+        rankdir=TB,
+        nodesep=0.6,
+        ranksep=0.4,
+        pad=0.3,
+        bgcolor="white"
+    ];
+    node [fontname="Helvetica", fontsize=11, margin="0.15,0.09"];
+    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
+
+    launch [shape=box, style="rounded,filled", fillcolor="#E3F2F7", color="#7890A2",
+            label="run_dflow2d3d_dwaves.sh\nstarts d_hydro (FLOW) in background\nand wave <mdw-file> 1 (mode = flow_online)"];
+
+    subgraph cluster_flow {
+        label="FLOW process (flow2d3d)";
+        color="#3B82A0";
+        style="rounded";
+        node [shape=box, style="rounded,filled", fillcolor="#E3F2F7", color="#7890A2"];
+        tricom_init   [label="tricom_init.F90\nif (wave .and. waveol==2):\ncall flow_to_wave_init(runid, it01, tscale,\nnumdomains, mudlay, parll)"];
+        tricom_step   [label="tricom_step.F90 time loop\nat nst==itwav:\ncall flow_to_wave_command(\nflow_wave_comm_perform_step, numdomains, mudlay, nst)"];
+        spacer1 [shape=point, style=invis, width=0.01];
+        spacer2 [shape=point, style=invis, width=0.01];
+        tricom_read   [label="tricom_step.F90\nif (waverd): call setwav(comfil, ...)\nreads WAVE results back from the com-file"];
+        tricom_finish [label="tricom_finish.F90\ncall flow_to_wave_command(\nflow_wave_comm_finalize, numdomains, mudlay)"];
+        tricom_init -> tricom_step [style=invis];
+        tricom_step -> spacer1 -> spacer2 -> tricom_read [style=invis];
+        tricom_read -> tricom_finish [style=invis];
+    }
+
+    subgraph cluster_wave {
+        label="WAVE process (D-Waves)";
+        color="#3B82A0";
+        style="rounded";
+        node [shape=box, style="rounded,filled", fillcolor="#E7F1FA", color="#7890A2"];
+        wave_init_call [label="wave_main.f90 : wave_init() → flow_data.f90 : flow_init()\n(swan_run%flowgridfile == ' ' branch)\ncall wave_from_flow_init(subdom_names, it01, d_tscale, mud)\n[blocks until FLOW connects]"];
+        master_step [label="wave_main.f90 : wave_master_step()\ndo while (command == flow_wave_comm_perform_step):\ncall wave_from_flow_command(command, mud, timtscale)"];
+        settime [label="call settimtscale(wavedata%time, timtscale,\nswan_run%modsim, swan_run%nonstat_interval)"];
+        swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads FLOW com-file fields;\nwave2flow/wave2com/put_wave_fields() write results back"];
+        status [label="call wave_to_flow_status(\nflow_wave_comm_result_ok, mud)"];
+        wave_finish [label="wave_main_finish() → wave_master_finish()\n(loop exits on flow_wave_comm_finalize)"];
+        wave_init_call -> master_step -> settime -> swan_tot -> status;
+        status -> master_step [label="loop while\nperform_step", constraint=false];
+        status -> wave_finish [style=dashed, label="on finalize"];
+    }
+
+    launch -> tricom_init;
+    launch -> wave_init_call;
+
+    { rank=same; tricom_init; wave_init_call; }
+    { rank=same; tricom_step; master_step; }
+    { rank=same; spacer1; settime; }
+    { rank=same; spacer2; swan_tot; }
+    { rank=same; tricom_read; status; }
+    { rank=same; tricom_finish; wave_finish; }
+
+    tricom_init -> wave_init_call [dir=both, label="flow_to_wave_init ↔\nwave_from_flow_init\n(sync_flowwave.f90)", constraint=false];
+    tricom_step -> master_step [dir=both, label="flow_to_wave_command ↔\nwave_from_flow_command", constraint=false];
+    status -> tricom_read [dir=both, label="wave_to_flow_status ↔\nflow_from_wave_status,\nthen setwav reads fields", constraint=false];
+    tricom_finish -> wave_finish [dir=both, style=dashed, label="flow_to_wave_command\n(finalize)", constraint=false];
+
+    node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
+    st_comminfo [label="comminfowater / comminfomud\n(dioplttype flow_to_wave / wave_to_flow,\nsync_flowwave.f90 module vars)"];
+    st_runids [label="runids(:) / num_subdomains /\nflow_data_initialized\n(flow_data.f90 module vars)"];
+    st_mode [label="wavedata%mode = flow_online (1)\nwavedata%time%tscale (from FLOW)\n(wave_data.f90)"];
+
+    { rank=same; tricom_init; wave_init_call; st_comminfo; st_runids; }
+    { rank=same; spacer1; settime; st_mode; }
+    tricom_init -> st_comminfo [style=dotted, arrowhead=none, constraint=false];
+    wave_init_call -> st_runids [style=dotted, arrowhead=none, constraint=false];
+    settime -> st_mode [style=dotted, arrowhead=none, constraint=false];
+}

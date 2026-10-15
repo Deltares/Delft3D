@@ -4,73 +4,89 @@ digraph dwaves_code_pathways {
         labelloc=t,
         fontsize=20,
         fontname="Helvetica",
-        rankdir=LR,
+        rankdir=TB,
         compound=true,
-        nodesep=0.35,
-        ranksep=0.55,
-        pad=0.2,
+        newrank=true,
+        nodesep=0.45,
+        ranksep=0.4,
+        pad=0.3,
         bgcolor="white"
     ];
-    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.14,0.09", color="#496276"];
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.16,0.10", color="#7890A2"];
     edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
 
     subgraph cluster_d4 {
         label="1. Delft3D4 online — current";
+        fontsize=14;
         color="#3B82A0";
+        penwidth=2;
         style="rounded";
-        flow4 [label="Delft3D4 FLOW\ntricom_init / time loop", fillcolor="#E3F2F7"];
-        dio [label="DelftIO sync_flowwave\nFLOW2WAVE_DATA ↔ WAVE2FLOW_DATA", fillcolor="#EAF4F7"];
-        wave4 [label="wave executable\nmode = flow_online (1)", fillcolor="#E7F1FA"];
-        manager4 [label="wave_main_step\nwait → set time → swan_tot", fillcolor="#E7F1FA"];
-        swan4 [label="SWAN computation\nand WAVE outputs", fillcolor="#F0F5FA"];
-        flow4 -> dio [label="init / FLOW fields"];
+        flow4    [label="Delft3D4 FLOW\ntricom_init / FLOW time loop", fillcolor="#E3F2F7"];
+        dio      [label="DelftIO sync_flowwave\nFLOW2WAVE_DATA ↔ WAVE2FLOW_DATA\ncommands + status only — not fields", fillcolor="#EAF4F7"];
+        wave4    [label="wave executable\nrun with mode = flow_online (1)", fillcolor="#E3F2F7"];
+        manager4 [label="wave_main_step\nwait → set WAVE time → swan_tot", fillcolor="#E7F1FA"];
+        swan4    [label="SWAN computation and WAVE results\nget/put fields via FLOW com-file;\nstatus reported back through DelftIO", fillcolor="#EAF4F7"];
+        flow4 -> dio [label="initialize / synchronize"];
         dio -> wave4 [label="DIO handshake"];
-        wave4 -> manager4 [label="initialize, step, finish"];
-        manager4 -> swan4 [label="run"];
-        swan4 -> dio [label="results / status", constraint=false];
+        wave4 -> manager4;
+        manager4 -> swan4;
     }
 
     subgraph cluster_fm {
         label="2. D-Flow FM / BMI — current";
+        fontsize=14;
         color="#5A9A72";
+        penwidth=2;
         style="rounded";
-        dimr [label="DIMR orchestration\ninitialize Flow before Wave", fillcolor="#EAF5EC"];
-        fm [label="D-Flow FM BMI\nFlow component", fillcolor="#EAF5EC"];
-        bmi [label="D-Waves shared library\nwave_bmi: initialize / update / finalize", fillcolor="#EAF5EC"];
-        mode [label="DIMR sets WAVE mode = 1\nthrough BMI get_var('mode')", fillcolor="#F2F8F3"];
-        files [label="Configured FlowGridFile\nNetCDF/com files → flow_data /\nget_flow_fields (when enabled)", fillcolor="#F2F8F3"];
-        swan_fm [label="wave_main_step(dt)\n→ swan_tot → SWAN", fillcolor="#EAF5EC"];
-        dimr -> fm [label="BMI lifecycle"];
-        dimr -> bmi [label="BMI lifecycle"];
-        dimr -> mode [label="before initialize"];
-        mode -> bmi;
-        fm -> files [label="Flow data (configured file path)"];
-        files -> swan_fm;
+        dimr     [label="DIMR orchestration\ninitializes Flow before Wave;\nsets BMI mode=1 via get_var(\"mode\")", fillcolor="#EAF5EC"];
+        fmcomp   [label="D-Flow FM BMI component\nFlow solver and configured couplers", fillcolor="#EAF5EC"];
+        bmi      [label="D-Waves shared library\nwave_bmi: initialize / update(dt) / finalize", fillcolor="#EAF5EC"];
+        swan_fm  [label="wave_main_step(dt) → swan_tot\nget_flow_fields when configured", fillcolor="#F2F8F3"];
+        files_fm [label="File-backed Flow input (when enabled)\nconfigured FlowGridFile NetCDF/com file(s)", fillcolor="#F2F8F3"];
+        dimr -> fmcomp [label="BMI lifecycle"];
+        fmcomp -> bmi [label="component order"];
         bmi -> swan_fm [label="update(dt)"];
-        swan_fm -> fm [label="configured WAVE results", style=dashed, constraint=false];
+        files_fm -> swan_fm [label="get_flow_fields", dir=both, style=dashed];
     }
 
     subgraph cluster_standalone {
         label="3. Standalone — current";
+        fontsize=14;
         color="#B28B42";
+        penwidth=2;
         style="rounded";
-        exe [label="wave executable\nmode defaults to 0", fillcolor="#FCF5E6"];
-        init [label="wave_main_init\nread MDW / grids / forcing", fillcolor="#FCF5E6"];
-        step [label="wave_main_step(-1)\nrun MDW times", fillcolor="#FCF5E6"];
-        swan_solo [label="swan_tot → SWAN\nnormal WAVE outputs", fillcolor="#FCF5E6"];
+        exe       [label="wave executable\nmode defaults to stand_alone (0)", fillcolor="#FCF5E6"];
+        init      [label="wave_main_init\nread MDW, initialize grids and forcing", fillcolor="#FCF5E6"];
+        step      [label="wave_main_step(-1)\nrun the configured MDW times", fillcolor="#FCF5E6"];
+        swan_solo [label="swan_tot → SWAN\nstandard WAVE outputs", fillcolor="#FCF5E6"];
+        flowfile  [label="Optional Flow-file input\nFlowGridFile/useflowdata when configured", fillcolor="#FFF9ED"];
         exe -> init -> step -> swan_solo;
+        flowfile -> swan_solo [label="when configured", dir=both, style=dashed, constraint=false];
     }
 
     subgraph cluster_poc {
         label="UNST-9075 preCICE proof of concept — reference only, not in current checkout";
+        fontsize=13;
         color="#9B70A8";
+        penwidth=2.2;
         style="rounded,dashed";
         precice [label="preCICE setup\nconfiguration + time windows", fillcolor="#F4ECF7"];
-        mesh [label="wave_main preCICE hooks\nregister SWAN vertices / triangles", fillcolor="#F4ECF7"];
-        fields [label="preCICE-aware SWAN loop\nread Flow fields / write Wave fields", fillcolor="#F4ECF7"];
-        precice -> mesh -> fields [style=dashed];
+        mesh    [label="wave_main preCICE hooks\nregister SWAN vertices / triangles", fillcolor="#F4ECF7"];
+        fields  [label="preCICE-aware SWAN loop\nread Flow fields / write Wave fields", fillcolor="#F4ECF7"];
+        advance [label="preCICE advance\ntime-window loop", fillcolor="#F4ECF7"];
+        precice -> mesh -> fields -> advance [style=dashed];
+        { rank=same; precice; mesh; fields; advance; }
     }
 
+    // Align the three current pathways into side-by-side columns, row by row
     { rank=same; flow4; dimr; exe; }
-    { rank=same; dio; fm; init; }
+    { rank=same; dio; fmcomp; init; }
+    { rank=same; wave4; bmi; step; }
+    { rank=same; manager4; swan_fm; swan_solo; }
+    { rank=same; swan4; files_fm; flowfile; }
+
+    // Force the preCICE reference panel to render below the three columns
+    swan4 -> precice [style=invis];
+    files_fm -> precice [style=invis];
+    flowfile -> precice [style=invis];
 }

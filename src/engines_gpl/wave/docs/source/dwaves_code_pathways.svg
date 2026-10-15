@@ -1,138 +1,272 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1010" viewBox="0 0 1320 1010" role="img" aria-labelledby="title desc">
-  <title id="title">D-Waves code pathways</title>
-  <desc id="desc">Three current pathways: standalone, Delft3D4 online through DelftIO, and D-Flow FM via BMI/DIMR with configured Flow files. A separate dashed panel is reference-only preCICE proof-of-concept material, not present in the current checkout.</desc>
-  <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#48647A"/>
-    </marker>
-    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#876293"/>
-    </marker>
-    <style>
-      text { font-family: Arial, Helvetica, sans-serif; fill: #203344; }
-      .title { font-size: 25px; font-weight: 700; }
-      .subtitle { font-size: 14px; fill: #526879; }
-      .panel-title { font-size: 17px; font-weight: 700; }
-      .box-title { font-size: 14px; font-weight: 700; }
-      .box-text { font-size: 12px; }
-      .note { font-size: 12px; fill: #415667; }
-      .arrow-label { font-size: 11px; fill: #415667; }
-      .box { stroke-width: 1.6; rx: 10; ry: 10; }
-      .current { stroke: #7890A2; }
-      .flow4 { fill: #E3F2F7; }
-      .flow4-light { fill: #EAF4F7; }
-      .fm { fill: #EAF5EC; }
-      .fm-light { fill: #F2F8F3; }
-      .solo { fill: #FCF5E6; }
-      .poc { fill: #F4ECF7; }
-      .arrow { fill: none; stroke: #48647A; stroke-width: 1.8; marker-end: url(#arrow); }
-      .poc-arrow { fill: none; stroke: #876293; stroke-width: 1.8; stroke-dasharray: 7 5; marker-end: url(#arrowPurple); }
-    </style>
-  </defs>
-
-  <rect width="1320" height="1010" fill="#FFFFFF"/>
-  <text x="36" y="43" class="title">D-Waves code pathways</text>
-  <text x="36" y="69" class="subtitle">Current checkout: standalone, Delft3D4/DelftIO, and D-Flow FM/DIMR BMI. preCICE material is shown only as a reference.</text>
-
-  <!-- Delft3D4 online -->
-  <rect x="28" y="100" width="410" height="594" rx="14" fill="#F8FCFD" stroke="#3B82A0" stroke-width="2"/>
-  <text x="48" y="132" class="panel-title">1. Delft3D4 online (current)</text>
-  <rect x="70" y="157" width="326" height="74" class="box current flow4"/>
-  <text x="233" y="184" text-anchor="middle" class="box-title">Delft3D4 FLOW</text>
-  <text x="233" y="205" text-anchor="middle" class="box-text">tricom_init / FLOW time loop</text>
-  <path d="M233 232 L233 260" class="arrow"/>
-  <text x="245" y="251" class="arrow-label">initialize / synchronize</text>
-  <rect x="70" y="265" width="326" height="87" class="box current flow4-light"/>
-  <text x="233" y="291" text-anchor="middle" class="box-title">DelftIO sync_flowwave</text>
-  <text x="233" y="313" text-anchor="middle" class="box-text">FLOW2WAVE_DATA ↔ WAVE2FLOW_DATA</text>
-  <text x="233" y="333" text-anchor="middle" class="box-text">domain, step command, fields, status</text>
-  <path d="M233 353 L233 379" class="arrow"/>
-  <text x="245" y="372" class="arrow-label">DIO handshake</text>
-  <rect x="70" y="384" width="326" height="74" class="box current flow4"/>
-  <text x="233" y="411" text-anchor="middle" class="box-title">wave executable</text>
-  <text x="233" y="433" text-anchor="middle" class="box-text">run with mode = flow_online (1)</text>
-  <path d="M233 459 L233 485" class="arrow"/>
-  <rect x="70" y="490" width="326" height="80" class="box current flow4"/>
-  <text x="233" y="517" text-anchor="middle" class="box-title">wave_main_step</text>
-  <text x="233" y="539" text-anchor="middle" class="box-text">wait → set WAVE time → swan_tot</text>
-  <path d="M233 571 L233 597" class="arrow"/>
-  <rect x="70" y="602" width="326" height="65" class="box current flow4-light"/>
-  <text x="233" y="628" text-anchor="middle" class="box-title">SWAN computation and WAVE results</text>
-  <text x="233" y="648" text-anchor="middle" class="box-text">completion/status returns through DelftIO</text>
-
-  <!-- FM / BMI -->
-  <rect x="455" y="100" width="410" height="594" rx="14" fill="#FAFDFA" stroke="#5A9A72" stroke-width="2"/>
-  <text x="475" y="132" class="panel-title">2. D-Flow FM / BMI (current)</text>
-  <rect x="497" y="157" width="326" height="74" class="box current fm"/>
-  <text x="660" y="184" text-anchor="middle" class="box-title">DIMR orchestration</text>
-  <text x="660" y="205" text-anchor="middle" class="box-text">initializes Flow before Wave</text>
-  <path d="M660 232 L660 260" class="arrow"/>
-  <text x="674" y="251" class="arrow-label">BMI lifecycle</text>
-  <rect x="497" y="265" width="326" height="69" class="box current fm"/>
-  <text x="660" y="291" text-anchor="middle" class="box-title">D-Flow FM BMI component</text>
-  <text x="660" y="313" text-anchor="middle" class="box-text">Flow solver and configured couplers</text>
-  <path d="M660 335 L660 362" class="arrow"/>
-  <text x="674" y="354" class="arrow-label">component calls</text>
-  <rect x="497" y="367" width="326" height="75" class="box current fm"/>
-  <text x="660" y="394" text-anchor="middle" class="box-title">D-Waves shared library</text>
-  <text x="660" y="416" text-anchor="middle" class="box-text">wave_bmi: initialize / update(dt) / finalize</text>
-  <path d="M660 443 L660 470" class="arrow"/>
-  <text x="674" y="462" class="arrow-label">update(dt)</text>
-  <rect x="497" y="475" width="326" height="82" class="box current fm-light"/>
-  <text x="660" y="502" text-anchor="middle" class="box-title">wave_main_step → swan_tot</text>
-  <text x="660" y="524" text-anchor="middle" class="box-text">configured FlowGridFile → flow_data /</text>
-  <text x="660" y="543" text-anchor="middle" class="box-text">get_flow_fields → SWAN</text>
-  <rect x="497" y="574" width="326" height="93" class="box current fm-light"/>
-  <text x="660" y="600" text-anchor="middle" class="box-title">File-backed Flow input (when enabled)</text>
-  <text x="660" y="622" text-anchor="middle" class="box-text">NetCDF/com file(s), including partitions</text>
-  <text x="660" y="642" text-anchor="middle" class="box-text">BMI get_var is not Flow-field exchange</text>
-  <path d="M811 334 C846 350 846 550 817 592" class="arrow"/>
-  <text x="838" y="465" class="arrow-label" transform="rotate(90 838 465)">FlowGridFile path</text>
-  <text x="511" y="683" class="note">DIMR sets WAVE mode=1 through get_var("mode") before initialize.</text>
-
-  <!-- Standalone -->
-  <rect x="882" y="100" width="410" height="594" rx="14" fill="#FFFDF8" stroke="#B28B42" stroke-width="2"/>
-  <text x="902" y="132" class="panel-title">3. Standalone (current)</text>
-  <rect x="924" y="157" width="326" height="74" class="box current solo"/>
-  <text x="1087" y="184" text-anchor="middle" class="box-title">wave executable</text>
-  <text x="1087" y="205" text-anchor="middle" class="box-text">mode defaults to stand_alone (0)</text>
-  <path d="M1087 232 L1087 260" class="arrow"/>
-  <rect x="924" y="265" width="326" height="79" class="box current solo"/>
-  <text x="1087" y="292" text-anchor="middle" class="box-title">wave_main_init</text>
-  <text x="1087" y="314" text-anchor="middle" class="box-text">read MDW, initialize grids and forcing</text>
-  <path d="M1087 345 L1087 373" class="arrow"/>
-  <rect x="924" y="378" width="326" height="77" class="box current solo"/>
-  <text x="1087" y="405" text-anchor="middle" class="box-title">wave_main_step(-1)</text>
-  <text x="1087" y="427" text-anchor="middle" class="box-text">run the configured MDW times</text>
-  <path d="M1087 456 L1087 484" class="arrow"/>
-  <rect x="924" y="489" width="326" height="79" class="box current solo"/>
-  <text x="1087" y="516" text-anchor="middle" class="box-title">swan_tot → SWAN</text>
-  <text x="1087" y="538" text-anchor="middle" class="box-text">standard WAVE outputs</text>
-  <rect x="924" y="584" width="326" height="83" class="box current solo"/>
-  <text x="1087" y="610" text-anchor="middle" class="box-title">Optional Flow-file input</text>
-  <text x="1087" y="632" text-anchor="middle" class="box-text">FlowGridFile/useflowdata can be configured;</text>
-  <text x="1087" y="652" text-anchor="middle" class="box-text">does not make this a live Flow process</text>
-
-  <!-- Reference-only POC -->
-  <rect x="28" y="724" width="1264" height="236" rx="14" fill="#FCF9FD" stroke="#9B70A8" stroke-width="2.5" stroke-dasharray="9 6"/>
-  <text x="50" y="758" class="panel-title">UNST-9075 preCICE proof of concept — reference only, not in the current checkout</text>
-  <rect x="65" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
-  <text x="197" y="815" text-anchor="middle" class="box-title">preCICE setup</text>
-  <text x="197" y="838" text-anchor="middle" class="box-text">component / config / time windows</text>
-  <text x="197" y="859" text-anchor="middle" class="box-text">explicit initialize / advance / finalize</text>
-  <path d="M332 833 L382 833" class="poc-arrow"/>
-  <rect x="389" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
-  <text x="521" y="815" text-anchor="middle" class="box-title">wave_main preCICE hooks</text>
-  <text x="521" y="838" text-anchor="middle" class="box-text">read MDW grid; register active</text>
-  <text x="521" y="859" text-anchor="middle" class="box-text">vertices and triangles</text>
-  <path d="M656 833 L706 833" class="poc-arrow"/>
-  <rect x="713" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
-  <text x="845" y="815" text-anchor="middle" class="box-title">preCICE-aware SWAN loop</text>
-  <text x="845" y="838" text-anchor="middle" class="box-text">get Flow fields; run SWAN;</text>
-  <text x="845" y="859" text-anchor="middle" class="box-text">write selected Wave fields</text>
-  <path d="M980 833 L1030 833" class="poc-arrow"/>
-  <rect x="1037" y="786" width="220" height="94" class="box poc" stroke="#9B70A8"/>
-  <text x="1147" y="815" text-anchor="middle" class="box-title">preCICE advance</text>
-  <text x="1147" y="838" text-anchor="middle" class="box-text">time-window loop</text>
-  <text x="50" y="922" class="note">Reference material only: this adapter is not in the current D-Waves path. Current FM orchestration remains BMI/DIMR plus its configured Flow-data route.</text>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (0)
+ -->
+<!-- Title: dwaves_code_pathways Pages: 1 -->
+<svg width="1224pt" height="607pt"
+ viewBox="0.00 0.00 1224.20 607.20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 585.6)">
+<title>dwaves_code_pathways</title>
+<polygon fill="#ffffff" stroke="transparent" points="-21.6,21.6 -21.6,-585.6 1202.6,-585.6 1202.6,21.6 -21.6,21.6"/>
+<text text-anchor="middle" x="590.5" y="-544" font-family="Helvetica,sans-Serif" font-size="20.00" fill="#000000">D&#45;Waves code pathways (current checkout); UNST&#45;9075 preCICE POC is reference only</text>
+<g id="clust1" class="cluster">
+<title>cluster_d4</title>
+<path fill="#ffffff" stroke="#3b82a0" stroke-width="2" d="M20,-101C20,-101 258,-101 258,-101 264,-101 270,-107 270,-113 270,-113 270,-508 270,-508 270,-514 264,-520 258,-520 258,-520 20,-520 20,-520 14,-520 8,-514 8,-508 8,-508 8,-113 8,-113 8,-107 14,-101 20,-101"/>
+<text text-anchor="middle" x="139" y="-504.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">1. Delft3D4 online — current</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_fm</title>
+<path fill="#ffffff" stroke="#5a9a72" stroke-width="2" d="M290,-107C290,-107 518,-107 518,-107 524,-107 530,-113 530,-119 530,-119 530,-514 530,-514 530,-520 524,-526 518,-526 518,-526 290,-526 290,-526 284,-526 278,-520 278,-514 278,-514 278,-119 278,-119 278,-113 284,-107 290,-107"/>
+<text text-anchor="middle" x="404" y="-510.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">2. D&#45;Flow FM / BMI — current</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_standalone</title>
+<path fill="#ffffff" stroke="#b28b42" stroke-width="2" d="M557,-107C557,-107 779,-107 779,-107 785,-107 791,-113 791,-119 791,-119 791,-508 791,-508 791,-514 785,-520 779,-520 779,-520 557,-520 557,-520 551,-520 545,-514 545,-508 545,-508 545,-119 545,-119 545,-113 551,-107 557,-107"/>
+<text text-anchor="middle" x="668" y="-504.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">3. Standalone — current</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_poc</title>
+<path fill="#ffffff" stroke="#9b70a8" stroke-width="2.2" stroke-dasharray="5,2" d="M326,-8C326,-8 1161,-8 1161,-8 1167,-8 1173,-14 1173,-20 1173,-20 1173,-72 1173,-72 1173,-78 1167,-84 1161,-84 1161,-84 326,-84 326,-84 320,-84 314,-78 314,-72 314,-72 314,-20 314,-20 314,-14 320,-8 326,-8"/>
+<text text-anchor="middle" x="743.5" y="-69.6" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#000000">UNST&#45;9075 preCICE proof of concept — reference only, not in current checkout</text>
+</g>
+<!-- flow4 -->
+<g id="node1" class="node">
+<title>flow4</title>
+<path fill="#e3f2f7" stroke="#7890a2" d="M207,-489C207,-489 71,-489 71,-489 65,-489 59,-483 59,-477 59,-477 59,-463 59,-463 59,-457 65,-451 71,-451 71,-451 207,-451 207,-451 213,-451 219,-457 219,-463 219,-463 219,-477 219,-477 219,-483 213,-489 207,-489"/>
+<text text-anchor="middle" x="139" y="-473.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">Delft3D4 FLOW</text>
+<text text-anchor="middle" x="139" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">tricom_init / FLOW time loop</text>
+</g>
+<!-- dio -->
+<g id="node2" class="node">
+<title>dio</title>
+<path fill="#eaf4f7" stroke="#7890a2" d="M250,-405C250,-405 28,-405 28,-405 22,-405 16,-399 16,-393 16,-393 16,-367 16,-367 16,-361 22,-355 28,-355 28,-355 250,-355 250,-355 256,-355 262,-361 262,-367 262,-367 262,-393 262,-393 262,-399 256,-405 250,-405"/>
+<text text-anchor="middle" x="139" y="-389.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">DelftIO sync_flowwave</text>
+<text text-anchor="middle" x="139" y="-377.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">FLOW2WAVE_DATA ↔ WAVE2FLOW_DATA</text>
+<text text-anchor="middle" x="139" y="-365.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">commands + status only — not fields</text>
+</g>
+<!-- flow4&#45;&gt;dio -->
+<g id="edge1" class="edge">
+<title>flow4&#45;&gt;dio</title>
+<path fill="none" stroke="#48647a" d="M139,-450.9133C139,-439.8889 139,-425.7167 139,-412.9437"/>
+<polygon fill="#48647a" stroke="#48647a" points="141.6251,-412.7121 139,-405.2121 136.3751,-412.7122 141.6251,-412.7121"/>
+<text text-anchor="middle" x="184.5" y="-422.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">initialize / synchronize</text>
+</g>
+<!-- wave4 -->
+<g id="node3" class="node">
+<title>wave4</title>
+<path fill="#e3f2f7" stroke="#7890a2" d="M216,-315C216,-315 64,-315 64,-315 58,-315 52,-309 52,-303 52,-303 52,-289 52,-289 52,-283 58,-277 64,-277 64,-277 216,-277 216,-277 222,-277 228,-283 228,-289 228,-289 228,-303 228,-303 228,-309 222,-315 216,-315"/>
+<text text-anchor="middle" x="140" y="-299.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave executable</text>
+<text text-anchor="middle" x="140" y="-287.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">run with mode = flow_online (1)</text>
+</g>
+<!-- dio&#45;&gt;wave4 -->
+<g id="edge2" class="edge">
+<title>dio&#45;&gt;wave4</title>
+<path fill="none" stroke="#48647a" d="M139.3,-354.7972C139.4211,-344.6307 139.5608,-332.8921 139.6835,-322.5897"/>
+<polygon fill="#48647a" stroke="#48647a" points="142.3088,-322.572 139.7733,-315.0412 137.0591,-322.5094 142.3088,-322.572"/>
+<text text-anchor="middle" x="172" y="-332.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">DIO handshake</text>
+</g>
+<!-- manager4 -->
+<g id="node4" class="node">
+<title>manager4</title>
+<path fill="#e7f1fa" stroke="#7890a2" d="M228,-237C228,-237 58,-237 58,-237 52,-237 46,-231 46,-225 46,-225 46,-211 46,-211 46,-205 52,-199 58,-199 58,-199 228,-199 228,-199 234,-199 240,-205 240,-211 240,-211 240,-225 240,-225 240,-231 234,-237 228,-237"/>
+<text text-anchor="middle" x="143" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_main_step</text>
+<text text-anchor="middle" x="143" y="-209.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wait → set WAVE time → swan_tot</text>
+</g>
+<!-- wave4&#45;&gt;manager4 -->
+<g id="edge3" class="edge">
+<title>wave4&#45;&gt;manager4</title>
+<path fill="none" stroke="#48647a" d="M140.7416,-276.7191C141.1121,-267.0846 141.5665,-255.2712 141.9703,-244.773"/>
+<polygon fill="#48647a" stroke="#48647a" points="144.6017,-244.6545 142.267,-237.0591 139.3556,-244.4527 144.6017,-244.6545"/>
+</g>
+<!-- swan4 -->
+<g id="node5" class="node">
+<title>swan4</title>
+<path fill="#eaf4f7" stroke="#7890a2" d="M237.5,-159C237.5,-159 52.5,-159 52.5,-159 46.5,-159 40.5,-153 40.5,-147 40.5,-147 40.5,-121 40.5,-121 40.5,-115 46.5,-109 52.5,-109 52.5,-109 237.5,-109 237.5,-109 243.5,-109 249.5,-115 249.5,-121 249.5,-121 249.5,-147 249.5,-147 249.5,-153 243.5,-159 237.5,-159"/>
+<text text-anchor="middle" x="145" y="-143.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">SWAN computation and WAVE results</text>
+<text text-anchor="middle" x="145" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">get/put fields via FLOW com&#45;file;</text>
+<text text-anchor="middle" x="145" y="-119.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">status reported back through DelftIO</text>
+</g>
+<!-- manager4&#45;&gt;swan4 -->
+<g id="edge4" class="edge">
+<title>manager4&#45;&gt;swan4</title>
+<path fill="none" stroke="#48647a" d="M143.4538,-198.9391C143.6801,-189.435 143.9602,-177.6703 144.2196,-166.7765"/>
+<polygon fill="#48647a" stroke="#48647a" points="146.8494,-166.6032 144.4037,-159.0428 141.6009,-166.4782 146.8494,-166.6032"/>
+</g>
+<!-- precice -->
+<g id="node16" class="node">
+<title>precice</title>
+<path fill="#f4ecf7" stroke="#7890a2" d="M474,-54C474,-54 334,-54 334,-54 328,-54 322,-48 322,-42 322,-42 322,-28 322,-28 322,-22 328,-16 334,-16 334,-16 474,-16 474,-16 480,-16 486,-22 486,-28 486,-28 486,-42 486,-42 486,-48 480,-54 474,-54"/>
+<text text-anchor="middle" x="404" y="-38.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">preCICE setup</text>
+<text text-anchor="middle" x="404" y="-26.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">configuration + time windows</text>
+</g>
+<!-- swan4&#45;&gt;precice -->
+<!-- dimr -->
+<g id="node6" class="node">
+<title>dimr</title>
+<path fill="#eaf5ec" stroke="#7890a2" d="M495.5,-495C495.5,-495 312.5,-495 312.5,-495 306.5,-495 300.5,-489 300.5,-483 300.5,-483 300.5,-457 300.5,-457 300.5,-451 306.5,-445 312.5,-445 312.5,-445 495.5,-445 495.5,-445 501.5,-445 507.5,-451 507.5,-457 507.5,-457 507.5,-483 507.5,-483 507.5,-489 501.5,-495 495.5,-495"/>
+<text text-anchor="middle" x="404" y="-479.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">DIMR orchestration</text>
+<text text-anchor="middle" x="404" y="-467.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">initializes Flow before Wave;</text>
+<text text-anchor="middle" x="404" y="-455.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">sets BMI mode=1 via get_var(&quot;mode&quot;)</text>
+</g>
+<!-- fmcomp -->
+<g id="node7" class="node">
+<title>fmcomp</title>
+<path fill="#eaf5ec" stroke="#7890a2" d="M490.5,-399C490.5,-399 317.5,-399 317.5,-399 311.5,-399 305.5,-393 305.5,-387 305.5,-387 305.5,-373 305.5,-373 305.5,-367 311.5,-361 317.5,-361 317.5,-361 490.5,-361 490.5,-361 496.5,-361 502.5,-367 502.5,-373 502.5,-373 502.5,-387 502.5,-387 502.5,-393 496.5,-399 490.5,-399"/>
+<text text-anchor="middle" x="404" y="-383.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">D&#45;Flow FM BMI component</text>
+<text text-anchor="middle" x="404" y="-371.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">Flow solver and configured couplers</text>
+</g>
+<!-- dimr&#45;&gt;fmcomp -->
+<g id="edge5" class="edge">
+<title>dimr&#45;&gt;fmcomp</title>
+<path fill="none" stroke="#48647a" d="M404,-444.93C404,-433.0688 404,-418.8925 404,-406.8165"/>
+<polygon fill="#48647a" stroke="#48647a" points="406.6251,-406.7296 404,-399.2296 401.3751,-406.7297 406.6251,-406.7296"/>
+<text text-anchor="middle" x="430" y="-422.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">BMI lifecycle</text>
+</g>
+<!-- bmi -->
+<g id="node8" class="node">
+<title>bmi</title>
+<path fill="#eaf5ec" stroke="#7890a2" d="M500.5,-315C500.5,-315 307.5,-315 307.5,-315 301.5,-315 295.5,-309 295.5,-303 295.5,-303 295.5,-289 295.5,-289 295.5,-283 301.5,-277 307.5,-277 307.5,-277 500.5,-277 500.5,-277 506.5,-277 512.5,-283 512.5,-289 512.5,-289 512.5,-303 512.5,-303 512.5,-309 506.5,-315 500.5,-315"/>
+<text text-anchor="middle" x="404" y="-299.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">D&#45;Waves shared library</text>
+<text text-anchor="middle" x="404" y="-287.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_bmi: initialize / update(dt) / finalize</text>
+</g>
+<!-- fmcomp&#45;&gt;bmi -->
+<g id="edge6" class="edge">
+<title>fmcomp&#45;&gt;bmi</title>
+<path fill="none" stroke="#48647a" d="M404,-360.9391C404,-349.7416 404,-335.4061 404,-323.054"/>
+<polygon fill="#48647a" stroke="#48647a" points="406.6251,-322.7762 404,-315.2762 401.3751,-322.7763 406.6251,-322.7762"/>
+<text text-anchor="middle" x="439" y="-332.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">component order</text>
+</g>
+<!-- swan_fm -->
+<g id="node9" class="node">
+<title>swan_fm</title>
+<path fill="#f2f8f3" stroke="#7890a2" d="M483.5,-237C483.5,-237 324.5,-237 324.5,-237 318.5,-237 312.5,-231 312.5,-225 312.5,-225 312.5,-211 312.5,-211 312.5,-205 318.5,-199 324.5,-199 324.5,-199 483.5,-199 483.5,-199 489.5,-199 495.5,-205 495.5,-211 495.5,-211 495.5,-225 495.5,-225 495.5,-231 489.5,-237 483.5,-237"/>
+<text text-anchor="middle" x="404" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_main_step(dt) → swan_tot</text>
+<text text-anchor="middle" x="404" y="-209.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">get_flow_fields when configured</text>
+</g>
+<!-- bmi&#45;&gt;swan_fm -->
+<g id="edge7" class="edge">
+<title>bmi&#45;&gt;swan_fm</title>
+<path fill="none" stroke="#48647a" d="M404,-276.7191C404,-267.0846 404,-255.2712 404,-244.773"/>
+<polygon fill="#48647a" stroke="#48647a" points="406.6251,-244.5591 404,-237.0591 401.3751,-244.5591 406.6251,-244.5591"/>
+<text text-anchor="middle" x="425.5" y="-254.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">update(dt)</text>
+</g>
+<!-- files_fm -->
+<g id="node10" class="node">
+<title>files_fm</title>
+<path fill="#f2f8f3" stroke="#7890a2" d="M509.5,-153C509.5,-153 298.5,-153 298.5,-153 292.5,-153 286.5,-147 286.5,-141 286.5,-141 286.5,-127 286.5,-127 286.5,-121 292.5,-115 298.5,-115 298.5,-115 509.5,-115 509.5,-115 515.5,-115 521.5,-121 521.5,-127 521.5,-127 521.5,-141 521.5,-141 521.5,-147 515.5,-153 509.5,-153"/>
+<text text-anchor="middle" x="404" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">File&#45;backed Flow input (when enabled)</text>
+<text text-anchor="middle" x="404" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">configured FlowGridFile NetCDF/com file(s)</text>
+</g>
+<!-- files_fm&#45;&gt;swan_fm -->
+<g id="edge8" class="edge">
+<title>files_fm&#45;&gt;swan_fm</title>
+<path fill="none" stroke="#48647a" stroke-dasharray="5,2" d="M404,-161.043C404,-170.6921 404,-181.5528 404,-191.1829"/>
+<polygon fill="#48647a" stroke="#48647a" points="406.6251,-160.7762 404,-153.2762 401.3751,-160.7763 406.6251,-160.7762"/>
+<polygon fill="#48647a" stroke="#48647a" points="401.3751,-191.4391 404,-198.9391 406.6251,-191.4391 401.3751,-191.4391"/>
+<text text-anchor="middle" x="435" y="-176.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">get_flow_fields</text>
+</g>
+<!-- files_fm&#45;&gt;precice -->
+<!-- exe -->
+<g id="node11" class="node">
+<title>exe</title>
+<path fill="#fcf5e6" stroke="#7890a2" d="M747,-489C747,-489 589,-489 589,-489 583,-489 577,-483 577,-477 577,-477 577,-463 577,-463 577,-457 583,-451 589,-451 589,-451 747,-451 747,-451 753,-451 759,-457 759,-463 759,-463 759,-477 759,-477 759,-483 753,-489 747,-489"/>
+<text text-anchor="middle" x="668" y="-473.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave executable</text>
+<text text-anchor="middle" x="668" y="-461.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">mode defaults to stand_alone (0)</text>
+</g>
+<!-- init -->
+<g id="node12" class="node">
+<title>init</title>
+<path fill="#fcf5e6" stroke="#7890a2" d="M757,-399C757,-399 579,-399 579,-399 573,-399 567,-393 567,-387 567,-387 567,-373 567,-373 567,-367 573,-361 579,-361 579,-361 757,-361 757,-361 763,-361 769,-367 769,-373 769,-373 769,-387 769,-387 769,-393 763,-399 757,-399"/>
+<text text-anchor="middle" x="668" y="-383.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_main_init</text>
+<text text-anchor="middle" x="668" y="-371.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">read MDW, initialize grids and forcing</text>
+</g>
+<!-- exe&#45;&gt;init -->
+<g id="edge9" class="edge">
+<title>exe&#45;&gt;init</title>
+<path fill="none" stroke="#48647a" d="M668,-450.9133C668,-438.0265 668,-420.8386 668,-406.612"/>
+<polygon fill="#48647a" stroke="#48647a" points="670.6251,-406.5591 668,-399.0592 665.3751,-406.5592 670.6251,-406.5591"/>
+</g>
+<!-- step -->
+<g id="node13" class="node">
+<title>step</title>
+<path fill="#fcf5e6" stroke="#7890a2" d="M741.5,-315C741.5,-315 594.5,-315 594.5,-315 588.5,-315 582.5,-309 582.5,-303 582.5,-303 582.5,-289 582.5,-289 582.5,-283 588.5,-277 594.5,-277 594.5,-277 741.5,-277 741.5,-277 747.5,-277 753.5,-283 753.5,-289 753.5,-289 753.5,-303 753.5,-303 753.5,-309 747.5,-315 741.5,-315"/>
+<text text-anchor="middle" x="668" y="-299.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_main_step(&#45;1)</text>
+<text text-anchor="middle" x="668" y="-287.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">run the configured MDW times</text>
+</g>
+<!-- init&#45;&gt;step -->
+<g id="edge10" class="edge">
+<title>init&#45;&gt;step</title>
+<path fill="none" stroke="#48647a" d="M668,-360.9391C668,-349.7416 668,-335.4061 668,-323.054"/>
+<polygon fill="#48647a" stroke="#48647a" points="670.6251,-322.7762 668,-315.2762 665.3751,-322.7763 670.6251,-322.7762"/>
+</g>
+<!-- swan_solo -->
+<g id="node14" class="node">
+<title>swan_solo</title>
+<path fill="#fcf5e6" stroke="#7890a2" d="M725.5,-237C725.5,-237 610.5,-237 610.5,-237 604.5,-237 598.5,-231 598.5,-225 598.5,-225 598.5,-211 598.5,-211 598.5,-205 604.5,-199 610.5,-199 610.5,-199 725.5,-199 725.5,-199 731.5,-199 737.5,-205 737.5,-211 737.5,-211 737.5,-225 737.5,-225 737.5,-231 731.5,-237 725.5,-237"/>
+<text text-anchor="middle" x="668" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">swan_tot → SWAN</text>
+<text text-anchor="middle" x="668" y="-209.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">standard WAVE outputs</text>
+</g>
+<!-- step&#45;&gt;swan_solo -->
+<g id="edge11" class="edge">
+<title>step&#45;&gt;swan_solo</title>
+<path fill="none" stroke="#48647a" d="M668,-276.7191C668,-267.0846 668,-255.2712 668,-244.773"/>
+<polygon fill="#48647a" stroke="#48647a" points="670.6251,-244.5591 668,-237.0591 665.3751,-244.5591 670.6251,-244.5591"/>
+</g>
+<!-- flowfile -->
+<g id="node15" class="node">
+<title>flowfile</title>
+<path fill="#fff9ed" stroke="#7890a2" d="M770.5,-153C770.5,-153 565.5,-153 565.5,-153 559.5,-153 553.5,-147 553.5,-141 553.5,-141 553.5,-127 553.5,-127 553.5,-121 559.5,-115 565.5,-115 565.5,-115 770.5,-115 770.5,-115 776.5,-115 782.5,-121 782.5,-127 782.5,-127 782.5,-141 782.5,-141 782.5,-147 776.5,-153 770.5,-153"/>
+<text text-anchor="middle" x="668" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">Optional Flow&#45;file input</text>
+<text text-anchor="middle" x="668" y="-125.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">FlowGridFile/useflowdata when configured</text>
+</g>
+<!-- flowfile&#45;&gt;swan_solo -->
+<g id="edge12" class="edge">
+<title>flowfile&#45;&gt;swan_solo</title>
+<path fill="none" stroke="#48647a" stroke-dasharray="5,2" d="M668,-161.043C668,-170.6921 668,-181.5528 668,-191.1829"/>
+<polygon fill="#48647a" stroke="#48647a" points="670.6251,-160.7762 668,-153.2762 665.3751,-160.7763 670.6251,-160.7762"/>
+<polygon fill="#48647a" stroke="#48647a" points="665.3751,-191.4391 668,-198.9391 670.6251,-191.4391 665.3751,-191.4391"/>
+<text text-anchor="middle" x="702.5" y="-176.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">when configured</text>
+</g>
+<!-- flowfile&#45;&gt;precice -->
+<!-- mesh -->
+<g id="node17" class="node">
+<title>mesh</title>
+<path fill="#f4ecf7" stroke="#7890a2" d="M724,-54C724,-54 562,-54 562,-54 556,-54 550,-48 550,-42 550,-42 550,-28 550,-28 550,-22 556,-16 562,-16 562,-16 724,-16 724,-16 730,-16 736,-22 736,-28 736,-28 736,-42 736,-42 736,-48 730,-54 724,-54"/>
+<text text-anchor="middle" x="643" y="-38.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">wave_main preCICE hooks</text>
+<text text-anchor="middle" x="643" y="-26.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">register SWAN vertices / triangles</text>
+</g>
+<!-- precice&#45;&gt;mesh -->
+<g id="edge13" class="edge">
+<title>precice&#45;&gt;mesh</title>
+<path fill="none" stroke="#48647a" stroke-dasharray="5,2" d="M486.1563,-35C504.7406,-35 523.325,-35 541.9093,-35"/>
+<polygon fill="#48647a" stroke="#48647a" points="542.3741,-37.6251 549.874,-35 542.374,-32.3751 542.3741,-37.6251"/>
+</g>
+<!-- fields -->
+<g id="node18" class="node">
+<title>fields</title>
+<path fill="#f4ecf7" stroke="#7890a2" d="M978,-54C978,-54 812,-54 812,-54 806,-54 800,-48 800,-42 800,-42 800,-28 800,-28 800,-22 806,-16 812,-16 812,-16 978,-16 978,-16 984,-16 990,-22 990,-28 990,-28 990,-42 990,-42 990,-48 984,-54 978,-54"/>
+<text text-anchor="middle" x="895" y="-38.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">preCICE&#45;aware SWAN loop</text>
+<text text-anchor="middle" x="895" y="-26.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">read Flow fields / write Wave fields</text>
+</g>
+<!-- mesh&#45;&gt;fields -->
+<g id="edge14" class="edge">
+<title>mesh&#45;&gt;fields</title>
+<path fill="none" stroke="#48647a" stroke-dasharray="5,2" d="M736.0234,-35C754.6794,-35 773.3353,-35 791.9913,-35"/>
+<polygon fill="#48647a" stroke="#48647a" points="792.4867,-37.6251 799.9867,-35 792.4866,-32.3751 792.4867,-37.6251"/>
+</g>
+<!-- advance -->
+<g id="node19" class="node">
+<title>advance</title>
+<path fill="#f4ecf7" stroke="#7890a2" d="M1152.5,-54C1152.5,-54 1065.5,-54 1065.5,-54 1059.5,-54 1053.5,-48 1053.5,-42 1053.5,-42 1053.5,-28 1053.5,-28 1053.5,-22 1059.5,-16 1065.5,-16 1065.5,-16 1152.5,-16 1152.5,-16 1158.5,-16 1164.5,-22 1164.5,-28 1164.5,-28 1164.5,-42 1164.5,-42 1164.5,-48 1158.5,-54 1152.5,-54"/>
+<text text-anchor="middle" x="1109" y="-38.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">preCICE advance</text>
+<text text-anchor="middle" x="1109" y="-26.2" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">time&#45;window loop</text>
+</g>
+<!-- fields&#45;&gt;advance -->
+<g id="edge15" class="edge">
+<title>fields&#45;&gt;advance</title>
+<path fill="none" stroke="#48647a" stroke-dasharray="5,2" d="M990.2969,-35C1008.6897,-35 1027.0825,-35 1045.4753,-35"/>
+<polygon fill="#48647a" stroke="#48647a" points="1045.8579,-37.6251 1053.3579,-35 1045.8579,-32.3751 1045.8579,-37.6251"/>
+</g>
+</g>
 </svg>
