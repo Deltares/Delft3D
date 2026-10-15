@@ -118,7 +118,7 @@ contains
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structurefile, is_path_relative)
+   subroutine readStructureFile(network, structure_file, is_path_relative)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
@@ -128,7 +128,7 @@ contains
       implicit none
 
       type(t_network), intent(inout) :: network !< Network pointer
-      character(len=*), intent(in) :: structurefile !< Name of the structure file
+      character(len=*), intent(in) :: structure_file !< Name of the structure file
       logical, intent(in) :: is_path_relative !< if true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical :: success, success1
@@ -152,14 +152,14 @@ contains
       success = .true.
 
       if (is_path_relative) then
-         call get_filepath(structurefile, structure_file_directory)
+         call get_filepath(structure_file, structure_file_directory)
       else
          structure_file_directory = ''
       end if
-      call tree_create(trim(structurefile), md_ptr, maxlenpar)
-      call prop_file('ini', trim(structurefile), md_ptr, istat)
+      call tree_create(trim(structure_file), md_ptr, maxlenpar)
+      call prop_file('ini', trim(structure_file), md_ptr, istat)
 
-      msgbuf = 'Reading '//trim(structurefile)//'.'
+      msgbuf = 'Reading '//trim(structure_file)//'.'
       call msg_flush()
 
       ! check FileVersion
@@ -168,7 +168,7 @@ contains
       minor = 0
       call get_version_number(md_ptr, major=major, minor=minor, success=success1)
       if (.not. success1 .or. major == 1) then
-         msgbuf = 'Early return, file '//trim(structurefile)//' is a 2D3D structure file (version 1.0).'
+         msgbuf = 'Early return, file '//trim(structure_file)//' is a 2D3D structure file (version 1.0).'
          call msg_flush()
          ! TODO: UNST-8867: re-enable the warning below after support for old structure files is dropped/differences have been explained.
          ! msgbuf = 'This functionality is deprecated, please convert this file to the current version.'
@@ -177,7 +177,7 @@ contains
       end if
       ! For now majorVersion = 2.xx is supported for all structures, except for the bridge.
       if ((major /= StructureFileMajorVersion .and. major /= 2) .or. (major == StructureFileMajorVersion .and. minor > StructureFileMinorversion)) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of structure file detected in '''//trim(structurefile)//''': v', major, minor, '. Current format: v', StructureFileMajorVersion, StructureFileMinorVersion, '. Ignoring this file.'
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of structure file detected in '''//trim(structure_file)//''': v', major, minor, '. Current format: v', StructureFileMajorVersion, StructureFileMinorVersion, '. Ignoring this file.'
          call err_flush()
          ierr = 1
       end if
@@ -239,7 +239,7 @@ contains
             if (success1 .and. network%loaded) then
                pstru%ibran = hashsearch(network%brs%hashlist, branchID)
                if (pstru%ibran <= 0) then
-                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structurefile)//''', branchId '''//trim(branchID)//''' not found.'
+                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structure_file)//''', branchId '''//trim(branchID)//''' not found.'
                   call err_flush()
                   success = .false.
                end if
@@ -266,7 +266,7 @@ contains
                   ! For backward compatibility: if locationfile is not found, try polylinefile.
                   call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'polylineFile', filename, success1)
                   if (success1) then
-                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structurefile)// &
+                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structure_file)// &
                               & ''' uses deprecated ''polylineFile''. Replace it with ''locationFile''.'
                      call warn_flush()
                   end if
@@ -291,7 +291,7 @@ contains
                call readCulvert(pstru%culvert, network, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_BRIDGE)
                if (major /= StructureFileMajorVersion) then
-                  call SetMessage(LEVEL_ERROR, 'The file version in '//structurefile//' should be at least 3.0 or higher')
+                  call SetMessage(LEVEL_ERROR, 'The file version in '//structure_file//' should be at least 3.0 or higher')
                   call SetMessage(-LEVEL_ERROR, 'when using bridges (parameter bedLevel must be changed to a shift).')
                   check_unused_settings = .false.
                else
@@ -307,7 +307,7 @@ contains
                call readGateAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
                call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, &
-                                         structurefile, st_id, network%forcinglist, success)
+                                         structure_file, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
                call readDambreak(pstru%dambreak, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_COMPOUND)
@@ -324,7 +324,7 @@ contains
             end select
 
             if (check_unused_settings) then
-               call warn_unknown_structure_settings(md_ptr%child_nodes(i)%node_ptr, structurefile, st_id)
+               call warn_unknown_structure_settings(md_ptr%child_nodes(i)%node_ptr, structure_file, st_id)
             end if
 
             if (success) then
@@ -1398,13 +1398,13 @@ contains
 
    !> Read the general structure parameters.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
-   subroutine readGeneralStructure(generalst, md_ptr, structurefile, st_id, forcinglist, success)
+   subroutine readGeneralStructure(generalst, md_ptr, structure_file, st_id, forcinglist, success)
 
       use messageHandling
 
       type(t_GeneralStructure), pointer, intent(inout) :: generalst !< General structure to be read into.
       type(tree_data), pointer, intent(in) :: md_ptr !< ini tree pointer with user input.
-      character(len=*), intent(in) :: structurefile
+      character(len=*), intent(in) :: structure_file
       character(IdLen), intent(in) :: st_id !< Structure character Id.
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters, to which general structure forcing will be added if needed.
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
@@ -1486,9 +1486,9 @@ contains
 
    !> Warns about unknown or unused settings in a structure property block.
    !! Each warning identifies the setting, structure, and source file.
-   subroutine warn_unknown_structure_settings(md_ptr, structurefile, st_id)
+   subroutine warn_unknown_structure_settings(md_ptr, structure_file, st_id)
       type(tree_data), pointer, intent(in) :: md_ptr !< Property tree for the structure.
-      character(len=*), intent(in) :: structurefile !< Structure file containing the property block.
+      character(len=*), intent(in) :: structure_file !< Structure file containing the property block.
       character(len=*), intent(in) :: st_id !< Identifier of the structure being read.
 
       integer :: i
@@ -1503,7 +1503,7 @@ contains
          setting => md_ptr%child_nodes(i)%node_ptr
          if (setting%node_visit < 1) then
             key = tree_get_name(setting)
-            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structurefile), &
+            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structure_file), &
                ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
             call warn_flush()
          end if
