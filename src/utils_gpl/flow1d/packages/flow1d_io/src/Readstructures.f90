@@ -306,8 +306,7 @@ contains
                ! support for version >= 2.0 structure files weirs as general structure
                call readGateAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_GENERAL_ST)
-               call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, &
-                                         structure_file, st_id, network%forcinglist, success)
+               call readGeneralStructure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_DAMBREAK)
                call readDambreak(pstru%dambreak, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_COMPOUND)
@@ -1398,13 +1397,12 @@ contains
 
    !> Read the general structure parameters.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
-   subroutine readGeneralStructure(generalst, md_ptr, structure_file, st_id, forcinglist, success)
+   subroutine readGeneralStructure(generalst, md_ptr, st_id, forcinglist, success)
 
       use messageHandling
 
       type(t_GeneralStructure), pointer, intent(inout) :: generalst !< General structure to be read into.
       type(tree_data), pointer, intent(in) :: md_ptr !< ini tree pointer with user input.
-      character(len=*), intent(in) :: structure_file
       character(IdLen), intent(in) :: st_id !< Structure character Id.
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters, to which general structure forcing will be added if needed.
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
