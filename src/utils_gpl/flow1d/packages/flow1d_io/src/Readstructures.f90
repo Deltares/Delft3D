@@ -1493,20 +1493,20 @@ contains
 
       integer :: i
       character(len=IdLen) :: key
-      type(tree_data), pointer :: setting
 
       if (.not. associated(md_ptr%child_nodes)) then
          return
       end if
 
       do i = 1, size(md_ptr%child_nodes)
-         setting => md_ptr%child_nodes(i)%node_ptr
-         if (setting%node_visit < 1) then
-            key = tree_get_name(setting)
-            write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structure_file), &
-               ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
-            call warn_flush()
-         end if
+         associate (setting => md_ptr%child_nodes(i)%node_ptr)
+            if (setting%node_visit < 1) then
+               key = tree_get_name(setting)
+               write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structure_file), &
+                  ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
+               call warn_flush()
+            end if
+         end associate
       end do
    end subroutine warn_unknown_structure_settings
 
