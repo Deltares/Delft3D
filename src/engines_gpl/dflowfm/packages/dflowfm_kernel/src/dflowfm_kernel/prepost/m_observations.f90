@@ -423,7 +423,6 @@ contains
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
          IVAL_BRUV_U = next_index(i)
-         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
          if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
