@@ -384,6 +384,7 @@ module m_flowparameters
    character(len=Idlen) :: vertical_advection_type !< Vertical advection type for turbulence quantities: CentralImplicit, HigherOrderUpwindExplicit
    integer, parameter :: VERTICAL_ADVECTION_CENTRAL_IMPLICIT = 4
    integer, parameter :: VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT = 6
+   real(kind=dp) :: theta_vertical_tracers = 0.0_dp !< theta vertical for tracers
 
    integer :: javasal !< vert. adv. sa1  : 4=CentraLimpL, switched to 3 for neg. strat.
 
