@@ -50,7 +50,8 @@ namespace
      * @return std::string XML document as a string.
      */
     std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake, double qintake,
-                                std::size_t intake_count = std::numeric_limits<std::size_t>::max())
+                                std::size_t intake_count = std::numeric_limits<std::size_t>::max(),
+                                double qsource = 10.0)
     {
         const std::size_t effective_intake_count =
             intake_count == std::numeric_limits<std::size_t>::max() ? (include_qintake ? 1u : 0u) : intake_count;
@@ -65,8 +66,8 @@ namespace
         {
             xml << "    <Qintake>" << qintake << "</Qintake>\n";
         }
-        xml << R"(    <Qsource>10.0</Qsource>
-    <constituentsOperator>excess</constituentsOperator>
+        xml << "    <Qsource>" << qsource << "</Qsource>\n";
+        xml << R"(    <constituentsOperator>excess</constituentsOperator>
     <constituents>10.0 0.0</constituents>
   </discharge>
   <NFResult>
@@ -696,4 +697,89 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
 
     // Verify (once more) that an error was returned.
     EXPECT_FALSE(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).has_value());
+}
+
+TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExpectedCountsAndDischarges)
+{
+    constexpr std::string_view minimal_csumo_settings_two_diffusers_with_intake_xml = R"(<?xml version="1.0"?>
+<COSUMO>
+    <fileVersion>0.3</fileVersion>
+    <settings>
+        <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+        <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+        <data>
+            <XYdiff>1.0 2.0</XYdiff>
+            <XYintake>3.0 4.0</XYintake>
+            <discharge><M3s>5.0</M3s><constituentsOperator>excess</constituentsOperator><constituents>0.0</constituents></discharge>
+            <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+        </data>
+    </settings>
+    <settings>
+        <general><ID>D2</ID><subGridModel/><farFieldModel/></general>
+        <comm><FF2NFdir>c</FF2NFdir><FFrundir>d</FFrundir></comm>
+        <data>
+            <XYdiff>5.0 6.0</XYdiff>
+            <XYintake>7.0 8.0</XYintake>
+            <discharge><M3s>9.0</M3s><constituentsOperator>excess</constituentsOperator><constituents>0.0</constituents></discharge>
+            <D0>1.0</D0><H0>2.0</H0><Theta0>3.0</Theta0><Sigma0>4.0</Sigma0>
+        </data>
+    </settings>
+</COSUMO>)";
+    const auto settings =
+        pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_two_diffusers_with_intake_xml);
+    ASSERT_TRUE(settings.has_value());
+    ASSERT_EQ(settings->diffusers().size(), 2u);
+
+    const auto xml_diffuser_1 = build_nf2ff_xml(2u, 1u, true, 6.0, 1u, 10.0);
+    const auto xml_diffuser_2 = build_nf2ff_xml(3u, 3u, true, 14.0, 2u, 24.0);
+
+    auto reader_1 = pre_c_sumo::NF2FFReader::fromString(xml_diffuser_1);
+    auto reader_2 = pre_c_sumo::NF2FFReader::fromString(xml_diffuser_2);
+    ASSERT_TRUE(reader_1.has_value());
+    ASSERT_TRUE(reader_2.has_value());
+
+    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    nf2ff_readers.emplace_back(std::move(*reader_1));
+    nf2ff_readers.emplace_back(std::move(*reader_2));
+
+    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
+    const auto second_diffuser_mesh = make_test_3d_mesh();
+    dummy_mesh.coordinates.insert(dummy_mesh.coordinates.end(), second_diffuser_mesh.coordinates.begin(),
+                                  second_diffuser_mesh.coordinates.end());
+    for (const auto vertex_id : second_diffuser_mesh.vertex_ids)
+    {
+        dummy_mesh.vertex_ids.push_back(vertex_id + 12);
+    }
+    dummy_mesh.forward_map.push_back(pre_c_sumo::DiffuserMapping{.diffuser_index = 12,
+                                                                 .has_intake = true,
+                                                                 .intake_index = 14,
+                                                                 .number_of_ambient_points = 8,
+                                                                 .first_ambient_point_index = 16});
+    dummy_mesh.number_of_nodes = 24;
+    for (auto& [quantity_id, values] : dummy_mesh.quantities)
+    {
+        values.resize(values.size() * 2);
+    }
+    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
+    ASSERT_TRUE(connected.has_value());
+
+    ASSERT_EQ(connected->get_number_of_entries(), 2012u);
+
+    const auto& discharges = connected->get_discharge_value();
+    ASSERT_EQ(discharges.size(), 2012u);
+
+    for (std::size_t entry_index = 0; entry_index < 2000u; ++entry_index)
+    {
+        EXPECT_NEAR(discharges[entry_index], entry_index < 1000u ? 0.04 : 0.01, 1e-12)
+            << "Diffuser 1 entry " << entry_index;
+    }
+    EXPECT_NEAR(discharges[2000], 6.0, 1e-12);
+
+    constexpr std::array<double, 11> expected_diffuser_2_discharges = {32.0, 32.0, 32.0, 0.8, 0.8, 0.8,
+                                                                       8.0,  8.0,  8.0,  7.0, 7.0};
+    for (std::size_t entry_index = 0; entry_index < expected_diffuser_2_discharges.size(); ++entry_index)
+    {
+        EXPECT_NEAR(discharges[2001u + entry_index], expected_diffuser_2_discharges[entry_index], 1e-12)
+            << "Diffuser 2 entry " << entry_index;
+    }
 }
