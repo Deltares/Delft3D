@@ -68,7 +68,6 @@ module m_flow_flowinit
    use m_rearst, only: rearst
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
-   use m_alloc_jacobi
    use m_waveconst
 
    implicit none
@@ -103,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -399,9 +398,6 @@ contains
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
-         if (icgsolver == 10) then
-            call alloc_jacobi(ndx, lnx)
-         end if
       end if
 
       ! In 2D set AUTO_TIMESTEP_2D_OUT as default
@@ -1365,7 +1361,7 @@ contains
       use precision, only: dp
       use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
-      use mathconsts, only: sqrt2_hp
+      use m_mathconstants, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag

@@ -200,7 +200,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
    
    integer :: numberOfChanges
    integer :: i, n, k1, k2, kb, L, j
-   integer :: itpbn
+   integer :: boundary_type
    integer :: istru
    integer :: suctionSideNode
    integer :: nstages
@@ -217,7 +217,7 @@ subroutine calculateDeadStorage(wl_deadstorage, network, bndvalues, inslevtube, 
       kb      = bndindex(1,n)
       k2      = bndindex(2,n)
       L       = bndindex(3,n)
-      itpbn   = bndindex(4,n)
+      boundary_type   = bndindex(4,n)
       wl_deadstorage(kb) = bndvalues(n)
    enddo
 

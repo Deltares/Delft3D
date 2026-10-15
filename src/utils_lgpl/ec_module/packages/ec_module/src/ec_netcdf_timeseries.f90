@@ -416,7 +416,7 @@ contains
 
       if (ivar < 0) then
          ! get candidate names for the quantity
-         call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
+         call ecSupportNetcdfGetQuantityCandidateNames(quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
       end if
 
       ! search for standard_name

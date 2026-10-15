@@ -34,7 +34,7 @@
 module m_ec_converter
    use m_ec_typedefs
    use m_ec_message
-   use mathconsts
+   use m_mathconstants
    use m_ec_support
    use m_ec_alloc
    use m_ec_parameters
@@ -3313,6 +3313,13 @@ contains
             targetValues => targetField%arr1dPtr
             targetMissing = targetField%MISSINGVALUE
             targetElementSet => targetItem%elementSetPtr
+
+            if (associated(targetElementSet%z)) then
+               if (sourceElementSet%n_layers < 2 .or. .not. associated(sourceElementSet%z)) then
+                  call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires at least two NetCDF source vertical coordinates.')
+                  return
+               end if
+            end if
 
             if (sourceElementSet%ofType == elmSetType_samples) then
                ! call interpolation based on nearest neighbours or triangulation

@@ -64,7 +64,7 @@ end function shld
 
 subroutine ruessink_etal_2012(k, hs, h, sk, as, phi_phase, urs, bm)
     use precision
-    use mathconsts, only: pi
+    use m_mathconstants, only: pi
 !
 ! arguments
 !
@@ -125,7 +125,7 @@ end subroutine ruessink_etal_2012
 subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vicmol, d15, poros, pormax, rheea, delta, u, v, &
     dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
     use precision
-    use mathconsts
+    use m_mathconstants
     
     integer                  , intent(in)    :: dilatancy
     integer                  , intent(in)    :: bedslpeffini
@@ -207,7 +207,7 @@ end subroutine calculate_critical_velocities
 
 subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
     use precision
-    use mathconsts
+    use m_mathconstants
     use m_ua_rvr, only: ua_rvr
     use m_ua_vt, only: ua_vt
     
@@ -237,7 +237,7 @@ end subroutine calculate_velocity_asymmetry
 
 subroutine calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
     use precision
-    use mathconsts
+    use m_mathconstants
 
     logical , intent(in)           :: ubot_from_com
     real(fp), intent(in)           :: hrms
