@@ -203,8 +203,6 @@ module m_flowparameters
 
    integer :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
-   integer :: javiuplus3D = 1 !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
-
    integer :: jafrculin !< use linear friction yes/no
 
    integer :: jaFrcInternalTides2D !< use internal tides friction (1) or not (0)
@@ -310,7 +308,7 @@ module m_flowparameters
 
    integer :: jacstbnd !< Delft-3D type cell-centered velocities at boundaries (ucx, ucy)
    !< or more precise: copy of inside cell vector, WITHOUT taking bnd. normal comp.
-   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
+   integer :: jaLogprofatubndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user-prescribed
    integer :: jaLogprofkepsbndin !< ubnds inflow: 0=uniform U1, 1 = log U1, 2 = log U1 and k-eps accordingly
    integer :: jamodelspecific = 0 !< override for above two parameters
 
@@ -373,8 +371,7 @@ module m_flowparameters
    !                                                     4 = 1.0*dts, reduce au
    !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
-   integer :: Icgsolver !< 'Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS '
-   integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
+   integer :: Icgsolver !< Solver type: 1 = Sobek Guus Stelling OMP, 2 = Sobek Guus Stelling OMP (thread-safe), 4 = Sobek Guus Stelling + Saadilud, 6 = parallel/PETSc
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
@@ -654,18 +651,6 @@ module m_flowparameters
    integer :: jawriteDFMinterpretedvalues !< Write interpretedvalues
    integer :: jawriteDetailedTimers !< Write detailed timers output file
 
-   ! parameters for parms solver
-   integer, parameter :: NPARMS_INT = 2 !< for parms solver, number of integer parameters
-   integer, parameter :: IPARMS_ILUTYPE = 1
-   integer, parameter :: IPARMS_NLEVEL = 2
-   character(len=128), dimension(NPARMS_INT), parameter :: iparmsnam = [character(len=128) :: 'ilutype', 'nlevel']
-   integer, dimension(NPARMS_INT) :: iparms
-
-   integer, parameter :: NPARMS_DBL = 1 !< for parms solver, number of real(kind=dp) parameters
-   integer, parameter :: IPARMS_DTOL = 1
-   character(len=128), dimension(NPARMS_DBL), parameter :: dparmsnam = [character(len=128) :: 'dtol']
-   real(kind=dp), dimension(NPARMS_DBL) :: dparms
-
    ! parameters for nudging
    real(kind=dp) :: Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time
 
@@ -810,7 +795,7 @@ contains
 
       jawavebreakerturbulence = WAVE_BREAKER_TURB_ON ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
-      jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
+      jawavedelta = WAVE_BOUNDARYLAYER_SANA ! Wave boundary layer formulation: 1=Sana
 
       jawaveforces = WAVE_FORCES_ON
 
@@ -844,7 +829,7 @@ contains
 
       ibedlevmode = BLMODE_DFM !< Default: Compute bed levels solely by ibedlevtyp, i.e., derived from velocity points (or direct bl tiles).
 
-      ibedlevtyp = 3 ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
+      ibedlevtyp = BEDLEV_TYPE_MEAN ! 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
       ! 2 : Bottom levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
       ! 3 : Bottom levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
       ! 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
@@ -954,8 +939,7 @@ contains
       !                                4 = 1.0*dts, reduce au
       !                                5 = 0.7*dts, reduce au
       jsolpos = 0 ! in iterative solver force solution above bottom level
-      Icgsolver = 4 !    Icgsolver = 1      ! 1 = GS_OMP, 2 = GS_OMPthreadsafe, 3 = GS, 4 = Saadilud
-      ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
+      Icgsolver = 4
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
       hwetbed = 0.2_dp ! for case wetbed
@@ -994,9 +978,6 @@ contains
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
       ! call reset_flowparameters()
-
-      iparms = 0 ! parms-default
-      dparms = 0.0_dp ! parms-default
 
       jaupwindsrc = 1
       jalogsolverconvergence = 0

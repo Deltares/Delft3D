@@ -67,8 +67,8 @@ contains
       use MessageHandling
       use m_partitioninfo
       use m_sethu
-      use fm_external_forcings, only: calculate_wind_stresses, prepare_wind, prepare_air_pressure_temperature_dew_point_temperature, &
-                                      compute_air_water_interaction_most_fluxes, set_external_forcings_boundaries
+      use fm_external_forcings, only: prepare_air_pressure_temperature_dew_point_temperature, &
+         compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
