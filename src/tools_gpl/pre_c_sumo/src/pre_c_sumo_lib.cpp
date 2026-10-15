@@ -170,7 +170,8 @@ namespace pre_c_sumo
         }
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-        auto initial_result = convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        auto initial_result =
+            convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers, csumo_3d_mesh);
 
         if (!initial_result.has_value())
         {
@@ -214,7 +215,8 @@ namespace pre_c_sumo
                 return -1;
             }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            auto conversion_result = convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            auto conversion_result =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers, csumo_3d_mesh);
             if (!conversion_result.has_value())
             {
                 std::println(stderr, "Unable to convert NF to ConnectedSinkSources: {}",
