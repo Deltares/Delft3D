@@ -44,6 +44,108 @@ contains
 
    end subroutine cleanup_netcells
 
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_bottom_layer_offset, test_mesh_zcoords_bottom_layer_offset,
+   !> Check that the bottom mesh slot uses the first physical FM layer and its bed interface.
+   subroutine test_mesh_zcoords_bottom_layer_offset() bind(C)
+      use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
+
+      ! Entry 1 is a dummy FM prefix value; entries 2:7 are the bed-to-surface interfaces.
+      real(kind=dp), dimension(7), parameter :: fm_interface_levels = [1000.0_dp, -10.0_dp, -8.0_dp, -6.0_dp, -4.0_dp, -2.0_dp, 0.0_dp]
+      real(kind=dp), dimension(6), parameter :: expected = [-999.0_dp, -9.0_dp, -7.0_dp, -5.0_dp, -3.0_dp, -1.0_dp]
+      real(kind=dp), dimension(18) :: coordinates
+
+      kmx = 6
+      call realloc(kbot, 1)
+      call realloc(ktop, 1)
+      call realloc(laydefnr, 1)
+      call realloc(laytyp, 1)
+      call realloc(laymx, 1)
+      call realloc(nlaybn, 1)
+      call realloc(nrlayn, 1)
+      kbot(1) = 3
+      ktop(1) = 7
+      laydefnr(1) = 1
+      laytyp(1) = LAYTP_Z
+      laymx(1) = kmx
+      nlaybn(1) = 2
+      nrlayn(1) = 5
+      coordinates = 123.0_dp ! Dummy value indicating uninitialized values
+
+      call set_cell_center_mesh_zcoords(1, kmx, fm_interface_levels, coordinates)
+
+      call f90_expect_near(coordinates(6), -9.0_dp, 1e-12_dp, "Bottom slot must average interfaces at (kbot - 1) and kbot")
+      call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Z coordinates must use the bottom layer slot offset")
+   end subroutine test_mesh_zcoords_bottom_layer_offset
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_layer_count_not_top_slot, test_mesh_zcoords_layer_count_not_top_slot,
+   !> Check that a layer count smaller than the bottom slot does not invalidate the physical layers.
+   subroutine test_mesh_zcoords_layer_count_not_top_slot() bind(C)
+      use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
+
+      ! Entry 1 is a dummy FM prefix value; entries 2:5 are the bed-to-surface interfaces.
+      real(kind=dp), dimension(5), parameter :: fm_interface_levels = [1000.0_dp, -6.0_dp, -4.0_dp, -2.0_dp, 0.0_dp]
+      real(kind=dp), dimension(6), parameter :: expected = [-999.0_dp, -999.0_dp, -999.0_dp, -5.0_dp, -3.0_dp, -1.0_dp]
+      real(kind=dp), dimension(18) :: coordinates
+
+      kmx = 6
+      call realloc(kbot, 1)
+      call realloc(ktop, 1)
+      call realloc(laydefnr, 1)
+      call realloc(laytyp, 1)
+      call realloc(laymx, 1)
+      call realloc(nlaybn, 1)
+      call realloc(nrlayn, 1)
+      kbot(1) = 3
+      ktop(1) = 5
+      laydefnr(1) = 1
+      laytyp(1) = LAYTP_Z
+      laymx(1) = kmx
+      nlaybn(1) = 4
+      nrlayn(1) = 3
+      coordinates = 123.0_dp ! Dummy value indicating uninitialized values
+
+      call set_cell_center_mesh_zcoords(1, kmx, fm_interface_levels, coordinates)
+
+      call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Three physical layers must occupy slots four through six")
+   end subroutine test_mesh_zcoords_layer_count_not_top_slot
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_inactive_top_layers, test_mesh_zcoords_inactive_top_layers,
+   !> Check that allocated layer slots above the current wet top retain the invalid-coordinate sentinel.
+   subroutine test_mesh_zcoords_inactive_top_layers() bind(C)
+      use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
+
+      ! Entry 1 is a dummy FM prefix value; entries 2:4 are physical interfaces and 5:6 collapse at the surface.
+      real(kind=dp), dimension(6), parameter :: fm_interface_levels = [1000.0_dp, -4.0_dp, -2.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]
+      real(kind=dp), dimension(4), parameter :: expected = [-3.0_dp, -1.0_dp, -999.0_dp, -999.0_dp]
+      real(kind=dp), dimension(12) :: coordinates
+
+      kmx = 4
+      call realloc(kbot, 1)
+      call realloc(ktop, 1)
+      call realloc(laydefnr, 1)
+      call realloc(laytyp, 1)
+      call realloc(laymx, 1)
+      call realloc(nlaybn, 1)
+      call realloc(nrlayn, 1)
+      kbot(1) = 3
+      ktop(1) = 4
+      laydefnr(1) = 1
+      laytyp(1) = LAYTP_Z
+      laymx(1) = kmx
+      nlaybn(1) = 1
+      nrlayn(1) = 4
+      coordinates = 123.0_dp
+
+      call set_cell_center_mesh_zcoords(1, kmx, fm_interface_levels, coordinates)
+
+      call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Slots above ktop must remain invalid despite allocated interfaces")
+   end subroutine test_mesh_zcoords_inactive_top_layers
+   !$f90tw )
 
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_pack_3d_sigma_fields, test_pack_3d_sigma_fields,
    subroutine test_pack_3d_sigma_fields() bind(C)
