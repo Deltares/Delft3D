@@ -1619,6 +1619,7 @@ contains
       integer :: i_const
       integer :: ierr
       logical :: is_successful
+      logical :: relation_successful
       logical :: is_read
 
       is_successful = .false.
@@ -1711,14 +1712,12 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
-                                                              1, source_sink_all_discharges(1 + i_const, :))
-               continue
+               relation_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
+                                                                     1, source_sink_all_discharges(1 + i_const, :))
+               is_successful = is_successful .and. relation_successful
             end if
          end do
       end if
-
-      is_successful = .true.
 
    end function init_sourcesink_forcings
 
