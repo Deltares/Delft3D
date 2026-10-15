@@ -43,7 +43,7 @@ module m_flow_initimestep
    use m_setcfuhi, only: setcfuhi
    use m_setbaptist, only: setbaptist
    use m_makeq1qaatstart
-   use m_pillar_upd
+   use m_pillar_update, only: pillar_update
    use m_heatu
    use m_waveconst
 
@@ -200,7 +200,7 @@ contains
       call timstop(handle_extra(45)) ! Start structactual
 
       if (pillar_method == PILLAR_DELFT3D_FLOWNODE .or. pillar_method == PILLAR_DELFT3D_FLOWLINK) then
-         call pillar_upd()
+         call pillar_update()
       end if
 
       ! TIDAL TURBINES: Insert equivalent calls to updturbine and applyturbines here

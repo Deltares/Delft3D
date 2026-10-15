@@ -29,7 +29,7 @@
 
 !
 
-module m_pillar_upd
+module m_pillar_update
 
    implicit none
 
@@ -37,7 +37,8 @@ contains
 
    ! =================================================================================================
    ! =================================================================================================
-   subroutine pillar_upd()
+   !< Updates the pillar advection term for each link or node depending on the chosen pillar method.
+   subroutine pillar_update()
       use precision, only: dp
       use fm_external_forcings_data, only: Cpil
       use m_flowgeom, only: lnx, ln, dx
@@ -45,10 +46,13 @@ contains
       use m_flowparameters, only: pillar_method, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK
       use m_get_Lbot_Ltop, only: getLbotLtop
 
-      implicit none
-
-      integer :: L, k1, k2, LL, Lb, Lt
-      real(kind=dp) :: CpilL, uv
+      integer :: L !< Link counter
+      integer :: k1 !< First neighbouring node to link
+      integer :: k2 !< Second neighbouring node to link
+      integer :: LL !< Loop counter for vertical layers within a link
+      integer :: Lb !< Bottom layer index of the link
+      integer :: Lt !< Top layer index of the link
+      real(kind=dp) :: CpilL !> Pillar drag factor as 0.5 * Cd * D * velocity_squared_correction_per_width
 
       if (kmx == 0) then
          if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
@@ -56,8 +60,10 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
-               uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
-               advi(L) = advi(L) + CpilL * uv / dx(L)
+               if (CpilL == 0.0_dp) then
+                  cycle
+               end if
+               advi(L) = advi(L) + compute_pillar_advection_term(u1(L), v(L), dx(L), CpilL)
             end do
          else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
             do L = 1, lnx
@@ -65,8 +71,7 @@ contains
                   cycle
                end if
                CpilL = Cpil(L)
-               uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
-               advi(L) = advi(L) + CpilL * uv / dx(L)
+               advi(L) = advi(L) + compute_pillar_advection_term(u1(L), v(L), dx(L), CpilL)
             end do
          end if
       else
@@ -75,10 +80,12 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
+               if (CpilL == 0.0_dp) then
+                  cycle
+               end if
                call getLbotLtop(L, Lb, Lt)
                do LL = Lb, Lt
-                  uv = sqrt(u1(LL) * u1(LL) + v(LL) * v(LL))
-                  advi(LL) = advi(LL) + CpilL * uv / dx(L)
+                  advi(LL) = advi(LL) + compute_pillar_advection_term(u1(LL), v(LL), dx(L), CpilL)
                end do
             end do
          else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
@@ -89,13 +96,28 @@ contains
                end if
                CpilL = Cpil(L)
                do LL = Lb, Lt
-                  uv = sqrt(u1(LL) * u1(LL) + v(LL) * v(LL))
-                  advi(LL) = advi(LL) + CpilL * uv / dx(L)
+                  advi(LL) = advi(LL) + compute_pillar_advection_term(u1(LL), v(LL), dx(L), CpilL)
                end do
             end do
          end if
       end if
 
-   end subroutine pillar_upd
+   end subroutine pillar_update
 
-end module m_pillar_upd
+   !> Compute the advection term due to pillar drag in the horizontal plane
+   pure function compute_pillar_advection_term(uL, vL, dxL, CpilL) result(advi_Cpil)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: uL !> Velocity component in the x-direction
+      real(kind=dp), intent(in) :: vL !> Velocity component in the y-direction
+      real(kind=dp), intent(in) :: dxL !> Grid spacing in the x-direction
+      real(kind=dp), intent(in) :: CpilL !> Pillar drag factor as 0.5 * Cd * D * velocity_squared_correction_per_width
+      real(kind=dp) :: advi_Cpil !> Advection term due to pillar drag
+      real(kind=dp) :: uv !> Magnitude of the velocity vector in the horizontal plane
+
+      uv = sqrt(uL * uL + vL * vL)
+      advi_Cpil = CpilL * uv / dxL
+
+   end function compute_pillar_advection_term
+
+end module m_pillar_update
