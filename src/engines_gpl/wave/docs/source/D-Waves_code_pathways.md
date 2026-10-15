@@ -4,10 +4,10 @@ This note describes the D-Waves execution paths in the current checkout for
 standalone use, Delft3D4 online coupling, and D-Flow FM orchestration through
 BMI. It also compares those paths with the
 [UNST-9075 preCICE proof-of-concept branch](https://github.com/Deltares/Delft3D/tree/all/poc/UNST-9075_preCICE_Proof_of_Concept).
-The diagram is available as [SVG](./dwaves_code_pathways.svg); its Graphviz
-source is [DOT](./dwaves_code_pathways.dot).
+The diagram is available as [SVG](../include/dwaves_code_pathways.svg); its Graphviz
+source is [DOT](../include/dwaves_code_pathways.dot).
 
-![D-Waves execution paths](./dwaves_code_pathways.svg)
+![D-Waves execution paths](../include/dwaves_code_pathways.svg)
 
 ## At a glance
 
@@ -49,8 +49,8 @@ Relevant implementation: [wave_exe.f90](../../packages/wave/src/wave_exe.f90),
 [flow_data.f90](../../packages/data/src/flow_data.f90).
 
 Detailed diagram (actual subroutine calls and module-level state):
-[dwaves_pathway_standalone_detailed.svg](./dwaves_pathway_standalone_detailed.svg)
-([DOT source](./dwaves_pathway_standalone_detailed.dot)).
+[dwaves_pathway_standalone_detailed.svg](../include/dwaves_pathway_standalone_detailed.svg)
+([DOT source](../include/dwaves_pathway_standalone_detailed.dot)).
 
 ## Coupling with Delft3D4
 
@@ -91,8 +91,8 @@ is not the D-Flow FM BMI path: it is a FLOW/WAVE process pair coordinated by
 DelftIO.
 
 Detailed diagram (both processes, the DelftIO sync points, and module-level
-state): [dwaves_pathway_delft3d4_detailed.svg](./dwaves_pathway_delft3d4_detailed.svg)
-([DOT source](./dwaves_pathway_delft3d4_detailed.dot)).
+state): [dwaves_pathway_delft3d4_detailed.svg](../include/dwaves_pathway_delft3d4_detailed.svg)
+([DOT source](../include/dwaves_pathway_delft3d4_detailed.dot)).
 
 ## Coupling with D-Flow FM through BMI
 
@@ -134,8 +134,8 @@ Relevant implementation: [wave_bmi.f90](../../packages/wave/src/wave_bmi.f90),
 
 Detailed diagram (DIMR, the BMI wrapper, the `swan_run%flowgridfile` branch
 decision, and module-level state):
-[dwaves_pathway_fm_bmi_detailed.svg](./dwaves_pathway_fm_bmi_detailed.svg)
-([DOT source](./dwaves_pathway_fm_bmi_detailed.dot)).
+[dwaves_pathway_fm_bmi_detailed.svg](../include/dwaves_pathway_fm_bmi_detailed.svg)
+([DOT source](../include/dwaves_pathway_fm_bmi_detailed.dot)).
 
 ## Reference comparison: UNST-9075 preCICE proof of concept
 
