@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1010" viewBox="0 0 1320 1010" role="img" aria-labelledby="title desc">
+  <title id="title">D-Waves code pathways</title>
+  <desc id="desc">Three current pathways: standalone, Delft3D4 online through DelftIO, and D-Flow FM via BMI/DIMR with configured Flow files. A separate dashed panel is reference-only preCICE proof-of-concept material, not present in the current checkout.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#48647A"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#876293"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #203344; }
+      .title { font-size: 25px; font-weight: 700; }
+      .subtitle { font-size: 14px; fill: #526879; }
+      .panel-title { font-size: 17px; font-weight: 700; }
+      .box-title { font-size: 14px; font-weight: 700; }
+      .box-text { font-size: 12px; }
+      .note { font-size: 12px; fill: #415667; }
+      .arrow-label { font-size: 11px; fill: #415667; }
+      .box { stroke-width: 1.6; rx: 10; ry: 10; }
+      .current { stroke: #7890A2; }
+      .flow4 { fill: #E3F2F7; }
+      .flow4-light { fill: #EAF4F7; }
+      .fm { fill: #EAF5EC; }
+      .fm-light { fill: #F2F8F3; }
+      .solo { fill: #FCF5E6; }
+      .poc { fill: #F4ECF7; }
+      .arrow { fill: none; stroke: #48647A; stroke-width: 1.8; marker-end: url(#arrow); }
+      .poc-arrow { fill: none; stroke: #876293; stroke-width: 1.8; stroke-dasharray: 7 5; marker-end: url(#arrowPurple); }
+    </style>
+  </defs>
+
+  <rect width="1320" height="1010" fill="#FFFFFF"/>
+  <text x="36" y="43" class="title">D-Waves code pathways</text>
+  <text x="36" y="69" class="subtitle">Current checkout: standalone, Delft3D4/DelftIO, and D-Flow FM/DIMR BMI. preCICE material is shown only as a reference.</text>
+
+  <!-- Delft3D4 online -->
+  <rect x="28" y="100" width="410" height="594" rx="14" fill="#F8FCFD" stroke="#3B82A0" stroke-width="2"/>
+  <text x="48" y="132" class="panel-title">1. Delft3D4 online (current)</text>
+  <rect x="70" y="157" width="326" height="74" class="box current flow4"/>
+  <text x="233" y="184" text-anchor="middle" class="box-title">Delft3D4 FLOW</text>
+  <text x="233" y="205" text-anchor="middle" class="box-text">tricom_init / FLOW time loop</text>
+  <path d="M233 232 L233 260" class="arrow"/>
+  <text x="245" y="251" class="arrow-label">initialize / synchronize</text>
+  <rect x="70" y="265" width="326" height="87" class="box current flow4-light"/>
+  <text x="233" y="291" text-anchor="middle" class="box-title">DelftIO sync_flowwave</text>
+  <text x="233" y="313" text-anchor="middle" class="box-text">FLOW2WAVE_DATA ↔ WAVE2FLOW_DATA</text>
+  <text x="233" y="333" text-anchor="middle" class="box-text">domain, step command, fields, status</text>
+  <path d="M233 353 L233 379" class="arrow"/>
+  <text x="245" y="372" class="arrow-label">DIO handshake</text>
+  <rect x="70" y="384" width="326" height="74" class="box current flow4"/>
+  <text x="233" y="411" text-anchor="middle" class="box-title">wave executable</text>
+  <text x="233" y="433" text-anchor="middle" class="box-text">run with mode = flow_online (1)</text>
+  <path d="M233 459 L233 485" class="arrow"/>
+  <rect x="70" y="490" width="326" height="80" class="box current flow4"/>
+  <text x="233" y="517" text-anchor="middle" class="box-title">wave_main_step</text>
+  <text x="233" y="539" text-anchor="middle" class="box-text">wait → set WAVE time → swan_tot</text>
+  <path d="M233 571 L233 597" class="arrow"/>
+  <rect x="70" y="602" width="326" height="65" class="box current flow4-light"/>
+  <text x="233" y="628" text-anchor="middle" class="box-title">SWAN computation and WAVE results</text>
+  <text x="233" y="648" text-anchor="middle" class="box-text">completion/status returns through DelftIO</text>
+
+  <!-- FM / BMI -->
+  <rect x="455" y="100" width="410" height="594" rx="14" fill="#FAFDFA" stroke="#5A9A72" stroke-width="2"/>
+  <text x="475" y="132" class="panel-title">2. D-Flow FM / BMI (current)</text>
+  <rect x="497" y="157" width="326" height="74" class="box current fm"/>
+  <text x="660" y="184" text-anchor="middle" class="box-title">DIMR orchestration</text>
+  <text x="660" y="205" text-anchor="middle" class="box-text">initializes Flow before Wave</text>
+  <path d="M660 232 L660 260" class="arrow"/>
+  <text x="674" y="251" class="arrow-label">BMI lifecycle</text>
+  <rect x="497" y="265" width="326" height="69" class="box current fm"/>
+  <text x="660" y="291" text-anchor="middle" class="box-title">D-Flow FM BMI component</text>
+  <text x="660" y="313" text-anchor="middle" class="box-text">Flow solver and configured couplers</text>
+  <path d="M660 335 L660 362" class="arrow"/>
+  <text x="674" y="354" class="arrow-label">component calls</text>
+  <rect x="497" y="367" width="326" height="75" class="box current fm"/>
+  <text x="660" y="394" text-anchor="middle" class="box-title">D-Waves shared library</text>
+  <text x="660" y="416" text-anchor="middle" class="box-text">wave_bmi: initialize / update(dt) / finalize</text>
+  <path d="M660 443 L660 470" class="arrow"/>
+  <text x="674" y="462" class="arrow-label">update(dt)</text>
+  <rect x="497" y="475" width="326" height="82" class="box current fm-light"/>
+  <text x="660" y="502" text-anchor="middle" class="box-title">wave_main_step → swan_tot</text>
+  <text x="660" y="524" text-anchor="middle" class="box-text">configured FlowGridFile → flow_data /</text>
+  <text x="660" y="543" text-anchor="middle" class="box-text">get_flow_fields → SWAN</text>
+  <rect x="497" y="574" width="326" height="93" class="box current fm-light"/>
+  <text x="660" y="600" text-anchor="middle" class="box-title">File-backed Flow input (when enabled)</text>
+  <text x="660" y="622" text-anchor="middle" class="box-text">NetCDF/com file(s), including partitions</text>
+  <text x="660" y="642" text-anchor="middle" class="box-text">BMI get_var is not Flow-field exchange</text>
+  <path d="M811 334 C846 350 846 550 817 592" class="arrow"/>
+  <text x="838" y="465" class="arrow-label" transform="rotate(90 838 465)">FlowGridFile path</text>
+  <text x="511" y="683" class="note">DIMR sets WAVE mode=1 through get_var("mode") before initialize.</text>
+
+  <!-- Standalone -->
+  <rect x="882" y="100" width="410" height="594" rx="14" fill="#FFFDF8" stroke="#B28B42" stroke-width="2"/>
+  <text x="902" y="132" class="panel-title">3. Standalone (current)</text>
+  <rect x="924" y="157" width="326" height="74" class="box current solo"/>
+  <text x="1087" y="184" text-anchor="middle" class="box-title">wave executable</text>
+  <text x="1087" y="205" text-anchor="middle" class="box-text">mode defaults to stand_alone (0)</text>
+  <path d="M1087 232 L1087 260" class="arrow"/>
+  <rect x="924" y="265" width="326" height="79" class="box current solo"/>
+  <text x="1087" y="292" text-anchor="middle" class="box-title">wave_main_init</text>
+  <text x="1087" y="314" text-anchor="middle" class="box-text">read MDW, initialize grids and forcing</text>
+  <path d="M1087 345 L1087 373" class="arrow"/>
+  <rect x="924" y="378" width="326" height="77" class="box current solo"/>
+  <text x="1087" y="405" text-anchor="middle" class="box-title">wave_main_step(-1)</text>
+  <text x="1087" y="427" text-anchor="middle" class="box-text">run the configured MDW times</text>
+  <path d="M1087 456 L1087 484" class="arrow"/>
+  <rect x="924" y="489" width="326" height="79" class="box current solo"/>
+  <text x="1087" y="516" text-anchor="middle" class="box-title">swan_tot → SWAN</text>
+  <text x="1087" y="538" text-anchor="middle" class="box-text">standard WAVE outputs</text>
+  <rect x="924" y="584" width="326" height="83" class="box current solo"/>
+  <text x="1087" y="610" text-anchor="middle" class="box-title">Optional Flow-file input</text>
+  <text x="1087" y="632" text-anchor="middle" class="box-text">FlowGridFile/useflowdata can be configured;</text>
+  <text x="1087" y="652" text-anchor="middle" class="box-text">does not make this a live Flow process</text>
+
+  <!-- Reference-only POC -->
+  <rect x="28" y="724" width="1264" height="236" rx="14" fill="#FCF9FD" stroke="#9B70A8" stroke-width="2.5" stroke-dasharray="9 6"/>
+  <text x="50" y="758" class="panel-title">UNST-9075 preCICE proof of concept — reference only, not in the current checkout</text>
+  <rect x="65" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
+  <text x="197" y="815" text-anchor="middle" class="box-title">preCICE setup</text>
+  <text x="197" y="838" text-anchor="middle" class="box-text">component / config / time windows</text>
+  <text x="197" y="859" text-anchor="middle" class="box-text">explicit initialize / advance / finalize</text>
+  <path d="M332 833 L382 833" class="poc-arrow"/>
+  <rect x="389" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
+  <text x="521" y="815" text-anchor="middle" class="box-title">wave_main preCICE hooks</text>
+  <text x="521" y="838" text-anchor="middle" class="box-text">read MDW grid; register active</text>
+  <text x="521" y="859" text-anchor="middle" class="box-text">vertices and triangles</text>
+  <path d="M656 833 L706 833" class="poc-arrow"/>
+  <rect x="713" y="786" width="265" height="94" class="box poc" stroke="#9B70A8"/>
+  <text x="845" y="815" text-anchor="middle" class="box-title">preCICE-aware SWAN loop</text>
+  <text x="845" y="838" text-anchor="middle" class="box-text">get Flow fields; run SWAN;</text>
+  <text x="845" y="859" text-anchor="middle" class="box-text">write selected Wave fields</text>
+  <path d="M980 833 L1030 833" class="poc-arrow"/>
+  <rect x="1037" y="786" width="220" height="94" class="box poc" stroke="#9B70A8"/>
+  <text x="1147" y="815" text-anchor="middle" class="box-title">preCICE advance</text>
+  <text x="1147" y="838" text-anchor="middle" class="box-text">time-window loop</text>
+  <text x="50" y="922" class="note">Reference material only: this adapter is not in the current D-Waves path. Current FM orchestration remains BMI/DIMR plus its configured Flow-data route.</text>
+</svg>
