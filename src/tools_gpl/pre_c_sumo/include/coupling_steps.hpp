@@ -198,7 +198,7 @@ namespace pre_c_sumo
      */
     [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
     convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumo_settings,
-                                    const std::vector<NF2FFReader>& nf2ff_readers);
+                                    const std::vector<NF2FFReader>& nf2ff_readers, pre_c_sumo::Mesh& csumo_3d_mesh);
     /**
      * @anchor pre_c_sumo_is_diffuser_modelled
      * @brief Query whether the diffuser is modelled explicitly.
@@ -206,6 +206,17 @@ namespace pre_c_sumo
      * @return true if the diffuser is modelled, false otherwise.
      */
     bool isDiffuserModelled(const NF2FFReader& diffuser);
+
+    /**
+     * @anchor get_intake_constituents
+     * @brief Get the depth averaged intake constituents of the diffuser's intake from a 3D mesh.
+     *
+     * @param mesh_3d A valid 3d mesh.
+     * @param diffuser_index Index of a diffuser with an intake.
+     *
+     * @returns a std::vector of double with averaged intake constituents values as received in supplied mesh.
+     */
+    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index);
 
     /**
      * @anchor pre_c_sumo_create_diffuser_model
