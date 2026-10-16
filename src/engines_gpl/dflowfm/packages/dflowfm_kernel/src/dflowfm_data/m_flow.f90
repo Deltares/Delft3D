@@ -87,6 +87,7 @@ module m_flow ! flow arrays-999
    integer, parameter :: TURBULENCE_MODEL_ALGEBRAIC = 2 !< Algebraic turbulence model
    integer, parameter :: TURBULENCE_MODEL_KEPS = 3 !< k-epsilon turbulence model
    integer, parameter :: TURBULENCE_MODEL_KTAU = 4 !< k-tau turbulence model
+   integer, parameter :: TURBULENCE_MODEL_KEPS_CELL_CENTER = 5 !< k-epsilon turbulence model at cell centers
 
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
