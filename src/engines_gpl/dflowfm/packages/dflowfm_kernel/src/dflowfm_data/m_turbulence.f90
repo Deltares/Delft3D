@@ -27,12 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_turbulence
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    ! Coefficients of turbulence model
    real(kind=dp), parameter :: CMUKEP = 0.09_dp
@@ -121,11 +119,17 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
+   real(kind=dp), allocatable, dimension(:) :: turkinws0 !< k old at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws0 !< eps old at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:, :) :: turkinepsws !< k and eps,1,2 at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
+
+   real(kind=dp), allocatable, dimension(:) :: ustbs ! ustb in cell centre (m/s) only iturbulencemodel=5
+   real(kind=dp), allocatable, dimension(:) :: ustws ! ustw in cell centre (m/s) only iturbulencemodel=5
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
