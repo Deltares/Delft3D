@@ -1,8 +1,10 @@
 module test_init_spatial_field
    use assertions_gtest
-   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
+   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input, is_static_spatial_input
+   use fm_location_types, only: TARGET_LAYER_ALL_3D, TARGET_LAYER_UNIFORM
    use m_wind, only: jaQext
-   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, NCFLOW
+   use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
+                                  WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
@@ -16,6 +18,136 @@ module test_init_spatial_field
    character(len=*), parameter :: BASE_DIR = "."
 
 contains
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_netcdf_normalizes_quantity, test_initial_netcdf_normalizes_quantity,
+   subroutine test_initial_netcdf_normalizes_quantity() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, quantity='initialSecchiDepth')
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR))
+      call f90_expect_true(input%is_static_field)
+      call f90_expect_streq(cstr(input%quantity), cstr('secchidepth'))
+      call f90_expect_eq(input%method, WEIGHTFACTORS)
+   end subroutine test_initial_netcdf_normalizes_quantity
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_modifier_preserves_suffix, test_initial_modifier_preserves_suffix,
+   subroutine test_initial_modifier_preserves_suffix() bind(C)
+      use fm_external_forcings_utils, only: split_qid
+
+      character(len=64) :: quantity, qid_base, qid_specific
+
+      quantity = 'initialtracerNO3'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialtracerNO3'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialtracer'))
+      call f90_expect_streq(cstr(qid_specific), cstr('NO3'))
+      quantity = 'initialwaqbotTestBot'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaqbotTestBot'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialwaqbot'))
+      call f90_expect_streq(cstr(qid_specific), cstr('TestBot'))
+      quantity = 'initialsalinity'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsalinity'))
+      quantity = 'initialtemperature'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialtemperature'))
+      quantity = 'initialwaterlevel'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaterlevel'))
+      quantity = 'initialwaterdepth'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaterdepth'))
+      quantity = 'initialsedfracSAND1'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsedfracSAND1'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialsedfrac'))
+      call f90_expect_streq(cstr(qid_specific), cstr('SAND1'))
+      quantity = 'initialsediment'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsediment'))
+      quantity = 'secchidepth'
+      call f90_expect_false(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('secchidepth'))
+      quantity = 'initialverticalsalinityprofile'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialverticalsalinityprofile'))
+   end subroutine test_initial_modifier_preserves_suffix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolvers_select_3d_targets, test_resolvers_select_3d_targets,
+   subroutine test_resolvers_select_3d_targets() bind(C)
+      use unstruc_inifields, only: resolve_constituent_target
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D
+      use m_flow, only: sa1, tem1, kmx, ndkx
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+
+      real(dp), dimension(:), pointer :: target_row
+      real(dp), dimension(:, :), pointer :: constituent_target
+      integer :: location, first_index, saved_kmx, saved_ndkx
+      integer :: saved_jasal, saved_temperature_model, saved_initem2D
+      logical :: success
+
+      saved_kmx = kmx
+      saved_ndkx = ndkx
+      saved_jasal = jasal
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      kmx = 2
+      ndkx = 3
+      jasal = 1
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
+      threshold_abort = LEVEL_FATAL
+      call realloc(sa1, ndkx, fill=42.0_dp, keepExisting=.false.)
+      call realloc(tem1, ndkx, fill=42.0_dp, keepExisting=.false.)
+
+      success = resolve_constituent_target('initialSalinity', location, constituent_target, first_index)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S, 'default salinity input must remain horizontal')
+      success = resolve_constituent_target('salinity', location, constituent_target, first_index)
+      call f90_expect_false(success, 'salinity without the initial prefix must not be accepted as an alias')
+      success = resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S3D)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, sa1), 'resolver must retain full salinity storage')
+
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_UNIFORM)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'new spatial-field resolver must leave the legacy expansion flag clear')
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_ALL_3D)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S3D)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'explicit 3D input must leave the legacy expansion flag clear')
+
+      kmx = 0
+      call f90_expect_false(resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                               target_layer=TARGET_LAYER_ALL_3D))
+      call f90_expect_false(resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D))
+
+      kmx = saved_kmx
+      ndkx = saved_ndkx
+      jasal = saved_jasal
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      deallocate (sa1, tem1)
+   end subroutine test_resolvers_select_3d_targets
+   !$f90tw)
 
    subroutine make_test_input( &
          input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
@@ -67,18 +199,100 @@ contains
       end if
    end subroutine make_test_input
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unrecognized_interpolation_method, test_validate_unrecognized_interpolation_method,
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_unknown_interpolation_method_string, test_validate_rejects_unknown_interpolation_method_string,
    !> An unrecognized interpolationMethod= string leaves method at -1 and must fail.
    !! This branch is never exercised by integration tests because they always use
    !! valid file types with known method strings.
-   subroutine test_validate_unrecognized_interpolation_method() bind(C)
+   subroutine test_validate_rejects_unknown_interpolation_method_string() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
       call make_test_input(input, interpolation_method='this_method_does_not_exist')
       threshold_abort = LEVEL_FATAL
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
-   end subroutine test_validate_unrecognized_interpolation_method
+   end subroutine test_validate_rejects_unknown_interpolation_method_string
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_constant_method_for_sample_file, test_validate_rejects_constant_method_for_sample_file,
+   subroutine test_validate_rejects_constant_method_for_sample_file() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.xyz', forcing_file_type='sample', interpolation_method='constant')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'sample files should reject constant interpolation')
+   end subroutine test_validate_rejects_constant_method_for_sample_file
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_averaging_method_for_bcascii, test_validate_rejects_averaging_method_for_bcascii,
+   subroutine test_validate_rejects_averaging_method_for_bcascii() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='averaging')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'bcascii files should reject averaging interpolation')
+   end subroutine test_validate_rejects_averaging_method_for_bcascii
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_rejects_triangulation_method_for_bcascii, test_validate_rejects_triangulation_method_for_bcascii,
+   subroutine test_validate_rejects_triangulation_method_for_bcascii() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='triangulation')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'bcascii files should reject triangulation interpolation')
+   end subroutine test_validate_rejects_triangulation_method_for_bcascii
+   !$f90tw)
+
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_defaults_to_weightfactors, test_validate_spiderweb_defaults_to_weightfactors,
+   subroutine test_validate_spiderweb_defaults_to_weightfactors() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb')
+
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                           'spiderweb should use its default when interpolationMethod is omitted')
+      call f90_expect_eq(input%method, WEIGHTFACTORS, 'spiderweb should default to weightfactors')
+   end subroutine test_validate_spiderweb_defaults_to_weightfactors
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_accepts_linearspacetime_extrapolation, test_validate_spiderweb_accepts_linearspacetime_extrapolation,
+   subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb', &
+                           interpolation_method='linearSpaceTime', is_extrapolation_allowed=.true.)
+
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                           'spiderweb should accept linearSpaceTime with extrapolation enabled')
+      call f90_expect_eq(input%method, WEIGHTFACTORS_EXTRAPOLATION, &
+                         'linearSpaceTime with extrapolation should select weightfactors_extrapolation')
+   end subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_spiderweb_rejects_constant_method, test_validate_spiderweb_rejects_constant_method,
+   subroutine test_validate_spiderweb_rejects_constant_method() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb', interpolation_method='constant')
+      threshold_abort = LEVEL_FATAL
+
+      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
+                            'spiderweb should reject constant interpolation because its default is weightfactors')
+   end subroutine test_validate_spiderweb_rejects_constant_method
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_dflowfm_map_file_type, test_validate_dflowfm_map_file_type,
@@ -151,22 +365,30 @@ contains
    end subroutine test_validate_file_type_extension_mismatch
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_supported_file_type_extensions, test_validate_supported_file_type_extensions,
-   subroutine test_validate_supported_file_type_extensions() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field,
+   !$f90tw test_validate_supported_extensions_select_effective_methods, test_validate_supported_extensions_select_effective_methods,
+   subroutine test_validate_supported_extensions_select_effective_methods() bind(C)
       character(len=16), parameter :: file_types(11) = [character(len=16) :: &
          '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
          '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
+      character(len=16), parameter :: methods(11) = [character(len=16) :: &
+         '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
+         'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
+      integer, parameter :: expected_methods(11) = [JUSTUPDATE, SPACEANDTIME, SPACEANDTIME, WEIGHTFACTORS, &
+                                                     METHOD_TRIANGULATION, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
+                                                     WEIGHTFACTORS, SPACEANDTIME, SPACEANDTIME]
       type(t_spatial_field_input) :: input
       integer :: i
 
       do i = 1, size(file_types)
          call make_test_input(input, forcing_file='dummy'//trim(extensions(i)), forcing_file_type=trim(file_types(i)), &
-                              interpolation_method='linearSpaceTime')
+                              interpolation_method=trim(methods(i)))
          call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                               trim(file_types(i))//' should accept '//trim(extensions(i)))
+         call f90_expect_eq(input%method, expected_methods(i), trim(file_types(i))//' should select the expected effective method')
       end do
-   end subroutine test_validate_supported_file_type_extensions
+   end subroutine test_validate_supported_extensions_select_effective_methods
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unknown_file_extension, test_validate_unknown_file_extension,
@@ -228,18 +450,20 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field,
-   !$f90tw test_validate_data_value_with_datavalue_type_succeeds, test_validate_data_value_with_datavalue_type_succeeds,
-   subroutine test_validate_data_value_with_datavalue_type_succeeds() bind(C)
+   !$f90tw test_validate_datavalue_type_accepts_constant_method, test_validate_datavalue_type_accepts_constant_method,
+   subroutine test_validate_datavalue_type_accepts_constant_method() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
 
-      call make_test_input(input, data_value=0.875_dp, forcing_file_type='datavalue', forcing_file='')
+      call make_test_input(input, data_value=0.875_dp, forcing_file_type='datavalue', forcing_file='', &
+                           interpolation_method='constant')
 
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
 
       call f90_expect_true(success, "dataValue may explicitly use dataFileType=datavalue")
       call f90_expect_eq(input%filetype, DATAVALUE)
-   end subroutine test_validate_data_value_with_datavalue_type_succeeds
+      call f90_expect_eq(input%method, METHOD_CONSTANT, 'dataValue should accept constant interpolation')
+   end subroutine test_validate_datavalue_type_accepts_constant_method
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field,
@@ -347,12 +571,18 @@ contains
       target_array => null()
       target_location_type = 0
 
-      success = resolve_initial_target('initialwaterlevel', 'test.ext', target_location_type, target_array)
+      success = resolve_initial_target('initialwaterlevel', target_location_type, target_array)
 
       call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
       call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")
       call f90_expect_eq(target_location_type, UNC_LOC_S, "initialwaterlevel must map to UNC_LOC_S")
       call f90_expect_true(associated(target_array, s1), "target_array must point directly to s1, not a copy")
+
+      target_array => null()
+      target_location_type = 0
+      success = resolve_initial_target('waterlevel', target_location_type, target_array)
+      call f90_expect_true(success, "waterlevel spelling should remain accepted")
+      call f90_expect_true(associated(target_array, s1), "waterlevel must still point directly to s1")
 
       ndx = 0
       if (allocated(s1)) deallocate (s1)
@@ -602,10 +832,10 @@ contains
                            "FlowWithoutWaves still requires wave height")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
                            "FlowWithoutWaves still requires wave period")
-      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
-                           "FlowWithoutWaves with breaker turbulence requires surface-breaking dissipation")
-      call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
-                           "FlowWithoutWaves with breaker turbulence requires white-capping dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
+                   "FlowWithoutWaves does not use surface-breaking dissipation")
+      call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
+                   "FlowWithoutWaves does not use white-capping dissipation")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
                             "FlowWithoutWaves with breaker turbulence does not require wave direction")
    end subroutine test_offline_wave_requirements_breaker_turbulence

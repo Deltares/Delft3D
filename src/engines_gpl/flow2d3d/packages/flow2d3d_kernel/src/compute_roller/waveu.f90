@@ -37,7 +37,7 @@ subroutine waveu(nmmax     ,kfs       ,sourw     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

@@ -52,7 +52,7 @@ contains
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
@@ -296,8 +296,8 @@ contains
       end if
 
       do n = 1, source_sinks%num_total
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
+         kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
          qsrckk = source_sinks%discharge(n)
          qsrck = qsrckk
 
@@ -319,17 +319,17 @@ contains
          end if
 
          if (kk > 0) then ! FROM Point
-            do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
+            do k = source_sinks%indices(n, BOTTOM_LAYER_SINK), source_sinks%indices(n, TOP_LAYER_SINK)
                if (k == 0) then
                   cycle
                end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 3)) - zws(source_sinks%indices(n, 2) - 1)
+                  dzss = zws(source_sinks%indices(n, TOP_LAYER_SINK)) - zws(source_sinks%indices(n, BOTTOM_LAYER_SINK) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sinks%indices(n, 3) - source_sinks%indices(n, 2) + 1)
+                     qsrck = qsrckk / (source_sinks%indices(n, TOP_LAYER_SINK) - source_sinks%indices(n, BOTTOM_LAYER_SINK) + 1)
                   end if
                end if
                if (qsrck > 0) then ! FROM k to k2
@@ -341,17 +341,17 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
+            do k = source_sinks%indices(n, BOTTOM_LAYER_SOURCE), source_sinks%indices(n, TOP_LAYER_SOURCE)
                if (k == 0) then
                   cycle
                end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 6)) - zws(source_sinks%indices(n, 5) - 1)
+                  dzss = zws(source_sinks%indices(n, TOP_LAYER_SOURCE)) - zws(source_sinks%indices(n, BOTTOM_LAYER_SOURCE) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (source_sinks%indices(n, 6) - source_sinks%indices(n, 5) + 1)
+                     qsrck = qsrckk / (source_sinks%indices(n, TOP_LAYER_SOURCE) - source_sinks%indices(n, BOTTOM_LAYER_SOURCE) + 1)
                   end if
                end if
                if (qsrck > 0) then

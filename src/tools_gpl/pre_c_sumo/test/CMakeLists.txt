@@ -13,7 +13,6 @@ set(source_files
     test_connected_sinks_sources.cpp
     test_coupling_steps.cpp
     test_csumo_settings_reader.cpp
-    test_endpoints.cpp
     test_FF2NF_writer.cpp
     test_NF2FF_reader.cpp
 )

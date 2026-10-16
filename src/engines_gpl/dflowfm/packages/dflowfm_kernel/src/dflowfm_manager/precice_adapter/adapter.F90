@@ -7,10 +7,10 @@
 !! It also contains utilities to publish model quantities to preCICE meshes.
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
    use precision, only: dp
    use precision_basics, only: comparereal
-   use mathconsts, only: degrad
+   use m_mathconstants, only: degrad
    use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
 
    implicit none(type, external)
@@ -341,23 +341,23 @@ contains
    !! - `s1` (sea_surface_height) written to 2D mesh when active.
    !! - `bl` (sea_floor_depth_below_geoid) written to 2D mesh when active (note the sign inversion).
    !! - `rho` (sea_water_potential_density) written to 3D mesh when active.
+   !! All 3D fields are packed using the mesh's active cell/layer indices.
    subroutine precice_adapter_write_data(self)
       use precice, only: precicef_write_data
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, s1, ucx, ucy, ucz
-      use m_flowgeom, only: bl, ndx2d,  ndx
+      use m_flow, only: hs, s1, ucx, ucy, ucz, kmx
+      use m_flowgeom, only: bl, ndx2d
       use m_turbulence, only: potential_density
       use m_transport, only: numconst, constituents
+      use precice_adapter_utils, only: pack_cell_center_mesh_data
             
       implicit none(type, external)
       class(precice_adapter_t), intent(in) :: self
 
       integer :: constituent_index
-      ! Temporary flow velocity buffer [ucx(1), ucy(1), ucz(1), ucx(2), ucy(2), ucz(2), ... , ucx(N), ucy(N), ucz(N)]
-      integer :: uc_index
-      integer :: velocity_index
       real(kind=c_double), dimension(:), allocatable :: flow_velocity_3d_buffer
+      real(kind=c_double), dimension(:), allocatable :: scalar_3d_buffer
 
       if (self%quantities%hs%is_active) then
          call precicef_write_data(self%cell_center_mesh_name, self%quantities%hs%standard_name, &
@@ -375,20 +375,17 @@ contains
                                   -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(trim(self%quantities%bl%standard_name)))
       end if
       if (self%quantities%rho%is_active) then
+         allocate (scalar_3d_buffer(self%mesh_3d_size))
+         call pack_cell_center_mesh_data(self%mesh_size, kmx, potential_density, scalar_3d_buffer)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                                  potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
+                                  scalar_3d_buffer, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
       end if
       if (self%quantities%flow_velocity_3d%is_active) then
-         if (.not. allocated(flow_velocity_3d_buffer)) then
-            allocate(flow_velocity_3d_buffer(self%mesh_3d_size * 3))
-         end if
-         do uc_index = 1, self%mesh_3d_size
-            velocity_index = 3 * (uc_index - 1) + 1
-            flow_velocity_3d_buffer(velocity_index) = ucx(uc_index)
-            flow_velocity_3d_buffer(velocity_index+1) = ucy(uc_index)
-            flow_velocity_3d_buffer(velocity_index+2) = ucz(uc_index)
-         end do
+         allocate (flow_velocity_3d_buffer(self%mesh_3d_size * 3))
+         call pack_cell_center_mesh_data(self%mesh_size, kmx, ucx, flow_velocity_3d_buffer(1::3))
+         call pack_cell_center_mesh_data(self%mesh_size, kmx, ucy, flow_velocity_3d_buffer(2::3))
+         call pack_cell_center_mesh_data(self%mesh_size, kmx, ucz, flow_velocity_3d_buffer(3::3))
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%flow_velocity_3d%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   flow_velocity_3d_buffer, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%flow_velocity_3d%standard_name)))
@@ -397,10 +394,14 @@ contains
       if (numconst > NUM_COUPLED_CONSTITUENTS) then
          call mess(LEVEL_ERROR, "The number of configured D-Flow FM constituents exceeds maximum! (10)")
       end if
+      if (numconst > 0 .and. .not. allocated(scalar_3d_buffer)) then
+         allocate (scalar_3d_buffer(self%mesh_3d_size))
+      end if
       do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
+         call pack_cell_center_mesh_data(self%mesh_size, kmx, constituents(constituent_index, :), scalar_3d_buffer)
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%constituents(constituent_index)%standard_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                                  constituents(constituent_index,ndx+1:), len(self%cell_center_mesh_3d_name), &
+                                  scalar_3d_buffer, len(self%cell_center_mesh_3d_name), &
                                   len(trim(self%quantities%constituents(constituent_index)%standard_name)))
       end do
    end subroutine precice_adapter_write_data
@@ -572,27 +573,30 @@ contains
          !    D-Flow FM will handle it correctly
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
-         call source_sinks%resize(source_sinks%num_total)
+         call source_sinks%realloc(source_sinks%num_total)
          write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
-         source_sinks%indices(source_sinks%num_total, 1) = sink_cell
-         source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
-         source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
-         source_sinks%indices(source_sinks%num_total, 4) = source_cell
-         source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
-         source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
+
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = sink_cell
+         source_sinks%z_bottom(source_sinks%num_total, SINK_SIDE) = self%sinks_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, SINK_SIDE) = self%sinks_z_max(i)
+
+         source_sinks%indices(source_sinks%num_total, FLOWCELL_SOURCE) = source_cell
+         source_sinks%z_bottom(source_sinks%num_total, SOURCE_SIDE) = self%sources_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, SOURCE_SIDE) = self%sources_z_max(i)
+
          source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
          if (comparereal(self%sources_momentum_magnitude_weighted(i), 0.0_dp) == 0) then
-            source_sinks%discharge_cosine(source_sinks%num_total,2) = 0.0_dp
-            source_sinks%discharge_sine(source_sinks%num_total,2) = 0.0_dp
+            source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = 0.0_dp
+            source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = 0.0_dp
             source_sinks%area(source_sinks%num_total) = 0.0_dp
          else
-            source_sinks%discharge_cosine(source_sinks%num_total,2) = cos(degrad * (90.0_dp - self%sources_momentum_direction(i)))
-            source_sinks%discharge_sine(source_sinks%num_total,2) = sin(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = cos(degrad * (90.0_dp - self%sources_momentum_direction(i)))
+            source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = sin(degrad * (90.0_dp - self%sources_momentum_direction(i)))
             ! TODO: Check whether the area needs to be set at all. It might only be needed if momentum needs to be passed through from the source location to the sink location.
             source_sinks%area(source_sinks%num_total) = ABS(self%sources_sinks_discharge(i)) / self%sources_momentum_magnitude_weighted(i)
          end if
          do constituent_index = 1, min(NUM_COUPLED_CONSTITUENTS, numconst)
-            source_sinks%constituents(source_sinks%num_total, constituent_index) = self%sources_sinks_constituents(constituent_index, i)
+            source_sink_all_discharges(constituent_index + 1, source_sinks%num_total) = self%sources_sinks_constituents(constituent_index, i)
          end do
       end do
 

@@ -42,7 +42,7 @@ subroutine upddis(lundis    ,lundia    ,sferic    ,itdis     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

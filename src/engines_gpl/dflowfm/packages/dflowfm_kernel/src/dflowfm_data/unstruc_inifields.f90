@@ -41,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
    use stdlib_kinds, only: c_bool
+   use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM, TARGET_LAYER_ALL_3D
 
    use precision, only: dp
    implicit none(type, external)
@@ -48,7 +49,7 @@ module unstruc_inifields
 
    public :: init1dField, spaceInit1dField, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D_dbl_slice, apply_waqbot_target_layer, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
-             set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
+             set_friction_type_values_explicit, finish_initialization, resolve_constituent_target, resolve_integer_target, &
              set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values, averagingTypeStringToInteger, &
              register_waq_target
 
@@ -73,11 +74,11 @@ module unstruc_inifields
    ! 1.01: initial implemented version
 
    ! Module-level state for deferred assignment of 1dField file [Global] values.
-   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
-   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
-   real(dp), public :: water_global_value_1dfield = -999.0_dp
-   real(dp), public :: friction_global_value_1dfield = -999.0_dp
-   character(len=256), public :: water_global_quantity_1dfield = ''
+   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:) !< Mask of 1D water locations with explicitly specified values.
+   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:) !< Mask of 1D friction locations with explicitly specified values.
+   real(dp), public :: water_global_value_1dfield = -999.0_dp !< Global water value applied to unspecified 1D locations.
+   real(dp), public :: friction_global_value_1dfield = -999.0_dp !< Global friction value applied to unspecified 1D locations.
+   character(len=256), public :: water_global_quantity_1dfield = '' !< Water quantity represented by water_global_value_1dfield.
 
 contains
 
@@ -497,8 +498,8 @@ contains
       use m_ec_interpolationsettings
       use string_module, only: str_tolower
       implicit none
-      character(len=*), intent(in) :: sAveragingType ! averaging type string
-      integer, intent(out) :: iAveragingType ! averaging type integer
+      character(len=*), intent(in) :: sAveragingType !< Averaging type name.
+      integer, intent(out) :: iAveragingType !< EC averaging type enum; -1 when the name is invalid.
 
       select case (trim(str_tolower(sAveragingType)))
       case ('mean')
@@ -684,9 +685,9 @@ contains
       use timespace_parameters, only: OPERAND_OVERRIDE
       implicit none
 
-      type(tree_data), pointer, intent(in) :: block_ptr
+      type(tree_data), pointer, intent(in) :: block_ptr !< Tree node containing the friction type.
       integer, intent(in) :: operand !< Operand for the friction type assignment.
-      logical :: res
+      logical :: res !< .true. if the friction type was read successfully.
       integer :: link
 
       character(len=256) :: friction_type_str
@@ -806,10 +807,10 @@ contains
       use m_flowgeom, only: iadv, ibot
       use string_module, only: str_tolower
 
-      character(len=*), intent(in) :: qid
-      integer, intent(out) :: target_location_type
-      integer, dimension(:), pointer, intent(out) :: target_array
-      logical :: success
+      character(len=*), intent(in) :: qid !< Quantity identifier.
+      integer, intent(out) :: target_location_type !< Location type for the resolved target.
+      integer, dimension(:), pointer, intent(out) :: target_array !< Integer target array; null when the quantity is not handled.
+      logical :: success !< .true. if the quantity was recognized and the target array is associated.
 
       target_array => null()
       target_location_type = 0
@@ -829,11 +830,11 @@ contains
 
 !> Resolve the target array and location type for quantities that need to be stored in a 3D array.
 !! Returns .true. if the quantity was recognized and target_array is associated.
-   function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
+   function resolve_constituent_target(quantity, target_location_type, target_array_rank_2, first_index, target_layer) result(success)
       use string_module, only: str_tolower
       use messagehandling, only: mess, LEVEL_ERROR
-      use m_flow, only: sa1
-      use m_flowparameters, only: jasal
+      use m_flow, only: sa1, tem1
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_transport, only: const_names
       use m_transportdata, only: itrac2const, constituents
       use m_sediment, only: stm_included, sed, jased, sedh
@@ -850,17 +851,18 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters
 
       character(len=*), intent(in) :: quantity !< Name of the quantity
-      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
-      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< Output to the target 3D array.
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D or UNC_LOC_3DV).
+      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_rank_2 !< The rank-2 target array for the quantity.
       integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
-      logical :: success !< true if the quantity was recognized and target_array_3d is associated.
+      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number
+      logical :: success !< true if the quantity was recognized and target_array_rank_2 is associated.
 
       character(len=256) :: qid_base, qid_specific
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=20) :: tracunit
       integer :: iconst, itrac, isednum, iwqbot, janew, iostat
 
-      target_array_3d => null()
+      target_array_rank_2 => null()
       first_index = 1
       target_location_type = UNC_LOC_S
       success = .true.
@@ -868,13 +870,24 @@ contains
       call split_qid(quantity, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
+
+      case ('initialtemperature')
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+            target_location_type = UNC_LOC_S
+            target_array_rank_2(1:1, 1:size(tem1)) => tem1
+         else
+            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires a temperature model to be enabled.')
+            success = .false.
+            return
+         end if
+
       case ('initialsalinity')
          if (jasal <= 0) then
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(quantity)//''' requires salinity to be enabled.')
             success = .false.
             return
          end if
-         target_array_3d(1:1, 1:size(sa1)) => sa1
+         target_array_rank_2(1:1, 1:size(sa1)) => sa1
          first_index = 1
 
       case ('initialsedfrac')
@@ -890,7 +903,7 @@ contains
             return
          end if
          first_index = iconst
-         target_array_3d => constituents
+         target_array_rank_2 => constituents
 
       case ('initialsediment')
          if (jased <= 0) then
@@ -902,7 +915,7 @@ contains
          read (qid_specific(1:1), '(i1)', iostat=iostat) isednum
          if (iostat /= 0) isednum = 1
          first_index = isednum
-         target_array_3d => sed
+         target_array_rank_2 => sed
 
       case ('initialtracer')
          call get_tracername(quantity, tracnam, qidnam)
@@ -916,7 +929,7 @@ contains
             return
          end if
          first_index = itrac2const(itrac)
-         target_array_3d => constituents
+         target_array_rank_2 => constituents
 
       case ('initialwaqbot')
          iwqbot = find_name(wqbotnames, qid_specific)
@@ -926,7 +939,7 @@ contains
             return
          end if
          first_index = iwqbot
-         target_array_3d => wqbot
+         target_array_rank_2 => wqbot
 
       case ('waqparameter', 'waqsegmentnumber')
          target_location_type = UNC_LOC_S
@@ -935,26 +948,59 @@ contains
          if (str_tolower(qid_base) == 'waqsegmentnumber') then
             call register_waq_segment_number_index(first_index)
          end if
-         allocate (target_array_3d(first_index:first_index, size(painp, 2)))
-         target_array_3d(first_index, :) = painp(first_index, :)
+         allocate (target_array_rank_2(first_index:first_index, size(painp, 2)))
+         target_array_rank_2(first_index, :) = painp(first_index, :)
 
       case default
          success = .false.
       end select
-   end function resolve_initial_3d_target
+      if (success) then
+         select case (str_tolower(qid_base))
+         case ('initialsalinity', 'initialsedfrac', 'initialtracer', 'initialtemperature')
+            success = set_3D_target_location(target_layer, quantity, size(target_array_rank_2, 2), target_location_type)
+         end select
+      end if
+   end function resolve_constituent_target
 
-   !> Resolve the target array and location type for an [Initial] quantity.
-   !! Handles all quantities that map to a plain real(dp) 1D array.
-   function resolve_initial_target(qid, inifilename, target_location_type, target_array) result(success)
+   !> Set the target location type to UNC_LOC_S3D if kmx > 0 and the array size is correct and target layer is '3D'.
+   function set_3D_target_location(target_layer, quantity, target_size, target_location_type) result(success)
+      use fm_location_types, only: UNC_LOC_S3D
+      use m_flow, only: kmx, ndkx
+      use messagehandling, only: mess, LEVEL_ERROR
+
+      integer, optional, intent(in) :: target_layer !< Target layer enum or positive layer number.
+      character(len=*), intent(in) :: quantity !< Quantity name for diagnostics.
+      integer, intent(in) :: target_size !< Size of the resolved target array.
+      integer, intent(inout) :: target_location_type !< Quantity target location type (use UNC_LOC_* constants), changed to UNC_LOC_S3D for correct input.
+      logical :: success
+
+      success = .true.
+      if (.not. present(target_layer)) then
+         return
+      end if
+      if (target_layer /= TARGET_LAYER_ALL_3D) then
+         return
+      end if
+      if (kmx <= 0 .or. target_size /= ndkx) then
+         call mess(LEVEL_ERROR, 'targetLayer=3d requires full cell-layer storage in a layered model for quantity '//trim(quantity)//'.')
+         success = .false.
+         return
+      end if
+
+      target_location_type = UNC_LOC_S3D
+   end function set_3D_target_location
+
+   !> Resolve all 'initial' quantities, plus waterlevel/waterdepth.
+   function resolve_initial_target(qid, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use m_missing, only: dmiss
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D
       use fm_external_forcings_data, only: uxini, uyini, inivelx, inively
       use m_flow, only: s1, hs, sa1, satop, sabot, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, &
-                                  temperature_model, TEMPERATURE_MODEL_NONE, initem2D, inivel
+                                  temperature_model, TEMPERATURE_MODEL_NONE, inivel
       use m_sediment, only: stm_included
       use m_transportdata, only: constituents, const_names
       use m_find_name, only: find_name
@@ -965,8 +1011,7 @@ contains
       implicit none
 
       character(len=*), intent(in) :: qid !< Name of the quantity.
-      character(len=*), intent(in) :: inifilename !< Name of the ini file, used for warning messages.
-      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
+      integer, intent(out) :: target_location_type !< Location type; explicit '3d' selects UNC_LOC_S3D.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
       logical :: success !< true if the quantity was recognized and target_array is associated.
       character(len=256) :: qid_base, qid_specific
@@ -979,7 +1024,7 @@ contains
       select case (str_tolower(qid_base))
       case ('waterlevel', 'initialwaterlevel')
          if (str_tolower(qid) == 'waterlevel') then
-            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
                       //''' is deprecated, use ''initialWaterLevel'' instead. Please update your input file.')
          end if
          target_location_type = UNC_LOC_S
@@ -987,12 +1032,11 @@ contains
 
       case ('waterdepth', 'initialwaterdepth')
          if (str_tolower(qid) == 'waterdepth') then
-            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)//''' found in file '''//trim(inifilename) &
+            call mess(LEVEL_WARN, 'Initial field quantity '''//trim(qid)&
                       //''' is deprecated, use ''initialWaterDepth'' instead. Please update your input file.')
          end if
          target_location_type = UNC_LOC_S
          target_array => hs
-
       case ('initialunsaturedzonethickness')
          call realloc(h_unsat, ndx, keepExisting=.true., fill=dmiss)
          target_location_type = UNC_LOC_S
@@ -1028,17 +1072,6 @@ contains
             target_array => sabot
          else
             call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires salinity to be enabled.')
-            success = .false.
-            return
-         end if
-
-      case ('initialtemperature')
-         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
-            target_location_type = UNC_LOC_S
-            target_array => tem1
-            initem2D = 1
-         else
-            call mess(LEVEL_ERROR, 'Initial quantity '''//trim(qid)//''' requires a temperature model to be enabled.')
             success = .false.
             return
          end if
@@ -1733,35 +1766,27 @@ contains
       use m_flow, only: kmx, kbot, ktop, kmxn
       use m_missing, only: dmiss
       use messageHandling, only: err_flush, msgbuf
-      use string_module, only: str_tolower
       use timespace, only: operate
 
       real(kind=dp), dimension(:), intent(in) :: input_array_2d !< input array on 2D grid cells
       real(kind=dp), dimension(:), intent(inout) :: output_array_3d !< target 3D array to be updated
-      character(len=*), intent(in) :: target_layer !< the target layer, should be "kbot", "all", or a positive integer.
-      character(len=*), intent(in) :: quantity !< the quantity name, should be "waqbot", parsed and checked at call site.
-      integer, intent(in) :: operand
-      logical :: success
+      integer, intent(in) :: target_layer !< Target layer enum or positive layer number.
+      character(len=*), intent(in) :: quantity !< the quantity name, should be "initialwaqbot", parsed and checked at call site.
+      integer, intent(in) :: operand !< Operand used to combine the input and target values.
+      logical :: success !< .true. if the target layer was applied successfully.
 
-      integer :: n, k, kb, kt, ktmax, layer, read_status
+      integer :: n, k, kb, kt, ktmax
 
-      select case (str_tolower(trim(target_layer)))
-      case ('', 'bottom')
-         layer = -1
-      case ('all')
-         layer = 0
-      case default !> read string as integer
-         read (target_layer, *, iostat=read_status) layer
-         if (read_status /= 0 .or. layer <= 0) then
-            write (msgbuf, '(a)') 'Invalid targetLayer '''//trim(target_layer)//''' for quantity '''//trim(quantity)//'''. Expected ''bottom'', ''all'', or a positive layer number.'
-            call err_flush()
-            success = .false.
-            return
-         end if
-      end select
+      if (target_layer < TARGET_LAYER_TOP) then
+         write (msgbuf, '(a,i0,a)') 'Invalid targetLayer ', target_layer, ' for quantity '''//trim(quantity)// &
+            '''. Expected ''bottom'', ''top''/''surface'', ''all'', or a positive layer number.'
+         call err_flush()
+         success = .false.
+         return
+      end if
 
-      if (layer > max(kmx, 1)) then
-         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
+      if (target_layer > max(kmx, 1)) then
+         write (msgbuf, '(a,i0,a,i0,a)') 'Invalid targetLayer ', target_layer, ' for quantity '''//trim(quantity)//''': maximum layer is ', max(kmx, 1), '.'
          call err_flush()
          success = .false.
          return
@@ -1777,10 +1802,12 @@ contains
          kb = kbot(n)
          kt = ktop(n)
          ktmax = kb + kmxn(n) - 1
-         if (layer < 0) then
+         if (target_layer == TARGET_LAYER_BOTTOM) then
             call operate(output_array_3d(kb), input_array_2d(n), operand)
-         else if (layer > 0) then
-            k = ktmax - max(kmx, 1) + layer
+         else if (target_layer == TARGET_LAYER_TOP) then
+            call operate(output_array_3d(kt), input_array_2d(n), operand)
+         else if (target_layer > TARGET_LAYER_UNIFORM) then
+            k = ktmax - max(kmx, 1) + target_layer
             if (k >= kb) call operate(output_array_3d(k), input_array_2d(n), operand)
          else
             do k = kb, kt

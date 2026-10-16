@@ -68,7 +68,6 @@ module m_flow_flowinit
    use m_rearst, only: rearst
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
-   use m_alloc_jacobi
    use m_waveconst
 
    implicit none
@@ -103,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -120,6 +119,14 @@ contains
       use m_solve_guus, only: reducept
       use m_upotukinueaa, only: upotukinueaa
       use m_density_formulas, only: DENSITY_OPTION_UNIFORM
+      use m_atmospheric_stability, only: initialize_atmospheric_stability
+      use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
+                                  free_convection, FREE_CONVECTION_ON, &
+                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
+                                  air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, &
+                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
+                                  pillar_method, PILLAR_NONE
 
       implicit none
 
@@ -196,6 +203,19 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
+
+      call initialize_atmospheric_stability( &
+         atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
+         free_convection == FREE_CONVECTION_ON, &
+         sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+         air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff)
+
+      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST .and. &
+          .not. any(temperature_model == [TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE])) then
+         call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST is only supported with temperature model = 0 or 5.')
+         error = DFM_WRONGINPUT
+         return
+      end if
 
       ! it has to be called after EC module initialization
       call read_moving_stations(md_obsfile)
@@ -379,9 +399,6 @@ contains
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
-         if (icgsolver == 10) then
-            call alloc_jacobi(ndx, lnx)
-         end if
       end if
 
       ! In 2D set AUTO_TIMESTEP_2D_OUT as default
@@ -399,7 +416,7 @@ contains
          call setstruclink()
       end if
 
-      if (japillar > OFF) then
+      if (pillar_method > PILLAR_NONE) then
          call setpillars()
       end if
 
@@ -1345,7 +1362,7 @@ contains
       use precision, only: dp
       use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
-      use mathconsts, only: sqrt2_hp
+      use m_mathconstants, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
