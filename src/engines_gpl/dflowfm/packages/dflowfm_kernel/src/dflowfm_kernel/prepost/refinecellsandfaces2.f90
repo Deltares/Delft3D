@@ -46,6 +46,7 @@ module m_refinecellsandfaces2
 contains
 
    subroutine refinecellsandfaces2()
+      use m_bilinear_interpolation, only: bilinear_data, arcinfo_data
       use m_rearrange_worldmesh, only: rearrange_worldmesh
       use m_prepare_samplehessian, only: prepare_samplehessian
       use m_get_meshbounds, only: get_meshbounds
@@ -61,12 +62,11 @@ contains
       use m_ec_interpolationsettings
       use m_missing
       use m_alloc
-      use messagehandling, only: LEVEL_INFO, mess
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_gui
       use kdtree2Factory
       use m_sferic
       use gridoperations
-      use timespace
       use m_polygon
       use m_arcinfo
       use m_qnerror
@@ -147,6 +147,14 @@ contains
             end if
          end if
 
+      end if
+
+      if (jaCourantnetwork == 1 .and. interpolationtype == 4) then
+         if (.not. allocated(d) .or. mca <= 0 .or. nca <= 0) then
+            call mess(LEVEL_ERROR, 'Bilinear refinement requires loaded interpolation data.')
+            goto 1234
+         end if
+         arcinfo_data = bilinear_data(values=d(1:mca, 1:nca), origin=[x0, y0], spacing=[dxa, dya], missing_value=dmiss)
       end if
 
       ! if ( netstat.ne.netstat_OK .or. NPL.gt.0 ) then ! in case of selecting polygon: always call findcells
@@ -357,6 +365,9 @@ contains
 !  error handling
 
 1234  continue
+   if (allocated(arcinfo_data%values)) then
+      deallocate (arcinfo_data%values)
+   end if
 
 !  deallocate
       if (allocated(jarefine)) then
@@ -784,7 +795,7 @@ contains
                   zmx = -1.0e9_dp
                   zmn = 1.0e9_dp
                   do m = 1, N
-                     call bilinarcinfo(x(m), y(m), z(m))
+                     z(m) = arcinfo_data%interpolate(x(m), y(m))
                      zmx = max(zmx, z(m))
                      zmn = min(zmn, z(m))
                   end do
@@ -795,7 +806,7 @@ contains
                      zc(1) = 0.0e9_dp
                      landsea = 1 ! always refine
                   else
-                     call bilinarcinfo(xc(1), yc(1), zc(1))
+                     zc(1) = arcinfo_data%interpolate(xc(1), yc(1))
                      landsea = 2
                   end if
                end if
