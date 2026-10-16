@@ -102,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -125,7 +125,8 @@ contains
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
                                   air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, &
-                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE
+                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
+                                  pillar_method, PILLAR_NONE
 
       implicit none
 
@@ -415,7 +416,7 @@ contains
          call setstruclink()
       end if
 
-      if (japillar > OFF) then
+      if (pillar_method > PILLAR_NONE) then
          call setpillars()
       end if
 
