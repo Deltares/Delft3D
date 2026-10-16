@@ -388,6 +388,7 @@ module m_flowparameters
    character(len=Idlen) :: vertical_advection_type !< Vertical advection type for turbulence quantities: CentralImplicit, HigherOrderUpwindExplicit
    integer, parameter :: VERTICAL_ADVECTION_CENTRAL_IMPLICIT = 4
    integer, parameter :: VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT = 6
+   real(kind=dp) :: theta_vertical_tracers = 0.0_dp !< theta vertical for tracers
 
    integer :: javasal !< vert. adv. sa1  : 4=CentraLimpL, switched to 3 for neg. strat.
 
@@ -950,6 +951,7 @@ contains
       javatem = 6 !< vert. adv. tem1 : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=switched to 3 for neg stratif.
       javased = 6 !< vert. adv. suspended sediment concentrations : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=switched to 3 for neg stratif., 6=higher-order upwind/explicit
       vertical_advection_type = '' !< vertical advection type for tracers and momentum.
+      theta_vertical_tracers = 0.0_dp
       jahazlayer = 0 !<
       jaPure1D = 0 !< 0 = org 1D advec, 1 = 1D mom Perot using vol1_f, 2 = 1D mom Perot using vol1, 3,4,5,6,7 = 1D mom on links (2 + Iadvec1D of SOBEK)
       jaJunction1D = 1 !< 0 = org 1D advec at junctions, 1 = junctions follow jaPure1D approach
