@@ -56,7 +56,7 @@ contains
                         testsplit, janettosplit, splitfac, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER
       use m_source_sink, only: source_sinks
-      use m_flowgeom, only: ndx, ndxi, lnx, acl, ln, lnxi
+      use m_flowgeom, only: ndx, lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
       use m_flowtimes, only: dtprev, t_spinup_turb_log_prof, time1, tstart_tlfsmo_user
@@ -981,15 +981,13 @@ contains
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
-                     if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then
-                        if (bruva(k) > 0.0_dp) then
-                           dk(k) = dk(k) + buoflu(k)
-                           bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkinws0(L)
-                           ! EdG: make buoyance term in matrix safer
-                           !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turkinws0(L), 1d-20)
-                        elseif (bruva(k) < 0.0_dp) then
-                           dk(k) = dk(k) - buoflu(k)
-                        end if
+                     if (bruva(k) > 0.0_dp) then
+                        dk(k) = dk(k) + buoflu(k)
+                        bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkinws0(L)
+                        ! EdG: make buoyance term in matrix safer
+                        !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turkinws0(L), 1d-20)
+                     elseif (bruva(k) < 0.0_dp) then
+                        dk(k) = dk(k) - buoflu(k)
                      end if
                   end if
 
@@ -1012,11 +1010,9 @@ contains
                   end if
 
                   sourtu = max(vicwws(L), vicwminb) * dijdij(k)
-                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then
-                     sinktu = turepsws0(L) / turkinws0(L)
-                     bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * turkinws0(L) + sourtu ! m2/s3
-                  end if
+                  sinktu = turepsws0(L) / turkinws0(L)
+                  bk(k) = bk(k) + sinktu * 2.0_dp
+                  dk(k) = dk(k) + sinktu * turkinws0(L) + sourtu ! m2/s3
 
                end do ! kb, kt-1
 
@@ -1107,53 +1103,40 @@ contains
                              + difd * (turepsws0(L - 1) - turepsws0(L)) * tetm1
                   end if
 
-                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then !k-eps
-
-                     !c Source and sink terms                                                                epsilon
-                     if (bruva(k) < 0.0_dp) then ! instable, increase rhs
-                        dk(k) = dk(k) - cmukep * c1e * bruva(k) * turkinws(L)
-                     end if
-
-                     ! Similar to the k-equation, in the eps-equation the net IWE to TKE
-                     ! transfer rate (TKEPRO-TKEDIS) is added to the eps-production term, but
-                     ! split for implicit treatment for avoiding negative epsilon.
-
-                     sourtu = c1e * cmukep * turkinws0(L) * dijdij(k)
-
-                     sinktu = c2e * turepsws0(L) / turkinws(L) ! yoeri has here : /turkin0(L)
-
-                     !c Addition of production and of dissipation to matrix ;                               epsilon
-                     !c observe implicit treatment by Newton linearization.
-
-                     bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * turepsws0(L) + sourtu
-
-                     !  bk(k) = bk(k) + sinktu
-                     !  dk(k) = dk(k) + sourtu
-
-                     ! dk(k) = dk(k) - sinktu*turepsws0(L) + sourtu
-
+                  !c Source and sink terms                                                                epsilon
+                  if (bruva(k) < 0.0_dp) then ! instable, increase rhs
+                     dk(k) = dk(k) - cmukep * c1e * bruva(k) * turkinws(L)
                   end if
+
+                  ! Similar to the k-equation, in the eps-equation the net IWE to TKE
+                  ! transfer rate (TKEPRO-TKEDIS) is added to the eps-production term, but
+                  ! split for implicit treatment for avoiding negative epsilon.
+
+                  sourtu = c1e * cmukep * turkinws0(L) * dijdij(k)
+
+                  sinktu = c2e * turepsws0(L) / turkinws(L) ! yoeri has here : /turkin0(L)
+
+                  !c Addition of production and of dissipation to matrix ;                               epsilon
+                  !c observe implicit treatment by Newton linearization.
+
+                  bk(k) = bk(k) + sinktu * 2.0_dp
+                  dk(k) = dk(k) + sinktu * turepsws0(L) + sourtu
 
                end do
 
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then ! Boundary conditions EPSILON:
+               ak(kxL) = -1.0_dp ! Flux at the free surface:
+               bk(kxL) = 1.0_dp
+               ck(kxL) = 0.0_dp
+               dk(kxL) = 4.0_dp * abs(ustws(kk))**3 / (vonkar * dzs(kt - kb + 1))
 
-                  ak(kxL) = -1.0_dp ! Flux at the free surface:
-                  bk(kxL) = 1.0_dp
-                  ck(kxL) = 0.0_dp
-                  dk(kxL) = 4.0_dp * abs(ustws(kk))**3 / (vonkar * dzs(kt - kb + 1))
-
-                  ak(0) = 0.0_dp ! at the bed:
-                  bk(0) = 1.0_dp
-                  ck(0) = -1.0_dp
-                  if (ustbs(kk) > 0 .and. kxL > 1) then
-                     hdzbs = 0.5_dp * dzs(1) + c9of1 * z00 ! half bottom layer plus 9z0
-                     dk(0) = dzs(1) * abs(ustbs(kk))**3 / (vonkar * hdzbs * hdzbs)
-                  else
-                     dk(0) = 0.0_dp
-                  end if
-
+               ak(0) = 0.0_dp ! at the bed:
+               bk(0) = 1.0_dp
+               ck(0) = -1.0_dp
+               if (ustbs(kk) > 0 .and. kxL > 1) then
+                  hdzbs = 0.5_dp * dzs(1) + c9of1 * z00 ! half bottom layer plus 9z0
+                  dk(0) = dzs(1) * abs(ustbs(kk))**3 / (vonkar * hdzbs * hdzbs)
+               else
+                  dk(0) = 0.0_dp
                end if
 
                if (javakeps >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
@@ -1186,9 +1169,7 @@ contains
                end do
 
                vicwmax = 0.1_dp * hs(kk) ! 0.009UH, Elder, uavmax=
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then ! k-eps
-                  vicwws(kb0:kt) = min(vicwmax, cmukep * turkinws(kb0:kt) * turkinws(kb0:kt) / turepsws(kb0:kt))
-               end if
+               vicwws(kb0:kt) = min(vicwmax, cmukep * turkinws(kb0:kt) * turkinws(kb0:kt) / turepsws(kb0:kt))
 
                vicwws(kt) = min(vicwws(kt), vicwws(kt - 1) * Eddyviscositysurfacmax)
                vicwws(kb0) = min(vicwws(kb0), vicwws(kb) * Eddyviscositybedfacmax)
@@ -1213,21 +1194,12 @@ contains
             ac1 = acL(LL)
             ac2 = 1.0_dp - ac1
 
+            call calculate_womegu(womegu, LL)
+
             do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-               Lu = L + 1
-               k = L - Lb + 1
-               ku = k + 1
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (n1 > ndxi) then ! open boundaries
-                  if (u1(LL) < 0.0_dp) then
-                     womegu(k) = qw(k2) / a1(n2)
-                  else
-                     womegu(k) = 0.0_dp
-                  end if
-               else
-                  womegu(k) = (ac1 * qw(k1) + ac2 * qw(k2)) / (ac1 * a1(n1) + ac2 * a1(n2))
-               end if
+
                vicwwu(L) = ac1 * vicwws(k1) + ac2 * vicwws(k2)
                turkin1(L) = ac1 * turkinws(k1) + ac2 * turkinws(k2) ! for now for postprocessing
                tureps1(L) = ac1 * turepsws(k1) + ac2 * turepsws(k2) ! for now for postprocessing
@@ -1241,7 +1213,6 @@ contains
             turkin1(Lb0) = ac1 * turkinws(k1) + ac2 * turkinws(k2) ! for now for postprocessing
             tureps1(Lb0) = ac1 * turepsws(k1) + ac2 * turepsws(k2) ! for now for postprocessing
 
-            womegu(kxL) = 0.0_dp ! top layer : 0
             do L = Lb, Lt ! vertical omega velocity at layer interface u point
                dzu(L - Lb + 1) = max(eps4, hu(L) - hu(L - 1))
             end do
