@@ -575,7 +575,7 @@ subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfi
     do while (i <= size(a))
         n = min(split, size(a) - i + 1)
         write(prefix,'(A,"[",I0,":",I0,"]=")')  name, i, i+n-1
-        write(rec,'(A30,*(F19.15))') prefix, a(i:i+n-1)
+        write(rec,'(A30,*(1X,F23.15))') prefix, a(i:i+n-1)
         call SetMessage(level, rec)
         i = i + n
     end do
