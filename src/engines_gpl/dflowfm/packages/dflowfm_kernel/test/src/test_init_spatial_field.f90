@@ -366,8 +366,8 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field,
-   !$f90tw test_validate_supported_extensions_select_effective_methods, test_validate_supported_extensions_select_effective_methods,
-   subroutine test_validate_supported_extensions_select_effective_methods() bind(C)
+   !$f90tw test_validate_supported_extensions_select_default_method, test_validate_supported_extensions_select_default_method,
+   subroutine test_validate_supported_extensions_select_default_method() bind(C)
       character(len=16), parameter :: file_types(11) = [character(len=16) :: &
          '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
@@ -376,7 +376,7 @@ contains
          '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
          'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
       integer, parameter :: expected_methods(11) = [JUSTUPDATE, SPACEANDTIME, SPACEANDTIME, WEIGHTFACTORS, &
-                                                     METHOD_TRIANGULATION, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
+                                                     METHOD_BILINEAR, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
                                                      WEIGHTFACTORS, SPACEANDTIME, SPACEANDTIME]
       type(t_spatial_field_input) :: input
       integer :: i
@@ -394,7 +394,7 @@ contains
       call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                            'GeoTIFF should accept explicit bilinear interpolation')
       call f90_expect_eq(input%method, METHOD_BILINEAR, 'GeoTIFF should retain the explicit bilinear method')
-   end subroutine test_validate_supported_extensions_select_effective_methods
+   end subroutine test_validate_supported_extensions_select_default_method
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unknown_file_extension, test_validate_unknown_file_extension,

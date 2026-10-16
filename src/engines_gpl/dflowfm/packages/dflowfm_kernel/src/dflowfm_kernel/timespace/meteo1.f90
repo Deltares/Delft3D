@@ -3302,7 +3302,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: zh
       real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
-      type(bilinear_data) :: data
+      type(bilinear_data) :: raster_data
       character(len=5) :: sd
       type(TerrorInfo) :: errorInfo
 
@@ -3341,7 +3341,7 @@ contains
          if (local_method == METHOD_TRIANGULATION) then
             local_method = METHOD_BILINEAR
             msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
-                     Method has been set to bilinear interpolation instead.'
+&                     Method has been set to bilinear interpolation instead.'
             call warn_flush()
          end if
 
@@ -3378,7 +3378,7 @@ contains
       case (METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR)
 
          select case (filetype)
-         
+
          case (NCFLOW)
 
             call read_flowsamples_from_netcdf(filename, qid, ierr)
@@ -3391,10 +3391,10 @@ contains
             call warn_flush()
             return
 
-            case (ARCINFO, GEOTIFF)
+         case (ARCINFO, GEOTIFF)
 
             if (local_method == METHOD_BILINEAR) then
-               data = bilinear_data(filename, filetype, ierr)
+               raster_data = bilinear_data(filename, filetype, ierr)
                if (ierr /= 0) then
                   msgbuf = 'timespace::timespaceinitialfield: could not read bilinear interpolation data from '''//trim(filename)//'''.'
                   call err_flush()
@@ -3413,7 +3413,7 @@ contains
 
             call reasam(minp0, 0)
 
-         end select         
+         end select
 
          select case (local_method)
 
@@ -3421,13 +3421,14 @@ contains
 
             jdla = 1
             call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
-               ZPL, transformcoef, kcc)
+                            ZPL, transformcoef, kcc)
 
          case (METHOD_BILINEAR)
 
-            where (zh == data%missing_value)
-               zh = data%interpolate(xu, yu)
+            where (zh == raster_data%missing_value)
+               zh = raster_data%interpolate(xu, yu)
             end where
+            deallocate (raster_data%values)
 
          case (METHOD_AVERAGING)
 
@@ -3455,7 +3456,7 @@ contains
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
-               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
@@ -3475,17 +3476,17 @@ contains
                   n6 = n6 + 2 ! safety at poles
                end if
 
-               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
-               allocate(LnnL(n6), Lorg(n6))
+               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
+               allocate (LnnL(n6), Lorg(n6))
 
                do n = 1, nx
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
 
-               deallocate(LnnL, Lorg)
+               deallocate (LnnL, Lorg)
             else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
 
                do k = 1, numk
                   if (jakc == 1) then
@@ -3503,7 +3504,7 @@ contains
                   end do
                end do
 
-               deallocate(xxx, yyy)
+               deallocate (xxx, yyy)
             end if
 
             if (jakdtree == 1) then
@@ -3517,7 +3518,7 @@ contains
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                              dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
             deallocate (xx, yy, nnn)
 
             if (errorInfo%cntNoSamples > 0) then
@@ -3530,10 +3531,6 @@ contains
                call warn_flush()
             end if
 
-            if (.not. errorInfo%success) then
-               return
-            end if
-
             ! restore settings
             iav = iav_store
             rcel = rcel_store
@@ -3544,7 +3541,15 @@ contains
                call delete_kdtree2(treeglob)
             end if
 
+            if (.not. errorInfo%success) then
+               call delsam(-1)
+               return
+            end if
+
          end select
+
+         ! Interpolation is complete; release samples without making a backup.
+         call delsam(-1)
 
          do k = 1, nx
             if (zh(k) /= dmiss_default) then
@@ -3553,11 +3558,9 @@ contains
             end if
          end do
 
-         ! sample set can be large, delete it and do not make a copy
-         call delsam(-1)
          if (allocated(d)) then
 
-            deallocate(d)
+            deallocate (d)
             mca = 0
             nca = 0
 
@@ -3739,7 +3742,7 @@ module m_meteo
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
    integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
    integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
-   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity   
+   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity
    integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
@@ -4123,7 +4126,7 @@ contains
       use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
       integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
-      
+
       select case (operand)
       case (OPERAND_OVERRIDE)
          ec_operand = EC_OPERAND_REPLACE
@@ -4374,7 +4377,7 @@ contains
       case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
 
-      ! Legacy FM-structures, deprecated as of 2027.01 release.
+         ! Legacy FM-structures, deprecated as of 2027.01 release.
       case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
@@ -4443,7 +4446,7 @@ contains
          itemPtr1 => item_sensible_heat_flux
          dataPtr1 => sensible_heat_flux
       case ('latentheatflux')
-          itemPtr1 => item_latent_heat_flux
+         itemPtr1 => item_latent_heat_flux
          dataPtr1 => latent_heat_flux
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity

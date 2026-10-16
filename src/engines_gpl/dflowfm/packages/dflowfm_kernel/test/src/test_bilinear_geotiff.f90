@@ -216,7 +216,7 @@ contains
    end subroutine test_geotiff_rejects_invalid_geometry
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration,
+   !$f90tw TESTCODE(TEST, test_bilinear_geotiff,
    !$f90tw test_bilinear_arcinfo_geotiff_initial_field, test_bilinear_arcinfo_geotiff_initial_field,
    !> Equivalent ArcInfo and GeoTIFF rasters initialize identical water-level fields.
    subroutine test_bilinear_arcinfo_geotiff_initial_field() bind(C)
