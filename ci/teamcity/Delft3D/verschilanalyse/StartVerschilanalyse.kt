@@ -19,15 +19,16 @@ object StartVerschilanalyse : BuildType({
     }
 
     params {
-        param("harbor_webhook.image.tag", "development")
+        text("harbor_webhook.image.tag", "development", display = ParameterDisplay.PROMPT)
         param("va_harbor_protocol", "docker")
-        param(
+        text(
             "harbor_webhook.image.url", 
             sequenceOf(
                 "containers.deltares.nl",
                 DslContext.getParameter("va_harbor_project"),
                 "${DslContext.getParameter("va_harbor_repository")}:development"
             ).joinToString(separator="/")
+            display = ParameterDisplay.PROMPT
         ) 
         text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
         checkbox(
