@@ -38,7 +38,7 @@ module m_tridag
 
    public :: tridag
 
-   real(kind=dp), parameter :: pivot_floor = 1.0e-15_dp
+   real(kind=dp), parameter :: PIVOT_FLOOR = 1.0e-15_dp
 
 contains
 
@@ -63,8 +63,8 @@ contains
       do row = 2, n
          normalized_upper(row) = upper(row - 1) / pivot
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
-         if (abs(pivot) < pivot_floor) then
-            pivot = sign(pivot_floor, pivot)
+         if (abs(pivot) < PIVOT_FLOOR) then
+            pivot = sign(PIVOT_FLOOR, pivot)
          end if
          solution(row) = (rhs(row) - lower(row) * solution(row - 1)) / pivot
       end do
