@@ -27,7 +27,7 @@ object StartVerschilanalyse : BuildType({
                 "containers.deltares.nl",
                 DslContext.getParameter("va_harbor_project"),
                 "${DslContext.getParameter("va_harbor_repository")}:development"
-            ).joinToString(separator="/")
+            ).joinToString(separator="/"),
             display = ParameterDisplay.PROMPT
         ) 
         text("reference_prefix", "output/release/2025.01", display = ParameterDisplay.PROMPT)
