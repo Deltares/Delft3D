@@ -3038,9 +3038,230 @@ contains
 
    end function ecConverterSpiderweb
 
+   !> Project fixed harmonic coefficients once, then evaluate them directly at target locations.
+   !! Source data, spatial mapping, operand and interpolation method remain fixed during a model run.
+   !! Extrapolation copies final target values after applying operands, just as in the uncached path.
+   function ecConverterHarmonic(connection, item_index, timesteps) result(success)
+      use kdtree2Factory
+      type(tEcConnection), intent(inout) :: connection !< Connection supplying the source, target and spatial mapping.
+      integer, intent(in) :: item_index !< Source/target pair to evaluate.
+      real(dp), intent(in) :: timesteps !< Requested time in modified Julian days.
+      logical :: success !< Whether projection and operand application succeeded.
+
+      type(tEcItem), pointer :: source_item, target_item
+      type(tEcConverter), pointer :: ptr
+      type(tEcHarmonicsFrame), pointer :: frame
+      type(tEcField), pointer :: sourcefield
+      type(tEcElementSet), pointer :: sourceset, targetset
+      type(tEcIndexWeight), pointer :: weights
+      type(tEcHarmonicProjection), pointer :: proj
+      real(dp), dimension(:), pointer :: targetfield
+      integer :: j, k, row, col, point, phase_row, phase_col, n_weights, n_cols, istat
+      integer :: projection_index, n_projections
+      integer, dimension(4) :: points, phase_cols, phase_rows
+      integer, dimension(:), allocatable :: sparse_rows
+      real(dp) :: amplitude, phase, weight, angle, pi, cos_time, sin_time, source_missing
+      logical :: valid, samples
+
+      success = .false.
+      source_item => connection%sourceItemsPtr(item_index)%ptr
+      target_item => connection%targetItemsPtr(item_index)%ptr
+      ptr => connection%converterPtr
+      frame => source_item%hframe
+      sourcefield => source_item%sourceT1FieldPtr
+      targetfield => target_item%targetFieldPtr%arr1dPtr
+      sourceset => source_item%elementSetPtr
+      targetset => target_item%elementSetPtr
+      weights => ptr%indexWeight
+      source_missing = source_item%quantityPtr%fillvalue
+      pi = 4.0_dp * atan(1.0_dp)
+      if (frame%ec_period <= 0) then
+         call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
+         return
+      end if
+
+      n_projections = 0
+      if (allocated(frame%projections)) then
+         n_projections = size(frame%projections)
+      end if
+      do projection_index = 1, n_projections
+         proj => frame%projections(projection_index)
+         if (proj%sourceItemId == source_item%id .and. proj%targetItemId == target_item%id .and. &
+             proj%converterId == ptr%id) then
+            exit
+         end if
+      end do
+      if (projection_index > n_projections) then
+         block
+            type(tEcHarmonicProjection), dimension(:), allocatable :: projections
+
+            allocate (projections(n_projections + 1), stat=istat)
+            if (istat /= 0) then
+               call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate projection cache.")
+               return
+            end if
+            do k = 1, n_projections
+               proj => frame%projections(k)
+               projections(k)%sourceItemId = proj%sourceItemId
+               projections(k)%targetItemId = proj%targetItemId
+               projections(k)%converterId = proj%converterId
+               call move_alloc(proj%cos, projections(k)%cos)
+               call move_alloc(proj%sin, projections(k)%sin)
+               call move_alloc(proj%mask, projections(k)%mask)
+            end do
+            call move_alloc(projections, frame%projections)
+         end block
+      end if
+      proj => frame%projections(projection_index)
+      proj%sourceItemId = source_item%id
+      proj%targetItemId = target_item%id
+      proj%converterId = ptr%id
+      if (.not. allocated(proj%cos)) then
+         block
+            type(tEcHarmonicProjection) :: pending
+            type(kdtree_instance) :: tree
+            real(dp), dimension(:), allocatable :: x_extrapolate
+
+            allocate (pending%cos(targetset%nCoordinates), pending%sin(targetset%nCoordinates), &
+                      pending%mask(targetset%nCoordinates), stat=istat)
+            if (istat /= 0) then
+               call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate harmonic coefficients.")
+               return
+            end if
+            pending%cos = 0.0_dp
+            pending%sin = 0.0_dp
+            pending%mask = 0
+            if (ptr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+               allocate (x_extrapolate(targetset%nCoordinates), stat=istat)
+               if (istat /= 0) then
+                  call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate extrapolation indices.")
+                  return
+               end if
+               x_extrapolate = targetset%x
+            end if
+            samples = sourceset%ofType == elmSetType_samples
+            n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
+            if (.not. samples .and. sourcefield%issparse == 1) then
+               allocate (sparse_rows(size(sourcefield%arr1d)), stat=istat)
+               if (istat /= 0) then
+                  call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate sparse row indices.")
+                  return
+               end if
+               do row = 1, sourceset%n_rows
+                  sparse_rows(sourcefield%ia(row):sourcefield%ia(row + 1) - 1) = row
+               end do
+            end if
+
+            do j = 1, targetset%nCoordinates
+               if (samples) then
+                  n_weights = size(weights%indices, 1)
+               else
+                  row = weights%indices(1, j)
+                  col = weights%indices(2, j)
+                  if (row <= 0 .or. col <= 0) then
+                     cycle
+                  end if
+                  n_weights = 4
+                  if (allocated(sparse_rows)) then
+                     points = [row, row + 1, col + 1, col]
+                     phase_rows = sparse_rows(points)
+                     phase_cols = sourcefield%ja(points)
+                  else
+                     points = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
+                               row * n_cols + col + 1, row * n_cols + col]
+                     phase_cols = [col, col + 1, col + 1, col]
+                     phase_rows = [row, row, row + 1, row + 1]
+                  end if
+               end if
+               valid = .true.
+               do k = 1, n_weights
+                  if (samples) then
+                     point = weights%indices(k, j)
+                     if (point <= 0 .or. point > sourceset%n_cols) then
+                        cycle
+                     end if
+                     phase_col = point
+                     phase_row = 1
+                  else
+                     point = points(k)
+                     phase_col = phase_cols(k)
+                     phase_row = phase_rows(k)
+                  end if
+                  amplitude = sourcefield%arr1d(point)
+                  phase = frame%phases(phase_col, phase_row)
+                  if (comparereal(amplitude, source_missing, .true.) == 0 .or. &
+                      comparereal(phase, source_missing, .true.) == 0) then
+                     if (samples) then
+                        call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                        return
+                     end if
+                     valid = .false.
+                     exit
+                  end if
+                  phase = phase * pi / 180.0_dp
+                  weight = weights%weightFactors(k, j)
+                  pending%cos(j) = pending%cos(j) + weight * amplitude * cos(phase)
+                  pending%sin(j) = pending%sin(j) + weight * amplitude * sin(phase)
+               end do
+               if (valid) then
+                  pending%mask(j) = 1
+               else if (allocated(x_extrapolate)) then
+                  x_extrapolate(j) = ec_undef_hp
+               end if
+            end do
+            if (allocated(x_extrapolate)) then
+               do j = 1, size(pending%mask)
+                  if (pending%mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
+                     cycle
+                  end if
+                  if (weights%substndx(j) == 0) then
+                     if (tree%itreestat /= ITREE_OK) then
+                        call build_kdtree(tree, size(x_extrapolate), x_extrapolate, targetset%y, istat, 0, ec_undef_hp)
+                        if (istat /= 0 .or. tree%itreestat /= ITREE_OK) then
+                           call delete_kdtree2(tree)
+                           call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to find harmonic extrapolation donors.")
+                           return
+                        end if
+                     end if
+                     call make_queryvector_kdtree(tree, targetset%x(j), targetset%y(j), 0)
+                     call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
+                     weights%substndx(j) = tree%results(1)%idx
+                  end if
+               end do
+               call delete_kdtree2(tree)
+            end if
+            call move_alloc(pending%cos, proj%cos)
+            call move_alloc(pending%sin, proj%sin)
+            call move_alloc(pending%mask, proj%mask)
+         end block
+      end if
+
+      call check_undefined_values_for_operand(ptr%operandType, targetfield(1:size(proj%mask)), success, proj%mask)
+      if (.not. success) then
+         return
+      end if
+      angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
+      cos_time = cos(angle)
+      sin_time = sin(angle)
+      do j = 1, size(proj%mask)
+         if (proj%mask(j) /= 0) then
+            call apply_operand(ptr%operandType, targetfield(j), proj%cos(j) * cos_time + proj%sin(j) * sin_time)
+         end if
+      end do
+      if (ptr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+         do j = 1, size(proj%mask)
+            if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
+               targetfield(j) = targetfield(weights%substndx(j))
+            end if
+         end do
+         ptr%extrapolated = .true.
+      end if
+      target_item%targetFieldPtr%timesteps = timesteps
+   end function ecConverterHarmonic
+
    !> Perform the configured conversion, if supported, for a NetCDF FileReader.
-   !! Supports linear interpolation in time, no interpolation in space and no weights.
-   !! Supports overwriting .
+   !! Fixed, unlayered harmonic fields cache their spatially interpolated cosine/sine coefficients.
+   !! Other fields retain their configured spatial and temporal interpolation.
    !! Converts source(i) to target(i).
    function ecConverterNetcdf(connection, timesteps) result(success)
       use m_alloc
@@ -3086,6 +3307,7 @@ contains
       type(tEcItem), pointer :: wavedirPtr ! pointer to item for wave direction
       type(tEcItem), pointer :: wavehgtPtr ! pointer to item for wave height
       logical :: has_x_wind, has_y_wind
+      logical :: has_rotated_wind
       logical :: has_wave_direction
       logical :: all_scalar_sources
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
@@ -3148,6 +3370,7 @@ contains
       windyPtr => null()
       has_x_wind = .false.
       has_y_wind = .false.
+      has_rotated_wind = .false.
       wavedirPtr => null()
       wavehgtPtr => null()
       waveheightT0 => null()
@@ -3281,6 +3504,7 @@ contains
          ! This should only be performed if the standard_name for the x-component was x_wind or grid_eastward_wind (and similar for the y-component)
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
          if (associated(windxPtr%elementsetPtr%dir)) then
+            has_rotated_wind = .true.
             do ipt = 1, windxPtr%elementsetPtr%ncoordinates
                phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.0_dp
                xtmp = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * sin(phi)
@@ -3319,6 +3543,14 @@ contains
                   call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires at least two NetCDF source vertical coordinates.')
                   return
                end if
+            end if
+
+            if (has_harmonics .and. .not. has_rotated_wind .and. sourceElementSet%n_layers == 0 .and. &
+                sourceItem%quantityPtr%name /= 'sea_surface_wave_from_direction') then
+               if (.not. ecConverterHarmonic(connection, i, timesteps)) then
+                  return
+               end if
+               cycle
             end if
 
             if (sourceElementSet%ofType == elmSetType_samples) then
