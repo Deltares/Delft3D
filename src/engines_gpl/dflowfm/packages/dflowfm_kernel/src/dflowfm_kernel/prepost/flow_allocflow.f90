@@ -64,7 +64,8 @@ contains
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
+                        use_density, iturbulencemodel, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0, &
+                        vicwwu_total, vicwws_total, difwws_total
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -90,7 +91,8 @@ contains
                         qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz, turkinws0, turkinws, turepsws0, & 
+          turepsws, ustbs, ustws, tke_min, eps_min, bruva_u
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
@@ -883,6 +885,8 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(bruva_u, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('bruva_u(lnkx)', ierr, lnkx)
          call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu_total(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -900,6 +904,19 @@ contains
          call aerr('turkinws(ndkx)', ierr, ndkx)
          call realloc(turepsws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('turepsws(ndkx)', ierr, ndkx)
+
+         if (iturbulencemodel == 5) then
+            allocate (turkinws0(ndkx), stat=ierr)
+            turkinws0 = tke_min
+            allocate (turkinws(ndkx), stat=ierr)
+            turkinws = tke_min
+            allocate (turepsws0(ndkx), stat=ierr)
+            turepsws0 = eps_min
+            allocate (turepsws(ndkx), stat=ierr)
+            turepsws = eps_min
+            allocate (ustbs(ndkx), stat=ierr)
+            allocate (ustws(ndkx), stat=ierr)
+         end if
 
          call realloc(sqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('sqcu(ndkx)', ierr, ndkx)
