@@ -1388,7 +1388,7 @@ contains
                         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, &
                         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
                         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
-                        thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
+         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf, volerror
       use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
@@ -1450,7 +1450,7 @@ contains
          id_pump_stagedim, &
          id_1dflowlink_dim, &
          id_time, id_timestep, &
-         id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_unorm, id_q1, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, &
+         id_s1, id_volerr, id_taus, id_ucx, id_ucy, id_ucz, id_unorm, id_q1, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, &
          id_ice_thickness, id_ice_area_fraction, id_snow_thickness, id_ice_pressure, id_ice_temperature, id_snow_temperature, &
          id_czs, id_E, id_thetamean, &
          id_sigmwav, &
@@ -1651,6 +1651,12 @@ contains
       ierr = nf90_put_att(irstfile, id_s1, 'standard_name', 'sea_surface_height') ! sorry for inland water people
       ierr = nf90_put_att(irstfile, id_s1, 'long_name', 'water level')
       ierr = nf90_put_att(irstfile, id_s1, 'units', 'm')
+
+      ierr = nf90_def_var(irstfile, 'volume_error', nf90_double, [id_flowelemdim, id_timedim], id_volerr)
+      ierr = nf90_put_att(irstfile, id_volerr, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+      ierr = nf90_put_att(irstfile, id_volerr, 'standard_name', '') ! sorry for inland water people
+      ierr = nf90_put_att(irstfile, id_volerr, 'long_name', 'volume error')
+      ierr = nf90_put_att(irstfile, id_volerr, 'units', 'm3')
 
       ! Definition and attributes of flow data on centres: water level timestep before the latest timestep
       ierr = nf90_def_var(irstfile, 's0', nf90_double, [id_flowelemdim, id_timedim], id_s0)
@@ -2299,7 +2305,7 @@ contains
       end if
 
       ! Gridmapping
-      ierr = unc_add_gridmapping_att(irstfile, [id_s1, id_taus, id_ucx, id_ucy, id_unorm, id_sa1, id_sed], jsferic) ! add id_ucz?
+      ierr = unc_add_gridmapping_att(irstfile, [id_s1, id_volerr, id_taus, id_ucx, id_ucy, id_unorm, id_sa1, id_sed], jsferic) ! add id_ucz?
 
       ! Flow cells
       ierr = nf90_def_var(irstfile, 'FlowElem_xzw', nf90_double, id_flowelemdim, id_flowelemxzw) ! For later cell-matching based on center of mass.
@@ -2635,6 +2641,7 @@ contains
       end if
       ierr = nf90_inq_varid(irstfile, 'timestep', id_timestep)
       ierr = nf90_inq_varid(irstfile, 's1', id_s1)
+      ierr = nf90_inq_varid(irstfile, 'volume_error', id_volerr)
       ierr = nf90_inq_varid(irstfile, 's0', id_s0)
       ierr = nf90_inq_varid(irstfile, 'unorm', id_unorm)
       ierr = nf90_inq_varid(irstfile, 'u0', id_u0)
@@ -2741,6 +2748,7 @@ contains
       ! Write the data: water level (new and old)
       ierr = nf90_put_var(irstfile, id_s1, s1, [1, itim], [ndxi, 1])
       ierr = nf90_put_var(irstfile, id_s0, s0, [1, itim], [ndxi, 1])
+      ierr = nf90_put_var(irstfile, id_volerr, volerror, [1, itim], [ndxi, 1])
 
       ! Write the data: bed level
       ierr = nf90_put_var(irstfile, id_bl, bl, [1, itim], [ndxi, 1])
@@ -3988,6 +3996,7 @@ contains
          ! Water levels
          if (map_write_settings%s1 > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s1, nc_precision, UNC_LOC_S, 's1', 'sea_surface_height', 'Water level', 'm', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_volerr, nc_precision, UNC_LOC_S, 'volume_error', '', 'Volume error', 'm3', jabndnd=jabndnd_)
          end if
          if (map_write_settings%s0 > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_s0, nc_precision, UNC_LOC_S, 's0', 'sea_surface_height', 'Water level on previous timestep', 'm', jabndnd=jabndnd_)
@@ -5151,6 +5160,7 @@ contains
       ! Water level
       if (map_write_settings%s1 == 1) then
          ierr = write_array_with_dmiss_for_dry_cells_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_s1, UNC_LOC_S, s1, jabndnd=jabndnd_)
+         ierr = write_array_with_dmiss_for_dry_cells_into_netcdf_file(mapids%ncid, mapids%id_tsp, mapids%id_volerr, UNC_LOC_S, volerror, jabndnd=jabndnd_)
       end if
 
       if (map_write_settings%s0 == 1) then
@@ -6848,6 +6858,16 @@ contains
             ierr = nf90_put_att(imapfile, id_s1(iid), 'standard_name', 'sea_surface_height') ! sorry for inland water people
             ierr = nf90_put_att(imapfile, id_s1(iid), 'long_name', 'water level')
             ierr = nf90_put_att(imapfile, id_s1(iid), 'units', 'm')
+            ierr = unc_add_gridmapping_att(imapfile, [id_s1(iid)], jsferic)
+         end if
+
+         if (map_write_settings%s1 > 0 .or. jaseparate_ == 2) then
+            ! Flow data on centres: water level at latest timestep
+            ierr = nf90_def_var(imapfile, 'volume_error', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_s1(iid))
+            ierr = nf90_put_att(imapfile, id_s1(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+            ierr = nf90_put_att(imapfile, id_s1(iid), 'standard_name', '') ! sorry for inland water people
+            ierr = nf90_put_att(imapfile, id_s1(iid), 'long_name', 'volume error')
+            ierr = nf90_put_att(imapfile, id_s1(iid), 'units', 'm3')
             ierr = unc_add_gridmapping_att(imapfile, [id_s1(iid)], jsferic)
          end if
 
