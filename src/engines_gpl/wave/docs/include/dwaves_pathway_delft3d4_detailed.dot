@@ -37,11 +37,11 @@ digraph dwaves_pathway_delft3d4 {
         color="#3B82A0";
         style="rounded";
         node [shape=box, style="rounded,filled", fillcolor="#E7F1FA", color="#7890A2"];
-        wave_init_call [label="wave_main.f90 : wave_init() → flow_data.f90 : flow_init()\n(swan_run%flowgridfile == ' ' branch)\ncall wave_from_flow_init(subdom_names, it01, d_tscale, mud)\n[blocks until FLOW connects]"];
-        master_step [label="wave_main.f90 : wave_master_step()\ndo while (command == flow_wave_comm_perform_step):\ncall wave_from_flow_command(command, mud, timtscale)"];
+        wave_init_call [label="wave_main.f90 : wave_init() → flow_data.f90 : flow_init()\n(swan_run%flowgridfile == ' ' branch)\ncall wave_from_flow_init(subdom_names, it01, d_tscale, mud)\nmode 2: also initialize mud connection and mudids"];
+        master_step [label="wave_main.f90 : wave_master_step()\ndo while (command == flow_wave_comm_perform_step):\ncall wave_from_flow_command(command, mud, timtscale)\nmode 2: wait for both water and mud commands"];
         settime [label="call settimtscale(wavedata%time, timtscale,\nswan_run%modsim, swan_run%nonstat_interval)"];
-        swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads FLOW com-file fields;\nwave2flow/wave2com/put_wave_fields() write results back"];
-        status [label="call wave_to_flow_status(\nflow_wave_comm_result_ok, mud)"];
+        swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads FLOW com-file fields;\nmode 2: also read mud density, viscosity, depth/level\nand configure SWAN mud physics (swan_input.f90)\nwave2flow/wave2com/put_wave_fields() write results back"];
+        status [label="call wave_to_flow_status(\nflow_wave_comm_result_ok, mud)\nmode 2: report completion to both water and mud"];
         wave_finish [label="wave_main_finish() → wave_master_finish()\n(loop exits on flow_wave_comm_finalize)"];
         wave_init_call -> master_step -> settime -> swan_tot -> status;
         status -> master_step [label="loop while\nperform_step", constraint=false];
@@ -66,7 +66,7 @@ digraph dwaves_pathway_delft3d4 {
     node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
     st_comminfo [label="comminfowater / comminfomud\n(dioplttype flow_to_wave / wave_to_flow,\nsync_flowwave.f90 module vars)"];
     st_runids [label="runids(:) / num_subdomains /\nflow_data_initialized\n(flow_data.f90 module vars)"];
-    st_mode [label="wavedata%mode = flow_online (1)\nwavedata%time%tscale (from FLOW)\n(wave_data.f90)"];
+    st_mode [label="wavedata%mode = flow_online (1), same as FM\nblank flowgridfile selects the DelftIO route\nmode 2: Delft3D4 fluid-mud extension ONLY, not FM/BMI\nsame driver and loop, with conditional mud operations\none water + one mud domain; identical grids\nwavedata%time%tscale from FLOW"];
 
     { rank=same; tricom_init; wave_init_call; st_comminfo; st_runids; }
     { rank=same; spacer1; settime; st_mode; }

@@ -34,13 +34,13 @@ digraph dwaves_pathway_fm_bmi {
     node [fillcolor="#F2F8F3"];
     wave_init   [label="wave_init(mode_in=wave_mode, mdw_file)\ncall setmode(wavedata, mode_in)\ncall read_dwaves_mdw(mdw_file, swan_run, wavedata)"];
     branch [shape=diamond, fillcolor="#FFFFFF", label="swan_run%flowgridfile\n== ' ' ?"];
-    flow_init_fm [label="flow_data.f90 : flow_init()\n[FM branch] call checkcomfiles(swan_run%flowgridfile)\nchecks NetCDF/com file(s), incl. partitions"];
+    flow_init_fm [label="flow_data.f90 : flow_init()\n[when useflowdata .or. swwav]\ncall checkcomfiles(swan_run%flowgridfile)\nchecks NetCDF/com file(s), incl. partitions"];
     flow_init_d4 [style="rounded,filled,dashed", fillcolor="#F6F6F6",
                   label="flow_data.f90 : flow_init()\n[D3D4 branch] call wave_from_flow_init(...)\n(DelftIO wait — see Delft3D4 diagram)"];
     master_step [label="wave_master_step()\nswan_run%flowgridfile /= ' ':\ncommand = 0 (skip DelftIO wait)"];
     settime [label="call settimsec(wavedata%time,\nwavedata%time%timsec + stepsize, ...)"];
     swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads configured\nNetCDF/com file(s) when useflowdata"];
-    write_out [label="write_wave_map(_netcdf) / write_wave_his_netcdf\n(+ wave2flow/wave2com/put_wave_fields\nif a com-file output is also configured)"];
+    write_out [label="write_wave_map(_netcdf) / write_wave_his_netcdf\n+ wave2com() / put_wave_fields() when WriteCOM\n(wave2flow() is legacy-route only)"];
     wave_master_finish [label="wave_master_finish()\ndel_temp_files / dealloc_swan"];
 
     wave_init -> branch;
@@ -67,9 +67,9 @@ digraph dwaves_pathway_fm_bmi {
     { rank=same; dimr_finalize; bmi_finalize; wave_master_finish; }
 
     node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
-    st_wavemode [label="wave_mode (module var, wave_bmi.f90)\nset by DIMR before initialize"];
+    st_wavemode [label="wave_mode (module var, wave_bmi.f90)\nDIMR sets flow_online = 1, same as Delft3D4\nno separate numeric FM mode"];
     st_commworld [label="engine_comm_world (get_var key)\nMPI communicator, parallel coordination"];
-    st_flowgridfile [label="swan_run%flowgridfile (swan_input.f90)\nreal differentiator: D3D4 vs FM route"];
+    st_flowgridfile [label="swan_run%flowgridfile (swan_input.f90)\nset by [Output] COMFile\nselects legacy vs FM file route"];
     st_flowdata [label="flow_data_initialized / num_subdomains\n(flow_data.f90 module vars)"];
 
     { rank=same; bmi_getvar; st_wavemode; st_commworld; }
