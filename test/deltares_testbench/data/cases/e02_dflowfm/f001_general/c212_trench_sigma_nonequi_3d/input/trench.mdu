@@ -1,0 +1,118 @@
+# Generated on 11:26:57, 05-06-2014
+# Deltares, D-Flow FM Version 1.1.99.34297M, Jun 05 2014, 10:13:56
+
+[model]
+Program                      = D-Flow FM
+Version                      = 1.1.99.34297M
+AutoStart                    = 0                   # Autostart simulation after loading MDU or not (0=no, 1=autostart, 2=autostartstop).
+
+[geometry]
+IniFieldFile = inibedlevel.ini
+NetFile                      = t01_net.nc          # *_net.nc
+WaterLevIniFile              =                     # Initial water levels sample file *.xyz
+LandBoundaryFile             =                     # Only for plotting
+ThinDamFile                  =                     # *_thd.pli, Polyline(s) for tracing thin dams.
+FixedWeirFile                =                     # *_tdk.pli, Polyline(s) x,y,z, z = fixed weir top levels
+VertplizFile                 =                     # *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
+ProflocFile                  =                     # *_proflocation.xyz)    x,y,z, z = profile refnumber
+ProfdefFile                  =                     # *_profdefinition.def) definition for all profile nrs
+ProfdefxyzFile               =                     # *_profdefinition.def) definition for all profile nrs
+Uniformwidth1D               = 2.                  # Uniform width for 1D profiles not specified bij profloc
+WaterLevIni                  = 0.                  # Initial water level
+Bedlevuni                    = -5.                 # Uniform bed level, (only if bedlevtype>=3, used at missing z values in netfile
+BedlevType                   = 1                   # 1 : Bottom levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
+                                                   # 2 : Bottom levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
+                                                   # 3 : Bottom levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
+                                                   # 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
+                                                   # 5 : Bottom levels at velocity points  (=flow links), using max  network levels xk, yk, zk  bl = lowest connected link
+PartitionFile                =                     # *_part.pol, polyline(s) x,y
+AngLat                       = 0.                  # Angle of latitude  S-N (deg), 0=no Coriolis
+AngLon                       = 0.                  # Angle of longitude E-W (deg), 0=Greenwich
+Conveyance2D                 = -1                   # -1:R=HU,0:R=H, 1:R=A/P, 2:K=analytic-1D conv, 3:K=analytic-2D conv
+Nonlin2D                     = 0                   # Non-linear 2D volumes, only icm ibedlevtype = 3
+Makeorthocenters             = 0                   # 1=yes, 0=no switch from circumcentres to orthocentres in geominit
+Dcenterinside                = 1.                  # limit cell center; 1.0:in cell <-> 0.0:on c/g
+Kmx                          = 10                                    # Max nr of vertical layers
+Layertype                    = 1                                     # 1= all sigma, 2 = all z, 3 = use VertplizFile
+StretchType                  = 1                   # type of layers stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
+stretchCoef                  =   4.0   4.8   5.7   6.8   8.1   9.6   11.5   13.7   16.3   19.5
+
+[numerics]
+CFLMax                       = 0.5                 # Max. Courant nr.
+AdvecType                    = 33                   # Adv type, 0=no, 1= Wenneker, qu-udzt, 2=1, q(uio-u), 3=Perot q(uio-u), 4=Perot q(ui-u), 5=Perot q(ui-u) without itself
+TimeStepType                 = 2                   #  0=only transport, 1=transport + velocity update, 2=full implicit step_reduce, 3=step_jacobi, 4=explicit
+Limtypmom                    = 4                   # Limiter type for cell center advection velocity, 0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
+Limtypsa                     = 0                   # Limiter type for salinity transport,           0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
+Vertadvtypmom                = 3                   # vertical advection for u1: 0: No, 3: Upwind implicit, 4: Central implicit, 5: QUICKEST implicit., 6: centerbased upwind expl
+Icgsolver                    = 4                   # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS
+Tlfsmo                       = 0.                  # Fourier smoothing time on waterlevel boundaries (s)
+Slopedrop2D                  = 0.3                 # Apply droplosses only if local bottom slope > Slopedrop2D, <=0 =no droplosses
+cstbnd                       = 1                   # Delft-3D type velocity treatment near boundaries for small coastal models (1) or not (0)
+Maxwaterleveldiff           = 0d0
+Maxvelocitydiff             = 0d0
+Turbulencemodel              =3
+anticreep                    =0
+
+[physics]
+UnifFrictCoef                = 2.5d-2              # Uniform friction coefficient, 0=no friction
+UnifFrictType                = 2                   # 0=Chezy, 1=Manning, 2=White Colebrook, 3=z0 etc
+UnifFrictCoef1D              =                     # Uniform friction coefficient in 1D links, 0=no friction
+UnifFrictCoefLin             = 0.                  # Uniform linear friction coefficient for ocean models (m/s), 0=no
+Vicouv                       = 1                   # Uniform horizontal eddy viscosity (m2/s)
+Dicouv                       = 1d-5                  # Uniform horizontal eddy diffusivity (m2/s)
+Vicoww =  0.
+Dicoww =  0.
+Smagorinsky                  = 0.                  # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
+Elder                        = 0.                  # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
+irov                         = 0                   # 0=free slip, 1 = partial slip using wall_ks
+wall_ks                      = 0.                  # Nikuradse roughness for side walls, wall_z0=wall_ks/30
+Rhomean                      = 1000.               #  Average water density (kg/m3)
+Ag                           = 9.81                #  Gravitational acceleration
+TidalForcing                 = 1                   # Tidal forcing (0=no, 1=yes) (only for jsferic == 1)
+Salinity                     = 0                   # Include salinity, (0=no, 1=yes)
+Temperature                  = 0                   # Include temperature, (0=no, 1=only transport, 5=heat flux model (5) of D3D)
+Backgroundwatertemperature   = 20.
+Backgroundsalinity           = 0.
+
+[wind]
+ICdtyp                       = 2                   # ( ),1=const, 2=S&B 2 breakpoints, 3= S&B 3 breakpoints, 4=Charnock constant
+Cdbreakpoints                = 2.5d-3 2.5d-3       # ( ),   e.g. 0.00063  0.00723
+Windspeedbreakpoints         = 0. 100.             # (m/s), e.g. 0.0      100.0
+
+[time]
+RefDate                      = 20000218            # Reference date (yyyymmdd)
+Tzone                        = 0.                  # Data Sources in GMT are interrogated with time in minutes since refdat-Tzone*60
+Tunit                        = S                   # Time units in MDU (H, M or S)
+DtUser                       = 0.2                 # User timestep in seconds (interval for external forcing update & his/map output)
+DtMax                        = 0.2                 # Max timestep in seconds
+DtInit                       = 1.                  # Initial timestep in seconds
+AutoTimestep                 = 5                   # Use CFL timestep limit or not (1/0)
+TStart                       = 1200.0               # Start time w.r.t. RefDate (in TUnit)
+TStop                        = 1350.0              # Stop  time w.r.t. RefDate (in TUnit)
+
+[restart]
+RestartFile                  =                     # Restart file, only from netcdf-file, hence: either *_rst.nc or *_map.nc
+RestartDateTime              =                     # Restart time (YYYYMMDDHHMMSS), only relevant in case of restart from *_map.nc
+
+[external forcing]
+
+ExtForceFileNew                           = trench3D_new-new.ext
+
+[output]
+OutputDir                    = dflowfmoutput       # Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir.
+ObsFile                      = t01_obs.xyn         # *.xyn Coords+name of observation stations.
+CrsFile                      = trench_crs.pli      # *_crs.pli Polyline(s) definining cross section(s).
+HisInterval                  = 10.0                # History output, given as "interval" "start period" "end period" (s)
+XLSInterval                  = 0.                  # Interval (s) between XLS history
+FlowGeomFile                 =                     # *_flowgeom.nc Flow geometry file in NetCDF format.
+MapInterval                  = 10.0                # Map file output, given as "interval" "start period" "end period" (s)
+MapFormat                    = 4                   # Map file format, 1: netCDF, 2: Tecplot, 3: netCFD and Tecplot, 4: NetCDF-UGRID
+Richardsononoutput           = 0                   # 1=yes,0=no
+RstInterval                  = 0.                  # Restart file output, given as "interval" "start period" "end period" (s)
+WaqInterval                  = 0.                  # Interval (in s) between Delwaq file outputs
+StatsInterval                = 0.                  # Interval (in s) between simulation statistics output.
+TimingsInterval              = 0.                  # Timings output interval
+TimeSplitInterval            = 0X                  # Time splitting interval, after which a new output file is started. value+unit, e.g. '1 M', valid units: Y,M,D,h,m,s.
+MapOutputTimeVector          =                     # File (.mpt) containing fixed map output times (s) w.r.t. RefDate
+FullGridOutput               = 0                   # 0:compact, 1:full time-varying grid data
+
