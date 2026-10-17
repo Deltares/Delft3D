@@ -198,6 +198,26 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              dicww(nm, k) = dicoww
           enddo
        enddo
+       do k = 1, kmax - 1
+          kup = k + 1
+          tsg = 0.5*(thick(k) + thick(kup))
+          do nm = 1, nmmax
+             dudz(nm, k) = 0.0
+             if (kfu(nm)==1) then
+                dudz(nm, k) = (ueul(nm, k) - ueul(nm, kup))/(hu(nm)*tsg)
+             endif
+          enddo
+       enddo
+       do k = 1, kmax - 1
+          kup = k + 1
+          tsg = 0.5*(thick(k) + thick(kup))
+          do nm = 1, nmmax
+             dvdz(nm, k) = 0.0
+             if (kfv(nm)==1) then
+                dvdz(nm, k) = (veul(nm, k) - veul(nm, kup))/(hv(nm)*tsg)
+             endif
+          enddo
+       enddo
     else
        !=======================================================================
        !
