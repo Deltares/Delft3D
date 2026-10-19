@@ -76,8 +76,10 @@ contains
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, turbulent_kinetic_energy_at_bottom, turbulent_kinetic_energy_at_top, epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
-      real(kind=dp) :: dt_inverse !< Inverse of the previous time step (1/dtprev)
-      real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
+      real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
+      real(kind=dp), dimension(kmxx) :: dzu !< [m] Layer thickness at flow links.
+      real(kind=dp), dimension(kmxx) :: dzw !< [m] Vertical distance between layer centers. (= 0.5 * (dzu(k) + dzu(k+1)))
+      real(kind=dp) :: womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: dzs(kmxx), dzws(kmxx), hdzbs
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
       real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface
@@ -258,14 +260,7 @@ contains
 
                do L = Lb, Lt ! layer thickness at layer center (org: Lb + 1)
                   k = L - Lb + 1
-                  !k1   = ln(1,L)  ; k2  = ln(2,L)
-                  !dzu(k) = acl(LL)*(zws(k1)-zws(k1-1)) + (1.0_dp-acl(LL))*(zws(k2)-zws(k2-1))
                   dzu(k) = max(EPS4, hu(L) - hu(L - 1))
-
-                  ! if (dzu(k) < 1d-10) then
-                  !   call qnerror('dzu(k) < 1d-10',' ',' ')
-                  ! endif
-
                end do
 
                do L = Lb, Lt - 1 ! layer thickness at layer interface

@@ -111,10 +111,6 @@ module m_flow ! flow arrays-999
    !
    real(kind=dp), allocatable, dimension(:, :) :: dzslay ! the normalized thickness of layer, dim = (: , maxlaydefs)
 
-   !real(kind=dp), allocatable     :: dzu(:)           !< vertical layer size at layer centre    at u-velocity points (m) 1:kmx Local
-   !real(kind=dp), allocatable     :: dzw(:)           !< vertical layer size at layer interface at u-velocity points (m) 1:kmx Local
-   !< 1:kmx: bottom interface not included
-
    real(kind=dp), allocatable, target, dimension(:) :: zws !< [m] z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx) {"shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: zws0 !< z levels  (m) of interfaces (w-points) at cell centres (s-points) (m)    (1:ndkx), be
 
