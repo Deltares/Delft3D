@@ -77,8 +77,13 @@ contains
       real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
       real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above.
       real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below.
-      real(kind=dp) :: sourtu, sinktu
-      real(kind=dp) :: zz, z00, ac1, ac2, turbulent_kinetic_energy_at_bottom, turbulent_kinetic_energy_at_top, epsbot, epssur
+      real(kind=dp) :: sourtu
+      real(kind=dp) :: sinktu
+      real(kind=dp) :: zz, z00, ac1, ac2
+      real(kind=dp) :: turbulent_kinetic_energy_at_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer.
+      real(kind=dp) :: turbulent_kinetic_energy_at_top !< [m2/s2] Turbulent kinetic energy at the top layer.
+      real(kind=dp) :: turbulent_dissipation_at_bottom !< [m2/s3] Turbulent dissipation at the bottom layer.
+      real(kind=dp) :: turbulent_dissipation_at_top !< [m2/s3] Turbulent dissipation at the top layer.
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
       real(kind=dp), dimension(kmxx) :: dzu !< [m] Layer thickness at flow links.
@@ -370,8 +375,8 @@ contains
                      end if
                      buoyancy_flux = max(vicwwu(L), vicwminb) * bruva(k)
 
-                     !c Production, dissipation, and buoyancy term in TKE equation;
-                     !c dissipation and positive buoyancy are split by Newton linearization:
+                     ! Production, dissipation, and buoyancy term in TKE equation;
+                     ! dissipation and positive buoyancy are split by Newton linearization:
                      if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                         if (bruva(k) > 0.0_dp) then
                            dk(k) = dk(k) + buoyancy_flux
@@ -790,20 +795,20 @@ contains
                         turbulent_kinetic_energy_wu(L) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(L)
                         turbulent_dissipation_wu(L) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(L)
                      end do
-                     epsbot = turbulent_dissipation_wu(Lb) + dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
-                     epssur = turbulent_dissipation_wu(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
+                     turbulent_dissipation_at_bottom = turbulent_dissipation_wu(Lb) + dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
+                     turbulent_dissipation_at_top = turbulent_dissipation_wu(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                        epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
+                        turbulent_dissipation_at_top = turbulent_dissipation_at_top - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if
-                     epsbot = max(epsbot, eps_min)
-                     epssur = max(epssur, eps_min)
+                     turbulent_dissipation_at_bottom = max(turbulent_dissipation_at_bottom, eps_min)
+                     turbulent_dissipation_at_top = max(turbulent_dissipation_at_top, eps_min)
                      tke = max(tke_min, turbulent_kinetic_energy_at_top)
                      turbulent_kinetic_energy_wu(Lt) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lt)
-                     eps = epssur / (hu(Lt) - hu(Lt - 1))
+                     eps = turbulent_dissipation_at_top / (hu(Lt) - hu(Lt - 1))
                      turbulent_dissipation_wu(Lt) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lt)
                      tke = max(tke_min, turbulent_kinetic_energy_at_bottom)
                      turbulent_kinetic_energy_wu(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lb - 1)
-                     eps = epsbot / (hu(Lb) - hu(Lb - 1))
+                     eps = turbulent_dissipation_at_bottom / (hu(Lb) - hu(Lb - 1))
                      turbulent_dissipation_wu(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lb - 1)
                   end if
                end if
