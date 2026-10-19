@@ -396,7 +396,7 @@ module m_output_config
    integer, public :: IDX_MAP_TEM1
    integer, public :: IDX_MAP_SED
    integer, public :: IDX_MAP_CONST
-   integer, public :: IDX_MAP_TURKIN1
+   integer, public :: IDX_MAP_turbulent_kinetic_energy_wu
    integer, public :: IDX_MAP_VICWWU
    integer, public :: IDX_MAP_TUREPS1
    integer, public :: IDX_MAP_TUREPS1_3

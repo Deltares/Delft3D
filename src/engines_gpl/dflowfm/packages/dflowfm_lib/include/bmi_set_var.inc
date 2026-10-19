@@ -205,9 +205,9 @@
   case("zbndq")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(zbndq))
      zbndq(:) = x_1d_double_ptr
-  case("turkin1")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(turkin1))
-     turkin1(:) = x_1d_double_ptr
+  case("turbulent_kinetic_energy_wu")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(turbulent_kinetic_energy_wu))
+     turbulent_kinetic_energy_wu(:) = x_1d_double_ptr
   case("vicwws")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(vicwws))
      vicwws(:) = x_1d_double_ptr

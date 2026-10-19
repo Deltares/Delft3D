@@ -83,11 +83,10 @@ module m_turbulence
    real(kind=dp) :: tke_min
    real(kind=dp) :: eps_min
 
-   real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
-   real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
-
-   real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
-   real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_wu_old ! [m2/s2] Old turbulent kinetic energy (k) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:), target :: turbulent_kinetic_energy_wu !< [m2/s2] Turbulent kinetic energy (k) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu_old ! [m2/s3] Old turbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu ! [m2/s3] Turbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
 
    real(kind=dp), allocatable, dimension(:) :: vius !< Flowlink-averaged horizontal viscosity (viu) at s-point
    real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
@@ -119,10 +118,10 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws_old !< Old turbulent kinetic energy at vertical face center at layer interface c. {size=ndkx}
-   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< Turbulent kinetic energy at vertical face center at layer interface c. {size=ndkx}
-   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws_old !< Old turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
-   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< Turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws_old !< [m2/s2] Old turbulent kinetic energy (k) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< [m2/s2] Turbulent kinetic energy (k) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws_old !< [m2/s3] Old turbulent dissipation (epsilon) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< [m2/s3] Turbulent dissipation (epsilon) at vertical face center at layer interface. {size=ndkx}
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turbulent_kinetic_energy_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turbulent_dissipation_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps

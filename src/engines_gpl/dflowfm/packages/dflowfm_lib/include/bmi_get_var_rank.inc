@@ -176,7 +176,7 @@
      rank = 1
   case("zbndq")
      rank = 1
-  case("turkin1")
+  case("turbulent_kinetic_energy_wu")
      rank = 1
   case("vicwws")
      rank = 1

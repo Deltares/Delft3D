@@ -193,7 +193,7 @@
        shape(1) = nbndu
     case("zbndq")
        shape(1) = nbndu
-    case("turkin1")
+    case("turbulent_kinetic_energy_wu")
        shape(1) = lnkx
     case("vicwws")
        shape(1) = ndkx

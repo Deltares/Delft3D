@@ -235,11 +235,11 @@ contains
                   do Ls = Lbs, Lts
                      k = Ls - Lbs + 1
                      u1(Ls) = csu(LLs) * ucxref(k)
-                     turkin1(Ls) = tkin1ref(k)
-                     tureps1(Ls) = teps1ref(k)
+                     turbulent_kinetic_energy_wu(Ls) = tkin1ref(k)
+                     turbulent_dissipation_wu(Ls) = teps1ref(k)
                   end do
-                  turkin1(Lbs - 1) = tkin1ref(0)
-                  tureps1(Lbs - 1) = teps1ref(0)
+                  turbulent_kinetic_energy_wu(Lbs - 1) = tkin1ref(0)
+                  turbulent_dissipation_wu(Lbs - 1) = teps1ref(0)
 
                end do
 
@@ -312,21 +312,21 @@ contains
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
-               vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmax = max(vmax, maxval(turbulent_kinetic_energy_wu(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) then
                   call TEKFN(4, 7, 0, tkin1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'tkin1', 0, 1, 0.0_dp, 0) ! interfaces
                end if
-               call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
+               call TEKFN(4, 8, 1, turbulent_kinetic_energy_wu(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
-               vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmax = max(vmax, maxval(turbulent_dissipation_wu(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) then
                   call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0.0_dp, 0) ! interfaces
                end if
-               call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0.0_dp, kplot + 1)
+               call TEKFN(5, 10, 1, turbulent_dissipation_wu(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
          end if

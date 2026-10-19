@@ -47,8 +47,8 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        ustbs, ustws, EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, qw, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        ustbs, ustws, EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old, zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, qw, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
@@ -181,8 +181,8 @@ contains
 
          call calculate_drhodz(zws, drhodz)
 
-         call links_to_centers(turbulent_kinetic_energy_ws, turkin1)
-         call links_to_centers(turbulent_dissipation_ws, tureps1)
+         call links_to_centers(turbulent_kinetic_energy_ws, turbulent_kinetic_energy_wu)
+         call links_to_centers(turbulent_dissipation_ws, turbulent_dissipation_wu)
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
@@ -268,16 +268,16 @@ contains
                   vicwwu(Lb0) = vonkar * ustb(LL) * z00
                end if
 
-               turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
-               tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
+               turbulent_kinetic_energy_wu_old(Lb0:Lt) = turbulent_kinetic_energy_wu(Lb0:Lt)
+               turbulent_dissipation_wu_old(Lb0:Lt) = turbulent_dissipation_wu(Lb0:Lt)
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
                bk(0:kxL) = dtiL
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
+               dk(0:kxL) = dtiL * turbulent_kinetic_energy_wu_old(Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(turkin0, turbulent_kinetic_energy_ws)
+                  call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old, turbulent_kinetic_energy_ws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
@@ -333,8 +333,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * tetavkeps
                   ck(k) = ck(k) - difu * tetavkeps
                   if (tetavkeps /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turkin0(L) - turkin0(Lu)) * tetm1 &
-                             + difd * (turkin0(L - 1) - turkin0(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * tetm1 &
+                             + difd * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * tetm1
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -357,15 +357,15 @@ contains
                      if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                         if (bruva(k) > 0.0_dp) then
                            dk(k) = dk(k) + buoflu(k)
-                           bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
+                           bk(k) = bk(k) + 2.0_dp * buoflu(k) / turbulent_kinetic_energy_wu_old(L)
                            ! EdG: make buoyance term in matrix safer
-                           !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turkin0(L), 1d-20)
+                           !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turbulent_kinetic_energy_wu_old(L), 1d-20)
                         elseif (bruva(k) < 0.0_dp) then
                            dk(k) = dk(k) - buoflu(k)
                         end if
                      else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                         if (bruva(k) > 0.0_dp) then
-                           bk(k) = bk(k) + buoflu(k) / turkin0(L)
+                           bk(k) = bk(k) + buoflu(k) / turbulent_kinetic_energy_wu_old(L)
                         else if (bruva(k) < 0.0_dp) then
                            dk(k) = dk(k) - buoflu(k)
                         end if
@@ -392,11 +392,11 @@ contains
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                     sinktu = tureps0(L) / turkin0(L)
+                     sinktu = turbulent_dissipation_wu_old(L) / turbulent_kinetic_energy_wu_old(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                     dk(k) = dk(k) + sinktu * turbulent_kinetic_energy_wu_old(L) + sourtu ! m2/s3
                   else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
-                     sinktu = 1.0_dp / tureps0(L)
+                     sinktu = 1.0_dp / turbulent_dissipation_wu_old(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
                   end if
@@ -526,8 +526,8 @@ contains
                               ap1 = 1.0 - diav * diav * rnv * pi * 0.25 ! Free area
                               xlveg = Clveg * sqrt(ap1 / rnv) ! typical length between plants
                               tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
-                              teps = 0.5_dp * (tureps0(L) + tureps0(L))
-                              tkin = 0.5_dp * (turkin0(L) + turkin0(L))
+                              teps = 0.5_dp * (turbulent_dissipation_wu_old(L) + turbulent_dissipation_wu_old(L))
+                              tkin = 0.5_dp * (turbulent_kinetic_energy_wu_old(L) + turbulent_kinetic_energy_wu_old(L))
                               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  tauinf = c2e * teps / tkin !
                               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
@@ -539,7 +539,7 @@ contains
                               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                                  wke = wk * tauinv
                               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
-                                 wke = wk * (1.0_dp - tureps1(L) * tauinv) * tureps1(L) / turkin1(L)
+                                 wke = wk * (1.0_dp - turbulent_dissipation_wu(L) * tauinv) * turbulent_dissipation_wu(L) / turbulent_kinetic_energy_wu(L)
                               end if
                               if (L < Lt) then
                                  alf = 0.5_dp * dzu(k) / dzw(k)
@@ -557,10 +557,10 @@ contains
                   end if
                end if
 
-               call tridag(ak, bk, ck, dk, ek, turkin1(Lb0:Lt), kxL + 1) ! solve k
-               turkin1(Lb0:Lt) = max(tke_min, turkin1(Lb0:Lt))
+               call tridag(ak, bk, ck, dk, ek, turbulent_kinetic_energy_wu(Lb0:Lt), kxL + 1) ! solve k
+               turbulent_kinetic_energy_wu(Lb0:Lt) = max(tke_min, turbulent_kinetic_energy_wu(Lb0:Lt))
                do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
-                  turkin1(L) = turkin1(Lt)
+                  turbulent_kinetic_energy_wu(L) = turbulent_kinetic_energy_wu(Lt)
                end do
 
                !_____________________________________________________________________________________!
@@ -568,12 +568,12 @@ contains
                ak(0:kxL) = 0.0_dp ! Matrix initialization eps, tau
                bk(0:kxL) = dtiL
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * tureps0(Lb0:Lt)
+               dk(0:kxL) = dtiL * turbulent_dissipation_wu_old(Lb0:Lt)
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(tureps0, turbulent_dissipation_ws)
+                  call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
@@ -597,50 +597,50 @@ contains
                   bk(k) = bk(k) + (difd + difu) * tetavkeps
                   ck(k) = ck(k) - difu * tetavkeps
                   if (tetavkeps /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (tureps0(L) - tureps0(Lu)) * tetm1 &
-                             + difd * (tureps0(L - 1) - tureps0(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * tetm1 &
+                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * tetm1
                   end if
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
 
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
-                        dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
+                        dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turbulent_kinetic_energy_wu(L)
                      elseif (bruva(k) < 0.0_dp) then ! unstable stratification
-                        dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                        dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turbulent_kinetic_energy_wu(L)
                      end if
 
-                     sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
+                     sourtu = c1e * cmukep * turbulent_kinetic_energy_wu_old(L) * dijdij(k)
                      ! Add wave dissipation production term
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                        sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
+                        sourtu = sourtu + pkwav(k) * c1e * turbulent_dissipation_wu_old(L) / max(turbulent_kinetic_energy_wu_old(L), 1.0e-7_dp)
                      end if
 
-                     sinktu = c2e * tureps0(L) / turkin1(L)
+                     sinktu = c2e * turbulent_dissipation_wu_old(L) / turbulent_kinetic_energy_wu(L)
 
                      !c Addition of production and of dissipation to matrix ;                               epsilon
                      !c observe implicit treatment by Newton linearization.
 
                      bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
+                     dk(k) = dk(k) + sinktu * turbulent_dissipation_wu_old(L) + sourtu
 
                   else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
 
                      if (bruva(k) < 0.0_dp) then ! instable
-                        bk(k) = bk(k) + c3t_unstable * bruva(k) * tureps0(L)
+                        bk(k) = bk(k) + c3t_unstable * bruva(k) * turbulent_dissipation_wu_old(L)
                      else if (bruva(k) > 0.0_dp) then ! stable
-                        bk(k) = bk(k) + c3t_stable * bruva(k) * tureps0(L)
+                        bk(k) = bk(k) + c3t_stable * bruva(k) * turbulent_dissipation_wu_old(L)
                      end if
 
-                     bk(k) = bk(k) - c1t * dijdij(k) * tureps0(L)
+                     bk(k) = bk(k) - c1t * dijdij(k) * turbulent_dissipation_wu_old(L)
                      dk(k) = dk(k) - c2t
 
-                     gradd = 0.5_dp * (turkin0(L - 1) + turkin0(L)) * (tureps0(L) - tureps0(L - 1)) / dzu(k) ! The D_tt-term:
-                     gradu = 0.5_dp * (turkin0(Lu) + turkin0(L)) * (tureps0(Lu) - tureps0(L)) / dzu(ku)
+                     gradd = 0.5_dp * (turbulent_kinetic_energy_wu_old(L - 1) + turbulent_kinetic_energy_wu_old(L)) * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(L - 1)) / dzu(k) ! The D_tt-term:
+                     gradu = 0.5_dp * (turbulent_kinetic_energy_wu_old(Lu) + turbulent_kinetic_energy_wu_old(L)) * (turbulent_dissipation_wu_old(Lu) - turbulent_dissipation_wu_old(L)) / dzu(ku)
                      gradt = gradd + gradu
 
-                     gradd = 0.5_dp * (tureps0(L - 1) + tureps0(L)) * (turkin0(L) - turkin0(L - 1)) / dzu(k) ! The D_kt-term:
-                     gradu = 0.5_dp * (tureps0(Lu) + tureps0(L)) * (turkin0(Lu) - turkin0(L)) / dzu(ku)
+                     gradd = 0.5_dp * (turbulent_dissipation_wu_old(L - 1) + turbulent_dissipation_wu_old(L)) * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(L - 1)) / dzu(k) ! The D_kt-term:
+                     gradu = 0.5_dp * (turbulent_dissipation_wu_old(Lu) + turbulent_dissipation_wu_old(L)) * (turbulent_kinetic_energy_wu_old(Lu) - turbulent_kinetic_energy_wu_old(L)) / dzu(ku)
                      gradk = gradd + gradu
                      grad = gradk - gradt ! D_kt - D_tt
 
@@ -743,10 +743,10 @@ contains
                   end do
                end if
 
-               call tridag(ak, bk, ck, dk, ek, tureps1(Lb0:Lt), kxL + 1) ! solve eps
-               tureps1(Lb0:Lt) = max(eps_min, tureps1(Lb0:Lt))
+               call tridag(ak, bk, ck, dk, ek, turbulent_dissipation_wu(Lb0:Lt), kxL + 1) ! solve eps
+               turbulent_dissipation_wu(Lb0:Lt) = max(eps_min, turbulent_dissipation_wu(Lb0:Lt))
                do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
-                  tureps1(L) = tureps1(Lt)
+                  turbulent_dissipation_wu(L) = turbulent_dissipation_wu(Lt)
                end do
 
                if ((t_spinup_turb_log_prof > 0.0_dp .and. Time1 < tstart_tlfsmo_user + t_spinup_turb_log_prof) .or. &
@@ -771,36 +771,36 @@ contains
                         zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic visc
                         vicwww = zz * max(0.001_dp, ustb(LL)) * vonkar
                         eps = cmukep * tke * tke / vicwww
-                        turkin1(L) = tke * (1.0_dp - alfaT) + alfaT * turkin1(L)
-                        tureps1(L) = eps * (1.0_dp - alfaT) + alfaT * tureps1(L)
+                        turbulent_kinetic_energy_wu(L) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(L)
+                        turbulent_dissipation_wu(L) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(L)
                      end do
-                     epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
-                     epssur = tureps1(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
+                     epsbot = turbulent_dissipation_wu(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
+                     epssur = turbulent_dissipation_wu(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if
                      epsbot = max(epsbot, eps_min)
                      epssur = max(epssur, eps_min)
                      tke = max(tke_min, tkesur)
-                     turkin1(Lt) = tke * (1.0_dp - alfaT) + alfaT * turkin1(Lt)
+                     turbulent_kinetic_energy_wu(Lt) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lt)
                      eps = epssur / (hu(Lt) - hu(Lt - 1))
-                     tureps1(Lt) = eps * (1.0_dp - alfaT) + alfaT * tureps1(Lt)
+                     turbulent_dissipation_wu(Lt) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lt)
                      tke = max(tke_min, tkebot)
-                     turkin1(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turkin1(Lb - 1)
+                     turbulent_kinetic_energy_wu(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lb - 1)
                      eps = epsbot / (hu(Lb) - hu(Lb - 1))
-                     tureps1(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * tureps1(Lb - 1)
+                     turbulent_dissipation_wu(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lb - 1)
                   end if
                end if
 
                if (jamodelspecific == 1) then
-                  call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
+                  call update_turkin_modelspecific(LL) ! will update turbulent_kinetic_energy_wu and turbulent_dissipation_wu for all layers of flow link LL.
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * turkin1(Lb0:Lt) / tureps1(Lb0:Lt))
+                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_kinetic_energy_wu(Lb0:Lt) / turbulent_dissipation_wu(Lb0:Lt))
                else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
-                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
+                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_dissipation_wu(Lb0:Lt))
                end if
 
                if (jawave == NO_WAVES .or. jawavebreakerturbulence == WAVE_BREAKER_TURB_OFF) then
@@ -812,14 +812,14 @@ contains
 
             else ! dry
 
-               tureps1(Lb0:Lb + kmxL(LL) - 1) = eps_min
-               turkin1(Lb0:Lb + kmxL(LL) - 1) = tke_min
+               turbulent_dissipation_wu(Lb0:Lb + kmxL(LL) - 1) = eps_min
+               turbulent_kinetic_energy_wu(Lb0:Lb + kmxL(LL) - 1) = tke_min
 
             end if ! if (hu(L) > 0) then
          end do ! links loop
 
-         turkin0 = turkin1
-         tureps0 = tureps1
+         turbulent_kinetic_energy_wu_old = turbulent_kinetic_energy_wu
+         turbulent_dissipation_wu_old = turbulent_dissipation_wu
 
       case (TURBULENCE_MODEL_KEPS_CELL_CENTER)
 
@@ -1075,7 +1075,7 @@ contains
 
                   sourtu = c1e * cmukep * turbulent_kinetic_energy_ws_old(L) * dijdij(k)
 
-                  sinktu = c2e * turbulent_dissipation_ws_old(L) / turbulent_kinetic_energy_ws(L) ! yoeri has here : /turkin0(L)
+                  sinktu = c2e * turbulent_dissipation_ws_old(L) / turbulent_kinetic_energy_ws(L) ! yoeri has here : /turbulent_kinetic_energy_wu_old(L)
 
                   !c Addition of production and of dissipation to matrix ;                               epsilon
                   !c observe implicit treatment by Newton linearization.
@@ -1162,17 +1162,17 @@ contains
                k2 = ln(2, L)
 
                vicwwu(L) = ac1 * vicwws(k1) + ac2 * vicwws(k2)
-               turkin1(L) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
-               tureps1(L) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
+               turbulent_kinetic_energy_wu(L) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
+               turbulent_dissipation_wu(L) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
             end do
             k1 = ln(1, Lt)
             k2 = ln(2, Lt) ! for now for postprocessing
-            turkin1(Lt) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
-            tureps1(Lt) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
+            turbulent_kinetic_energy_wu(Lt) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
+            turbulent_dissipation_wu(Lt) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
             k1 = ln(1, Lb) - 1
             k2 = ln(2, Lb) - 1 ! for now for postprocessing
-            turkin1(Lb0) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
-            tureps1(Lb0) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
+            turbulent_kinetic_energy_wu(Lb0) = ac1 * turbulent_kinetic_energy_ws(k1) + ac2 * turbulent_kinetic_energy_ws(k2) ! for now for postprocessing
+            turbulent_dissipation_wu(Lb0) = ac1 * turbulent_dissipation_ws(k1) + ac2 * turbulent_dissipation_ws(k2) ! for now for postprocessing
 
             do L = Lb, Lt ! vertical omega velocity at layer interface u point
                dzu(L - Lb + 1) = max(eps4, hu(L) - hu(L - 1))
