@@ -17,16 +17,21 @@ digraph dwaves_pathway_fm_bmi {
     hdr_bmi  [shape=plaintext, style="", fontsize=13, label="wave_bmi.f90 (D-Waves shared library)"];
     hdr_wave [shape=plaintext, style="", fontsize=13, label="wave_main.f90 / swan_tot.f90 / flow_data.f90"];
     { rank=same; hdr_dimr; hdr_bmi; hdr_wave; }
+    hdr_dimr -> hdr_bmi -> hdr_wave [style=invis];
 
     node [fillcolor="#EAF5EC"];
-    dimr_master [label="dimr.cpp : runParallelInit()\nmasterComponent (Flow, e.g. dflowfm)\ndllInitialize() called first"];
+    dimr_master [label="dimr.cpp : runParallelInit()\nmasterComponent (Flow, e.g. dflowfm)\ninitialized before Wave"];
+    fm_init [label="D-Flow FM BMI initialize\nflowinit -> flow_modelinit\ninitial flow_externaloutput(time1) -> wricom\nwrites the initial *_com.nc"];
     dimr_mode   [label="dimr.cpp\nfor COMP_TYPE_WAVE component:\ndllGetVar(\"mode\", &waveModePtr);\n*waveModePtr = 1;  // before dllInitialize"];
     dimr_init   [label="dimr.cpp\nthisComponent->dllInitialize(inputFile)"];
     dimr_update [label="dimr.cpp main loop\nthisComponent->dllUpdate(tStep)"];
     dimr_finalize [label="dimr.cpp\nthisComponent->dllFinalize()"];
-    dimr_master -> dimr_mode -> dimr_init -> dimr_update -> dimr_finalize;
+    dimr_master -> fm_init -> dimr_mode -> dimr_init -> dimr_update -> dimr_finalize;
 
-    bmi_getvar  [label="get_var(\"mode\") → x = c_loc(wave_mode)\nmodule variable wave_mode, initially -999"];
+    fm_comfile [shape=cylinder, fillcolor="#EAF5EC",
+                label="FM NetCDF communication file\n*_com.nc\ninitial grid/fields and configured output records"];
+
+    bmi_getvar  [label="get_var(\"mode\") → x = c_loc(wave_mode)\nDIMR sets mode = 1 before initialize\nBMI also exposes engine_comm_world"];
     bmi_init    [label="function initialize(c_mdw_file)\nretval = wave_main_init(wave_mode, mdw_file)"];
     bmi_update  [label="function update(dt)\nretval = wave_main_step(real(dt,hp))"];
     bmi_finalize [label="function finalize()\nretval = wave_main_finish()"];
@@ -34,13 +39,13 @@ digraph dwaves_pathway_fm_bmi {
     node [fillcolor="#F2F8F3"];
     wave_init   [label="wave_init(mode_in=wave_mode, mdw_file)\ncall setmode(wavedata, mode_in)\ncall read_dwaves_mdw(mdw_file, swan_run, wavedata)"];
     branch [shape=diamond, fillcolor="#FFFFFF", label="swan_run%flowgridfile\n== ' ' ?"];
-    flow_init_fm [label="flow_data.f90 : flow_init()\n[when useflowdata .or. swwav]\ncall checkcomfiles(swan_run%flowgridfile)\nchecks NetCDF/com file(s), incl. partitions"];
+    flow_init_fm [label="flow_data.f90 : flow_init()\n[when useflowdata .or. swwav]\ncheck FM NetCDF file(s), incl. partitions\n(no classic DelftIO handshake)"];
     flow_init_d4 [style="rounded,filled,dashed", fillcolor="#F6F6F6",
                   label="flow_data.f90 : flow_init()\n[D3D4 branch] call wave_from_flow_init(...)\n(DelftIO wait — see Delft3D4 diagram)"];
-    master_step [label="wave_master_step()\nswan_run%flowgridfile /= ' ':\ncommand = 0 (skip DelftIO wait)"];
+    master_step [label="wave_master_step()\nFM file route skips DelftIO wait\nBMI update(dt) advances WAVE time"];
     settime [label="call settimsec(wavedata%time,\nwavedata%time%timsec + stepsize, ...)"];
-    swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads configured\nNetCDF/com file(s) when useflowdata"];
-    write_out [label="write_wave_map(_netcdf) / write_wave_his_netcdf\n+ wave2com() / put_wave_fields() when WriteCOM\n(wave2flow() is legacy-route only)"];
+    swan_tot [label="swan_tot.f90 : swan_tot(...)\nwhen useflowdata: get_var_netcdf reads FM fields\nand grmap_esmf maps FM -> SWAN"];
+    write_out [label="SWAN results / map_swan_output\nwhen WriteCOM: map SWAN -> FM with grmap\nwave2com() / put_wave_fields() writes file"];
     wave_master_finish [label="wave_master_finish()\ndel_temp_files / dealloc_swan"];
 
     wave_init -> branch;
@@ -48,6 +53,9 @@ digraph dwaves_pathway_fm_bmi {
     branch -> flow_init_d4 [label="blank (classic D3D4)", style=dashed];
     flow_init_fm -> master_step;
     master_step -> settime -> swan_tot -> write_out;
+    fm_comfile -> flow_init_fm [style=dashed, constraint=false, label="grid read and file check"];
+    write_out -> fm_comfile [style=dashed, constraint=false, label="when WriteCOM"];
+    { rank=same; write_out; fm_comfile; }
 
     hdr_dimr -> dimr_master [style=invis];
     hdr_bmi -> bmi_getvar [style=invis];
@@ -71,12 +79,17 @@ digraph dwaves_pathway_fm_bmi {
     st_commworld [label="engine_comm_world (get_var key)\nMPI communicator, parallel coordination"];
     st_flowgridfile [label="swan_run%flowgridfile (swan_input.f90)\nset by [Output] COMFile\nselects legacy vs FM file route"];
     st_flowdata [label="flow_data_initialized / num_subdomains\n(flow_data.f90 module vars)"];
+    st_bmi_data [label="BMI lifecycle and dt schedule only\nFM fields are file-backed, not generic\nWAVE BMI get_var arrays"];
+    st_maps [label="FM -> SWAN: ESMF weights / grmap_esmf\nSWAN -> FM: mkmap weights / grmap\nprepared per grid pair at initialization"];
 
-    { rank=same; bmi_getvar; st_wavemode; st_commworld; }
+    { rank=same; bmi_getvar; st_wavemode; st_commworld; st_bmi_data; }
     { rank=same; branch; st_flowgridfile; }
     { rank=same; flow_init_fm; st_flowdata; }
+    { rank=same; swan_tot; st_maps; }
     bmi_getvar -> st_wavemode [style=dotted, arrowhead=none, constraint=false];
     bmi_getvar -> st_commworld [style=dotted, arrowhead=none, constraint=false];
     branch -> st_flowgridfile [style=dotted, arrowhead=none, constraint=false];
     flow_init_fm -> st_flowdata [style=dotted, arrowhead=none, constraint=false];
+    bmi_getvar -> st_bmi_data [style=dotted, arrowhead=none, constraint=false];
+    swan_tot -> st_maps [style=dotted, arrowhead=none, constraint=false];
 }

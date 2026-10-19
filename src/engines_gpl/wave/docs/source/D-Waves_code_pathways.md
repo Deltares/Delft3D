@@ -107,157 +107,20 @@ The older `[Output] FlowGridForCom` keyword is explicitly rejected. See
 [Flow-input selection](../../packages/data/src/swan_input.f90#L2074), and
 [Flow file initialization](../../packages/data/src/flow_data.f90#L79).
 
-## Standalone
+## Detailed pathway pages
 
-1. The `wave` executable in
-   [wave_exe.f90](../../packages/wave/src/wave_exe.f90) parses the MDW filename
-   and optional mode. With no mode argument it uses `0`.
-2. It calls `wave_main_init`, then `wave_main_step(-1)`, then
-   `wave_main_finish` in
-   [wave_main.f90](../../packages/manager/src/wave_main.f90).
-3. Initialization reads the MDW input, configures SWAN grids and grid maps,
-   and prepares any configured external forcing. The manager calls
-   `swan_tot` to stage SWAN input, run SWAN, and consume its results.
-4. In mode `stand_alone`, finalization releases the SWAN and forcing resources.
-   Scheduling depends on the file route: with blank `swan_run%flowgridfile`,
-   `wave_master_step` calls `swan_tot(..., selectedtime=0)`, whose own loop
-   processes the MDW times. With a nonblank FM file path, the manager instead
-   selects times within the supplied step interval (or computes once if no
-   timepoints were specified). Thus `wave_main_step(-1)` is not a universal
-   "run all times" operation for both routes. See
-   [wave_master_step](../../packages/manager/src/wave_main.f90#L485) and
-   [swan_tot](../../packages/manager/src/swan_tot.f90#L106).
+The overview diagram and comparison above summarize the three current
+pathways. Subpages contain the full call sequences, data routes, mapping and
+timing details, and each pathway's detailed diagram and DOT source:
 
-Standalone does not require a live Flow process. It can nevertheless be
-configured to use existing Flow data. Appendix A.1.2 of the manual describes
-the legacy offline workflow: remove `[General] FlowFile`, use mode 0, and
-specify calculation timepoints that match stored FLOW output times. By
-default, the legacy com-file runid matches the WAVE runid; `[General] ComFile`
-can select another runid or a list of partition/domain runids. This corresponds
-to the standalone branch of
-[flow_init](../../packages/data/src/flow_data.f90#L95).
+- [Standalone execution and optional saved FLOW input](./D-Waves_pathway_standalone.md)
+- [Online coupling with Delft3D4 FLOW, including its mode-2 fluid-mud extension](./D-Waves_pathway_delft3d4.md)
+- [D-Flow FM orchestration through DIMR/BMI](./D-Waves_pathway_fm_bmi.md)
 
-For the FM NetCDF route, `[Output] COMFile` supplies the path, and `flow_init`
-checks that file or its partition variants even in standalone mode, when Flow
-input or com-file output is requested
-([flow_init](../../packages/data/src/flow_data.f90#L79)).
-This is file-backed reuse, not live online synchronization; the FM time-window
-behavior above still applies.
-
-Relevant implementation: [wave_exe.f90](../../packages/wave/src/wave_exe.f90),
-[wave_main.f90](../../packages/manager/src/wave_main.f90), and
-[flow_data.f90](../../packages/data/src/flow_data.f90).
-
-Detailed diagram (actual subroutine calls and module-level state):
-[dwaves_pathway_standalone_detailed.svg](../include/dwaves_pathway_standalone_detailed.svg)
-([DOT source](../include/dwaves_pathway_standalone_detailed.dot)).
-
-## Coupling with Delft3D4
-
-The classic online path uses two processes. The
-[D-Waves run script](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh) starts
-`d_hydro` and starts `wave <mdw-file> 1`; the latter selects `flow_online`.
-The Delft3D4 side initializes and steps the coupling from
-[tricom_init.F90](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90)
-and its FLOW time loop.
-
-The synchronization contract is implemented by
-[sync_flowwave.f90](../../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90):
-
-- FLOW initializes the connection and publishes its domain names, reference
-  date, timestep, and coupling configuration.
-- D-Waves enters `flow_init`; with blank `swan_run%flowgridfile` (no FM
-  `[Output] COMFile`), it waits for
-  `wave_from_flow_init` and records the connected FLOW domains.
-- On each step, D-Waves waits for FLOW's command and timestep, sets the WAVE
-  time, calls `swan_tot`, then reports completion. FLOW and WAVE exchange
-  step commands and status flags through DelftIO's `FLOW2WAVE_DATA` and
-  `WAVE2FLOW_DATA` streams (`flow_to_wave_command`/`wave_from_flow_command`
-  and `wave_to_flow_status`/`flow_from_wave_status`). The synchronization
-  module also defines the corresponding MUD streams for the fluid-mud mode.
-- The model fields themselves (water levels, currents, bed levels, and wave
-  forcing) are not carried by these DelftIO streams: WAVE reads Flow fields
-  from the FLOW communication (com) file through `get_flow_fields`, and
-  writes its results back to the com-file through `wave2flow`, `wave2com`,
-  and `put_wave_fields` when `[Output] WriteCOM` enables this
-  ([swan_tot](../../packages/manager/src/swan_tot.f90#L499)). FLOW reads the wave
-  results back from the same com-file through `setwav` in `tricom_step.F90`.
-- The FLOW manager handles the coupling for serial or parallel FLOW runs;
-  the DelftIO layer carries the domain/partition information for the control
-  channel described above.
-
-The online loop is in
-[wave_main.f90](../../packages/manager/src/wave_main.f90), and the mode selection
-is defined in [wave_data.f90](../../packages/data/src/wave_data.f90). This path
-is not the D-Flow FM BMI path: it is a FLOW/WAVE process pair coordinated by
-DelftIO.
-
-Detailed diagram (both processes, the DelftIO sync points, and module-level
-state): [dwaves_pathway_delft3d4_detailed.svg](../include/dwaves_pathway_delft3d4_detailed.svg)
-([DOT source](../include/dwaves_pathway_delft3d4_detailed.dot)).
-
-## Coupling with D-Flow FM through BMI
-
-The Wave target is built both as an executable and as a shared library. The
-library target includes [wave_bmi.f90](../../packages/wave/src/wave_bmi.f90)
-through [wave_dll.cmake](../../packages/wave/wave_dll.cmake).
-The BMI `initialize`, `update`, and `finalize` wrappers delegate to
-`wave_main_init`, `wave_main_step(dt)`, and `wave_main_finish`.
-
-In DIMR's parallel component initialization,
-[dimr.cpp](../../../dimr/packages/dimr_lib/src/dimr.cpp) initializes the master
-component first (the code notes that Wave must be initialized after Flow).
-For a Wave component, DIMR obtains the BMI `mode` variable and sets it to
-`1` before calling Wave's BMI `initialize`. DIMR then advances the BMI
-components and coordinates their configured couplers.
-
-There are two important details about what “via BMI” means in the current
-code:
-
-1. The Wave BMI wrapper's `get_var` exposes `mode` and
-   `engine_comm_world`; its `set_var` accepts the `mode` key. It does not
-   expose the SWAN grid and Flow-forcing fields as generic BMI variables.
-2. The actual Flow-input route depends on the MDW configuration. With a
-   nonblank `[Output] COMFile` (`swan_run%flowgridfile`), `flow_data` recognizes the FM NetCDF/com-file
-   path, checks for partition files, and `swan_tot` obtains Flow forcing
-   through `get_flow_fields` when `swan_run%useflowdata` is true. In
-   `flow_online` mode with blank `swan_run%flowgridfile`,
-   the manager instead waits on the DelftIO `wave_from_flow_command` path.
-
-For the FM route, each `update(dt)` advances `wavedata%time%timsec` by the
-supplied interval, then calls `swan_tot`; the non-standalone FM initialization
-sets `swan_run%nttide = 1`. This differs from processing a list of offline
-timepoints
-([wave_init](../../packages/manager/src/wave_main.f90#L180),
-[wave_master_step](../../packages/manager/src/wave_main.f90#L432)).
-
-The manual's sections 5.4.1.1 and 5.4.9 confirm that FM and WAVE use a
-communication file, including for returning WAVE results on the Flow grid.
-Flow input and Flow-grid output are independent selections: even without
-hydrodynamic input, Flow-grid output requires an existing communication file.
-In the code, `flow_init` checks files when either `useflowdata` or `swwav` is
-true, while `swan_tot` writes back only when `swwav` (`WriteCOM`) is true.
-For FM, the writeback uses `wave2com` and `put_wave_fields`; the preceding
-`wave2flow` vector conversion is specific to the legacy, blank-file-path
-branch
-([flow_init](../../packages/data/src/flow_data.f90#L79),
-[swan_tot](../../packages/manager/src/swan_tot.f90#L499)).
-
-Consequently, DIMR/BMI provides the current component lifecycle and stepping
-interface, while configured file-backed Flow input is a separate part of the
-D-Waves data path. Do not infer direct in-memory Flow-to-Wave array exchange
-from the BMI component registration alone.
-
-Relevant implementation: [wave_bmi.f90](../../packages/wave/src/wave_bmi.f90),
-[wave_dll.cmake](../../packages/wave/wave_dll.cmake),
-[dimr.cpp](../../../dimr/packages/dimr_lib/src/dimr.cpp),
-[flow_data.f90](../../packages/data/src/flow_data.f90), and
-[swan_tot.f90](../../packages/manager/src/swan_tot.f90).
-
-Detailed diagram (DIMR, the BMI wrapper, the `swan_run%flowgridfile` branch
-decision, and module-level state):
-[dwaves_pathway_fm_bmi_detailed.svg](../include/dwaves_pathway_fm_bmi_detailed.svg)
-([DOT source](../include/dwaves_pathway_fm_bmi_detailed.dot)).
+Mode 2 remains part of the classic Delft3D4 pathway, not a fourth pathway or
+an implemented FM/BMI mud option. Standalone FM-file use is covered by the
+standalone page; the same communication-file route can be used for live
+FM/BMI orchestration.
 
 ## Reference comparison: UNST-9075 preCICE proof of concept
 
@@ -292,21 +155,17 @@ preCICE.
 
 ## Diagram notes
 
-The SVG shows the three current pathways and a separate, dashed preCICE
-reference lane, explicitly outside the current pathway set. Arrows to/from
-Flow files are configuration-dependent:
-`[Output] COMFile` sets the internal `swan_run%flowgridfile` path; Flow-input
-selections determine `swan_run%useflowdata`, and `[Output] WriteCOM` controls
-writeback. The overview retains its three-column layout and preCICE reference
-panel; the reviewed labels distinguish MDW keys from internal state and
-describe the route-dependent standalone scheduling.
+The overview SVG continues to show the three current pathways and a separate,
+dashed preCICE reference lane outside the current pathway set. The overview
+diagram and its preCICE comparison are unchanged; configuration-dependent
+Flow-file inputs and writeback are detailed on the pathway pages above.
 
-The DOT files are the source of truth. To regenerate the SVGs, run from
-`src/engines_gpl/wave/docs/include`:
+The overview DOT file is the source of truth for this image. To regenerate
+the overview SVG, run from `src/engines_gpl/wave/docs/include`:
 
 ```sh
-for diagram in dwaves_code_pathways dwaves_pathway_standalone_detailed \
-               dwaves_pathway_delft3d4_detailed dwaves_pathway_fm_bmi_detailed; do
-    dot -Tsvg "$diagram.dot" -o "$diagram.svg"
-done
+dot -Tsvg dwaves_code_pathways.dot -o dwaves_code_pathways.svg
 ```
+
+Each detailed SVG and its DOT source is linked from its corresponding
+pathway page.
