@@ -6295,7 +6295,7 @@ contains
       ! - If waves present:
       !  * for fetch models (jawave 1,2):
       !     + taus depends on jawaveswartdelwaq;
-      !     + taus derived from taubxu (jawaveswartdelwaq==2) calculated in getustbcfuhi (3D), in 2D in tauwave().
+      !     + taus derived from taubxu (jawaveswartdelwaq==2) calculated in get_ustb_cfuhi (3D), in 2D in tauwave().
       !  * for swan etc (jawave>2):
       !     + taus for output are calculated in gettauswave(), based on jawaveswartdelwaq:
       !        * 0: taus based on soulsby wave-current formulas taubu's

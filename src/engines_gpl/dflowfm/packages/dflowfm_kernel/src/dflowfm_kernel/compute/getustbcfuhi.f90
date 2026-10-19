@@ -1,14 +1,6 @@
-module m_getustbcfuhi
-   use m_getvanrijnwci
-   use m_waveconst
-
-   implicit none
-
-contains
-
    !----- AGPL --------------------------------------------------------------------
    !
-!  Copyright (C)  Stichting Deltares, 2017-2026.
+   !  Copyright (C)  Stichting Deltares, 2017-2026.
    !
    !  This file is part of Delft3D (D-Flow Flexible Mesh component).
    !
@@ -35,10 +27,15 @@ contains
    !
    !-------------------------------------------------------------------------------
 
-   !
-   !
+module m_getustbcfuhi
+   use m_getvanrijnwci
+   use m_waveconst
 
-   subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
+   implicit none(type, external)
+
+contains
+
+   subroutine get_ustb_cfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
       use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
@@ -382,6 +379,6 @@ contains
          cfuhi3D = cfuhi3D + frculin(LL) / hu(Lb)
       end if
 
-   end subroutine getustbcfuhi
+   end subroutine get_ustb_cfuhi
 
 end module m_getustbcfuhi

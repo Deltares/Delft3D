@@ -157,7 +157,7 @@ contains
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
-         z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/getustbcfuhi
+         z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/get_ustb_cfuhi
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
