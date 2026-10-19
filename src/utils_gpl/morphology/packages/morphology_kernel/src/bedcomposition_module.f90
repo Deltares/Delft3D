@@ -81,15 +81,15 @@ public bedcomp_getpointer_realprec
 ! public parameters
 !
 !`imobility`
-integer, parameter, public :: MOBILITY_OFF = 0 ! not used
-integer, parameter, public :: MOBILITY_DISCRETE = 1 ! discrete
-integer, parameter, public :: MOBILITY_SHIELDS = 2 ! based on Shields curve
-integer, parameter, public :: MOBILITY_WILCOCKMCARDELL = 3 ! Wilcock and McArdell (1997)
-integer, parameter, public :: MOBILITY_SEDTRANS = 4 ! From sediment transport relation
+integer, parameter, public :: MOBILITY_OFF = 0 !< not used
+integer, parameter, public :: MOBILITY_DISCRETE = 1 !< discrete
+integer, parameter, public :: MOBILITY_SHIELDS = 2 !< based on Shields curve
+integer, parameter, public :: MOBILITY_WILCOCKMCARDELL = 3 !< Wilcock and McArdell (1997)
+integer, parameter, public :: MOBILITY_SEDTRANS = 4 !< from sediment transport relation
 !
 !`active-layer diffusion`
-integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 ! no diffusion (default)
-integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY = 1 ! x-y-diffusion file
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 !< no diffusion (default)
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY = 1 !< x-y-diffusion file
 !
 ! interfaces
 !
@@ -115,22 +115,23 @@ end interface
 !
 ! morphology layers numerical settings
 !
+!> Numerical controls for sediment-shortage tracking and diagnostics.
 type morlyrnumericstype
-    logical  :: track_mass_shortage       ! track the mass shortage
-    real(fp) :: mass_shortage_thresh      ! minimum erosion thickness for a shortage warning
-    integer  :: max_num_shortage_warnings ! maximum number of shortage warnings remaining
+    logical  :: track_mass_shortage       !< track the mass shortage
+    real(fp) :: mass_shortage_thresh      !< minimum erosion thickness for a shortage warning
+    integer  :: max_num_shortage_warnings !< maximum number of shortage warnings remaining
 end type morlyrnumericstype
 
 ! iconsolidate
-integer, parameter, public :: CONSOL_NONE       = 0 !  0: no consolidation
-integer, parameter, public :: CONSOL_GIBSON     = 1 !  1: full Gibson model
-integer, parameter, public :: CONSOL_DECON      = 2 !  2: Dynamic Equilibrium CONsolidation (DECON)
-integer, parameter, public :: CONSOL_TERZAGHI   = 3 !  3: simple loading model (Terzaghi)
-integer, parameter, public :: CONSOL_TERZ_PEAT  = 4 !  4: simple loading including peat (Terzaghi)
+integer, parameter, public :: CONSOL_NONE       = 0 !< no consolidation
+integer, parameter, public :: CONSOL_GIBSON     = 1 !< full Gibson model
+integer, parameter, public :: CONSOL_DECON      = 2 !< Dynamic Equilibrium CONsolidation (DECON)
+integer, parameter, public :: CONSOL_TERZAGHI   = 3 !< simple loading model (Terzaghi)
+integer, parameter, public :: CONSOL_TERZ_PEAT  = 4 !< simple loading including peat (Terzaghi)
 
 ! idiffusion
-integer, parameter, public :: BDIFF_NONE        = 0 !  0: no diffusion
-integer, parameter, public :: BDIFF_ACTIVE      = 1 !  1: diffusion
+integer, parameter, public :: BDIFF_NONE        = 0 !< no diffusion
+integer, parameter, public :: BDIFF_ACTIVE      = 1 !< diffusion
 
 ! ierosion
 integer, parameter, public :: EROS_CONST        = 0 !  0: cohesive sediment erodibility doesn't depend on bed composition
@@ -167,6 +168,7 @@ integer, parameter, public :: BASELYR_CONST_THK = 5 !  5: base layer composition
 integer, parameter, public :: TOPLYR_POR_RESET  = 1 !  1: top layer porosity is recomputed based on new mixture
 integer, parameter, public :: TOPLYR_POR_UPDATE = 2 !  2: top layer porosity is updated based on newly added sediment
 
+!> Parameters controlling composition-dependent erosion.
 type erosion_settings
     real(fp) :: A                                    !< activity of soil, which is used to calculate PI index
     real(fp) :: alpha                                !< a constant in determining critical bed shear stress for erosion
@@ -188,17 +190,18 @@ type erosion_settings
     real(fp) :: taucr_min2                           !< critical shear stress at high density [N/m2]
 end type erosion_settings
 
+!> Configuration and numerical settings for bed composition.
 type bedcomp_settings
     !
     ! doubles
     !
     real(fp) :: thlalyr                              !< thickness of Lagrangian underlayer layers
     real(fp) :: theulyr                              !< thickness of Eulerian underlayer layers
-    real(fp) :: a_max
-    real(fp) :: sinkfrac_max
-    real(fp) :: asfm
-    real(fp) :: bsfm
-    real(fp) :: sigma_sfm
+    real(fp) :: a_max                                !< maximum dune-length amplification factor [-]
+    real(fp) :: sinkfrac_max                         !< maximum sinking fraction
+    real(fp) :: asfm                                 !< active-sediment formulation parameter
+    real(fp) :: bsfm                                 !< bed-slope formulation parameter
+    real(fp) :: sigma_sfm                            !< sediment formulation parameter
     !
     ! reals
     real(fp) :: ag                                   !< gravity
@@ -266,11 +269,8 @@ type bedcomp_settings
                                                      !  3: svfrac0
                                                      !  4: weight average
     integer :: iunderlyr                             !< switch for underlayer concept
-    integer :: imobility  !  switch for mobility concept. Possible values in "parameters" section above.
-    integer :: isedcrs2tr !  switch for entraining mobile sediment from coarse layer to active layer
-                          !  0: no
-                          !  1: yes
-    integer :: ihidexptrcrs ! switch for computing hiding and exposure on the basis of the transport and coarse layer
+    integer :: imobility  !< switch for mobility concept
+    integer :: ihidexptrcrs !< switch for computing hiding and exposure on the basis of the transport and coarse layer
                           !  0: no
                           !  1: yes
                                                      !  1: standard fully mixed concept
@@ -322,16 +322,17 @@ type bedcomp_settings
     logical :: crslyr     !  flag for use of coarse layer (underlayer bookkeeping system)
     logical :: exchlyr    !  flag for use of exchange layer (underlayer bookkeeping system)
     logical :: initcl
-    logical :: include_peat ! flag for including peat in the bed composition module
+    logical :: include_peat !< flag for including peat in the bed composition module
     !
     ! characters
     !
-    character(999)                       :: plyrstr
+    character(999)                       :: plyrstr       !< textual layer description
 end type bedcomp_settings
 !
+!> Mutable bed-composition state arrays.
 type bedcomp_state
     real(prec) , dimension(:,:)  , pointer :: bodsed       !< Array with total sediment [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: mobile   ! sediment mobility parameter for 0->1 = not mobile->fully mobile
+    real(fp)   , dimension(:,:)  , pointer :: mobile       !< sediment mobility parameter from not mobile to fully mobile
     real(fp)   , dimension(:)    , pointer :: dpsed        !< Total depth sediment layer [m]
     real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
     real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg/m2]
@@ -341,19 +342,20 @@ type bedcomp_state
     real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg/m2]
     real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
     real(fp)   , dimension(:,:)  , pointer :: thlyr        !< thickness of morphological layers [m]
-    real(fp)   , dimension(:)    , pointer :: thmudgibson  !<
-    real(fp)   , dimension(:)    , pointer :: thsandgibson !<
+    real(fp)   , dimension(:)    , pointer :: thmudgibson  !< consolidated mud thickness for the Gibson model
+    real(fp)   , dimension(:)    , pointer :: thsandgibson !< consolidated sand thickness for the Gibson model
     !peat
-    real(fp)   , dimension(:,:)  , pointer :: strain       !<
+    real(fp)   , dimension(:,:)  , pointer :: strain       !< accumulated strain in consolidation layers
     real(hp)                               :: tdecon       !< latest morphological time (morft) of consolidation [days since reference date]
 end type bedcomp_state
 !
+!> Temporary work arrays used by bed-composition calculations.
 type bedcomp_work
-    real(fp), dimension(:,:) , pointer :: msed2
-    real(fp), dimension(:)   , pointer :: svfrac2
-    real(fp), dimension(:)   , pointer :: thlyr2
-    real(fp), dimension(:)   , pointer :: preload2
-    real(fp), dimension(:)   , pointer :: depos_time2
+    real(fp), dimension(:,:) , pointer :: msed2         !< temporary layer sediment masses
+    real(fp), dimension(:)   , pointer :: svfrac2       !< temporary layer solid volume fractions
+    real(fp), dimension(:)   , pointer :: thlyr2        !< temporary layer thicknesses
+    real(fp), dimension(:)   , pointer :: preload2      !< temporary consolidation preload
+    real(fp), dimension(:)   , pointer :: depos_time2   !< temporary deposition times
 
     ! working arrays for high-concentration consolidation
     real(fp), dimension(:)   , pointer :: dthsedlyr      !< thickness of average pure sediment between two neighbouring layers [m]
@@ -372,14 +374,16 @@ type bedcomp_work
     real(fp), dimension(:)   , pointer :: svfracnew      !< new solid volume fraction after consolidation
 end type bedcomp_work
 !
+!> Complete bed-composition data object.
 type bedcomp_data
-   type (bedcomp_settings), pointer :: settings
-   type (bedcomp_state)   , pointer :: state
-   type (bedcomp_work)    , pointer :: work
+   type (bedcomp_settings), pointer :: settings          !< bed-composition configuration
+   type (bedcomp_state)   , pointer :: state             !< mutable bed-composition state
+   type (bedcomp_work)    , pointer :: work             !< temporary calculation workspace
 end type bedcomp_data
 
 contains
 
+!> Sets the default fraction representation for the selected bed concept.
 subroutine set_default_fractions(this)
     !
     ! Call variables
@@ -398,15 +402,18 @@ subroutine set_default_fractions(this)
     endif
 end subroutine set_default_fractions
 
+!> Applies sediment-shortage accounting and emits configured shortage warnings.
 subroutine handle_sediment_shortage(mass, mass_available, mass_change, shortage, track_shortage, nm, l, morlyrnum, messages)
     use precision
     use message_module, only: message_stack, message_len, addmessage
-    real(fp), intent(inout) :: mass, shortage
-    real(fp), intent(in) :: mass_available, mass_change
-    logical, intent(in) :: track_shortage
-    integer, intent(in) :: nm, l
-    type(morlyrnumericstype), intent(inout) :: morlyrnum
-    type(message_stack), intent(inout) :: messages
+    real(fp), intent(inout) :: mass                         !< current mass after the requested mass change
+    real(fp), intent(inout) :: shortage                     !< accumulated shortage for this fraction and location
+    real(fp), intent(in) :: mass_available                  !< mass available before applying the requested change
+    real(fp), intent(in) :: mass_change                     !< requested mass change for this fraction
+    logical, intent(in) :: track_shortage                   !< whether shortage mass should be accumulated
+    integer, intent(in) :: nm, l                            !< location and fraction indices used in diagnostics
+    type(morlyrnumericstype), intent(inout) :: morlyrnum    !< numerical shortage settings and warning counters
+    type(message_stack), intent(inout) :: messages          !< message stack receiving shortage diagnostics
     character(message_len) :: message
 
     if (mass < 0.0_fp) then
@@ -437,6 +444,7 @@ subroutine handle_sediment_shortage(mass, mass_available, mass_change, shortage,
     endif
 end subroutine handle_sediment_shortage
 
+!> Repays accumulated sediment shortage from newly available mass.
 subroutine repay_sediment_shortage(mass, shortage)
     use precision
     real(fp), intent(inout) :: mass, shortage
@@ -497,6 +505,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
 end function updmorlyr
 
 
+!> Updates a layered bed without a coarse layer.
 subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
     use precision
     use message_module, only: message_stack
@@ -617,7 +626,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
                     thick = thick + thickd
                 else
                     !
-                    ! only erosion � preload and svfrac don�t need updating
+                    ! only erosion, preload and svfrac don't need updating
                     !
                 endif
             endif
@@ -756,6 +765,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
 end subroutine updmorlyr_layered_bed_without_coarse_layer
 
 
+!> Updates a layered bed with transport and coarse layers.
 subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength, sbot, dtmor, messages)
     use precision
     use message_module, only: message_stack
@@ -936,6 +946,7 @@ subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength,
 end subroutine updmorlyr_layered_bed_with_coarse_layer
 
 
+!> Updates a fully mixed bed composition.
 subroutine updmorlyr_mixed_bed(this, dbodsd, dz, messages)
     use precision
     use message_module, only: message_stack
@@ -2195,6 +2206,28 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     !
     ! compute total sink and replacement flux
     !
+    !> The timescale for sediment flux from the active layer to the
+    !! coarse layer is
+    !! \f[
+    !! T_{\mathrm{imm}} = \frac{L_a \Lambda_{\mathrm{cl}}}{q_b},
+    !! \f]
+    !! where \f$L_a\f$ is the dune length, \f$q_b\f$ is the bed-load
+    !! transport rate, and \f$\Lambda_{\mathrm{cl}}\f$ is the average
+    !! distance between dune troughs reaching the coarse layer:
+    !! \f[
+    !! \Lambda_{\mathrm{cl}} = \alpha_{\Lambda}\Lambda.
+    !! \f]
+    !! Here, the dune-length amplification factor is calculated as
+    !! \f[
+    !! \alpha_{\Lambda}
+    !! = 1 + (\alpha_m - 1)\frac{L_a}{L_{a0}},
+    !! \f]
+    !! where \f$L_{a0}\f$ is the reference dune length. The
+    !! implementation represents \f$L_a/L_{a0}\f$ by the ratio of
+    !! transport-layer thickness to requested transport-layer
+    !! thickness and caps \f$\alpha_{\Lambda}\f$ at
+    !! \f$\alpha_m\f$.
+
     if (thick>0.0_fp) then
         if (thtrlyr(nm)>0.0_fp) then
             dunelength_coarse_layer    = dunelength(nm)*min(1.0_fp + (a_max-1.0_fp)*thick/thtrlyr(nm),a_max)
@@ -3200,7 +3233,6 @@ function initmorlyr(this) result (istat)
     settings%max_total_thick_decon_lyrs = 1.0e10_fp ! no limiting thickness by default
     settings%svgel        = 0.158_fp               ! volume fraction of pure sediment at gelling point
     settings%svmax        = 0.6_fp                 ! if svfrac > svmax, consolidation stops
-    settings%isedcrs2tr   = 0
     settings%ihidexptrcrs = HIDEXP_ACTIVE_LAYER_ONLY
     settings%a_max        = 20.0_fp
     settings%asfm         = 0.523_fp
@@ -3711,8 +3743,6 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%ifractions
     case ('mobility_model_type','imobility')
        val => this%settings%imobility
-    case ('isedcrs2tr')
-       val => this%settings%isedcrs2tr
     case ('ihidexptrcrs')
        val => this%settings%ihidexptrcrs
     case ('porosity_model_type','iporosity')

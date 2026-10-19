@@ -110,7 +110,6 @@ contains
       real(fp), pointer :: bsfm
       real(fp), pointer :: sigma_sfm
       integer, pointer :: imobility
-      integer, pointer :: isedcrs2tr
       integer, pointer :: ihidexptrcrs
       real(fp), dimension(:), pointer :: thclyr
       !
@@ -724,8 +723,7 @@ contains
          !
          ! HANNEKE
          !
-         istat = bedcomp_getpointer_integer(morlyr, 'ISedCrs2Tr', isedcrs2tr)
-         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs', ihidexptrcrs)
+         istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs', ihidexptrcrs)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IMobility', imobility)
          if (istat /= 0) then
             errmsg = 'Memory problem in RDMORLYR'
@@ -735,7 +733,6 @@ contains
          end if
          !
          if (crslyr) then
-            call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
             call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
             call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
             !
