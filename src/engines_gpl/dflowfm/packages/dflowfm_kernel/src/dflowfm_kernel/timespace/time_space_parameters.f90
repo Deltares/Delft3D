@@ -266,23 +266,25 @@ contains
    !!
    !! Mainly used to hide EC-module inconsistencies from the user.
    !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
+   !! Also overrides and warns about deprecated triangulation interpolation for GeoTIFF files.
    subroutine update_method_with_weightfactor_fallback(file_type, method)
+      use messageHandling, only: mess, LEVEL_WARN
+
       character(len=*), intent(in) :: file_type !< File type string.
       integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
 
-      if (method /= WEIGHTFACTORS) then
+      select case (str_tolower(trim(file_type)))
+      case ('arcinfo', 'uniform', 'unimagdir', 'bcascii')
          ! Only fix weightfactors method, other wrong input methods are true
          ! user input errors and should lead to an error message.
-         return
-      end if
-
-      select case (str_tolower(trim(file_type)))
-      case ('arcinfo')
-         method = SPACEANDTIME
-      case ('uniform', 'unimagdir')
-         method = SPACEANDTIME
-      case ('bcascii')
-         method = SPACEANDTIME
+         if (method == WEIGHTFACTORS) then
+            method = SPACEANDTIME
+         end if
+      case ('geotiff')
+         if (method == METHOD_TRIANGULATION) then
+            call mess(LEVEL_WARN, 'Interpolation method ''triangulation'' for GeoTIFF files is deprecated. Use Bilinear instead.')
+            method = METHOD_BILINEAR
+         end if
       end select
 
    end subroutine update_method_with_weightfactor_fallback

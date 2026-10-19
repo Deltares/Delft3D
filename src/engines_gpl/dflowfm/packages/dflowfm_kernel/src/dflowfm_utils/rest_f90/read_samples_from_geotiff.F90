@@ -34,9 +34,10 @@ module m_read_samples_from_geotiff
 
    public :: read_samples_from_geotiff
 
-contains
+   contains
 
    !> Legacy compatibility function, read raster data object and then convert to global samples.
+   ! CAN BE REMOVED ONCE WE PHASE OUT OLD EXT
    function read_samples_from_geotiff(filename) result(success)
       use precision, only: dp
       use messagehandling, only: mess, level_warn
