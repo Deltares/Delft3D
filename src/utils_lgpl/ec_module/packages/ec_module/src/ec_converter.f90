@@ -2315,7 +2315,7 @@ contains
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
 
          do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-            ! TODO : Calculate target value depending on ElementSet mask.
+            ! TODO : Calculate target value detemp_proj on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
             if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
@@ -3038,11 +3038,158 @@ contains
 
    end function ecConverterSpiderweb
 
+   !> Compute the cached harmonic coefficients of one source/target pair.
+   !! Only called once per pair, the first time the pair is evaluated.
+   function ecConverterHarmonicCoefficients(proj, source_item, target_item, converter) result(success)
+      use kdtree2Factory
+      use m_mathconstants, only: PI
+      type(tEcHarmonicProjection), intent(inout) :: proj !< Projection receiving the cos/sin coefficients and mask.
+      type(tEcItem), pointer, intent(in) :: source_item !< Source item with amplitudes and harmonics frame.
+      type(tEcItem), pointer, intent(in) :: target_item !< Target item defining the target points.
+      type(tEcConverter), pointer, intent(in) :: converter !< Converter with the spatial mapping; extrapolation donors are stored in it.
+      logical :: success !< Whether the coefficients were computed.
+
+      type(tEcHarmonicsFrame), pointer :: frame
+      type(tEcField), pointer :: sourcefield
+      type(tEcElementSet), pointer :: sourceset, targetset
+      type(tEcIndexWeight), pointer :: weights
+      type(tEcHarmonicProjection) :: temp_proj !< temporary projection, to prevent overwriting the original if an error occurs.
+      type(kdtree_instance) :: tree
+      real(dp), dimension(:), allocatable :: x_extrapolate
+      integer :: j, k, row, col, point, phase_row, phase_col, n_weights, n_cols, istat
+      integer, dimension(4) :: points, phase_cols, phase_rows
+      integer, dimension(:), allocatable :: sparse_rows
+      real(dp) :: amplitude, phase, weight, source_missing
+      logical :: valid, samples
+
+      success = .false.
+      frame => source_item%hframe
+      sourcefield => source_item%sourceT1FieldPtr
+      sourceset => source_item%elementSetPtr
+      targetset => target_item%elementSetPtr
+      weights => converter%indexWeight
+      source_missing = source_item%quantityPtr%fillvalue
+
+      allocate (temp_proj%cos(targetset%nCoordinates), temp_proj%sin(targetset%nCoordinates), &
+                temp_proj%mask(targetset%nCoordinates))
+      temp_proj%cos = 0.0_dp
+      temp_proj%sin = 0.0_dp
+      temp_proj%mask = 0
+      if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+         x_extrapolate = targetset%x
+      end if
+      samples = sourceset%ofType == elmSetType_samples
+      n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
+      if (.not. samples .and. sourcefield%issparse == 1) then
+         allocate (sparse_rows(size(sourcefield%arr1d)))
+         do row = 1, sourceset%n_rows
+            sparse_rows(sourcefield%ia(row):sourcefield%ia(row + 1) - 1) = row
+         end do
+      end if
+
+      do j = 1, targetset%nCoordinates
+         ! Step 2a: collect the source points of target j.
+         if (samples) then
+            n_weights = size(weights%indices, 1)
+         else
+            row = weights%indices(1, j)
+            col = weights%indices(2, j)
+            if (row <= 0 .or. col <= 0) then
+               cycle
+            end if
+            n_weights = 4
+            if (allocated(sparse_rows)) then
+               points = [row, row + 1, col + 1, col]
+               phase_rows = sparse_rows(points)
+               phase_cols = sourcefield%ja(points)
+            else
+               points = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
+                         row * n_cols + col + 1, row * n_cols + col]
+               phase_cols = [col, col + 1, col + 1, col]
+               phase_rows = [row, row, row + 1, row + 1]
+            end if
+         end if
+         ! Step 2b: accumulate the cos/sin coefficients of target j.
+         valid = .true.
+         do k = 1, n_weights
+            if (samples) then
+               point = weights%indices(k, j)
+               if (point <= 0 .or. point > sourceset%n_cols) then
+                  cycle
+               end if
+               phase_col = point
+               phase_row = 1
+            else
+               point = points(k)
+               phase_col = phase_cols(k)
+               phase_row = phase_rows(k)
+            end if
+            amplitude = sourcefield%arr1d(point)
+            phase = frame%phases(phase_col, phase_row)
+            if (comparereal(amplitude, source_missing, .true.) == 0 .or. &
+                comparereal(phase, source_missing, .true.) == 0) then
+               if (samples) then
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                  return
+               end if
+               valid = .false.
+               exit
+            end if
+            phase = phase * pi / 180.0_dp
+            weight = weights%weightFactors(k, j)
+            temp_proj%cos(j) = temp_proj%cos(j) + weight * amplitude * cos(phase)
+            temp_proj%sin(j) = temp_proj%sin(j) + weight * amplitude * sin(phase)
+         end do
+         if (valid) then
+            temp_proj%mask(j) = 1
+         else if (allocated(x_extrapolate)) then
+            x_extrapolate(j) = ec_undef_hp
+         end if
+      end do
+      ! Step 2c: find donors for unmasked targets inside the source grid.
+      if (allocated(x_extrapolate)) then
+         do j = 1, size(temp_proj%mask)
+            if (temp_proj%mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
+               cycle
+            end if
+            if (weights%substndx(j) == 0) then
+               if (tree%itreestat /= ITREE_OK) then
+                  call build_kdtree(tree, size(x_extrapolate), x_extrapolate, targetset%y, istat, 0, ec_undef_hp)
+                  if (istat /= 0 .or. tree%itreestat /= ITREE_OK) then
+                     call delete_kdtree2(tree)
+                     call set_ec_message("ERROR: ec_converter::ecConverterHarmonicCoefficients: Unable to find harmonic extrapolation donors.")
+                     return
+                  end if
+               end if
+               call make_queryvector_kdtree(tree, targetset%x(j), targetset%y(j), 0)
+               call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
+               weights%substndx(j) = tree%results(1)%idx
+            end if
+         end do
+         call delete_kdtree2(tree)
+      end if
+      call move_alloc(temp_proj%cos, proj%cos)
+      call move_alloc(temp_proj%sin, proj%sin)
+      call move_alloc(temp_proj%mask, proj%mask)
+      success = .true.
+   end function ecConverterHarmonicCoefficients
+
    !> Project fixed harmonic coefficients once, then evaluate them directly at target locations.
    !! Source data, spatial mapping, operand and interpolation method remain fixed during a model run.
    !! Extrapolation copies final target values after applying operands, just as in the uncached path.
+   !!
+   !! Steps:
+   !!   1. Find the cached projection of this source/target pair in the harmonics frame; append an empty one if absent.
+   !!   2. First call only: compute the cached coefficients per target point j:
+   !!      2a. Collect the source points and weights from the existing spatial mapping.
+   !!      2b. cos(j) = sum_i weight(i) * amplitude(i) * cos(phase(i)),
+   !!          sin(j) = sum_i weight(i) * amplitude(i) * sin(phase(i)),
+   !!          mask(j) = 1 when all source points have a valid amplitude and phase.
+   !!      2c. With extrapolation: find a donor target for each unmasked target inside the source grid.
+   !!   3. Every call: target(j) = target(j) <operand> cos(j) * cos(omega t) + sin(j) * sin(omega t), where mask(j) = 1.
+   !!   4. With extrapolation: copy the donor's final value to each unmasked target inside the source grid.
    function ecConverterHarmonic(connection, item_index, timesteps) result(success)
-      use kdtree2Factory
+      use m_mathconstants, only: PI
       type(tEcConnection), intent(inout) :: connection !< Connection supplying the source, target and spatial mapping.
       integer, intent(in) :: item_index !< Source/target pair to evaluate.
       real(dp), intent(in) :: timesteps !< Requested time in modified Julian days.
@@ -3051,35 +3198,25 @@ contains
       type(tEcItem), pointer :: source_item, target_item
       type(tEcConverter), pointer :: ptr
       type(tEcHarmonicsFrame), pointer :: frame
-      type(tEcField), pointer :: sourcefield
-      type(tEcElementSet), pointer :: sourceset, targetset
       type(tEcIndexWeight), pointer :: weights
       type(tEcHarmonicProjection), pointer :: proj
       real(dp), dimension(:), pointer :: targetfield
-      integer :: j, k, row, col, point, phase_row, phase_col, n_weights, n_cols, istat
-      integer :: projection_index, n_projections
-      integer, dimension(4) :: points, phase_cols, phase_rows
-      integer, dimension(:), allocatable :: sparse_rows
-      real(dp) :: amplitude, phase, weight, angle, pi, cos_time, sin_time, source_missing
-      logical :: valid, samples
+      integer :: j, k, projection_index, n_projections
+      real(dp) :: angle, cos_time, sin_time
 
       success = .false.
       source_item => connection%sourceItemsPtr(item_index)%ptr
       target_item => connection%targetItemsPtr(item_index)%ptr
       ptr => connection%converterPtr
       frame => source_item%hframe
-      sourcefield => source_item%sourceT1FieldPtr
       targetfield => target_item%targetFieldPtr%arr1dPtr
-      sourceset => source_item%elementSetPtr
-      targetset => target_item%elementSetPtr
       weights => ptr%indexWeight
-      source_missing = source_item%quantityPtr%fillvalue
-      pi = 4.0_dp * atan(1.0_dp)
       if (frame%ec_period <= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
          return
       end if
 
+      ! Step 1: find or append the cached projection of this source/target pair.
       n_projections = 0
       if (allocated(frame%projections)) then
          n_projections = size(frame%projections)
@@ -3095,11 +3232,7 @@ contains
          block
             type(tEcHarmonicProjection), dimension(:), allocatable :: projections
 
-            allocate (projections(n_projections + 1), stat=istat)
-            if (istat /= 0) then
-               call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate projection cache.")
-               return
-            end if
+            allocate (projections(n_projections + 1))
             do k = 1, n_projections
                proj => frame%projections(k)
                projections(k)%sourceItemId = proj%sourceItemId
@@ -3116,126 +3249,15 @@ contains
       proj%sourceItemId = source_item%id
       proj%targetItemId = target_item%id
       proj%converterId = ptr%id
+
+      ! Step 2: first call only, compute the cached coefficients.
       if (.not. allocated(proj%cos)) then
-         block
-            type(tEcHarmonicProjection) :: pending
-            type(kdtree_instance) :: tree
-            real(dp), dimension(:), allocatable :: x_extrapolate
-
-            allocate (pending%cos(targetset%nCoordinates), pending%sin(targetset%nCoordinates), &
-                      pending%mask(targetset%nCoordinates), stat=istat)
-            if (istat /= 0) then
-               call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate harmonic coefficients.")
-               return
-            end if
-            pending%cos = 0.0_dp
-            pending%sin = 0.0_dp
-            pending%mask = 0
-            if (ptr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
-               allocate (x_extrapolate(targetset%nCoordinates), stat=istat)
-               if (istat /= 0) then
-                  call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate extrapolation indices.")
-                  return
-               end if
-               x_extrapolate = targetset%x
-            end if
-            samples = sourceset%ofType == elmSetType_samples
-            n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
-            if (.not. samples .and. sourcefield%issparse == 1) then
-               allocate (sparse_rows(size(sourcefield%arr1d)), stat=istat)
-               if (istat /= 0) then
-                  call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to allocate sparse row indices.")
-                  return
-               end if
-               do row = 1, sourceset%n_rows
-                  sparse_rows(sourcefield%ia(row):sourcefield%ia(row + 1) - 1) = row
-               end do
-            end if
-
-            do j = 1, targetset%nCoordinates
-               if (samples) then
-                  n_weights = size(weights%indices, 1)
-               else
-                  row = weights%indices(1, j)
-                  col = weights%indices(2, j)
-                  if (row <= 0 .or. col <= 0) then
-                     cycle
-                  end if
-                  n_weights = 4
-                  if (allocated(sparse_rows)) then
-                     points = [row, row + 1, col + 1, col]
-                     phase_rows = sparse_rows(points)
-                     phase_cols = sourcefield%ja(points)
-                  else
-                     points = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
-                               row * n_cols + col + 1, row * n_cols + col]
-                     phase_cols = [col, col + 1, col + 1, col]
-                     phase_rows = [row, row, row + 1, row + 1]
-                  end if
-               end if
-               valid = .true.
-               do k = 1, n_weights
-                  if (samples) then
-                     point = weights%indices(k, j)
-                     if (point <= 0 .or. point > sourceset%n_cols) then
-                        cycle
-                     end if
-                     phase_col = point
-                     phase_row = 1
-                  else
-                     point = points(k)
-                     phase_col = phase_cols(k)
-                     phase_row = phase_rows(k)
-                  end if
-                  amplitude = sourcefield%arr1d(point)
-                  phase = frame%phases(phase_col, phase_row)
-                  if (comparereal(amplitude, source_missing, .true.) == 0 .or. &
-                      comparereal(phase, source_missing, .true.) == 0) then
-                     if (samples) then
-                        call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
-                        return
-                     end if
-                     valid = .false.
-                     exit
-                  end if
-                  phase = phase * pi / 180.0_dp
-                  weight = weights%weightFactors(k, j)
-                  pending%cos(j) = pending%cos(j) + weight * amplitude * cos(phase)
-                  pending%sin(j) = pending%sin(j) + weight * amplitude * sin(phase)
-               end do
-               if (valid) then
-                  pending%mask(j) = 1
-               else if (allocated(x_extrapolate)) then
-                  x_extrapolate(j) = ec_undef_hp
-               end if
-            end do
-            if (allocated(x_extrapolate)) then
-               do j = 1, size(pending%mask)
-                  if (pending%mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
-                     cycle
-                  end if
-                  if (weights%substndx(j) == 0) then
-                     if (tree%itreestat /= ITREE_OK) then
-                        call build_kdtree(tree, size(x_extrapolate), x_extrapolate, targetset%y, istat, 0, ec_undef_hp)
-                        if (istat /= 0 .or. tree%itreestat /= ITREE_OK) then
-                           call delete_kdtree2(tree)
-                           call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Unable to find harmonic extrapolation donors.")
-                           return
-                        end if
-                     end if
-                     call make_queryvector_kdtree(tree, targetset%x(j), targetset%y(j), 0)
-                     call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
-                     weights%substndx(j) = tree%results(1)%idx
-                  end if
-               end do
-               call delete_kdtree2(tree)
-            end if
-            call move_alloc(pending%cos, proj%cos)
-            call move_alloc(pending%sin, proj%sin)
-            call move_alloc(pending%mask, proj%mask)
-         end block
+         if (.not. ecConverterHarmonicCoefficients(proj, source_item, target_item, ptr)) then
+            return
+         end if
       end if
 
+      ! Step 3: evaluate the harmonic at time t and apply the operand.
       call check_undefined_values_for_operand(ptr%operandType, targetfield(1:size(proj%mask)), success, proj%mask)
       if (.not. success) then
          return
@@ -3248,6 +3270,7 @@ contains
             call apply_operand(ptr%operandType, targetfield(j), proj%cos(j) * cos_time + proj%sin(j) * sin_time)
          end if
       end do
+      ! Step 4: copy donor values to unmasked targets.
       if (ptr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
             if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
@@ -3312,7 +3335,7 @@ contains
       logical :: all_scalar_sources
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       logical :: status !< Status of undefined values check
-      real(dp) :: sourceValue !< Source value at t0 or t1, depending on the time interpolation
+      real(dp) :: sourceValue !< Source value at t0 or t1, detemp_proj on the time interpolation
       real(dp), dimension(:), pointer :: targetValues
       real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
