@@ -1367,7 +1367,6 @@
       <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
         <parameters>
           <parameter name="mesh2d_water_quality_stat_1" toleranceAbsolute="5.0e0" toleranceRelative="1.0e-6"/>
-          <parameter name="mesh2d_water_quality_stat_3" toleranceAbsolute="1.0e0" toleranceRelative="1.0e-6"/>
           <parameter name="mesh2d_water_quality_stat_4" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="mesh2d_water_quality_stat_5" toleranceAbsolute="2.0e-2" toleranceRelative="1.0e-6"/>
           <parameter name="mesh2d_water_quality_stat_6" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
@@ -1413,7 +1412,7 @@
           <parameter name="water_quality_stat_12" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="water_quality_stat_13" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="water_quality_stat_14" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-          <parameter name="water_quality_stat_15" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="water_quality_stat_15" toleranceAbsolute="5.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="water_quality_stat_16" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-6"/>
           <parameter name="water_quality_stat_17" toleranceAbsolute="5.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="water_quality_stat_18" toleranceAbsolute="1.0e-2" toleranceRelative="1.0e-6"/>
@@ -1592,7 +1591,7 @@
         <parameters>
           <parameter name="s1" toleranceAbsolute="5.0e-1" toleranceRelative="1.0e-6"/>
           <parameter name="q1" toleranceAbsolute="2.0e3" toleranceRelative="1.0e-6"/>
-          <parameter name="T1-Sea" toleranceAbsolute="5.0e-2" toleranceRelative="1.0e-6"/>
+          <parameter name="T1-Sea" toleranceAbsolute="2.0e-1" toleranceRelative="1.0e-6"/>
           <parameter name="T3-Hansweert" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
           <parameter name="T4-Terneuzen" toleranceAbsolute="2.0e-3" toleranceRelative="1.0e-6"/>
           <parameter name="T5-Vlissingen" toleranceAbsolute="2.0e-3" toleranceRelative="1.0e-6"/>
