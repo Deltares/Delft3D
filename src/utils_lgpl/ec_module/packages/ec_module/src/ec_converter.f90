@@ -3216,6 +3216,7 @@ contains
       real(dp), dimension(:), pointer :: targetfield
       integer :: j, k, projection_index, n_projections
       real(dp) :: angle, cos_time, sin_time
+      real(dp), dimension(:), allocatable :: values !< Harmonic values at the target points; allocatable to keep it off the stack.
 
       success = .false.
       source_item => connection%sourceItemsPtr(item_index)%ptr
@@ -3279,11 +3280,8 @@ contains
       angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
       cos_time = cos(angle)
       sin_time = sin(angle)
-      do j = 1, size(proj%mask)
-         if (proj%mask(j) /= 0) then
-            call apply_operand(converter%operandType, targetfield(j), proj%cos(j) * cos_time + proj%sin(j) * sin_time)
-         end if
-      end do
+      values = proj%cos * cos_time + proj%sin * sin_time
+      call apply_operand_masked(converter%operandType, targetfield(1:size(proj%mask)), values, proj%mask)
       ! Step 4: copy donor values to unmasked targets.
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
@@ -4746,6 +4744,43 @@ contains
       end select
 
    end subroutine apply_operand
+
+   !> Applies the specified operand to the target values where mask /= 0.
+   !! Selects the operand once for the whole array, so each case is a single vectorizable masked assignment.
+   subroutine apply_operand_masked(operand, target_values, provided_values, mask)
+      integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, ...)
+      real(dp), dimension(:), intent(inout) :: target_values !< target values to apply the operand to
+      real(dp), dimension(:), intent(in) :: provided_values !< values to apply with the operand, same size as target_values
+      integer, dimension(:), intent(in) :: mask !< only target values with mask /= 0 are updated, same size as target_values
+
+      select case (operand)
+      case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
+         where (mask /= 0)
+            target_values = provided_values
+         end where
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+         where (mask /= 0 .and. target_values == ec_undef_hp)
+            target_values = provided_values
+         end where
+      case (EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT)
+         where (mask /= 0)
+            target_values = target_values + provided_values
+         end where
+      case (EC_OPERAND_MULTIPLY)
+         where (mask /= 0)
+            target_values = target_values * provided_values
+         end where
+      case (EC_OPERAND_MINIMUM)
+         where (mask /= 0)
+            target_values = min(target_values, provided_values)
+         end where
+      case (EC_OPERAND_MAXIMUM)
+         where (mask /= 0)
+            target_values = max(target_values, provided_values)
+         end where
+      end select
+
+   end subroutine apply_operand_masked
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
    subroutine check_undefined_values_for_operand(operand, target_values, istat, target_mask)
