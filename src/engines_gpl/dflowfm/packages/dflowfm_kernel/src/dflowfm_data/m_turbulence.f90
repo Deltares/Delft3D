@@ -123,7 +123,6 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< Turbulent kinetic energy at vertical face center at layer interface c. {size=ndkx}
    real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws_old !< Old turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
    real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< Turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
-   real(kind=dp), allocatable, dimension(:, :) :: turkinepsws !< k and eps,1,2 at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turbulent_kinetic_energy_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turbulent_dissipation_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
