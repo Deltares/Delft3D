@@ -59,8 +59,6 @@ module m_turbulence
    integer, parameter :: TURB_LAX_CONNECTED = 2
 
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
-   real(kind=dp) :: buoflu(kmxx)
-   real(kind=dp) :: bruva(kmxx)
 
    real(kind=dp) :: ak(0:kmxx)
    real(kind=dp) :: bk(0:kmxx)
@@ -101,7 +99,7 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:), target :: in_situ_density !< [kg/m3] Pressure dependent water density at cell centres
    real(kind=dp), allocatable, dimension(:), target :: potential_density !< [kg/m3] Potential water density at cell centres
    real(kind=dp), dimension(:), pointer :: rho ! [kg/m3] Water density at cell centres
-   real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
+   real(kind=dp), allocatable, dimension(:) :: drhodz !< [kg/m4] Vertical density gradient
    real(kind=dp), allocatable, dimension(:) :: rhosww !< [kg/m3] deviatoric density at vertical interfaces, w points
    real(kind=dp), allocatable, dimension(:) :: rhowat !< [kg/m3] density at cell centres, only salt and temp
    real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
