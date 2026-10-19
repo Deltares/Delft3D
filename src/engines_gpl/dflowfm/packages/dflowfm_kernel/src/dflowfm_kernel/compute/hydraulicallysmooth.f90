@@ -38,7 +38,7 @@ module m_hydraulicallysmooth
 contains
 
    pure function hydraulicallysmooth(umod, h) result(sqcf)
-      use m_physcoef, only: viskin, VON_KARMAN
+      use m_physcoef, only: VISKIN, VON_KARMAN
       use precision, only: dp
       implicit none
 
@@ -49,7 +49,7 @@ contains
       real(kind=dp), parameter :: rv = 123.8_dp, e = 8.84_dp, eps = 1e-2_dp
       real(kind=dp) :: r, s, sd, er, ers
 
-      r = umod * h / viskin ! Local re-number:
+      r = umod * h / VISKIN ! Local re-number:
       r = max(r, 1e-3_dp)
       if (r < rv) then ! Viscous sublayer:
          s = sqrt(r)

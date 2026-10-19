@@ -51,7 +51,7 @@ contains
                         ustbs, ustws, EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old, zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, qw, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, ktop, kbot, hs, epshu, ucx, ucy, kmxn, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, &
                         TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER
@@ -63,7 +63,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: CMUKEP, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
+      use m_turbulence, only: CMUKEP, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE, SIGMA_TURBULENT_DISSIPATION_INVERSE, cde, &
                   c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
@@ -295,9 +295,9 @@ contains
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old, turbulent_kinetic_energy_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
+               vicu = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
-               ! Calculate turkin source from wave dissipation: preparation
+               ! Calculate turbulent kinetic energy (k) source from wave dissipation: preparation
                if (jawave /= NO_WAVES) then
                   if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
@@ -333,7 +333,7 @@ contains
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigtkei
+                  vicu = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
@@ -591,13 +591,13 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
+               vicu = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigepsi
+                  vicu = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
@@ -659,7 +659,7 @@ contains
                      gradk = gradd + gradu
                      grad = gradk - gradt ! D_kt - D_tt
 
-                     grad = -grad * sigepsi * CMUKEP ! This is positive advection, dc/dt + wdc/dz
+                     grad = -grad * SIGMA_TURBULENT_DISSIPATION_INVERSE * CMUKEP ! This is positive advection, dc/dt + wdc/dz
                      grad = grad / dzw(k) ! dzw is receiving volume
                      if (grad > 0.0_dp) then
                         bk(k) = bk(k) + grad
@@ -942,13 +942,13 @@ contains
                ck(0:kxL) = 0.0_dp
                dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_ws_old(kb0:kt)
 
-               vicu = viskin + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * sigtkei !
+               vicu = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE !
 
                do L = kb, kt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwws(L) + vicwws(Lu)) * sigtkei
+                  vicu = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                   k = L - kb + 1
                   ku = k + 1
@@ -1072,13 +1072,13 @@ contains
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
-               vicu = viskin + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * sigepsi
+               vicu = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = kb, kt - 1
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwws(L) + vicwws(Lu)) * sigepsi
+                  vicu = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                   k = L - kb + 1
                   ku = k + 1
