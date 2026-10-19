@@ -195,7 +195,7 @@ contains
                vicwref(0) = 0.0_dp
                vicwref(km) = 0.0_dp
 
-            else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
+            else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
 
                tkebot = ustbref**2 / sqrt(cmukep)
                tkewin = ustwref**2 / sqrt(cmukep)
@@ -307,7 +307,7 @@ contains
          vmin = -vmax
          call TEKFN(3, 6, 1, ww1(kb:kt), hwref(1:), km, vmin, vmax, zmin, zmax, KLPROF, 'ww1', 1, 2, 0.0_dp, kplot)
 
-         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp

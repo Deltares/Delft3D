@@ -85,7 +85,7 @@ module m_flow ! flow arrays-999
    integer, parameter :: TURBULENCE_MODEL_NONE = 0 !< No turbulence model
    integer, parameter :: TURBULENCE_MODEL_CONSTANT = 1 !< Constant turbulence model
    integer, parameter :: TURBULENCE_MODEL_ALGEBRAIC = 2 !< Algebraic turbulence model
-   integer, parameter :: TURBULENCE_MODEL_KEPS = 3 !< k-epsilon turbulence model
+   integer, parameter :: TURBULENCE_MODEL_KEPS_FLOW_LINKS = 3 !< k-epsilon turbulence model at flow links
    integer, parameter :: TURBULENCE_MODEL_KTAU = 4 !< k-tau turbulence model
    integer, parameter :: TURBULENCE_MODEL_KEPS_CELL_CENTER = 5 !< k-epsilon turbulence model at cell centers
 
@@ -579,7 +579,7 @@ contains
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
       layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
-      iturbulencemodel = TURBULENCE_MODEL_KEPS !< 0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
+      iturbulencemodel = TURBULENCE_MODEL_KEPS_FLOW_LINKS !< 0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       z_layer_growth_factor = 1.0_dp
 
