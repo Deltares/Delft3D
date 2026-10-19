@@ -52,7 +52,7 @@ subroutine initau(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
 !
 ! Global variables
 !
@@ -94,7 +94,7 @@ subroutine initau(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
     ag       => gdp%gdphysco%ag
     z0       => gdp%gdphysco%z0
-    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
+    vonkar   => gdp%gdphysco%vonkar
     !
     sixth = 1./6.
     sag = sqrt(ag)
@@ -122,9 +122,9 @@ subroutine initau(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           optionroughness:select case (rouflo)
           case ('MANN')
              cfu = hu(nm)**sixth/cfurou(nm, 2)
-             z0urou(nm) = hu(nm)/(ee*(exp(VON_KARMAN*cfu/sag) - 1.0))
+             z0urou(nm) = hu(nm)/(ee*(exp(vonkar*cfu/sag) - 1.0))
           case ('CHEZ')
-             z0urou(nm) = hu(nm)/(ee*(exp(VON_KARMAN*cfurou(nm, 2)/sag) - 1.0))
+             z0urou(nm) = hu(nm)/(ee*(exp(vonkar*cfurou(nm, 2)/sag) - 1.0))
           case ('WHIT')
              z0urou(nm) = cfurou(nm, 2)/30.
           case ('Z   ')

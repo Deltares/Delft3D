@@ -93,7 +93,7 @@ subroutine flocculate_dwq( swfloform, cmacro, cmicro, tpm, tau, total_depth, loc
     
     call get_tshear_tdiss( tshear_fp, turb_diss_fp, rho_water_fp, taub=tau_fp, &
                            waterdepth=total_depth_fp, localdepth=local_depth_fp, &
-                           VON_KARMAN=VONKAR_fp )
+                           vonkar=VONKAR_fp )
 
     select case (swfloform)
     case (FLOC_MANNING_DYER)

@@ -53,7 +53,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     real(fp)               , pointer :: ag
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
     real(fp)               , pointer :: chzmin
 !
 ! Global variables
@@ -131,7 +131,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
     !
     chzmin   => gdp%gdnumeco%chzmin
     ag       => gdp%gdphysco%ag
-    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
+    vonkar   => gdp%gdphysco%vonkar
     !
     k = 1
     if (abs(betac)<1E-4) goto 999
@@ -161,7 +161,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
           umod = max(1.E-8_fp, sqrt(uuu*uuu + vvv*vvv))
           czosg = 0.5*(cfurou(nm, 1) + cfurou(nmd, 1))
           czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(VON_KARMAN*czosg)
+          alpha = 1.0_fp/(vonkar*czosg)
           betast = betac*(5.0*alpha - 15.6*alpha*alpha + 37.5*alpha*alpha*alpha)
           beta = betast*r0(nm, k, lsecfl)/umod
           !
@@ -192,7 +192,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
           czosg = (kfu(nm)*cfurou(nm, 1) + kfu(num)*cfurou(num, 1) + kfv(nm)    &
                 & *cfvrou(nm, 1) + kfv(nmu)*cfvrou(nmu, 1))/(kenmu + kenmv)
           czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(VON_KARMAN*czosg)
+          alpha = 1.0_fp/(vonkar*czosg)
           betast = betac*(5.0*alpha - 15.6*alpha*alpha + 37.5*alpha*alpha*alpha)
           rsecfl = (kfu(nm)*(r0(nm, k, lsecfl) + r0(nmu, k, lsecfl)) + kfu(num) &
                  & *(r0(num, k, lsecfl) + r0(numu, k, lsecfl)) + kfv(nm)        &

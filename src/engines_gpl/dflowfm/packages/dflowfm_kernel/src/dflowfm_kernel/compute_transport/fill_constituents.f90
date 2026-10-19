@@ -237,7 +237,7 @@ contains
                spir_ce = fcorio * hs(kk) * 0.5_dp
                spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
                spir_e = spir_be - spir_ce
-               alength_a = (1.0_dp - 2.0_dp * alpha) * hs(kk) / (2.0_dp * VON_KARMAN * VON_KARMAN * alpha) !TO DO: this term should be expanded to prevent negative alength_a for alpha > 0.5
+               alength_a = (1.0_dp - 2.0_dp * alpha) * hs(kk) / (2.0_dp * VON_KARMAN ** 2 * alpha) !TO DO: this term should be expanded to prevent negative alength_a for alpha > 0.5
                time_a = alength_a / spirucm(kk)
                !const_sour(ISPIR,kk) =  ( spir_e - spirint(kk) ) / time_a !* dvoli    ! S=(I_eq - I)/Ta
                const_sour(ISPIR, kk) = const_sour(ISPIR, kk) + spir_e / time_a

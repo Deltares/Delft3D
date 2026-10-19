@@ -99,7 +99,7 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     real(fp)                            , pointer :: rhow
     real(fp)                            , pointer :: z0
     real(fp)                            , pointer :: z0v
-    real(fp)                            , pointer :: VON_KARMAN
+    real(fp)                            , pointer :: vonkar
     real(fp)                            , pointer :: vicmol
     integer                             , pointer :: iro
     integer                             , pointer :: irov
@@ -296,7 +296,7 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     rhow        => gdp%gdphysco%rhow
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
+    vonkar      => gdp%gdphysco%vonkar
     vicmol      => gdp%gdphysco%vicmol
     iro         => gdp%gdphysco%iro
     irov        => gdp%gdphysco%irov
@@ -753,28 +753,28 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                       num = nm + icy
                       if (kcs(num) == 0) then
                          uu = 0.25 * (u1(nm, k) + u1(nmd, k) + u1(nm, ku) + u1(nmd, ku))
-                         us = VON_KARMAN * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
+                         us = vonkar * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
                          du = abs(us) / (0.25*(guu(nm) + guu(nmd)) + z0v)
                          ddk(nm, k) = ddk(nm, k) + 0.5*du*us*us
                          bdy(nm, k) = bdy(nm, k) + 0.5*du*du
                       endif
                       if (kcs(ndm) == 0) then
                          uu = 0.25 * (u1(nm, k) + u1(nmd, k) + u1(nm, ku) + u1(nmd, ku))
-                         us = VON_KARMAN * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
+                         us = vonkar * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
                          du = abs(us) / (0.25*(guu(nm) + guu(nmd)) + z0v)
                          ddk(nm, k) = ddk(nm, k) + 0.5*du*us*us
                          bdy(nm, k) = bdy(nm, k) + 0.5*du*du
                       endif
                       if (kcs(nmu) == 0) then
                          vv = 0.25 * (v1(nm, k) + v1(ndm, k) + v1(nm, ku) + v1(ndm, ku))
-                         vs = VON_KARMAN * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
+                         vs = vonkar * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
                          dv = abs(vs) / (0.25*(guu(nm) + guu(nmd)) + z0v)
                          ddk(nm, k) = ddk(nm, k) + 0.5*dv*vs*vs
                          bdy(nm, k) = bdy(nm, k) + 0.5*dv*dv
                       endif
                       if (kcs(nmd) == 0) then
                          vv = 0.25 * (v1(nm, k) + v1(ndm, k) + v1(nm, ku) + v1(ndm, ku))
-                         vs = VON_KARMAN * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
+                         vs = vonkar * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
                          dv = abs(vs) / (0.25*(guu(nm) + guu(nmd)) + z0v)
                          ddk(nm, k) = ddk(nm, k) + 0.5*dv*vs*vs
                          bdy(nm, k) = bdy(nm, k) + 0.5*dv*dv
@@ -970,7 +970,7 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                    ! condition for k is assumed to scale in the same fashion as z0 = ks/30:
                    ! (zw = 0.5_fp*hrms(nm)/30.0_fp)
                    !
-                   tkewav = (epswav*VON_KARMAN*0.5_fp*hrms(nm)/(30.0_fp*cde))**(2.0_fp/3.0_fp)
+                   tkewav = (epswav*vonkar*0.5_fp*hrms(nm)/(30.0_fp*cde))**(2.0_fp/3.0_fp)
                    !
                    ddk(nm, 0) = ddk(nm, 0) + tkewav
                 endif

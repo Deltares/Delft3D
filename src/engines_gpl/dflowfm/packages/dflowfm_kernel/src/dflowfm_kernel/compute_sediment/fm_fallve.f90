@@ -233,7 +233,7 @@ contains
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                   call get_tshear_tdiss(tshear, tur_eps, rhoint, tke=tur_k)
                else
-                  call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, localdepth=s1(k) - zws(kk), VON_KARMAN=VON_KARMAN)
+                  call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, localdepth=s1(k) - zws(kk), vonkar=VON_KARMAN)
                end if
 
             else ! 2D
@@ -257,7 +257,7 @@ contains
                !
                tur_k = -999.0_dp
                tur_eps = -999.0_dp
-               call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, VON_KARMAN=VON_KARMAN)
+               call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, vonkar=VON_KARMAN)
             end if
             !
             ctot = 0.0_dp

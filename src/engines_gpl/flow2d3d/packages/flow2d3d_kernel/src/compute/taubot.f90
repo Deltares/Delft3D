@@ -75,7 +75,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)               , pointer :: rhow
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
     logical                , pointer :: const
     logical                , pointer :: wave
     logical                , pointer :: mudlay
@@ -291,7 +291,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     rhow       => gdp%gdphysco%rhow
     ag         => gdp%gdphysco%ag
     z0         => gdp%gdphysco%z0
-    VON_KARMAN     => gdp%gdphysco%VON_KARMAN
+    vonkar     => gdp%gdphysco%vonkar
     const      => gdp%gdprocs%const
     wave       => gdp%gdprocs%wave
     mudlay     => gdp%gdprocs%mudlay
@@ -393,14 +393,14 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 cfurou(nm, 1) = 18.0_fp*log10(12.0_fp*hurou)
              else
                 rz            = 1.0 + hu(nm)/(ee*cfurou(nm, 2)/30.)
-                cfurou(nm, 1) = sag*log(rz)/VON_KARMAN
+                cfurou(nm, 1) = sag*log(rz)/vonkar
              endif
           elseif (rouflo=='Z   ') then
              !
              ! 3D
              !
              rz            = 1.0 + hu(nm)/(ee*cfurou(nm, 2))
-             cfurou(nm, 1) = sag*log(rz)/VON_KARMAN
+             cfurou(nm, 1) = sag*log(rz)/vonkar
           else
           endif
           kmaxx      = kmax
@@ -436,7 +436,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
        ! store current-roughness values for use in EROSED
        !
        if (kfu(nm)==1) then
-          z0ucur(nm) = hu(nm)/(ee*(exp(VON_KARMAN*cfurou(nm, 1)/sag) - 1.0))
+          z0ucur(nm) = hu(nm)/(ee*(exp(vonkar*cfurou(nm, 1)/sag) - 1.0))
        endif
     enddo
     !
@@ -792,9 +792,9 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                    ubot = umod
                    dz   = hu(nm)/ee
                 endif
-                z0urou(nm)    = hu(nm)/(ee*(exp(VON_KARMAN*cfurou(nm, 1)/sag) - 1.0))
+                z0urou(nm)    = hu(nm)/(ee*(exp(vonkar*cfurou(nm, 1)/sag) - 1.0))
                 rz            = 1.0 + dz/z0urou(nm)
-                cfurou(nm, 1) = log(rz)/VON_KARMAN
+                cfurou(nm, 1) = log(rz)/vonkar
                 ust           = umod/cfurou(nm, 1)
                 taubpu(nm)    = ust*ust/(max(ubot, 0.0001_fp))
                 taubxu(nm)    = rhow*taubpu(nm)*ubot
@@ -815,7 +815,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                         & + v1(nmu, kmaxx))
                 endif
                 umod       = sqrt(uuu*uuu + vvv*vvv)
-                z0urou(nm) = hu(nm)/(ee*(exp(VON_KARMAN*cfurou(nm, 1)/sag) - 1.0))
+                z0urou(nm) = hu(nm)/(ee*(exp(vonkar*cfurou(nm, 1)/sag) - 1.0))
                 !
                 ! Bottom is assumed at Z0
                 !
@@ -824,7 +824,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 else
                    rz = 1.0 + hu(nm)/(ee*z0urou(nm))
                 endif
-                cfurou(nm, 1) = log(rz)/VON_KARMAN
+                cfurou(nm, 1) = log(rz)/vonkar
                 cwall         = 1./(cfurou(nm, 1)**2)
                 taubpu(nm)    = cwall*umod
                 taubxu(nm)    = rhow*taubpu(nm)*umod
@@ -881,13 +881,13 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 cfurou(nm, 1) = min(umod/ust,40.0_fp)
                 if (kmax > 1) then
                    if (zmodel) then
-                      z0urou(nm) = dz/(exp(VON_KARMAN*cfurou(nm, 1)) - 1.0)
+                      z0urou(nm) = dz/(exp(vonkar*cfurou(nm, 1)) - 1.0)
                    else
                       z0urou(nm) = (1.0 + sig(kmaxx))*hu(nm)                     &
-                                 & /(exp(VON_KARMAN*cfurou(nm, 1)) - 1.0)
+                                 & /(exp(vonkar*cfurou(nm, 1)) - 1.0)
                    endif
                 else
-                   z0urou(nm) = hu(nm)/((exp(VON_KARMAN*cfurou(nm, 1)) - 1.0)*ee)
+                   z0urou(nm) = hu(nm)/((exp(vonkar*cfurou(nm, 1)) - 1.0)*ee)
                 endif
                 !
                 ! Limit z0rou to 10 m (required in large water depths when umod/ust is small)

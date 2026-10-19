@@ -127,7 +127,7 @@ contains
       real(fp) :: uorb
       real(fp) :: uuu
       real(fp) :: vicmol
-      real(fp) :: VON_KARMAN
+      real(fp) :: vonkar
       real(fp) :: vvv
       real(fp) :: z0cur
       real(fp) :: z0rou
@@ -203,7 +203,7 @@ contains
       !vbed      = real(realpar(RP_VBED ),fp)
       !velb      = real(realpar(RP_VELBD),fp)
       !zvelb     = real(realpar(RP_ZVLBD),fp)
-      VON_KARMAN = real(realpar(RP_VNKAR), fp)
+      vonkar = real(realpar(RP_VNKAR), fp)
       z0cur = real(realpar(RP_Z0CUR), fp)
       z0rou = real(realpar(RP_Z0ROU), fp)
       !
@@ -232,7 +232,7 @@ contains
                    & tauc, taubcw, taurat, ta, caks, &
                    & dss, eps, aksfac, rwave, &
                    & camax, rdc, rdw, iopkcw, iopsus, &
-                   & VON_KARMAN, wave, tauadd, awb)
+                   & vonkar, wave, tauadd, awb)
       realpar(RP_DSS) = real(dss, hp)
       !
       ! Find bottom cell for SAND sediment calculations and store for use
@@ -273,7 +273,7 @@ contains
       difvr = epspar .and. wave
       call calseddf1993(ustarc, ws, h1, num_layers_grid, sig, &
                       & thick, dicww, tauwav, tauc, ltur, &
-                      & eps, VON_KARMAN, difvr, deltas, epsbed, &
+                      & eps, vonkar, difvr, deltas, epsbed, &
                       & epsmax, epsmxc, seddif)
       !
       ! Calculate equilibrium concentration profile for sediment

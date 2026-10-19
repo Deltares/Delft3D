@@ -33,7 +33,7 @@ module m_tranb7
 contains
 
    subroutine tranb7(utot, d50, d90, h, npar, &
-                   & par, sbot, ssus, VON_KARMAN, mudfrac)
+                   & par, sbot, ssus, vonkar, mudfrac)
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
@@ -52,7 +52,7 @@ contains
       real(fp), intent(in) :: mudfrac ! fraction of mud
       real(fp), dimension(npar), intent(in) :: par ! sediment parameter list
       real(fp), intent(in) :: utot ! flow velocity
-      real(fp), intent(in) :: VON_KARMAN
+      real(fp), intent(in) :: vonkar
       !
       real(fp), intent(out) :: sbot ! bed load transport
       real(fp), intent(out) :: ssus ! suspended sediment transport
@@ -123,7 +123,7 @@ contains
       beta = 1.+2.*(ws / ustar)**2
       beta = min(beta, 1.5_fp)
       psi = 2.5 * (ws / ustar)**0.8 * (ca / 0.65)**0.4
-      if (ustar > 0.) zc = ws / VON_KARMAN / ustar / beta + psi
+      if (ustar > 0.) zc = ws / vonkar / ustar / beta + psi
       if (zc > 20.) zc = 20.
       ah = a / h
       fc = 0.

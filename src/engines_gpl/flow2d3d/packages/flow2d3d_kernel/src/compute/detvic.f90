@@ -64,7 +64,7 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     logical                , pointer :: elder
     real(fp)               , pointer :: drycrt
     real(fp)               , pointer :: ag
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
     real(fp)               , pointer :: vicmol
 !
 ! Global variables
@@ -138,7 +138,7 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     elder     => gdp%gdhtur2d%elder
     drycrt    => gdp%gdnumeco%drycrt
     ag        => gdp%gdphysco%ag
-    VON_KARMAN    => gdp%gdphysco%VON_KARMAN
+    vonkar    => gdp%gdphysco%vonkar
     vicmol    => gdp%gdphysco%vicmol
     !
     ! Initialisation local variables
@@ -193,7 +193,7 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
           !
           if (kmax==1 .and. elder) then
              ustar  = utot*sag/chezy
-             viceld = VON_KARMAN*ustar*depth/6.
+             viceld = vonkar*ustar*depth/6.
              vicuv(nm, khtur) = vicuv(nm, khtur) + viceld
           endif
           !

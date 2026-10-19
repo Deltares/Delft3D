@@ -71,7 +71,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: vicoww
     real(fp)               , pointer :: dicoww
@@ -191,7 +191,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
+    vonkar      => gdp%gdphysco%vonkar
     vicmol      => gdp%gdphysco%vicmol
     vicoww      => gdp%gdphysco%vicoww
     dicoww      => gdp%gdphysco%dicoww
@@ -347,7 +347,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    endif
                    rz = 1.0 + zcord/dicww(nm, kmax)
                    vicww(nm, kmax) = vicww(nm, kmax)                            &
-                                   & + utot*VON_KARMAN/(log(rz)*(kfsmax(nm)         &
+                                   & + utot*vonkar/(log(rz)*(kfsmax(nm)         &
                                    & - kfsmin(nm) + 1))
                 enddo
              endif
@@ -376,7 +376,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                 ! Bottom is assumed at Z0
                 !
                 rz              = 1.0_fp + dz/dicww(nm, kmax)
-                ustbot          = utot*VON_KARMAN/log(rz)
+                ustbot          = utot*vonkar/log(rz)
                 vicww(nm, kmax) = max(vicww(nm, kmax), ustbot)
              endif
           enddo
@@ -409,7 +409,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    ! Mixing length
                    !
                    reldik = reldik + dzs1(nm, k)/h0
-                   rl = VON_KARMAN*h0*reldik*sqrt(1.0 - reldik)*fl
+                   rl = vonkar*h0*reldik*sqrt(1.0 - reldik)*fl
                    !
                    ! Algebraic eddy viscosity (Uittenbogaard '91 )
                    !
@@ -457,7 +457,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    endif
                    fs = 1.
                    reldik = reldik + dzs1(nm, k)/h0
-                   rl = VON_KARMAN*h0*reldik*sqrt(1.0 - reldik)*fl
+                   rl = vonkar*h0*reldik*sqrt(1.0 - reldik)*fl
                    vicww(nm, k) = cmukl*rl*sqrt(rtur1(nm, k, 1))
                    dicww(nm, k) = cmukl*rl*sqrt(rtur1(nm, k, 1))/fs
                 endif
@@ -522,9 +522,9 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              endif
              utot   = sqrt(uuu*uuu + vvv*vvv)
              rz     = 1.0 + dz/dicww(nm, kmax)
-             ustbot = abs(utot)*VON_KARMAN/log(rz)
+             ustbot = abs(utot)*vonkar/log(rz)
              !
-             vicww(nm, kmin - 1) = VON_KARMAN*ustbot*dicww(nm, kmax)
+             vicww(nm, kmin - 1) = vonkar*ustbot*dicww(nm, kmax)
              dicww(nm, kmin - 1) = vicww(nm, kmin - 1)
              if (kfsmax(nm)/=kfsmin(nm)) then
                 !
@@ -545,7 +545,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    fl = (1.0_fp - 14.0_fp*rich(nm, kmin))**0.25_fp
                    fs = 1.0_fp
                 endif
-                vicww(nm, kmin) = VON_KARMAN*ustbot*dzs1(nm, kmin)*fl
+                vicww(nm, kmin) = vonkar*ustbot*dzs1(nm, kmin)*fl
                 dicww(nm, kmin) = vicww(nm,kmin)/fs
              endif
              vicww(nm, kmax) = 0.0
@@ -554,8 +554,8 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              zw = inpzw*zwi + (1 - inpzw)*zwc
              ustwkw = sqrt(windsu(nm)**2 + windsv(nm)**2)/rhow
              ustwin = sqrt(ustwkw)
-             vicww(nm, kfsmax(nm)) = VON_KARMAN*zw*ustwin
-             dicww(nm, kfsmax(nm)) = VON_KARMAN*zw*ustwin
+             vicww(nm, kfsmax(nm)) = vonkar*zw*ustwin
+             dicww(nm, kfsmax(nm)) = vonkar*zw*ustwin
              !
              ! RTUR1 can be used to determine viscosity at surface
              ! Only for k-eps model

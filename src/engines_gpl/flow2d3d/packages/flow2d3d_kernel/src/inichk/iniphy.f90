@@ -1,4 +1,4 @@
-subroutine iniphy(iro       ,z0        ,VON_KARMAN    ,vicmol    ,sboltz    , &
+subroutine iniphy(iro       ,z0        ,vonkar    ,vicmol    ,sboltz    , &
                 & sferic    ,anglat    ,grdang    ,temeqs    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -63,7 +63,7 @@ subroutine iniphy(iro       ,z0        ,VON_KARMAN    ,vicmol    ,sboltz    , &
     real(fp), intent(out) :: sboltz !  Description and declaration in physco.igs
     real(fp), intent(in)  :: temeqs !  Description and declaration in physco.igs
     real(fp), intent(out) :: vicmol !  Description and declaration in physco.igs
-    real(fp), intent(out) :: VON_KARMAN !  Description and declaration in physco.igs
+    real(fp), intent(out) :: vonkar !  Description and declaration in physco.igs
     real(fp), intent(out) :: z0     !  Description and declaration in physco.igs
 !
 ! Local variables
@@ -75,7 +75,7 @@ subroutine iniphy(iro       ,z0        ,VON_KARMAN    ,vicmol    ,sboltz    , &
     !
     iro    = 1
     z0     = 1.0e-6
-    VON_KARMAN = 0.41
+    vonkar = 0.41
     !
     ! vicmol computed according to Van Rijn (2004) sediment tranport
     !

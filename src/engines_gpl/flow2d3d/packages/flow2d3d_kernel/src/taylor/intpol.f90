@@ -69,7 +69,7 @@ subroutine intpol(kmax      ,kmxdt     ,kmxt      ,h0        ,zeta      , &
     real(fp)               , pointer :: viscof
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
-    real(fp)               , pointer :: VON_KARMAN
+    real(fp)               , pointer :: vonkar
 !
 ! Global variables
 !
@@ -183,7 +183,7 @@ subroutine intpol(kmax      ,kmxdt     ,kmxt      ,h0        ,zeta      , &
 !
     ag       => gdp%gdphysco%ag
     z0       => gdp%gdphysco%z0
-    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
+    vonkar   => gdp%gdphysco%vonkar
     ricrit   => gdp%gdiwearr%ricrit
     bvmin    => gdp%gdiwearr%bvmin
     epsuko   => gdp%gdiwearr%epsuko
@@ -273,8 +273,8 @@ subroutine intpol(kmax      ,kmxdt     ,kmxt      ,h0        ,zeta      , &
           ! log layer near surface:
           zsur = zeta - ztg
           ratio = log(zsur/(zeta - zk))
-          utg(ktg) = u0(1) + ratio*ustwix/VON_KARMAN
-          vtg(ktg) = v0(1) + ratio*ustwiy/VON_KARMAN
+          utg(ktg) = u0(1) + ratio*ustwix/vonkar
+          vtg(ktg) = v0(1) + ratio*ustwiy/vonkar
           d2u(ktg) = d2u0(1)
           d2v(ktg) = d2v0(1)
        elseif (ztg<zk) then

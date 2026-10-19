@@ -34,7 +34,7 @@ contains
 
    subroutine trab11(u, v, hrms, h, tp, &
                    & d50, npar, par, sbotx, sboty, &
-                   & ssusx, ssusy, ubot, VON_KARMAN, ubot_from_com)
+                   & ssusx, ssusy, ubot, vonkar, ubot_from_com)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! the transport formula of Soulsby / Van Rijn
@@ -54,7 +54,7 @@ contains
       real(fp), intent(in) :: ubot !  Description and declaration in esm_alloc_real.f90
       real(fp), intent(in) :: u
       real(fp), intent(in) :: v
-      real(fp), intent(in) :: VON_KARMAN
+      real(fp), intent(in) :: vonkar
       !
       real(fp), intent(out) :: sbotx
       real(fp), intent(out) :: sboty
@@ -147,7 +147,7 @@ contains
       !
       !     Soulsby p. 183
       !
-      cd = (VON_KARMAN / (log(h / z0) - 1.))**2
+      cd = (vonkar / (log(h / z0) - 1.))**2
       asb = 0.005 * h * (d50 / h / (delta * ag * d50))**1.2
       ass = 0.012 * d50 * dstar**(-0.6) / (delta * ag * d50)**1.2
       term1 = (utot * utot + alfaurms * 0.018 / cd * urms * urms)**0.5
