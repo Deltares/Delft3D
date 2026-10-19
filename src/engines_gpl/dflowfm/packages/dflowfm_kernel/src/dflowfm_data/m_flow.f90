@@ -81,7 +81,7 @@ module m_flow ! flow arrays-999
    integer, parameter :: STRETCH_UNDEFINED = -999 !< undefined stretching type
    integer :: stretch_type = STRETCH_UNDEFINED !< Stretching type for layers
 
-   integer :: iturbulencemodel !< Turbulence model to be used (0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau)
+   integer :: iturbulencemodel !< Turbulence model to be used (0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau, 5 = k-eps at cell centers)
    integer, parameter :: TURBULENCE_MODEL_NONE = 0 !< No turbulence model
    integer, parameter :: TURBULENCE_MODEL_CONSTANT = 1 !< Constant turbulence model
    integer, parameter :: TURBULENCE_MODEL_ALGEBRAIC = 2 !< Algebraic turbulence model
