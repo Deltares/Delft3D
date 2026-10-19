@@ -72,10 +72,11 @@ contains
       use m_alloc, only: aerr
       use m_waveconst
 
-      real(kind=dp) :: tetm1
+      real(kind=dp) :: theta_complement
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
-      real(kind=dp) :: hdzb, dtiL, adv, omegu
+      real(kind=dp) :: hdzb, adv, omegu
+      real(kind=dp) :: dt_inverse !< Inverse of the previous time step (1/dtprev)
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: dzs(kmxx), dzws(kmxx), hdzbs
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
@@ -237,8 +238,8 @@ contains
             end do
          end if
 
-         tetm1 = 1.0_dp - THETA_KEPS_DIFFUSION
-         dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
+         theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
+         dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
 
@@ -291,9 +292,9 @@ contains
                turbulent_dissipation_wu_old(Lb0:Lt) = turbulent_dissipation_wu(Lb0:Lt)
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_kinetic_energy_wu_old(Lb0:Lt)
+               dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_wu_old(Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old, turbulent_kinetic_energy_ws)
@@ -352,8 +353,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * tetm1 &
-                             + difd * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * theta_complement &
+                             + difd * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -585,9 +586,9 @@ contains
                !_____________________________________________________________________________________!
 
                ak(0:kxL) = 0.0_dp ! Matrix initialization eps, tau
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_dissipation_wu_old(Lb0:Lt)
+               dk(0:kxL) = dt_inverse * turbulent_dissipation_wu_old(Lb0:Lt)
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
@@ -616,8 +617,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * tetm1 &
-                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
+                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
                   end if
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
@@ -896,8 +897,8 @@ contains
             end do
          end if
 
-         tetm1 = 1.0_dp - THETA_KEPS_DIFFUSION
-         dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
+         theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
+         dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
             ustb(LL) = 0.0_dp
@@ -942,9 +943,9 @@ contains
                tkesur = ustws(kk)**2 / sqrt(cmukep) ! only wind+ship contribution
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_kinetic_energy_ws_old(kb0:kt)
+               dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_ws_old(kb0:kt)
 
                vicu = viskin + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * sigtkei !
 
@@ -967,8 +968,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_ws_old(L) - turbulent_kinetic_energy_ws_old(Lu)) * tetm1 &
-                             + difd * (turbulent_kinetic_energy_ws_old(L - 1) - turbulent_kinetic_energy_ws_old(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_ws_old(L) - turbulent_kinetic_energy_ws_old(Lu)) * theta_complement &
+                             + difd * (turbulent_kinetic_energy_ws_old(L - 1) - turbulent_kinetic_energy_ws_old(L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -1070,9 +1071,9 @@ contains
                !_____________________________________________________________________________________!
 
                ak(0:kxL) = 0.0_dp ! Matrix initialization eps, tau, Cellcenters
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_dissipation_ws_old(kb0:kt)
+               dk(0:kxL) = dt_inverse * turbulent_dissipation_ws_old(kb0:kt)
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
@@ -1097,8 +1098,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_ws_old(L) - turbulent_dissipation_ws_old(Lu)) * tetm1 &
-                             + difd * (turbulent_dissipation_ws_old(L - 1) - turbulent_dissipation_ws_old(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_dissipation_ws_old(L) - turbulent_dissipation_ws_old(Lu)) * theta_complement &
+                             + difd * (turbulent_dissipation_ws_old(L - 1) - turbulent_dissipation_ws_old(L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                epsilon
@@ -1240,7 +1241,7 @@ contains
             k2 = ln(2, L)
             if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
+                  dk(L - Lb + 1) = dt_inverse * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
                end if
             end if
          end do
