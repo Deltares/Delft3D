@@ -2176,13 +2176,10 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     pup      = 0.0_fp
     pdown    = 0.0_fp
     mtot_ac  = 0.0_fp
-    !mtot_crs = 0.0_fp
     do l = 1, this%settings%nfrac
         mtot_ac  = mtot_ac  + msed(l,1,nm)
-        !mtot_crs = mtot_crs + msed(l,2,nm)
     enddo
     pmob_ac  = 0.0_fp
-    !pmob_crs = 0.0_fp
     !
     if (mtot_ac  > 0.0_fp) then
         do l = 1, this%settings%nfrac
@@ -2190,12 +2187,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
         enddo
         pmob_ac  = pmob_ac/mtot_ac
     endif
-    !if (mtot_crs > 0.0_fp) then
-    !    do l = 1, this%settings%nfrac
-    !        pmob_crs = pmob_crs + mobile(l,nm)*msed(l,2,nm)
-    !    enddo
-    !    pmob_crs  = pmob_crs/mtot_crs
-    !endif
     !
     ! compute composition of sink and replacement flux
     !
