@@ -3348,6 +3348,8 @@ contains
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       logical :: status !< Status of undefined values check
       real(dp) :: sourceValue !< Source value at t0 or t1, detemp_proj on the time interpolation
+      real(dp), dimension(:), allocatable :: source_values !< Time-interpolated source values; allocatable to keep it off the stack.
+      integer :: n_targets !< Number of target points
       real(dp), dimension(:), pointer :: targetValues
       real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
@@ -4092,20 +4094,16 @@ contains
                      return
                   end if
 
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
+                  n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), status)
 
-                     if (.not. status) then
-                        return
-                     end if
+                  if (.not. status) then
+                     return
+                  end if
 
-                     call apply_operand( &
-                        connection%converterPtr%operandType, &
-                        targetField%arr1dPtr(j), &
-                        connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j) &
-                        )
-                  end do
+                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), &
+                                     connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets))
 
                   targetField%timesteps = timesteps
 
@@ -4140,19 +4138,17 @@ contains
                      return
                   end if
 
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     sourceValueT0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
-                     sourceValueT1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(j)
-                     sourceValue = sourceValueT0 * a0 + sourceValueT1 * a1
+                  n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), status)
 
-                     if (.not. status) then
-                        return
-                     end if
+                  if (.not. status) then
+                     return
+                  end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), sourceValue)
-                  end do
+                  source_values = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets) * a0 &
+                                  + connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(1:n_targets) * a1
+                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), source_values)
 
                   targetField%timesteps = timesteps
 
