@@ -73,7 +73,9 @@ contains
       integer :: n, kb, km, km1, k, kk, ku, kku, Lb0, Lb, Lt, Lm1, L, LL, La
       real(kind=dp) :: zmin, zmax
       real(kind=dp) :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
-      real(kind=dp) :: tkebot, tkesur, tkewin
+      real(kind=dp) :: turbulent_kinetic_energy_at_bottom !< Turbulent kinetic energy at the bottom layer; bottom boundary condition.
+      real(kind=dp) :: turbulent_kinetic_energy_at_top !< Turbulent kinetic energy at the top layer; top boundary condition.
+      real(kind=dp) :: tkewin
       real(kind=dp) :: cewall
       real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg
       real(kind=dp) :: VMAX2, VMIN2
@@ -197,28 +199,28 @@ contains
 
             else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
 
-               tkebot = ustbref**2 / sqrt(cmukep)
+               turbulent_kinetic_energy_at_bottom = ustbref**2 / sqrt(cmukep)
                tkewin = ustwref**2 / sqrt(cmukep)
-               tkesur = max(tkewin, ustbref**2)
-               ! tkesur = 0d0
-               epsbot = cewall * tkebot**1.5_dp
-               epssur = cewall * tkesur**1.5_dp
+               turbulent_kinetic_energy_at_top = max(tkewin, ustbref**2)
+               ! turbulent_kinetic_energy_at_top = 0d0
+               epsbot = cewall * turbulent_kinetic_energy_at_bottom**1.5_dp
+               epssur = cewall * turbulent_kinetic_energy_at_top**1.5_dp
 
                ! TKE and epsilon at layer interfaces:
                do k = 1, km - 1
                   zint = hwref(k) / h0
                   z1 = 1.0_dp - zint
-                  tkin1ref(k) = tkebot * z1 + tkesur * zint
+                  tkin1ref(k) = turbulent_kinetic_energy_at_bottom * z1 + turbulent_kinetic_energy_at_top * zint
                   teps1ref(k) = (epsbot / zint + epssur / z1) / h0
                   teps1ref(k) = max(eps_min, teps1ref(k))
                   vicwref(k) = cmukep * tkin1ref(k)**2 / abs(teps1ref(k))
                end do
 
                ! TKE, epsilon and mixing coefficients at free surface:
-               tkin1ref(km) = tkesur
+               tkin1ref(km) = turbulent_kinetic_energy_at_top
                teps1ref(km) = epssur / (hwref(km) - hwref(km - 1))
                ! TKE, epsilon and mixing coefficients at bed:
-               tkin1ref(0) = tkebot
+               tkin1ref(0) = turbulent_kinetic_energy_at_bottom
                teps1ref(0) = epsbot / (hwref(1) - hwref(0)) !  dzcs(kb)
 
                dzkap = vonkar * 0.5_dp * (hwref(1) - hwref(0))
