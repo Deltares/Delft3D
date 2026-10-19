@@ -3095,7 +3095,7 @@ contains
                source_phase(point) = frame%phases(sourcefield%ja(point), row)
             end do
          end do
-      else
+      else if (n_cols > 0) then ! a non-positive bounding box width means no target overlaps the source grid
          do point = 1, n_source
             source_phase(point) = frame%phases(mod(point - 1, n_cols) + 1, (point - 1) / n_cols + 1)
          end do

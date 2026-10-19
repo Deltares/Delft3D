@@ -429,4 +429,26 @@ contains
    end subroutine cached_and_uncached_conversions_agree
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ec_harmonic_projection, no_overlapping_targets, no_overlapping_targets,
+   subroutine no_overlapping_targets() bind(C)
+      type(fixture), target :: f
+      type(c_time) :: time
+      logical :: success
+
+      ! Without overlap, a 3x3 grid gets bbox [3, 3, 0, 0] and the reader allocates (-2)*(-2) = 4 entries.
+      call setup(f, 1)
+      deallocate (f%harmonics%phases)
+      allocate (f%harmonics%phases(3, 3))
+      f%harmonics%phases = 0.0_dp
+      f%t0%bbox = [3, 3, 0, 0]
+      f%t1%bbox = f%t0%bbox
+      f%weights%indices = 0
+      call time%set(59000.0_dp)
+      success = ecConverterPerformConversions(f%connection, time)
+      call f90_assert_true(success, 'harmonic projection without overlapping targets should succeed')
+      call f90_expect_true(all(f%values == 7.0_dp), 'targets without overlap must be untouched')
+      call cleanup(f)
+   end subroutine no_overlapping_targets
+   !$f90tw)
+
 end module test_ec_harmonic_projection
