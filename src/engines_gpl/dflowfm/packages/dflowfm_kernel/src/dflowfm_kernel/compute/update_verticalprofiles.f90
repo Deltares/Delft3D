@@ -865,15 +865,33 @@ contains
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   discharge_at_layer_interface = 0.5_dp * (q1(L) + q1(L + 1))
+
                   if (discharge_at_layer_interface > 0) then ! set upwind center values on links
-                     sum_q_times_turbulent_kinetic_energy_ws(k2) = sum_q_times_turbulent_kinetic_energy_ws(k2) + discharge_at_layer_interface * turbulent_kinetic_energy_ws(k1)
-                     sum_q_times_turbulent_dissipation_ws(k2) = sum_q_times_turbulent_dissipation_ws(k2) + discharge_at_layer_interface * turbulent_dissipation_ws(k1)
+
+                     sum_q_times_turbulent_kinetic_energy_ws(k2) = &
+                        sum_q_times_turbulent_kinetic_energy_ws(k2) &
+                        + discharge_at_layer_interface * turbulent_kinetic_energy_ws(k1)
+                     
+                     sum_q_times_turbulent_dissipation_ws(k2) = &
+                        sum_q_times_turbulent_dissipation_ws(k2) &
+                        + discharge_at_layer_interface * turbulent_dissipation_ws(k1)
+                     
                      sum_inflowing_discharges_ws(k2) = sum_inflowing_discharges_ws(k2) + discharge_at_layer_interface
+                  
                   else if (discharge_at_layer_interface < 0) then
-                     sum_q_times_turbulent_kinetic_energy_ws(k1) = sum_q_times_turbulent_kinetic_energy_ws(k1) - discharge_at_layer_interface * turbulent_kinetic_energy_ws(k2)
-                     sum_q_times_turbulent_dissipation_ws(k1) = sum_q_times_turbulent_dissipation_ws(k1) - discharge_at_layer_interface * turbulent_dissipation_ws(k2)
+
+                     sum_q_times_turbulent_kinetic_energy_ws(k1) = &
+                        sum_q_times_turbulent_kinetic_energy_ws(k1) &
+                        - discharge_at_layer_interface * turbulent_kinetic_energy_ws(k2)
+                     
+                     sum_q_times_turbulent_dissipation_ws(k1) = &
+                        sum_q_times_turbulent_dissipation_ws(k1) &
+                        - discharge_at_layer_interface * turbulent_dissipation_ws(k2)
+                     
                      sum_inflowing_discharges_ws(k1) = sum_inflowing_discharges_ws(k1) - discharge_at_layer_interface
+                  
                   end if
+
                end do
             end do
          end if

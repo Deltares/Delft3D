@@ -126,7 +126,6 @@ module m_physcoef
 
    real(kind=dp) :: tetav !< vertical teta transport
    real(kind=dp) :: tetavkeps !< vertical teta k-eps
-   real(kind=dp) :: tetavmom !< vertical teta momentum
 
    real(kind=dp) :: locsaltlev !< salinity level for case of lock exchange
    real(kind=dp) :: locsaltmin !< minimum salinity for case of lock exchange
@@ -176,7 +175,6 @@ contains
       free_convection_coefficient = 0.14_dp
       tetav = 0.55_dp
       tetavkeps = 0.55_dp
-      tetavmom = 0.55_dp
       locsaltlev = 1.0_dp
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp
