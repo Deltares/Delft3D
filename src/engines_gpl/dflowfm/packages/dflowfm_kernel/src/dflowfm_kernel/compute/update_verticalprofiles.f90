@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, turbulent_advection_scheme, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         ustbs, ustws, EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old, zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, qw, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -184,7 +184,7 @@ contains
          call links_to_centers(turbulent_kinetic_energy_ws, turbulent_kinetic_energy_wu)
          call links_to_centers(turbulent_dissipation_ws, turbulent_dissipation_wu)
 
-         if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
+         if (turbulent_advection_scheme > 0) then ! transport switched on: prepare horizontal advection k and eps
 
             if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
                call doaddksources()
@@ -442,7 +442,7 @@ contains
                ck(0) = 0.0_dp
                dk(0) = tkebot
 
-               if (javau > 0 .or. javakeps > 0) then
+               if (javau > 0 .or. turbulent_advection_scheme > 0) then
                   call calculate_womegu(womegu, LL)
 
                   ac1 = acL(LL)
@@ -450,7 +450,7 @@ contains
                   n1 = ln(1, LL)
                   n2 = ln(2, LL)
 
-                  if (javakeps >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
+                  if (turbulent_advection_scheme >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
 
                      arLL = ac1 * a1(n1) + ac2 * a1(n2)
                      do L = Lb, Lt - 1
@@ -471,7 +471,7 @@ contains
                            end if
                         end if
 
-                        if (javakeps == 3) then ! turkin
+                        if (turbulent_advection_scheme == 3) then ! turkin
                            if (q1(L) + q1(L + 1) > 0) then
                               kup = ln(1, L)
                               arLL = a1(n1)
@@ -482,7 +482,7 @@ contains
                            volki = 1.0_dp / (dzw(k) * arLL)
                            dk(k) = dk(k) + tqcu(kup) * volki
                            bk(k) = bk(k) + sqcu(kup) * volki
-                        else if (javakeps == 4) then ! turkin
+                        else if (turbulent_advection_scheme == 4) then ! turkin
                            k1 = ln(1, L)
                            k2 = ln(2, L)
                            volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
@@ -695,7 +695,7 @@ contains
 
                end if
 
-               if (javakeps >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
+               if (turbulent_advection_scheme >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
                   do L = Lb, Lt - 1
                      k = L - Lb + 1
                      omegu = 0.5_dp * womegu(k)
@@ -714,7 +714,7 @@ contains
                         end if
                      end if
 
-                     if (javakeps == 3) then ! tureps
+                     if (turbulent_advection_scheme == 3) then ! tureps
                         if (q1(L) + q1(L + 1) > 0) then
                            kup = ln(1, L)
                            arLL = a1(n1)
@@ -725,7 +725,7 @@ contains
                         volki = 1.0_dp / (dzw(k) * arLL)
                         dk(k) = dk(k) + eqcu(kup) * volki
                         bk(k) = bk(k) + sqcu(kup) * volki
-                     else if (javakeps == 4) then ! tureps
+                     else if (turbulent_advection_scheme == 4) then ! tureps
                         k1 = ln(1, L)
                         k2 = ln(2, L)
                         volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
@@ -825,7 +825,7 @@ contains
 
          call calculate_drhodz(zws, drhodz)
 
-         if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
+         if (turbulent_advection_scheme > 0) then ! transport switched on: prepare horizontal advection k and eps
 
             if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
                call doaddksources()
@@ -990,14 +990,14 @@ contains
                ck(0) = 0.0_dp
                dk(0) = tkebot
 
-               if (javau > 0 .or. javakeps > 0) then
+               if (javau > 0 .or. turbulent_advection_scheme > 0) then
                   do L = kb, kt - 1 ! vertical omega velocity at layer interface u point
                      k = L - kb + 1
                      womegu(k) = qw(L) / a1(kk)
                   end do
                   womegu(kt - kb + 1) = 0.0_dp ! top layer : 0
 
-                  if (javakeps >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
+                  if (turbulent_advection_scheme >= 3) then ! Advection of turkin, vertical implicit, horizontal explicit
                      arLL = a1(kk)
                      do L = kb, kt - 1
                         k = L - kb + 1
@@ -1100,7 +1100,7 @@ contains
                   dk(0) = 0.0_dp
                end if
 
-               if (javakeps >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
+               if (turbulent_advection_scheme >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
                   do L = kb, kt - 1
                      k = L - kb + 1
                      omegu = 0.5_dp * womegu(k)

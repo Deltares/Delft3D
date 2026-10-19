@@ -470,7 +470,7 @@ contains
       !,                  only : kmx, layertype, mxlayz, z_layer_growth_factor, iturbulencemodel, &
       !                         LAYTP_SIGMA, numtopsig, spirbeta,                              &
       !                         dztopuniabovez, dztop, uniformhu, jahazlayer, Floorlevtoplay,         &
-      !                         javakeps,                                                             &
+      !                         turbulent_advection_scheme,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
       !                         Tsigma, jarhoxu,                                                      &
       !                         stretch_type, STRETCH_UNIFORM, STRETCH_USER, STRETCH_EXPONENT, &
@@ -1059,7 +1059,7 @@ contains
          call mess(LEVEL_ERROR, 'c3eUnstable should be >= 0')
       end if
 
-      call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
+      call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', turbulent_advection_scheme)
       call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor)
       call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method)
 
@@ -3226,8 +3226,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-eps turbulence model')
       end if
 
-      if (writeall .or. (javakeps /= 3 .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection', javakeps, 'Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)')
+      if (writeall .or. (turbulent_advection_scheme /= 3 .and. kmx > 0)) then
+         call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection', turbulent_advection_scheme, 'Turbulence advection (0: none, 1: upwind explicit, 2: central explicit, 3: horizontally explicit and vertically implicit, 4: central implicit)')
       end if
 
       if (writeall .or. (tur_time_int_factor > 0 .and. kmx > 0)) then
