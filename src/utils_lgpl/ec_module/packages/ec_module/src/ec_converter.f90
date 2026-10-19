@@ -2315,7 +2315,7 @@ contains
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
 
          do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-            ! TODO : Calculate target value detemp_proj on ElementSet mask.
+            ! TODO : Calculate target value depending on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
             if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
