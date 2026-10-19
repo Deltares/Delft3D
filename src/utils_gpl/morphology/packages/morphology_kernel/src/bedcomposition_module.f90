@@ -90,6 +90,9 @@ integer, parameter, public :: MOBILITY_SEDTRANS = 4 !< from sediment transport r
 !`active-layer diffusion`
 integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 !< no diffusion (default)
 integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY = 1 !< x-y-diffusion file
+!`active-layer to substrate flux`
+integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM = 1 !< existing uniform-composition transfer
+integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST = 2 !< deposit immobile sediment first
 !
 ! interfaces
 !
@@ -297,6 +300,7 @@ type bedcomp_settings
    integer  :: peatfrac                              !< peat flag (no peat growth, peat thickness is homogeneous)
    integer  :: max_mud_sedtyp                        !< highest sediment type number that is considered a mud fraction
    integer  :: active_layer_diffusion                !< switch for applying diffusion in the active layer model
+   integer  :: active_layer_to_substrate_flux        !< active-layer sediment composition transferred to substrate
     !
     ! pointers
     !
@@ -522,12 +526,14 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     real(fp) :: fac, seddep0, seddep1, thdiff, temp, thick, thickd, thicke
     real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
     real(fp) :: totmassd, totsv, totsvd, totsve
+    real(fp) :: transfer_solid_volume, immobile_solid_volume, mobile_solid_volume
     real(fp), dimension(this%settings%nfrac) :: dmi, mfrac
     type(morlyrnumericstype), pointer :: morlyrnum
     integer, pointer :: iconsolidate
     integer, pointer :: nconlyr
     real(fp), dimension(:), pointer :: rhofrac
     real(fp), dimension(:,:), pointer :: svfrac, sedshort, thlyr, preload, depos_time
+    real(fp), dimension(:,:), pointer :: mobile
     real(fp), dimension(:,:,:), pointer :: msed
     real(fp), pointer :: thtrempty
     real(fp), dimension(:), pointer :: thtrlyr
@@ -538,6 +544,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     rhofrac => this%settings%rhofrac
     thtrempty => this%settings%thtrempty
     thtrlyr => this%settings%thtrlyr
+    mobile => this%state%mobile
     svfrac => this%state%svfrac
     msed => this%state%msed
     sedshort => this%state%sedshort
@@ -702,13 +709,37 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
                ! sedimentation to underlayers
                ! determine surplus of mass per fraction
                !
-               fac = thdiff/thick
                sdbodsed = 0.0_fp
-               do l = 1, this%settings%nfrac
-                   dmi(l) = msed(l, 1, nm)*fac
-                   msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                   sdbodsed = sdbodsed + dbodsd(l, nm)
-               enddo
+               if (this%settings%active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM) then
+                  fac = thdiff/thick
+                  do l = 1, this%settings%nfrac
+                     dmi(l) = msed(l, 1, nm)*fac
+                     msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                     sdbodsed = sdbodsed + dbodsd(l, nm)
+                  enddo
+               else
+                  transfer_solid_volume = thdiff*svfrac(1, nm)
+                  immobile_solid_volume = 0.0_fp
+                  mobile_solid_volume = 0.0_fp
+                  do l = 1, this%settings%nfrac
+                     dmi(l) = (1.0_fp - mobile(l, nm))*msed(l, 1, nm)
+                     immobile_solid_volume = immobile_solid_volume + dmi(l)/rhofrac(l)
+                     mobile_solid_volume = mobile_solid_volume + mobile(l, nm)*msed(l, 1, nm)/rhofrac(l)
+                  enddo
+                  if (immobile_solid_volume > 0.0_fp .and. transfer_solid_volume <= immobile_solid_volume) then
+                     fac = transfer_solid_volume/immobile_solid_volume
+                     dmi = dmi*fac
+                  elseif (mobile_solid_volume > 0.0_fp) then
+                     fac = (transfer_solid_volume - immobile_solid_volume)/mobile_solid_volume
+                     do l = 1, this%settings%nfrac
+                        dmi(l) = dmi(l) + fac*mobile(l, nm)*msed(l, 1, nm)
+                     enddo
+                  endif
+                  do l = 1, this%settings%nfrac
+                     msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                     sdbodsed = sdbodsed + dbodsd(l, nm)
+                  enddo
+               endif
                !
                ! store surplus of mass in underlayers
                !
@@ -3213,6 +3244,7 @@ function initmorlyr(this) result (istat)
     settings%updtoplyr  = TOPLYR_POR_RESET         ! by default, the top layer porosity is reset
     settings%updbaselyr = BASELYR_UPDATED          !
     settings%active_layer_diffusion = ACTIVE_LAYER_DIFFUSION_OFF
+    settings%active_layer_to_substrate_flux = ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM
     settings%imobility    = MOBILITY_OFF
 
     !!  --> default values, based on Merckelbach et al. (2000, 2004a, b)
@@ -3433,6 +3465,8 @@ function allocmorlyr(this) result (istat)
        if (settings%crslyr) then
           if (istat == 0) allocate (settings%thclyr(nmlb:nmub), stat = istat)
           if (istat == 0) settings%thclyr = 0.0_fp
+       endif
+       if (settings%crslyr .or. settings%active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST) then
           if (istat == 0) allocate (state%mobile(nfrac,nmlb:nmub), stat = istat)
           if (istat == 0) state%mobile = 1.0_fp
        endif
@@ -3768,6 +3802,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
         val => this%settings%ierosion
     case ('active_layer_diffusion')
        val => this%settings%active_layer_diffusion
+    case ('active_layer_to_substrate_flux','alsflux')
+       val => this%settings%active_layer_to_substrate_flux
     case default
        val => NULL()
        istat = -1

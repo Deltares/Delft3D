@@ -30,7 +30,9 @@ module test_morphology
    use m_trab19, only: trab19
    use m_rdtrafrm, only: traparams
    use morphology_data_module, only: NPARDEF
-   use bedcomposition_module, only: BED_LAYERED, BED_MIXED, CONSOL_DECON, CONSOL_NONE, &
+   use bedcomposition_module, only: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST, &
+                                   ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM, BED_LAYERED, BED_MIXED, &
+                                   CONSOL_DECON, CONSOL_NONE, MOBILITY_DISCRETE, &
                                    allocmorlyr, bedcomp_data, clrmorlyr, initmorlyr, updmorlyr
    use message_module, only: clearstack, getmessage, initstack, isempty, message_len, message_stack
 
@@ -255,12 +257,113 @@ contains
    end subroutine test_updmorlyr_layered_bed_paths
    !$f90tw)
 
-   subroutine initialize_bedcomposition_test(bed, bed_mode, coarse_layer, consolidation_mode, istat)
+   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_active_layer_to_substrate_flux, test_updmorlyr_active_layer_to_substrate_flux,
+   subroutine test_updmorlyr_active_layer_to_substrate_flux() bind(C)
+      type(bedcomp_data) :: bed
+      type(message_stack) :: messages
+      integer :: istat
+      real(fp), dimension(2, 1) :: dbodsd
+      real(fp), dimension(1) :: dz
+      real(fp), dimension(1) :: dunelength
+      real(fp), dimension(1, 2) :: sbot
+
+      call initstack(messages)
+
+      call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed setup failed")
+      call f90_assert_near(real(bed%settings%active_layer_to_substrate_flux, fp), &
+                           real(ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM, fp), 0.0_fp, &
+                           "active-layer substrate flux did not default to UNIFORM")
+
+      bed%settings%thtrlyr(1) = 2.5_fp
+      bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 2, 1) = [0.5_fp, 0.5_fp]
+      bed%state%thlyr(:, 1) = [2.0_fp, 1.0_fp]
+      bed%state%svfrac(:, 1) = 1.0_fp
+      dbodsd(:, 1) = [1.0_fp, 1.0_fp]
+      dz = 0.0_fp
+      dunelength = 0.0_fp
+      sbot = 0.0_fp
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed update failed")
+      call f90_assert_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, &
+                           "uniform flux changed the first active-layer fraction")
+      call f90_assert_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, &
+                           "uniform flux changed the second active-layer fraction")
+      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "uniform flux did not conserve first-fraction mass")
+      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "uniform flux did not conserve second-fraction mass")
+      call f90_assert_true(isempty(messages), "unexpected message during uniform-flux transfer")
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed cleanup failed")
+
+      call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat, &
+                                          ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed setup failed")
+      bed%settings%imobility = MOBILITY_DISCRETE
+      bed%settings%thtrlyr(1) = 2.5_fp
+      bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 2, 1) = [0.5_fp, 0.5_fp]
+      bed%state%thlyr(:, 1) = [2.0_fp, 1.0_fp]
+      bed%state%svfrac(:, 1) = 1.0_fp
+      bed%state%mobile(:, 1) = [0.75_fp, 0.25_fp]
+      dbodsd(:, 1) = [1.0_fp, 1.0_fp]
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed update failed")
+      call f90_assert_near(bed%state%msed(1, 1, 1), 1.625_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not prioritize immobile sediment")
+      call f90_assert_near(bed%state%msed(2, 1, 1), 0.875_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not preserve the requested thickness")
+      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not conserve first-fraction mass")
+      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not conserve second-fraction mass")
+      call f90_assert_true(isempty(messages), "unexpected message during immobile-first transfer")
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed cleanup failed")
+
+      call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat, &
+                                          ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed setup failed")
+      bed%settings%imobility = MOBILITY_DISCRETE
+      bed%settings%thtrlyr(1) = 1.0_fp
+      bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 2, 1) = [0.5_fp, 0.5_fp]
+      bed%state%thlyr(:, 1) = [2.0_fp, 1.0_fp]
+      bed%state%svfrac(:, 1) = 1.0_fp
+      bed%state%mobile(:, 1) = [0.5_fp, 0.5_fp]
+      dbodsd(:, 1) = [1.0_fp, 1.0_fp]
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed update failed")
+      call f90_assert_near(bed%state%msed(1, 1, 1), 0.5_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not use mobile sediment for the remainder")
+      call f90_assert_near(bed%state%msed(2, 1, 1), 0.5_fp, 1.0e-6_fp, &
+                           "immobile-first transfer did not preserve the requested thickness")
+      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "mobile-remainder transfer did not conserve first-fraction mass")
+      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+                           "mobile-remainder transfer did not conserve second-fraction mass")
+      call f90_assert_true(isempty(messages), "unexpected message during mobile-remainder transfer")
+
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed cleanup failed")
+   end subroutine test_updmorlyr_active_layer_to_substrate_flux
+   !$f90tw)
+
+   subroutine initialize_bedcomposition_test(bed, bed_mode, coarse_layer, consolidation_mode, istat, substrate_flux)
       type(bedcomp_data), intent(inout) :: bed
       integer, intent(in) :: bed_mode
       logical, intent(in) :: coarse_layer
       integer, intent(in) :: consolidation_mode
       integer, intent(out) :: istat
+      integer, intent(in), optional :: substrate_flux
 
       istat = initmorlyr(bed)
       if (istat /= 0) then
@@ -273,6 +376,9 @@ contains
       bed%settings%iunderlyr = bed_mode
       bed%settings%crslyr = coarse_layer
       bed%settings%iconsolidate = consolidation_mode
+      if (present(substrate_flux)) then
+         bed%settings%active_layer_to_substrate_flux = substrate_flux
+      endif
 
       istat = allocmorlyr(bed)
       if (istat == 0) then

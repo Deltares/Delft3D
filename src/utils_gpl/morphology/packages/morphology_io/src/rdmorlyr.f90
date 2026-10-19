@@ -125,6 +125,7 @@ contains
       integer, pointer :: idiffusion
       integer, pointer :: ifractions
       integer, pointer :: active_layer_diffusion
+      integer, pointer :: active_layer_to_substrate_flux
       integer, pointer :: iporosity
       integer, pointer :: iunderlyr
       integer, pointer :: maxwarn
@@ -186,6 +187,7 @@ contains
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'Ndiff', ndiff)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IDiffusion', idiffusion)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'active_layer_diffusion', active_layer_diffusion)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'active_layer_to_substrate_flux', active_layer_to_substrate_flux)
       if (istat /= 0) then
          errmsg = 'Memory problem in RDMORLYR'
          call write_error(errmsg, unit=lundia)
@@ -250,6 +252,28 @@ contains
       end if
       txtput1 = 'Underlayer mechanism'
       write (lundia, '(2a,i20)') txtput1, ':', iunderlyr
+      call prop_get(mor_ptr, 'Underlayer', 'ALSflux', active_layer_to_substrate_flux)
+      select case (active_layer_to_substrate_flux)
+      case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM)
+         txtput1 = 'Active-layer substrate flux'
+         txtput2 = 'UNIFORM'
+      case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
+         txtput1 = 'Active-layer substrate flux'
+         txtput2 = 'IMMOBILE_FIRST'
+      case default
+         errmsg = 'ALSflux should be 1 (UNIFORM) or 2 (IMMOBILE_FIRST) in '//trim(filmor)
+         call write_error(errmsg, unit=lundia)
+         error = .true.
+         return
+      end select
+      write (lundia, '(3a)') txtput1, ':', txtput2
+      if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
+          & iunderlyr /= BED_LAYERED) then
+         errmsg = 'ALSflux=2 (IMMOBILE_FIRST) requires IUnderLyr=2 in '//trim(filmor)
+         call write_error(errmsg, unit=lundia)
+         error = .true.
+         return
+      end if
       !
       call set_default_fractions(morlyr)
       call prop_get(mor_ptr, 'Underlayer', 'IFractions', ifractions)
@@ -275,6 +299,13 @@ contains
             txtput2 = '                  NO'
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
+         !
+         if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. crslyr) then
+            errmsg = 'ALSflux=2 (IMMOBILE_FIRST) cannot be used with CrsLyr in '//trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         end if
          !
          if (crslyr) then
             if (.not. lfbedfrm) then
@@ -732,11 +763,15 @@ contains
             return
          end if
          !
-         if (crslyr) then
-            call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+         if (crslyr .or. active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST) then
+            if (crslyr) then
+               call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+               txtput1 = 'Mobility model for vertical sorting'
+            else
+               txtput1 = 'Mobility model for substrate flux'
+            end if
             call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
             !
-            txtput1 = 'Mobility model for vertical sorting'
             select case (imobility)
             case (MOBILITY_OFF)
                txtput3 = ' not used'
@@ -757,7 +792,16 @@ contains
                return
             end select
             write (lundia, '(3a)') txtput1, ':', txtput3
+            if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
+                & imobility == MOBILITY_OFF) then
+               errmsg = 'ALSflux=2 (IMMOBILE_FIRST) requires IMobility different from 0 in '//trim(filmor)
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            end if
+         end if
 
+         if (crslyr) then
             associate (telfil => morpar%telfil)
                istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
                if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'SinkFrac_max', sinkfrac_max)
