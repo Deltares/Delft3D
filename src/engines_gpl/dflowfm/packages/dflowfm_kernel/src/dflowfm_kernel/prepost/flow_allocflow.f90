@@ -56,7 +56,7 @@ contains
                         keepzlayeringatbed, kmxd, workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, &
                         spirucm, ht_xx, spirfx, spirsrc, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, &
                         dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
-                        tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
+                        tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
@@ -92,7 +92,7 @@ contains
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, difwws_total, vicwwu_total, vicwws_total, rich, richs, drhodz, &
-                              turkinws0, turkinws, turepsws0, turepsws, ustbs, ustws
+                              turbulent_kinetic_energy_ws_old, turbulent_kinetic_energy_ws, turbulent_dissipation_ws_old, turbulent_dissipation_ws, ustbs, ustws
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
@@ -898,20 +898,20 @@ contains
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
-         call realloc(turkinws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('turkinws(ndkx)', ierr, ndkx)
-         call realloc(turepsws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('turepsws(ndkx)', ierr, ndkx)
+         call realloc(turbulent_kinetic_energy_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turbulent_kinetic_energy_ws(ndkx)', ierr, ndkx)
+         call realloc(turbulent_dissipation_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turbulent_dissipation_ws(ndkx)', ierr, ndkx)
 
          if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then
-            allocate (turkinws0(ndkx), stat=ierr)
-            turkinws0 = tke_min
-            allocate (turkinws(ndkx), stat=ierr)
-            turkinws = tke_min
-            allocate (turepsws0(ndkx), stat=ierr)
-            turepsws0 = eps_min
-            allocate (turepsws(ndkx), stat=ierr)
-            turepsws = eps_min
+            allocate (turbulent_kinetic_energy_ws_old(ndkx), stat=ierr)
+            turbulent_kinetic_energy_ws_old = tke_min
+            allocate (turbulent_kinetic_energy_ws(ndkx), stat=ierr)
+            turbulent_kinetic_energy_ws = tke_min
+            allocate (turbulent_dissipation_ws_old(ndkx), stat=ierr)
+            turbulent_dissipation_ws_old = eps_min
+            allocate (turbulent_dissipation_ws(ndkx), stat=ierr)
+            turbulent_dissipation_ws = eps_min
             allocate (ustbs(ndkx), stat=ierr)
             allocate (ustws(ndkx), stat=ierr)
          end if

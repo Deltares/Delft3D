@@ -56,7 +56,7 @@ contains
       use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_KEPS, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs, epsz0
       use m_transport, only: constituents, isalt, itemp, ised1
-      use m_turbulence, only: turkinws, turepsws, rhowat
+      use m_turbulence, only: turbulent_kinetic_energy_ws, turbulent_dissipation_ws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
       use morphology_data_module
       use message_module, only: write_error
@@ -221,12 +221,12 @@ contains
                w = (tka * ucz(kk + 1) + tkb * ucz(kk)) / tkt ! z component
 
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                  tur_k = turkinws(kk)
+                  tur_k = turbulent_kinetic_energy_ws(kk)
                else
                   tur_k = -999.0_dp
                end if
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                  tur_eps = turepsws(kk)
+                  tur_eps = turbulent_dissipation_ws(kk)
                else
                   tur_eps = -999.0_dp
                end if
