@@ -33,6 +33,12 @@ The presence of `[Output] COMFile` alone does not make a run online or imply
 that FLOW is advancing. In standalone mode it can identify saved FM output.
 Likewise, `useflowdata` is internal state, not an MDW keyword.
 
+The manual defines `FlowFile` and `FlowMudFile` in
+[Appendix A.1.1 of the D-Waves User Manual](../include/D-Waves_User_Manual.pdf)
+(printed pages 85–87). The parser behavior and the distinction between MDW
+settings and internal state described above are checked against the current
+implementation.
+
 ## Independent calculation or offline FLOW input
 
 Standalone describes how WAVE runs, not where all its inputs originate.
@@ -55,6 +61,15 @@ The saved-file options differ by engine:
 |---|---|
 | Delft3D4 FLOW | Use mode 0, leave `[General] FlowFile` blank, and select the runid(s) with `[General] ComFile` (or the default WAVE runid). No DelftIO handshake is performed. Legacy offline workflows should align WAVE calculation times with stored FLOW output times. |
 | D-Flow FM | Set `[Output] COMFile` to the FM NetCDF communication file. WAVE checks the file and any partition variants, reads its grid and fields, and does not run the FM model. The file must contain the grid and selected fields; an arbitrary FM map-output file is not a substitute. |
+
+The manual's [Appendix A.1.2](../include/D-Waves_User_Manual.pdf) (printed
+page 89) describes the offline legacy FLOW workflow: remove `FlowFile`, use
+`ComFile` for alternate or partitioned com-files, and specify timepoints
+matching records in those files. The manual's [Section 5.4.1.1](../include/D-Waves_User_Manual.pdf)
+(printed page 35) describes D-Flow FM input through its communication file.
+The FM standalone behavior and route selection above are additionally
+verified against the implementation; Appendix A.1.2 describes the legacy
+com-file route, not FM NetCDF scheduling.
 
 The MDW time schedule and file route both affect when calculations occur:
 
@@ -124,6 +139,12 @@ The legacy route uses `wave2flow` for vector conversion before
 `wave2com`/`put_wave_fields`; the FM route skips the legacy `wave2flow`
 conversion and writes through `wave2com`/`put_wave_fields`. This is
 communication-file writeback, not ordinary WAVE map output.
+
+This matches the manual's Section 5.4.9 (printed pages 60–61), which says
+that output on the Flow grid uses a communication file, and its example in
+[Appendix A.1.3.4.2](../include/D-Waves_User_Manual.pdf) (printed page 94),
+which sets `[Output] WriteCOM` and `[Output] COMFile`. The exact mapping and
+file-write calls described here are implementation details.
 
 ## Implementation references
 

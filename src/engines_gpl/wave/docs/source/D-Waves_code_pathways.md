@@ -15,19 +15,26 @@ The three current pathways below have been cross-checked against the
 [D-Waves User Manual](../include/D-Waves_User_Manual.pdf), version 2027.01,
 revision 81307, dated 15 October 2026. Relevant sections are:
 
-- Section 3.3.1: running models separately or coupled and exporting a DIMR
-  configuration.
-- Sections 5.4.1.1–5.4.1.2: Flow communication files and the online coupling
-  timeframe.
-- Section 5.4.9: output to the Flow grid and computational grids.
-- Appendix A.1.2: offline calculations using existing FLOW results.
-- Appendix A.1.3.4.2: an FM–D-Waves example using `[Output] COMFile`.
+- Section 3.3.1 (printed page 11): project-versus-model workflows and DIMR
+  configuration export.
+- Sections 5.4.1.1–5.4.1.2 (printed pages 35–36): D-Flow FM input from
+  communication files and the online-coupling timeframe.
+- Section 5.4.9 (printed pages 60–61): output to the Flow grid and
+  communication-file requirements.
+- Appendix A.1.1 (printed pages 85–87): MDW keywords, including `FlowFile`
+  and `FlowMudFile`.
+- Appendix A.1.2 (printed page 89): offline calculations using existing
+  FLOW results.
+- Appendix A.1.3.4.2 (printed page 94): an FM–D-Waves MDW example using
+  `[Output] COMFile` and `WriteCOM`.
 
 The manual describes model setup; the source references below establish the
 actual entry points and branching conditions. Its section 2.1.3 refers readers
 to the D-Flow FM manual for further FM coupling details; it does not itself
-specify the BMI call contract. The preCICE reference section is outside this
-review.
+specify the DIMR/BMI call contract. It also does not describe the classic
+Delft3D4/DelftIO control protocol or the implementation's grid-remapping
+algorithms. Those details are documented from source on the pathway pages.
+The preCICE reference section is outside this review.
 
 ## At a glance
 

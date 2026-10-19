@@ -54,6 +54,12 @@ prepares spatial mappings before the first BMI update. It reads grid
 geometry from the file; it does not request the FM grid through a BMI
 `get_var` call.
 
+The manual's Section 5.4.1.1 (printed page 35) describes using D-Flow FM
+results from its communication file and says the associated com-file must
+be available in the working directory. Section 5.4.1.2 (printed page 36)
+describes the online-coupling timeframe, which is disabled by default in the
+manual's GUI workflow.
+
 At calculation time, when `swan_run%useflowdata` is true, WAVE's
 `get_flow_fields` reads requested variables directly from the NetCDF
 communication file, including fields such as bed elevation, water level and
@@ -66,6 +72,13 @@ configured output instants. DIMR's WAVE component schedule should be
 coordinated with this cadence so the required FM fields are available for
 each WAVE update. DIMR controls when components advance; the NetCDF file
 carries gridded fields between them.
+
+The manual's Section 5.4.9 (printed pages 60–61) explains the output-on-Flow-
+grid option and its communication-file requirement. Appendix A.1.3.4.2
+(printed page 94) gives an FM–D-Waves MDW example with `[Output] COMFile`
+and `WriteCOM`. These manual references cover configuration; the DIMR/BMI
+initialization order, file read/write sequence, and timing coordination
+above are established from source code.
 
 ## Spatial mapping and optional writeback
 
@@ -102,6 +115,11 @@ for the supported classic fluid-mud pathway.
 
 ## Implementation references
 
+- [D-Waves User Manual, Sections 5.4.1.1–5.4.1.2](../include/D-Waves_User_Manual.pdf)
+  (printed pages 35–36), and Section 5.4.9 (printed pages 60–61): FM
+  communication-file configuration, coupling timeframe, and Flow-grid output.
+- [D-Waves User Manual, Appendix A.1.3.4.2](../include/D-Waves_User_Manual.pdf)
+  (printed page 94): FM–D-Waves MDW example using `COMFile` and `WriteCOM`.
 - [WAVE BMI lifecycle and variables](../../packages/wave/src/wave_bmi.f90#L63)
 - [WAVE shared-library target](../../packages/wave/wave_dll.cmake)
 - [DIMR component initialization and scheduling](../../../dimr/packages/dimr_lib/src/dimr.cpp#L429)

@@ -91,6 +91,12 @@ pathway, not a separate driver, time loop, or FM/BMI feature. It adds:
 The implemented case requires one water domain and one mud domain with
 identical grids. It is not a general suspended-sediment switch.
 
+The manual's Appendix A.1.1 (printed pages 85–87) defines `FlowFile` as
+selecting online FLOW input and `FlowMudFile` as selecting the mud phase of
+a two-phase FLOW model. Those keyword descriptions do not specify the
+engine-specific branch behavior below; that distinction is verified against
+the current code.
+
 The parser's startup message saying that WAVE runs online with FLOW,
 including MUD, reports mode selection only. Nonblank `FlowFile` and
 `FlowMudFile` can assign mode 2, but this does not verify which route is
@@ -103,6 +109,8 @@ implemented.
 
 ## Implementation references
 
+- [D-Waves User Manual, Appendix A.1.1](../include/D-Waves_User_Manual.pdf)
+  (printed pages 85–87): MDW `FlowFile` and `FlowMudFile` keyword descriptions.
 - [Delft3D4 coupled launcher](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh#L131)
 - [Delft3D4 FLOW initialization path](../../../flow2d3d/packages/flow2d3d_manager/src/trisim.F90#L127)
 - [FLOW communication initialization](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90#L1478)
