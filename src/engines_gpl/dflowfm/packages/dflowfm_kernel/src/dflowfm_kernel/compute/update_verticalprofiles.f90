@@ -73,7 +73,7 @@ contains
       use m_waveconst
 
       real(kind=dp) :: theta_complement
-      real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
+      real(kind=dp) :: vicu, vicd, difu, difd, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, turbulent_kinetic_energy_at_bottom, turbulent_kinetic_energy_at_top, epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
@@ -341,11 +341,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  dzdz1 = dzw(k) * dzu(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzw(k) * dzu(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / (dzw(k) * dzu(k))
+                  difu = vicu / (dzw(k) * dzu(ku))
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
@@ -603,11 +600,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  dzdz1 = dzw(k) * dzu(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzw(k) * dzu(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / (dzw(k) * dzu(k))
+                  difu = vicu / (dzw(k) * dzu(ku))
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
@@ -954,11 +948,8 @@ contains
                   k = L - kb + 1
                   ku = k + 1
 
-                  dzdz1 = dzws(k) * dzs(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzws(k) * dzs(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / (dzws(k) * dzs(k))
+                  difu = vicu / (dzws(k) * dzs(ku))
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
@@ -1084,11 +1075,8 @@ contains
                   k = L - kb + 1
                   ku = k + 1
 
-                  dzdz1 = dzws(k) * dzs(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzws(k) * dzs(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / (dzws(k) * dzs(k))
+                  difu = vicu / (dzws(k) * dzs(ku))
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
