@@ -1281,10 +1281,66 @@
                     "value_type": "intenum",
                     "description": "Solver type.",
                     "enum_values": {
-                        "1": "sobekGS_OMP",
-                        "2": "sobekGS_OMPthreadsafe",
-                        "4": "sobekGS + Saad-ILUD (default sequential)",
-                        "6": "PETSc (default parallel)"
+                        "1": "Sobek Guus Stelling solver with OpenMP parallelization",
+                        "2": "Thread-safe Sobek Guus Stelling solver with OpenMP parallelization",
+                        "3": {
+                            "description": "Sobek Guus Stelling solver without OpenMP",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Sobek Guus Stelling solver without OpenMP is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "4": "Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)",
+                        "5": {
+                            "description": "parallel/global Saad",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Global Saad solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "6": "PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)",
+                        "7": {
+                            "description": "Conjugate Gradient + MILU (parallel)",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Windows MPI solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "8": {
+                            "description": "pARMS",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "pARMS solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "9": {
+                            "description": "Robin-Robin MPI test solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Experimental Robin-Robin MPI solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "10": {
+                            "description": "OpenMP Jacobi solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Experimental OpenMP Jacobi solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "44": {
+                            "description": "Non-thread-safe Saad/milud solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Non-thread-safe variant of solver 4 (Saad/milud) is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        }
                     }
                 },
                 {

@@ -216,7 +216,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `limTypSa` | Limiter type for salinity transport. | `4` | <ul><li>**`0`**: no</li><li>**`1`**: minmod</li><li>**`2`**: vanLeer</li><li>**`4`**: Monotone Central</li></ul> |  |  |
 | `pure1D` | Purely 1D advection. | `0` | <ul><li>**`0`**: original advection using velocity vector</li><li>**`1`**: pure 1D using flow volume vol1_f</li><li>**`2`**: pure 1D using volume vol1</li></ul> |  |  |
 | `junction1D` | Advection at 1D junctions. | `0` | <ul><li>**`0`**: original 1D advection using velocity vector</li><li>**`1`**: same as along 1D channels using `pure1D`=1</li></ul> |  |  |
-| `icgSolver` | Solver type. | `4` | <ul><li>**`1`**: sobekGS_OMP</li><li>**`2`**: sobekGS_OMPthreadsafe</li><li>**`4`**: sobekGS + Saad-ILUD (default sequential)</li><li>**`6`**: PETSc (default parallel)</li></ul> |  |  |
+| `icgSolver` | Solver type. | `4` | <ul><li>**`1`**: Sobek Guus Stelling solver with OpenMP parallelization</li><li>**`2`**: Thread-safe Sobek Guus Stelling solver with OpenMP parallelization</li><li>**`4`**: Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)</li><li>**`6`**: PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)</li></ul> |  |  |
 | `logSolverConvergence` | Print time step, number of solver iterations and solver residual to diagnostic output. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxDegree` | Maximum degree in Gauss elimination. | `6` |  |  |  |
 | `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`0`**: none</li><li>**`1`**: TODO</li><li>**`2`**: TODO</li><li>**`3`**: TODO</li><li>**`4`**: TODO</li><li>**`5`**: TODO</li><li>**`6`**: semi-subgrid scheme</li><li>**`7`**: TODO</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
@@ -1131,6 +1131,20 @@ The keywords and options listed below are deprecated and will be removed in a fu
 # Obsolete keywords and options
 
 The keywords and options listed below are no longer supported and will cause an error if used in D-Flow FM. They are grouped by the release in which they became obsolete, most recent first. If your model still uses one of them, please update it by following the notes or user manual.
+
+<a id="release-2027.02"></a>
+## Release 2027.02
+
+
+| Keyword/value | Notes |
+| ------------- | ----- |
+| `[numerics] icgSolver=10` | Experimental OpenMP Jacobi solver is no longer supported. |
+| `[numerics] icgSolver=3` | Sobek Guus Stelling solver without OpenMP is no longer supported. |
+| `[numerics] icgSolver=44` | Non-thread-safe variant of solver 4 (Saad/milud) is no longer supported. |
+| `[numerics] icgSolver=5` | Global Saad solver is no longer supported. |
+| `[numerics] icgSolver=7` | Windows MPI solver is no longer supported. |
+| `[numerics] icgSolver=8` | pARMS solver is no longer supported. |
+| `[numerics] icgSolver=9` | Experimental Robin-Robin MPI solver is no longer supported. |
 
 <a id="release-2027.01"></a>
 ## Release 2027.01
