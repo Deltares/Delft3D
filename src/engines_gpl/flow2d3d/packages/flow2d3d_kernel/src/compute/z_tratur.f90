@@ -90,7 +90,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     real(fp)               , pointer :: rhow
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: vicmol
     integer                , pointer :: iro
     integer                , pointer :: irov
@@ -274,7 +274,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     rhow        => gdp%gdphysco%rhow
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     vicmol      => gdp%gdphysco%vicmol
     iro         => gdp%gdphysco%iro
     irov        => gdp%gdphysco%irov
@@ -697,28 +697,28 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
           !            num = nm + icy
           !            if (kcs(num) == 0) then
           !               uu = 0.25 * (u1(nm, k) + u1(nmd, k) + u1(nm, ku) + u1(nmd, ku))
-          !               us = vonkar * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
+          !               us = VON_KARMAN * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
           !               du = abs(us) / (0.25*(guu(nm) + guu(nmd)) + z0v)
           !               ddk(nm, k) = ddk(nm, k) + 0.5*du*us*us
           !               bdy(nm, k) = bdy(nm, k) + 0.5*du*du
           !            endif
           !            if (kcs(ndm) == 0) then
           !               uu = 0.25 * (u1(nm, k) + u1(nmd, k) + u1(nm, ku) + u1(nmd, ku))
-          !               us = vonkar * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
+          !               us = VON_KARMAN * uu / log((0.25*(guu(nm) + guu(nmd)) + z0v)/z0v)
           !               du = abs(us) / (0.25*(guu(nm) + guu(nmd)) + z0v)
           !               ddk(nm, k) = ddk(nm, k) + 0.5*du*us*us
           !               bdy(nm, k) = bdy(nm, k) + 0.5*du*du
           !            endif
           !            if (kcs(nmu) == 0) then
           !               vv = 0.25 * (v1(nm, k) + v1(ndm, k) + v1(nm, ku) + v1(ndm, ku))
-          !               vs = vonkar * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
+          !               vs = VON_KARMAN * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
           !               dv = abs(vs) / (0.25*(guu(nm) + guu(nmd)) + z0v)
           !               ddk(nm, k) = ddk(nm, k) + 0.5*dv*vs*vs
           !               bdy(nm, k) = bdy(nm, k) + 0.5*dv*dv
           !            endif
           !            if (kcs(nmd) == 0) then
           !               vv = 0.25 * (v1(nm, k) + v1(ndm, k) + v1(nm, ku) + v1(ndm, ku))
-          !               vs = vonkar * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
+          !               vs = VON_KARMAN * vv / log((0.25*(gvv(nm) + gvv(nmd)) + z0v)/z0v)
           !               dv = abs(vs) / (0.25*(guu(nm) + guu(nmd)) + z0v)
           !               ddk(nm, k) = ddk(nm, k) + 0.5*dv*vs*vs
           !               bdy(nm, k) = bdy(nm, k) + 0.5*dv*dv
@@ -855,7 +855,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                    ! condition for k is assumed to scale in the same fashion as z0 = ks/30:
                    ! (zw = 0.5_fp*hrms(nm)/30.0_fp)
                    !
-                   tkewav = (epswav*vonkar*0.5*hrms(nm)/(30.0*cde))**(2.0/3.0)
+                   tkewav = (epswav*VON_KARMAN*0.5*hrms(nm)/(30.0*cde))**(2.0/3.0)
                    !
                    ddk(nm, kfsmax(nm)) = ddk(nm, kfsmax(nm)) + tkewav
                 endif
@@ -890,7 +890,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                        & + kfv(nm )*z0vrou(nm ) ) / ken
                    !
                    rz                      = 1.0 + 1.0/z0s*dz
-                   s                       = log(rz)/vonkar
+                   s                       = log(rz)/VON_KARMAN
                    ddk(nm, kfsmin(nm) - 1) = utot*utot/(s*s*sqrt(cmukep))
                    if (kfsmax(nm)/=kfsmin(nm)) then
                       aak(nm, kmin) = 0.0
@@ -962,7 +962,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                    z0s    = ( kfu(nmd)*z0urou(nmd) + kfu(nm)*z0urou(nm) + kfv(ndm)*z0vrou(ndm)  &
                           & + kfv(nm )*z0vrou(nm ) ) / ken
                    rz     = 1.0 + dz/z0s
-                   s      = log(rz) / vonkar
+                   s      = log(rz) / VON_KARMAN
                    turbulent_kinetic_energy_at_bottom = utot*utot/(s*s*sqrt(cmukep))
                    aak(nm, kmin - 1) = 0.0
                    bbk(nm, kmin - 1) = 1.0

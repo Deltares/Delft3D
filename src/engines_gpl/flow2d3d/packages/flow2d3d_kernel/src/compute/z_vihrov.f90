@@ -56,7 +56,7 @@ subroutine z_vihrov(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     integer                , pointer :: iro
     integer                , pointer :: irov
     real(fp)               , pointer :: hdt
@@ -116,7 +116,7 @@ subroutine z_vihrov(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
     z0       => gdp%gdphysco%z0
     z0v      => gdp%gdphysco%z0v
-    vonkar   => gdp%gdphysco%vonkar
+    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
     iro      => gdp%gdphysco%iro
     irov     => gdp%gdphysco%irov
     hdt      => gdp%gdnumeco%hdt
@@ -178,13 +178,13 @@ subroutine z_vihrov(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                       !
                       ! rxy for u(nm); rough wall, flow below wall
                       !
-                      s         = vonkar * u0(nm,k) / log((0.5_fp*guu(nm)+z0v)/z0v)
+                      s         = VON_KARMAN * u0(nm,k) / log((0.5_fp*guu(nm)+z0v)/z0v)
                       rxy(nm,k) = -s * abs(s)
                    elseif (ki==9 .or. ki==3 .or. ki==1) then
                       !
                       ! rxy for u(num); rough wall, flow above wall
                       !
-                      s         = vonkar * u0(num,k) / log((0.5_fp*guu(num)+z0v)/z0v)
+                      s         = VON_KARMAN * u0(num,k) / log((0.5_fp*guu(num)+z0v)/z0v)
                       rxy(nm,k) = s * abs(s)
                    else
                    endif

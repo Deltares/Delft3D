@@ -59,7 +59,7 @@ subroutine initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: cde
     real(fp)               , pointer :: cmukep
     real(fp)               , pointer :: cewall
@@ -144,7 +144,7 @@ subroutine initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     !
     nm_pos      =  1
     !
@@ -207,7 +207,7 @@ subroutine initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 !
                 !***MIXING LENGTH
                 !
-                rl = vonkar*h0*(1.0_fp + sigw)*sqrt( - sigw)
+                rl = VON_KARMAN*h0*(1.0_fp + sigw)*sqrt( - sigw)
                 !
                 !***INITIALISATION TKE and EPSILON from PRANDTL MIXING LENGTH MODEL
                 !
@@ -257,7 +257,7 @@ subroutine initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              vvv  = 0.5_fp*(v0(ndm, kmax) + v0(nm, kmax))*maskval
              utot = sqrt(uuu*uuu + vvv*vvv)
              dz   = 0.5_fp*thick(kmax)*h0
-             ust  = utot*vonkar/log(1.0_fp + dz/z00)
+             ust  = utot*VON_KARMAN/log(1.0_fp + dz/z00)
              tke  = ust*ust/sqrt(cmukep)
              rtur0(nm, kmax, 1) = tke
           endif
@@ -276,7 +276,7 @@ subroutine initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 !
                 !***MIXING LENGTH
                 !
-                rl = vonkar*h0*(1.0_fp + sigw)*sqrt( - sigw)
+                rl = VON_KARMAN*h0*(1.0_fp + sigw)*sqrt( - sigw)
                 if (rich(nm,k) >= 0.0_fp) then
                     damping = exp(-2.3_fp*min(rich(nm,k), 30.0_fp))
                 else

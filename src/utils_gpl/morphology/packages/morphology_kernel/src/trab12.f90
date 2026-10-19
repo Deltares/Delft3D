@@ -36,7 +36,7 @@ contains
 !! first implementation assumes transport in current direction only.
    subroutine trab12(u, v, hrms, h, tp, &
                    & dir, d50, npar, par, sbotx, &
-                   & sboty, ssusx, ssusy, ubot, vonkar, &
+                   & sboty, ssusx, ssusy, ubot, VON_KARMAN, &
                    & ubot_from_com)
 !!--declarations----------------------------------------------------------------
       use precision
@@ -55,7 +55,7 @@ contains
       real(fp), intent(in) :: u
       real(fp) :: ubot !< Description and declaration in esm_alloc_real.f90
       real(fp), intent(in) :: v
-      real(fp), intent(in) :: vonkar
+      real(fp), intent(in) :: VON_KARMAN
       !
       real(fp), intent(out) :: sbotx
       real(fp), intent(out) :: sboty
@@ -187,7 +187,7 @@ contains
       !           and due to current alone
       !
       tauwav = 0.5_fp * rho * fw * uorb**2
-      cdrag = (vonkar / (1.+log(z0 / h)))**2
+      cdrag = (VON_KARMAN / (1.+log(z0 / h)))**2
       taucur = rho * cdrag * utot**2
       !
       !           Angle between current and waves

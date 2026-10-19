@@ -87,7 +87,7 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
                 & huv       ,kcuv       ,sig       , &
                 & z0rou     ,jdir       ,waqol     ,gdtrachy  , & 
                 & umod      ,update_umag,nmlb     ,nmub      ,nmlbc     , nmubc    , & 
-                & rhow      ,ag         ,vonkar    ,vicmol    , & 
+                & rhow      ,ag         ,VON_KARMAN    ,vicmol    , & 
                 & eps       ,dryflc     ,spatial_bedform      ,bedformD50,bedformD90, & 
                 & rksr      ,rksmr      ,rksd      ,error, & 
                 & assoc_dxx ,nxx        ,lsedtot   ,dxx       ,i50       ,i90,       &
@@ -175,7 +175,7 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
     real(fp)                                                            , intent(in) :: rhow
     real(fp)                                                            , intent(in) :: ag
     !real(fp)                                                            , intent(in) :: z0     ! not used 
-    real(fp)                                                            , intent(in) :: vonkar
+    real(fp)                                                            , intent(in) :: VON_KARMAN
     real(fp)                                                            , intent(in) :: vicmol
     real(fp)                                                            , intent(in) :: dryflc
     logical                                                                          :: assoc_dxx
@@ -299,7 +299,7 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
     !rhow            => gdp%gdphysco%rhow
     !ag              => gdp%gdphysco%ag
     !z0              => gdp%gdphysco%z0
-    !vonkar          => gdp%gdphysco%vonkar
+    !VON_KARMAN          => gdp%gdphysco%VON_KARMAN
     !vicmol          => gdp%gdphysco%vicmol
     !eps             => gdp%gdconst%eps
     !dryflc          => gdp%gdnumeco%dryflc
@@ -871,16 +871,16 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
                 t3   = sqrt(t2 + (uv0*uv0))
                 t4   = sqrt(rc3 + (uv0*uv0))
                 e1   = (t1*t2)/(2.0_fp*t3)
-                a1   = (1.0_fp + sqrt(1.0_fp + ((4.0_fp*(e1**2)*(vonkar**2)*(depth - vheigh))/ag)))&
-                     & /((2.0_fp*(e1**2)*(vonkar**2))/ag)
+                a1   = (1.0_fp + sqrt(1.0_fp + ((4.0_fp*(e1**2)*(VON_KARMAN**2)*(depth - vheigh))/ag)))&
+                     & /((2.0_fp*(e1**2)*(VON_KARMAN**2))/ag)
                 a1   = min(a1,vheigh)
                 t5   = depth - (vheigh - a1)
-                f    = (vonkar*t3)/sqrt(ag*t5)
+                f    = (VON_KARMAN*t3)/sqrt(ag*t5)
                 vz0  = a1*exp( - f)
                 rc0  = 1.0_fp/(depth**1.5_fp)                                          &
                      & *((2.0_fp/t1)*(t3 - t4) + (uv0/t1)*log(((t3 - uv0)*(t4 + uv0))  &
                      & /((t3 + uv0)*max((t4 - uv0), eps_fp)))                          &
-                     & + (sqrt(ag*t5)/vonkar)                                          &
+                     & + (sqrt(ag*t5)/VON_KARMAN)                                          &
                      & *((t5*log(t5/vz0)) - (a1*log(a1/vz0)) - (depth - vheigh)))
              endif
              !
@@ -904,7 +904,7 @@ subroutine trtrou(lundia    ,kmaxtrt    ,nmmax   , &
                 error = .true.
                 return
              endif
-             call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, u2dh, ag, vonkar, vegetation_result)
+             call evaluate_vegetation(vegetation_parameters, depth, u2dh, umag, u2dh, ag, VON_KARMAN, vegetation_result)
              ch_icode = vegetation_result%ch_icode
              if (vegetation_parameters%accumulate_lambda) then
                 rttfu(nm, 1) = rttfu(nm, 1) + fraccu*vegetation_result%lambda_factor
@@ -1186,16 +1186,16 @@ end subroutine decode_vegetation_parameters
 !> @param stem_velocity stem velocity used by the approximate formulation.
 !> @param foliage_velocity foliage velocity used by the approximate formulation.
 !> @param ag gravitational acceleration.
-!> @param vonkar von Karman constant.
+!> @param VON_KARMAN von Karman constant.
 !> @param result calculated vegetation resistance results.
-subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, foliage_velocity, ag, vonkar, result)
+subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, foliage_velocity, ag, VON_KARMAN, result)
    type(trachy_vegetation_parameters), intent(in) :: formulation !< vegetation formulation parameters
    real(fp), intent(in) :: depth !< local water depth
    real(fp), intent(in) :: uc_reference !< reference velocity used by the iterative formulation
    real(fp), intent(in) :: stem_velocity !< stem velocity used by the approximate formulation
    real(fp), intent(in) :: foliage_velocity !< foliage velocity used by the approximate formulation
    real(fp), intent(in) :: ag !< gravitational acceleration
-   real(fp), intent(in) :: vonkar !< von Karman constant
+   real(fp), intent(in) :: VON_KARMAN !< von Karman constant
    type(trachy_vegetation_result), intent(out) :: result !< calculated vegetation resistance results
    integer, parameter :: IUC_MAX = 10
    real(fp), parameter :: IUC_TOL = 1.0e-3_fp
@@ -1228,7 +1228,7 @@ subroutine evaluate_vegetation(formulation, depth, uc_reference, stem_velocity, 
          foliage_velocity_i = foliage_velocity
       endif
       call compute_vegetation_phi(formulation, depth, stem_velocity_i, foliage_velocity_i, apply_blockage, phi)
-      call compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
+      call compute_vegetation_chezy(formulation, depth, phi, ag, VON_KARMAN, ch_icode)
       iteration_count = iuc
       if (evaluation_mode /= VEGETATION_ITERATE_VELOCITY) exit
       iuc_err = abs(uc - uc_reference*cbed/ch_icode)
@@ -1294,14 +1294,14 @@ end subroutine compute_vegetation_phi
 !> @param depth local water depth.
 !> @param phi vegetation resistance factor.
 !> @param ag gravitational acceleration.
-!> @param vonkar von Karman constant.
+!> @param VON_KARMAN von Karman constant.
 !> @param ch_icode calculated vegetation Chezy coefficient.
-subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icode)
+subroutine compute_vegetation_chezy(formulation, depth, phi, ag, VON_KARMAN, ch_icode)
    type(trachy_vegetation_parameters), intent(in) :: formulation !< vegetation formulation parameters
    real(fp), intent(in) :: depth !< local water depth
    real(fp), intent(in) :: phi !< vegetation resistance factor
    real(fp), intent(in) :: ag !< gravitational acceleration
-   real(fp), intent(in) :: vonkar !< von Karman constant
+   real(fp), intent(in) :: VON_KARMAN !< von Karman constant
    real(fp), intent(out) :: ch_icode !< calculated vegetation Chezy coefficient
    real(fp) :: hk
 
@@ -1309,7 +1309,7 @@ subroutine compute_vegetation_chezy(formulation, depth, phi, ag, vonkar, ch_icod
       & karman_alpha => formulation%karman_alpha)
    !
    hk = max(1.0_fp, depth/vheigh)
-   ch_icode = cbed + sqrt(ag)/(karman_alpha*vonkar)*log(hk) * sqrt(1.0_fp + phi*cbed**2/(2.0_fp*ag))
+   ch_icode = cbed + sqrt(ag)/(karman_alpha*VON_KARMAN)*log(hk) * sqrt(1.0_fp + phi*cbed**2/(2.0_fp*ag))
    !
    end associate
 end subroutine compute_vegetation_chezy

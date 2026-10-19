@@ -61,7 +61,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: cde
     real(fp)               , pointer :: cmukep
     real(fp)               , pointer :: cewall
@@ -153,7 +153,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     !
     nm_pos = 1
     !
@@ -223,7 +223,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 ! Mixing length
                 !
                 reldik = reldik + dzs1(nm, k)/h0
-                rl     = vonkar * h0 * reldik * sqrt(1.0_fp-reldik)
+                rl     = VON_KARMAN * h0 * reldik * sqrt(1.0_fp-reldik)
                 !
                 !***INITIALISATION TKE and EPSILON from PRANDTL MIXING LENGTH MODEL
                 !
@@ -273,7 +273,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              uuu  = 0.5_fp*(u0(nmd, kmin) + u0(nm, kmin))*maskval
              vvv  = 0.5_fp*(v0(ndm, kmin) + v0(nm, kmin))*maskval
              utot = sqrt(uuu*uuu + vvv*vvv)
-             ust  = utot*vonkar/log(1.0_fp + dzs1(nm, kmin)/z00)
+             ust  = utot*VON_KARMAN/log(1.0_fp + dzs1(nm, kmin)/z00)
              tke  = ust*ust/sqrt(cmukep)
              rtur0(nm, kmin - 1, 1) = tke
           endif
@@ -294,7 +294,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 !***MIXING LENGTH
                 !
                 reldik = reldik + dzs1(nm, k)/h0
-                rl     = vonkar * h0 * reldik * sqrt(1.0_fp-reldik)
+                rl     = VON_KARMAN * h0 * reldik * sqrt(1.0_fp-reldik)
                 if (rich(nm,k) >= 0.0_fp) then
                     damping = exp(-2.3_fp*min(rich(nm,k), 30.0_fp))
                 else

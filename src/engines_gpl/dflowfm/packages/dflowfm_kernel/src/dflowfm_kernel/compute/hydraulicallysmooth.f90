@@ -38,7 +38,7 @@ module m_hydraulicallysmooth
 contains
 
    pure function hydraulicallysmooth(umod, h) result(sqcf)
-      use m_physcoef, only: viskin, vonkar
+      use m_physcoef, only: viskin, VON_KARMAN
       use precision, only: dp
       implicit none
 
@@ -60,7 +60,7 @@ contains
          do while (abs(sd - s) > (eps * s))
             sd = s
             ers = max(er / sd, 1.0001e0_dp)
-            s = log(ers) / vonkar
+            s = log(ers) / VON_KARMAN
          end do
       end if
 

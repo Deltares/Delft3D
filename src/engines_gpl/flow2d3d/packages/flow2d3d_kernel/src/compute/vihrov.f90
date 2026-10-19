@@ -54,7 +54,7 @@
     !
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     integer                , pointer :: iro
     integer                , pointer :: irov
     real(fp)               , pointer :: hdt
@@ -110,7 +110,7 @@
 !
     z0       => gdp%gdphysco%z0
     z0v      => gdp%gdphysco%z0v
-    vonkar   => gdp%gdphysco%vonkar
+    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
     iro      => gdp%gdphysco%iro
     irov     => gdp%gdphysco%irov
     hdt      => gdp%gdnumeco%hdt
@@ -155,7 +155,7 @@
                 ! rxy for u(nm); rough wall, flow below wall
                 !
                 do k = 1, kmax
-                   s = vonkar*u0(nm, k)/log((0.5*guu(nm) + z0v)/z0v)
+                   s = VON_KARMAN*u0(nm, k)/log((0.5*guu(nm) + z0v)/z0v)
                    rxy(nm, k) = -s*abs(s)
                 enddo
              elseif (ki==9 .or. ki==3 .or. ki==1) then
@@ -163,7 +163,7 @@
                 ! rxy for u(num); rough wall, flow above wall
                 !
                 do k = 1, kmax
-                   s = vonkar*u0(num, k)/log((0.5*guu(num) + z0v)/z0v)
+                   s = VON_KARMAN*u0(num, k)/log((0.5*guu(num) + z0v)/z0v)
                    rxy(nm, k) = s*abs(s)
                 enddo
              else

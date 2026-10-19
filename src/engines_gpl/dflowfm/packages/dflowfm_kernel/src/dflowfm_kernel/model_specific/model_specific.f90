@@ -788,8 +788,8 @@ contains
       yw = b / 2 - hdy
 
       if (irov == 1) then ! uniform mesh assumed, with cell size near wall dy (see above)
-         aa = vonkar / log(c9of1 + hdy / wall_z0)
-         !aa  = vonkar/log(1d0   + hdy/wall_z0)
+         aa = VON_KARMAN / log(c9of1 + hdy / wall_z0)
+         !aa  = VON_KARMAN/log(1d0   + hdy/wall_z0)
 
          ust = sqrt(abs(c0 * b))
 

@@ -37,7 +37,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
                       & tauwav    ,tauc      ,ltur      ,delw      ,rhowat    , &
                       & uwbih     ,aks       ,caks      ,caks_ss3d ,deltas    , &
                       & aks_ss3d  ,d50       ,salinity  ,ws0       ,psi       , &
-                      & epspar    ,eps       ,vonkar    ,salmax    ,wave      , &
+                      & epspar    ,eps       ,VON_KARMAN    ,salmax    ,wave      , &
                       & epsmax    ,epsmxc    )
 !!--description-----------------------------------------------------------------
 !
@@ -79,7 +79,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     real(fp), dimension(num_layers_grid)  , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(num_layers_grid)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: eps
-    real(fp)                   , intent(in)  :: vonkar
+    real(fp)                   , intent(in)  :: VON_KARMAN
     logical                    , intent(in)  :: epspar
     logical                    , intent(in)  :: wave
     real(fp)                   , intent(out) :: epsmax
@@ -145,7 +145,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
     difvr = epspar .and. wave
     call calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
                     & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
-                    & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
+                    & eps       ,VON_KARMAN    ,difvr     ,deltas    ,epsbed    , &
                     & epsmax    ,epsmxc    ,seddif    )
     !
     ! Determine height cell centre num_layers_grid

@@ -94,7 +94,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
     integer                , pointer :: lundia
     real(fp)               , pointer :: hdt
     real(fp)               , pointer :: ag
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: ceta
     real(fp)               , pointer :: ck
@@ -213,7 +213,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
     ck          => gdp%gdturcoe%ck
     sigq2e      => gdp%gdturcoe%sigq2e
     ag          => gdp%gdphysco%ag
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     vicmol      => gdp%gdphysco%vicmol
     hdt         => gdp%gdnumeco%hdt
     lundia      => gdp%gdinout%lundia
@@ -284,7 +284,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
              umod      = sqrt(uuu*uuu + vvv*vvv)
              chezy     = .25*(cfurou(nm,1) + cfurou(num,1) + cfvrou(nm,1) + cfvrou(nmu,1))
              fac       = ag/(chezy*chezy*dep)
-             vnu3d(nm) = vonkar*sqrt(fac*umod*umod)*dep/6.
+             vnu3d(nm) = VON_KARMAN*sqrt(fac*umod*umod)*dep/6.
           endif
        enddo
     endif

@@ -4,7 +4,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
                   & zumod     ,dzs1      ,hu      ,hv        ,kfsed     , &
                   & kfsmin    ,kfsmax    ,kfumin  ,kfumax    ,kfvmin    , &
                   & kfvmax    ,dzu1      ,dzv1    ,z0ucur    ,z0vcur    , &
-                  & vonkar    ,gdp     )
+                  & VON_KARMAN    ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -95,7 +95,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: dzv1   !  Description and declaration in rjdim.f90 
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: z0ucur
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: z0vcur
-    real(fp)  , intent(in)  :: vonkar
+    real(fp)  , intent(in)  :: VON_KARMAN
     !
     ! Local variables
     !
@@ -306,7 +306,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           enddo
           zumod_u1  = zumod_u1+ dzu1(nm,kmx_u1)*0.5_fp
           if(zumod_u1 > 0.0_fp) then
-             ustarc_u1= u1 * vonkar / log(1.0_fp + zumod_u1/z0ucur(nm_u1))
+             ustarc_u1= u1 * VON_KARMAN / log(1.0_fp + zumod_u1/z0ucur(nm_u1))
           else 
              ustarc_u1= 0.0_fp
           endif
@@ -318,14 +318,14 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           enddo
           zumod_u2  = zumod_u2+ dzu1(nm, kmx_u2)*0.5_fp
           if(zumod_u2 > 0.0_fp) then
-             ustarc_u2= u2*vonkar/log(1.0 + zumod_u2/z0ucur(nm_u2))
+             ustarc_u2= u2*VON_KARMAN/log(1.0 + zumod_u2/z0ucur(nm_u2))
           else
              ustarc_u2= 0.0_fp 
           endif
        endif
        ustarc = (ustarc_u1+ustarc_u2) * ufac
        if (z0cur_u >0.0_fp) then
-          uu = ustarc * log(1.0_fp+zumod(nm)/z0cur_u) / vonkar
+          uu = ustarc * log(1.0_fp+zumod(nm)/z0cur_u) / VON_KARMAN
        else
           uu = 0.0_fp
        endif
@@ -368,7 +368,7 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           enddo
           zvmod_v1  = zvmod_v1 + dzv1(nm,kmx_v1)*0.5_fp
           if(zvmod_v1 > 0.0_fp) then
-             vstarc_v1= v1 * vonkar / log(1.0_fp + zvmod_v1/z0vcur(nm_v1))
+             vstarc_v1= v1 * VON_KARMAN / log(1.0_fp + zvmod_v1/z0vcur(nm_v1))
           else
              vstarc_v1= 0.0_fp 
           endif
@@ -380,14 +380,14 @@ subroutine z_dwnvel(nmmax     ,kmax      ,icx     ,kcs       ,kfu       , &
           enddo
           zvmod_v2  = zvmod_v2 + dzv1(nm,kmx_v2)*0.5_fp
           if(zvmod_v2 > 0.0_fp) then
-             vstarc_v2= v2 * vonkar / log(1.0_fp + zvmod_v2/z0vcur(nm_v2))
+             vstarc_v2= v2 * VON_KARMAN / log(1.0_fp + zvmod_v2/z0vcur(nm_v2))
           else
              vstarc_v2= 0.0_fp
           endif
        endif
        vstarc = vfac * (vstarc_v1+vstarc_v2)
        if (z0cur_v >0.0_fp) then
-          vv = vstarc * log(1.0_fp + zumod(nm)/z0cur_v) / vonkar
+          vv = vstarc * log(1.0_fp + zumod(nm)/z0cur_v) / VON_KARMAN
        else
           vv = 0.0_fp
        endif

@@ -192,7 +192,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    real(fp) :: uuu
    real(fp) :: v
    real(fp) :: vicmol
-   real(fp) :: vonkar
+   real(fp) :: VON_KARMAN
    real(fp) :: vvv
    real(fp) :: z0cur
    real(fp) :: z0rou
@@ -275,7 +275,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    !vbed      = real(realpar(RP_VBED ),fp)
    !velb      = real(realpar(RP_VELBD),fp)
    !zvelb     = real(realpar(RP_ZVLBD),fp)
-   vonkar = real(realpar(RP_VNKAR), fp)
+   VON_KARMAN = real(realpar(RP_VNKAR), fp)
    z0cur = real(realpar(RP_Z0CUR), fp)
    z0rou = real(realpar(RP_Z0ROU), fp)
    ustarc = real(realpar(RP_USTAR), fp)
@@ -316,7 +316,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
          do k = 0, num_layers_grid
             seddif(k) = dicww(k)
          end do
-         ! seddif(num_layers_grid) = vonkar*z0rou*ustarc
+         ! seddif(num_layers_grid) = VON_KARMAN*z0rou*ustarc
       end if
    end if
    !
@@ -417,7 +417,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !
       call tranb5(u, v, di50, d90, chezy, &
                 & h1, hrms, tp, teta, npar, &
-                & par, dzduu, dzdvv, vonkar, wsb, &
+                & par, dzduu, dzdvv, VON_KARMAN, wsb, &
                 & poros, sbcu, sbcv, sscu, sscv, &
                 & cesus)
       !
@@ -444,7 +444,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       ! Van Rijn (1984, modified)
       !
       call tranb7(utot, di50, d90, h1, npar, &
-                & par, sbot, ssus, vonkar, mudfrac)
+                & par, sbot, ssus, VON_KARMAN, mudfrac)
       !
       sbc_total = .true.
       sus_total = .true.
@@ -498,7 +498,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !
       call trab11(u, v, hrms, h1, tp, &
                 & di50, npar, par, sbcu, sbcv, &
-                & sscu, sscv, ubot, vonkar, ubot_from_com)
+                & sscu, sscv, ubot, VON_KARMAN, ubot_from_com)
       !
       sbc_total = .false.
       sus_total = .false.
@@ -508,7 +508,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
       !
       call trab12(u, v, hrms, h1, tp, &
                 & teta, di50, npar, par, sbcu, &
-                & sbcv, sscu, sscv, ubot, vonkar, &
+                & sbcv, sscu, sscv, ubot, VON_KARMAN, &
                 & ubot_from_com)
       !
       sbc_total = .false.

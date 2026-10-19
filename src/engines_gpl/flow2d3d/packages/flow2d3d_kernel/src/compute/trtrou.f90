@@ -65,7 +65,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     real(fp)                   , pointer :: rhow
     real(fp)                   , pointer :: ag
     real(fp)                   , pointer :: z0
-    real(fp)                   , pointer :: vonkar
+    real(fp)                   , pointer :: VON_KARMAN
     real(fp)                   , pointer :: vicmol
     real(fp)                   , pointer :: dryflc
     real(fp)                   , pointer :: alf_area_ser
@@ -238,7 +238,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     rhow            => gdp%gdphysco%rhow
     ag              => gdp%gdphysco%ag
     z0              => gdp%gdphysco%z0
-    vonkar          => gdp%gdphysco%vonkar
+    VON_KARMAN          => gdp%gdphysco%VON_KARMAN
     vicmol          => gdp%gdphysco%vicmol
     eps             => gdp%gdconst%eps
     dryflc          => gdp%gdnumeco%dryflc
@@ -795,16 +795,16 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 t3   = sqrt(t2 + (uv0*uv0))
                 t4   = sqrt(rc3 + (uv0*uv0))
                 e1   = (t1*t2)/(2.0_fp*t3)
-                a1   = (1.0_fp + sqrt(1.0_fp + ((4.0_fp*(e1**2)*(vonkar**2)*(depth - vheigh))/ag)))&
-                     & /((2.0_fp*(e1**2)*(vonkar**2))/ag)
+                a1   = (1.0_fp + sqrt(1.0_fp + ((4.0_fp*(e1**2)*(VON_KARMAN**2)*(depth - vheigh))/ag)))&
+                     & /((2.0_fp*(e1**2)*(VON_KARMAN**2))/ag)
                 a1   = min(a1,vheigh)
                 t5   = depth - (vheigh - a1)
-                f    = (vonkar*t3)/sqrt(ag*t5)
+                f    = (VON_KARMAN*t3)/sqrt(ag*t5)
                 vz0  = a1*exp( - f)
                 rc0  = 1.0_fp/(depth**1.5_fp)                                          &
                      & *((2.0_fp/t1)*(t3 - t4) + (uv0/t1)*log(((t3 - uv0)*(t4 + uv0))  &
                      & /((t3 + uv0)*max((t4 - uv0), eps_fp)))                          &
-                     & + (sqrt(ag*t5)/vonkar)                                          &
+                     & + (sqrt(ag*t5)/VON_KARMAN)                                          &
                      & *((t5*log(t5/vz0)) - (a1*log(a1/vz0)) - (depth - vheigh)))
              endif
              !
@@ -841,14 +841,14 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 if (depth>vheigh) then
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*vheigh)/(2.0_fp*ag)) &
-                            & + sqrt(ag)*log(depth/vheigh)/vonkar
+                            & + sqrt(ag)*log(depth/vheigh)/VON_KARMAN
                 else
                    ch_icode = 1.0_fp/sqrt(1.0_fp/(cbed*cbed) + &
                             &          (drag*densit*depth)/(2.0_fp*ag))
                 endif
              else
                 hk     = max(1.0_fp,depth/vheigh)
-                ch_icode = cbed + sqrt(ag)/vonkar*log(hk)* &
+                ch_icode = cbed + sqrt(ag)/VON_KARMAN*log(hk)* &
                          & sqrt(1.0_fp+(drag*densit*vheigh*cbed**2)/(2.0_fp*ag))
                 rttf(nc, mc, 1) = rttf(nc, mc, 1) + fraccu * &
                          & drag*densit/hk*(cbed*cbed)/(ch_icode*ch_icode)

@@ -75,7 +75,7 @@ subroutine taylor(kmax      ,kmxdt     ,kmxt      ,np        ,nfreqs    , &
     integer                , pointer :: nrange
     logical                , pointer :: iwedia
     real(fp)               , pointer :: ag
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
 !
 ! Global variables
 !
@@ -203,7 +203,7 @@ subroutine taylor(kmax      ,kmxdt     ,kmxt      ,np        ,nfreqs    , &
 !
     !
     ag       => gdp%gdphysco%ag
-    vonkar   => gdp%gdphysco%vonkar
+    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
     alfaz    => gdp%gdiwearr%alfaz
     xmu0     => gdp%gdiwearr%xmu0
     viscof   => gdp%gdiwearr%viscof
@@ -229,7 +229,7 @@ subroutine taylor(kmax      ,kmxdt     ,kmxt      ,np        ,nfreqs    , &
     ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++
     !
     h0     = zeta + real(dps,fp)
-    zzlu   = vonkar*h0/8
+    zzlu   = VON_KARMAN*h0/8
     wvltke = pi2*zzlu
     xk     = pi2/wvltke
     useref = .true.

@@ -127,7 +127,7 @@ end subroutine flocculate
 
 
 !> Calculate the turbulent shear and dissipation for different flow models
-subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, taub, waterdepth, localdepth, vonkar )
+subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, taub, waterdepth, localdepth, VON_KARMAN )
 !
 ! Global variables
 !
@@ -140,7 +140,7 @@ subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, tau
     real(fp), optional, intent(in)  :: taub       !< Bed shear stress [N/m2]
     real(fp), optional, intent(in)  :: waterdepth !< Total water depth [m]
     real(fp), optional, intent(in)  :: localdepth !< Depth below water surface [m]
-    real(fp), optional, intent(in)  :: vonkar     !< Von Karman constant [-]
+    real(fp), optional, intent(in)  :: VON_KARMAN     !< Von Karman constant [-]
 
 !
 ! Local variables 
@@ -162,7 +162,7 @@ subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, tau
           tshear = PARAM_SOULSBY * rho_water * tke
           ! tdiss already set
        endif
-    elseif (present(waterdepth) .and. present(taub) .and. present(vonkar)) then
+    elseif (present(waterdepth) .and. present(taub) .and. present(VON_KARMAN)) then
        if (present(localdepth)) then ! algebraic
           z = waterdepth - localdepth
           xi = localdepth/waterdepth
@@ -172,7 +172,7 @@ subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, tau
        endif
        ustar = sqrt(taub / rho_water)
        tshear = xi * taub
-       tdiss = (xi * ustar ** 3) / (vonkar * z)
+       tdiss = (xi * ustar ** 3) / (VON_KARMAN * z)
     endif
 end subroutine get_tshear_tdiss
 

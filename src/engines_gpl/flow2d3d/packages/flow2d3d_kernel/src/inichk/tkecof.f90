@@ -1,4 +1,4 @@
-subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
+subroutine tkecof(lturi     ,VON_KARMAN    ,sigdif    ,sigmol    , &
                 & rtur1     ,rtu2d1    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -83,7 +83,7 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
 ! Global variables
 !
     integer                , intent(in)  :: lturi !  Description and declaration in tricom.igs
-    real(fp)               , intent(in)  :: vonkar !  Description and declaration in physco.igs
+    real(fp)               , intent(in)  :: VON_KARMAN !  Description and declaration in physco.igs
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:gdp%d%kmax, gdp%d%ltur), intent(out) :: rtur1 !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 2)                       , intent(out) :: rtu2d1 !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%lstsci), intent(out) :: sigdif !  Description and declaration in esm_alloc_real.f90
@@ -138,7 +138,7 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
     cep2       = 1.92
     cep3       = 1.
     sigrho     = 0.7
-    cewall     = cmukep**.75/vonkar
+    cewall     = cmukep**.75/VON_KARMAN
     !
     ! lrdamp_fac is used when low Reynolds number damping is switched on
     ! See subroutine redvic

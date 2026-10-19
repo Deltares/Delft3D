@@ -39,7 +39,7 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
                    & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
                    & dss       ,eps       ,aksfac    ,rwave     , &
                    & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                   & vonkar    ,wave      ,tauadd    ,awb       )
+                   & VON_KARMAN    ,wave      ,tauadd    ,awb       )
 !!--description-----------------------------------------------------------------
 !
 ! Compute bed roughness and shear stress parameters
@@ -86,7 +86,7 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp), intent(in)    :: rdw
     integer , intent(in)    :: iopkcw
     integer , intent(in)    :: iopsus
-    real(fp), intent(in)    :: vonkar
+    real(fp), intent(in)    :: VON_KARMAN
     logical , intent(in)    :: wave
     real(fp), intent(in)    :: tauadd
 !
@@ -229,7 +229,7 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     ! and is based on the velocity USUS at the height ZUSUS.
     ! Note that alfacw is not required in wave and current situations.
     !
-    ustarc = usus*vonkar/log(1. + zusus/z0cur)
+    ustarc = usus*VON_KARMAN/log(1. + zusus/z0cur)
     tauc   = rhowat*ustarc**2
     if (tauadd>0.0_fp) then
        !

@@ -139,7 +139,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     real(fp)               , pointer :: rhoa
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: vicoww
     real(fp)               , pointer :: dicoww
@@ -256,7 +256,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     rhoa        => gdp%gdphysco%rhoa
     ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     vicmol      => gdp%gdphysco%vicmol
     vicoww      => gdp%gdphysco%vicoww
     dicoww      => gdp%gdphysco%dicoww
@@ -421,10 +421,10 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                  & r(yz)       ,r(guu)      ,r(gvv)      ,r(guv)      ,r(gvu)      , &
                  & r(gsqs)     ,r(gsqd)     ,r(guz)      ,r(gvz)      ,r(gud)      , &
                  & r(gvd)      ,r(gsqiu)    ,r(gsqiv)    ,gdp         )
-    ! INIPHY: set initial values for IRO, Z0, VONKAR, VICOM & SBOLTZ
+    ! INIPHY: set initial values for IRO, Z0, VON_KARMAN, VICOM & SBOLTZ
     !         and re-define ANGLAT and GRDANG for SFERIC = .true.
     !
-    call iniphy(iro       ,z0        ,vonkar    ,vicmol    ,sboltz    , &
+    call iniphy(iro       ,z0        ,VON_KARMAN    ,vicmol    ,sboltz    , &
               & sferic    ,anglat    ,grdang    ,temeqs    ,gdp       )
     !
     ! CHKPHY: checks all physical coefficients
@@ -496,7 +496,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     !
     ! TKECOF: set initial turbulence model coefficients
     !
-    call tkecof(lturi     ,vonkar    ,r(sigdif) ,r(sigmol) , &
+    call tkecof(lturi     ,VON_KARMAN    ,r(sigdif) ,r(sigmol) , &
               & r(rtur1)  ,r(rtu2d0) ,gdp       )
     !
     ! IWE

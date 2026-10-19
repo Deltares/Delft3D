@@ -39,7 +39,7 @@ contains
 
    subroutine tranb5(u, v, d50, d90, chezy, &
                    & h, hrms, tp, dir, npar, &
-                   & par, dzdx, dzdy, vonkar, ws, &
+                   & par, dzdx, dzdy, VON_KARMAN, ws, &
                    & poros, sbotx, sboty, ssusx, ssusy, &
                    & cesus)
 !!--description-----------------------------------------------------------------
@@ -65,7 +65,7 @@ contains
       real(fp), intent(in) :: tp
       real(fp), intent(in) :: u
       real(fp), intent(in) :: v
-      real(fp), intent(in) :: vonkar
+      real(fp), intent(in) :: VON_KARMAN
       real(fp), intent(in) :: ws
       !
       real(fp), intent(out) :: sbotx
@@ -194,7 +194,7 @@ contains
          arga = max(arga, -50.0_fp)
          arga = min(arga, 50.0_fp)
          vstar = sqrt(cf) * sqrt(uuvar)
-         z = w / vonkar / vstar
+         z = w / VON_KARMAN / vstar
          z = min(z, 8.0_fp)
       else
          arga = -50.0_fp

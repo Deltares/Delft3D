@@ -66,7 +66,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: vicoww
     real(fp)               , pointer :: dicoww
@@ -165,7 +165,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
-    vonkar      => gdp%gdphysco%vonkar
+    VON_KARMAN      => gdp%gdphysco%VON_KARMAN
     vicmol      => gdp%gdphysco%vicmol
     vicoww      => gdp%gdphysco%vicoww
     dicoww      => gdp%gdphysco%dicoww
@@ -301,7 +301,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    ! bottom is assumed at Z0
                    !
                    rz = 1.0 + (1. + sig(k))*h0/dicww(nm, kmax)
-                   vicww(nm, kmax) = vicww(nm, kmax) + uuu*vonkar/(log(rz)*kmax)
+                   vicww(nm, kmax) = vicww(nm, kmax) + uuu*VON_KARMAN/(log(rz)*kmax)
                 endif
              enddo
           enddo
@@ -325,7 +325,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                 ! bottom is assumed at Z0
                 !
                 rz = 1.0 + (1. + sig(kmax))*h0/dicww(nm, kmax)
-                ustbot = uuu*vonkar/log(rz)
+                ustbot = uuu*VON_KARMAN/log(rz)
                 vicww(nm, kmax) = max(vicww(nm, kmax), ustbot)
              endif
           enddo
@@ -361,7 +361,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    !
                    ! Mixing length
                    !
-                   rl = vonkar*h0*(1. + sigw)*sqrt( - sigw)*fl
+                   rl = VON_KARMAN*h0*(1. + sigw)*sqrt( - sigw)*fl
                    !
                    ! Algebraic eddy viscosity (Uittenbogaard '91 )
                    !
@@ -411,7 +411,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    endif
                    fs = 1.
                    !
-                   rl = vonkar*h0*(1. + sigw)*sqrt( - sigw)*fl
+                   rl = VON_KARMAN*h0*(1. + sigw)*sqrt( - sigw)*fl
                    vicww(nm, k) = cmukl*rl*sqrt(rtur0(nm, k, 1))
                    dicww(nm, k) = cmukl*rl*sqrt(rtur0(nm, k, 1))/fs
                 endif
@@ -461,8 +461,8 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              zw           = inpzw*zwi + (1 - inpzw)*zwc
              ustwkw       = sqrt(windsu(nm)**2 + windsv(nm)**2)/rhow
              ustwin       = sqrt(ustwkw)
-             vicww(nm, 0) = vonkar*zw*ustwin
-             dicww(nm, 0) = vonkar*zw*ustwin
+             vicww(nm, 0) = VON_KARMAN*zw*ustwin
+             dicww(nm, 0) = VON_KARMAN*zw*ustwin
              !
              ! RTUR can be used to determine viscosity at surface
              ! only for k-eps model
@@ -484,9 +484,9 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              uuu = 0.5*maskval*sqrt(  (ueul(nm, kmax) + ueul(nmd, kmax))**2      &
                  &                  + (veul(nm, kmax) + veul(ndm, kmax))**2 )
              rz = 1.0 + (1. + sig(kmax))*h0/dicww(nm, kmax)
-             ustbot = abs(uuu)*vonkar/log(rz)
-             vicww(nm, kmax) = vonkar*ustbot*dicww(nm, kmax)
-             dicww(nm, kmax) = vonkar*ustbot*dicww(nm, kmax)
+             ustbot = abs(uuu)*VON_KARMAN/log(rz)
+             vicww(nm, kmax) = VON_KARMAN*ustbot*dicww(nm, kmax)
+             dicww(nm, kmax) = VON_KARMAN*ustbot*dicww(nm, kmax)
           else
              !
              ! Make vicww and dicww small for points

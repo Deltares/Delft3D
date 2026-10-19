@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: get_ustb_cfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, turbulent_advection_scheme, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
+                        a1, vicwwu, VON_KARMAN, c2e, ndkx, turbulent_advection_scheme, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
                         ustbs, ustws, EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old, zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, qw, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -63,7 +63,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
+      use m_turbulence, only: CMUKEP, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
                   c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
@@ -172,7 +172,7 @@ contains
                do L = Lb, Lt
                   zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic
                   !           zz       = hu(L)*sqrt( ( 1.0_dp - hu(L)/ hu(LL) ) )     ! Bakhmetev
-                  vicwwu(L) = zz * ustb(LL) * vonkar
+                  vicwwu(L) = zz * ustb(LL) * VON_KARMAN
                end do
 
                call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
@@ -276,11 +276,11 @@ contains
                   advi(Lb) = advi(Lb) + cfuhi3D
                end if
 
-               turbulent_kinetic_energy_at_bottom = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
-               turbulent_kinetic_energy_at_top = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
+               turbulent_kinetic_energy_at_bottom = ustb(LL)**2 / sqrt(CMUKEP) ! this has stokes incorporated when jawave>0
+               turbulent_kinetic_energy_at_top = ustw(LL)**2 / sqrt(CMUKEP) ! only wind+ship contribution
 
                if (ieps == 3) then ! as Delft3D
-                  vicwwu(Lb0) = vonkar * ustb(LL) * z00
+                  vicwwu(Lb0) = VON_KARMAN * ustb(LL) * z00
                end if
 
                turbulent_kinetic_energy_wu_old(Lb0:Lt) = turbulent_kinetic_energy_wu(Lb0:Lt)
@@ -319,7 +319,7 @@ contains
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
-                        turbulent_kinetic_energy_at_top = turbulent_kinetic_energy_at_top + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
+                        turbulent_kinetic_energy_at_top = turbulent_kinetic_energy_at_top + (pkwmag * VON_KARMAN * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
                      else
                         pkwmag = 0.0_dp
                      end if
@@ -540,7 +540,7 @@ contains
                               wk = vk * um * um ! work done by this layer m2/s3
                               ap1 = 1.0 - diav * diav * rnv * pi * 0.25 ! Free area
                               xlveg = Clveg * sqrt(ap1 / rnv) ! typical length between plants
-                              tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
+                              tauinv = c2e * sqrt(CMUKEP) * (wk / xlveg**2)**r3
                               teps = 0.5_dp * (turbulent_dissipation_wu_old(L) + turbulent_dissipation_wu_old(L))
                               tkin = 0.5_dp * (turbulent_kinetic_energy_wu_old(L) + turbulent_kinetic_energy_wu_old(L))
                               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
@@ -620,12 +620,12 @@ contains
 
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
-                        dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turbulent_kinetic_energy_wu(L)
+                        dk(k) = dk(k) - CMUKEP * c3e_stable * bruva(k) * turbulent_kinetic_energy_wu(L)
                      elseif (bruva(k) < 0.0_dp) then ! unstable stratification
-                        dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turbulent_kinetic_energy_wu(L)
+                        dk(k) = dk(k) - CMUKEP * c3e_unstable * bruva(k) * turbulent_kinetic_energy_wu(L)
                      end if
 
-                     sourtu = c1e * cmukep * turbulent_kinetic_energy_wu_old(L) * dijdij(k)
+                     sourtu = c1e * CMUKEP * turbulent_kinetic_energy_wu_old(L) * dijdij(k)
                      ! Add wave dissipation production term
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         sourtu = sourtu + pkwav(k) * c1e * turbulent_dissipation_wu_old(L) / max(turbulent_kinetic_energy_wu_old(L), 1.0e-7_dp)
@@ -659,7 +659,7 @@ contains
                      gradk = gradd + gradu
                      grad = gradk - gradt ! D_kt - D_tt
 
-                     grad = -grad * sigepsi * cmukep ! This is positive advection, dc/dt + wdc/dz
+                     grad = -grad * sigepsi * CMUKEP ! This is positive advection, dc/dt + wdc/dz
                      grad = grad / dzw(k) ! dzw is receiving volume
                      if (grad > 0.0_dp) then
                         bk(k) = bk(k) + grad
@@ -678,7 +678,7 @@ contains
                   ak(kxL) = -1.0_dp ! Flux at the free surface:
                   bk(kxL) = 1.0_dp
                   ck(kxL) = 0.0_dp
-                  dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
+                  dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
                   if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
                      dk(kxL) = dk(kxL) + dzu(Lt - Lb + 1) * pkwmag / (fwavpendep * hrmsLL)
                   end if
@@ -687,7 +687,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = -1.0_dp
                   if (ustb(LL) > 0 .and. kxL > 1) then
-                     dk(0) = dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
+                     dk(0) = dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -703,7 +703,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = 0.0_dp
                   if (ustb(LL) > 0) then
-                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
+                     dk(0) = VON_KARMAN * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -784,13 +784,13 @@ contains
                         k2 = ln(1, L)
                         tke = turbulent_kinetic_energy_at_bottom * z1 + turbulent_kinetic_energy_at_top * zint
                         zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic visc
-                        vicwww = zz * max(0.001_dp, ustb(LL)) * vonkar
-                        eps = cmukep * tke * tke / vicwww
+                        vicwww = zz * max(0.001_dp, ustb(LL)) * VON_KARMAN
+                        eps = CMUKEP * tke * tke / vicwww
                         turbulent_kinetic_energy_wu(L) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(L)
                         turbulent_dissipation_wu(L) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(L)
                      end do
-                     epsbot = turbulent_dissipation_wu(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
-                     epssur = turbulent_dissipation_wu(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
+                     epsbot = turbulent_dissipation_wu(Lb) + dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
+                     epssur = turbulent_dissipation_wu(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if
@@ -813,9 +813,9 @@ contains
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
-                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_kinetic_energy_wu(Lb0:Lt) / turbulent_dissipation_wu(Lb0:Lt))
+                  vicwwu(Lb0:Lt) = min(vicwmax, CMUKEP * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_kinetic_energy_wu(Lb0:Lt) / turbulent_dissipation_wu(Lb0:Lt))
                else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
-                  vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_dissipation_wu(Lb0:Lt))
+                  vicwwu(Lb0:Lt) = min(vicwmax, CMUKEP * turbulent_kinetic_energy_wu(Lb0:Lt) * turbulent_dissipation_wu(Lb0:Lt))
                end if
 
                if (jawave == NO_WAVES .or. jawavebreakerturbulence == WAVE_BREAKER_TURB_OFF) then
@@ -934,8 +934,8 @@ contains
                   dzws(k) = 0.5_dp * (dzs(k) + dzs(k + 1))
                end do
 
-               turbulent_kinetic_energy_at_bottom = ustbs(kk)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
-               turbulent_kinetic_energy_at_top = ustws(kk)**2 / sqrt(cmukep) ! only wind+ship contribution
+               turbulent_kinetic_energy_at_bottom = ustbs(kk)**2 / sqrt(CMUKEP) ! this has stokes incorporated when jawave>0
+               turbulent_kinetic_energy_at_top = ustws(kk)**2 / sqrt(CMUKEP) ! only wind+ship contribution
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
                bk(0:kxL) = dt_inverse
@@ -1099,14 +1099,14 @@ contains
 
                   !c Source and sink terms                                                                epsilon
                   if (bruva(k) < 0.0_dp) then ! instable, increase rhs
-                     dk(k) = dk(k) - cmukep * c1e * bruva(k) * turbulent_kinetic_energy_ws(L)
+                     dk(k) = dk(k) - CMUKEP * c1e * bruva(k) * turbulent_kinetic_energy_ws(L)
                   end if
 
                   ! Similar to the k-equation, in the eps-equation the net IWE to TKE
                   ! transfer rate (TKEPRO-TKEDIS) is added to the eps-production term, but
                   ! split for implicit treatment for avoiding negative epsilon.
 
-                  sourtu = c1e * cmukep * turbulent_kinetic_energy_ws_old(L) * dijdij(k)
+                  sourtu = c1e * CMUKEP * turbulent_kinetic_energy_ws_old(L) * dijdij(k)
 
                   sinktu = c2e * turbulent_dissipation_ws_old(L) / turbulent_kinetic_energy_ws(L) ! yoeri has here : /turbulent_kinetic_energy_wu_old(L)
 
@@ -1121,14 +1121,14 @@ contains
                ak(kxL) = -1.0_dp ! Flux at the free surface:
                bk(kxL) = 1.0_dp
                ck(kxL) = 0.0_dp
-               dk(kxL) = 4.0_dp * abs(ustws(kk))**3 / (vonkar * dzs(kt - kb + 1))
+               dk(kxL) = 4.0_dp * abs(ustws(kk))**3 / (VON_KARMAN * dzs(kt - kb + 1))
 
                ak(0) = 0.0_dp ! at the bed:
                bk(0) = 1.0_dp
                ck(0) = -1.0_dp
                if (ustbs(kk) > 0 .and. kxL > 1) then
                   hdzbs = 0.5_dp * dzs(1) + c9of1 * z00 ! half bottom layer plus 9z0
-                  dk(0) = dzs(1) * abs(ustbs(kk))**3 / (vonkar * hdzbs * hdzbs)
+                  dk(0) = dzs(1) * abs(ustbs(kk))**3 / (VON_KARMAN * hdzbs * hdzbs)
                else
                   dk(0) = 0.0_dp
                end if
@@ -1163,7 +1163,7 @@ contains
                end do
 
                vicwmax = 0.1_dp * hs(kk) ! 0.009UH, Elder, uavmax=
-               vicwws(kb0:kt) = min(vicwmax, cmukep * turbulent_kinetic_energy_ws(kb0:kt) * turbulent_kinetic_energy_ws(kb0:kt) / turbulent_dissipation_ws(kb0:kt))
+               vicwws(kb0:kt) = min(vicwmax, CMUKEP * turbulent_kinetic_energy_ws(kb0:kt) * turbulent_kinetic_energy_ws(kb0:kt) / turbulent_dissipation_ws(kb0:kt))
 
                vicwws(kt) = min(vicwws(kt), vicwws(kt - 1) * Eddyviscositysurfacmax)
                vicwws(kb0) = min(vicwws(kb0), vicwws(kb) * Eddyviscositybedfacmax)

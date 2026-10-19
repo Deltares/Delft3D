@@ -213,7 +213,7 @@ contains
       real(fp) :: v
       real(fp) :: vcr
       real(fp) :: vicmol
-      real(fp) :: vonkar
+      real(fp) :: VON_KARMAN
       real(fp) :: vvv
       real(fp) :: ws0
       real(fp) :: z
@@ -255,7 +255,7 @@ contains
       !vbed      = real(realpar(RP_VBED ),fp)
       !velb      = real(realpar(RP_VELBD),fp)
       !zvelb     = real(realpar(RP_ZVLBD),fp)
-      vonkar = real(realpar(RP_VNKAR), fp)
+      VON_KARMAN = real(realpar(RP_VNKAR), fp)
       z0cur = real(realpar(RP_Z0CUR), fp)
       z0rou = real(realpar(RP_Z0ROU), fp)
       taucrb = real(realpar(RP_TAUCR),fp)
@@ -337,7 +337,7 @@ contains
                          & tauwav, tauc, ltur, delw, rhowat, &
                          & uwbih, aks, caks, caks_ss3d, deltas, &
                          & aks_ss3d, di50, salinity, ws0, psi, &
-                         & epspar, eps, vonkar, salmax, wave, &
+                         & epspar, eps, VON_KARMAN, salmax, wave, &
                          & epsmax, epsmxc)
       else
          do k = 1, num_layers_grid

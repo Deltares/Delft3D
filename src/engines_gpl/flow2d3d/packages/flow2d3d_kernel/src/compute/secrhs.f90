@@ -55,7 +55,7 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     real(fp)               , pointer :: ag
-    real(fp)               , pointer :: vonkar
+    real(fp)               , pointer :: VON_KARMAN
     integer                , pointer :: lundia
     real(fp)               , pointer :: chzmin
     real(fp)               , pointer :: dryflc
@@ -136,7 +136,7 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
     rmincf   => gdp%gdnumeco%rmincf
     lundia   => gdp%gdinout%lundia
     ag       => gdp%gdphysco%ag
-    vonkar   => gdp%gdphysco%vonkar
+    VON_KARMAN   => gdp%gdphysco%VON_KARMAN
     !
     htrsh = 0.5*dryflc
     k = 1
@@ -185,18 +185,18 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
           !         because TAH0 = 0.5*(1.-2.*ALPHA)*H0 should be > 0
           !
           czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(vonkar*czosg)
+          alpha = 1.0_fp/(VON_KARMAN*czosg)
           if (alpha>=0.5) then
              ierr = ierr + 1
           endif
           taold = 0.5*(1. - 2.*alpha)*h0old
           tanew = 0.5*(1. - 2.*alpha)*h0new
-          tai = ((vonkar**2*alpha)*umod)/taold
+          tai = ((VON_KARMAN**2*alpha)*umod)/taold
           !
           !---------Subtract Coriolis contribution
           !
           sour(nm, k, lsecfl) = (bendeq - corieq)*tai
-          tai = ((vonkar**2*alpha)*umod)/tanew
+          tai = ((VON_KARMAN**2*alpha)*umod)/tanew
           sink(nm, k, lsecfl) = 1.*tai
        endif
     enddo

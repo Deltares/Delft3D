@@ -203,7 +203,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: rksr
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: espir
-    real(fp)                             , pointer :: vonkar
+    real(fp)                             , pointer :: VON_KARMAN
     logical                              , pointer :: epspar
     logical                              , pointer :: ubot_from_com
     real(fp)                             , pointer :: timsec
@@ -540,7 +540,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     bedw                => gdp%gdmorpar%bedw
     espir               => gdp%gdmorpar%espir
     epspar              => gdp%gdmorpar%epspar 
-    vonkar              => gdp%gdphysco%vonkar
+    VON_KARMAN              => gdp%gdphysco%VON_KARMAN
     vicmol              => gdp%gdphysco%vicmol
     timsec              => gdp%gdinttim%timsec
     timhr               => gdp%gdinttim%timhr
@@ -884,7 +884,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        !
        z0rou = (  kfu(nmd)*z0urou(nmd) + kfu(nm)*z0urou(nm) &
              &  + kfv(ndm)*z0vrou(ndm) + kfv(nm)*z0vrou(nm)  )/kn
-       chezy = sag * log( 1.0_fp + h1/max(1.0e-8_fp,ee*z0rou) ) / vonkar
+       chezy = sag * log( 1.0_fp + h1/max(1.0e-8_fp,ee*z0rou) ) / VON_KARMAN
        !
        ! bed shear stress as used in flow, or
        ! skin friction following Soulsby; "Bed shear stress under
@@ -910,7 +910,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           taub(nm) = taubmx(nm)
        endif
        !
-       ustarc = umod(nm)*vonkar/log(1.0_fp + zumod(nm)/z0rou)
+       ustarc = umod(nm)*VON_KARMAN/log(1.0_fp + zumod(nm)/z0rou)
        if (scour) then
           !
           ! Calculate extra stress (tauadd) for point = nm, if so required by
@@ -1007,7 +1007,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        dll_reals(RP_VBED ) = real(vbed           ,hp)
        dll_reals(RP_VELBD) = real(velb           ,hp)
        dll_reals(RP_ZVLBD) = real(zvelb          ,hp)
-       dll_reals(RP_VNKAR) = real(vonkar         ,hp)
+       dll_reals(RP_VNKAR) = real(VON_KARMAN         ,hp)
        dll_reals(RP_Z0CUR) = real(z0cur          ,hp)
        dll_reals(RP_Z0ROU) = real(z0rou          ,hp)
        dll_reals(RP_DG   ) = real(dg(nm)         ,hp)

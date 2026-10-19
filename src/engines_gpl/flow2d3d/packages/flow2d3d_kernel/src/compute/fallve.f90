@@ -62,7 +62,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     real(fp)                           , pointer :: ag
-    real(fp)                           , pointer :: vonkar
+    real(fp)                           , pointer :: VON_KARMAN
     !
     real(fp)                           , pointer :: vicmol
     real(fp)                           , pointer :: csoil
@@ -175,7 +175,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
 !! executable statements -------------------------------------------------------
 !
     ag                  => gdp%gdphysco%ag
-    vonkar              => gdp%gdphysco%vonkar
+    VON_KARMAN              => gdp%gdphysco%VON_KARMAN
     !
     vicmol              => gdp%gdphysco%vicmol
     csoil               => gdp%gdsedpar%csoil
@@ -222,7 +222,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
        kn    = max(1, kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm))
        z0rou = (  kfu(nmd)*z0urou(nmd) + kfu(nm)*z0urou(nm) &
              &  + kfv(ndm)*z0vrou(ndm) + kfv(nm)*z0vrou(nm)  )/kn
-       chezy = sag * log( 1.0_fp + h0/max(1.0e-8_fp,ee*z0rou) ) / vonkar
+       chezy = sag * log( 1.0_fp + h0/max(1.0e-8_fp,ee*z0rou) ) / VON_KARMAN
        !
        ! loop over the interfaces in the vertical
        !
@@ -290,7 +290,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
           endif
           !
           if (kmax == 0) then ! 2D
-             call get_tshear_tdiss( tshear, tur_eps, rhoint, taub = taubmx(nm), waterdepth = h0, vonkar = vonkar )
+             call get_tshear_tdiss( tshear, tur_eps, rhoint, taub = taubmx(nm), waterdepth = h0, VON_KARMAN = VON_KARMAN )
           elseif (ltur == 0) then ! algebraic or constant
              call get_tshear_tdiss( tshear, tur_eps, rhoint, taub = taubmx(nm), waterdepth = h0, localdepth = ldepth)
           elseif (ltur == 1) then ! k-L
@@ -300,8 +300,8 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              else
                 fl = (1.0_fp - 14.0_fp*rich(nm, k))**0.25_fp
              endif
-             tur_l = vonkar * (h0 - ldepth) * sqrt(ldepth/h0) * fl
-             call get_tshear_tdiss( tshear, tur_eps, rhoint, tke = tur_k, tlength = tur_l, vonkar = vonkar)
+             tur_l = VON_KARMAN * (h0 - ldepth) * sqrt(ldepth/h0) * fl
+             call get_tshear_tdiss( tshear, tur_eps, rhoint, tke = tur_k, tlength = tur_l, VON_KARMAN = VON_KARMAN)
           else ! k-eps
              call get_tshear_tdiss( tshear, tur_eps, rhoint, tke = tur_k )
           endif

@@ -34,7 +34,7 @@ contains
 
 subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
                       & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
-                      & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
+                      & eps       ,VON_KARMAN    ,difvr     ,deltas    ,epsbed    , &
                       & epsmax    ,epsmxc    ,seddif    )
 !!--description-----------------------------------------------------------------
 !
@@ -59,7 +59,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
     real(fp)                   , intent(in)  :: tauwav
     real(fp), dimension(num_layers_grid)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: ustarc
-    real(fp)                   , intent(in)  :: vonkar
+    real(fp)                   , intent(in)  :: VON_KARMAN
     real(fp), dimension(0:num_layers_grid), intent(in)  :: ws     !  Description and declaration in esm_alloc_real.f90
     logical                    , intent(in)  :: difvr
     !
@@ -92,7 +92,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
        beta = 1.0_fp
     endif
     !
-    epsmxc = 0.25_fp * vonkar * beta * ustarc * h1
+    epsmxc = 0.25_fp * VON_KARMAN * beta * ustarc * h1
     if (ltur==0 .or. ltur==1 .or. difvr) then
        !
        ! if algebraic or K-L turbulence model or difvr = .true. then
