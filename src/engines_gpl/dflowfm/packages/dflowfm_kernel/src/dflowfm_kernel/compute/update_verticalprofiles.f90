@@ -73,7 +73,11 @@ contains
       use m_waveconst
 
       real(kind=dp) :: theta_complement
-      real(kind=dp) :: vicu, vicd, difu, difd, sourtu, sinktu
+      real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above.
+      real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
+      real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above.
+      real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below.
+      real(kind=dp) :: sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, turbulent_kinetic_energy_at_bottom, turbulent_kinetic_energy_at_top, epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
@@ -297,8 +301,6 @@ contains
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old, turbulent_kinetic_energy_ws)
                end if
 
-               vicu = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
                ! Calculate turbulent kinetic energy (k) source from wave dissipation: preparation
                if (jawave /= NO_WAVES) then
                   if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
@@ -331,24 +333,27 @@ contains
                   end if
                end if
 
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
+
                ! Setting up system of equations for turbulent kinetic energy (k)
                do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
                   k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / (dzw(k) * dzu(k))
-                  difu = vicu / (dzw(k) * dzu(ku))
+                  ! We move up a layer, viscosity up becomes viscosity down
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
-                  dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * theta_complement &
-                          + difd * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * theta_complement
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
+
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
+                  dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * theta_complement &
+                          + turbulent_diffusion_down * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * theta_complement
 
                   ! Source and sink terms turbulent kinetic energy (k)
                   if (use_density()) then
@@ -589,26 +594,27 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               vicu = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
                   k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / (dzw(k) * dzu(k))
-                  difu = vicu / (dzw(k) * dzu(ku))
+                  ! We move up a layer, viscosity up becomes viscosity down
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
+
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
-                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
+                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
+                             + turbulent_diffusion_down * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
                   end if
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
@@ -937,26 +943,27 @@ contains
                ck(0:kxL) = 0.0_dp
                dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_ws_old(kb0:kt)
 
-               vicu = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE !
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE !
 
                do L = kb, kt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
-                  k = L - kb + 1
+                  k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / (dzws(k) * dzs(k))
-                  difu = vicu / (dzws(k) * dzs(ku))
+                  ! We move up a layer, viscosity up becomes viscosity down
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzws(k) * dzs(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzws(k) * dzs(ku))
+
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_ws_old(L) - turbulent_kinetic_energy_ws_old(Lu)) * theta_complement &
-                             + difd * (turbulent_kinetic_energy_ws_old(L - 1) - turbulent_kinetic_energy_ws_old(L)) * theta_complement
+                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_kinetic_energy_ws_old(L) - turbulent_kinetic_energy_ws_old(Lu)) * theta_complement &
+                             + turbulent_diffusion_down * (turbulent_kinetic_energy_ws_old(L - 1) - turbulent_kinetic_energy_ws_old(L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -1064,26 +1071,27 @@ contains
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
-               vicu = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = kb, kt - 1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
-                  k = L - kb + 1
+                  k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / (dzws(k) * dzs(k))
-                  difu = vicu / (dzws(k) * dzs(ku))
+                  ! We move up a layer, viscosity up becomes viscosity down
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzws(k) * dzs(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzws(k) * dzs(ku))
+
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_ws_old(L) - turbulent_dissipation_ws_old(Lu)) * theta_complement &
-                             + difd * (turbulent_dissipation_ws_old(L - 1) - turbulent_dissipation_ws_old(L)) * theta_complement
+                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_dissipation_ws_old(L) - turbulent_dissipation_ws_old(Lu)) * theta_complement &
+                             + turbulent_diffusion_down * (turbulent_dissipation_ws_old(L - 1) - turbulent_dissipation_ws_old(L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                epsilon
