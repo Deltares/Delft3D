@@ -3295,9 +3295,7 @@ contains
    end function ecConverterHarmonic
 
    !> Perform the configured conversion, if supported, for a NetCDF FileReader.
-   !! Fixed, unlayered harmonic fields cache their spatially interpolated cosine/sine coefficients.
-   !! Other fields retain their configured spatial and temporal interpolation.
-   !! Converts source(i) to target(i).
+   !! Converts connection source(i) to target(i).
    function ecConverterNetcdf(connection, timesteps) result(success)
       use m_alloc
       use kdtree2Factory
@@ -3347,7 +3345,7 @@ contains
       logical :: all_scalar_sources
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       logical :: status !< Status of undefined values check
-      real(dp) :: sourceValue !< Source value at t0 or t1, detemp_proj on the time interpolation
+      real(dp) :: sourceValue !< Source value at t0 or t1, depending on the time interpolation
       real(dp), dimension(:), allocatable :: source_values !< Time-interpolated source values; allocatable to keep it off the stack.
       integer :: n_targets !< Number of target points
       real(dp), dimension(:), pointer :: targetValues
