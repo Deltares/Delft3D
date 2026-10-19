@@ -25,11 +25,14 @@
 
 module test_morphology
    use assertions_gtest
-   use precision, only: fp
+   use precision, only: fp, hp, prec
    use m_missing, only: dmiss
    use m_trab19, only: trab19
    use m_rdtrafrm, only: traparams
    use morphology_data_module, only: NPARDEF
+   use bedcomposition_module, only: BED_LAYERED, BED_MIXED, CONSOL_DECON, CONSOL_NONE, &
+                                   allocmorlyr, bedcomp_data, clrmorlyr, initmorlyr, updmorlyr
+   use message_module, only: clearstack, getmessage, initstack, isempty, message_len, message_stack
 
    implicit none
 
@@ -132,5 +135,149 @@ contains
 
    end subroutine test_trab19
    !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_mixed_bed_update, test_updmorlyr_mixed_bed_update,
+   subroutine test_updmorlyr_mixed_bed_update() bind(C)
+      type(bedcomp_data) :: bed
+      type(message_stack) :: messages
+      integer :: istat
+      real(fp), dimension(2, 1) :: dbodsd
+      real(fp), dimension(1) :: dz
+      real(fp), dimension(1) :: dunelength
+      real(fp), dimension(1, 2) :: sbot
+      character(message_len) :: message
+
+      call initstack(messages)
+      call initialize_bedcomposition_test(bed, BED_MIXED, .false., CONSOL_NONE, istat)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed setup failed")
+
+      bed%state%bodsed(:, 1) = [1.0_prec, 2.0_prec]
+      bed%state%dpsed(1) = 3.0_fp
+      dbodsd(:, 1) = [0.5_fp, 0.25_fp]
+      dz = 0.0_fp
+      dunelength = 0.0_fp
+      sbot = 0.0_fp
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed update failed")
+      call f90_assert_near(dz(1), 0.75_fp, 1.0e-6_fp, "unexpected mixed bed level change")
+      call f90_assert_near(real(bed%state%bodsed(1, 1), fp), 1.5_fp, 1.0e-6_fp, "unexpected first mixed fraction mass")
+      call f90_assert_near(real(bed%state%bodsed(2, 1), fp), 2.25_fp, 1.0e-6_fp, "unexpected second mixed fraction mass")
+      call f90_assert_true(isempty(messages), "unexpected message during mixed bed deposition")
+
+      bed%settings%morlyrnum%mass_shortage_thresh = 0.1_fp
+      bed%settings%morlyrnum%max_num_shortage_warnings = 5
+      dbodsd(:, 1) = [-2.5_fp, 0.0_fp]
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed erosion update failed")
+      call f90_assert_near(dz(1), -1.5_fp, 1.0e-6_fp, "unexpected mixed bed erosion level change")
+      call f90_assert_near(bed%state%sedshort(1, 1), -1.0_fp, 1.0e-6_fp, "unexpected mixed bed sediment shortage")
+      call f90_assert_near(real(bed%settings%morlyrnum%max_num_shortage_warnings, fp), 4.0_fp, 0.0_fp, &
+                           "unexpected shortage warning count")
+      call getmessage(messages, message)
+      call f90_assert_true(index(message, "Sediment erosion shortage at NM") > 0, "missing sediment shortage message")
+      call clearstack(messages)
+
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed cleanup failed")
+   end subroutine test_updmorlyr_mixed_bed_update
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_layered_bed_paths, test_updmorlyr_layered_bed_paths,
+   subroutine test_updmorlyr_layered_bed_paths() bind(C)
+      type(bedcomp_data) :: bed
+      type(message_stack) :: messages
+      integer :: istat
+      real(fp), dimension(2, 1) :: dbodsd
+      real(fp), dimension(1) :: dz
+      real(fp), dimension(1) :: dunelength
+      real(fp), dimension(1, 2) :: sbot
+
+      call initstack(messages)
+      call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed setup failed")
+
+      bed%settings%thtrlyr(1) = 2.5_fp
+      bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 2, 1) = [0.5_fp, 0.5_fp]
+      bed%state%thlyr(:, 1) = [2.0_fp, 1.0_fp]
+      bed%state%svfrac(:, 1) = 1.0_fp
+      dbodsd(:, 1) = [0.5_fp, 0.0_fp]
+      dz = 0.0_fp
+      dunelength = 0.0_fp
+      sbot = 0.0_fp
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed update failed")
+      call f90_assert_near(dz(1), 0.5_fp, 1.0e-6_fp, "unexpected layered bed level change")
+      call f90_assert_near(bed%state%msed(1, 1, 1), 1.5_fp, 1.0e-6_fp, "unexpected layered top fraction mass")
+      call f90_assert_near(bed%state%thlyr(1, 1), 2.5_fp, 1.0e-6_fp, "unexpected layered transport layer thickness")
+      call f90_assert_true(bed%settings%initcl, "layered bed was not marked initialized")
+      call f90_assert_true(isempty(messages), "unexpected message during layered bed deposition")
+
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed cleanup failed")
+
+      call initialize_bedcomposition_test(bed, BED_LAYERED, .true., CONSOL_NONE, istat)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed setup failed")
+
+      bed%settings%thtrlyr(1) = 2.5_fp
+      bed%settings%thclyr(1) = 1.5_fp
+      bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 2, 1) = [1.0_fp, 1.0_fp]
+      bed%state%msed(:, 3, 1) = [0.5_fp, 0.5_fp]
+      bed%state%thlyr(:, 1) = [2.0_fp, 2.0_fp, 1.0_fp]
+      bed%state%svfrac(:, 1) = 1.0_fp
+      bed%state%mobile(:, 1) = 0.5_fp
+      bed%state%tdecon = 7.0_hp
+      dbodsd = 0.0_fp
+      dz = 0.0_fp
+      dunelength = 1.0_fp
+      sbot = 0.2_fp
+
+      istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 1.0_fp, 100.0_hp, messages)
+
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed update failed")
+      call f90_assert_near(dz(1), 0.0_fp, 1.0e-6_fp, "coarse-layer exchange changed total bed level")
+      call f90_assert_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected first coarse-layer top mass")
+      call f90_assert_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected second coarse-layer top mass")
+      call f90_assert_near(bed%state%msed(1, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected first coarse-layer mass")
+      call f90_assert_near(bed%state%msed(2, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected second coarse-layer mass")
+      call f90_assert_near(real(bed%state%tdecon, fp), 7.0_fp, 1.0e-6_fp, "coarse-layer update changed DECON schedule")
+      call f90_assert_true(bed%settings%initcl, "coarse-layer bed was not marked initialized")
+      call f90_assert_true(isempty(messages), "unexpected message during coarse-layer exchange")
+
+      istat = clrmorlyr(bed)
+      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed cleanup failed")
+   end subroutine test_updmorlyr_layered_bed_paths
+   !$f90tw)
+
+   subroutine initialize_bedcomposition_test(bed, bed_mode, coarse_layer, consolidation_mode, istat)
+      type(bedcomp_data), intent(inout) :: bed
+      integer, intent(in) :: bed_mode
+      logical, intent(in) :: coarse_layer
+      integer, intent(in) :: consolidation_mode
+      integer, intent(out) :: istat
+
+      istat = initmorlyr(bed)
+      if (istat /= 0) then
+         return
+      endif
+
+      bed%settings%nfrac = 2
+      bed%settings%nmlb = 1
+      bed%settings%nmub = 1
+      bed%settings%iunderlyr = bed_mode
+      bed%settings%crslyr = coarse_layer
+      bed%settings%iconsolidate = consolidation_mode
+
+      istat = allocmorlyr(bed)
+      if (istat == 0) then
+         bed%settings%rhofrac = 1.0_fp
+      endif
+   end subroutine initialize_bedcomposition_test
 
 end module test_morphology

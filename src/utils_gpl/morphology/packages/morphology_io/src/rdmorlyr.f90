@@ -321,6 +321,13 @@ contains
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
+         if (crslyr .and. iconsolidate /= CONSOL_NONE) then
+            errmsg = 'Coarse layer functionality cannot be used together with consolidation in '//trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         endif
+         !
          idummy = -999
          call prop_get(mor_ptr, 'Consolidate', 'iero', idummy)
          call prop_get(mor_ptr, 'Consolidate', 'ierosion', idummy)

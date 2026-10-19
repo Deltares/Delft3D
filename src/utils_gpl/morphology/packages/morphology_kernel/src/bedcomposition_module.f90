@@ -398,592 +398,589 @@ subroutine set_default_fractions(this)
     endif
 end subroutine set_default_fractions
 
+subroutine handle_sediment_shortage(mass, mass_available, mass_change, shortage, track_shortage, nm, l, morlyrnum, messages)
+    use precision
+    use message_module, only: message_stack, message_len, addmessage
+    real(fp), intent(inout) :: mass, shortage
+    real(fp), intent(in) :: mass_available, mass_change
+    logical, intent(in) :: track_shortage
+    integer, intent(in) :: nm, l
+    type(morlyrnumericstype), intent(inout) :: morlyrnum
+    type(message_stack), intent(inout) :: messages
+    character(message_len) :: message
+
+    if (mass < 0.0_fp) then
+        if (mass < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings > 0) then
+            morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
+            write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
+                & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
+                & ' Mass available   : ', mass_available, &
+                & ' Mass to be eroded: ', mass_change
+            call addmessage(messages, message)
+            if (morlyrnum%max_num_shortage_warnings == 0) then
+                message = 'Sediment erosion shortage messages suppressed'
+                call addmessage(messages, message)
+            endif
+        endif
+        if (track_shortage) then
+            shortage = shortage + mass
+        endif
+        mass = 0.0_fp
+    elseif (shortage < 0.0_fp) then
+        mass = mass + shortage
+        if (mass < 0.0_fp) then
+            shortage = mass
+            mass = 0.0_fp
+        else
+            shortage = 0.0_fp
+        endif
+    endif
+end subroutine handle_sediment_shortage
+
+subroutine repay_sediment_shortage(mass, shortage)
+    use precision
+    real(fp), intent(inout) :: mass, shortage
+
+    if (shortage < 0.0_fp .and. mass > 0.0_fp) then
+        shortage = shortage + mass
+        if (shortage > 0.0_fp) then
+            mass = shortage
+            shortage = 0.0_fp
+        else
+            mass = 0.0_fp
+        endif
+    endif
+end subroutine repay_sediment_shortage
+
 !> Update underlayer bookkeeping system for given erosion/sedimentation flux
 function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) result (istat)
     use precision
-    use message_module, only: message_stack, message_len, addmessage
-    !
-    ! Call variables
-    !
+    use message_module, only: message_stack
     type(bedcomp_data)                                                                           :: this     !< bed composition object
     real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd   !< change in sediment composition, units : kg/m2
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(out) :: dz       !< change in bed level, units : m
     type(message_stack)                                                                          :: messages !< message stack
     real(hp)                                                                       , intent(in)  :: morft    !< morphological time [days since reference date]
     real(fp)                                                                       , intent(in)  :: dtmor    !< morphological time step [s]
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m        !  half time step
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in)  :: sbot
-    integer                                                                                      :: istat    !< function status
-    !
-    ! Local variables
-    !
-    logical                                 :: track_shortage
-    integer                                 :: l
-    integer                                 :: nm
-    integer                                 :: k
-    integer                                 :: kk
-    integer                                 :: ktemp
-    !
-    real(fp)                                :: dm
-    real(fp)                                :: fac
-    real(fp)                                :: localcrslyr
-    real(fp)                                :: locallyr
-    real(fp)                                :: seddep0
-    real(fp)                                :: seddep1
-    real(fp)                                :: thdiff
-    real(fp)                                :: thdiff2
-    real(fp)                                :: temp
-    real(fp)                                :: thick
-    real(fp)                                :: thickd   !< thickness of newly deposited sediment
-    real(fp)                                :: thick2
-    real(fp)                                :: thicke   !< thickness of eroded sediment
-    real(fp)                                :: preload0 !< preload of newly deposited sediment
-    real(fp)                                :: svfracd
-    real(fp)                                :: thtrlyrnew
-    real(fp)                                :: phi_mud       !< mud volume fraction
-    real(fp)                                :: thclyrnew
-    real(fp), dimension(this%settings%nfrac):: dmi
-    real(fp)                                :: sdbodsed !< the sum of dbodsd
-    real(fp)                                :: td0
-    real(fp), dimension(this%settings%nfrac):: dmi_out
-    real(fp), dimension(this%settings%nfrac):: dmi_crs
-    !
-    character(message_len)                  :: message
-    !
-    type (morlyrnumericstype)     , pointer :: morlyrnum
-    integer                       , pointer :: iconsolidate
-    integer                       , pointer :: nconlyr
-    real(prec) , dimension(:,:)   , pointer :: bodsed
-    real(fp)   , dimension(:,:)   , pointer :: svfrac
-    real(fp)   , dimension(:)     , pointer :: dpsed
-    real(fp)   , dimension(:,:)   , pointer :: mobile
-    real(fp)   , dimension(:,:,:) , pointer :: msed
-    real(fp)   , dimension(:)     , pointer :: rhofrac
-    real(fp)   , dimension(:,:)   , pointer :: sedshort
-    real(fp)   , dimension(:)     , pointer :: thclyr
-    real(fp)   , dimension(:,:)   , pointer :: thlyr
-    real(fp)                      , pointer :: thtrempty
-    real(fp)   , dimension(:)     , pointer :: thtrlyr
-    integer                       , pointer :: imobility
-    real(fp)   , dimension(:,:)   , pointer :: preload
-    real(fp)   , dimension(:,:)   , pointer :: depos_time
-    real(fp)                                :: poros
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in) :: sbot
+    integer :: istat
+    logical :: call_consolidate
 
-    real(fp),dimension(this%settings%nfrac) :: mfrac
-    real(fp)                                :: totmassd     !< total mass of deposited sediment
-    real(fp)                                :: totsv        !< total sediment volume in top layer
-    real(fp)                                :: totsvd       !< total sediment volume of deposited sediment
-    real(fp)                                :: totsve       !< total sediment volume of eroded sediment
-    logical                                 :: call_consolidate !< flag indicating whether consolidate should be called
-!
-!! executable statements -------------------------------------------------------
-!
-    morlyrnum    => this%settings%morlyrnum
-    iconsolidate => this%settings%iconsolidate
-    nconlyr      => this%settings%nconlyr
-    rhofrac      => this%settings%rhofrac
-    thtrempty    => this%settings%thtrempty
-    thclyr      => this%settings%thclyr
-    thtrlyr      => this%settings%thtrlyr
-    !
-    svfrac      => this%state%svfrac
-    bodsed      => this%state%bodsed
-    dpsed       => this%state%dpsed
-    mobile      => this%state%mobile
-    msed        => this%state%msed
-    sedshort    => this%state%sedshort
-    thlyr       => this%state%thlyr
-    imobility   => this%settings%imobility
-    preload     => this%state%preload
-    depos_time => this%state%depos_time
-    !
     istat = allocwork(this)
-    if (istat /= 0) return
-    track_shortage = this%settings%morlyrnum%track_mass_shortage
-    select case (this%settings%iunderlyr)
-    case (BED_LAYERED)
-        if (this%settings%iconsolidate == CONSOL_NONE) then
-            call_consolidate = .false.
-        elseif (this%settings%iconsolidate == CONSOL_DECON) then
-            ! check whether it's time to consolidate the bed again
-            if (morft < this%state%tdecon) then
+    if (istat /= 0) then
+        return
+    endif
+
+    if (this%settings%iunderlyr == BED_LAYERED) then
+        if (this%settings%crslyr) then
+            call updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength, sbot, dtmor, messages)
+        else
+            if (this%settings%iconsolidate == CONSOL_NONE) then
                 call_consolidate = .false.
+            elseif (this%settings%iconsolidate == CONSOL_DECON) then
+                if (morft < this%state%tdecon) then
+                    call_consolidate = .false.
+                else
+                    this%state%tdecon = morft + real(this%settings%dtdecon, hp) / 86400.0_hp
+                    call_consolidate = .true.
+                endif
             else
-                ! consolidate now and set the next consolidation time
-                this%state%tdecon = morft + real(this%settings%dtdecon,hp)/86400.0_hp
                 call_consolidate = .true.
             endif
-        else
-            call_consolidate = .true.
+            call updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
         endif
+        this%settings%initcl = .true.
+    else
+        call updmorlyr_mixed_bed(this, dbodsd, dz, messages)
+    endif
+end function updmorlyr
 
-        do nm = this%settings%nmlb,this%settings%nmub
-            call getsedthick_1point(this, nm, seddep0)
-            if (.not.this%settings%crslyr) then
-                !
-                ! transport layer only
-                !
-                !
-                totmassd = 0.0_fp ! total deposited mass
-                totsvd   = 0.0_fp ! total deposited volume
-                totsve   = 0.0_fp ! total eroded volume
-                totsv    = 0.0_fp ! total sediment volume
-                do l = 1, this%settings%nfrac
-                    if (dbodsd(l,nm) > 0.0_fp) then
-                        ! fraction being deposited
-                        totmassd = totmassd + dbodsd(l,nm)
-                        totsvd   = totsvd   + dbodsd(l,nm) / rhofrac(l)
-                    else
-                        ! fraction being eroded
-                        totsve   = totsve   - dbodsd(l,nm) / rhofrac(l)
-                    endif
-                    !
-                    temp  = msed(l, 1, nm) + dbodsd(l, nm)
-                    if (temp < 0.0_fp) then
-                       if (temp < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings>0) then
-                          morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
-                            write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
-                               & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
-                               & ' Mass available   : ' ,msed(l, 1, nm), &
-                               & ' Mass to be eroded: ', dbodsd(l, nm)
-                            call addmessage(messages,message)
-                          if (morlyrnum%max_num_shortage_warnings == 0) then
-                                message = 'Sediment erosion shortage messages suppressed'
-                                call addmessage(messages,message)
-                            endif
-                        endif
-                        if (track_shortage) then
-                            sedshort(l, nm) = sedshort(l, nm) + temp
-                        endif
-                        temp = 0.0_fp
-                    elseif ( sedshort(l, nm) < 0.0_fp ) then
-                        temp = temp + sedshort(l, nm)
-                        if ( temp < 0.0_fp ) then
-                            sedshort(l, nm) = temp
-                            temp = 0.0_fp
-                        else
-                            sedshort(l, nm) = 0.0_fp
-                        endif
-                    endif
-                    msed(l, 1, nm) = temp
-                    totsv = totsv + temp / rhofrac(l)
-                enddo
-                !
-                ! get new requested transport layer thickness.
-                !
-                thtrlyrnew = thtrlyr(nm)
-                !
-                ! compute actual current thickness of top layer
-                !
-                if (this%settings%updtoplyr == TOPLYR_POR_RESET) then
-                    ! thickness of top layer based on the porosity
-                    ! formula for the complete mixture of sediment
-                    ! irrespective age (i.e. freshly deposited or
-                    ! remnant of previous top layer composition).
-                    if (iconsolidate == CONSOL_NONE) then
-                        call updateporosity(this, nm, 1)
-                    endif
-                    thick = totsv/svfrac(1, nm)
+
+subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
+    use precision
+    use message_module, only: message_stack
+    type(bedcomp_data), intent(inout) :: this
+    real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in) :: dbodsd
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub), intent(out) :: dz
+    real(fp), intent(in) :: dtmor
+    real(hp), intent(in) :: morft
+    type(message_stack), intent(inout) :: messages
+    logical, intent(in) :: call_consolidate
+
+    logical :: track_shortage
+    integer :: l, nm, k, kk, ktemp
+    real(fp) :: fac, seddep0, seddep1, thdiff, temp, thick, thickd, thicke
+    real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
+    real(fp) :: totmassd, totsv, totsvd, totsve
+    real(fp), dimension(this%settings%nfrac) :: dmi, mfrac
+    type(morlyrnumericstype), pointer :: morlyrnum
+    integer, pointer :: iconsolidate
+    integer, pointer :: nconlyr
+    real(fp), dimension(:), pointer :: rhofrac
+    real(fp), dimension(:,:), pointer :: svfrac, sedshort, thlyr, preload, depos_time
+    real(fp), dimension(:,:,:), pointer :: msed
+    real(fp), pointer :: thtrempty
+    real(fp), dimension(:), pointer :: thtrlyr
+
+    morlyrnum => this%settings%morlyrnum
+    iconsolidate => this%settings%iconsolidate
+    nconlyr => this%settings%nconlyr
+    rhofrac => this%settings%rhofrac
+    thtrempty => this%settings%thtrempty
+    thtrlyr => this%settings%thtrlyr
+    svfrac => this%state%svfrac
+    msed => this%state%msed
+    sedshort => this%state%sedshort
+    thlyr => this%state%thlyr
+    preload => this%state%preload
+    depos_time => this%state%depos_time
+    track_shortage = this%settings%morlyrnum%track_mass_shortage
+
+    do nm = this%settings%nmlb,this%settings%nmub
+        call getsedthick_1point(this, nm, seddep0)
+            !
+            ! transport layer only
+            !
+            !
+            totmassd = 0.0_fp ! total deposited mass
+            totsvd   = 0.0_fp ! total deposited volume
+            totsve   = 0.0_fp ! total eroded volume
+            totsv    = 0.0_fp ! total sediment volume
+            do l = 1, this%settings%nfrac
+                if (dbodsd(l,nm) > 0.0_fp) then
+                    ! fraction being deposited
+                    totmassd = totmassd + dbodsd(l,nm)
+                    totsvd   = totsvd   + dbodsd(l,nm) / rhofrac(l)
                 else
-                    ! thickness of transport layer based on a combination
-                    ! of freshly deposited sediment (using porosity formula)
-                    ! and the remainder of the original top layer.
-                
-                    ! reduce thickness by eroded volume
-                    thicke = totsve / svfrac(1,nm)
-                    thick = thlyr(1,nm) - thicke
-                
-                    if (totmassd > 0.0_fp) then
-                        ! some deposition occurred (maybe also some erosion)
-                        ! determine porosity and thickness of added mixture
-                        do l = 1, this%settings%nfrac
-                            if (dbodsd(l,nm) > 0.0_fp) then
-                                mfrac(l) = dbodsd(l,nm) / totmassd
-                            else
-                                mfrac(l) = 0.0_fp
-                            endif
-                        enddo
-                        call getporosity(this, mfrac, poros)
-                        svfracd = 1.0_fp - poros
-                        thickd = totsvd / svfracd
+                    ! fraction being eroded
+                    totsve   = totsve   - dbodsd(l,nm) / rhofrac(l)
+                endif
+                !
+                temp  = msed(l, 1, nm) + dbodsd(l, nm)
+                call handle_sediment_shortage(temp, msed(l, 1, nm), dbodsd(l, nm), &
+                    & sedshort(l, nm), track_shortage, nm, l, morlyrnum, messages)
+                msed(l, 1, nm) = temp
+                totsv = totsv + temp / rhofrac(l)
+            enddo
+            !
+            ! get new requested transport layer thickness.
+            !
+            thtrlyrnew = thtrlyr(nm)
+            !
+            ! compute actual current thickness of top layer
+            !
+            if (this%settings%updtoplyr == TOPLYR_POR_RESET) then
+                ! thickness of top layer based on the porosity
+                ! formula for the complete mixture of sediment
+                ! irrespective age (i.e. freshly deposited or
+                ! remnant of previous top layer composition).
+                if (iconsolidate == CONSOL_NONE) then
+                    call updateporosity(this, nm, 1)
+                endif
+                thick = totsv/svfrac(1, nm)
+            else
+                ! thickness of transport layer based on a combination
+                ! of freshly deposited sediment (using porosity formula)
+                ! and the remainder of the original top layer.
 
-                        if (iconsolidate == CONSOL_TERZAGHI) then
-                           ! new sediment comes without preload history
-                           preload0 = 0.0_fp
-                           td0 = real(morft,fp)
-                           ! some deposition (maybe also some erosion)
-                           preload(1,nm) = (thick * preload(1,nm) + thickd * preload0) / (thick + thickd)
-                           depos_time(1,nm) = (thick * depos_time(1,nm) + thickd * td0) / (thick + thickd)
+                ! reduce thickness by eroded volume
+                thicke = totsve / svfrac(1,nm)
+                thick = thlyr(1,nm) - thicke
+
+                if (totmassd > 0.0_fp) then
+                    ! some deposition occurred (maybe also some erosion)
+                    ! determine porosity and thickness of added mixture
+                    do l = 1, this%settings%nfrac
+                        if (dbodsd(l,nm) > 0.0_fp) then
+                            mfrac(l) = dbodsd(l,nm) / totmassd
+                        else
+                            mfrac(l) = 0.0_fp
                         endif
-                        svfrac(1,nm)  = (thick * svfrac(1,nm) + thickd * svfracd) / (thick + thickd)
-                        !
-                        ! new transport layer thickness takes into account deposition
-                        !
-                        thick = thick + thickd
-                    else
-                        !
-                        ! only erosion � preload and svfrac don�t need updating
-                        !
+                    enddo
+                    call getporosity(this, mfrac, poros)
+                    svfracd = 1.0_fp - poros
+                    thickd = totsvd / svfracd
+
+                    if (iconsolidate == CONSOL_TERZAGHI) then
+                       ! new sediment comes without preload history
+                       preload0 = 0.0_fp
+                       td0 = real(morft,fp)
+                       ! some deposition (maybe also some erosion)
+                       preload(1,nm) = (thick * preload(1,nm) + thickd * preload0) / (thick + thickd)
+                       depos_time(1,nm) = (thick * depos_time(1,nm) + thickd * td0) / (thick + thickd)
                     endif
+                    svfrac(1,nm)  = (thick * svfrac(1,nm) + thickd * svfracd) / (thick + thickd)
+                    !
+                    ! new transport layer thickness takes into account deposition
+                    !
+                    thick = thick + thickd
+                else
+                    !
+                    ! only erosion � preload and svfrac don�t need updating
+                    !
                 endif
+            endif
+            !
+            if (iconsolidate == CONSOL_DECON) then
                 !
-                if (iconsolidate == CONSOL_DECON) then
+                ! In case of Dynamic Equilibrium CONsolidation (DECON), we erode the top layer until
+                ! it runs out of sediment and then push the administration of the top NCONLYR layers
+                ! up. In case of sedimentation, the sediment is added to the top layer and
+                ! redistributed over the top NCONLYR layers once every DTDECON.
+                !
+                if (thick < thtrempty) then
                     !
-                    ! In case of Dynamic Equilibrium CONsolidation (DECON), we erode the top layer until
-                    ! it runs out of sediment and then push the administration of the top NCONLYR layers
-                    ! up. In case of sedimentation, the sediment is added to the top layer and
-                    ! redistributed over the top NCONLYR layers once every DTDECON.
+                    ! The top layer is eroded almost completely.
+                    ! Check if there is still some sediment left in the consolidation layers
                     !
-                    if (thick < thtrempty) then
-                        !
-                        ! The top layer is eroded almost completely.
-                        ! Check if there is still some sediment left in the consolidation layers
-                        !
-                        do k = 2,nconlyr
-                             thick = thick + thlyr(k,nm)
-                             if (thick > thtrempty) then
-                                 ktemp = k
-                                 exit
-                             endif
-                        enddo
-                        !
-                        ! If there is sufficient sediment left in the top KTEMP consolidation layers.
-                        !
-                        if (thick > thtrempty) then
-                            !
-                            ! Accumulate the contents of the top KTEMP layers such that the new top layer
-                            ! is sufficiently thick.
-                            !
-                            svfrac(1,nm)   = svfrac(1,nm)*thlyr(1,nm)
-                            do k = 2,ktemp
-                                do l = 1, this%settings%nfrac
-                                    msed(l,1,nm) = msed(l,1,nm) + msed(l,k,nm)
-                                enddo
-                                svfrac(1,nm)   = svfrac(1,nm)   + svfrac(k,nm)*thlyr(k,nm)
-                            enddo
-                            svfrac(1,nm)   = svfrac(1,nm)/thick
-                            thlyr(1,nm) = thick
-                
-                            ! Shift the content of the other consolidation layers up.
-                            do k = ktemp+1,nconlyr
-                                kk = k-ktemp+1
-                                do l = 1, this%settings%nfrac
-                                    msed(l,kk,nm) = msed(l,k, nm)
-                                enddo
-                                svfrac(kk,nm) = svfrac(k,nm)
-                                thlyr(kk,nm) = thlyr(k,nm)
-                            enddo
-                
-                            ! Erase the administration of the bottom-most consolidation layers.
-                            do k = nconlyr-ktemp+2, nconlyr
-                                msed(:,k,nm) = 0.0_fp
-                                svfrac(k,nm) = 0.0_fp
-                                thlyr(k,nm) = 0.0_fp
-                            enddo
-                        endif
-                    endif
-                
-                    ! Don't replenish the consolidation layers while there is still sediment in the consolidation layers
+                    do k = 2,nconlyr
+                         thick = thick + thlyr(k,nm)
+                         if (thick > thtrempty) then
+                             ktemp = k
+                             exit
+                         endif
+                    enddo
+                    !
+                    ! If there is sufficient sediment left in the top KTEMP consolidation layers.
+                    !
                     if (thick > thtrempty) then
-                       thtrlyrnew = thick
+                        !
+                        ! Accumulate the contents of the top KTEMP layers such that the new top layer
+                        ! is sufficiently thick.
+                        !
+                        svfrac(1,nm)   = svfrac(1,nm)*thlyr(1,nm)
+                        do k = 2,ktemp
+                            do l = 1, this%settings%nfrac
+                                msed(l,1,nm) = msed(l,1,nm) + msed(l,k,nm)
+                            enddo
+                            svfrac(1,nm)   = svfrac(1,nm)   + svfrac(k,nm)*thlyr(k,nm)
+                        enddo
+                        svfrac(1,nm)   = svfrac(1,nm)/thick
+                        thlyr(1,nm) = thick
+
+                        ! Shift the content of the other consolidation layers up.
+                        do k = ktemp+1,nconlyr
+                            kk = k-ktemp+1
+                            do l = 1, this%settings%nfrac
+                                msed(l,kk,nm) = msed(l,k, nm)
+                            enddo
+                            svfrac(kk,nm) = svfrac(k,nm)
+                            thlyr(kk,nm) = thlyr(k,nm)
+                        enddo
+
+                        ! Erase the administration of the bottom-most consolidation layers.
+                        do k = nconlyr-ktemp+2, nconlyr
+                            msed(:,k,nm) = 0.0_fp
+                            svfrac(k,nm) = 0.0_fp
+                            thlyr(k,nm) = 0.0_fp
+                        enddo
                     endif
                 endif
-                thdiff = thick-thtrlyrnew
-                !
-                ! get sediment from or put sediment into underlayers
-                ! to get transport layer of requested thickness
-                !
-                if ( thdiff > 0.0_fp ) then
-                   !
-                   ! sedimentation to underlayers
-                   ! determine surplus of mass per fraction
-                   !
-                   fac = thdiff/thick
-                   sdbodsed = 0.0_fp
-                   do l = 1, this%settings%nfrac
-                       dmi(l) = msed(l, 1, nm)*fac
-                       msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                       sdbodsed = sdbodsed + dbodsd(l, nm)
-                   enddo
-                   !
-                   ! store surplus of mass in underlayers
-                   !
-                   if (iconsolidate == CONSOL_TERZAGHI) then
-                      call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, depos_time(1, nm))
-                   else
-                      call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
-                   endif
-                   !
-                elseif ( thdiff < 0.0_fp ) then
-                   !
-                   ! erosion of underlayers
-                   ! total erosion thickness: thdiff
-                   ! associated mass returned in: dmi
-                   !
-                   thdiff = -thdiff
-                   !
-                   call lyrerosion(this , nm, thdiff, dmi) ! TODO: get porosity, preload and depos_time
-                   !
-                   ! add to top layer
-                   !
-                   do l = 1, this%settings%nfrac
-                       msed(l, 1, nm)   = msed(l, 1, nm) + dmi(l)
-                   enddo
-                   !
-                   do l = 1, this%settings%nfrac
-                       if (sedshort(l, nm) < 0.0_fp .and. msed(l, 1, nm) > 0.0_fp) then
-                           sedshort(l, nm) = sedshort(l, nm) + msed(l, 1, nm)
-                           if (sedshort(l, nm) > 0.0_fp) then
-                               msed(l, 1, nm)  = sedshort(l, nm)
-                               sedshort(l, nm) = 0.0_fp
-                           else
-                               msed(l, 1, nm) = 0.0_fp
-                           endif
-                       endif
-                   enddo
-                   !
-                   if (iconsolidate == CONSOL_NONE) then
-                       call updateporosity(this, nm, 1)
-                   endif
-                   thick = 0.0_fp
-                   do l = 1, this%settings%nfrac
-                       thick = thick + msed(l, 1, nm)/rhofrac(l)
-                   enddo
-                   thick = thick/svfrac(1, nm)
-                   !
-                   ! if there is not enough sediment in the bed then the actual
-                   ! thickness thick of the top layer may not reach the desired
-                   ! thickness thtrlyrnew, so we should here use thick as the
-                   ! thickness instead of thtrlyrnew
-                   !
+
+                ! Don't replenish the consolidation layers while there is still sediment in the consolidation layers
+                if (thick > thtrempty) then
                    thtrlyrnew = thick
                 endif
-                thlyr(1, nm) = thtrlyrnew
-                !
-                if (call_consolidate) then
-                    call consolidate(this, nm, morft, dtmor)
-                endif
-            else
-                !
-                ! transport and coarse layer
-                !
-                do l = 1, this%settings%nfrac
-                   temp  = msed(l, 1, nm) + dbodsd(l, nm) ! account for mobility of sediment here too?
-                   if (temp < 0.0_fp) then
-                      if (temp < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings>0) then
-                         morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
-                         write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
-                            & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
-                            & ' Mass available   : ' ,msed(l, 1, nm), &
-                            & ' Mass to be eroded: ', dbodsd(l, nm)
-                         call addmessage(messages,message)
-                         if (morlyrnum%max_num_shortage_warnings == 0) then
-                            message = 'Sediment erosion shortage messages suppressed'
-                            call addmessage(messages,message)
-                         endif
-                      endif
-                      sedshort(l, nm) = sedshort(l, nm) + temp
-                      temp = 0.0_fp
-                   elseif ( sedshort(l, nm) < 0.0_fp ) then
-                      temp = temp + sedshort(l, nm)
-                      if ( temp < 0.0_fp ) then
-                         sedshort(l, nm) = temp
-                         temp = 0.0_fp
-                      else
-                         sedshort(l, nm) = 0.0_fp
-                      endif
-                   endif
-                   msed(l, 1, nm) = temp
-                enddo
-                !
-                ! compute actual current thickness of top layer
-                !
-                call getthicklayer(this, nm, 1, thick)
-                !
-                ! Exchange of mobile and immobile fractions with coarse layer
-                !
-                dmi_crs = 0.0_fp
-                !
-                ! retrieve mass to be stored in coarse layer
-                !
-                call updcrslyr(this, nm, dtmor, sbot, dunelength, thick, dmi_crs)
-                !
-                do l = 1, this%settings%nfrac
-                    msed(l, 1, nm) = msed(l, 1, nm) + dmi_crs(l)
-                    msed(l, 2, nm) = msed(l, 2, nm) - dmi_crs(l)
-                enddo
-                !
-                ! compute actual current thickness of top layer
-                !
-                call getthicklayer(this, nm, 1, thick)
-                thlyr(1, nm) = thick
-                !
-                ! get new requested transport layer thickness.
-                !
-                thtrlyrnew = thtrlyr(nm)
-                !
-                thdiff = thick - thtrlyrnew
-                !
-                if ( thdiff > 0.0_fp ) then
-                   !
-                   ! if transport layer is larger than the requested transport layer thickness
-                   ! sedimentation to the coarse layer
-                   !
-                   ! determine surplus of mass per fraction
-                   !
-                   fac = thdiff/thick
-                   do l = 1, this%settings%nfrac
-                       dmi(l) = msed(l, 1, nm)*fac
-                       msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                       msed(l, 2, nm) = msed(l, 2, nm) + dmi(l)
-                   enddo
-                elseif ( thdiff < 0.0_fp ) then
-                   !
-                   ! if transport layer is smaller than the requested transport layer thickness
-                   ! erosion from the coarse layer
-                   !
-                   ! total erosion thickness: thdiff
-                   ! associated mass returned in: dmi
-                   !
-                   thdiff = -thdiff
-                   !
-                   ! get available mobile sediment in second layer
-                   !
-                   call getthicklayermobile(this, nm, 2, thick2)
-                   !
-                   ! limit the amount to be taken from the coarse layer by the amount of mobile sediment
-                   !
-                   thdiff2 = min(thdiff, thick2)
-                   !
-                   if (thick2 > 0.0_fp) then
-                       fac = thdiff2/thick2
-                       !
-                       do l = 1, this%settings%nfrac
-                           dmi(l) = fac*mobile(l, nm)*msed(l, 2, nm)
-                           msed(l, 1, nm) = msed(l, 1, nm) + dmi(l)
-                           msed(l, 2, nm) = msed(l, 2, nm) - dmi(l)
-                       enddo
-                   endif
-                   !
-                endif
-                !
-                ! compute actual current thickness of coarse layer
-                !
-                call getthicklayer(this, nm, 2, thick2)
-                !
-                ! get new requested coarse layer thickness.
-                !
-                thclyrnew = thclyr(nm)
-                !
-                thdiff2 = thick2 - thclyrnew
-                !
-                ! get sediment from or put sediment into underlayers
-                ! to get transport layer of requested thickness
-                !
-                
-                if ( thdiff2 > 0.0_fp ) then
-                   !
-                   ! sedimentation to underlayers
-                   !
-                   ! determine surplus of mass per fraction
-                   !
+            endif
+            thdiff = thick-thtrlyrnew
+            !
+            ! get sediment from or put sediment into underlayers
+            ! to get transport layer of requested thickness
+            !
+            if ( thdiff > 0.0_fp ) then
+               !
+               ! sedimentation to underlayers
+               ! determine surplus of mass per fraction
+               !
+               fac = thdiff/thick
+               sdbodsed = 0.0_fp
+               do l = 1, this%settings%nfrac
+                   dmi(l) = msed(l, 1, nm)*fac
+                   msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                   sdbodsed = sdbodsed + dbodsd(l, nm)
+               enddo
+               !
+               ! store surplus of mass in underlayers
+               !
+               if (iconsolidate == CONSOL_TERZAGHI) then
+                  call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, depos_time(1, nm))
+               else
+                  call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
+               endif
+               !
+            elseif ( thdiff < 0.0_fp ) then
+               !
+               ! erosion of underlayers
+               ! total erosion thickness: thdiff
+               ! associated mass returned in: dmi
+               !
+               thdiff = -thdiff
+               !
+               call lyrerosion(this , nm, thdiff, dmi) ! TODO: get porosity, preload and depos_time
+               !
+               ! add to top layer
+               !
+               do l = 1, this%settings%nfrac
+                   msed(l, 1, nm)   = msed(l, 1, nm) + dmi(l)
+               enddo
+               !
+               do l = 1, this%settings%nfrac
+                   call repay_sediment_shortage(msed(l, 1, nm), sedshort(l, nm))
+               enddo
+               !
+               if (iconsolidate == CONSOL_NONE) then
+                   call updateporosity(this, nm, 1)
+               endif
+               thick = 0.0_fp
+               do l = 1, this%settings%nfrac
+                   thick = thick + msed(l, 1, nm)/rhofrac(l)
+               enddo
+               thick = thick/svfrac(1, nm)
+               !
+               ! if there is not enough sediment in the bed then the actual
+               ! thickness thick of the top layer may not reach the desired
+               ! thickness thtrlyrnew, so we should here use thick as the
+               ! thickness instead of thtrlyrnew
+               !
+               thtrlyrnew = thick
+            endif
+            thlyr(1, nm) = thtrlyrnew
+            !
+            if (call_consolidate) then
+                call consolidate(this, nm, morft, dtmor)
+            endif
+        call getsedthick_1point(this, nm, seddep1)
+        dz(nm) = seddep1-seddep0
+    enddo
+end subroutine updmorlyr_layered_bed_without_coarse_layer
+
+
+subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength, sbot, dtmor, messages)
+    use precision
+    use message_module, only: message_stack
+    type(bedcomp_data), intent(inout) :: this
+    real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in) :: dbodsd
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub), intent(out) :: dz
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub), intent(in) :: dunelength
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in) :: sbot
+    real(fp), intent(in) :: dtmor
+    type(message_stack), intent(inout) :: messages
+
+    integer :: l, nm
+    real(fp) :: temp, fac, seddep0, seddep1, thdiff, thdiff2, thick, thick2
+    real(fp) :: thtrlyrnew, thclyrnew
+    real(fp), dimension(this%settings%nfrac) :: dmi, dmi_crs
+    type(morlyrnumericstype), pointer :: morlyrnum
+    real(fp), dimension(:), pointer :: rhofrac, thclyr, thtrlyr
+    real(fp), dimension(:,:), pointer :: svfrac, mobile, sedshort, thlyr
+    real(fp), dimension(:,:,:), pointer :: msed
+
+    morlyrnum => this%settings%morlyrnum
+    rhofrac => this%settings%rhofrac
+    svfrac => this%state%svfrac
+    mobile => this%state%mobile
+    msed => this%state%msed
+    sedshort => this%state%sedshort
+    thlyr => this%state%thlyr
+    thclyr => this%settings%thclyr
+    thtrlyr => this%settings%thtrlyr
+
+    do nm = this%settings%nmlb,this%settings%nmub
+        call getsedthick_1point(this, nm, seddep0)
+            !
+            ! transport and coarse layer
+            !
+            do l = 1, this%settings%nfrac
+               temp  = msed(l, 1, nm) + dbodsd(l, nm) ! account for mobility of sediment here too?
+               call handle_sediment_shortage(temp, msed(l, 1, nm), dbodsd(l, nm), &
+                   & sedshort(l, nm), .true., nm, l, morlyrnum, messages)
+               msed(l, 1, nm) = temp
+            enddo
+            !
+            ! compute actual current thickness of top layer
+            !
+            call getthicklayer(this, nm, 1, thick)
+            !
+            ! Exchange of mobile and immobile fractions with coarse layer
+            !
+            dmi_crs = 0.0_fp
+            !
+            ! retrieve mass to be stored in coarse layer
+            !
+            call updcrslyr(this, nm, dtmor, sbot, dunelength, thick, dmi_crs)
+            !
+            do l = 1, this%settings%nfrac
+                msed(l, 1, nm) = msed(l, 1, nm) + dmi_crs(l)
+                msed(l, 2, nm) = msed(l, 2, nm) - dmi_crs(l)
+            enddo
+            !
+            ! compute actual current thickness of top layer
+            !
+            call getthicklayer(this, nm, 1, thick)
+            thlyr(1, nm) = thick
+            !
+            ! get new requested transport layer thickness.
+            !
+            thtrlyrnew = thtrlyr(nm)
+            !
+            thdiff = thick - thtrlyrnew
+            !
+            if ( thdiff > 0.0_fp ) then
+               !
+               ! if transport layer is larger than the requested transport layer thickness
+               ! sedimentation to the coarse layer
+               !
+               ! determine surplus of mass per fraction
+               !
+               fac = thdiff/thick
+               do l = 1, this%settings%nfrac
+                   dmi(l) = msed(l, 1, nm)*fac
+                   msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                   msed(l, 2, nm) = msed(l, 2, nm) + dmi(l)
+               enddo
+            elseif ( thdiff < 0.0_fp ) then
+               !
+               ! if transport layer is smaller than the requested transport layer thickness
+               ! erosion from the coarse layer
+               !
+               ! total erosion thickness: thdiff
+               ! associated mass returned in: dmi
+               !
+               thdiff = -thdiff
+               !
+               ! get available mobile sediment in second layer
+               !
+               call getthicklayermobile(this, nm, 2, thick2)
+               !
+               ! limit the amount to be taken from the coarse layer by the amount of mobile sediment
+               !
+               thdiff2 = min(thdiff, thick2)
+               !
+               if (thick2 > 0.0_fp) then
                    fac = thdiff2/thick2
+                   !
                    do l = 1, this%settings%nfrac
-                       dmi(l) = msed(l, 2, nm)*fac
+                       dmi(l) = fac*mobile(l, nm)*msed(l, 2, nm)
+                       msed(l, 1, nm) = msed(l, 1, nm) + dmi(l)
                        msed(l, 2, nm) = msed(l, 2, nm) - dmi(l)
                    enddo
-                   !
-                   ! store surplus of mass in underlayers
-                   !
-                   if (iconsolidate == CONSOL_TERZAGHI) then
-                      call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), sdbodsed, depos_time(2, nm))
-                   else
-                      call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
-                   endif
-                   !
-                elseif ( thdiff2 < 0.0_fp ) then
-                   !
-                   ! erosion of underlayers
-                   ! total erosion thickness: thdiff
-                   ! associated mass returned in: dmi
-                   !
-                   thdiff2 = -thdiff2
-                   !
-                   call lyrerosion(this, nm, thdiff2, dmi)
-                   !
-                   ! add to coarse layer
-                   !
-                   do l = 1, this%settings%nfrac
-                       msed(l, 2, nm)   = msed(l, 2, nm) + dmi(l)
-                   enddo
-                   !
-                   do l = 1, this%settings%nfrac
-                       if (sedshort(l, nm) < 0.0_fp .and. msed(l, 2, nm) > 0.0_fp) then
-                           sedshort(l, nm) = sedshort(l, nm) + msed(l, 2, nm)
-                           if (sedshort(l, nm) > 0.0_fp) then
-                               msed(l, 2, nm)  = sedshort(l, nm)
-                               sedshort(l, nm) = 0.0_fp
-                           else
-                               msed(l, 2, nm) = 0.0_fp
-                           endif
-                       endif
-                   enddo
-                endif
-                !
-                ! Finalise thickness computations for transport and coarse layers
-                !
-                call getthicklayer(this, nm, 1, thick)
-                !
-                thlyr(1, nm) = thick
-                !
-                call getthicklayer(this, nm, 2, thick2)
-                !
-                thlyr(2, nm) = thick2
-                !
+               endif
+               !
             endif
-            call getsedthick_1point(this, nm, seddep1)
-            dz(nm) = seddep1-seddep0
+            !
+            ! compute actual current thickness of coarse layer
+            !
+            call getthicklayer(this, nm, 2, thick2)
+            !
+            ! get new requested coarse layer thickness.
+            !
+            thclyrnew = thclyr(nm)
+            !
+            thdiff2 = thick2 - thclyrnew
+            !
+            ! get sediment from or put sediment into underlayers
+            ! to get transport layer of requested thickness
+            !
+
+            if ( thdiff2 > 0.0_fp ) then
+               !
+               ! sedimentation to underlayers
+               !
+               ! determine surplus of mass per fraction
+               !
+               fac = thdiff2/thick2
+               do l = 1, this%settings%nfrac
+                   dmi(l) = msed(l, 2, nm)*fac
+                   msed(l, 2, nm) = msed(l, 2, nm) - dmi(l)
+               enddo
+               !
+               ! store surplus of mass in underlayers
+               !
+               call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
+               !
+            elseif ( thdiff2 < 0.0_fp ) then
+               !
+               ! erosion of underlayers
+               ! total erosion thickness: thdiff
+               ! associated mass returned in: dmi
+               !
+               thdiff2 = -thdiff2
+               !
+               call lyrerosion(this, nm, thdiff2, dmi)
+               !
+               ! add to coarse layer
+               !
+               do l = 1, this%settings%nfrac
+                   msed(l, 2, nm)   = msed(l, 2, nm) + dmi(l)
+               enddo
+               !
+               do l = 1, this%settings%nfrac
+                   call repay_sediment_shortage(msed(l, 2, nm), sedshort(l, nm))
+               enddo
+            endif
+            !
+            ! Finalise thickness computations for transport and coarse layers
+            !
+            call getthicklayer(this, nm, 1, thick)
+            !
+            thlyr(1, nm) = thick
+            !
+            call getthicklayer(this, nm, 2, thick2)
+            !
+            thlyr(2, nm) = thick2
+            !
+        call getsedthick_1point(this, nm, seddep1)
+        dz(nm) = seddep1-seddep0
+    enddo
+end subroutine updmorlyr_layered_bed_with_coarse_layer
+
+
+subroutine updmorlyr_mixed_bed(this, dbodsd, dz, messages)
+    use precision
+    use message_module, only: message_stack
+    type(bedcomp_data), intent(inout) :: this
+    real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in) :: dbodsd
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub), intent(out) :: dz
+    type(message_stack), intent(inout) :: messages
+
+    logical :: track_shortage
+    integer :: l, nm
+    real(fp) :: seddep0, mass_fp, mass_available_fp
+    type(morlyrnumericstype), pointer :: morlyrnum
+    real(prec), dimension(:,:), pointer :: bodsed
+    real(fp), dimension(:), pointer :: dpsed, rhofrac
+    real(fp), dimension(:,:), pointer :: sedshort
+
+    morlyrnum => this%settings%morlyrnum
+    rhofrac => this%settings%rhofrac
+    bodsed => this%state%bodsed
+    dpsed => this%state%dpsed
+    sedshort => this%state%sedshort
+    track_shortage = this%settings%morlyrnum%track_mass_shortage
+
+    do nm = this%settings%nmlb,this%settings%nmub
+        seddep0   = dpsed(nm)
+        dpsed(nm) = 0.0_fp
+        dz(nm)    = 0.0_fp
+        do l = 1, this%settings%nfrac
+            bodsed(l, nm) = bodsed(l, nm) + real(dbodsd(l, nm),prec)
+            if (bodsed(l, nm) < 0.0_prec) then
+                mass_fp = real(bodsed(l, nm), fp)
+                mass_available_fp = mass_fp
+                call handle_sediment_shortage(mass_fp, mass_available_fp, dbodsd(l, nm), &
+                    & sedshort(l, nm), track_shortage, nm, l, morlyrnum, messages)
+                bodsed(l, nm) = real(mass_fp, prec)
+            elseif (sedshort(l, nm) < 0.0_fp .and. bodsed(l, nm) > 0.0_prec) then
+                mass_fp = real(bodsed(l, nm), fp)
+                call repay_sediment_shortage(mass_fp, sedshort(l, nm))
+                bodsed(l, nm) = real(mass_fp, prec)
+            endif
+            dpsed(nm) = dpsed(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
         enddo
-       this%settings%initcl = .true.
-    case default ! BED_MIXED
-        do nm = this%settings%nmlb,this%settings%nmub
-            seddep0   = dpsed(nm)
-            dpsed(nm) = 0.0_fp
-            dz(nm)    = 0.0_fp
-            do l = 1, this%settings%nfrac
-                bodsed(l, nm) = bodsed(l, nm) + real(dbodsd(l, nm),prec)
-                if (bodsed(l, nm) < 0.0_prec) then
-                if (bodsed(l, nm) < real(-morlyrnum%mass_shortage_thresh,prec) .and. morlyrnum%max_num_shortage_warnings>0) then
-                   morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
-                        write(message,'(a,i0,a,i0,a,e20.4,a,e20.4)') &
-                           & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
-                           & ' Mass available   : ' ,bodsed(l, nm), &
-                           & ' Mass to be eroded: ', dbodsd(l, nm)
-                        call addmessage(messages,message)
-                   if (morlyrnum%max_num_shortage_warnings == 0) then
-                            message = 'Sediment erosion shortage messages suppressed'
-                            call addmessage(messages,message)
-                        endif
-                    endif
-                if (track_shortage) then
-                   sedshort(l, nm) = sedshort(l, nm) + bodsed(l, nm)
-                endif
-                    bodsed(l, nm) = 0.0_prec
-             elseif (sedshort(l, nm) < 0.0_fp .and. bodsed(l, nm) > 0.0_prec) then
-                bodsed(l, nm) = bodsed(l, nm) + real(sedshort(l, nm),prec)
-                if (bodsed(l, nm) > 0.0_prec) then
-                    sedshort(l, nm) = 0.0_fp
-                else
-                    sedshort(l, nm) = real(bodsed(l, nm), fp)
-                    bodsed(l, nm) = 0.0_prec
-                endif
-             endif
-                dpsed(nm) = dpsed(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
-            enddo
-            dz(nm) = dpsed(nm) - seddep0
-        enddo
-    endselect
-end function updmorlyr
+        dz(nm) = dpsed(nm) - seddep0
+    enddo
+end subroutine updmorlyr_mixed_bed
 
 
 !> Retrieve the sediment in the top layer (thickness dz_eros in m) from the
@@ -1212,15 +1209,7 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
                 enddo
                 !
                 do l = 1, this%settings%nfrac
-                    if (sedshort(l, nm) < 0.0_fp .and. msed(l, 1, nm) > 0.0_fp) then
-                        sedshort(l, nm) = sedshort(l, nm) + msed(l, 1, nm)
-                        if (sedshort(l, nm) > 0.0_fp) then
-                            msed(l, 1, nm)  = sedshort(l, nm)
-                            sedshort(l, nm) = 0.0_fp
-                        else
-                            msed(l, 1, nm) = 0.0_fp
-                        endif
-                    endif
+                    call repay_sediment_shortage(msed(l, 1, nm), sedshort(l, nm))
                 enddo
                 !
                 call updateporosity(this, nm, 1)
