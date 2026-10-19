@@ -9,6 +9,22 @@ as the code changes.
 The preCICE proof-of-concept pathway is outside this review. These notes do
 not change its documentation or the existing diagrams.
 
+## Terminology: Delft3D4 FLOW versus D-Flow FM
+
+To avoid ambiguity, these notes use **Delft3D4 FLOW** for the classic
+structured-grid `d_hydro` engine and **D-Flow FM** for the flexible-mesh
+engine. They are distinct engines and have different D-Waves coupling/data
+routes:
+
+| Engine | Current D-Waves route described here |
+|---|---|
+| Delft3D4 FLOW | Separate `d_hydro` and WAVE processes; DelftIO carries step commands/status; legacy `com-<runid>` files carry gridded fields. |
+| D-Flow FM | FM NetCDF `*_com.nc` communication files; live component scheduling through DIMR/BMI. |
+
+Where a section says **FLOW** generically, it means the hydrodynamic-model
+side or its fields, not that Delft3D4 FLOW and D-Flow FM are interchangeable.
+Any claim specific to one engine is labelled explicitly below.
+
 ## 1. Which modes correspond to Delft3D4 and FM?
 
 Both normal online pathways use `flow_online = 1`; there is no separate
@@ -64,6 +80,33 @@ References:
 [mud fields](../../packages/io/src/get_flow_fields.f90#L317),
 [SWAN mud input grid](../../packages/data/src/swan_input.f90#L3238),
 [SWAN mud physics](../../packages/data/src/swan_input.f90#L3676).
+
+### Interpreting the startup message
+
+The parser prints `Delft3D-WAVE runs online with Delft3D-FLOW, including MUD`
+when it has assigned `flow_mud_online`. Treat this as a mode-selection
+message, not as confirmation that a particular FLOW engine has connected or
+that FM/BMI mud coupling is implemented. The parser assigns mode 2 when
+`[General] FlowFile` and `[General] FlowMudFile` are nonblank; that check
+does not inspect the later FM NetCDF route.
+
+The actual route is selected later by `flow_init`: a nonblank internal
+`swan_run%flowgridfile` takes the FM NetCDF branch first. That branch checks
+communication files but does not initialize the mud connection or `mudids`
+required by mode-2 mud field reads. With a blank FM path, non-standalone mode
+enters the classic Delft3D4/DelftIO branch, where the additional mud
+handshake is implemented. The BMI wrapper also explicitly rejects the
+mode-2 end-time and timestep queries as not implemented.
+
+Thus the startup text is overly broad/ambiguous for distinguishing engines;
+it should not be used as evidence that mode 2 works with FM. A more precise
+message would name the requested mode and say that the actual data/coupling
+route depends on the configured file path and caller.
+
+References:
+[mode assignment and startup message](../../packages/data/src/swan_input.f90#L915),
+[FM branch precedes classic mode branch](../../packages/data/src/flow_data.f90#L68),
+[mode-2 BMI time-query limitations](../../packages/wave/src/wave_bmi.f90#L213).
 
 ## 3. Why would standalone WAVE need FLOW data?
 
@@ -635,8 +678,365 @@ References:
 [WriteCOM parsing](../../packages/data/src/swan_input.f90#L1516),
 [communication-file checks](../../packages/data/src/flow_data.f90#L60).
 
+## 17. Why is `nttide` forced to one for non-standalone FM?
+
+After parsing the MDW file, `wave_main_init` executes:
+
+```fortran
+if (wavedata%mode /= stand_alone .and. swan_run%flowgridfile /= ' ') then
+   swan_run%nttide = 1
+endif
+```
+
+This condition identifies the non-standalone FM NetCDF route: the run is
+online/coupled and has a nonblank `[Output] COMFile` path. In that pathway,
+the external caller controls when WAVE advances. For DIMR/BMI, each
+`update(dt)` calls `wave_main_step(dt)`; for each online step,
+`wave_master_step` advances WAVE time by that interval and calls
+`swan_tot(..., selectedtime=0)`.
+
+Setting `nttide` to one prevents the MDW's standalone list of calculation
+times from causing multiple SWAN calculations inside a single externally
+scheduled FM update. In other words, the coupled caller's timestep is the
+outer schedule, and WAVE performs one SWAN calculation for each call/update.
+This is distinct from standalone FM-file use: when `mode` is
+`stand_alone`, this condition is false, so the standalone scheduling logic
+can use the MDW times (within its `stepsize` interval) or its no-times
+single-computation branch.
+
+It does not mean there is only one SWAN grid: `nttide` is the count of
+calculation times, while `n_swan_grids` is the number of configured SWAN
+domains/grids.
+
+References:
+[post-MDW `nttide` adjustment](../../packages/manager/src/wave_main.f90#L180),
+[BMI update forwarding `dt`](../../packages/wave/src/wave_bmi.f90#L130),
+[FM coupled time advance and one `swan_tot` call per step](../../packages/manager/src/wave_main.f90#L432),
+[standalone FM scheduling](../../packages/manager/src/wave_main.f90#L497).
+
+## 18. Classic Delft3D4 FLOW-WAVE timing, data exchange and remapping
+
+### Coupling cadence and time advancement
+
+In the classic online route, FLOW owns the simulation time loop. In
+`tricom_step`, FLOW sets `itwav = itcomc` on each FLOW step and triggers a
+WAVE calculation when `nst == itwav` with online coupling enabled
+(`waveol == 2`). Thus WAVE is called at the configured FLOW communication /
+wave-coupling times, not necessarily at every internal FLOW time step.
+
+At a coupling time, FLOW updates the relevant communication-file data
+(including the online bed-level write), then the master domain calls
+`flow_to_wave_command(flow_wave_comm_perform_step, ..., nst)`. The
+communication layer sends the command and FLOW timestep index; WAVE receives
+them through `wave_from_flow_command` and `wave_master_step` sets WAVE's
+time using `settimtscale`. WAVE runs its calculation, then sends a completion
+status using `wave_to_flow_status`. The FLOW command call waits for this
+status before returning, so the exchange is a synchronized handshake.
+
+### Which channel carries what?
+
+Classic coupling uses both DelftIO and the legacy FLOW communication
+com-file, for different purposes:
+
+| Channel | Carries |
+|---|---|
+| DelftIO `FLOW2WAVE_DATA` / `WAVE2FLOW_DATA` | Step/finalize command, FLOW step index, and WAVE success/error status. |
+| Legacy com-file(s), typically `com-<runid>` | Spatial model fields: configured FLOW inputs for WAVE, and configured WAVE results for FLOW. |
+
+The DelftIO streams do not carry the gridded hydrodynamic and wave fields.
+WAVE's field routines read/write the com-file(s); the file/grid maps are
+prepared during WAVE initialization.
+
+### FLOW to WAVE
+
+At the coupling time, WAVE's `swan_tot` calls `get_flow_fields` for each
+configured FLOW domain and SWAN grid when `useflowdata` is enabled. On the
+classic blank-`flowgridfile` route, the routine reads the requested fields
+from the legacy com-file using helpers such as `get_dep`, `get_lev`,
+`get_cur` and `get_wind`. It then maps the fields from the FLOW grid onto
+the SWAN grid with the precomputed FLOW-to-SWAN map and `grmap`. For
+currents, `flow2wav` first converts the FLOW velocity representation to
+Cartesian values at cell centres; this is a vector-coordinate conversion,
+not the spatial grid remapping.
+
+Only configured FLOW-derived inputs are fetched. Other WAVE inputs can come
+from WAVE files or external meteo forcing.
+
+### WAVE to FLOW
+
+If `[Output] WriteCOM` is enabled, after SWAN has run WAVE calls
+`map_swan_output` for each SWAN-grid/FLOW-grid pair. That routine spatially
+interpolates selected SWAN results onto the FLOW grid with `grmap` and the
+precomputed SWAN-to-FLOW map. After combining output across SWAN grids,
+WAVE performs the communication-format conversions (`wave2flow` for
+classic vector directions and `wave2com` for com-file parameters) and writes
+the fields to the com-file(s) through `put_wave_fields`.
+
+FLOW then discovers the new wave-time record (`rdtimw`) and reads /
+interpolates it into FLOW arrays using `setwav`. In the normal online
+sequence, `tricom_step` sets `itrw = nst + 1` after issuing the WAVE command;
+the wave result is then read at the following FLOW step when the com-file
+record is available.
+
+### Where the spatial maps are made
+
+During initialization, `grids_and_gridmaps` loops over every FLOW/SWAN pair
+and calls `make_grid_map` in both directions:
+
+```text
+make_grid_map(FLOW, SWAN, flow2swan_map, ...)
+make_grid_map(SWAN, FLOW, swan2flow_map, ...)
+```
+
+For the classic route, `make_grid_map` constructs interpolation reference
+indices and weights internally using `mkmap`. At runtime, `grmap` applies
+those precomputed references and weights; it does not search for matches
+again on every coupling step. The reverse SWAN-to-FLOW mapping is also built
+internally. This differs from the FM NetCDF route, which uses external ESMF
+weight generation for FLOW-to-SWAN mapping.
+
+```text
+FLOW time loop reaches coupling point
+  -> FLOW updates legacy com-file(s)
+  -> DelftIO command/time -> WAVE
+  -> get_* reads configured FLOW fields from com-file
+  -> grmap: FLOW grid -> SWAN grid
+  -> SWAN run
+  -> map_swan_output + grmap: SWAN grid -> FLOW grid
+  -> wave2flow / wave2com -> put_wave_fields writes com-file(s)
+  -> WAVE status -> FLOW
+  -> FLOW setwav reads/interpolates wave record at next read point
+```
+
+Key references:
+[FLOW step/coupling trigger and `itwav = itcomc`](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L660),
+[FLOW command and wave-record read logic](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L734),
+[DelftIO command/time and status channels](../../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90#L330),
+[WAVE command receive, time update and status](../../packages/manager/src/wave_main.f90#L430),
+[classic FLOW input reads and FLOW-to-SWAN `grmap`](../../packages/io/src/get_flow_fields.f90#L102),
+[pairwise maps created in both directions](../../packages/kernel/src/grids_and_gridmaps.f90#L165),
+[classic `mkmap` map setup](../../packages/data/src/swan_flow_grid_maps.f90#L520),
+[SWAN-to-FLOW mapping](../../packages/kernel/src/map_swan_output.f90#L50),
+[com-file writeback](../../packages/manager/src/swan_tot.f90#L499),
+[FLOW reads wave fields with `setwav`](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L826).
+
+## 19. How is Delft3D4 FLOW's `tricom_init` invoked?
+
+WAVE does not call `tricom_init`. It is part of the **Delft3D4 FLOW**
+(`d_hydro`) engine's own initialization path; it is not a D-Flow FM routine:
+
+```text
+d_hydro / FLOW component startup
+  -> trisim(...)
+  -> trisim_init(...)
+  -> tricom_init(gdp)
+```
+
+The `trisim` wrapper calls `trisim_init`; after Delft3D4 FLOW's preprocessing
+and initial setup, `trisim_init` calls `tricom_init`. This happens because
+the Delft3D4 FLOW engine is being initialized, not because WAVE invoked a
+FLOW routine.
+
+The Delft3D4 FLOW `.mdf` configuration controls whether Delft3D4 FLOW enables
+its WAVE functionality and online coupling. Its `dimpro` reads the `WaveOL` setting:
+`false`/default gives `waveol = 0` (offline), `true` gives `waveol = 2`
+(online), and the value `mimic` gives `waveol = 1`. It also determines
+whether `wave` is enabled from the relevant program-option setting. During
+`tricom_init`, if Delft3D4 FLOW has wave enabled and `waveol == 2`, it
+initializes the DelftIO connection through `flow_to_wave_init`.
+
+That Delft3D4 FLOW-side setting does **not** launch the WAVE executable. For
+classic online coupling, both engines must be started/configured: `d_hydro`
+initializes its endpoint from its MDF configuration, and WAVE must also be
+started with the matching online mode/configuration. The coupled-run script
+demonstrates this by starting `d_hydro` and `wave <mdw-file> 1` as separate
+processes. They rendezvous through DelftIO; Delft3D4 FLOW then initiates each
+calculation command from `tricom_step`.
+
+References:
+[FLOW `trisim` wrapper](../../../flow2d3d/packages/flow2d3d_manager/src/trisim.F90#L127),
+[`trisim_init` call to `tricom_init`](../../../flow2d3d/packages/flow2d3d_manager/src/trisim_mod.F90#L295),
+[MDF parsing of `WaveOL`](../../../flow2d3d/packages/flow2d3d_io/src/input/dimpro.f90#L215),
+[DelftIO initialization from FLOW](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90#L1478),
+[FLOW-issued step command](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L734),
+[launcher starts both executables](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh#L131).
+
+## 20. When does D-Waves read the D-Flow FM grid in DIMR/BMI coupling?
+
+The FM grid is not a pre-run input that the user must create manually.
+DIMR initializes the designated master component first; in the usual FM–
+WAVE setup, this is D-Flow FM. Its BMI `initialize` path runs `flowinit`,
+which performs model initialization and then writes initial external output
+through `flow_externaloutput(time1)`. When online SWAN coupling is enabled,
+that output path calls `wricom`, creating/writing the initial FM NetCDF
+communication file, including the grid geometry and initial fields.
+
+After the master FM component initializes, DIMR initializes the WAVE
+component. WAVE reads the FM grid **during its own initialization**, after
+DIMR calls WAVE BMI `initialize`; it does not ask FM for the grid through a
+BMI grid-variable request. WAVE's `initialize` enters `wave_main_init`,
+which calls `wave_init`. WAVE reads the MDW configuration first, then
+initializes its FM-grid metadata and maps before the first coupled
+`update(dt)`.
+
+For the FM route, the MDW `[Output] COMFile` path is stored as
+`swan_run%flowgridfile`. When FLOW-sourced fields (`useflowdata`) or
+WAVE-to-FLOW output (`swwav` / `WriteCOM`) are requested, `wave_init` calls
+`flow_init`. Its FM branch checks the configured NetCDF communication file
+and counts file partitions; it does not perform the classic DelftIO
+handshake.
+
+Then `wave_init` calls `grids_and_gridmaps`. That routine recognizes the
+nonblank FM communication-file path, reads the SWAN grids, and reads each
+FM communication-file grid as an `NC` grid through `Alloc_and_get_grid`.
+It constructs the FLOW-to-SWAN and SWAN-to-FLOW mappings before the first
+WAVE update. For FM input, the FLOW-to-SWAN mapping setup also prepares the
+ESMF regridding files/weights.
+
+```text
+DIMR -> D-Flow FM BMI initialize
+  -> flowinit -> flow_modelinit
+  -> initial flow_externaloutput(time1) -> wricom -> FM *_com.nc exists
+DIMR -> WAVE BMI initialize
+  -> wave_main_init -> wave_init
+       -> read MDW / identify [Output] COMFile
+       -> flow_init: check FM communication file(s)
+       -> grids_and_gridmaps: read FM and SWAN grids; prepare maps/weights
+DIMR -> BMI updates according to the configured component schedule
+```
+
+### Runtime timing and com-file updates
+
+The D-Flow FM and WAVE data path remains file-backed, while DIMR controls
+when the components are advanced. In a DIMR `<parallel>` block, the
+designated master (normally D-Flow FM) determines the overall time advance.
+The WAVE component's `<startGroup><time>...</time>` schedule in
+`dimr_config.xml` determines its scheduled execution times. DIMR calls
+WAVE's BMI `update(dt)` when WAVE is due; the supplied `dt` is the elapsed
+interval since that WAVE component's previous update. WAVE's BMI wrapper
+passes that interval to `wave_main_step`, which advances WAVE time and runs
+the SWAN calculation.
+
+D-Flow FM updates the NetCDF com-file from its external-output path. The
+initial record is written during FM initialization; subsequent records are
+written at FM's configured com-file output instants while FM is advanced.
+The DIMR schedule for WAVE should therefore be coordinated with the FM
+com-file write schedule so the needed FM fields are available for each WAVE
+update. DIMR's XML schedule controls component timing; it does not itself
+transfer the gridded FM/WAVE fields. Those are read/written through the
+NetCDF com-file.
+
+An example DIMR configuration uses FM as the `<start>` master and schedules
+WAVE with `<time>0.0 3.6e3 9.99e4</time>`; the listed values are WAVE's
+component execution times, not a replacement for FM's internal numerical
+timestep. The concrete schedule must match the intended case and its output
+cadence.
+
+The distinction is:
+
+- The FM component may already be initialized by DIMR before WAVE
+  initialization. Its initialization-time output creates/writes the
+  communication file that WAVE reads for geometry; WAVE does not get the
+  grid through a direct BMI variable request.
+- Reading the grid geometry and preparing maps happens in initialization;
+  reading time-varying FM fields (such as water level/currents) happens in
+  `get_flow_fields` during `swan_tot` at calculation time.
+- If neither FM input nor WAVE output is configured, the code need not
+  initialize/read FM grids for WAVE.
+
+References:
+[BMI `initialize` wrapper](../../packages/wave/src/wave_bmi.f90#L63),
+[WAVE initialization order and `flow_init` conditions](../../packages/manager/src/wave_main.f90#L179),
+[FM file check](../../packages/data/src/flow_data.f90#L68),
+[grid-file read and pairwise map preparation](../../packages/kernel/src/grids_and_gridmaps.f90#L82),
+[FM NetCDF grid reader call](../../packages/kernel/src/grids_and_gridmaps.f90#L142),
+[runtime field acquisition](../../packages/manager/src/swan_tot.f90#L160),
+[DIMR initializes master before WAVE](../../../dimr/packages/dimr_lib/src/dimr.cpp#L429),
+[FM BMI initialization runs `flowinit`](../../../dflowfm/packages/dflowfm_lib/src/unstruc_bmi.F90#L233),
+[FM initialization writes initial external output](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90#L263),
+[FM online com-file output via `wricom`](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/flow_externaloutput.F90#L216),
+[FM `wricom` writes the NetCDF file](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_io/wricom.f90#L44),
+[DIMR schedules component updates](../../../dimr/packages/dimr_lib/src/dimr.cpp#L968),
+[example DIMR Wave schedule](../../../../../examples/dflowfm/08_dflowfm_sequential_dwaves/dimr_config.xml),
+[Wave BMI update forwards `dt`](../../packages/wave/src/wave_bmi.f90#L130).
+
+## 21. Where are D-Flow FM fields regridded to SWAN and back?
+
+For the FM NetCDF route, the geometry-based mapping setup happens during
+WAVE initialization in `grids_and_gridmaps`. It constructs a mapping for
+each configured FLOW-grid/SWAN-grid pair. The two directions use different
+mapping implementations:
+
+| Direction | Setup during initialization | Applied to fields during calculation |
+|---|---|---|
+| D-Flow FM → SWAN | `make_grid_map(j, i, f, s, f2s, netcdf_files)` invokes `ESMF_RegridWeightGen` for the FM NetCDF route, then reads its sparse `row`, `col`, and `S` weights into `flow2swan_maps`. | `get_flow_fields` reads time-varying values from the NetCDF file with `get_var_netcdf`, then calls `grmap_esmf` to apply the stored weights to each requested field. |
+| SWAN → D-Flow FM | `make_grid_map(i, j, s, f, s2f, .false.)` uses `mkmap` to build the internal reference and interpolation-weight tables in `swan2flow_maps`. This direction is not delegated to ESMF. | `swan_tot` calls `map_swan_output`, which applies the stored tables with `grmap` to map wave output fields onto the FM grid before `put_wave_fields` writes the NetCDF com-file. |
+
+The mapping weights are **not recomputed for each time step**. They are
+prepared at initialization and then reused while the grid geometry stays
+unchanged; at each calculation time, the current field values are read or
+produced and the relevant stored mapping is applied. In FM→SWAN, the
+`grmap_esmf` application uses the sparse ESMF `row`, `col`, and `S` arrays
+already held in the `grid_map`. In SWAN→FM, `grmap` uses the `ref_table`
+and `weight_table` produced by `mkmap`.
+
+“Once” means once per configured source/destination grid pair and per WAVE
+initialization, not one universal map for all domains. With multiple FM
+partitions or SWAN grids, setup runs for the corresponding pairs. The
+FM→SWAN external weight generation is therefore associated with each
+FLOW-to-SWAN pair; the reverse map is also built separately for each
+SWAN-to-FLOW pair. These are spatial remapping weights, distinct from the
+time selection of records in the NetCDF com-file.
+
+### Standalone WAVE reading existing D-Flow FM output
+
+When standalone WAVE is configured to use an existing FM NetCDF
+communication/output file as FLOW input (`useflowdata`), and is not
+configured to write wave fields back (`swwav` / `WriteCOM`), the required
+remapping is **one-way: D-Flow FM → SWAN**. During `wave_init`,
+`flow_init` checks the configured NetCDF file and `grids_and_gridmaps`
+reads its FM grid, then builds the FM-to-SWAN ESMF map. At each WAVE
+calculation, `get_flow_fields` reads the needed FM fields and calls
+`grmap_esmf` with the stored weights. Standalone WAVE does not advance
+D-Flow FM; it consumes the fields already present in the file.
+
+The reverse map is only constructed/applied if standalone WAVE is also
+configured to write wave fields to the FLOW grid (`swwav` / `WriteCOM`).
+In that optional file-writeback case the same initialization sets up both
+directions, and `swan_tot` maps SWAN output back with
+`map_swan_output`/`grmap` before `put_wave_fields` writes it. The presence
+of an FM NetCDF file alone does not make the coupling bidirectional.
+
+```text
+Standalone read-only FM input:
+  grids_and_gridmaps
+    FM -> SWAN: make_grid_map(..., netcdf_files)
+      -> ESMF_RegridWeightGen -> load sparse weights in grid_map
+
+Each WAVE calculation:
+  FM -> SWAN: get_var_netcdf -> grmap_esmf(stored ESMF weights)
+
+Optional standalone WriteCOM:
+  Initialization: SWAN -> FM make_grid_map(..., .false.) -> mkmap
+  Each WAVE calculation: map_swan_output -> grmap(stored tables)
+                         -> put_wave_fields(NetCDF com-file)
+```
+
+References:
+[pairwise initialization calls](../../packages/kernel/src/grids_and_gridmaps.f90),
+[`make_grid_map` and external weight loading](../../packages/data/src/swan_flow_grid_maps.f90),
+[`mkmap` weight construction](../../packages/data/src/mkmap.f90),
+[FM-to-SWAN field read and mapping](../../packages/io/src/get_flow_fields.f90),
+[`get_var_netcdf`](../../packages/io/src/get_var_netcdf.f90),
+[`grmap_esmf`](../../packages/io/src/grmap_esmf.f90),
+[`map_swan_output`](../../packages/kernel/src/map_swan_output.f90),
+[`grmap`](../../packages/kernel/src/grmap.f90),
+[runtime mapping and com-file writeback](../../packages/manager/src/swan_tot.f90).
+
 ## Points to carry into later refinement
 
+- Always distinguish Delft3D4 FLOW (`d_hydro`, DelftIO, legacy com-files)
+  from D-Flow FM (DIMR/BMI, NetCDF communication files).
 - Keep execution mode, forcing source, file format and grid mapping distinct.
 - Show FLOW input and external meteo as optional inputs, not mandatory
   standalone dependencies.
