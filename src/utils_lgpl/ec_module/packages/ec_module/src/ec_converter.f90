@@ -3040,6 +3040,15 @@ contains
 
    !> Compute the cached harmonic coefficients of one source/target pair.
    !! Only called once per pair, the first time the pair is evaluated.
+   !!
+   !! Steps:
+   !!   1. Per source point i: a(i) = amplitude(i) * cos(phase(i)), b(i) = amplitude(i) * sin(phase(i)).
+   !!      Only the phase lookup depends on the source layout (samples, sparse grid or dense grid).
+   !!   2. Per target point j, using the existing spatial mapping:
+   !!      cos(j) = sum_i weight(j, i) * a(i), sin(j) = sum_i weight(j, i) * b(i),
+   !!      mask(j) = 1 when all source points have a valid amplitude and phase.
+   !!      Only the source point lookup depends on the source layout.
+   !!   3. With extrapolation: find a donor target for each unmasked target inside the source grid.
    function ecConverterHarmonicCoefficients(proj, source_item, target_item, converter) result(success)
       use kdtree2Factory
       use m_mathconstants, only: PI
@@ -3055,11 +3064,11 @@ contains
       type(tEcIndexWeight), pointer :: weights
       type(tEcHarmonicProjection) :: temp_proj !< temporary projection, to prevent overwriting the original if an error occurs.
       type(kdtree_instance) :: tree
-      real(dp), dimension(:), allocatable :: x_extrapolate
-      integer :: j, k, row, col, point, phase_row, phase_col, n_weights, n_cols, istat
-      integer, dimension(4) :: points, phase_cols, phase_rows
-      integer, dimension(:), allocatable :: sparse_rows
-      real(dp) :: amplitude, phase, weight, source_missing
+      real(dp), dimension(:), allocatable :: x_extrapolate, source_phase, source_cos, source_sin
+      logical, dimension(:), allocatable :: source_valid
+      integer, dimension(:), allocatable :: points
+      integer :: j, k, row, col, point, n_points, n_source, n_cols, istat
+      real(dp) :: amplitude, source_missing
       logical :: valid, samples
 
       success = .false.
@@ -3069,76 +3078,82 @@ contains
       targetset => target_item%elementSetPtr
       weights => converter%indexWeight
       source_missing = source_item%quantityPtr%fillvalue
+      samples = sourceset%ofType == elmSetType_samples
+      n_source = size(sourcefield%arr1d)
+      n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
 
-      allocate (temp_proj%cos(targetset%nCoordinates), temp_proj%sin(targetset%nCoordinates), &
-                temp_proj%mask(targetset%nCoordinates))
+      ! Step 1: cos/sin coefficients of every source point.
+      allocate (source_phase(n_source))
+      source_phase = source_missing
+      if (samples) then
+         do point = 1, n_source
+            source_phase(point) = frame%phases(point, 1)
+         end do
+      else if (sourcefield%issparse == 1) then
+         do row = 1, sourceset%n_rows
+            do point = sourcefield%ia(row), sourcefield%ia(row + 1) - 1
+               source_phase(point) = frame%phases(sourcefield%ja(point), row)
+            end do
+         end do
+      else
+         do point = 1, n_source
+            source_phase(point) = frame%phases(mod(point - 1, n_cols) + 1, (point - 1) / n_cols + 1)
+         end do
+      end if
+      allocate (source_cos(n_source), source_sin(n_source), source_valid(n_source))
+      do point = 1, n_source
+         amplitude = sourcefield%arr1d(point)
+         source_valid(point) = comparereal(amplitude, source_missing, .true.) /= 0 .and. &
+                               comparereal(source_phase(point), source_missing, .true.) /= 0
+         source_cos(point) = amplitude * cos(source_phase(point) * PI / 180.0_dp)
+         source_sin(point) = amplitude * sin(source_phase(point) * PI / 180.0_dp)
+      end do
+
+      ! Step 2: weighted sums of the source coefficients per target point.
+      allocate (temp_proj%cos(targetset%nCoordinates), temp_proj%sin(targetset%nCoordinates), temp_proj%mask(targetset%nCoordinates))
       temp_proj%cos = 0.0_dp
       temp_proj%sin = 0.0_dp
       temp_proj%mask = 0
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          x_extrapolate = targetset%x
       end if
-      samples = sourceset%ofType == elmSetType_samples
-      n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
-      if (.not. samples .and. sourcefield%issparse == 1) then
-         allocate (sparse_rows(size(sourcefield%arr1d)))
-         do row = 1, sourceset%n_rows
-            sparse_rows(sourcefield%ia(row):sourcefield%ia(row + 1) - 1) = row
-         end do
-      end if
-
+      allocate (points(max(4, size(weights%indices, 1))))
+      ! for each target point, find the source points that contribute to the interpolated value.
       do j = 1, targetset%nCoordinates
-         ! Step 2a: collect the source points of target j.
          if (samples) then
-            n_weights = size(weights%indices, 1)
+            n_points = size(weights%indices, 1)
+            points(1:n_points) = weights%indices(:, j)
          else
             row = weights%indices(1, j)
             col = weights%indices(2, j)
             if (row <= 0 .or. col <= 0) then
                cycle
             end if
-            n_weights = 4
-            if (allocated(sparse_rows)) then
-               points = [row, row + 1, col + 1, col]
-               phase_rows = sparse_rows(points)
-               phase_cols = sourcefield%ja(points)
+            n_points = 4
+            if (sourcefield%issparse == 1) then
+               points(1:4) = [row, row + 1, col + 1, col]
             else
-               points = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
-                         row * n_cols + col + 1, row * n_cols + col]
-               phase_cols = [col, col + 1, col + 1, col]
-               phase_rows = [row, row, row + 1, row + 1]
+               points(1:4) = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
+                              row * n_cols + col + 1, row * n_cols + col]
             end if
          end if
-         ! Step 2b: accumulate the cos/sin coefficients of target j.
          valid = .true.
-         do k = 1, n_weights
-            if (samples) then
-               point = weights%indices(k, j)
-               if (point <= 0 .or. point > sourceset%n_cols) then
-                  cycle
-               end if
-               phase_col = point
-               phase_row = 1
-            else
-               point = points(k)
-               phase_col = phase_cols(k)
-               phase_row = phase_rows(k)
+         ! accumulate the weighted sums of source cos/sin coefficients for this target point.
+         do k = 1, n_points
+            point = points(k)
+            if (samples .and. (point <= 0 .or. point > sourceset%n_cols)) then
+               cycle
             end if
-            amplitude = sourcefield%arr1d(point)
-            phase = frame%phases(phase_col, phase_row)
-            if (comparereal(amplitude, source_missing, .true.) == 0 .or. &
-                comparereal(phase, source_missing, .true.) == 0) then
+            if (.not. source_valid(point)) then
                if (samples) then
-                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                  call set_ec_message("ec_converter::ecConverterHarmonicCoefficients: missing amplitude or phase at a station in harmonic forcing, missing values are only supported for gridded data.")
                   return
                end if
                valid = .false.
                exit
             end if
-            phase = phase * pi / 180.0_dp
-            weight = weights%weightFactors(k, j)
-            temp_proj%cos(j) = temp_proj%cos(j) + weight * amplitude * cos(phase)
-            temp_proj%sin(j) = temp_proj%sin(j) + weight * amplitude * sin(phase)
+            temp_proj%cos(j) = temp_proj%cos(j) + weights%weightFactors(k, j) * source_cos(point)
+            temp_proj%sin(j) = temp_proj%sin(j) + weights%weightFactors(k, j) * source_sin(point)
          end do
          if (valid) then
             temp_proj%mask(j) = 1
@@ -3146,7 +3161,8 @@ contains
             x_extrapolate(j) = ec_undef_hp
          end if
       end do
-      ! Step 2c: find donors for unmasked targets inside the source grid.
+
+      ! Step 3: find donors for unmasked targets inside the source grid.
       if (allocated(x_extrapolate)) then
          do j = 1, size(temp_proj%mask)
             if (temp_proj%mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
@@ -3168,6 +3184,7 @@ contains
          end do
          call delete_kdtree2(tree)
       end if
+      ! succesfully initialized the projection, so move the temporary arrays to the returned projection object.
       call move_alloc(temp_proj%cos, proj%cos)
       call move_alloc(temp_proj%sin, proj%sin)
       call move_alloc(temp_proj%mask, proj%mask)
@@ -3180,12 +3197,8 @@ contains
    !!
    !! Steps:
    !!   1. Find the cached projection of this source/target pair in the harmonics frame; append an empty one if absent.
-   !!   2. First call only: compute the cached coefficients per target point j:
-   !!      2a. Collect the source points and weights from the existing spatial mapping.
-   !!      2b. cos(j) = sum_i weight(i) * amplitude(i) * cos(phase(i)),
-   !!          sin(j) = sum_i weight(i) * amplitude(i) * sin(phase(i)),
-   !!          mask(j) = 1 when all source points have a valid amplitude and phase.
-   !!      2c. With extrapolation: find a donor target for each unmasked target inside the source grid.
+   !!   2. First call only: compute the cached cos/sin coefficients, mask and extrapolation donors
+   !!      (see ecConverterHarmonicCoefficients).
    !!   3. Every call: target(j) = target(j) <operand> cos(j) * cos(omega t) + sin(j) * sin(omega t), where mask(j) = 1.
    !!   4. With extrapolation: copy the donor's final value to each unmasked target inside the source grid.
    function ecConverterHarmonic(connection, item_index, timesteps) result(success)
@@ -3196,7 +3209,7 @@ contains
       logical :: success !< Whether projection and operand application succeeded.
 
       type(tEcItem), pointer :: source_item, target_item
-      type(tEcConverter), pointer :: ptr
+      type(tEcConverter), pointer :: converter
       type(tEcHarmonicsFrame), pointer :: frame
       type(tEcIndexWeight), pointer :: weights
       type(tEcHarmonicProjection), pointer :: proj
@@ -3207,10 +3220,10 @@ contains
       success = .false.
       source_item => connection%sourceItemsPtr(item_index)%ptr
       target_item => connection%targetItemsPtr(item_index)%ptr
-      ptr => connection%converterPtr
+      converter => connection%converterPtr
       frame => source_item%hframe
       targetfield => target_item%targetFieldPtr%arr1dPtr
-      weights => ptr%indexWeight
+      weights => converter%indexWeight
       if (frame%ec_period <= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
          return
@@ -3224,11 +3237,11 @@ contains
       do projection_index = 1, n_projections
          proj => frame%projections(projection_index)
          if (proj%sourceItemId == source_item%id .and. proj%targetItemId == target_item%id .and. &
-             proj%converterId == ptr%id) then
+             proj%converterId == converter%id) then
             exit
          end if
       end do
-      if (projection_index > n_projections) then
+      if (projection_index > n_projections) then ! not found, append a new projection
          block
             type(tEcHarmonicProjection), dimension(:), allocatable :: projections
 
@@ -3248,17 +3261,18 @@ contains
       proj => frame%projections(projection_index)
       proj%sourceItemId = source_item%id
       proj%targetItemId = target_item%id
-      proj%converterId = ptr%id
+      proj%converterId = converter%id
 
       ! Step 2: first call only, compute the cached coefficients.
       if (.not. allocated(proj%cos)) then
-         if (.not. ecConverterHarmonicCoefficients(proj, source_item, target_item, ptr)) then
+         success = ecConverterHarmonicCoefficients(proj, source_item, target_item, converter)
+         if (.not. success) then
             return
          end if
       end if
 
       ! Step 3: evaluate the harmonic at time t and apply the operand.
-      call check_undefined_values_for_operand(ptr%operandType, targetfield(1:size(proj%mask)), success, proj%mask)
+      call check_undefined_values_for_operand(converter%operandType, targetfield(1:size(proj%mask)), success, proj%mask)
       if (.not. success) then
          return
       end if
@@ -3267,17 +3281,17 @@ contains
       sin_time = sin(angle)
       do j = 1, size(proj%mask)
          if (proj%mask(j) /= 0) then
-            call apply_operand(ptr%operandType, targetfield(j), proj%cos(j) * cos_time + proj%sin(j) * sin_time)
+            call apply_operand(converter%operandType, targetfield(j), proj%cos(j) * cos_time + proj%sin(j) * sin_time)
          end if
       end do
       ! Step 4: copy donor values to unmasked targets.
-      if (ptr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+      if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
             if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
                targetfield(j) = targetfield(weights%substndx(j))
             end if
          end do
-         ptr%extrapolated = .true.
+         converter%extrapolated = .true.
       end if
       target_item%targetFieldPtr%timesteps = timesteps
    end function ecConverterHarmonic
