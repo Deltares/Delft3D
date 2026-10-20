@@ -2039,19 +2039,19 @@ contains
                              'Wrimap_sediment', 'const', 'Constituents', &
                              '', '-', UNC_LOC_S, description='Write constiuents to map file')
       call add_output_config(config_set_map, IDX_MAP_TURBULENT_KINETIC_ENERGY_WU, &
-                             'Wrimap_turbulence', 'turbulent_kinetic_energy_wu', 'turbulent kinetic energy', &
+                             'Wrimap_turbulence', 'turkin1', 'turbulent kinetic energy', &
                              'specific_turbulent_kinetic_energy_of_sea_water', 'm2 s-2', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_VICWWU, &
                              'Wrimap_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity', &
                              'eddy_viscosity', 'm2 s-1', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_TUREPS1, &
-                             'Wrimap_turbulence', 'turbulent_dissipation_wu', 'turbulent energy dissipation', &
+                             'Wrimap_turbulence', 'tureps1', 'turbulent energy dissipation', &
                              'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'm2 s-3', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_TUREPS1_3, &
-                             'Wrimap_turbulence', 'turbulent_dissipation_wu', 'turbulent energy dissipation', &
+                             'Wrimap_turbulence', 'tureps1', 'turbulent energy dissipation', &
                              'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'm2 s-3', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_TUREPS1_4, &
-                             'Wrimap_turbulence', 'turbulent_dissipation_wu', 'turbulent time scale', &
+                             'Wrimap_turbulence', 'tureps1', 'turbulent time scale', &
                              '', 's-1', UNC_LOC_WU)
 
       call ncu_set_att(atts(1), 'non_si_units', 'm0.5 s-1')

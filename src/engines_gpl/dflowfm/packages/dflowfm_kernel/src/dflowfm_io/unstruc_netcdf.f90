@@ -1804,7 +1804,7 @@ contains
             ierr = nf90_put_att(irstfile, id_vicwwu, '_FillValue', dmiss)
 
             ! Definition and attributes of kinetic energy
-            ierr = nf90_def_var(irstfile, 'turbulent_kinetic_energy_wu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_turbulent_kinetic_energy_wu)
+            ierr = nf90_def_var(irstfile, 'turkin1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_turbulent_kinetic_energy_wu)
             ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
             ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'long_name', 'turbulent kinetic energy')
@@ -1812,7 +1812,7 @@ contains
             ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, '_FillValue', dmiss)
 
             ! Definition and attributes of energy_dissipation or turbulence_time_scale
-            ierr = nf90_def_var(irstfile, 'turbulent_dissipation_wu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
+            ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
             ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_tureps1, '_FillValue', dmiss)
             if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
@@ -4403,15 +4403,15 @@ contains
          ! Turbulence.
          if (map_write_settings%tur > 0 .and. kmx > 0) then
             if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turbulent_kinetic_energy_wu, nc_precision, UNC_LOC_WU, 'turbulent_kinetic_energy_wu', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turbulent_kinetic_energy_wu, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, nc_precision, UNC_LOC_W, 'difwws_total', 'eddy_diffusivity', 'total vertical eddy diffusivity of salinity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'turbulent_dissipation_wu', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
                else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'turbulent_dissipation_wu', '', 'turbulent time scale', 's-1', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', '', 'turbulent time scale', 's-1', jabndnd=jabndnd_)
                end if
             end if
          end if
@@ -7303,7 +7303,7 @@ contains
 
             if (map_write_settings%tur > 0 .and. kmx > 0) then
                if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-                  ierr = nf90_def_var(imapfile, 'turbulent_kinetic_energy_wu', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turbulent_kinetic_energy_wu(iid))
+                  ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turbulent_kinetic_energy_wu(iid))
                   ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
                   ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'long_name', 'turbulent kinetic energy')
@@ -7334,7 +7334,7 @@ contains
                   ierr = nf90_put_att(imapfile, id_difwws_total(iid), 'units', 'm2 s-1')
                   ierr = nf90_put_att(imapfile, id_difwws_total(iid), '_FillValue', dmiss)
 
-                  ierr = nf90_def_var(imapfile, 'turbulent_dissipation_wu', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_tureps1(iid))
+                  ierr = nf90_def_var(imapfile, 'tureps1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_tureps1(iid))
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), '_FillValue', dmiss)
 
@@ -8220,8 +8220,8 @@ contains
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
             end if
             if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-               ierr = nf90_inq_varid(imapfile, 'turbulent_kinetic_energy_wu', id_turbulent_kinetic_energy_wu(iid))
-               ierr = nf90_inq_varid(imapfile, 'turbulent_dissipation_wu', id_tureps1(iid))
+               ierr = nf90_inq_varid(imapfile, 'turkin1', id_turbulent_kinetic_energy_wu(iid))
+               ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
                ierr = nf90_inq_varid(imapfile, 'vicwwu', id_vicwwu(iid))
             end if
          else
@@ -12467,43 +12467,26 @@ contains
             call check_error(ierr, 'vicwwu')
             call readyy('Reading map data', 0.76_dp)
 
-            ! turbulent_dissipation_wu
-            ierr = get_var_and_shift(imapfile, 'turbulent_dissipation_wu', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+            ! tureps1
+            ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
-            ! Older map and restart files use tureps1 and turkin1.
-            if (ierr == nf90_enotvar) then
-               ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
-                                        um%jamergedmap, um%ilink_own, um%ilink_merge)
-            end if
-            call check_error(ierr, 'turbulent_dissipation_wu')
+            call check_error(ierr, 'tureps1')
             call readyy('Reading map data', 0.77_dp)
 
-            ! turbulent_kinetic_energy_wu
-            ierr = get_var_and_shift(imapfile, 'turbulent_kinetic_energy_wu', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+            ! turkin1
+            ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
-            if (ierr == nf90_enotvar) then
-               ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
-                                        um%jamergedmap, um%ilink_own, um%ilink_merge)
-            end if
-            call check_error(ierr, 'turbulent_kinetic_energy_wu')
+            call check_error(ierr, 'turkin1')
             call readyy('Reading map data', 0.78_dp)
 
             ! ghost
             if (um%jafillghost == 1) then
-               ierr = get_var_and_shift(imapfile, 'turbulent_dissipation_wu', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+               ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
-               if (ierr == nf90_enotvar) then
-                  ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
-                                           um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
-               end if
                call check_error(ierr, 'tureps1_ghost_cells')
-               ierr = get_var_and_shift(imapfile, 'turbulent_kinetic_energy_wu', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+               ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
-               if (ierr == nf90_enotvar) then
-                  ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
-                                           um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
-               end if
-               call check_error(ierr, 'turbulent_kinetic_energy_wu_ghost_cells')
+               call check_error(ierr, 'turkin1_ghost_cells')
             end if
          end if
       else
