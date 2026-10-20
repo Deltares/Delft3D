@@ -225,23 +225,43 @@ contains
 
    !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
    subroutine test_adapter_add_to_fm_administration() bind(C)
+      call check_adapter_add_to_fm_administration(initialize_administration=.true.)
+   end subroutine test_adapter_add_to_fm_administration
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_uninitialized_fm_administration, test_adapter_add_to_uninitialized_fm_administration,
+   !> Check that preCICE can add the first sources/sinks to a model without conventional sources/sinks.
+   subroutine test_adapter_add_to_uninitialized_fm_administration() bind(C)
+      call check_adapter_add_to_fm_administration(initialize_administration=.false.)
+   end subroutine test_adapter_add_to_uninitialized_fm_administration
+   !$f90tw )
+
+   !> Exercise source/sink registration with or without an initialized FM administration.
+   subroutine check_adapter_add_to_fm_administration(initialize_administration)
       use m_flow_geominit, only: flow_geominit
       use m_cellmask_from_polygon_set, only: t_netcell_set
       use precice_adapter
       use m_source_sink, only: SourceSinks, source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_alloc, only: realloc
       use m_resetfullflowmodel, only: resetfullflowmodel
+      use m_transport, only: numconst
 
+      logical, intent(in) :: initialize_administration !< Whether conventional sources/sinks have initialized FM's administration.
       type(t_grid_helper) :: grid_helper
       type(precice_adapter_t) :: adapter
       type(t_netcell_set) :: netcell_cache
       integer :: expected_sink_cell
       integer :: expected_source_cell
+      integer :: saved_numconst
 
       ! Setup grid
       call disable_timers_logging_and_mpi()
       call source_sinks%reset()
-      call source_sinks%initialize(1)
+      saved_numconst = numconst
+      numconst = 2
+      if (initialize_administration) then
+         call source_sinks%initialize(1)
+      end if
       grid_helper = t_grid_helper()
       call grid_helper%make_square_grid( &
          bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -265,6 +285,10 @@ contains
       adapter%sources_z_min(1) = 5.6
       adapter%sources_z_max(1) = -7.8
       adapter%sources_sinks_discharge(1) = 9.10
+      adapter%sources_momentum_magnitude_weighted(1) = 0.0_dp
+      adapter%sources_momentum_direction(1) = 0.0_dp
+      adapter%sources_sinks_constituents(:, 1) = 0.0_dp
+      adapter%sources_sinks_constituents(1:2, 1) = [12.0_dp, 34.0_dp]
 
       ! Actual call to test
       call precice_adapter_add_to_fm_administration(adapter)
@@ -280,12 +304,13 @@ contains
       call f90_assert_near(source_sinks%z_bottom(1, SOURCE_SIDE), 5.6_dp, 1e-5_dp, "Unexpected z_bottom(1,2) in source sinks"//c_null_char)
       call f90_assert_near(source_sinks%z_top(1, SOURCE_SIDE), -7.8_dp, 1e-5_dp, "Unexpected z_top(1,2) in source sinks"//c_null_char)
       call f90_assert_near(source_sink_all_discharges(1, 1), 9.10_dp, 1e-5_dp, "Unexpected source_sink_all_discharges(1, 1) in source sinks"//c_null_char)
+      call f90_expect_near(source_sink_all_discharges(2:3, 1), [12.0_dp, 34.0_dp], 1e-12_dp, "Coupled constituents must be registered")
 
       ! Cleanup
       call cleanup_netcells()
       call precice_adapter_deallocate_read_arrays(adapter)
       call resetfullflowmodel()
-   end subroutine test_adapter_add_to_fm_administration
-   !$f90tw )
+      numconst = saved_numconst
+   end subroutine check_adapter_add_to_fm_administration
 
 end module m_test_precice_adapter

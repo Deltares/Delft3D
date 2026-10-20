@@ -148,16 +148,20 @@ class HtmlFormatter:
             if model_name in flow_vel_exceeded:
                 flow_tolerance = "❌ Exceeded"
 
-            salinity_tolerance = "✅ Success"
-            if model_name in salinity_exceeded:
-                salinity_tolerance = "❌ Exceeded"
-            elif "dflowfm2d" in model_name:
-                salinity_tolerance = "N/A"
+            has_3d_output = isinstance(his_outputs.get(model_name), VerschillentoolOutput3D) and isinstance(
+                map_outputs.get(model_name), VerschillentoolOutput3D
+            )
 
-            temperature_tolerance = "✅ Success"
-            if model_name in temperature_exceeded:
-                temperature_tolerance = "❌ Exceeded"
-            elif "dflowfm2d" in model_name:
+            if has_3d_output:
+                salinity_tolerance = "✅ Success"
+                if model_name in salinity_exceeded:
+                    salinity_tolerance = "❌ Exceeded"
+
+                temperature_tolerance = "✅ Success"
+                if model_name in temperature_exceeded:
+                    temperature_tolerance = "❌ Exceeded"
+            else:
+                salinity_tolerance = "N/A"
                 temperature_tolerance = "N/A"
 
             yield "".join(
@@ -277,12 +281,12 @@ class HtmlFormatter:
         salinity_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_salinity_models(output_stats))
         if not salinity_items:
             exceeded_html = "exceeded"
-            salinity_items = "<li>None: All salinity differences are within tolerances.</li>"
+            salinity_items = "<li>None: Where applicable, all salinity differences are within tolerances.</li>"
 
         temperature_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_temperature_models(output_stats))
         if not temperature_items:
             exceeded_html = "exceeded"
-            temperature_items = "<li>None: All temperature differences are within tolerances.</li>"
+            temperature_items = "<li>None: Where applicable, all temperature differences are within tolerances.</li>"
 
         template = textwrap.dedent(
             f"""
