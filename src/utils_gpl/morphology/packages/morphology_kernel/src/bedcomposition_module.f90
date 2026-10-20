@@ -464,6 +464,30 @@ subroutine repay_sediment_shortage(mass, shortage)
     endif
 end subroutine repay_sediment_shortage
 
+!> Determines whether consolidation should be called at the current morphological time.
+!> @param[in,out] this Bed composition object; the next DECON call time may be updated.
+!> @param[in] morft Current morphological time [days since reference date].
+!> @return call_consolidate True if the consolidation routine should be called.
+function should_call_consolidate(this, morft) result(call_consolidate)
+    use precision
+    type(bedcomp_data), intent(inout) :: this !< bed composition object
+    real(hp), intent(in) :: morft !< morphological time [days since reference date]
+    logical :: call_consolidate
+
+    if (this%settings%iconsolidate == CONSOL_NONE) then
+        call_consolidate = .false.
+    elseif (this%settings%iconsolidate == CONSOL_DECON) then
+        if (morft < this%state%tdecon) then
+            call_consolidate = .false.
+        else
+            this%state%tdecon = morft + real(this%settings%dtdecon, hp) / 86400.0_hp
+            call_consolidate = .true.
+        endif
+    else
+        call_consolidate = .true.
+    endif
+end function should_call_consolidate
+
 !> Update underlayer bookkeeping system for given erosion/sedimentation flux
 function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) result (istat)
     use precision
@@ -488,18 +512,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
         if (this%settings%crslyr) then
             call updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength, sbot, dtmor, messages)
         else
-            if (this%settings%iconsolidate == CONSOL_NONE) then
-                call_consolidate = .false.
-            elseif (this%settings%iconsolidate == CONSOL_DECON) then
-                if (morft < this%state%tdecon) then
-                    call_consolidate = .false.
-                else
-                    this%state%tdecon = morft + real(this%settings%dtdecon, hp) / 86400.0_hp
-                    call_consolidate = .true.
-                endif
-            else
-                call_consolidate = .true.
-            endif
+            call_consolidate = should_call_consolidate(this, morft)
             call updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
         endif
         this%settings%initcl = .true.
