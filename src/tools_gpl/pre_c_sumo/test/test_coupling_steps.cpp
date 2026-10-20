@@ -2,6 +2,7 @@
 
 #include <array>
 #include <limits>
+#include <ranges>
 #include <sstream>
 #include <utility>
 
@@ -146,16 +147,10 @@ namespace
         // Add dummy preCICE quantity data buffers.
         mesh.quantities[pre_c_sumo::densities_id] = std::vector<double>(12);
         mesh.quantities[pre_c_sumo::flow_velocities_id] = std::vector<double>(12 * 3);
-        mesh.quantities[pre_c_sumo::c01_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c02_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c03_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c04_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c05_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c06_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c07_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c08_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c09_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c10_id] = std::vector<double>(12);
+        for (const auto id : pre_c_sumo::constituent_ids)
+        {
+            mesh.quantities[id] = std::vector<double>(12);
+        }
 
         return mesh;
     }
@@ -222,11 +217,18 @@ TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
     ASSERT_EQ(mesh_3d.number_of_nodes, 12);
     ASSERT_TRUE(mesh_3d.forward_map[0].has_intake);
     const auto intake_index = mesh_3d.forward_map[0].intake_index;
-    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index] = 1.0;
-    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index + 1] = 5.0;
+    for (const auto& [index, id] : pre_c_sumo::constituent_ids | std::views::enumerate)
+    {
+        // The test 3d mesh has two z layers, write different concentrations in each layer
+        mesh_3d.quantities[id][intake_index] = index + 1.0;
+        mesh_3d.quantities[id][intake_index + 1] = index + 5.0;
+    }
     auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
     EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_consituents);
-    EXPECT_DOUBLE_EQ(constituents[0], 3.0);
+    for (std::size_t index = 0; index < constituents.size(); ++index)
+    {
+        EXPECT_DOUBLE_EQ(constituents[index], index + 3.0); // Average value over all layers
+    }
 }
 
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.

@@ -14,6 +14,8 @@
 #include <cmath>   // for atan2,sin,cos
 #include <string>
 #include <fstream>
+#include <functional>
+#include <span>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -36,13 +38,11 @@ namespace pre_c_sumo
                 .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
                 .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
-                .constituents = {mesh_3d.quantities[c01_id][index_3d + i], mesh_3d.quantities[c02_id][index_3d + i],
-                                 mesh_3d.quantities[c03_id][index_3d + i], mesh_3d.quantities[c04_id][index_3d + i],
-                                 mesh_3d.quantities[c05_id][index_3d + i], mesh_3d.quantities[c06_id][index_3d + i],
-                                 mesh_3d.quantities[c07_id][index_3d + i], mesh_3d.quantities[c08_id][index_3d + i],
-                                 mesh_3d.quantities[c09_id][index_3d + i], mesh_3d.quantities[c10_id][index_3d + i]
-
-                }, // constituents
+                .constituents = constituent_ids |
+                                std::views::transform([&mesh_3d, layer_index = index_3d + i](const auto id) {
+                                    return mesh_3d.quantities[id][layer_index];
+                                }) |
+                                std::ranges::to<std::vector>(),
             });
         }
         return FarFieldPoint2D{
@@ -55,20 +55,14 @@ namespace pre_c_sumo
 
     std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index)
     {
-        std::vector<double> constituents(max_number_of_consituents);
-        const std::vector<std::string_view> constituent_ids = {c01_id, c02_id, c03_id, c04_id, c05_id,
-                                                               c06_id, c07_id, c08_id, c09_id, c10_id};
         const std::size_t index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
-        const double number_of_layers = static_cast<double>(mesh_3d.number_of_zcoordinates);
-        for (std::size_t c = 0; c < max_number_of_consituents; c++)
-        {
-            for (std::size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
-            {
-                constituents[c] += mesh_3d.quantities[constituent_ids[c]][index_3d + i];
-            }
-            constituents[c] /= number_of_layers;
-        }
-        return constituents;
+        const auto number_of_layers = mesh_3d.number_of_zcoordinates;
+        const auto average_intake_constituent = [&mesh_3d, index_3d, number_of_layers](const auto id) {
+            const std::span<const double> values(mesh_3d.quantities[id]);
+            const auto intake_layers = values.subspan(index_3d, number_of_layers);
+            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
+        };
+        return constituent_ids | std::views::transform(average_intake_constituent) | std::ranges::to<std::vector>();
     }
 
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
@@ -108,8 +102,9 @@ namespace pre_c_sumo
     {
         // TODO: obtain these from the far-field model / coupling state
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature", "salinity",
-                                                            "tracer"}; // TODO: derive from settings
+        const auto constituent_names = constituent_ids |
+                                       std::views::transform([](const auto id) { return std::string(id); }) |
+                                       std::ranges::to<std::vector>();
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {

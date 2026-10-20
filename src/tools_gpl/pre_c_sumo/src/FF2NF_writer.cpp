@@ -207,7 +207,7 @@ namespace pre_c_sumo
           write_file([](const std::filesystem::path& file_path,
                         std::string_view xml) -> std::expected<void, WriteError> {
               errno = 0;
-              std::ofstream output_file(file_path);
+              std::ofstream output_file(file_path, std::ios::out | std::ios::noreplace);
               if (!output_file)
               {
                   const auto error = std::error_code(errno == 0 ? EIO : errno, std::generic_category());

@@ -114,6 +114,7 @@ namespace pre_c_sumo
          * @param file_operations Directory creation and file writing operations.
          * @return Empty result on success, or a WriteError on failure.
          * @note The function first calls generate() and returns any validation error from that step.
+         * @note Default file operations create the destination exclusively and fail if it already exists.
          */
         [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path,
                                                              const FF2NFFileOperations& file_operations = {}) const;
