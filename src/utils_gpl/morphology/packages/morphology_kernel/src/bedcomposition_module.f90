@@ -453,6 +453,71 @@ subroutine repay_sediment_shortage(mass, shortage)
     endif
 end subroutine repay_sediment_shortage
 
+!> Computes the mass transferred from the active layer using uniform composition.
+!!
+!! Each sediment fraction contributes the same fraction of its active-layer mass.
+subroutine compute_dmi_uniform(msed, nfrac, thdiff, thick, dmi)
+    use precision
+    integer, intent(in) :: nfrac !< Number of sediment fractions.
+    real(fp), dimension(nfrac), intent(in) :: msed !< Active-layer mass per fraction [kg/m2].
+    real(fp), intent(in) :: thdiff !< Excess active-layer thickness to transfer [m].
+    real(fp), intent(in) :: thick !< Current active-layer thickness [m].
+    real(fp), dimension(nfrac), intent(out) :: dmi !< Transferred mass per fraction [kg/m2].
+
+    real(fp) :: fac
+
+    fac = thdiff/thick
+    dmi = msed*fac
+end subroutine compute_dmi_uniform
+
+
+!> Computes active-layer mass transfer by prioritizing immobile sediment.
+!!
+!! Immobile sediment is transferred first. If the requested solid volume
+!! exceeds the immobile solid volume, the remaining transfer is taken from
+!! mobile sediment in proportion to its mobile mass.
+subroutine compute_dmi_immobile_first(msed, mobile, rhofrac, nfrac, transfer_solid_volume, total_solid_volume, dmi)
+    use precision
+    integer, intent(in) :: nfrac !< Number of sediment fractions.
+    real(fp), dimension(nfrac), intent(in) :: msed !< Active-layer mass per fraction [kg/m2].
+    real(fp), dimension(nfrac), intent(in) :: mobile !< Mobile mass fraction per sediment fraction [-].
+    real(fp), dimension(nfrac), intent(in) :: rhofrac !< Sediment density per fraction [kg/m3].
+    real(fp), intent(in) :: transfer_solid_volume !< Solid volume to transfer [m].
+    real(fp), intent(in) :: total_solid_volume !< Total active-layer solid volume [m].
+    real(fp), dimension(nfrac), intent(out) :: dmi !< Transferred mass per fraction [kg/m2].
+
+    real(fp) :: fac
+    real(fp) :: immobile_solid_volume
+    real(fp) :: mobile_solid_volume
+    integer :: l
+
+    immobile_solid_volume = 0.0_fp
+    do l = 1, nfrac
+        dmi(l) = (1.0_fp - mobile(l))*msed(l)
+        immobile_solid_volume = immobile_solid_volume + dmi(l)/rhofrac(l)
+    enddo
+
+    if (immobile_solid_volume > 0.0_fp .and. transfer_solid_volume <= immobile_solid_volume) then
+        fac = transfer_solid_volume/immobile_solid_volume
+        dmi = dmi*fac
+    else
+        mobile_solid_volume = total_solid_volume - immobile_solid_volume
+        if (mobile_solid_volume < sqrt(epsilon(1.0_fp))*total_solid_volume) then
+            ! Avoid loss of precision when the mobile volume is much smaller than the total.
+            mobile_solid_volume = 0.0_fp
+            do l = 1, nfrac
+                mobile_solid_volume = mobile_solid_volume + mobile(l)*msed(l)/rhofrac(l)
+            enddo
+        endif
+        if (mobile_solid_volume > 0.0_fp) then
+            fac = (transfer_solid_volume - immobile_solid_volume)/mobile_solid_volume
+            do l = 1, nfrac
+                dmi(l) = dmi(l) + fac*mobile(l)*msed(l)
+            enddo
+        endif
+    endif
+end subroutine compute_dmi_immobile_first
+
 !> Determines whether consolidation should be called at the current morphological time.
 !> @return True if consolidation should be called at the current morphological time.
 function should_call_consolidate(this, morft) result(call_consolidate)
@@ -527,7 +592,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     real(fp) :: fac, seddep0, seddep1, thdiff, temp, thick, thickd, thicke
     real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
     real(fp) :: totmassd, totsv, totsvd, totsve
-    real(fp) :: transfer_solid_volume, immobile_solid_volume, mobile_solid_volume
+    real(fp) :: transfer_solid_volume
     real(fp), dimension(this%settings%nfrac) :: dmi, mfrac
     type(morlyrnumericstype), pointer :: morlyrnum
     integer, pointer :: iconsolidate
@@ -712,35 +777,16 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
                !
                sdbodsed = 0.0_fp
                if (this%settings%active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM) then
-                  fac = thdiff/thick
-                  do l = 1, this%settings%nfrac
-                     dmi(l) = msed(l, 1, nm)*fac
-                     msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                     sdbodsed = sdbodsed + dbodsd(l, nm)
-                  enddo
+                  call compute_dmi_uniform(msed(:, 1, nm), this%settings%nfrac, thdiff, thick, dmi)
                else
                   transfer_solid_volume = thdiff*svfrac(1, nm)
-                  immobile_solid_volume = 0.0_fp
-                  mobile_solid_volume = 0.0_fp
-                  do l = 1, this%settings%nfrac
-                     dmi(l) = (1.0_fp - mobile(l, nm))*msed(l, 1, nm)
-                     immobile_solid_volume = immobile_solid_volume + dmi(l)/rhofrac(l)
-                     mobile_solid_volume = mobile_solid_volume + mobile(l, nm)*msed(l, 1, nm)/rhofrac(l)
-                  enddo
-                  if (immobile_solid_volume > 0.0_fp .and. transfer_solid_volume <= immobile_solid_volume) then
-                     fac = transfer_solid_volume/immobile_solid_volume
-                     dmi = dmi*fac
-                  elseif (mobile_solid_volume > 0.0_fp) then
-                     fac = (transfer_solid_volume - immobile_solid_volume)/mobile_solid_volume
-                     do l = 1, this%settings%nfrac
-                        dmi(l) = dmi(l) + fac*mobile(l, nm)*msed(l, 1, nm)
-                     enddo
-                  endif
-                  do l = 1, this%settings%nfrac
-                     msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                     sdbodsed = sdbodsed + dbodsd(l, nm)
-                  enddo
+                  call compute_dmi_immobile_first(msed(:, 1, nm), mobile(:, nm), rhofrac, &
+                      & this%settings%nfrac, transfer_solid_volume, totsv, dmi)
                endif
+               do l = 1, this%settings%nfrac
+                  msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
+                  sdbodsed = sdbodsed + dbodsd(l, nm)
+               enddo
                !
                ! store surplus of mass in underlayers
                !
