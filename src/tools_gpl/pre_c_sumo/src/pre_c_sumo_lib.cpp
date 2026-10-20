@@ -207,7 +207,14 @@ namespace pre_c_sumo
             double coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
-            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
+            const auto ff2nf_result =
+                writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
+            if (!ff2nf_result.has_value())
+            {
+                std::println(stderr, "Error: Unable to write FF2NF data at time {} s: {}", current_time_seconds,
+                             ff2nf_result.error().message);
+                return -1;
+            }
             if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
             {
                 std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",

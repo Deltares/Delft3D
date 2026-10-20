@@ -102,8 +102,9 @@ namespace pre_c_sumo
         }
     }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
-                         double current_time_seconds)
+    std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh,
+                                                    Mesh& csumo_3d_mesh, double current_time_seconds,
+                                                    const FF2NFFileOperations& file_operations)
     {
         // TODO: obtain these from the far-field model / coupling state
         const std::string run_id = "FlowFM";
@@ -130,11 +131,11 @@ namespace pre_c_sumo
 
             const auto ff2nf_filename = diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds);
 
-            const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
+            const auto nf2ff_wait_file = diffuser.nf2ffFilepath(subgrid_model_nr, current_time_seconds);
 
             auto ff2nf_config = FF2NFConfig{
                 .ff2nf_filename = ff2nf_filename.string(),
-                .wait_for_file = nf2ff_wait_file,
+                .wait_for_file = nf2ff_wait_file.string(),
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
                 .unique_id = "", // Do not use unique ID, run C-SUMO in different directories for now
@@ -149,14 +150,10 @@ namespace pre_c_sumo
                 .settings_xml_node = diffuser.settings_xml_node,
             };
 
-            const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);
-            if (!result.has_value())
-            {
-                std::println(stderr, "Error writing FF2NF file: {}", result.error().message);
-                continue;
-            }
+            RETURN_IF_ERROR(FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename, file_operations));
             std::println("Wrote FF2NF file: {}", ff2nf_filename.string());
         }
+        return {};
     }
 
     bool is_complete_nf2ff_file(std::filesystem::path filename)

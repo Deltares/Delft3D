@@ -237,6 +237,32 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
     EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
 }
 
+TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesPropagatesValidationErrorWithoutIO)
+{
+    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
+    ASSERT_TRUE(settings.has_value()) << settings.error().message;
+    pre_c_sumo::Mesh mesh_2d{.coordinates = {1.0, 2.0},
+                             .forward_map = {pre_c_sumo::DiffuserMapping{}},
+                             .quantities = {{pre_c_sumo::water_levels_id, {0.0}}, {pre_c_sumo::bed_levels_id, {1.0}}}};
+    pre_c_sumo::Mesh mesh_3d{.forward_map = {pre_c_sumo::DiffuserMapping{}}};
+    pre_c_sumo::FF2NFFileOperations file_operations;
+    file_operations.create_directories =
+        [](const std::filesystem::path&) -> std::expected<void, pre_c_sumo::WriteError> {
+        ADD_FAILURE() << "Directory creation must not be reached after a validation failure";
+        return std::unexpected(pre_c_sumo::WriteError{"unexpected directory creation"});
+    };
+    file_operations.write_file = [](const std::filesystem::path&,
+                                    std::string_view) -> std::expected<void, pre_c_sumo::WriteError> {
+        ADD_FAILURE() << "File writing must not be reached after a validation failure";
+        return std::unexpected(pre_c_sumo::WriteError{"unexpected file writing"});
+    };
+
+    const auto result = pre_c_sumo::writeFF2NFFiles(*settings, mesh_2d, mesh_3d, 0.0, file_operations);
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "Ambient points were not set");
+}
+
 TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndOneSink)
 {
     constexpr std::string_view xml = R"(<?xml version="1.0" encoding="utf-8"?>

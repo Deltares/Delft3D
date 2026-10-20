@@ -11,6 +11,7 @@
 #include "connected_sinks_sources.hpp"
 #include "parsing_types.hpp"
 #include "NF2FF_reader.hpp"
+#include "FF2NF_writer.hpp"
 #include "pre_c_sumo_lib.hpp"
 
 namespace pre_c_sumo
@@ -105,15 +106,19 @@ namespace pre_c_sumo
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
      *
      * Writes a FF2NF file for each configured diffuser.
-     * If `csumo_settings` holds an error, no files are written.
+     * Stops at the first validation, directory creation or file writing error.
      *
      * @param csumo_settings Parsed C-SUMO settings used to determine which diffuser files to write.
      * @param csumo_2d_mesh 2D mesh containing the ambient and coupling data for the far-field exchange.
      * @param csumo_3d_mesh 3D mesh containing the vertical data used when writing the FF2NF content.
      * @param current_time_seconds Current simulation time in seconds used to resolve time-dependent file names.
+     * @param file_operations Directory creation and file writing operations shared by all diffusers.
+     * @return Empty result on success, or the WriteError from the first failed file.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
-                         double current_time_seconds);
+    [[nodiscard]] std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettingsReader& csumo_settings,
+                                                                  Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                                                                  double current_time_seconds,
+                                                                  const FF2NFFileOperations& file_operations = {});
 
     /**
      * @anchor pre_c_sumo_wait_nf2ff
