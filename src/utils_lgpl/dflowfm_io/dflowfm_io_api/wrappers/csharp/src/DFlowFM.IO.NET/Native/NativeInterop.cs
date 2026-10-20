@@ -33,6 +33,16 @@ internal static class NativeInterop
         return Utf8NoBom.GetBytes(value);
     }
 
+    public static byte[] StringToUtf8Z(string value)
+    {
+        int byteCount = Utf8NoBom.GetByteCount(value);
+        byte[] bytes = new byte[byteCount + 1];
+
+        Utf8NoBom.GetBytes(value, 0, value.Length, bytes, 0);
+
+        return bytes;
+    }
+
     public static double[] MarshalDoubleArray(IntPtr ptr, ulong count)
     {
         double[] result = new double[(int)count];
@@ -73,12 +83,11 @@ internal static class NativeInterop
     {
         IntPtr[] ptrs = Array.ConvertAll(values, v =>
         {
-            byte[] bytes = StringToUtf8(v);
-            IntPtr ptr = Marshal.AllocHGlobal(bytes.Length + 1);
-            
+            byte[] bytes = StringToUtf8Z(v);
+            IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
+
             Marshal.Copy(bytes, 0, ptr, bytes.Length);
-            Marshal.WriteByte(ptr, bytes.Length, 0);
-            
+
             return ptr;
         });
 

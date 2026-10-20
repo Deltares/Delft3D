@@ -29,7 +29,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the file could not be loaded.</exception>
     public void LoadFromFile(string path)
     {
-        byte[] pathBytes = NativeInterop.StringToUtf8(path);
+        byte[] pathBytes = NativeInterop.StringToUtf8Z(path);
         ThrowIfError(NativeMduApi.mdu_load_from_file(_handle, pathBytes));
     }
 
@@ -51,7 +51,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the file could not be saved.</exception>
     public void SaveToFile(string path)
     {
-        byte[] pathBytes = NativeInterop.StringToUtf8(path);
+        byte[] pathBytes = NativeInterop.StringToUtf8Z(path);
         ThrowIfError(NativeMduApi.mdu_save_to_file(_handle, pathBytes));
     }
 
@@ -74,7 +74,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public int GetInt(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_int(_handle, keyBytes, out int value));
         return value;
     }
@@ -87,7 +87,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public bool GetBool(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_bool(_handle, keyBytes, out int value));
         return value != 0;
     }
@@ -100,7 +100,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public double GetDouble(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_double(_handle, keyBytes, out double value));
         return value;
     }
@@ -113,7 +113,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public string GetString(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_string(_handle, keyBytes, out IntPtr ptr));
         return NativeInterop.PtrToStringUtf8(ptr);
     }
@@ -126,7 +126,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public string GetPath(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_path(_handle, keyBytes, out IntPtr ptr));
         return NativeInterop.PtrToStringUtf8(ptr);
     }
@@ -139,7 +139,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public DateTime? GetDateTime(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_datetime(_handle, keyBytes, out long epochSeconds, out int hasValue));
         return hasValue != 0 ? DateTimeOffset.FromUnixTimeSeconds(epochSeconds).UtcDateTime : null;
     }
@@ -152,7 +152,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public string GetStringEnum(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_string_enum(_handle, keyBytes, out IntPtr ptr));
         return NativeInterop.PtrToStringUtf8(ptr);
     }
@@ -165,7 +165,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public int GetIntEnum(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_int_enum(_handle, keyBytes, out int value));
         return value;
     }
@@ -178,7 +178,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public IEnumerable<string> GetStringList(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_string_list(_handle, keyBytes, out IntPtr ptr, out ulong count));
         return NativeInterop.MarshalStringArray(ptr, count);
     }
@@ -191,7 +191,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public IEnumerable<string> GetPathList(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_path_list(_handle, keyBytes, out IntPtr ptr, out ulong count));
         return NativeInterop.MarshalStringArray(ptr, count);
     }
@@ -204,7 +204,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be retrieved.</exception>
     public IEnumerable<double> GetDoubleList(string key)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_get_double_list(_handle, keyBytes, out IntPtr ptr, out ulong count));
         return NativeInterop.MarshalDoubleArray(ptr, count);
     }
@@ -217,7 +217,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetInt(string key, int value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_set_int(_handle, keyBytes, value));
     }
 
@@ -229,7 +229,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetBool(string key, bool value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_set_bool(_handle, keyBytes, value ? 1 : 0));
     }
 
@@ -241,7 +241,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetDouble(string key, double value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_set_double(_handle, keyBytes, value));
     }
 
@@ -253,8 +253,8 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetString(string key, string value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        byte[] valueBytes = NativeInterop.StringToUtf8(value);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
+        byte[] valueBytes = NativeInterop.StringToUtf8Z(value);
         ThrowIfError(NativeMduApi.mdu_set_string(_handle, keyBytes, valueBytes));
     }
 
@@ -266,8 +266,8 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetPath(string key, string value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        byte[] valueBytes = NativeInterop.StringToUtf8(value);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
+        byte[] valueBytes = NativeInterop.StringToUtf8Z(value);
         ThrowIfError(NativeMduApi.mdu_set_path(_handle, keyBytes, valueBytes));
     }
 
@@ -279,7 +279,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetDateTime(string key, DateTime? value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         long epoch = value.HasValue ? new DateTimeOffset(value.Value, TimeSpan.Zero).ToUnixTimeSeconds() : 0L;
         ThrowIfError(NativeMduApi.mdu_set_datetime(_handle, keyBytes, epoch, value.HasValue ? 1 : 0));
     }
@@ -292,8 +292,8 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetStringEnum(string key, string value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
-        byte[] valueBytes = NativeInterop.StringToUtf8(value);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
+        byte[] valueBytes = NativeInterop.StringToUtf8Z(value);
         ThrowIfError(NativeMduApi.mdu_set_string_enum(_handle, keyBytes, valueBytes));
     }
 
@@ -305,7 +305,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetIntEnum(string key, int value)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         ThrowIfError(NativeMduApi.mdu_set_int_enum(_handle, keyBytes, value));
     }
 
@@ -317,7 +317,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetStringList(string key, IEnumerable<string> values)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         NativeInterop.MarshalStringArray(values.ToArray(), (ptr, size) =>
             ThrowIfError(NativeMduApi.mdu_set_string_list(_handle, keyBytes, ptr, size)));
     }
@@ -330,7 +330,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetPathList(string key, IEnumerable<string> values)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         NativeInterop.MarshalStringArray(values.ToArray(), (ptr, size) =>
             ThrowIfError(NativeMduApi.mdu_set_path_list(_handle, keyBytes, ptr, size)));
     }
@@ -343,7 +343,7 @@ internal sealed class MduApi : IDisposable
     /// <exception cref="InvalidOperationException">When the property could not be set.</exception>
     public void SetDoubleList(string key, IEnumerable<double> values)
     {
-        byte[] keyBytes = NativeInterop.StringToUtf8(key);
+        byte[] keyBytes = NativeInterop.StringToUtf8Z(key);
         NativeInterop.MarshalDoubleArray(values.ToArray(), (ptr, size) =>
             ThrowIfError(NativeMduApi.mdu_set_double_list(_handle, keyBytes, ptr, size)));
     }

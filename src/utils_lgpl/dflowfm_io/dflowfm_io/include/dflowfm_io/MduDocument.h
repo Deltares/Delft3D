@@ -41,7 +41,8 @@ namespace dflowfm_io
 
         /// @brief Loads and validates an MDU file from a file path.
         /// @param path Path to the MDU file to load.
-        /// @throws std::runtime_error if the file cannot be opened.
+        /// @throws std::invalid_argument if @p path is empty.
+        /// @throws std::ios_base::failure if the file cannot be opened.
         /// @return Issues found during loading.
         IssueReport Load(const std::filesystem::path& path);
 
@@ -51,7 +52,8 @@ namespace dflowfm_io
 
         /// @brief Writes the current MDU data to a file.
         /// @param path Path of the file to write. The file is created or overwritten.
-        /// @throws std::runtime_error if the file cannot be opened for writing.
+        /// @throws std::invalid_argument if @p path is empty.
+        /// @throws std::ios_base::failure if the file cannot be opened for writing.
         void Save(const std::filesystem::path& path) const;
 
         /// @brief Returns the parsed and validated MDU data.

@@ -18,7 +18,7 @@ namespace dflowfm_io
                 .allowDuplicateProperties = false,
                 .allowMultiLineValues = true,
             },
-        .formatterOptions
+        .formatterOptions =
             {
                 .propertyKeyWidth = 42,
                 .propertyValueWidth = 20,
