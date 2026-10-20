@@ -3351,6 +3351,7 @@ function initmorlyr(this) result (istat)
     nullify(settings%thtrlyr)
     nullify(settings%zdiff)
     nullify(settings%plyrthk)
+    nullify(settings%aldiff)
     !
     nullify(state%bodsed)
     nullify(state%dpsed)
