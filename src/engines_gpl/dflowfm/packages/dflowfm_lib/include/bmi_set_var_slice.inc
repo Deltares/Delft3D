@@ -266,6 +266,10 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      turbulent_kinetic_energy_wu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("turkin1")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     turbulent_kinetic_energy_wu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("vicwws")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))

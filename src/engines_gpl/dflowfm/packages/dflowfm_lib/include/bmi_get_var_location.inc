@@ -176,6 +176,8 @@ select case(var_name)
     location_name = "edge"
   case("zbndq")
     location_name = "edge"
+  case("turkin1")
+    location_name = "edge"
   case("turbulent_kinetic_energy_wu")
     location_name = "edge"
   case("vicwws")

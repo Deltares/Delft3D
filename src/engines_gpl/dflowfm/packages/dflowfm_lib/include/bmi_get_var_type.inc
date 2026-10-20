@@ -176,6 +176,8 @@ select case(var_name)
     type_name = "double"
   case("zbndq")
     type_name = "double"
+  case("turkin1")
+    type_name = "double"
   case("turbulent_kinetic_energy_wu")
     type_name = "double"
   case("vicwws")

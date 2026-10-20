@@ -176,6 +176,8 @@
      x = c_loc(zbndu)
   case("zbndq") !<  [m3/s] discharge  boundary points function {"location": "edge", "shape": ["nbndu"]}
      x = c_loc(zbndq)
+  case("turkin1") !<  [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
+     x = c_loc(turbulent_kinetic_energy_wu)
   case("turbulent_kinetic_energy_wu") !<  [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
      x = c_loc(turbulent_kinetic_energy_wu)
   case("vicwws") !<  [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}

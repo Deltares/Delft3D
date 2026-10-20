@@ -177,7 +177,7 @@
   case(73)
      var_name = "zbndq"
   case(74)
-     var_name = "turbulent_kinetic_energy_wu"
+     var_name = "turkin1"
   case(75)
      var_name = "vicwws"
   case(76)
