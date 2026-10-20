@@ -12470,12 +12470,21 @@ contains
             ! turbulent_dissipation_wu
             ierr = get_var_and_shift(imapfile, 'turbulent_dissipation_wu', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
+            ! Older map and restart files use tureps1 and turkin1.
+            if (ierr == nf90_enotvar) then
+               ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+                                        um%jamergedmap, um%ilink_own, um%ilink_merge)
+            end if
             call check_error(ierr, 'turbulent_dissipation_wu')
             call readyy('Reading map data', 0.77_dp)
 
             ! turbulent_kinetic_energy_wu
             ierr = get_var_and_shift(imapfile, 'turbulent_kinetic_energy_wu', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
+            if (ierr == nf90_enotvar) then
+               ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+                                        um%jamergedmap, um%ilink_own, um%ilink_merge)
+            end if
             call check_error(ierr, 'turbulent_kinetic_energy_wu')
             call readyy('Reading map data', 0.78_dp)
 
@@ -12483,9 +12492,17 @@ contains
             if (um%jafillghost == 1) then
                ierr = get_var_and_shift(imapfile, 'turbulent_dissipation_wu', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
+               if (ierr == nf90_enotvar) then
+                  ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+                                           um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
+               end if
                call check_error(ierr, 'tureps1_ghost_cells')
                ierr = get_var_and_shift(imapfile, 'turbulent_kinetic_energy_wu', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
+               if (ierr == nf90_enotvar) then
+                  ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+                                           um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
+               end if
                call check_error(ierr, 'turbulent_kinetic_energy_wu_ghost_cells')
             end if
          end if
