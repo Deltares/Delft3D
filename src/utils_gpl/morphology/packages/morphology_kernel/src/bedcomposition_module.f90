@@ -1021,7 +1021,7 @@ subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength,
         call getsedthick_1point(this, nm, seddep1)
         dz(nm) = seddep1-seddep0
     enddo
-end subroutine updmorlyr_layered_bed_with_coarse_layer
+end subroutine updmorlyr_layered_bed_with_coarse_layer 
 
 
 !> Updates a fully mixed bed composition.
