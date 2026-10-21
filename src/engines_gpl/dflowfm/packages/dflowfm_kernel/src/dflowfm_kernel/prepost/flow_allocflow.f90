@@ -60,7 +60,7 @@ contains
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
-                        sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
+                        sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
@@ -1035,12 +1035,6 @@ contains
       if (jasal > 0 .or. kmx > 0) then
          call realloc(sa1, ndkx, stat=ierr, fill=salini, keepexisting=.false.)
          call aerr('sa1(ndkx)', ierr, ndkx)
-         call realloc(sam0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('sam0(ndkx)', ierr, ndkx)
-         call realloc(sam1, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('sam1(ndkx)', ierr, ndkx)
-         call realloc(same, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('same(ndkx)', ierr, ndkx)
       end if
 
       if (ja_computed_airdensity == 1) then
