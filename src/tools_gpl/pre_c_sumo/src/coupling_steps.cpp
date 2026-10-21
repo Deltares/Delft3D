@@ -31,6 +31,10 @@ namespace pre_c_sumo
         std::vector<FarFieldLayer> layers;
         for (size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
         {
+            // Create a lambda to extract constituent values for the current layer
+            const auto from_constituent_id_to_value = [&mesh_3d, layer_index = index_3d + i](const auto id) {
+                return mesh_3d.quantities[id][layer_index];
+            };
             layers.emplace_back(FarFieldLayer{
                 // 3d.coordinates = (x1, y1, z1, x2, y2, z2, ...): skip "index_3d + i" points, then skip x and y
                 .z_coordinate = mesh_3d.coordinates[(index_3d + i) * 3 + 2],
@@ -38,10 +42,7 @@ namespace pre_c_sumo
                 .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
                 .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
-                .constituents = constituent_ids |
-                                std::views::transform([&mesh_3d, layer_index = index_3d + i](const auto id) {
-                                    return mesh_3d.quantities[id][layer_index];
-                                }) |
+                .constituents = constituent_ids | std::views::transform(from_constituent_id_to_value) |
                                 std::ranges::to<std::vector>(),
             });
         }
@@ -57,12 +58,13 @@ namespace pre_c_sumo
     {
         const std::size_t index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
         const auto number_of_layers = mesh_3d.number_of_zcoordinates;
-        const auto average_intake_constituent = [&mesh_3d, index_3d, number_of_layers](const auto id) {
+        // Create a lambda to compute the average value of a constituent over all layers at the intake point
+        const auto compute_depth_average = [&mesh_3d, index_3d, number_of_layers](const auto id) {
             const std::span<const double> values(mesh_3d.quantities[id]);
             const auto intake_layers = values.subspan(index_3d, number_of_layers);
             return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
         };
-        return constituent_ids | std::views::transform(average_intake_constituent) | std::ranges::to<std::vector>();
+        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
     }
 
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
