@@ -72,9 +72,10 @@ contains
       use m_waveconst
 
       real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
+      real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
-      real(kind=dp) :: hdzb, dtiL, adv, omegu
+      real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
       real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface.
@@ -232,7 +233,7 @@ contains
          end if
 
          theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
-         dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
+         dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
 
@@ -285,9 +286,9 @@ contains
                turbulent_dissipation_wu_old(Lb0:Lt) = turbulent_dissipation_wu(Lb0:Lt)
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_kinetic_energy_wu_old (Lb0:Lt)
+               dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_wu_old (Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old , turbulent_kinetic_energy_ws)
@@ -579,9 +580,9 @@ contains
                !_____________________________________________________________________________________!
 
                ak(0:kxL) = 0.0_dp ! Matrix initialization eps, tau
-               bk(0:kxL) = dtiL
+               bk(0:kxL) = dt_inverse
                ck(0:kxL) = 0.0_dp
-               dk(0:kxL) = dtiL * turbulent_dissipation_wu_old(Lb0:Lt)
+               dk(0:kxL) = dt_inverse * turbulent_dissipation_wu_old(Lb0:Lt)
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
@@ -854,7 +855,7 @@ contains
             k2 = ln(2, L)
             if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
+                  dk(L - Lb + 1) = dt_inverse * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
                end if
             end if
          end do
