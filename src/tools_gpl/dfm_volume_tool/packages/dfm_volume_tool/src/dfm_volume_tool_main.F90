@@ -34,12 +34,14 @@
 program dfm_volume_tool
 !-----------------------------------------------------------------------------------------------------------------------------------
 
+   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
    use ir_precision ! Integers and reals precision definition.
    use precision
    use iso_c_utils
    use string_module
    use messagehandling
    use dfm_volume_tool_version_module
+   use dfm_volume_tool_static_version_info, only: TOOL_BASE_NAME, TOOL_VERSION
    use data_type_command_line_interface, only: type_command_line_interface ! Definition of Type_Command_Line_Interface.
    use m_netcdf_output
    use m_volumetables
@@ -49,7 +51,7 @@ program dfm_volume_tool
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-   implicit none
+   implicit none(type, external)
 
    character(len=IDLEN) :: dll_name
    character(len=IDLEN) :: mdufile
@@ -98,6 +100,7 @@ program dfm_volume_tool
 ! externals
 
    integer, external :: open_shared_library, bmi_initialize
+   external :: dfm_generate_volume_tables, bmi_get_var_pointer, bmi_get_var_shape, bmi_get_var, write_1d_flowgeom_ugrid
 
    type(type_command_line_interface) :: cli !< Command Line Interface (CLI).
    integer(I4P) :: ierr !< Error trapping flag.
@@ -121,7 +124,7 @@ program dfm_volume_tool
 !! setting Command Line Arguments
    call cli%add(switch='--mdufile', switch_ab='-f', help='Name of the input mdu file.', &
                 required=.true., act='store', def=char(0), valname='FILE')
-   call cli%add(switch='--increment', switch_ab='-i', help='required interval for the volume tables', &
+   call cli%add(switch='--increment', switch_ab='-i', help='finite positive interval for the volume tables', &
                 required=.true., act='store', def='', valname='INCREMENT')
    call cli%add(switch='--output', switch_ab='-o', &
                 help='output type: "Total" (default), "Branches", "Gridpoints" (separate file only), "All"', &
@@ -137,6 +140,7 @@ program dfm_volume_tool
 
    if (ierr /= 0) then
       call setmessage(LEVEL_ERROR, 'Error reading input parameters')
+      error stop 1
    end if
 
 ! Check options
@@ -147,6 +151,12 @@ program dfm_volume_tool
    end if
    if (ierr == 0) then
       call cli%get(switch='--increment', val=increment, error=ierr)
+   end if
+   if (ierr == 0) then
+      if (.not. ieee_is_finite(increment) .or. increment <= tiny(1.0_dp)) then
+         call setmessage(LEVEL_ERROR, 'Volume-table increment must be finite and greater than tiny(1.0_DP).')
+         error stop 1
+      end if
    end if
    if (ierr == 0) then
       call cli%get(switch='--output', val=output_type, error=ierr)
@@ -176,6 +186,11 @@ program dfm_volume_tool
       end if
    end if
 
+   if (ierr /= 0) then
+      call setmessage(LEVEL_ERROR, 'Error retrieving input parameters')
+      error stop 1
+   end if
+
 #ifdef WIN32
    dll_name = 'dflowfm'
 #else
@@ -186,6 +201,7 @@ program dfm_volume_tool
       if (ierr /= 0) then
          msgbuf = 'Cannot open'//trim(dll_name)//'.'
          call msg_flush()
+         error stop 1
       end if
 
    end if
@@ -196,6 +212,7 @@ program dfm_volume_tool
       if (ierr /= 0) then
          msgbuf = 'Cannot initialize '''//trim(mdufile)//'''.'
          call msg_flush()
+         error stop 1
       end if
 
       ! Generate the volume tables
@@ -285,17 +302,18 @@ program dfm_volume_tool
       allocate (surface(numlevels, numids), volume(numlevels, numids), storage(numlevels, numids), deadstorage(numlevels, numids))
       allocate (levels(numlevels), ids(numids), mask(numpoints), wl_deadstorage(numpoints))
 
-      surface = 0.0_DP
-      volume = 0.0_DP
-      storage = 0.0_DP
-      deadstorage = 0.0_DP
+      surface = 0.0_dp
+      volume = 0.0_dp
+      storage = 0.0_dp
+      deadstorage = 0.0_dp
 
       do i = 1, numlevels
          levels(i) = real(i - 1, kind=DP) * increment
       end do
       tableincrement = increment
 
-      call calculate_dead_storage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, ln2nd, kcu2, numlinks, numpoints, numbnd)
+      call calculate_dead_storage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, &
+                                  ln2nd, kcu2, numlinks, numpoints, numbnd)
 
       id_index = 0
       if (compute_total) then
@@ -336,10 +354,10 @@ program dfm_volume_tool
                    gridvolume(numlevels, numgridpoints), gridstorage(numlevels, numgridpoints), &
                    bedlevels(numgridpoints), topheights(numgridpoints), tablecount(numgridpoints))
 
-         gridsurface = 0.0_DP
-         gridvolume = 0.0_DP
-         gridstorage = 0.0_DP
-         griddeadstorage = 0.0_DP
+         gridsurface = 0.0_dp
+         gridvolume = 0.0_dp
+         gridstorage = 0.0_dp
+         griddeadstorage = 0.0_dp
 
          do i = 1, numgridpoints
             bedlevels(i) = volumetable(i)%bedlevel
