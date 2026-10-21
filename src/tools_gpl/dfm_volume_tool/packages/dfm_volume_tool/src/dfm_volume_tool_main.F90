@@ -332,16 +332,16 @@ program dfm_volume_tool
       if (compute_on_gridpoints) then !Gridpoints are written separately
          !compute maximum volume table length
 
-         allocate (gridsurface(numlevels, numpoints), griddeadstorage(numlevels, numpoints), &
-                   gridvolume(numlevels, numpoints), gridstorage(numlevels, numpoints), &
-                   bedlevels(numpoints), topheights(numpoints), tablecount(numpoints))
+         allocate (gridsurface(numlevels, numgridpoints), griddeadstorage(numlevels, numgridpoints), &
+                   gridvolume(numlevels, numgridpoints), gridstorage(numlevels, numgridpoints), &
+                   bedlevels(numgridpoints), topheights(numgridpoints), tablecount(numgridpoints))
 
          gridsurface = 0.0_DP
          gridvolume = 0.0_DP
          gridstorage = 0.0_DP
          griddeadstorage = 0.0_DP
 
-         do i = 1, numpoints
+         do i = 1, numgridpoints
             bedlevels(i) = volumetable(i)%bedlevel
             topheights(i) = volumetable(i)%topheight
             tablecount(i) = volumetable(i)%count

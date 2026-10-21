@@ -14150,7 +14150,7 @@ contains
       use precision, only: dp
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
-      use m_flowgeom, only: nd
+      use m_flowgeom, only: nd, ndx2d
       use netcdf
       use m_alloc, only: realloc, reallocP
       use dfm_error
@@ -14230,10 +14230,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      if (allocated(flowgeom_map%node_map_1d)) then
-         nodes_1d = flowgeom_map%node_map_1d
+      if (allocated(flowgeom1d%node_map_1d)) then
+         nodes_1d = flowgeom1d%node_map_1d
       else
-         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
+         nodes_1d = [(ndx2d + i, i=1, flowgeom1d%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &

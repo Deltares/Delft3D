@@ -101,6 +101,9 @@ contains
       integer :: j, l
 
       volume = 0d0
+      surface = 0d0
+      storage = 0d0
+      deadstorage = 0d0
 
       do j = 1, numpoints
          l = links(j)
