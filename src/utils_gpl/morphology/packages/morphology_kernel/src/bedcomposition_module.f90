@@ -840,6 +840,7 @@ subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength,
     real(fp), dimension(:), pointer :: rhofrac, thclyr, thtrlyr
     real(fp), dimension(:,:), pointer :: svfrac, mobile, sedshort, thlyr
     real(fp), dimension(:,:,:), pointer :: msed
+    logical, parameter :: track_shortage_in_coarse_layer = .true.
 
     morlyrnum => this%settings%morlyrnum
     rhofrac => this%settings%rhofrac
@@ -859,7 +860,7 @@ subroutine updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength,
             do l = 1, this%settings%nfrac
                temp  = msed(l, 1, nm) + dbodsd(l, nm) ! account for mobility of sediment here too?
                call handle_sediment_shortage(temp, msed(l, 1, nm), dbodsd(l, nm), &
-                   & sedshort(l, nm), .true., nm, l, morlyrnum, messages)
+                   & sedshort(l, nm), track_shortage_in_coarse_layer, nm, l, morlyrnum, messages)
                msed(l, 1, nm) = temp
             enddo
             !
