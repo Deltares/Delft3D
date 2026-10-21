@@ -71,7 +71,7 @@ contains
       use m_alloc, only: aerr
       use m_waveconst
 
-      real(kind=dp) :: tetm1
+      real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
@@ -231,7 +231,7 @@ contains
             end do
          end if
 
-         tetm1 = 1.0_dp - THETA_KEPS_DIFFUSION
+         theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
          dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
@@ -346,8 +346,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old (L) - turbulent_kinetic_energy_wu_old (Lu)) * tetm1 &
-                             + difd * (turbulent_kinetic_energy_wu_old (L - 1) - turbulent_kinetic_energy_wu_old (L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old (L) - turbulent_kinetic_energy_wu_old (Lu)) * theta_complement &
+                             + difd * (turbulent_kinetic_energy_wu_old (L - 1) - turbulent_kinetic_energy_wu_old (L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -610,8 +610,8 @@ contains
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
                   ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * tetm1 &
-                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * tetm1
+                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
+                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
                   end if
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
