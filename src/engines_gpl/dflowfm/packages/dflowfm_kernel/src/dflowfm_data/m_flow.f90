@@ -469,19 +469,15 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: epsmaxlev = 1.0e-8_dp !< [m] Eps lev diff.
    real(kind=dp) :: epsmaxlevm = 1.0e-8_dp !< [m] Eps lev diff minus part.
 
-   logical :: debugon !< [-] Texts yes or no.
    logical :: validateon !< [-] Should we validate flow state yes or no (switched off at water drop).
    integer :: noddifmaxlev !< [-] Node number of max lev diff.
    integer :: nodneg !< [-] Node number with negative hs.
    integer :: numnodneg !< [-] Number of posh checks.
-   integer :: jaLinkdried !< [-] There was at least 1 setback in this step.
-   integer :: Linkdriedmx = 0 !< [-] Maixmum number of au growth steps after having dried.
+   integer :: Linkdriedmx = 0 !< [-] Maximum number of au growth steps after having dried.
    integer :: nodnegtek !< [-] Node number with negative hs to draw.
    integer :: kkcflmx !< [-] 2D Node number with max courant.
    integer :: kcflmx !< [-] 3D Node number with max courant.
    integer :: itsol !< [-] Act number of iterations in solve.
-   integer :: nochkadv !< [-] Number of chkadvd checks.
-   integer :: nrimptran !< [-] Number of implicit transport points.
    integer :: ndmin !< [-] Node number where min znod is found in viewing area.
    integer :: ndmax !< [-] Node number where max znod is found in viewing area.
    integer :: Lnmin !< [-] Link number where min zlin is found in viewing area.
@@ -644,15 +640,12 @@ contains
 
       difmaxlev = 0 ! max lev diff (m3)
 
-      debugon = .false. ! texts  yes or no
       validateon = .true. ! validate flow state yes or no
 
       nodneg = 0 ! node nr with negative hs
       kkcflmx = 0 ! 2D node nr with max courant
       itsol = 0 ! act nr. of iterations in solve
-      nochkadv = 0 ! nr of chkadvd checks
       numnodneg = 0 ! nr of posh checks
-      nrimptran = 0 ! nr of implicit transport points
       ndmin = 0 ! node nr where min znod is found in viewing area
       ndmax = 0 ! node nr where max znod is found in viewing area
       Lnmin = 0 ! link nr where min zlin is found in viewing area
