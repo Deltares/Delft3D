@@ -614,7 +614,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
 
     logical :: track_shortage
     integer :: l, nm, k, kk, ktemp
-    real(fp) :: fac, seddep0, seddep1, thdiff, temp, thick, thickd, thicke
+    real(fp) :: seddep0, seddep1, thdiff, temp, thick, thickd, thicke
     real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
     real(fp) :: totmassd, totsv, totsvd, totsve
     real(fp) :: transfer_solid_volume
@@ -1616,7 +1616,6 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep, 
     real(fp), dimension(this%settings%nfrac)    :: dmi2
     real(fp), dimension(:,:)  , pointer         :: preload
     real(fp), dimension(:,:)  , pointer         :: depos_time
-    real(fp)                                    :: temp
     type(bedcomp_work)        , pointer         :: work
 !
 !! executable statements -------------------------------------------------------
@@ -2091,7 +2090,6 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     real(fp)                          :: t1         !
     real(fp)                          :: t2         !
     real(fp)                          :: tau50      !
-    real(fp)                          :: theta !< dimensionless shear stress
     real(fp)                          :: thetcr !< Shields parameter
     real(fp)                , pointer :: asfm
     real(fp)                , pointer :: bsfm
@@ -2190,15 +2188,9 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     integer                                 :: l
     real(fp)                                :: cel_dunes
     real(fp)                                :: dunelength_coarse_layer
-    real(fp)                                :: hefac
-    real(fp)                                :: localmoblyr
-    real(fp)                                :: mav_ms_cl !< available mass of mobile sediment in coarse layer for exchange
     real(fp)                                :: mdown !< total mass that sinks from active to coarse layer
     real(fp)                                :: mtot_ac !< total mass in active layer
-    real(fp)                                :: mtot_crs !< total mass in coarse layer
-    real(fp)                                :: mup !< total mass that rises from coarse to active layer
     real(fp)                                :: pmob_ac !< fraction mobile sediment in active layer
-    real(fp)                                :: pmob_crs !< fraction mobile sediment in coarse layer
     real(fp)                                :: sinkfrac !< fraction immobile sediment that sinks from active to coarse layer
     real(fp)                                :: qs !< total sediment transport, units : m2/s
     real(fp), dimension(this%settings%nfrac):: pdown !< composition of sediment that sinks from active to coarse layer
@@ -2587,7 +2579,7 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, ifracreq,k
     !
     select case (ifracreq_)
     case (FRAC_MASS)
-       call getmfrac(this ,frac, nmfrom, nmto, kfrom2, kto2)
+       call getmfrac(this ,frac, nmfrom, nmto)
     case default ! FRAC_VOLUME
        call getvfrac(this ,frac, nmfrom, nmto, kfrom2, kto2)
     endselect
@@ -2870,24 +2862,20 @@ end subroutine getbedprop
 
 
 !> Returns mass fractions for the requested locations and layer range.
-subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
+subroutine getmfrac(this, frac, nmfrom, nmto)
     use precision
     integer                                                           , intent(in)  :: nmfrom !< First grid-location index.
     integer                                                           , intent(in)  :: nmto !< Last grid-location index.
     type(bedcomp_data)                                                , intent(in)  :: this     !< bed composition object
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac !< Mass fraction per location and sediment class [-].
-    integer                                                           , intent(in)  :: kfrom !< First layer included in the calculation.
-    integer                                                           , intent(in)  :: kto !< Last layer included in the calculation.
     !
     ! Local variables
     !
     integer                             :: l
     integer                             :: nm
-    integer                             :: k
     real(fp)                            :: sedtot
     real(prec), dimension(:,:), pointer :: bodsed
     real(fp), dimension(:,:,:), pointer :: msed
-    real(fp)                            :: msedl
     !
     !! executable statements -------------------------------------------------------
     !
@@ -4343,7 +4331,7 @@ subroutine consolidate(this, nm, morft, dtmor)
         call consolidate_gibson(this, nm, dtmor)
 
     case (CONSOL_DECON) ! Dynamic Equilibrium CONsolidation (DECON)
-        call consolidate_decon(this, nm, dtmor)
+        call consolidate_decon(this, nm)
 
     case (CONSOL_TERZAGHI) ! simple loading model (primary compaction)
         if (this%settings%include_peat) then
@@ -4371,8 +4359,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     integer                                                           , intent(in)  :: nm !< Grid-location index.
     real(fp)                                                          , intent(in)  :: dtmor !< Morphological time step [s].
 
-    integer                              :: istat
-
     !
     ! Local variables
     !
@@ -4382,15 +4368,11 @@ subroutine consolidate_gibson(this, nm, dtmor)
     integer                                   :: l
     real(fp)                                  :: svfractemp !< temp real store and read in the volume fraction
     real(fp)                                  :: nfd !< sediment fractal exponent number, = 2.0/(3.0-nf)
-    real(fp)                                  :: load !< not used in Gibson's formulation
-    real(fp)                                  :: thnew !< not used in Gibson's formulation
-    real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:,:,:), pointer      :: msed
     real(fp) , dimension(:,:)  , pointer      :: preload !< not used in Gibson's formulation
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: thlyr !< including pore water
     real(fp) , dimension(:)    , pointer      :: rhow
-    real(fp)                                  :: frac
     real(fp) , dimension(:)    , pointer      :: rhofrac
     real(fp)                                  :: thtrlyr
 
@@ -4398,18 +4380,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     real(fp)                                  :: thtemp
     real(fp)                                  :: temp1
     real(fp)                                  :: temp2
-
-    ! Dynamic Equilibrium CONsolidation (DECON)
-    real(fp)                                  :: thmudgibson_new !< total gibson height for mud
-    real(fp)                                  :: thsandgibson_new !< total gibson height for sand
-    integer ,dimension(this%settings%nconlyr) :: kzlyr !< number of vertical grid used to discretize equilibrium concentration profile in each layer
-    integer                                   :: kztotal
-    integer                                   :: lowerindex
-    integer                                   :: upperindex
-    real(fp) , dimension(:) , allocatable     :: zcprofile
-    real(fp) , dimension(:) , allocatable     :: czmud !< equilibrium mud concentration profile
-    real(fp)                                  :: z_up
-    real(fp)                                  :: z_low
 
     !! ---> more variables used
     integer, pointer  :: nlyr
@@ -4656,7 +4626,7 @@ end subroutine consolidate_gibson
 
 
 !> Consolidates the bed at grid location nm using Dynamic Equilibrium Consolidation.
-subroutine consolidate_decon(this, nm, dtmor)
+subroutine consolidate_decon(this, nm)
     use precision
     use sediment_basics_module
     use morphology_data_module
@@ -4666,22 +4636,12 @@ subroutine consolidate_decon(this, nm, dtmor)
     !
     type(bedcomp_data)                                                              :: this     !< bed composition object
     integer                                                           , intent(in)  :: nm !< Grid-location index.
-    real(fp)                                                          , intent(in)  :: dtmor !< Morphological time step [s].
-
-    integer                              :: istat
-
     !
     ! Local variables
     !
-    integer                                   :: j !< loop index used to deal with 0 layer thickness!
     integer                                   :: k
-    integer                                   :: i !< loop index used for replenish step, property change for transport layer
     integer                                   :: l
-    real(fp)                                  :: svfractemp !< temp real store and read in the volume fraction
     real(fp)                                  :: nfd !< sediment fractal exponent number, = 2.0/(3.0-nf)
-    real(fp)                                  :: load !< not used in Gibson's formulation
-    real(fp)                                  :: thnew !< not used in Gibson's formulation
-    real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:,:,:), pointer      :: msed
     real(fp) , dimension(:,:)  , pointer      :: preload !< preload for Terzaghi
     real(fp) , dimension(:,:)  , pointer      :: depos_time !< deposition time for Terzaghi
@@ -4693,15 +4653,8 @@ subroutine consolidate_decon(this, nm, dtmor)
 
     real(fp)                                  :: thconlyreqm !< equilibrium consolidate layer thickness
 
-    ! Dynamic Equilibrium CONsolidation (DECON)
     real(fp)                                  :: thmudgibson_new !< total gibson height for mud
     real(fp)                                  :: thsandgibson_new !< total gibson height for sand
-    integer ,dimension(this%settings%nconlyr) :: kzlyr !< number of vertical grid used to discretize equilibrium concentration profile in each layer
-    integer                                   :: kztotal
-    integer                                   :: lowerindex
-    integer                                   :: upperindex
-    real(fp) , dimension(:) , allocatable     :: zcprofile
-    real(fp) , dimension(:) , allocatable     :: czmud !< equilibrium mud concentration profile
     real(fp)                                  :: z_up
     real(fp)                                  :: z_low
 
