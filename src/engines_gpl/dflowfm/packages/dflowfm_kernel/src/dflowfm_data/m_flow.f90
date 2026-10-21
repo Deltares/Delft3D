@@ -149,7 +149,7 @@ module m_flow
 
    integer :: nsigma
 
-   ! Flow arrays
+   ! flow arrays
 
    ! node related, dim = ndx
    real(kind=dp), allocatable, target, dimension(:) :: s0 !< [m] Waterlevel at start of timestep. {"location": "face", "shape": ["ndx"]}
