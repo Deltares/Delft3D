@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, tetavkeps, &
                         EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old , zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -192,9 +192,9 @@ contains
                call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_dissipation_ws, ierror)
             end if
 
-            tqcu = 0.0_dp
-            eqcu = 0.0_dp
-            sqcu = 0.0_dp
+            sum_q_times_turbulent_kinetic_energy_ws = 0.0_dp
+            sum_q_times_turbulent_dissipation_ws = 0.0_dp
+            sum_inflowing_discharges_ws = 0.0_dp
 
             do LL = 1, lnx
                call getLbotLtop(LL, Lb, Lt)
@@ -203,13 +203,13 @@ contains
                   k2 = ln(2, L)
                   qqq = 0.5_dp * (q1(L) + q1(L + 1))
                   if (qqq > 0) then ! set upwind center values on links
-                     tqcu(k2) = tqcu(k2) + qqq * turbulent_kinetic_energy_ws(k1)
-                     eqcu(k2) = eqcu(k2) + qqq * turbulent_dissipation_ws(k1)
-                     sqcu(k2) = sqcu(k2) + qqq
+                     sum_q_times_turbulent_kinetic_energy_ws(k2) = sum_q_times_turbulent_kinetic_energy_ws(k2) + qqq * turbulent_kinetic_energy_ws(k1)
+                     sum_q_times_turbulent_dissipation_ws(k2) = sum_q_times_turbulent_dissipation_ws(k2) + qqq * turbulent_dissipation_ws(k1)
+                     sum_inflowing_discharges_ws(k2) = sum_inflowing_discharges_ws(k2) + qqq
                   else if (qqq < 0) then
-                     tqcu(k1) = tqcu(k1) - qqq * turbulent_kinetic_energy_ws(k2)
-                     eqcu(k1) = eqcu(k1) - qqq * turbulent_dissipation_ws(k2)
-                     sqcu(k1) = sqcu(k1) - qqq
+                     sum_q_times_turbulent_kinetic_energy_ws(k1) = sum_q_times_turbulent_kinetic_energy_ws(k1) - qqq * turbulent_kinetic_energy_ws(k2)
+                     sum_q_times_turbulent_dissipation_ws(k1) = sum_q_times_turbulent_dissipation_ws(k1) - qqq * turbulent_dissipation_ws(k2)
+                     sum_inflowing_discharges_ws(k1) = sum_inflowing_discharges_ws(k1) - qqq
                   end if
                end do
             end do
@@ -477,15 +477,15 @@ contains
                               arLL = a1(n2)
                            end if
                            volki = 1.0_dp / (dzw(k) * arLL)
-                           dk(k) = dk(k) + tqcu(kup) * volki
-                           bk(k) = bk(k) + sqcu(kup) * volki
+                           dk(k) = dk(k) + sum_q_times_turbulent_kinetic_energy_ws(kup) * volki
+                           bk(k) = bk(k) + sum_inflowing_discharges_ws(kup) * volki
                         else if (javakeps == 4) then ! turkin
                            k1 = ln(1, L)
                            k2 = ln(2, L)
                            volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
                            volki = 1.0_dp / volki
-                           dk(k) = dk(k) + (ac1 * tqcu(k1) + ac2 * tqcu(k2)) * volki
-                           bk(k) = bk(k) + (ac1 * sqcu(k1) + ac2 * sqcu(k2)) * volki
+                           dk(k) = dk(k) + (ac1 * sum_q_times_turbulent_kinetic_energy_ws(k1) + ac2 * sum_q_times_turbulent_kinetic_energy_ws(k2)) * volki
+                           bk(k) = bk(k) + (ac1 * sum_inflowing_discharges_ws(k1) + ac2 * sum_inflowing_discharges_ws(k2)) * volki
                         end if
                      end do
                   end if
@@ -720,15 +720,15 @@ contains
                            arLL = a1(n2)
                         end if
                         volki = 1.0_dp / (dzw(k) * arLL)
-                        dk(k) = dk(k) + eqcu(kup) * volki
-                        bk(k) = bk(k) + sqcu(kup) * volki
+                        dk(k) = dk(k) + sum_q_times_turbulent_dissipation_ws(kup) * volki
+                        bk(k) = bk(k) + sum_inflowing_discharges_ws(kup) * volki
                      else if (javakeps == 4) then ! tureps
                         k1 = ln(1, L)
                         k2 = ln(2, L)
                         volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
                         volki = 1.0_dp / volki
-                        dk(k) = dk(k) + (ac1 * eqcu(k1) + ac2 * eqcu(k2)) * volki
-                        bk(k) = bk(k) + (ac1 * sqcu(k1) + ac2 * sqcu(k2)) * volki
+                        dk(k) = dk(k) + (ac1 * sum_q_times_turbulent_dissipation_ws(k1) + ac2 * sum_q_times_turbulent_dissipation_ws(k2)) * volki
+                        bk(k) = bk(k) + (ac1 * sum_inflowing_discharges_ws(k1) + ac2 * sum_inflowing_discharges_ws(k2)) * volki
                      end if
                   end do
                end if
