@@ -150,12 +150,11 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: dkx !< [-] Sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
    real(kind=dp), allocatable, dimension(:) :: sdkx !< [-] Sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
 
-   real(kind=dp), allocatable, dimension(:) :: asig !< [-] Alpha of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
    real(kind=dp), allocatable, dimension(:) :: ustb !< [-] Ustar at Lbot. {size=Lnx}
    real(kind=dp), allocatable, dimension(:) :: ustw !< [-] Ustar at Ltop. {size=Lnx}
    real(kind=dp), allocatable, dimension(:) :: ustbc !< [-] Ustar at bed at netnodes. {size=numk}
 
-   integer :: nfixed, nsigma
+   integer :: nsigma
 
    ! flow arrays
 
@@ -237,7 +236,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: ducydy !< [1/s] Cell center gradient of y-velocity in y-dir.
    real(kind=dp), dimension(:), allocatable :: spircrv !< [1/m] 1/R_s streamline curvature.
    real(kind=dp), dimension(:), allocatable :: spirint !< [m/s] Spiral flow intensity.
-   real(kind=dp), dimension(:), allocatable :: spirsrc !< [m/s2] Source term for spiral flow intensity.
    real(kind=dp), dimension(:), allocatable :: spirfx !< [m/s2] Secondary flow force for momentum in x-dir.
    real(kind=dp), dimension(:), allocatable :: spirfy !< [m/s2] Secondary flow force for momentum in y-dir.
    real(kind=dp), dimension(:), allocatable :: spirucm !< [m/s] Velocity in the flow node.
