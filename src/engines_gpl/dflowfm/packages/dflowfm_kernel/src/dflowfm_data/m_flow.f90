@@ -470,7 +470,6 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: samoutbndcum !< [ppt*m3] Cumulative mass out boundaries.
    real(kind=dp) :: samerrcum !< [ppt*m3] Mass error since start of computation.
 
-   real(kind=dp) :: epsmaxvol !< [m3] Eps vol diff.
    real(kind=dp) :: difmaxlev !< [m] Max lev diff.
    real(kind=dp) :: epsmaxlev = 1.0e-8_dp !< [m] Eps lev diff.
    real(kind=dp) :: epsmaxlevm = 1.0e-8_dp !< [m] Eps lev diff minus part.
@@ -648,10 +647,7 @@ contains
       ep1rela = 0 ! time relaxe ep1tot
       hsaver = 0 ! average waterdepth (m), vol/are
 
-      epsmaxvol = 1.0e-9_dp ! eps vol diff (m3) ! both not used now
       difmaxlev = 0 ! max lev diff (m3)
-      !epsmaxlev   = 1d-8 ! eps lev diff (m)  ! max waterlevel difference in Newton iterations
-      !epsmaxlevm  = 1d-8 ! eps lev diff (m)  ! max waterlevel difference in Newton iterations
 
       debugon = .false. ! texts  yes or no
       validateon = .true. ! validate flow state yes or no
