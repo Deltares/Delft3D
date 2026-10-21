@@ -101,9 +101,9 @@ end interface
 !
 !> Numerical controls for sediment-shortage tracking and diagnostics.
 type morlyrnumericstype
-    logical  :: track_mass_shortage       !< track the mass shortage
-    real(fp) :: mass_shortage_thresh      !< minimum erosion thickness for a shortage warning
-    integer  :: max_num_shortage_warnings !< maximum number of shortage warnings remaining
+    logical  :: track_mass_shortage       !< Whether sediment-shortage tracking is enabled.
+    real(fp) :: mass_shortage_thresh      !< Minimum sediment mass deficit that triggers a shortage warning [kg/m2].
+    integer  :: max_num_shortage_warnings !< Maximum number of shortage warnings remaining.
 end type morlyrnumericstype
 
 !
@@ -172,24 +172,24 @@ integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST = 2 
 
 !> Parameters controlling composition-dependent erosion.
 type erosion_settings
-    real(fp) :: A                                    !< activity of soil, which is used to calculate PI index
-    real(fp) :: alpha                                !< a constant in determining critical bed shear stress for erosion
-    real(fp) :: alpha_me                             !< tuning parameter in simple Me equation
-    real(fp) :: alpha_mix                            !< tuning parameter for cohesionless mixture
-    real(fp) :: alpha_lehir                          !< tuning parameter in Le Hir tcrero equation
-    real(fp) :: alpha_winterwerp                     !< tuning parameter in Winterwerp Me equation
-    real(fp) :: alpha1                               !< non-linearity coefficient for the interpolation between rho_min1 and rho_star [-]
-    real(fp) :: alpha2                               !< non-linearity coefficient for the interpolation between rho_star and rho_min2 [-]
-    real(fp) :: beta                                 !< a constant in determining critical bed shear stress for erosion
-    real(fp) :: beta_mix                             !< tuning parameter for cohesionless mixture
-    real(fp) :: C0                                   !< interceptin x axis of mud fraction vs critical bed shear stress for erosion plot
-    real(fp) :: d50sed                               !< d50 grain size of sediment supply [m]
-    real(fp) :: rho_max                              !< layer density at and above which critical shear stress taucr_min2 should be applied [kg/m3]
-    real(fp) :: rho_min                              !< layer density at and below which critical shear stress taucr_min1 should be applied [kg/m3]
-    real(fp) :: rho_star                             !< layer density at which critical shear stress maximum taucr_max should be applied [kg/m3]
-    real(fp) :: taucr_max                            !< maximum critical shear stress [N/m2]
-    real(fp) :: taucr_min1                           !< critical shear stress at low density [N/m2]
-    real(fp) :: taucr_min2                           !< critical shear stress at high density [N/m2]
+    real(fp) :: A                                    !< Soil activity used to calculate the plasticity index [-].
+    real(fp) :: alpha                                !< Coefficient in the Winterwerp critical-shear-stress relation [N/m2].
+    real(fp) :: alpha_me                             !< Maximum erosion-rate parameter in the Le Hir and Alonso relations [kg/m2/s].
+    real(fp) :: alpha_mix                            !< Coefficient in the critical-shear-stress relation for cohesionless mixtures [N/m2].
+    real(fp) :: alpha_lehir                          !< Coefficient in the Le Hir critical-shear-stress relation [N/m2].
+    real(fp) :: alpha_winterwerp                     !< Coefficient in the Winterwerp erosion-rate relation [-].
+    real(fp) :: alpha1                               !< Exponent for interpolation between rho_min and rho_star [-].
+    real(fp) :: alpha2                               !< Exponent for interpolation between rho_star and rho_max [-].
+    real(fp) :: beta                                 !< Exponent in the Winterwerp critical-shear-stress relation [-].
+    real(fp) :: beta_mix                             !< Exponent in the cohesionless-mixture critical-shear-stress relation [-].
+    real(fp) :: C0                                   !< Mud-volume-fraction threshold separating cohesionless and cohesive behavior [-].
+    real(fp) :: d50sed                               !< Median grain diameter of the sediment supply [m].
+    real(fp) :: rho_max                              !< Layer density at and above which taucr_min2 is applied [kg/m3].
+    real(fp) :: rho_min                              !< Layer density at and below which taucr_min1 is applied [kg/m3].
+    real(fp) :: rho_star                             !< Layer density at which taucr_max is applied [kg/m3].
+    real(fp) :: taucr_max                            !< Maximum critical shear stress [N/m2].
+    real(fp) :: taucr_min1                           !< Critical shear stress at low density [N/m2].
+    real(fp) :: taucr_min2                           !< Critical shear stress at high density [N/m2].
 end type erosion_settings
 
 !> Configuration and numerical settings for bed composition.
@@ -197,54 +197,54 @@ type bedcomp_settings
     !
     ! doubles
     !
-    real(fp) :: thlalyr                              !< thickness of Lagrangian underlayer layers
-    real(fp) :: theulyr                              !< thickness of Eulerian underlayer layers
-    real(fp) :: a_max                                !< maximum dune-length amplification factor [-]
-    real(fp) :: sinkfrac_max                         !< maximum sinking fraction
-    real(fp) :: asfm                                 !< active-sediment formulation parameter
-    real(fp) :: bsfm                                 !< bed-slope formulation parameter
-    real(fp) :: sigma_sfm                            !< sediment formulation parameter
+    real(fp) :: thlalyr                              !< Thickness of each Lagrangian underlayer [m].
+    real(fp) :: theulyr                              !< Thickness of each Eulerian underlayer [m].
+    real(fp) :: a_max                                !< Maximum dune-length amplification factor [-].
+    real(fp) :: sinkfrac_max                         !< Maximum sinking fraction [-].
+    real(fp) :: asfm                                 !< Coefficient in the Wilcock and McArdell critical-shear-stress power law, with grain diameter in millimetres [N/m2].
+    real(fp) :: bsfm                                 !< Exponent in the Wilcock and McArdell critical-shear-stress power law [-].
+    real(fp) :: sigma_sfm                            !< Standard deviation of the logarithmic critical-shear-stress relation [-].
     !
     ! reals
-    real(fp) :: ag                                   !< gravity
-    real(fp) :: dtdecon                              !< time interval to call consolidation for DECON [s]
-    real(fp) :: nf                                   !< fractal dimension nf
-    real(fp) :: kbioturb                             !< bioturbation induced diffusion coefficient [m2/s]
-    real(fp) :: kk                                   !< permeability coefficient [m/s]
-    real(fp) :: ksigma                               !< effective stress coefficient [Pa]
-    real(fp) :: ksigma0                              !< effective stress coefficient (usually set as 0) [Pa]
-    real(fp) :: ky                                   !< strength coefficient [Pa]
-    real(fp) :: max_total_thick_decon_lyrs           !< maximum total thickness of the nconlyr DECON layers [m]
-    real(fp) :: confac                               !< ratio between consolidation and morphological time scales [-]
-    real(fp) :: svfrac0                              !< user-input initial solids volume fraction for newly deposited sediments (general)
-    real(fp) :: svfrac0m                             !< user-input initial solids volume fraction for newly deposited mud fractions
-    real(fp) :: svfrac0s                             !< user-input initial solids volume fraction for newly deposited sand fractions
-    real(fp) :: svgel                                !< solids volume fraction at gelling point
-    real(fp) :: svmax                                !< if svfrac > svmax, consolidation stops
-    real(fp) :: thtrconcr                            !< the critical thickness of transport layer above which consolidation module is called [m]
-                                                     ! just choose a very small value to avoid numerical issues, e.g., 10E-6.
-    real(fp) :: thtrempty                            !< the critical thickness of transport layer below which it's considered empty [m]
-    real(fp) :: ymodpeat                             !< Young modulus of peat (Terzaghi., 1942)
-    real(fp) :: ccpeat                               !< consolidation rate of peat (Terzaghi., 1942)
-    real(fp) :: peatloi                              !< loss on ignition (LI) or organic content in peat
-    real(fp) :: peatthick                            !< Initial thickness of peat layer
-    real(fp) :: parb                                 !< coefficient in peat equation (Van Asselen, 2009)
-    real(fp) :: parc                                 !< coefficient in peat equation (Van Asselen, 2009)
-    real(fp) :: pard                                 !< coefficient in peat equation (Van Asselen, 2009)
-    real(fp) :: minporm                              !< critical porosity for mud
-    real(fp) :: minpors                              !< critical porosity for sand
-    real(fp) :: crmud                                !< consolidation rate of mud
-    real(fp) :: crsand                               !< consolidation rate of sand
-    real(fp) :: crmsec                               !< secondary mud consolidation
-    real(fp) :: porini                               !< initial porosity
-    !critical bed shear stress
-    real(fp) :: rhow_const                           !< a constant that defines water density
-    real(fp) :: ptr                                  !< percentage of thickness reduction
+    real(fp) :: ag                                   !< Gravitational acceleration [m/s2].
+    real(fp) :: dtdecon                              !< Time interval between DECON calls [s].
+    real(fp) :: nf                                   !< Fractal dimension [-].
+    real(fp) :: kbioturb                             !< Bioturbation-induced diffusion coefficient [m2/s].
+    real(fp) :: kk                                   !< Permeability coefficient [m/s].
+    real(fp) :: ksigma                               !< Effective-stress coefficient [Pa].
+    real(fp) :: ksigma0                              !< Initial effective-stress coefficient [Pa].
+    real(fp) :: ky                                   !< Strength coefficient [Pa].
+    real(fp) :: max_total_thick_decon_lyrs           !< Maximum total thickness of the nconlyr DECON layers [m].
+    real(fp) :: confac                               !< Ratio between consolidation and morphological time scales [-].
+    real(fp) :: svfrac0                              !< Initial solid-volume fraction for newly deposited sediment [-].
+    real(fp) :: svfrac0m                             !< Initial solid-volume fraction for newly deposited mud [-].
+    real(fp) :: svfrac0s                             !< Initial solid-volume fraction for newly deposited sand [-].
+    real(fp) :: svgel                                !< Solid-volume fraction at the gelling point [-].
+    real(fp) :: svmax                                !< Maximum solid-volume fraction for consolidation [-].
+    real(fp) :: thtrconcr                            !< Critical transport-layer thickness above which consolidation is called [m].
+                                                     ! Choose a small value to avoid numerical issues, e.g., 10E-6 m.
+    real(fp) :: thtrempty                            !< Critical transport-layer thickness below which the layer is considered empty [m].
+    real(fp) :: ymodpeat                             !< Young's modulus of peat [Pa].
+    real(fp) :: ccpeat                               !< Consolidation rate of peat (Terzaghi, 1942) [-].
+    real(fp) :: peatloi                              !< Loss on ignition, representing the organic-matter fraction in peat [-].
+    real(fp) :: peatthick                            !< Initial thickness of the peat layer [m].
+    real(fp) :: parb                                 !< Coefficient of the logarithmic time-dependent peat-strain relation (Van Asselen, 2009) [-].
+    real(fp) :: parc                                 !< Coefficient relating peat organic content to load-dependent compression (Van Asselen, 2009) [-].
+    real(fp) :: pard                                 !< Constant term in the load-dependent peat compression coefficient (Van Asselen, 2009) [-].
+    real(fp) :: minporm                              !< Critical porosity for mud [-].
+    real(fp) :: minpors                              !< Critical porosity for sand [-].
+    real(fp) :: crmud                                !< Compressibility coefficient of mud used for primary consolidation [-].
+    real(fp) :: crsand                               !< Compressibility coefficient of sand used for primary consolidation [-].
+    real(fp) :: crmsec                               !< Secondary-consolidation coefficient for mud [-].
+    real(fp) :: porini                               !< Initial porosity threshold before consolidation starts [-].
+    ! water density and thickness-reduction controls
+    real(fp) :: rhow_const                           !< Constant water density used by consolidation [kg/m3].
+    real(fp) :: ptr                                  !< Fraction of the nominal layer-thickness reduction applied to the solid volume [-].
     !
     ! integers
     !
-    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment (1: mix).
-    integer :: nconlyr                               !< number of consolidating layers used, user defined
+    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment (0: no, 1: yes).
+    integer :: nconlyr                               !< Number of consolidating layers used.
     integer :: iconsolidate                          !< Consolidation model selector:
                                                      !< 0: No consolidation.
                                                      !< 1: Full Gibson model.
@@ -280,13 +280,13 @@ type bedcomp_settings
     integer :: keuler                                !< Index of the first Eulerian (non-moving) layer:
                                                      !< 2: Only the top layer moves with bed level.
                                                      !< nlyr: All layers move with bed level (fully Lagrangian).
-    integer :: nfrac                                 !< number of sediment fractions
-    integer :: neulyr                                !< number of Eulerian underlayers
-    integer :: nlalyr                                !< number of Lagrangian underlayers
-    integer :: nlyr                                  !< number of layers (transport + exchange + under layers)
-    integer :: ndiff                                 !< number of diffusion coefficients in vertical direction
-    integer :: nmlb                                  !< start index of segments
-    integer :: nmub                                  !< nm end index
+    integer :: nfrac                                 !< Number of sediment fractions.
+    integer :: neulyr                                !< Number of Eulerian underlayers.
+    integer :: nlalyr                                !< Number of Lagrangian underlayers.
+    integer :: nlyr                                  !< Number of layers (transport, exchange, and underlayers).
+    integer :: ndiff                                 !< Number of vertical diffusion coefficients.
+    integer :: nmlb                                  !< First segment index.
+    integer :: nmub                                  !< Last segment index.
     integer :: updtoplyr                             !< Top-layer porosity update mode (1: reset for the new mixture, 2: update for newly added sediment).
     integer :: updbaselyr                            !< Base-layer update mode:
                                                      !< 1: Update composition and thickness independently.
@@ -294,8 +294,8 @@ type bedcomp_settings
                                                      !< 3: Copy composition from the layer above and conserve total mass.
                                                      !< 4: Keep composition and thickness fixed.
                                                      !< 5: Update composition while keeping thickness fixed.
-   integer  :: peatfrac                              !< peat flag (no peat growth, peat thickness is homogeneous)
-   integer  :: max_mud_sedtyp                        !< highest sediment type number that is considered a mud fraction
+   integer  :: peatfrac                              !< Sediment-fraction index representing peat; zero disables peat.
+   integer  :: max_mud_sedtyp                        !< Highest sediment-type code considered to be a mud fraction.
    integer  :: active_layer_diffusion                !< Switch for applying diffusion in the active layer model:
                                                       !< 0: No diffusion (default).
                                                       !< 1: X-Y diffusion file.
@@ -308,82 +308,82 @@ type bedcomp_settings
     type (morlyrnumericstype) , pointer :: morlyrnum !< Numerical controls for sediment-shortage handling.
     type (erosion_settings)   , pointer :: erosion   !< Settings for composition-dependent erosion.
     !
-    integer  , dimension(:)   , pointer :: sedtyp    !< Sediment type code for each fraction (total, non-cohesive, or cohesive).
+    integer  , dimension(:)   , pointer :: sedtyp    !< Sediment-type code for each fraction (total, non-cohesive, or cohesive).
     real(fp) , dimension(:,:) , pointer :: kdiff     !< Diffusion coefficients between layers [m2/s].
-    real(fp) , dimension(:)   , pointer :: phi       !< Median grain diameter on the phi scale.
-    real(fp) , dimension(:)   , pointer :: rhofrac   !< Density of each fraction, with or without pore volume.
-    real(fp) , dimension(:)   , pointer :: sigphi    !< Grain-size standard deviation on the phi scale.
+    real(fp) , dimension(:)   , pointer :: phi       !< Median grain size for each fraction on the phi scale [-].
+    real(fp) , dimension(:)   , pointer :: rhofrac   !< Density of each fraction, with or without pore volume [kg/m3].
+    real(fp) , dimension(:)   , pointer :: sigphi    !< Grain-size standard deviation on the phi scale [-].
     real(fp) , dimension(:)   , pointer :: thclyr    !< Coarse-layer thickness [m].
     real(fp) , dimension(:)   , pointer :: thexlyr   !< Exchange-layer thickness [m].
     real(fp) , dimension(:)   , pointer :: thtrlyr   !< Transport-layer thickness [m].
     real(fp) , dimension(:)   , pointer :: zdiff     !< Depth below bed level at which diffusion coefficients are defined [m].
     real(fp) , dimension(:)   , pointer :: plyrthk   !< Fraction of the consolidation thickness assigned to each layer [-].
     real(fp) , dimension(:)   , pointer :: ymod      !< Young's modulus for each sediment fraction [Pa].
-    real(fp) , dimension(:)   , pointer :: cc        !< Consolidation coefficient for each sediment fraction.
-    real(fp) , dimension(:)   , pointer :: aldiff    !< Active-layer diffusion coefficient at cell centres [m/s2].
+    real(fp) , dimension(:)   , pointer :: cc        !< Compressibility coefficient for each sediment fraction [-].
+    real(fp) , dimension(:)   , pointer :: aldiff    !< Diffusion coefficient applied to active-layer mass at cell centres [m/s2].
     !
     ! logicals
     !
     logical :: crslyr     !< Whether the coarse layer is enabled in the underlayer bookkeeping system.
     logical :: exchlyr    !< Whether the exchange layer is enabled in the underlayer bookkeeping system.
     logical :: initcl     !< Whether the coarse layer has been initialized.
-    logical :: include_peat !< flag for including peat in the bed composition module
+    logical :: include_peat !< Whether peat is included in the bed-composition module.
     !
     ! characters
     !
-    character(999)                       :: plyrstr       !< textual layer description
+    character(999)                       :: plyrstr       !< Space-separated percentages of the consolidation thickness assigned to each DECON layer [%].
 end type bedcomp_settings
 !
 !> Mutable bed-composition state arrays.
 type bedcomp_state
-    real(prec) , dimension(:,:)  , pointer :: bodsed       !< Array with total sediment [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: mobile       !< sediment mobility parameter from not mobile to fully mobile
-    real(fp)   , dimension(:)    , pointer :: dpsed        !< Total depth sediment layer [m]
-    real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
-    real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: depos_time   !< (morphological) time of latest load increment, i.e. that initiates primary compaction [days since reference date]
-    real(fp)   , dimension(:)    , pointer :: rhow         !< Water density [kg/m3] (currently 2D, but should be 3D in the future)
-    real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg/m2]
-    real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
-    real(fp)   , dimension(:,:)  , pointer :: thlyr        !< thickness of morphological layers [m]
-    real(fp)   , dimension(:)    , pointer :: thmudgibson  !< consolidated mud thickness for the Gibson model
-    real(fp)   , dimension(:)    , pointer :: thsandgibson !< consolidated sand thickness for the Gibson model
+    real(prec) , dimension(:,:)  , pointer :: bodsed       !< Sediment mass per unit horizontal area for each fraction [kg/m2].
+    real(fp)   , dimension(:,:)  , pointer :: mobile       !< Sediment mobility parameter from immobile to fully mobile [-].
+    real(fp)   , dimension(:)    , pointer :: dpsed        !< Total sediment depth [m].
+    real(fp)   , dimension(:)    , pointer :: dzc          !< Bed subsidence [m].
+    real(fp)   , dimension(:,:,:), pointer :: msed         !< Sediment mass per unit horizontal area for each fraction and morphological layer [kg/m2].
+    real(fp)   , dimension(:,:)  , pointer :: preload      !< Historical maximum overburden mass per unit horizontal area [kg/m2].
+    real(fp)   , dimension(:,:)  , pointer :: depos_time   !< Morphological time of the latest load increment that initiates primary compaction [days since reference date].
+    real(fp)   , dimension(:)    , pointer :: rhow         !< Water density at the grid locations [kg/m3].
+    real(fp)   , dimension(:,:)  , pointer :: sedshort     !< Sediment shortage in the transport layer [kg/m2].
+    real(fp)   , dimension(:,:)  , pointer :: svfrac       !< Solid-volume fraction, equal to one minus porosity [-].
+    real(fp)   , dimension(:,:)  , pointer :: thlyr        !< Thickness of morphological layers [m].
+    real(fp)   , dimension(:)    , pointer :: thmudgibson  !< Consolidated mud thickness for the Gibson model [m].
+    real(fp)   , dimension(:)    , pointer :: thsandgibson !< Consolidated sand thickness for the Gibson model [m].
     !peat
-    real(fp)   , dimension(:,:)  , pointer :: strain       !< accumulated strain in consolidation layers
-    real(hp)                               :: tdecon       !< latest morphological time (morft) of consolidation [days since reference date]
+    real(fp)   , dimension(:,:)  , pointer :: strain       !< Accumulated strain in consolidation layers [-].
+    real(hp)                               :: tdecon       !< Latest morphological time of consolidation [days since reference date].
 end type bedcomp_state
 !
 !> Temporary work arrays used by bed-composition calculations.
 type bedcomp_work
-    real(fp), dimension(:,:) , pointer :: msed2         !< temporary layer sediment masses
-    real(fp), dimension(:)   , pointer :: svfrac2       !< temporary layer solid volume fractions
-    real(fp), dimension(:)   , pointer :: thlyr2        !< temporary layer thicknesses
-    real(fp), dimension(:)   , pointer :: preload2      !< temporary consolidation preload
-    real(fp), dimension(:)   , pointer :: depos_time2   !< temporary deposition times
+    real(fp), dimension(:,:) , pointer :: msed2         !< Temporary sediment mass per unit horizontal area for each fraction and layer [kg/m2].
+    real(fp), dimension(:)   , pointer :: svfrac2       !< Temporary layer solid-volume fractions [-].
+    real(fp), dimension(:)   , pointer :: thlyr2        !< Temporary layer thicknesses [m].
+    real(fp), dimension(:)   , pointer :: preload2      !< Temporary consolidation preload per unit horizontal area [kg/m2].
+    real(fp), dimension(:)   , pointer :: depos_time2   !< Temporary deposition times [days since reference date].
 
     ! working arrays for high-concentration consolidation
-    real(fp), dimension(:)   , pointer :: dthsedlyr      !< thickness of average pure sediment between two neighbouring layers [m]
+    real(fp), dimension(:)   , pointer :: dthsedlyr      !< Thickness of average pure sediment between two neighbouring layers [m].
 
-    real(fp), dimension(:)   , pointer :: sigmaeff       !< effective stress [Pa]
-    real(fp), dimension(:)   , pointer :: thsedlyr       !< thickness of pure sediment in each layer [m]
-    real(fp), dimension(:)   , pointer :: svfracsand     !< new solids fraction after consolidation
-    real(fp), dimension(:)   , pointer :: svfracmud      !< new solids fraction after consolidation
+    real(fp), dimension(:)   , pointer :: sigmaeff       !< Effective stress [Pa].
+    real(fp), dimension(:)   , pointer :: thsedlyr       !< Thickness of pure sediment in each layer [m].
+    real(fp), dimension(:)   , pointer :: svfracsand     !< New solid-volume fraction of sand after consolidation [-].
+    real(fp), dimension(:)   , pointer :: svfracmud      !< New solid-volume fraction of mud after consolidation [-].
 
-    real(fp), dimension(:)   , pointer :: vs0p5          !< particle settling velocity at layer interface [m/s]
-    real(fp), dimension(:)   , pointer :: k0p5           !< permeability at layer interface [m/s]
-    real(fp), dimension(:)   , pointer :: svfrac0p5      !< solids fraction at layer interface
-    real(fp), dimension(:)   , pointer :: svfracsand0p5  !< new solids fraction after consolidation
-    real(fp), dimension(:)   , pointer :: svfracmud0p5   !< new solids fraction after consolidation
+    real(fp), dimension(:)   , pointer :: vs0p5          !< Particle settling velocity at layer interfaces [m/s].
+    real(fp), dimension(:)   , pointer :: k0p5           !< Permeability at layer interfaces [m/s].
+    real(fp), dimension(:)   , pointer :: svfrac0p5      !< Solid-volume fraction at layer interfaces [-].
+    real(fp), dimension(:)   , pointer :: svfracsand0p5  !< New sand solid-volume fraction after consolidation [-].
+    real(fp), dimension(:)   , pointer :: svfracmud0p5   !< New mud solid-volume fraction after consolidation [-].
 
-    real(fp), dimension(:)   , pointer :: svfracnew      !< new solid volume fraction after consolidation
+    real(fp), dimension(:)   , pointer :: svfracnew      !< New solid-volume fraction after consolidation [-].
 end type bedcomp_work
 !
 !> Complete bed-composition data object.
 type bedcomp_data
-   type (bedcomp_settings), pointer :: settings          !< bed-composition configuration
-   type (bedcomp_state)   , pointer :: state             !< mutable bed-composition state
-   type (bedcomp_work)    , pointer :: work             !< temporary calculation workspace
+   type (bedcomp_settings), pointer :: settings          !< Bed-composition configuration.
+   type (bedcomp_state)   , pointer :: state             !< Mutable bed-composition state.
+   type (bedcomp_work)    , pointer :: work              !< Temporary calculation workspace.
 end type bedcomp_data
 
 contains
