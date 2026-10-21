@@ -45,7 +45,7 @@ contains
 
    subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
       use precision, only: dp
-      use m_flow, only: kmxx, jafilter, u0, zws, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
+      use m_flow, only: kmxx, jafilter, u0, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
       use m_flowgeom, only: acl, ln, lnxi, iadv, yu, dxi, iadv_subgrid_weir, iadv_rajaratnam_weir, iadv_villemonte_weir, bob, teta
       use m_flowtimes, only: dti
       use m_waves, only: ustokes
@@ -53,43 +53,37 @@ contains
       use m_filter_data, only: ustar, itype
       implicit none
       integer :: Lb, Lt, kxL, LL
-      real(kind=dp) :: a(kmxx), b(kmxx), c(kmxx), d(kmxx), e(kmxx), dzu(kxL), womegu(kxL - 1), dzv(kmxx)
+      real(kind=dp), dimension(kmxx) :: lower, diagonal, upper, rhs, normalized_upper
+      real(kind=dp) :: dzu(kxL), womegu(kxL - 1)
 
       integer :: L, k, k1, k2
       real(kind=dp) :: dzLw, vstress, adv, adv1, tt, ustv, st2, agp, dzurho
 
       real(kind=dp) :: gdxi, gdxids, du, cu, ac1, ac2, hup, twot = 0.666666666666_dp, slopec
 
-      real(kind=dp) :: aa(kmxx), cc(kmxx) ! for five-diaginal matrix
-      ! aa(i)*u(i-2)+a(i)*u(i-1)+b(i)*u(i)+c(i)*u(i+1)+cc(i)*u(i+2)=d(i)
+      real(kind=dp), dimension(kmxx) :: second_lower, second_upper ! Second off-diagonals of the pentadiagonal matrix.
+      ! second_lower(i)*u(i-2)+lower(i)*u(i-1)+diagonal(i)*u(i)+upper(i)*u(i+1)+second_upper(i)*u(i+2)=rhs(i)
 
       integer :: jav3
 
-      a(1:kxL) = 0.0_dp
-      b(1:kxL) = dti
-      c(1:kxL) = 0.0_dp
+      lower(1:kxL) = 0.0_dp
+      diagonal(1:kxL) = dti
+      upper(1:kxL) = 0.0_dp
 
       if (jafilter /= 0) then
-         d(1:kxL) = ustar(Lb:Lt) * dti
+         rhs(1:kxL) = ustar(Lb:Lt) * dti
       else
-         d(1:kxL) = u0(Lb:Lt) * dti ! put u1 in ddk
+         rhs(1:kxL) = u0(Lb:Lt) * dti ! put u1 in ddk
       end if
 
-      aa(1:kxL) = 0.0_dp
-      cc(1:kxL) = 0.0_dp
+      second_lower(1:kxL) = 0.0_dp
+      second_upper(1:kxL) = 0.0_dp
 
       adv = 0.0_dp
       adv1 = 0.0_dp
 
       ac1 = acL(LL)
       ac2 = 1.0_dp - ac1
-
-      do L = Lb, 0 ! Lt
-         k = L - Lb + 1
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
-      end do
 
       jav3 = 0
       if (javau == 3) then
@@ -108,11 +102,14 @@ contains
          k = L - Lb + 1
          dzLw = 0.5_dp * (dzu(k + 1) + dzu(k))
 
-         vstress = (vicwwu(L) + vicoww) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
+         vstress = (vicwwu(L) + vicoww%get(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
          ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 
          ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
+         
+         adv = 0.0_dp
+         adv1 = 0.0_dp
 
          if (jav3 == 1) then ! vertical advection upwind implicit
             if (womegu(k) > 0.0_dp) then
@@ -135,59 +132,48 @@ contains
 
             ! adv = 0d0 ; adv1 = 0d0   ! noslip test
 
-            !tt     = vstress/dzu(k+1) + adv1/dzv(k+1)
             tt = (vstress + adv1) / dzu(k + 1)
-            b(k + 1) = b(k + 1) + tt
-            a(k + 1) = a(k + 1) - tt
+            diagonal(k + 1) = diagonal(k + 1) + tt
+            lower(k + 1) = lower(k + 1) - tt
 
-            !tt     = vstress/dzu(k  ) + adv/dzv(k  )
             tt = (vstress + adv) / dzu(k)
-            b(k) = b(k) + tt
-            c(k) = c(k) - tt
-
-            !a(k+1) = a(k+1) - adv1/dzu(k+1)
-            !b(k+1) = b(k+1) + adv/dzu(k+1)
-            !
-            !b(k) = b(k) + adv1/dzu(k)
-            !c(k) = c(k) - adv/dzu(k)
-
-            !d(k)   = d(k)   - adv1/dzu(k)   * u0(L) + adv/dzu(k)   * u0(L+1)
-            !d(k+1) = d(k+1) + adv1/dzu(k+1) * u0(L) - adv/dzu(k+1) * u0(L+1)
+            diagonal(k) = diagonal(k) + tt
+            upper(k) = upper(k) - tt
 
          else if (javau == 4) then ! vertical advection central implicit
 
             adv = 0.5_dp * womegu(k) ! here, omegu(k) lies above u point of same index
 
-            b(k + 1) = b(k + 1) + (vstress - adv) / dzu(k + 1)
-            a(k + 1) = a(k + 1) - (vstress + adv) / dzu(k + 1)
+            diagonal(k + 1) = diagonal(k + 1) + (vstress - adv) / dzu(k + 1)
+            lower(k + 1) = lower(k + 1) - (vstress + adv) / dzu(k + 1)
 
-            b(k) = b(k) + (vstress + adv) / dzu(k)
-            c(k) = c(k) - (vstress - adv) / dzu(k)
+            diagonal(k) = diagonal(k) + (vstress + adv) / dzu(k)
+            upper(k) = upper(k) - (vstress - adv) / dzu(k)
 
          else if (javau == 0 .or. javau >= 6) then ! 3D checkerboard
 
             if (jarhoxu < 3) then
-               b(k + 1) = b(k + 1) + vstress / dzu(k + 1)
-               a(k + 1) = a(k + 1) - vstress / dzu(k + 1)
+               diagonal(k + 1) = diagonal(k + 1) + vstress / dzu(k + 1)
+               lower(k + 1) = lower(k + 1) - vstress / dzu(k + 1)
 
-               b(k) = b(k) + vstress / dzu(k)
-               c(k) = c(k) - vstress / dzu(k)
+               diagonal(k) = diagonal(k) + vstress / dzu(k)
+               upper(k) = upper(k) - vstress / dzu(k)
             else if (jarhoxu == 3) then
                vstress = vstress * (rhou(L) * dzu(k) + rhou(L + 1) * dzu(k + 1)) / (2.0_dp * dzLw)
                dzurho = dzu(k + 1) * rhou(L + 1)
-               b(k + 1) = b(k + 1) + vstress / dzurho
-               a(k + 1) = a(k + 1) - vstress / dzurho
+               diagonal(k + 1) = diagonal(k + 1) + vstress / dzurho
+               lower(k + 1) = lower(k + 1) - vstress / dzurho
 
                dzurho = dzu(k) * rhou(L)
-               b(k) = b(k) + vstress / dzurho
-               c(k) = c(k) - vstress / dzurho
+               diagonal(k) = diagonal(k) + vstress / dzurho
+               upper(k) = upper(k) - vstress / dzurho
             else if (jarhoxu >= 4) then
 
-               b(k + 1) = b(k + 1) + vstress / dzu(k + 1)
-               a(k + 1) = a(k + 1) - vstress * rhou(L) / (dzu(k + 1) * rhou(L + 1))
+               diagonal(k + 1) = diagonal(k + 1) + vstress / dzu(k + 1)
+               lower(k + 1) = lower(k + 1) - vstress * rhou(L) / (dzu(k + 1) * rhou(L + 1))
 
-               b(k) = b(k) + vstress / dzu(k)
-               c(k) = c(k) - vstress * rhou(L + 1) / (dzu(k) * rhou(L))
+               diagonal(k) = diagonal(k) + vstress / dzu(k)
+               upper(k) = upper(k) - vstress * rhou(L + 1) / (dzu(k) * rhou(L))
             end if
 
          else if (javau == 5) then
@@ -201,17 +187,17 @@ contains
                end if
                if (L == Lb) then
                   tt = adv1 / dzu(k + 1)
-                  b(k + 1) = b(k + 1) + tt
-                  a(k + 1) = a(k + 1) - tt
+                  diagonal(k + 1) = diagonal(k + 1) + tt
+                  lower(k + 1) = lower(k + 1) - tt
                else
                   tt = adv1 / dzu(k)
-                  a(k) = a(k) - tt * 0.125_dp
-                  b(k) = b(k) + tt * 0.750_dp - tt
-                  c(k) = c(k) + tt * 0.375_dp
+                  lower(k) = lower(k) - tt * 0.125_dp
+                  diagonal(k) = diagonal(k) + tt * 0.750_dp - tt
+                  upper(k) = upper(k) + tt * 0.375_dp
                   tt = adv1 / dzu(k + 1)
-                  aa(k + 1) = aa(k + 1) + tt * 0.125_dp
-                  a(k + 1) = a(k + 1) - tt * 0.750_dp
-                  b(k + 1) = b(k + 1) - tt * 0.375_dp + tt
+                  second_lower(k + 1) = second_lower(k + 1) + tt * 0.125_dp
+                  lower(k + 1) = lower(k + 1) - tt * 0.750_dp
+                  diagonal(k + 1) = diagonal(k + 1) - tt * 0.375_dp + tt
                end if
             else
                if (jarhoxu > 0) then
@@ -223,48 +209,48 @@ contains
                end if
                if (L == Lt - 1) then
                   tt = adv / dzu(k)
-                  b(k) = b(k) + tt
-                  c(k) = c(k) - tt
+                  diagonal(k) = diagonal(k) + tt
+                  upper(k) = upper(k) - tt
                else
                   tt = -adv / dzu(k)
-                  b(k) = b(k) + tt * 0.375_dp - tt
-                  c(k) = c(k) + tt * 0.750_dp
-                  cc(k) = cc(k) - tt * 0.125_dp
+                  diagonal(k) = diagonal(k) + tt * 0.375_dp - tt
+                  upper(k) = upper(k) + tt * 0.750_dp
+                  second_upper(k) = second_upper(k) - tt * 0.125_dp
                   tt = -adv / dzu(k + 1)
-                  a(k + 1) = a(k + 1) - tt * 0.375_dp
-                  b(k + 1) = b(k + 1) - tt * 0.750_dp + tt
-                  c(k + 1) = c(k + 1) + tt * 0.125
+                  lower(k + 1) = lower(k + 1) - tt * 0.375_dp
+                  diagonal(k + 1) = diagonal(k + 1) - tt * 0.750_dp + tt
+                  upper(k + 1) = upper(k + 1) + tt * 0.125
                end if
             end if
 
             tt = vstress / dzu(k + 1)
-            b(k + 1) = b(k + 1) + tt
-            a(k + 1) = a(k + 1) - tt
+            diagonal(k + 1) = diagonal(k + 1) + tt
+            lower(k + 1) = lower(k + 1) - tt
             tt = vstress / dzu(k)
-            b(k) = b(k) + tt
-            c(k) = c(k) - tt
+            diagonal(k) = diagonal(k) + tt
+            upper(k) = upper(k) - tt
          else
             adv = 0.0_dp
             adv1 = 0.0_dp
          end if
 
          if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flow_without_waves) then ! ustokes correction in vertical viscosity
-            ustv = vstress * (ustokes(L) - ustokes(L - 1))
-            d(k + 1) = d(k + 1) + ustv / dzu(k + 1)
-            d(k) = d(k) - ustv / dzu(k)
+            ustv = vstress * (ustokes(L+1) - ustokes(L))
+            rhs(k + 1) = rhs(k + 1) + ustv / dzu(k + 1)
+            rhs(k) = rhs(k) - ustv / dzu(k)
          end if
 
       end do
 
       agp = ag
       if (jahelmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
-         st2 = sin(dg2rd * yu(L))**2
+         st2 = sin(dg2rd * yu(LL))**2
          agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
       end if
       gdxi = agp * dxi(LL)
 
       if (jarhoxu >= 2) then
-         gdxi = gdxi * rhomean / rhou(L)
+         gdxi = gdxi * rhomean / rhou(L) ! top layer rho!
       end if
 
       k1 = ln(1, LL)
@@ -292,29 +278,25 @@ contains
       if (jafilter /= 0 .and. itype == 3) then
          do L = Lb, Lt
             k = L - Lb + 1
-            b(k) = b(k) + advi(L)
-            d(k) = d(k) - du
+            diagonal(k) = diagonal(k) + advi(L)
+            rhs(k) = rhs(k) - du
          end do
       else
          do L = Lb, Lt
             k = L - Lb + 1
-            b(k) = b(k) + advi(L)
-            d(k) = d(k) - adve(L) - du
+            diagonal(k) = diagonal(k) + advi(L)
+            rhs(k) = rhs(k) - adve(L) - du
          end do
       end if
 
       if (javau == 5) then
-         call pentadiag(aa, a, b, c, cc, d, Ru(Lb:), kxL)
+         call pentadiag(second_lower, lower, diagonal, upper, second_upper, rhs, Ru(Lb:), kxL)
+         rhs(1:kxL) = cu
+         call pentadiag(second_lower, lower, diagonal, upper, second_upper, rhs, Fu(Lb:), kxL)
       else
-         call tridag(a, b, c, d, e, Ru(Lb:), kxL)
-      end if
-
-      d(1:kxL) = cu
-
-      if (javau == 5) then
-         call pentadiag(aa, a, b, c, cc, d, Fu(Lb:), kxL)
-      else
-         call tridag(a, b, c, d, e, Fu(Lb:), kxL)
+         call tridag(lower, diagonal, upper, rhs, normalized_upper, Ru(Lb:), kxL)
+         rhs(1:kxL) = cu
+         call tridag(lower, diagonal, upper, rhs, normalized_upper, Fu(Lb:), kxL)
       end if
 
    end subroutine vertical_profile_u0

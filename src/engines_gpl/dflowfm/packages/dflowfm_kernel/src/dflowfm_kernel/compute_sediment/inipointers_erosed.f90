@@ -70,7 +70,9 @@ contains
                               sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
-                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50
+                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50, &
+                              poros, tcrero_bed, eropar_bed, iconsolidate, depflxf, eroflxf
+      use m_fm_erosed, only : difparam, seddif_cal
 
       if (.not. stm_included) then
          return
@@ -123,6 +125,8 @@ contains
       floclist => stmpar%sedpar%floclist
       tbreakup => stmpar%sedpar%tbreakup
       tfloc => stmpar%sedpar%tfloc
+      difparam => stmpar%sedpar%difparam
+      seddif_cal => stmpar%sedpar%seddif_cal
 
       ! morpar
       thresh => stmpar%morpar%thresh
@@ -163,6 +167,8 @@ contains
       iflufflyr => stmpar%morpar%flufflyr%iflufflyr
       depfac => stmpar%morpar%flufflyr%depfac
       mfluff => stmpar%morpar%flufflyr%mfluff
+      depflxf => stmpar%morpar%flufflyr%depflxf
+      eroflxf => stmpar%morpar%flufflyr%eroflxf
       alfabs => stmpar%morpar%alfabs
       alfabn => stmpar%morpar%alfabn
       wetslope => stmpar%morpar%wetslope
@@ -238,6 +244,7 @@ contains
       mudfrac_he => sedtra%mudfrac_he
       sandfrac => sedtra%sandfrac
       hidexp => sedtra%hidexp
+      poros => sedtra%poros
       rsdqlc => sedtra%rsdqlc
       rsedeq => sedtra%rsedeq
       sbcx => sedtra%sbcx
@@ -276,6 +283,8 @@ contains
       srcmax => sedtra%srcmax
       taub => sedtra%taub
       taurat => sedtra%taurat
+      tcrero_bed => sedtra%tcrero_bed
+      eropar_bed => sedtra%eropar_bed
       ust2 => sedtra%ust2
       umod => sedtra%umod
       uuu => sedtra%uuu
@@ -284,6 +293,9 @@ contains
       zumod => sedtra%zumod
       rca => sedtra%rca
       statqnt => sedtra%statqnt
+
+      ! morlyr
+      iconsolidate => stmpar%morlyr%settings%iconsolidate
 
    end subroutine inipointers_erosed
 

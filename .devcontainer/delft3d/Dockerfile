@@ -13,9 +13,13 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked,id=dnf-install-${CACHE_SUFFIX} <<"EOF"
-
-PACKAGES=(sudo dos2unix tree strace)
+PACKAGES=( \
+    sudo strace tree netcdf dos2unix gh jq \
+    libxml2 xmlstarlet ripgrep fd-find bat \
+)
 [[ "${ENABLE_JAVA}" == "0" ]] || PACKAGES+=(java-17-openjdk java-17-openjdk-devel maven)
+
+dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
 dnf install -y "${PACKAGES[@]}"
 
 if [[ "${ENABLE_JAVA}" != "0" ]]; then
@@ -36,9 +40,9 @@ EOF
 USER dev
 WORKDIR /home/dev
 
-# Create mount points for bash history, MinIO credentials, and Conan in the user's home directory.
+# Create mount points for bash history, MinIO credentials, Conan and VSCode config in the user's home directory.
 RUN <<"EOF"
-mkdir ~/.history ~/.aws ~/.conan2
+mkdir ~/.history ~/.aws ~/.conan2 ~/.config ~/.vscode-server ~/.copilot
 touch ~/.history/.bash_history
 EOF
 
@@ -50,7 +54,11 @@ RUN <<"EOF"
 export UV_PYTHON_DOWNLOADS=never
 uv tool install fortls
 uv tool install fprettify
+uv tool install 'markitdown[pdf]'
 EOF
+
+# Install `teamcity` command line tool.
+RUN curl -fsSL https://jb.gg/tc/install | bash -s -- v1.3.0 /home/dev/.local/bin
 
 # Configure interactive bash environment.
 RUN cat >> /home/dev/.bashrc <<EOF

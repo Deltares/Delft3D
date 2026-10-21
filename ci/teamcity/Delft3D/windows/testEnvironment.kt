@@ -10,21 +10,22 @@ import Delft3D.step.*
 
 object WindowsTestEnvironment : BuildType({
 
-    description = "Test-environment container image to test our Delf3D software in."
+    description = "Image used to test Delft3D on Windows."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
-    name = "Delft3D test environment container"
+    name = "Test environment"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test-environment-ltsc2025")
+        param("container.tag", "test-environment")
     }
 
     vcs {
@@ -33,23 +34,6 @@ object WindowsTestEnvironment : BuildType({
     }
 
     steps {
-        powerShell {
-            name = "Get tooling from network share"
-            platform = PowerShellStep.Platform.x64
-            scriptMode = script {
-                content = """                    
-                    # Get the current working directory
-                    ${'$'}destinationDir = "ci\\dockerfiles\\windows"
-                    
-                    # Copy the files from the source to the destination
-                    Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
-                    Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
-
-                    # List all the files in the destination directory
-                    Get-ChildItem -Path ${'$'}destinationDir
-                """.trimIndent()
-            }
-        }
         dockerCommand {
             name = "Docker build dhydro test-environment container"
             commandType = build {
@@ -82,14 +66,17 @@ object WindowsTestEnvironment : BuildType({
                 """.trimIndent()
             }
             conditions {
-                equals("trigger.type", "vcs")
+                matches("trigger.type", "vcs|schedule")
             }
         }
     }
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-test-environment
+                +:ci/teamcity/Delft3D/windows/testEnvironment.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
                 param("trigger.type", "vcs")

@@ -102,7 +102,7 @@ contains
 
    !> Calculate a Gregorian date and hour-minutes-seconds integer since reference date
    function ecTimeFrameRealHpTimestepsToDateTime(timestamp_mjd, yyyymmdd, hhmmss) result(success)
-      use mathconsts, only: daysec_hp
+      use m_mathconstants, only: daysec_hp
       logical :: success !< function status
       real(hp), intent(in) :: timestamp_mjd !< number of time steps
       integer, intent(out) :: yyyymmdd !< calculated Gregorian date
@@ -312,13 +312,12 @@ contains
    ! =======================================================================
 
    !> Look up the variable and standard names for a given quantity name from predefined lists
-   subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
-      character(len=*), intent(in) :: fileName !< name of the file, used for error messages
+   subroutine ecSupportNetcdfGetQuantityCandidateNames(quantityName, ncstdnames, ncvarnames, ncstdnames_fallback)
+      use string_module, only: str_tolower, istarts_with
       character(len=*), intent(in) :: quantityName !< name of the quantity to look up
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
 
       select case (str_tolower(trim(quantityName)))
       case ('rainfall')
@@ -365,7 +364,7 @@ contains
          ncstdnames(1) = 'surface_downward_eastward_stress'
          ncvarnames(2) = 'tauv' ! northward wind stress
          ncstdnames(2) = 'surface_downward_northward_stress'
-      case ('airpressure', 'atmosphericpressure')
+      case ('airpressure')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
          ncvarnames(1) = 'msl' ! mean sea-level pressure
@@ -511,6 +510,30 @@ contains
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
          ncstdnames(2) = 'sea_water_salinity'
+      case ('initialsalinity')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'so'
+         ncstdnames(1) = 'sea_water_salinity'
+      case ('initialtemperature')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'thetao'
+         ncstdnames(1) = 'sea_water_potential_temperature'
+      case ('initialvelocityx')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'uo'
+         ncstdnames(1) = 'sea_water_x_velocity'
+         ncstdnames_fallback(1) = 'eastward_sea_water_velocity'
+      case ('initialvelocityy')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'vo'
+         ncstdnames(1) = 'sea_water_y_velocity'
+         ncstdnames_fallback(1) = 'northward_sea_water_velocity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          allocate (ncstdnames(1))
          ncstdnames(1) = quantityName
@@ -534,15 +557,6 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'hs' ! significant wave height
          ncstdnames(1) = 'sea_surface_wave_significant_height'
-      case ('waveperiod')
-         if (present(varname)) then
-            allocate (ncvarnames(1))
-            allocate (ncstdnames(1))
-            ncvarnames(1) = varname ! wave period
-            ncstdnames(1) = varname
-         else
-            call set_ec_message("Variable name for quantity 'waveperiod' not provided for file "//trim(fileName)//".")
-         end if
       case ('wavedirection')
          allocate (ncvarnames(1:2))
          allocate (ncstdnames(1:2))
@@ -576,22 +590,16 @@ contains
          ncvarnames(1) = 'dissip'
          ncstdnames(1) = 'total_energy_dissipation'
       case default ! experiment: gather miscellaneous variables from an NC-file,
-         if (index(quantityName, 'waqsegmentfunction') == 1) then
+         if (istarts_with(quantityName, 'waqsegmentfunction')) then
             allocate (ncvarnames(1))
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName
             ncstdnames(1) = quantityName
-         else if (index(quantityName, 'initialtracer') == 1) then
+         else if (istarts_with(quantityName, 'initialtracer')) then
             allocate (ncvarnames(1))
             allocate (ncstdnames(1))
             ncvarnames(1) = quantityName(14:)
             ncstdnames(1) = quantityName(14:)
-         else
-            ! we have faulty
-            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
-            !TODO: user defined quantity name
-            !ncvarnames(1) = varname
-            !ncstdnames(1) = varname
          end if
       end select
 
@@ -760,7 +768,7 @@ contains
    !
    !    ! Initialize the new Converter.
    !    if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+   !    if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
    !    if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_timespace))) return
    !    if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
    !
@@ -1362,8 +1370,7 @@ contains
                                          x_varid, x_dimid, y_varid, y_dimid, &
                                          z_varid, z_dimid, &
                                          tim_varid, tim_dimid, &
-                                         series_varid, series_dimid, &
-                                         realization_varid, realization_dimid) result(success)
+                                         series_varid, series_dimid) result(success)
       use netcdf
       logical :: success
       integer, intent(in) :: ncid !< NetCDF file ID
@@ -1383,8 +1390,6 @@ contains
       integer, intent(out) :: z_dimid !< Z dimension
       integer, intent(out) :: tim_dimid !< Time dimension
       integer, intent(out) :: series_dimid !< Series dimension
-      integer, intent(out) :: realization_varid !< realization varid
-      integer, intent(out) :: realization_dimid !< realization dimension
       integer :: ndim, nvar, ivar, nglobatts, unlimdimid, ierr
       integer, allocatable :: dimids(:)
       character(len=NF90_MAX_NAME) :: units, axis, varname, stdname, cf_role, std_name
@@ -1397,7 +1402,6 @@ contains
       z_varid = -1
       tim_varid = -1
       series_varid = -1
-      realization_varid = -1
 
       lon_dimid = -1
       lat_dimid = -1
@@ -1406,7 +1410,6 @@ contains
       z_dimid = -1
       tim_dimid = -1
       series_dimid = -1
-      realization_dimid = -1
 
       allocate (dimids(NF90_MAX_VAR_DIMS))
 
@@ -1419,12 +1422,6 @@ contains
          if (strcmpi(cf_role, 'timeseries_id')) then
             series_varid = ivar ! store last timeseries_id variable
             series_dimid = dimids(ndim)
-         end if
-         ierr = nf90_get_att(ncid, ivar, 'standard_name', std_name)
-         if (strcmpi(std_name, 'realization')) then
-            realization_varid = ivar ! store last timeseries_id variable
-            realization_dimid = dimids(ndim)
-            cycle
          end if
          units = ''
          ierr = nf90_get_att(ncid, ivar, 'units', units)

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+  <fileVersion>0.3</fileVersion>
+  <discharge>
+    <Qintake>10.0</Qintake>
+    <Qsource>10.0</Qsource>
+    <!-- Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
+         Operator: "absolute" values or "excess" (dT,dS,d..) -->
+    <constituentsOperator>excess</constituentsOperator>
+    <constituents>10.0 0.0</constituents>
+  </discharge>
+  <NFResult>
+    <!--Intake(s) - total Q0(/U0?) will be taken from these locations and distributed over the number of rows of intakes. This water will be directly distributed over the sources (complimented with the entrained water from the sinks, if any).-->
+    <!--Sinks will use dS/dTr(ajectory) to determine entrainment sinks. If dS/dTr=0 no (additional) entrainment will take place.-->
+    <sinks>
+   250.000       350.087         9.700         1.000         0.000         0.000
+   252.500       350.048         9.700         0.5           0.250         0.380
+    </sinks>
+    <sources>
+   1050.000       350.365         5.000         5.000         5        15.000
+   1050.500       350.365         5.000         5.000         5        15.000
+    </sources>
+  </NFResult>
+</NF2FF>
+
+<!--
+   preC-SUMO should abort when reading the sinks because the entrainment factor (4th column) decreases.
+-->

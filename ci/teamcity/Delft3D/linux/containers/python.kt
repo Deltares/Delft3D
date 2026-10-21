@@ -9,8 +9,8 @@ import Delft3D.step.*
 import java.io.File
 
 object LinuxPython : BuildType({
-    name = "Linux Python"
-    description = "Container image used to run python workloads in TeamCity."
+    name = "Python"
+    description = "Image for Python CI jobs."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
@@ -18,7 +18,8 @@ object LinuxPython : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {

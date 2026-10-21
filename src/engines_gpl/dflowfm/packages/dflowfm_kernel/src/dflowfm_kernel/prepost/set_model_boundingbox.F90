@@ -56,6 +56,7 @@ contains
       use m_alloc
       use m_missing, only: dmiss
       use unstruc_netcdf, only: crs
+      use messagehandling, only: LEVEL_WARN, mess
 #ifdef HAVE_PROJ
       use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
 #endif
@@ -71,13 +72,15 @@ contains
       make_latlon = 0
 #ifdef HAVE_PROJ
       if (jsferic == 0) then
-         make_latlon = 1
+         if (crs%proj_string == ' ') then
+            call mess(LEVEL_WARN, 'set_model_boundingbox: cannot set lat/lon model bounds, because projection string is unavailable.')
+         else
+            make_latlon = 1
+         end if
       end if
 #else
       if (jsferic == 0) then
          call mess(LEVEL_WARN, 'set_model_boundingbox: cannot set lat/lon model bounds, because PROJ is unavailable.')
-         ierr = DFM_GENERICERROR
-         goto 999
       end if
 #endif
 
@@ -158,14 +161,6 @@ contains
       if (mb_latmax == -huge(1.0_dp)) then
          mb_latmax = dmiss
       end if
-
-888   continue
-      ! Successful exit
-      return
-
-999   continue
-      ! Some error occurred
-      return
 
    end function set_model_boundingbox
 

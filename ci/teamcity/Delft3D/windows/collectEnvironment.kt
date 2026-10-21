@@ -10,16 +10,17 @@ import Delft3D.step.*
 
 object WindowsCollectEnvironment : BuildType({
 
-    description = "Collect-environment container image for prepping and verifying Delft3D Windows binaries."
+    description = "Image used to prepare and verify Windows binaries."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
-    name = "Delft3D collect environment container"
+    name = "Collect environment"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
@@ -73,7 +74,7 @@ object WindowsCollectEnvironment : BuildType({
     triggers {
         vcs {
             triggerRules = """
-                +:ci/dockerfiles/windows/**
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-collect
                 +:ci/teamcity/Delft3D/windows/collectEnvironment.kt
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()

@@ -49,6 +49,7 @@ contains
       use m_get_prof_1D, only: getprof_1d
       use m_get_prof_1D_min, only: getprof_1d_min
       use m_get_hpr_nostruc, only: get_hpr_nostruc
+      use network_data, only: LINK_1D
 
       implicit none
 
@@ -64,7 +65,7 @@ contains
       k2 = ln(2, L)
 
       if (dxDoubleAt1DEndNodes) then
-         if (kcu(L) == 1) then
+         if (kcu(L) == LINK_1D) then
             if (nd(k1)%lnx == 1) then
                dx1 = 2.0_dp * dx1
             end if
@@ -78,7 +79,7 @@ contains
 
          calcConv = 0
 
-         if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==5, maybe not for kcu(L)==7
+         if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==LINK_1D2D_STREETINLET, maybe not for kcu(L)==LINK_1D2D_ROOF
             hpr = s1(k1) - bob0(1, L)
             if (hpr >= 0.0_dp) then
                call getprof_1D(L, hpr, ar1, wid1, japerim, calcConv, perim)
@@ -91,7 +92,7 @@ contains
             end if
          end if
 
-         if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==5, maybe not for kcu(L)==7
+         if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==LINK_1D2D_STREETINLET, maybe not for kcu(L)==LINK_1D2D_ROOF
             hpr = s1(k2) - bob0(2, L)
             if (hpr >= 0.0_dp) then
                call getprof_1D(L, hpr, ar2, wid2, japerim, calcConv, perim)

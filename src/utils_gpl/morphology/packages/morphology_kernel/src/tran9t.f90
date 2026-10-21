@@ -1,10 +1,3 @@
-module m_tran9t
-   implicit none
-
-contains
-
-   subroutine tran9t(utot, d50, d90, chezy, h, &
-                   & ust, npar, par, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,17 +24,19 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
-!!--description-----------------------------------------------------------------
-!
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
+
+module m_tran9t
+   implicit none
+   private
+   public tran9t
+
+contains
+
+   subroutine tran9t(utot, d50, d90, chezy, h, &
+                   & ust, npar, par, sbot, ssus)
 !!--declarations----------------------------------------------------------------
       use precision
       use sed_support_routines, only: shld
-      implicit none
 !
 ! Arguments
 !

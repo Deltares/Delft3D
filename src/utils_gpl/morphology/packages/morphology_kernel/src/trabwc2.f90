@@ -1,10 +1,3 @@
-module m_trabwc2
-   implicit none
-
-contains
-
-   subroutine trabwc2(utot, di, taub, npar, par, &
-                    & sbot, ssus, dg, dgsd, chezy)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,8 +24,16 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_trabwc2
+   implicit none
+   private
+   public trabwc2
+
+contains
+
+   subroutine trabwc2(utot, di, taub, npar, par, &
+                    & sbot, ssus, dg, dgsd, chezy)
 !!--description-----------------------------------------------------------------
 !
 !  Computes sediment transport according to Wilcock and Crowe formula modified to use
@@ -47,12 +48,8 @@ contains
 !  Crowe "Surface based transport for mixed size sediment", Journal of Hydraulic
 !  Engineering, Feb 2003
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      !
-      implicit none
 !
 ! Arguments
 !

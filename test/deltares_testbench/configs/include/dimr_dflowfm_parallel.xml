@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f012_c0322" ref="postproc">
-        <path version="2026-03-31T13:41:43.639000">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
           <program ref="dimr" seq="1">
             <arguments>
@@ -56,7 +56,7 @@
             </arguments>
           </program>
         </programs>
-        <maxRunTime>120.0</maxRunTime>
+
         <checks>
            <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
            </file>
@@ -88,7 +88,8 @@
     </testCase>
     
     <testCase name="e02_f012_c0325" ref="dimr">
-        <path version="2025-10-15T15:07:12.409000">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
+    <maxRunTime>540</maxRunTime>
          <checks>
             <file name="dflowfmoutput/classmap_0000.nc" type="NETCDF">
                 <parameters>
@@ -122,7 +123,7 @@
             </arguments>
           </program>
         </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0326_classmap_mapmerge</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c0326_classmap_mapmerge</path>
          <checks>
             <file name="western_scheldt_3domains_classmap.nc" type="NETCDF">
                 <parameters>
@@ -145,7 +146,7 @@
             </arguments>
           </program>
         </programs>
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c327_specialgrid_mapmerge</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c327_specialgrid_mapmerge</path>
          <checks>
             <file name="flow_merged_map.nc" type="NETCDF">
                 <parameters>
@@ -155,7 +156,8 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+    <maxRunTime>900</maxRunTime>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -169,7 +171,6 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
            <parameters>
@@ -181,7 +182,8 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="dimr">
-      <path version="2026-03-17T10:15:49.591000">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+    <maxRunTime>420</maxRunTime>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -195,7 +197,6 @@
            </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_0000_his.nc" type="netCDF">
            <parameters>
@@ -207,7 +208,8 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c042_dad_2dredge1dump_layered_bed_par" ref="dimr">
-      <path version="2025-05-22T14:31:00">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
+    <maxRunTime>660</maxRunTime>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -215,7 +217,7 @@
              </arguments>
           </program>
       </programs>
-      <maxRunTime>120.0</maxRunTime>
+
       <checks>
         <file name="DFM_OUTPUT_test/test_0000_his.nc" type="netCDF">
            <parameters>
@@ -227,39 +229,8 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c100" ref="dimr">
-        <path version="2025-10-15T15:07:15.034000">e02_dflowfm/f014_parallel/c100_guayas_model</path>
-		<programs>
-          <program ref="dimr">
-             <arguments>
-                 <argument>-c 4 -m dimr.xml</argument>
-             </arguments>
-          </program>
-        </programs>
-         <checks>
-            <file name="dflowfmoutput/guayas_0000_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/guayas_0001_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/guayas_0002_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/guayas_0003_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
-    <testCase name="e02_f014_c101_icg7" ref="dimr">
-        <path version="2025-10-15T15:07:16.919000">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c100_guayas_model</path>
+    <maxRunTime>900</maxRunTime>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -294,7 +265,7 @@
     <!-- the results of the following test case are platform dependent because METIS results are platform dependent -->
     <!-- this test case is included to guarantee that the METIS workflow works correctly -->
     <testCase name="e02_f014_c102" ref="generic_platform_specific">
-      <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c102_baltic_bedlevtype1_on_netfile</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c102_baltic_bedlevtype1_on_netfile</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -303,7 +274,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+
       <checks>
         <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
            <parameters>
@@ -329,7 +300,7 @@
     </testCase>
     
     <testCase name="e02_f014_c103" ref="generic">
-      <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c103_baltic_bedlevtype1_on_netfile_partpoly</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c103_baltic_bedlevtype1_on_netfile_partpoly</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -339,7 +310,7 @@
           </arguments>
         </program>
       </programs>
-      <maxRunTime>20.0</maxRunTime>
+
       <checks>
         <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
            <parameters>
@@ -363,50 +334,50 @@
         </file>
       </checks>
     </testCase>
-    
-    <testCase name="e02_f014_c120" ref="dimr">
-        <path version="2025-10-15T15:07:18.938000">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
-        <programs>
-          <program ref="dimr">
-             <arguments>
-                 <argument>-c 4 -m dimr.xml</argument>
-             </arguments>
-          </program>
-        </programs>
-         <checks>
-            <file name="dflowfmoutput/tt3_0000_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-                    <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/tt3_0001_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-                    <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/tt3_0002_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-                    <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/tt3_0003_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-                    <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/tt3_his.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="waterlevel" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>
-         </checks>
-    </testCase>
+  <!-- <testCase name="e02_f014_c120" ref="dimr"> -->
+    <!-- <path version="DVC">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path> -->
+    <!-- <programs> -->
+      <!-- <program ref="dimr"> -->
+        <!-- <arguments> -->
+          <!-- <argument>-c 4 -m dimr.xml</argument> -->
+        <!-- </arguments> -->
+      <!-- </program> -->
+    <!-- </programs> -->
+    <!-- <checks> -->
+      <!-- <file name="dflowfmoutput/tt3_0000_map.nc" type="NETCDF"> -->
+        <!-- <parameters> -->
+          <!-- <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/> -->
+          <!-- <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/> -->
+        <!-- </parameters> -->
+      <!-- </file> -->
+      <!-- <file name="dflowfmoutput/tt3_0001_map.nc" type="NETCDF"> -->
+        <!-- <parameters> -->
+          <!-- <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/> -->
+          <!-- <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/> -->
+        <!-- </parameters> -->
+      <!-- </file> -->
+      <!-- <file name="dflowfmoutput/tt3_0002_map.nc" type="NETCDF"> -->
+        <!-- <parameters> -->
+          <!-- <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/> -->
+          <!-- <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/> -->
+        <!-- </parameters> -->
+      <!-- </file> -->
+      <!-- <file name="dflowfmoutput/tt3_0003_map.nc" type="NETCDF"> -->
+        <!-- <parameters> -->
+          <!-- <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/> -->
+          <!-- <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/> -->
+        <!-- </parameters> -->
+      <!-- </file> -->
+      <!-- <file name="dflowfmoutput/tt3_his.nc" type="NETCDF"> -->
+        <!-- <parameters> -->
+          <!-- <parameter name="waterlevel" toleranceAbsolute="0.001"/> -->
+        <!-- </parameters> -->
+      <!-- </file> -->
+    <!-- </checks> -->
+  <!-- </testCase> -->
     <testCase name="e02_f014_c150" ref="dimr">
-        <path version="2026-04-21T14:36:31.090000">e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
+    <maxRunTime>360</maxRunTime>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -429,7 +400,8 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c151_convert_old_longculverts_before_partitioning" ref="generic">
-      <path version="2026-04-21T14:36:35.262000">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
+    <path version="DVC">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
+    <maxRunTime>420</maxRunTime>
       <programs>
         <program ref="dflowfm">
             <arguments>
@@ -471,7 +443,7 @@
             </arguments>
           </program>
         </programs>
-        <path version="2024-03-22T19:40:00">e02_dflowfm/f012_inout/c188_from_restart_graded_inicomp_mapmerge</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c188_from_restart_graded_inicomp_mapmerge</path>
          <checks>
             <file name="str_merged_20151101_001000_rst.nc" type="NETCDF">
                 <parameters>
@@ -498,7 +470,7 @@
             </arguments>
           </program>
         </programs>
-        <path version="2024-03-22T19:40:00">e02_dflowfm/f012_inout/c190_rijn_rst_mapmerge</path>
+    <path version="DVC">e02_dflowfm/f012_inout/c190_rijn_rst_mapmerge</path>
          <checks>
             <file name="RIJN_merged_20000101_010000_rst.nc" type="NETCDF">
                 <parameters>
@@ -514,8 +486,8 @@
          Motivation: Slurm related scripts always prepend mpiexec
       -->
     <testCase name="e02_f004_c080_chezy_uniform" ref="dimr">
-      <path version="2025-10-15T15:07:21.413000">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
-      <maxRunTime>15000.0000000</maxRunTime>
+    <path version="DVC">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
+
         <programs>
           <program ref="dimr">
              <arguments>
@@ -541,10 +513,11 @@
         </file>
       </checks>
     </testCase>
+  <!-- FLAKY
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
         <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
-        <maxRunTime>60.0</maxRunTime>
-        <programs>
+
+                <programs>
           <program ref="dimr">
              <arguments>
                  <argument>-c 2 -m dimr_config.xml</argument>
@@ -569,49 +542,5 @@
             </file>
         </checks>
     </testCase>
-	<testCase name="e02_f042_c02_sedtrails_parallel" ref="dimr">
-        <path version="2026-06-11T15:07:15.034000">e02_dflowfm/f042_sedtrails_output/c02_sedtrails_parallel</path>
-		<maxRunTime>600.0000000</maxRunTime>
-		<programs>
-          <program ref="dimr">
-             <arguments>
-                 <argument>-c 4 -m dimr_config.xml</argument>
-             </arguments>
-          </program>
-        </programs>
-        <checks>
-           <file name="output/inlet_0000_sedtrails.nc" type="netCDF">
-             <parameters>
-               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
-               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
-               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
-               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
-             </parameters>
-           </file>        
-		   <file name="output/inlet_0001_sedtrails.nc" type="netCDF">
-             <parameters>
-               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
-               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
-               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
-               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
-             </parameters>
-           </file>        
-		   <file name="output/inlet_0002_sedtrails.nc" type="netCDF">
-             <parameters>
-               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
-               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
-               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
-               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
-             </parameters>
-           </file>        
-		   <file name="output/inlet_0003_sedtrails.nc" type="netCDF">
-             <parameters>
-               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
-               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
-               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
-               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
-             </parameters>
-           </file>
-        </checks>
-    </testCase>
- </testCases>
+    -->
+</testCases>

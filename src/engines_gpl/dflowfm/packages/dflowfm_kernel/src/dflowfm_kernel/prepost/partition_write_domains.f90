@@ -44,8 +44,7 @@ module m_partition_write_domains
 
 contains
 
-   subroutine partition_write_domains(netfilename, icgsolver, jacells, japolygon, japartugrid)
-
+   subroutine partition_write_domains(netfilename, jacells, japolygon, japartugrid)
       use m_partitioninfo
       use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID, UNC_CONV_CFOLD
       use unstruc_model, only: md_ident
@@ -59,7 +58,6 @@ contains
       use m_filez, only: newfil
 
       character(len=*), intent(in) :: netfilename !< filename of whole network
-      integer, intent(in) :: icgsolver !< intended solver
       integer, intent(in) :: jacells !< write cell and subdomain numbers to file
       integer, intent(in) :: japolygon !< write partitioning polygon
       integer, intent(in) :: japartugrid !< write partitioning in ugrid format (1) or not (0)
@@ -113,7 +111,7 @@ contains
       end if
 
 !     set ghostlevel parameters
-      call partition_setghost_params(icgsolver)
+      call partition_setghost_params()
 
 !     loop over all domains
       do idmn = 0, ndomains - 1
@@ -126,14 +124,16 @@ contains
          if (ierror /= DFM_NOERR) then
             goto 1234
          end if
-
+         
 !        write partitioning net files, including cell info. and idomain
          call unc_write_net(filename, janetcell=1, janetbnd=1, jaidomain=jacells, &
                             jaiglobal_s=jacells, iconventions=iconv, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
 
 !        restore network
+         call restorestructures()
          call restore()
          call restorecells() ! restore netcell, lne, lnn and idomain,xz, yz, xzw, yzw, ba
+
       end do
       call restore_1dugrid_state()
 

@@ -8,16 +8,17 @@ import Delft3D.step.*
 
 object WindowsBuild2D3DSP : BuildType({
 
-    description = "CMake build 2D3D single-precision. This is part of the Delft3D 4 delivery."
+    description = "CMake build of 2D3D single-precision (Delft3D 4)."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
  
-    name = "Build 2D3D single-precision"
+    name = "Build 2D3D (SP)"
     buildNumberPattern = "%product%: %build.vcs.number%"
 
     allowExternalStatus = true
@@ -84,7 +85,7 @@ object WindowsBuild2D3DSP : BuildType({
                 matches("product", """^(d3d4-(suite|testbench))|(all-testbench)$""")
             }
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                call C:\set-env.cmd
 
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%

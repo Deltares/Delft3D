@@ -140,6 +140,7 @@ module meteo_data
       character(60), dimension(3)   :: quantities       ! Quantities to be served by this meteoitem, normally just one. 
                                                         ! Exceptions: meteotypes uniuvp, meteo_on_computational_grid, meteo_on_spiderweb_grid
       character(20)                 :: spw_rad_unit     ! Unit of spiderweb radius, must be meters
+      character(20)                 :: spw_utm_zone_target  ! UTM zone (eg 53N) of grid on which spw should be projected; only relevant for grid_unit=degree
       character(100)                :: time_unit        ! Actual unit of time, distilled from time_definition, possibly decorated with spaces and long real by the user
       character(300)                :: time_definition  ! Fixed format: Time unit 'since' reference date and time +- time zone difference, possibly decorated with spaces and long reals by the user
       character(30), dimension(3)   :: units = 'undef'  ! Units of the three quantities

@@ -89,7 +89,7 @@ contains
       end do
 
       do n = 1, nbndz
-         if (kbndz(4, n) == BOUNDARY_VELOCITY_RIEMANN) then ! riemann boundaries
+         if (kbndz(4, n) == BOUNDARY_VELOCITY_RIEMANN) then
             kb = kbndz(1, n)
             ki = kbndz(2, n)
             L = kbndz(3, n)

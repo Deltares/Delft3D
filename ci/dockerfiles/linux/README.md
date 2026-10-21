@@ -36,7 +36,7 @@ The dockerfile has two build arguments:
 The `BASE_IMAGE_URL` points to the repository where the base image is located.
 This URL can be set to `almalinux:8` when you would like to create a `buildtools` image based on the default Alma Linux 8 image available on DockerHub.
 
-Valid values for `INTEL_ONEAPI_VERSION` are `2023` and `2024`.
+Valid values for `INTEL_ONEAPI_VERSION` are `2023`, `2024`, `2025` and `2026`.
 This build argument allows you to choose which versions of the C, C++ and Fortran compilers you want to install in the `buildtools` image.
 
 ### Build
@@ -97,7 +97,7 @@ The dockerfile has several build arguments:
 - `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
 
 The `INTEL_ONEAPI_VERSION` build argument is used to select the right `buildtools` image.
-Valid values are `2023` and `2024`.
+Valid values are `2023`, `2024`, `2025` and `2026`.
 
 The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile the Fortran libraries (there are just a few libraries for which this is relevant).
 Valid values are `ifort` and `ifx`.

@@ -1,0 +1,6 @@
+outs:
+- md5: deb885142989efc56ee5ce9a7c7e5a64.dir
+  size: 39102
+  nfiles: 11
+  hash: md5
+  path: input

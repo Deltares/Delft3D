@@ -58,11 +58,12 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
       implicit none
 
       logical :: make2dh
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
-      integer :: itpbn, newucxq = 0
+      integer :: boundary_type, newucxq = 0
       real(kind=dp) :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin, duxdn, duydn
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny, u1L
@@ -79,7 +80,7 @@ contains
 
             do L = 1, lnx1D
                if (u1(L) /= 0.0_dp) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -109,7 +110,7 @@ contains
                   end if
                end if
                if (u1(L) /= 0.0_dp) then ! link flows
-                  if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -216,12 +217,12 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
-         itpbn = kbndz(4, n)
+         boundary_type = kbndz(4, n)
          cs = csu(LL)
          sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2), ucy(k2)) * cs + nod2liny(LL, 2, ucx(k2), ucy(k2)) * sn
                      ucx(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -269,7 +270,7 @@ contains
             do L = Lb, Lt
                kbk = ln(1, L)
                k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
                      ucx(kbk) = uin * lin2nodx(LL, 1, cs, sn)

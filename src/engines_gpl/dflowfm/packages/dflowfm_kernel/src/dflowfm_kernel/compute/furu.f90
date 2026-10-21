@@ -61,11 +61,14 @@ contains
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
+      use network_data, only: LINK_1D2D_INTERNAL
+      use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
+                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_ABSORBING_GENERATING
 
       implicit none
 
-      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, itpbn, i
+      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, boundary_type, i
       integer :: kup, kdo, iup
 
       real(kind=dp) :: bui, cu, du, du0, gdxi, ds
@@ -178,15 +181,14 @@ contains
                         frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)
                      end if
                      !
-                     du = du0 + frL * ustokes(L)
-                     !
                      ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
                      if ((jaBaptist >= 2) .or. trachy_resistance) then
                         frL = frL + alfav(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      end if
-
+                     !
+                     du = du0 + frL * ustokes(L)
                   else if (ifxedweirfrictscheme > 0) then
-                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
+                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == LINK_1D2D_INTERNAL) then
                         call fixedweirfriction2D(L, k1, k2, frL)
                      else
                         frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
@@ -266,8 +268,6 @@ contains
             end do
          end if
 
-         call furu_structures()
-
       end if
 
       if (kmx > 0) then
@@ -284,13 +284,13 @@ contains
 
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         itpbn = kbndu(4, n)
+         boundary_type = kbndu(4, n)
          call getLbotLtop(LL, Lb, Lt)
 
          !Original:  !zbndun = zbndu( (n-1)*kmxd + 1 )
-         if (itpbn == 4) then ! dischargebnd
+         if (boundary_type == BOUNDARY_VELOCITY_FLUX) then
             zbndun = zbndq(n)
-         else if (itpbn == 5) then ! absgenbc
+         else if (boundary_type == BOUNDARY_ABSORBING_GENERATING) then 
             zbndun = u1(LL) ! set in xbeach_absgen_bc
          else ! other types that use alfsmo
             zbndun = zbndu((n - 1) * kmxd + 1)
@@ -301,11 +301,11 @@ contains
             zbndun = alfsmo * zbndun + (1.0_dp - alfsmo) * zbndu0n ! i.c. smoothing, start from 0
          end if
 
-         if (itpbn == 8) then ! Criticaloutflowbnd
+         if (boundary_type == BOUNDARY_CRITICAL_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                zbndun = -sqrt(ag * (s1(k2) - min(bob(1, LL), bob(2, LL))))
             end if
-         else if (itpbn == 9) then ! Weiroutflowbnd 2/3h(sqrt
+         else if (boundary_type == BOUNDARY_WEIR_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                hb = s1(k2) - min(bob(1, LL), bob(2, LL))
                h23 = twot * hb
@@ -337,7 +337,7 @@ contains
             ru(L) = zbndun
 
             if (Lt > Lb) then
-               if (jaLogprofatubndin /= 1 .and. itpbn == 3) then ! non logprof and vertical profile specified
+               if (jaLogprofatubndin /= 1 .and. boundary_type == BOUNDARY_VELOCITY_NORMAL_INFLOW) then ! non logprof and vertical profile specified
                   ru(L) = zbndu((n - 1) * kmxd + L - Lb + 1) * min(1.0_dp, alfsmo)
                else if (abs(u1(Lb)) > 1.0e-4_dp .and. z00 > 0.0_dp) then
                   if (jaustarint == 0 .or. jaustarint == 3 .or. jaustarint == 1) then
@@ -366,6 +366,7 @@ contains
 
       end do
 
+      call furu_structures()
       call furusobekstructures()
 
       if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then

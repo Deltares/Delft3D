@@ -43,6 +43,7 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
     use string_module
     use dfparall
     use system_utils, only: exifil
+    use m_scannr, only: scannr
     !
     implicit none
     !

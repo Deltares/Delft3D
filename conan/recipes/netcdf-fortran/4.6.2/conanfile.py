@@ -17,7 +17,7 @@ class netcdf_fortranRecipe(ConanFile):
     topics = ("netcdf", "fortran", "scientific", "data")
 
     # Binary configuration
-    settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "build_type", "arch", "fortran_compiler"
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
 
@@ -26,7 +26,7 @@ class netcdf_fortranRecipe(ConanFile):
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
-        self.requires("hdf5/1.14.6")
+        self.requires("hdf5/1.14.2")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)

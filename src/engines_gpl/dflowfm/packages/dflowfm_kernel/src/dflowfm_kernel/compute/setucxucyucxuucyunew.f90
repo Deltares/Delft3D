@@ -57,11 +57,12 @@ contains
       use m_nod2linx, only: nod2linx, nod2linx_fast
       use m_nod2liny, only: nod2liny, nod2liny_fast
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL
       implicit none
 
       logical :: make2dh
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k, n1, n2, i
-      integer :: itpbn
+      integer :: boundary_type
       real(kind=dp) :: uu, vv, uucx, uucy, cs, sn, hul, hsk, uin, duxdn, duydn, uhu, htrs
       real(kind=dp) :: u1correction
       real(kind=dp) :: uinx, uiny
@@ -80,7 +81,7 @@ contains
 
             do i = 1, wetLink2D - 1
                L = onlyWetLinks(i)
-               if (kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+               if (kcu(L) /= LINK_1D2D_INTERNAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
@@ -711,12 +712,12 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
-         itpbn = kbndz(4, n)
+         boundary_type = kbndz(4, n)
          cs = csu(LL)
          sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2), ucy(k2)) * cs + nod2liny(LL, 2, ucx(k2), ucy(k2)) * sn
                      ucx(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -745,7 +746,7 @@ contains
             do L = Lb, Lt
                kbk = ln(1, L)
                k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
                      ucx(kbk) = uin * lin2nodx(LL, 1, cs, sn)

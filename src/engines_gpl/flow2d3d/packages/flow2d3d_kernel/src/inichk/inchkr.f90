@@ -375,7 +375,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     logical                              , pointer :: flbcc
     logical                              , pointer :: fldis
     include 'tri-dyn.igd'
-    real(fp)      , dimension(:)         , pointer :: rhosol
 !
 ! Global variables
 !
@@ -737,7 +736,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     flbct               => gdp%gdtmpfil%flbct
     flbcc               => gdp%gdtmpfil%flbcc
     fldis               => gdp%gdtmpfil%fldis
-    rhosol              => gdp%gdsedpar%rhosol
     !
     icx     = 0
     icy     = 0
@@ -1064,7 +1062,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
             & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
             & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-            & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+            & r(sumrho) ,r(rhowat) ,ifirst_dens,gdp       )
     !
     ! Z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
     !

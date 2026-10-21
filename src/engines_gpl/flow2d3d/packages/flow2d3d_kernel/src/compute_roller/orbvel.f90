@@ -35,7 +35,7 @@ subroutine orbvel(nmmax     ,kfs       ,dps       ,ubot      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

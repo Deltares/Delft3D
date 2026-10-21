@@ -12,17 +12,16 @@ import Delft3D.linux.containers.*
 
 object TestPythonCiTools : BuildType({
     id("TestPythonCiTools")
-    name = "Test Python CI tools"
+    name = "Lint Python CI tools"
     buildNumberPattern = "%build.vcs.number%"
-    description = """
-        Runs tests and quality checks on the python CI tools (including DIMRset delivery).
-    """.trimIndent()
+    description = "ruff, mypy, and pytest for ci/python."
 
     // The name `coverage.zip` for the pytest coverage report should not be changed.
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
     // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
         +:ci/python/*.xml => report
+        +:ci/python/ruff_format.patch => report
         +:ci/python/htmlcov/* => coverage.zip
     """.trimIndent()
 
@@ -30,6 +29,7 @@ object TestPythonCiTools : BuildType({
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     vcs {
@@ -71,7 +71,7 @@ object TestPythonCiTools : BuildType({
             scriptContent = """
                 #!/usr/bin/env bash
                 set -exo pipefail
-                uv run ruff format --diff
+                uv run ruff format --diff . > ruff_format.patch
                 uv run ruff check --output-format=junit --output-file=ruff.xml
                 uv run mypy ci_tools --junit-xml=mypy.xml
                 uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.

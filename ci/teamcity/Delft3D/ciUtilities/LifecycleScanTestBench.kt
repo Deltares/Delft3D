@@ -5,7 +5,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 
 object LifecycleScanTestBench : BuildType({
-    name = "Lifecycle Scan TestBench"
+    id("LifecycleScanTestBench")
+    name = "Nexus IQ (TestBench)"
+    description = "SBOM and Nexus IQ scan of TestBench."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {
@@ -13,7 +15,8 @@ object LifecycleScanTestBench : BuildType({
     }
 
     templates(
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateBuildConcurrency
     )
 
     artifactRules = """
@@ -44,9 +47,14 @@ object LifecycleScanTestBench : BuildType({
 
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
-            vcs {
+            schedule {
+                schedulingPolicy = daily {
+                    hour = 3
+                    minute = 30
+                }
                 branchFilter = "+:<default>"
-                perCheckinTriggering = false
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
         }
     }

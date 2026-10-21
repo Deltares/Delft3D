@@ -1,30 +1,3 @@
-# strip_boost_header_only_deps
-# Boost's CMake config conservatively declares compile-time header
-# dependencies (e.g. thread -> atomic, chrono, container) as
-# INTERFACE_LINK_LIBRARIES. These are not actual runtime DLL dependencies
-# (verified via dumpbin /dependents), but CMake's TARGET_RUNTIME_DLLS
-# walks INTERFACE_LINK_LIBRARIES and picks them up anyway. This function
-# strips those header-only transitive deps from the given Boost targets
-# so the corresponding DLLs don't get installed.
-#
-# Arguments
-#   TARGETS       : List of Boost targets to clean (e.g. Boost::thread Boost::log)
-#   EXCLUDE_DEPS  : List of Boost targets to remove from INTERFACE_LINK_LIBRARIES
-function(strip_boost_header_only_deps)
-    cmake_parse_arguments("" "" "" "TARGETS;EXCLUDE_DEPS" ${ARGN})
-    foreach(_target IN LISTS _TARGETS)
-        if(TARGET ${_target})
-            get_target_property(_libs ${_target} INTERFACE_LINK_LIBRARIES)
-            if(_libs)
-                foreach(_dep IN LISTS _EXCLUDE_DEPS)
-                    list(REMOVE_ITEM _libs ${_dep})
-                endforeach()
-                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
-            endif()
-        endif()
-    endforeach()
-endfunction()
-
 # create_target
 # Creates a target (library or executable) of a certain module
 #
@@ -366,10 +339,10 @@ function(create_test test_name)
     )
     # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
     if (UNIX)
-        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
+        set(lib_path_modification "LD_LIBRARY_PATH=path_list_prepend:${CMAKE_INSTALL_PREFIX}/lib")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
+        set(lib_path_modification "PATH=path_list_prepend:${CMAKE_INSTALL_PREFIX}/bin")
     endif (WIN32)
 
 
@@ -426,82 +399,10 @@ function(create_test test_name)
         set(data_path "DATA_PATH=${TEST_DATA_PATH}")
 
         set_tests_properties(${test_i} PROPERTIES
-            ENVIRONMENT "${lib_path};${data_path}"
+            ENVIRONMENT "${data_path}"
+            ENVIRONMENT_MODIFICATION "${lib_path_modification}"
             LABELS "${labels}"
         )
     endforeach()
 
-endfunction()
-
-# Function to set a key-value pair
-# Use the `dict` cmake function to create a dictionary-like data structure {key:value} like python
-# dict_name:
-#           The dictionary name
-# "key:value": [string]
-#           a string of the key and value separated by a colon
-# Examples:
-# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
-# message(${labels})
-# >>> test_1:fast;test_2:medium;test_3:e2e
-function(dict dict_name)
-    math(EXPR arg_len "${ARGC}-1")
-    foreach(i RANGE 1 ${arg_len})
-        list(GET ARGV ${i} pair)
-        list(APPEND ${dict_name} "${pair}")
-    endforeach()
-    set(${dict_name} "${${dict_name}}" PARENT_SCOPE)
-endfunction()
-
-# Function to get a value for a given key
-# Function to set a key-value pair
-# Use the `get_dict_value` cmake function to retrieve a value coresponding to a certain key from a dictionary created by the `dict`
-# function
-# dict_name: [string/input]
-#           The dictionary name, do not use the ${} in the dictionary na,e
-# key: [string/input]
-#       key value.
-# value: [string/output]
-#       value coresponding to the key you entered.
-# Examples:
-# dict(labels "test_1:fast" "test_2:medium" "test_3:e2e")
-# get_dict_value(labels test_3 test_label)
-# message(${test_label})
-# >>> e2e
-function(get_dict_value dict_name key value)
-    set(result NOTFOUND)
-    foreach(pair IN LISTS ${dict_name})
-        if(pair MATCHES "^${key}:")
-            string(REPLACE "${key}:" "" result "${pair}")
-            break()
-        endif()
-    endforeach()
-    set(${value} "${result}" PARENT_SCOPE)
-endfunction()
-
-# Function to return ifort version number
-function(get_intel_version)
-    # Intel OneAPI versions have different version numbers for their compilers.
-    # Furthermore, the compiler versions reported through CMAKE_Fortran_COMPILER_VERSION do not always match the official compiler version string.
-    # Before OneAPI 2021, the compiler version matches the ifort version (e.g., 2020.2)
-    # After OneAPI 2024, the compiler version matches the ifx version (e.g., 2025.1)
-    # In between, the ifx version does match the OneAPI version, but the ifort version is always reported as 2021.x(x).x.xxxxxxxx.
-    # Up to and including version 2023, the 2021.x version kept increasing, but in OneAPI 2024 the version reported in CMake goes back to 2021.0 or 2021.1.
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.[0-9]\\.[0-9]\\.(20231010|202[4-9][0-9][0-9][0-9][0-9])|^2024[\\.0-9]*")
-        set(intel_version 24 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(8|9|10)\\.[\\.0-9]*|^2023[\\.0-9]*")
-        set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(5|6|7)\\.[\\.0-9]*|^2022[\\.0-9]*")
-        set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^20([0-9][0-9])[\\.0-9]*")
-        set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
-    else()
-        message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")
-    endif()
-    if (NOT DEFINED ENV{ONEAPI_ROOT})
-        if (WIN32)
-            message(FATAL_ERROR "ONEAPI_ROOT environment variable not found. \nPlease run CMake from an intel oneapi command prompt for intel 64.")
-        else()
-            message(FATAL_ERROR "ONEAPI_ROOT environment variable not found. \nPlease ensure that the intel environment is set via an environment module or via a setvars script.")
-        endif()
-    endif()
 endfunction()

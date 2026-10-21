@@ -4,10 +4,15 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 import Delft3D.linux.*
 import Delft3D.windows.*
+import Delft3D.template.*
 
 object PublishToGui : BuildType({
     name = "Publish to GUI"
-    description = "Push latest DIMR release to NuGet for GUI pipeline"
+    description = "Push the latest DIMR release to NuGet for the GUI pipeline."
+
+    templates(
+        TemplateBuildConcurrency
+    )
 
     buildNumberPattern = "%build.vcs.number%"
 

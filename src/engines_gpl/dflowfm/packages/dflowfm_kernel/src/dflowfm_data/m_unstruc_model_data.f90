@@ -101,6 +101,7 @@ module m_unstruc_model_data
 
    character(len=max_prop_length) :: md_extfile = ' ' !< External forcing specification file (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
+   character(len=max_prop_length), dimension(:), allocatable :: extfile_new_list !< List of external forcing specification files new style (bct format), (e.g., *.ext)
    character(len=max_prop_length) :: md_extfile_dir = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
 
    character(len=max_prop_length) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
@@ -115,12 +116,18 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+   character(len=max_prop_length) :: md_dynvegpol = ' ' !< File containing extent of dynamic vegetation application
 
    character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
    character(len=max_prop_length) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
    character(len=max_prop_length) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
    character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
+   character(len=max_prop_length) :: md_map_output_polyfile = ' ' !< Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)
+
+   character(len=max_prop_length) :: md_mbafile = ' ' !< Space-separated input mass balance area file(s) (*_mba.ini).
+   integer, parameter :: MBA_MAJOR_FILE_VERSION = 1 !< Major version of the mass balance area file format.
+   integer, parameter :: MBA_MINOR_FILE_VERSION = 0 !< Minor version of the mass balance area file format.
 
    character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
    character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
@@ -191,11 +198,6 @@ module m_unstruc_model_data
    integer :: md_M = 1024 !< size of x in Axpy
    integer :: md_N = 2048 !< size of y in Axpy
    integer :: md_Nruns = 10 ! number of test runs
-   integer :: md_soltest = 0 !< solver test (1) or not (0)
-   integer :: md_CFL = 0 !< wave-based Courant number (if > 0)
-   integer :: md_maxmatvecs = 0 !< maximum number of matrix-vector multiplications in Krylov solver (if > 0 )
-   integer :: md_epscg = 0 !< -10log(epscg) (if > 0), tolerance in (inner) Krylov iterations
-   integer :: md_epsdiff = 0 !< -10log(epsdiff) (if > 0), tolerance in (outer) Schwarz iterations
    integer :: md_convnetcells = 0 !< Convert _net.nc files with only netnodes/links into _net.nc files with netcell info.
    integer :: md_findcells = 0 !< read netcell info from files and bypass findcells. If not 0, findcells are called.
    integer :: md_pressakey = 0 !< press a key (1) or not (0)

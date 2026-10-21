@@ -47,6 +47,7 @@ module m_ec_filereader
    public :: ecFileReaderFree1dArray
    public :: ecFileReaderReadNextRecord
    public :: ecFileReaderFindItem
+   public :: ecFileReaderFindItems
    public :: ecFileReaderAddItem
    public :: ecFileReaderGetNumberOfItems
    public :: ecFileReaderGetItem
@@ -369,6 +370,17 @@ module m_ec_filereader
                if (associated(itemPtr%hframe)) then
                   ! This is a harmonics file, read all the variable values because we actually don't have time steps.
                   success = ecNetcdfReadVariable(fileReaderPtr, itemPtr)
+               else if (fileReaderPtr%tframe%nr_timesteps == 0 .or. &
+                        (fileReaderPtr%tframe%nr_timesteps == 1 .and. .not. fileReaderPtr%one_time_field)) then
+                  do i = 1, fileReaderPtr%nItems
+                     success = ecNetcdfReadVariable(fileReaderPtr, fileReaderPtr%items(i)%ptr)
+                     if (.not. success) then
+                        return
+                     end if
+                     fileReaderPtr%items(i)%ptr%sourceT0FieldPtr%timesteps = -ec_huge_hp
+                     fileReaderPtr%items(i)%ptr%sourceT1FieldPtr%timesteps = ec_huge_hp
+                     fileReaderPtr%items(i)%ptr%quantityPtr%constant = .true.
+                  end do
                else
                   if (itemPtr%sourceT0FieldPtr%timesndx < 0) then
                      t0t1 = 0
@@ -433,6 +445,38 @@ module m_ec_filereader
 
       ! =======================================================================
 
+
+      !> Find a source Item with itemId in FileReader with fileReaderId.
+      !! Failure is indicated by returning ec_undef_int.
+      function ecFileReaderFindItems(instancePtr, fileReaderId, name) result(itemIds)
+         use m_alloc
+         integer, dimension(:), allocatable    :: itemIds       !< unique Item id
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: fileReaderId !< unique FileReader id
+         character(len=*),          intent(in) :: name         !< Quantity name which identifies the requested Item
+         !
+         type(tEcFileReader), pointer :: fileReaderPtr !< FileReader corresponding to fileReaderId
+         integer                      :: i             !< loop counter
+         integer                      :: nItems        !< number of items in the FileReader
+         !
+         fileReaderPtr => ecSupportFindFileReader(instancePtr, fileReaderId)
+         nItems = 0
+         if (associated(fileReaderPtr)) then
+            do i=1, fileReaderPtr%nItems
+               if (strcmpi(fileReaderPtr%items(i)%ptr%quantityPtr%name, name)) then
+                  nItems = nItems + 1
+                  call realloc(itemIds, nItems, keepExisting = .true.)
+                  itemIds(nItems) = fileReaderPtr%items(i)%ptr%id
+               end if
+            end do
+         end if
+
+         if (nItems == 0) then
+            allocate(itemIds(0))
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
+         end if
+      end function ecFileReaderFindItems
+
       !> Find a source Item with itemId in FileReader with fileReaderId.
       !! Failure is indicated by returning ec_undef_int.
       function ecFileReaderFindItem(instancePtr, fileReaderId, name) result(itemId)
@@ -459,7 +503,6 @@ module m_ec_filereader
             call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
          end if
       end function ecFileReaderFindItem
-
       ! =======================================================================
 
       !> Find the x-th source Item in FileReader with fileReaderId.

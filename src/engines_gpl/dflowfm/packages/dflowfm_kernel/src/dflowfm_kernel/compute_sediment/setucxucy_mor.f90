@@ -56,11 +56,12 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
-      integer :: itpbn
+      integer :: boundary_type
       real(kind=dp) :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny
@@ -72,7 +73,7 @@ contains
 
       if (kmx < 1) then ! original 2D coding
          do L = 1, lnx1D
-            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= LINK_1D2D_INTERNAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                k1 = ln(1, L)
                k2 = ln(2, L)
                wcxu = wcx1(L) * u1_loc(L)
@@ -187,12 +188,12 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
-         itpbn = kbndz(4, n)
+         boundary_type = kbndz(4, n)
          cs = csu(LL)
          sn = snu(LL)
          if (kmx == 0) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2), ucy_mor(k2)) * cs + nod2liny(LL, 2, ucx_mor(k2), ucy_mor(k2)) * sn
                      ucx_mor(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -238,7 +239,7 @@ contains
             do L = Lb, Lt
                kbk = ln(1, L)
                k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * cs + nod2liny(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * sn
                      ucx_mor(kbk) = uin * lin2nodx(LL, 1, cs, sn)

@@ -45,7 +45,7 @@ contains
       use m_inipointers_erosed, only: inipointers_erosed
       use m_sediment
       use m_rdstm
-      use m_flow, only: kmx, ndkx, iturbulencemodel
+      use m_flow, only: kmx, ndkx, iturbulencemodel, TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use morphology_data_module !, only: nullsedtra, allocsedtra
       use sediment_basics_module
       use message_module, only: clearstack, initstack
@@ -54,7 +54,7 @@ contains
       use unstruc_files
       use m_flowgeom
       use m_flowtimes
-      use m_physcoef, only: rhomean, ag, vismol
+      use m_physcoef, only: rhomean, ag, vismol, dynroughveg
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -126,9 +126,9 @@ contains
       ltur_ = 0
       if (kmx > 0) then
          select case (iturbulencemodel)
-         case (0, 1, 2)
+         case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur_ = 0
-         case (3, 4)
+         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
             ltur_ = 2
          end select
       end if
@@ -145,7 +145,7 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error, ag=ag)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return
@@ -472,12 +472,6 @@ contains
          end if
          call realloc(avalflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
-         ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-         if (comparereal(stmpar%morpar%wetslope, 10.0_dp) == 0) then
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-            stmpar%morpar%wetslope = 1.0e-1_dp
-         end if
-         !
          ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
          if (comparereal(upperlimitssc, 1.0e6_dp) /= 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Upper limit imposed on ssc. This will cause large mass errors icm avalanching. Check the mass error at the end of the run.')
@@ -548,6 +542,11 @@ contains
       case default
          ! if 0, do nothing.
       end select
+      !
+      if (dynroughveg > 0) then
+         if (allocated(cumes)) deallocate(cumes)
+         call realloc(cumes, lnx,stat=ierr,fill=0.0_dp, keepExisting=.false.)
+      end if
 
 1234  return
    end subroutine flow_sedmorinit

@@ -43,7 +43,7 @@ module m_flow_initimestep
    use m_setcfuhi, only: setcfuhi
    use m_setbaptist, only: setbaptist
    use m_makeq1qaatstart
-   use m_pillar_upd
+   use m_pillar_update, only: pillar_update
    use m_heatu
    use m_waveconst
 
@@ -67,9 +67,14 @@ contains
       use MessageHandling
       use m_partitioninfo
       use m_sethu
-      use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
+      use fm_external_forcings, only: prepare_air_pressure_temperature_dew_point_temperature, &
+         compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
+      use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
+      use m_physcoef, only: dynroughveg
+      use m_update_dynveg, only: update_dynveg
+
       implicit none
 
       integer, intent(in) :: jazws0
@@ -147,10 +152,28 @@ contains
       call timstop(handle_extra(43)) ! End setumod
 
       if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
-         call calculate_wind_stresses(time0, iresult)
+         if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            call prepare_air_pressure_temperature_dew_point_temperature(time0)
+         end if
+
+         call prepare_wind(time0, iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
+
+         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            call compute_air_water_interaction_most_fluxes(initialization=.false.)
+         end if
+
+         call calculate_wind_stresses(iresult)
+         if (iresult /= DFM_NOERR) then
+            return
+         end if
+      end if
+
+      ! Adapt roughness according to burial/erosion
+      if (dynroughveg > 0) then
+         call update_dynveg()
       end if
 
       call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi
@@ -176,8 +199,8 @@ contains
       call initialize_structures_actual_params(network%sts)
       call timstop(handle_extra(45)) ! Start structactual
 
-      if (japillar == 1 .or. japillar == 3) then
-         call pillar_upd()
+      if (pillar_method == PILLAR_DELFT3D_FLOWNODE .or. pillar_method == PILLAR_DELFT3D_FLOWLINK) then
+         call pillar_update()
       end if
 
       ! TIDAL TURBINES: Insert equivalent calls to updturbine and applyturbines here

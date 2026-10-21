@@ -62,6 +62,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     use dfparall
     use system_utils, only: exifil
     use MessageHandling
+    use m_scannr, only: scannr
     !
     implicit none
     !
@@ -123,7 +124,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
 ! Local parameters
 !
     integer, parameter :: IROUGH = 300
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -511,6 +511,11 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     !     Vaestilae & Jaervelae (2017) and Jarvela (2004) vegetation formulations
     nropar(155) = 10
     nropar(156) = 6
+    nropar(158) = 10
+    nropar(159) = 6
+    nropar(160) = 11
+    nropar(161) = 7
+    nropar(162) = 13
     !
     ! 201-249: Vegetation roughness predictors (linear)
     !
@@ -1133,7 +1138,6 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -1771,6 +1775,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     use properties   ! includes tree_structures
     use tree_structures
     use MessageHandling
+    use m_scannr, only: scannr
 
     implicit none
     !
@@ -1794,7 +1799,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
+    
 !
 ! Global variables
 !
@@ -1846,7 +1851,18 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ntrtobs = 0
     n_q     = 0
     n_zs    = 0
-    nroupa = 12
+   ! 
+   !A line in the ttd-file (trachytope definition file) contains:
+   !```
+   ! TrachytopeNr FormulaNr Parameter1 ... ParameterN
+   !```
+   !E.g.:
+   ! ```
+   ! 102 155 0.176 0.0548 0.65 0.20 -0.03 1.38 0.50 0.20 -1.03 25.2   
+   ! ```
+   !Hence, the maximum number of parameters `nroupa` is the maximum number of fields minus 2.
+   ! 
+    nroupa = MAXFLD-2 
     do jdir = 1,nodir
        nttaru        => gdtrachy%dir(jdir)%nttaru
        nttaru = 0
@@ -2050,13 +2066,13 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 !    use globaldata
     use system_utils, only: exifil
     use MessageHandling
+    use trachytopes_data_module, only: MAXFLD
     !
     implicit none
     !
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -2251,6 +2267,8 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 end subroutine dittar
 
 subroutine interpret_record( rec132, nrflds, itype, ifield, rfield, cfield, lenchr, lcomment, lokay )
+   use m_scannr, only: scannr
+
     character(len=*), intent(in)    :: rec132
     integer, intent(out)            :: nrflds
     integer, intent(out)            :: itype(:)

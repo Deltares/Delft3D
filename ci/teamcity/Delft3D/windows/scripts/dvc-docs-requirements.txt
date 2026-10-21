@@ -1,0 +1,4 @@
+# Minimal deps for documentation DVC pulls on TeamCity Windows agents.
+# Pinned to match testbench (test/deltares_testbench/pip/win-requirements.txt).
+dvc==3.67.1
+dvc-s3==3.3.0
