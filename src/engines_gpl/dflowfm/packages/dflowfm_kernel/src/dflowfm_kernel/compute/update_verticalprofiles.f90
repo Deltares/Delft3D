@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -178,8 +178,8 @@ contains
 
          call calculate_drhodz(zws, drhodz)
 
-         call links_to_centers(turkinws, turkin1)
-         call links_to_centers(turepsws, tureps1)
+         call links_to_centers(turbulent_kinetic_energy_ws, turkin1)
+         call links_to_centers(turbulent_dissipation_ws, tureps1)
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
@@ -188,8 +188,8 @@ contains
             end if
 
             if (jampi == 1) then
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turkinws, ierror)
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turepsws, ierror)
+               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_kinetic_energy_ws, ierror)
+               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_dissipation_ws, ierror)
             end if
 
             tqcu = 0.0_dp
@@ -203,12 +203,12 @@ contains
                   k2 = ln(2, L)
                   qqq = 0.5_dp * (q1(L) + q1(L + 1))
                   if (qqq > 0) then ! set upwind center values on links
-                     tqcu(k2) = tqcu(k2) + qqq * turkinws(k1)
-                     eqcu(k2) = eqcu(k2) + qqq * turepsws(k1)
+                     tqcu(k2) = tqcu(k2) + qqq * turbulent_kinetic_energy_ws(k1)
+                     eqcu(k2) = eqcu(k2) + qqq * turbulent_dissipation_ws(k1)
                      sqcu(k2) = sqcu(k2) + qqq
                   else if (qqq < 0) then
-                     tqcu(k1) = tqcu(k1) - qqq * turkinws(k2)
-                     eqcu(k1) = eqcu(k1) - qqq * turepsws(k2)
+                     tqcu(k1) = tqcu(k1) - qqq * turbulent_kinetic_energy_ws(k2)
+                     eqcu(k1) = eqcu(k1) - qqq * turbulent_dissipation_ws(k2)
                      sqcu(k1) = sqcu(k1) - qqq
                   end if
                end do
@@ -274,7 +274,7 @@ contains
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(turkin0, turkinws)
+                  call apply_horizontal_coupling(turkin0, turbulent_kinetic_energy_ws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
@@ -570,7 +570,7 @@ contains
                ! Dirichlet condition on bed ; teta method:
 
                if (tur_time_int_factor > 0) then
-                  call apply_horizontal_coupling(tureps0, turepsws)
+                  call apply_horizontal_coupling(tureps0, turbulent_dissipation_ws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi

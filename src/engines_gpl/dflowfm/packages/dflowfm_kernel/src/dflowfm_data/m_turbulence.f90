@@ -121,10 +121,10 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< Turbulent kinetic energy at vertical face center at layer interface c. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< turbulent_dissipation_ws !< Turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turbulent_kinetic_energy_ws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turbulent_dissipation_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers

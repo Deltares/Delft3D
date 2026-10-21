@@ -97,7 +97,7 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_turbulence, only: vicwws, turkinws, rhowat
+      use m_turbulence, only: vicwws, turbulent_kinetic_energy_ws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
@@ -919,7 +919,7 @@ contains
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
          if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
+            dll_reals(RP_KTUR) = real(turbulent_kinetic_energy_ws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)

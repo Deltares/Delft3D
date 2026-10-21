@@ -424,7 +424,7 @@ contains
          if (allocated(FrcInternalTides2D)) then
             OPTION(46) = 'FrcInternalTides2D                      '
          else
-            OPTION(46) = 'turkinws                                '
+            OPTION(46) = 'turbulent_kinetic_energy_ws                                '
          end if
 
          if (jagrw > 0 .or. jadhyd > 0) then
