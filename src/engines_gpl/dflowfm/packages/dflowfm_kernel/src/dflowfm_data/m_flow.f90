@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_flow ! flow arrays-999
+module m_flow
    use fm_external_forcings_data
    use m_alloc
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, &
@@ -508,10 +508,11 @@ module m_flow ! flow arrays-999
    logical :: ucxyq_read_rst !< Determines if variables `ucxq` and `ucxy` have been read from restart.
 
 contains
-!> Sets ALL (scalar) variables in this module to their default values.
-!! For a reinit prior to flow computation, only call reset_flow() instead.
+
+   !> Sets ALL (scalar) variables in this module to their default values.
+   !! For a reinit prior to flow computation, only call reset_flow() instead.
    subroutine default_flow()
-! 3D parameters
+   ! 3D parameters
       ! kmx         = 0    ! nr of 3d layers, increasing in positive upward direction
       ! if kmx==0 then 2D code. if kmx==1 then 3D code
       ! kmxd        = 0    ! dim of kmx, >= 1
@@ -529,13 +530,12 @@ contains
       call reset_flow()
    end subroutine default_flow
 
-!> Resets only flow variables intended for a restart of flow simulation.
-!! Upon loading of new model/MDU, call default_flow() instead.
+   !> Resets only flow variables intended for a restart of flow simulation.
+   !! Upon loading of new model/MDU, call default_flow() instead.
    subroutine reset_flow()
       use m_missing, only: dmiss
-! node related
 
-! basis
+      ! Initialization
       vol0tot = 0 ! total volume start of timestep          (m3)
       vol1tot = 0 ! total volume   end of timestep          (m3)
       vol1icept = 0.0_dp ! total volume interception end of timestep (m3)
