@@ -244,7 +244,7 @@ contains
       ! underlayer bookkeeping mechanism
       !
       call prop_get(mor_ptr, 'Underlayer', 'IUnderLyr', iunderlyr)
-      if (iunderlyr < 1 .or. iunderlyr > 2) then
+      if (iunderlyr < BED_MIXED .or. iunderlyr > BED_LAYERED) then
          errmsg = 'IUnderLyr should be 1 or 2 in '//trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
@@ -277,7 +277,7 @@ contains
       !
       call set_default_fractions(morlyr)
       call prop_get(mor_ptr, 'Underlayer', 'IFractions', ifractions)
-      if (ifractions < 1 .or. ifractions > 2) then
+      if (ifractions < FRAC_MASS .or. ifractions > FRAC_VOLUME) then
          errmsg = 'IFractions should be 1 or 2 in ' // trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
@@ -287,7 +287,7 @@ contains
       ! underlayer mechanism parameters
       !
       select case (iunderlyr)
-      case (2)
+      case (BED_LAYERED)
          !
          ! flag for coarse layer
          !
@@ -383,7 +383,7 @@ contains
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
-         if (morlyr%settings%ierosion > 0) then
+         if (morlyr%settings%ierosion > EROS_CONST) then
             call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
          endif
          !
@@ -513,7 +513,7 @@ contains
          end if
          !
          call prop_get(mor_ptr, 'Underlayer', 'UpdTopLyr', updtoplyr)
-         if (updtoplyr < 1 .or. updtoplyr > 2) then
+         if (updtoplyr < TOPLYR_POR_RESET .or. updtoplyr > TOPLYR_POR_UPDATE) then
             errmsg = 'UpdTopLyr should be 1-2 in ' // trim(filmor)
             call write_error(errmsg, unit=lundia)
             error = .true.
@@ -521,8 +521,8 @@ contains
          end if
          !
          call prop_get(mor_ptr, 'Underlayer', 'UpdBaseLyr', updbaselyr)
-         if (updbaselyr < 1 .or. updbaselyr > 4) then
-            errmsg = 'UpdBaseLyr should be 1-4 in '//trim(filmor)
+         if (updbaselyr < BASELYR_UPDATED .or. updbaselyr > BASELYR_CONST_THK) then
+            errmsg = 'UpdBaseLyr should be 1-5 in '//trim(filmor)
             call write_error(errmsg, unit=lundia)
             error = .true.
             return
@@ -530,15 +530,18 @@ contains
          !
          txtput1 = 'Base layer composition'
          select case (updbaselyr)
-         case (1)
+         case (BASELYR_UPDATED)
             txtput2 = ' computed separately'
-         case (2)
+         case (BASELYR_CONST_FRC)
             txtput2 = ' constant'
-         case (3)
+         case (BASELYR_COPY_FRC)
             txtput2 = ' same as layer above'
-         case (4)
+         case (BASELYR_CONST)
             txtput1 = 'Base layer composition and thickness'
             txtput2 = '            constant'
+         case (BASELYR_CONST_THK)
+            txtput1 = 'Base layer comp.'
+            txtput2 = ' updated, thk fixed'
          case default
             txtput2 = ' <unknown>'
          end select
@@ -548,13 +551,13 @@ contains
          !
          call prop_get(mor_ptr, 'Underlayer', 'IDiffusion', idiffusion)
          txtput1 = 'Mixing between layers'
-         if (idiffusion > 0) then
+         if (idiffusion > BDIFF_NONE) then
             txtput2 = '                 YES'
          else
             txtput2 = '                  NO'
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
-         if (idiffusion > 0) then
+         if (idiffusion > BDIFF_NONE) then
             call prop_get(mor_ptr, 'Underlayer', 'NDiff', ndiff)
             txtput1 = '# diffusion coefficients in z-direction'
             write (lundia, '(2a,i20)') txtput1, ':', ndiff
@@ -574,7 +577,7 @@ contains
       !
       ! Numerical settings
       !
-      track_shortage = iunderlyr > 1 ! default off for standard bed composition
+      track_shortage = iunderlyr > BED_MIXED ! default off for standard bed composition
       call prop_get(mor_ptr, 'Numerics', 'TrackMassShortage', track_shortage)
       if (track_shortage) then
          call prop_get(mor_ptr, 'Numerics', 'MinMassShortWarning', minmass)
@@ -591,8 +594,8 @@ contains
       ! underlayer mechanism parameters
       !
       select case (iunderlyr)
-      case (2)
-         if (idiffusion > 0) then
+      case (BED_LAYERED)
+         if (idiffusion > BDIFF_NONE) then
             !
             ! Diffusion coefficient
             !
@@ -630,7 +633,7 @@ contains
          associate (ttlform => morpar%ttlform)
             call prop_get(mor_ptr, 'Underlayer', 'TTLForm', ttlform)
             select case (ttlform)
-            case (1)
+            case (ACTIVE_LAYER_DIFFUSION_XY)
                !
                ! Transport layer thickness constant in time:
                ! uniform or spatially varying thickness
@@ -874,14 +877,14 @@ contains
          !
          associate (aldiff => morlyr%settings%aldiff, aldifffil => morpar%aldifffil)
             select case (active_layer_diffusion)
-            case (0)
+            case (ACTIVE_LAYER_DIFFUSION_OFF)
                !
                !NO diffusion in active-layer model
                !
                txtput1 = 'Diffusion in active-layer model'
                write (lundia, '(3a)') txtput1, ':', '                  NO'
                morpar%moroutput%aldiff = .false. !if you request the output but there is no diffusion, we do no write it.
-            case (1)
+            case (ACTIVE_LAYER_DIFFUSION_XY)
                !
                !YES diffusion in active-layer mode
                !
@@ -1115,7 +1118,7 @@ contains
          flcomp = ''
          call prop_get(mor_ptr, 'Underlayer', 'IniComp', flcomp)
          !
-         if (iunderlyr /= 2 .and. flcomp /= ' ') then
+         if (iunderlyr /= BED_LAYERED .and. flcomp /= ' ') then
             write (lundia, '(a)') 'WARNING: IniComp keyword only supported for IUnderLyr=2'
             flcomp = ' '
          end if
@@ -1170,7 +1173,7 @@ contains
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kk
 
           select case (iconsolidate)
-          case (1) ! Gibson model parameters
+          case (CONSOL_GIBSON) ! Gibson model parameters
 
               call prop_get(mor_ptr, 'Consolidate', 'ksigma0', morlyr%settings%ksigma0)
               txtput1 = 'Effective stress coefficient, ksigma0'
@@ -1201,7 +1204,7 @@ contains
               txtput1 = 'Maximum volume fraction, svmax'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svmax
 
-          case (2) ! Dynamic Equilibrium CONsolidation (DECON) parameters
+          case (CONSOL_DECON) ! Dynamic Equilibrium CONsolidation (DECON) parameters
               call prop_get(mor_ptr, 'Consolidate', 'dtcon', morlyr%settings%dtdecon)
               call prop_get(mor_ptr, 'Consolidate', 'dtdecon', morlyr%settings%dtdecon)
               txtput1 = 'DECON consolidation update time step (s)'
@@ -1302,7 +1305,8 @@ contains
                  call prop_get(mor_ptr, 'peat', 'peatfrac', morlyr%settings%peatfrac)
                  txtput1 = 'peatfrac'
                  write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%peatfrac
-                 if (morlyr%settings%peatfrac < 1 .or. morlyr%settings%peatfrac > morlyr%settings%nfrac) then
+                 if (morlyr%settings%peatfrac <= PEATFRAC_DISABLED .or. &
+                     morlyr%settings%peatfrac > morlyr%settings%nfrac) then
                     write(errmsg,'(a,i0,2a)') 'Peat fraction should be in range 1 to ',morlyr%settings%nfrac,' in ',trim(filmor)
                     call write_error(errmsg, unit=lundia)
                     error = .true.
@@ -1814,7 +1818,7 @@ end subroutine rderosion
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nlyr', nlyr)
          if (istat == 0) istat = bedcomp_getpointer_realprec(morlyr, 'bodsed', bodsed)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'iporosity', iporosity)
-         if (iunderlyr == 2) then
+         if (iunderlyr == BED_LAYERED) then
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'msed', msed)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'thlyr', thlyr)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'svfrac', svfrac)
@@ -1825,7 +1829,7 @@ end subroutine rderosion
             return
          end if
          !
-         if (iunderlyr == 1 .or. flcomp == ' ') then
+         if (iunderlyr == BED_MIXED .or. flcomp == ' ') then
             !
             ! If not restart and no layer administration, then use the bed composition specified in the sed file.
             !

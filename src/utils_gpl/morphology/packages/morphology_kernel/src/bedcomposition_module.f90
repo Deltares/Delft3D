@@ -120,6 +120,10 @@ integer, parameter, public :: CONSOL_TERZ_PEAT  = 4 !< simple loading including 
 integer, parameter, public :: BDIFF_NONE        = 0 !< no diffusion
 integer, parameter, public :: BDIFF_ACTIVE      = 1 !< diffusion
 
+! imixtr
+integer, parameter, public :: MIXTR_OFF         = 0 !< Do not mix the transport layer with layers below.
+integer, parameter, public :: MIXTR_ON          = 1 !< Mix the transport layer with layers below during replenishment.
+
 ! ierosion
 integer, parameter, public :: EROS_CONST        = 0 !< Keep cohesive-sediment erodibility independent of bed composition.
 integer, parameter, public :: EROS_WHITEHOUSE   = 1 !< Whitehouse (2001) cohesive-sediment erodibility model.
@@ -150,6 +154,9 @@ integer, parameter, public :: BASELYR_CONST_FRC = 2 !< Keep base-layer compositi
 integer, parameter, public :: BASELYR_COPY_FRC  = 3 !< Copy the composition of the layer above while conserving total mass.
 integer, parameter, public :: BASELYR_CONST     = 4 !< Keep base-layer composition and thickness unchanged.
 integer, parameter, public :: BASELYR_CONST_THK = 5 !< Update base-layer composition while keeping thickness fixed.
+
+! peatfrac
+integer, parameter, public :: PEATFRAC_DISABLED = 0 !< No peat fraction is specified.
 
 ! updtoplyr
 integer, parameter, public :: TOPLYR_POR_RESET  = 1 !< Recompute top-layer porosity for the updated mixture.
@@ -238,51 +245,17 @@ type bedcomp_settings
     !
     ! integers
     !
-    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment:
-                                                     !< 0: No.
-                                                     !< 1: Yes.
+    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment.
     integer :: nconlyr                               !< Number of consolidating layers used.
-    integer :: iconsolidate                          !< Consolidation model selector:
-                                                     !< 0: No consolidation.
-                                                     !< 1: Full Gibson model.
-                                                     !< 2: Dynamic Equilibrium Consolidation (DECON).
-                                                     !< 3: Terzaghi loading model.
-                                                     !< 4: Terzaghi loading model including peat.
-    integer :: idiffusion                            !< Switch for diffusion between layers:
-                                                     !< 0: Off.
-                                                     !< 1: On.
-    integer :: ierosion                              !< Cohesive-sediment erodibility model selector:
-                                                     !< 0: Independent of bed composition.
-                                                     !< 1: Whitehouse (2001).
-                                                     !< 2: Le Hir (2011).
-                                                     !< 3: Alonso et al. (2021).
-                                                     !< 4: Winterwerp (2013).
-                                                     !< 5: MUSA.
-    integer :: ifractions                            !< Fraction representation returned by getfrac:
-                                                     !< 1: Mass fractions.
-                                                     !< 2: Solid-volume fractions.
-    integer :: iporosity                             !< Porosity model selector:
-                                                     !< 0: Porosity is included in densities.
-                                                     !< 1: Frings (2009).
-                                                     !< 2: Weltje, based on Beard and Weyl (1973).
-                                                     !< 3: Initial solid-volume fraction.
-                                                     !< 4: Weighted mean of the initial mud and sand solid-volume fractions.
-                                                     !< 5: Shared-porosity variant of POROS_IN_DENSITY.
-    integer :: iunderlyr                             !< Underlayer concept:
-                                                     !< 1: Fully mixed.
-                                                     !< 2: Layered.
-    integer :: imobility                             !< Mobility model selector:
-                                                     !< 0: Not used.
-                                                     !< 1: Discrete.
-                                                     !< 2: Based on the Shields curve.
-                                                     !< 3: Wilcock and McArdell (1997).
-                                                     !< 4: From the sediment transport relation.
-    integer :: ihidexptrcrs                          !< Use the transport and coarse layers to compute hiding and exposure:
-                                                     !< 0: No.
-                                                     !< 1: Yes.
-    integer :: keuler                                !< Index of the first Eulerian (non-moving) layer:
-                                                     !< 2: Only the top layer moves with bed level.
-                                                     !< nlyr: All layers move with bed level (fully Lagrangian).
+    integer :: iconsolidate                          !< Consolidation model selector.
+    integer :: idiffusion                            !< Switch for diffusion between layers.
+    integer :: ierosion                              !< Cohesive-sediment erodibility model selector.
+    integer :: ifractions                            !< Fraction representation returned by getfrac.
+    integer :: iporosity                             !< Porosity model selector.
+    integer :: iunderlyr                             !< Underlayer concept.
+    integer :: imobility                             !< Mobility model selector.
+    integer :: ihidexptrcrs                          !< Use the transport and coarse layers to compute hiding and exposure.
+    integer :: keuler                                !< Index of the first Eulerian (non-moving) layer.
     integer :: nfrac                                 !< Number of sediment fractions.
     integer :: neulyr                                !< Number of Eulerian underlayers.
     integer :: nlalyr                                !< Number of Lagrangian underlayers.
@@ -290,25 +263,12 @@ type bedcomp_settings
     integer :: ndiff                                 !< Number of vertical diffusion coefficients.
     integer :: nmlb                                  !< First segment index.
     integer :: nmub                                  !< Last segment index.
-    integer :: updtoplyr                             !< Top-layer porosity update mode:
-                                                     !< 1: Reset for the new mixture.
-                                                     !< 2: Update for newly added sediment.
-    integer :: updbaselyr                            !< Base-layer update mode:
-                                                     !< 1: Update composition and thickness independently.
-                                                     !< 2: Keep composition fixed and conserve total mass.
-                                                     !< 3: Copy composition from the layer above and conserve total mass.
-                                                     !< 4: Keep composition and thickness fixed.
-                                                     !< 5: Update composition while keeping thickness fixed.
-    integer  :: peatfrac                             !< Sediment-fraction index representing peat:
-                                                     !< 0: Peat disabled.
-                                                     !< 1 to nfrac: Peat fraction index.
+    integer :: updtoplyr                             !< Top-layer porosity update mode.
+    integer :: updbaselyr                            !< Base-layer update mode.
+    integer  :: peatfrac                             !< Sediment-fraction index representing peat; PEATFRAC_DISABLED when absent.
     integer  :: max_mud_sedtyp                       !< Highest sediment-type code considered to be a mud fraction.
-    integer  :: active_layer_diffusion               !< Switch for applying diffusion in the active layer model:
-                                                     !< 0: No diffusion (default).
-                                                     !< 1: X-Y diffusion file.
-    integer  :: active_layer_to_substrate_flux       !< Active-layer to substrate flux model:
-                                                     !< 1: Existing uniform-composition transfer.
-                                                     !< 2: Deposit immobile sediment first.
+    integer  :: active_layer_diffusion               !< Switch for applying diffusion in the active layer model.
+    integer  :: active_layer_to_substrate_flux       !< Active-layer to substrate flux model.
     !
     ! pointers
     !
@@ -1429,7 +1389,7 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     kero1 = k-1
     remove = .true.
     do while (dz>0.0_fp .and. k<=nlyr)
-        if (peatfrac>0) then
+        if (peatfrac > PEATFRAC_DISABLED) then
            mpeat = msed(peatfrac, k, nm)
         else
            mpeat = 0.0_fp
@@ -3245,7 +3205,7 @@ function initmorlyr(this) result (istat)
     settings%confac       = 1.0_fp                 ! default consider consolidation occurs at morphological time scale
     settings%thtrconcr    = 1.0E-6_fp              ! default very small value to avoid numerical problems
     settings%thtrempty    = 0.0001_fp
-    settings%imixtr       = 1                      !
+    settings%imixtr       = MIXTR_ON
     settings%crmud        = 0.001_fp               ! consolidation rate of clay [m]
     settings%crsand       = 0.01_fp                ! consolidation rate of sand [m]
     settings%crmsec       = 3.0E-04_fp             ! secondary consolidation of mud
@@ -3281,7 +3241,7 @@ function initmorlyr(this) result (istat)
     settings%nconlyr      = 6                      !
     settings%plyrstr      = '0.05 0.05 0.10 0.15 0.20 0.45'
     !! Peat
-    settings%peatfrac     = 0                      !
+    settings%peatfrac     = PEATFRAC_DISABLED
     settings%peatloi      = 0.0_fp                 !
     settings%parb         = 0.009_fp               !
     settings%parc         = 0.08_fp                !
@@ -3459,7 +3419,7 @@ function allocmorlyr(this) result (istat)
     if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
     if (istat == 0) state%sedshort = 0.0_fp
     !
-    if (settings%active_layer_diffusion > 0) then
+    if (settings%active_layer_diffusion > ACTIVE_LAYER_DIFFUSION_OFF) then
        if (istat == 0) allocate (settings%aldiff(nmlb:nmub), stat = istat)
        if (istat == 0) settings%aldiff = 0.0_fp
     endif
@@ -4586,7 +4546,7 @@ subroutine consolidate_gibson(this, nm, dtmor)
 
         ! The property of the transport layer (1st layer) should be averaged with the layers below when replenish step is done.
         ! This is only considered when thlyr(1,nm) < thtrlyr so that replenish step is required.
-        if (this%settings%imixtr==1 .and. thlyr(1,nm) < thtrlyr) then
+        if (this%settings%imixtr == MIXTR_ON .and. thlyr(1,nm) < thtrlyr) then
             ! find the layer when enough thick soil can be used to replenish, avoid some 0 layer thickness
             do j = 2, nlyr
                 thtemp = thtemp + thlyr(j,nm)
@@ -5153,7 +5113,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
         svmax_allowed = max(eps_sv, min(0.99_fp, svmax_allowed))
 
         ! Peat mass in layer k.
-        if (peatfrac > 0 .and. peatfrac <= this%settings%nfrac) then
+        if (peatfrac > PEATFRAC_DISABLED .and. peatfrac <= this%settings%nfrac) then
             mpeat = msed(peatfrac, k, nm)
         else
             mpeat = 0.0_fp
