@@ -572,7 +572,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength !< Dune length at each grid location [m].
     real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in) :: sbot !< Bottom sediment transport per fraction and grid location [kg/s].
     integer :: istat
-    logical :: call_consolidate
 
     istat = allocwork(this)
     if (istat /= 0) then
@@ -583,8 +582,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
         if (this%settings%crslyr) then
             call updmorlyr_layered_bed_with_coarse_layer(this, dbodsd, dz, dunelength, sbot, dtmor, messages)
         else
-            call_consolidate = should_call_consolidate(this, morft)
-            call updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
+            call updmorlyr_layered_bed_Hirano(this, dbodsd, dz, dtmor, morft, messages)
         endif
         this%settings%initcl = .true.
     else
@@ -594,7 +592,7 @@ end function updmorlyr
 
 
 !> Updates a layered bed without a coarse layer.
-subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, morft, messages, call_consolidate)
+subroutine updmorlyr_layered_bed_Hirano(this, dbodsd, dz, dtmor, morft, messages)
     use precision
     use message_module, only: message_stack
     type(bedcomp_data), intent(inout) :: this !< Bed-composition data to update.
@@ -603,9 +601,8 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     real(fp), intent(in) :: dtmor !< Morphological time step [s].
     real(hp), intent(in) :: morft !< Current morphological time [days since reference date].
     type(message_stack), intent(inout) :: messages !< Message stack for warnings and errors.
-    logical, intent(in) :: call_consolidate !< Whether to run consolidation during this update.
 
-    logical :: track_shortage
+    logical :: call_consolidate, track_shortage
     integer :: l, nm, k, kk, ktemp
     real(fp) :: seddep0, seddep1, thdiff, temp, thick, thickd, thicke
     real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
@@ -622,6 +619,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     real(fp), pointer :: thtrempty
     real(fp), dimension(:), pointer :: thtrlyr
 
+    call_consolidate = should_call_consolidate(this, morft)
     morlyrnum => this%settings%morlyrnum
     iconsolidate => this%settings%iconsolidate
     nconlyr => this%settings%nconlyr
@@ -858,7 +856,8 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
         call getsedthick_1point(this, nm, seddep1)
         dz(nm) = seddep1-seddep0
     enddo
-end subroutine updmorlyr_layered_bed_without_coarse_layer
+
+end subroutine updmorlyr_layered_bed_Hirano
 
 
 !> Updates a layered bed with transport and coarse layers.
