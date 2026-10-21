@@ -460,15 +460,10 @@ module m_flow ! flow arrays-999
    ! basis zout
    real(kind=dp) :: sam0tot !< [ppt*m3] Total mass start of timestep.
    real(kind=dp) :: sam1tot !< [ppt*m3] Total mass end of timestep.
-   real(kind=dp) :: sam1ini = -1.0_dp !< [ppt*m3] Total mass initially.
 
    real(kind=dp) :: saminbnd !< [ppt*m3] Actual mass in  boundaries of timestep.
    real(kind=dp) :: samoutbnd !< [ppt*m3] Actual mass out boundaries of timestep.
    real(kind=dp) :: samerr !< [m3] vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel.
-
-   real(kind=dp) :: saminbndcum !< [ppt*m3] Cumulative mass in  boundaries. Cumulative values
-   real(kind=dp) :: samoutbndcum !< [ppt*m3] Cumulative mass out boundaries.
-   real(kind=dp) :: samerrcum !< [ppt*m3] Mass error since start of computation.
 
    real(kind=dp) :: difmaxlev !< [m] Max lev diff.
    real(kind=dp) :: epsmaxlev = 1.0e-8_dp !< [m] Eps lev diff.
