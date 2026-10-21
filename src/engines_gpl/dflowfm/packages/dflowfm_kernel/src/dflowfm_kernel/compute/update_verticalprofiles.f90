@@ -76,7 +76,8 @@ contains
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
-      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq
+      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
+      real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface.
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
@@ -201,15 +202,30 @@ contains
                do L = Lb, Lt - 1
                   k1 = ln(1, L)
                   k2 = ln(2, L)
-                  qqq = 0.5_dp * (q1(L) + q1(L + 1))
-                  if (qqq > 0) then ! set upwind center values on links
-                     sum_q_times_turbulent_kinetic_energy_ws(k2) = sum_q_times_turbulent_kinetic_energy_ws(k2) + qqq * turbulent_kinetic_energy_ws(k1)
-                     sum_q_times_turbulent_dissipation_ws(k2) = sum_q_times_turbulent_dissipation_ws(k2) + qqq * turbulent_dissipation_ws(k1)
-                     sum_inflowing_discharges_ws(k2) = sum_inflowing_discharges_ws(k2) + qqq
-                  else if (qqq < 0) then
-                     sum_q_times_turbulent_kinetic_energy_ws(k1) = sum_q_times_turbulent_kinetic_energy_ws(k1) - qqq * turbulent_kinetic_energy_ws(k2)
-                     sum_q_times_turbulent_dissipation_ws(k1) = sum_q_times_turbulent_dissipation_ws(k1) - qqq * turbulent_dissipation_ws(k2)
-                     sum_inflowing_discharges_ws(k1) = sum_inflowing_discharges_ws(k1) - qqq
+                  discharge_at_layer_interface = 0.5_dp * (q1(L) + q1(L + 1))
+
+                  if (discharge_at_layer_interface > 0) then ! set upwind center values on links
+
+                     sum_q_times_turbulent_kinetic_energy_ws(k2) = &
+                        sum_q_times_turbulent_kinetic_energy_ws(k2) &
+                        + discharge_at_layer_interface * turbulent_kinetic_energy_ws(k1)
+                     sum_q_times_turbulent_dissipation_ws(k2) = &
+                        sum_q_times_turbulent_dissipation_ws(k2) &
+                        + discharge_at_layer_interface * turbulent_dissipation_ws(k1)
+                     sum_inflowing_discharges_ws(k2) = &
+                        sum_inflowing_discharges_ws(k2) + discharge_at_layer_interface
+
+                  else if (discharge_at_layer_interface < 0) then
+
+                     sum_q_times_turbulent_kinetic_energy_ws(k1) = &
+                        sum_q_times_turbulent_kinetic_energy_ws(k1) &
+                        - discharge_at_layer_interface * turbulent_kinetic_energy_ws(k2)
+                     sum_q_times_turbulent_dissipation_ws(k1) = &
+                        sum_q_times_turbulent_dissipation_ws(k1) &
+                        - discharge_at_layer_interface * turbulent_dissipation_ws(k2)
+                     sum_inflowing_discharges_ws(k1) = &
+                        sum_inflowing_discharges_ws(k1) - discharge_at_layer_interface
+
                   end if
                end do
             end do
