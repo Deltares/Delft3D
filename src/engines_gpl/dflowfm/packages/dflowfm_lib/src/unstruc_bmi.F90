@@ -2736,8 +2736,10 @@ contains
             return
          case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
             if (is_in_network) then
-               fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
-               fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+               !fieldptr = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+               !fieldptr = xptr ! Set the scalar value of the structure's field pointed being to.
+               call c_f_pointer(xptr, x_0d_double_ptr)
+               network%sts%struct(item_index)%GENERALST%GATELOWEREDGELEVEL=x_0d_double_ptr
             else
                call c_f_pointer(xptr, x_0d_double_ptr)
                zcgen((item_index - 1) * 4 + 2) = x_0d_double_ptr
