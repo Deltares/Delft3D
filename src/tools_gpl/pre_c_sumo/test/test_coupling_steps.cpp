@@ -220,14 +220,14 @@ TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
     for (const auto& [index, id] : pre_c_sumo::constituent_ids | std::views::enumerate)
     {
         // The test 3d mesh has two z layers, write different concentrations in each layer
-        mesh_3d.quantities[id][intake_index] = index + 1.0;
-        mesh_3d.quantities[id][intake_index + 1] = index + 5.0;
+        mesh_3d.quantities[id][intake_index] = static_cast<double>(index) + 1.0;
+        mesh_3d.quantities[id][intake_index + 1] = static_cast<double>(index) + 5.0;
     }
     auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
     EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_consituents);
     for (std::size_t index = 0; index < constituents.size(); ++index)
     {
-        EXPECT_DOUBLE_EQ(constituents[index], index + 3.0); // Average value over all layers
+        EXPECT_DOUBLE_EQ(constituents[index], static_cast<double>(index) + 3.0); // Average value over all layers
     }
 }
 
