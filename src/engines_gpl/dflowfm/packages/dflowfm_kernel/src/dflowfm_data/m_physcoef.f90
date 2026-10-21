@@ -124,9 +124,9 @@ module m_physcoef
    integer :: Jadelvappos !< only positive forced evaporation fluxes
    real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
 
-   real(kind=dp) :: tetav !< vertical teta transport
-   real(kind=dp) :: tetavkeps !< vertical teta k-eps
-
+   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents.
+   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion.
+   
    real(kind=dp) :: locsaltlev !< salinity level for case of lock exchange
    real(kind=dp) :: locsaltmin !< minimum salinity for case of lock exchange
    real(kind=dp) :: locsaltmax !< maximum salinity for case of lock exchange
@@ -173,8 +173,6 @@ contains
       Dalton = 0.0013_dp
       Jadelvappos = 0
       free_convection_coefficient = 0.14_dp
-      tetav = 0.55_dp
-      tetavkeps = 0.55_dp
       locsaltlev = 1.0_dp
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp

@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
                         EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old , zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -231,7 +231,7 @@ contains
             end do
          end if
 
-         tetm1 = 1.0_dp - tetavkeps
+         tetm1 = 1.0_dp - THETA_KEPS_DIFFUSION
          dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
@@ -342,10 +342,10 @@ contains
                   dzdz2 = dzw(k) * dzu(ku)
                   difu = vicu / dzdz2
 
-                  ak(k) = ak(k) - difd * tetavkeps
-                  bk(k) = bk(k) + (difd + difu) * tetavkeps
-                  ck(k) = ck(k) - difu * tetavkeps
-                  if (tetavkeps /= 1.0_dp) then
+                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
                      dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old (L) - turbulent_kinetic_energy_wu_old (Lu)) * tetm1 &
                              + difd * (turbulent_kinetic_energy_wu_old (L - 1) - turbulent_kinetic_energy_wu_old (L)) * tetm1
                   end if
@@ -606,10 +606,10 @@ contains
                   dzdz2 = dzw(k) * dzu(ku)
                   difu = vicu / dzdz2
 
-                  ak(k) = ak(k) - difd * tetavkeps
-                  bk(k) = bk(k) + (difd + difu) * tetavkeps
-                  ck(k) = ck(k) - difu * tetavkeps
-                  if (tetavkeps /= 1.0_dp) then
+                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
                      dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * tetm1 &
                              + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * tetm1
                   end if
