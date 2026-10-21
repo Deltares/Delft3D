@@ -31,7 +31,6 @@
 !
 
 module m_s1nod
-   use m_update_matrix, only: update_matrix
 
    implicit none
 
@@ -51,7 +50,7 @@ contains
       use m_flowgeom, only: ndx, ndx2d, xz, yz, nd, lnx1d, kfs, dx, dxi, bl, ndxi
       use m_flowtimes, only: dti, refdat, time1, alfsmo, dts
       use m_reduce, only: bbr, ddr, ccr, lv2
-      use m_partitioninfo, only: jampi, idomain, my_rank, qnerror, jaoverlap
+      use m_partitioninfo, only: jampi, idomain, my_rank, qnerror
       use m_sobekdfm, only: nbnd1d2d, compute_1d2d_boundaries
       use unstruc_channel_flow, only: network
       use time_module, only: seconds_to_datetimestring
@@ -63,11 +62,11 @@ contains
                                            BOUNDARY_DISCHARGE_HEAD
 
       integer :: n
-      integer :: kb, k2, L, k, LL, itpbn
+      integer :: kb, k2, L, k, LL, boundary_type
       integer :: ibr
       real(kind=dp) :: dtiba, hh, water_level_boundary, dtgh
       real(kind=dp) :: sqrtgfh, cffu, rowsum, fuL, ruL, huL, hep
-      integer :: i, ierr
+      integer :: i
       character(len=2) :: dim_text
       real(kind=dp), parameter :: HBMIN = 1.0e-3_dp
       real(kind=dp), pointer, dimension(:) :: gridPointsChainages
@@ -182,21 +181,21 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          L = kbndz(3, n)
-         itpbn = kbndz(4, n)
+         boundary_type = kbndz(4, n)
 !    bbr(kb) = 1d0
-         if (itpbn == BOUNDARY_WATER_LEVEL) then ! waterlevelbnd
+         if (boundary_type == BOUNDARY_WATER_LEVEL) then
             water_level_boundary = zbndz(n)
             if (alfsmo < 1.0_dp) then
                water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
-         else if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then ! neumannbnd, positive specified slope leads to inflow
+         else if (boundary_type == BOUNDARY_WATER_LEVEL_NEUMANN) then ! positive specified slope leads to inflow
             !water_level_boundary   = s1(k2) + zbndz(n)*dx(L)
             water_level_boundary = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! right-hand side
-         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then ! Riemannbnd
+         else if (boundary_type == BOUNDARY_VELOCITY_RIEMANN) then
 !       hh   = max(epshs, 0.5d0*( hs(kb) + hs(k2) ) )
 !       water_level_boundary   = 2d0*zbndz(n) - zbndz0(n) - sqrt(hh/ag)*u1(L)
             water_level_boundary = 2.0_dp * zbndz(n) - zbndz0(n)
-         else if (itpbn == BOUNDARY_WATER_LEVEL_OUTFLOW) then ! outflowbnd
+         else if (boundary_type == BOUNDARY_WATER_LEVEL_OUTFLOW) then
             if (u0(L) > 0.0_dp) then
                water_level_boundary = s1(k2)
             else
@@ -204,7 +203,7 @@ contains
                dtgh = dts * (sqrt(ag * hh))
                water_level_boundary = s0(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
             end if
-         else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then ! qhbnd
+         else if (boundary_type == BOUNDARY_DISCHARGE_HEAD) then
             water_level_boundary = zbndz(n)
             if (alfsmo < 1.0_dp) then
                water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
@@ -212,7 +211,7 @@ contains
          end if
 
 !   set matrix entries
-         if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then
+         if (boundary_type == BOUNDARY_WATER_LEVEL_NEUMANN) then
 !      Neumann boundary condition
             if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
                ccr(Lv2(L)) = -bbr(kb)
@@ -222,7 +221,7 @@ contains
 
             bbr(kb) = -ccr(Lv2(L))
             ddr(kb) = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! double for safety
-         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then
+         else if (boundary_type == BOUNDARY_VELOCITY_RIEMANN) then
 !      Riemann boundary condition (note: ccr= -Au theta fu)
             water_level_boundary = max(water_level_boundary, bl(kb) + HBMIN)
             if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
@@ -292,11 +291,6 @@ contains
                call qnerror('checkmatrix = nocheck', ' ', ' ')
             end if
          end do
-      end if
-
-! update overlapping ghost-parts of matrix
-      if (jampi == 1 .and. jaoverlap == 1) then
-         call update_matrix(ierr)
       end if
 
    end subroutine s1nod
