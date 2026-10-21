@@ -219,9 +219,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target, dimension(:) :: ucx_mor !< [m/s] Cell center velocity for sedmor, global x-dir. {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: ucy_mor !< [m/s] Cell center velocity for sedmor, global y-dir. {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, dimension(:) :: dsadx !< [ppt/m] Cell center sa gradient.
-   real(kind=dp), allocatable, dimension(:) :: dsady !< [ppt/m] Cell center sa gradient.
-
    ! node related, dim = ndxi
    real(kind=dp), allocatable, target, dimension(:) :: freeboard !< [m] For output purposes: freeboard at cell center, only for 1D.
    real(kind=dp), allocatable, target, dimension(:) :: hsOnGround !< [m] For output purposes: waterdepth above ground level, only for 1D.
