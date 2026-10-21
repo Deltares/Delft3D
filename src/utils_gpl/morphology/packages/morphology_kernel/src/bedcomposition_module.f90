@@ -75,22 +75,6 @@ public bedcomp_getpointer_logical
 public bedcomp_getpointer_realfp
 public bedcomp_getpointer_realprec
 !
-! public parameters
-!
-!`imobility`
-integer, parameter, public :: MOBILITY_OFF = 0 !< not used
-integer, parameter, public :: MOBILITY_DISCRETE = 1 !< discrete
-integer, parameter, public :: MOBILITY_SHIELDS = 2 !< based on Shields curve
-integer, parameter, public :: MOBILITY_WILCOCKMCARDELL = 3 !< Wilcock and McArdell (1997)
-integer, parameter, public :: MOBILITY_SEDTRANS = 4 !< from sediment transport relation
-!
-!`active-layer diffusion`
-integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 !< no diffusion (default)
-integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY = 1 !< x-y-diffusion file
-!`active-layer to substrate flux`
-integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM = 1 !< existing uniform-composition transfer
-integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST = 2 !< deposit immobile sediment first
-!
 ! interfaces
 !
 interface bedcomp_getpointer_logical
@@ -122,6 +106,9 @@ type morlyrnumericstype
     integer  :: max_num_shortage_warnings !< maximum number of shortage warnings remaining
 end type morlyrnumericstype
 
+!
+! public parameters
+!
 ! iconsolidate
 integer, parameter, public :: CONSOL_NONE       = 0 !< no consolidation
 integer, parameter, public :: CONSOL_GIBSON     = 1 !< full Gibson model
@@ -167,6 +154,21 @@ integer, parameter, public :: BASELYR_CONST_THK = 5 !< Update base-layer composi
 ! updtoplyr
 integer, parameter, public :: TOPLYR_POR_RESET  = 1 !< Recompute top-layer porosity for the updated mixture.
 integer, parameter, public :: TOPLYR_POR_UPDATE = 2 !< Update top-layer porosity using newly added sediment.
+
+! imobility
+integer, parameter, public :: MOBILITY_OFF             = 0 !< not used
+integer, parameter, public :: MOBILITY_DISCRETE        = 1 !< discrete
+integer, parameter, public :: MOBILITY_SHIELDS         = 2 !< based on Shields curve
+integer, parameter, public :: MOBILITY_WILCOCKMCARDELL = 3 !< Wilcock and McArdell (1997)
+integer, parameter, public :: MOBILITY_SEDTRANS        = 4 !< from sediment transport relation
+
+! active-layer diffusion
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 !< no diffusion (default)
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY  = 1 !< x-y-diffusion file
+
+! active-layer to substrate flux
+integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM        = 1 !< existing uniform-composition transfer
+integer, parameter, public :: ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST = 2 !< deposit immobile sediment first
 
 !> Parameters controlling composition-dependent erosion.
 type erosion_settings
@@ -266,8 +268,15 @@ type bedcomp_settings
                                                      !< 4: Weighted mean of the initial mud and sand solid-volume fractions.
                                                      !< 5: Shared-porosity variant of POROS_IN_DENSITY.
     integer :: iunderlyr                             !< Underlayer concept selector (1: fully mixed, 2: layered).
-    integer :: imobility  !< switch for mobility concept
-    integer :: ihidexptrcrs !< Use the transport and coarse layers to compute hiding and exposure (0: no, 1: yes).
+    integer :: imobility                             !< Mobility model selector:
+                                                     !< 0: Not used.
+                                                     !< 1: Discrete.
+                                                     !< 2: Based on the Shields curve.
+                                                     !< 3: Wilcock and McArdell (1997).
+                                                     !< 4: From the sediment transport relation.
+    integer :: ihidexptrcrs                          !< Use the transport and coarse layers to compute hiding and exposure:
+                                                     !< 0: No.
+                                                     !< 1: Yes.
     integer :: keuler                                !< Index of the first Eulerian (non-moving) layer:
                                                      !< 2: Only the top layer moves with bed level.
                                                      !< nlyr: All layers move with bed level (fully Lagrangian).
@@ -287,8 +296,12 @@ type bedcomp_settings
                                                      !< 5: Update composition while keeping thickness fixed.
    integer  :: peatfrac                              !< peat flag (no peat growth, peat thickness is homogeneous)
    integer  :: max_mud_sedtyp                        !< highest sediment type number that is considered a mud fraction
-   integer  :: active_layer_diffusion                !< switch for applying diffusion in the active layer model
-   integer  :: active_layer_to_substrate_flux        !< active-layer sediment composition transferred to substrate
+   integer  :: active_layer_diffusion                !< Switch for applying diffusion in the active layer model:
+                                                      !< 0: No diffusion (default).
+                                                      !< 1: X-Y diffusion file.
+   integer  :: active_layer_to_substrate_flux        !< Active-layer to substrate flux model:
+                                                      !< 1: Existing uniform-composition transfer.
+                                                      !< 2: Deposit immobile sediment first.
     !
     ! pointers
     !
