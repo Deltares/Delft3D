@@ -45,7 +45,7 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
-                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, stretch_type, &
+                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, sdkx, dkx, zlaybot, stretch_type, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, STRETCH_USER, laycof, STRETCH_EXPONENT, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
                         sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
@@ -219,9 +219,7 @@ contains
          kbotc(:) = 1
          kmxc(:) = 1
 
-         mxlays = kmx
-         numvertdis = 3
-         mxlaydefs = numvertdis
+         mxlaydefs = 3
          mx = 0
          laydefnr = 1
 

@@ -41,19 +41,15 @@ module m_flow ! flow arrays-999
    use m_turbulence
    use m_vegetation
 
-   implicit none
+   implicit none(type, external)
 
    ! 3D parameters
    integer :: kmx !< [-] Number of 3d layers, increasing in positive upward direction. 
                   !! When kmx==0 compute as 2D code, when kmx==1 compute as 3D code.
-   integer :: kmx1 !< [-] kmx + 1, for dimensioning arrays that used to be (0:kmax).
    integer :: kmxd !< [-] Dim of kmx, >= 1.
    integer :: ndkx !< [-] Dim of 3d flow nodes (internal + boundary).
-   integer :: ndkx1 !< [-] Dim of 3d flow horizontal interfaces (internal + boundary), (0:kmx).
    integer :: lnkx !< [-] Dim of 3d flow links (internal + boundary).
-   integer :: numvertdis !< [-] Number of vertical layer distributions.
    integer :: mxlayz !< [-] Maximum number of z layers in flow domain.
-   integer :: mxlays !< [-] Maximum number of sigma layers in flow domain.
    integer :: kplot !< [-] Layer number to be plotted.
    integer :: nplot !< [-] Vertical profile to be plotted at node number.
    integer :: kplotfrombedorsurface = 2 !< [-] Up or down k.
@@ -85,7 +81,6 @@ module m_flow ! flow arrays-999
    integer, parameter :: TURBULENCE_MODEL_KEPS = 3 !< [-] k-epsilon turbulence model, computed on flow links.
    integer, parameter :: TURBULENCE_MODEL_KTAU = 4 !< [-] k-tau turbulence model.
 
-   integer :: ieps !< [-] Bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb.
    real(kind=dp) :: tur_time_int_factor = 0 !< [-] Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes).
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< [-] Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected).
    real(kind=dp) :: z_layer_growth_factor !< [-] z-layer thickness growth factor from DzTopUniAboveZ downwards.
@@ -98,8 +93,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: bbk !< [-] Coefficient vertical mom exchange of kmx layers.
    real(kind=dp), allocatable, dimension(:) :: cck !< [-] Coefficient vertical mom exchange of kmx layers.
    real(kind=dp), allocatable, dimension(:) :: ddk !< [-] Coefficient vertical mom exchange of kmx layers.
-   real(kind=dp), allocatable, dimension(:) :: eek !< [-] Coefficient vertical mom exchange of kmx layers.
-   real(kind=dp), allocatable, dimension(:) :: uuk !< [-] Coefficient vertical mom exchange of kmx layers.
 
    real(kind=dp), allocatable, dimension(:) :: laycof !< [-] Coefficients for sigma layer.
                                                       !! If stretch_type = STRETCH_USER: Percentages of the layers, user defined, laycof(kmx).
@@ -521,19 +514,15 @@ contains
 ! 3D parameters
       ! kmx         = 0    ! nr of 3d layers, increasing in positive upward direction
       ! if kmx==0 then 2D code. if kmx==1 then 3D code
-      ! kmx1        = kmx+1 ! kmx + 1, for dimensioning arrays that used be (0:kmax)
       ! kmxd        = 0    ! dim of kmx, >= 1
       ! ndkx        = 0    ! dim of 3d flow nodes (internal + boundary)
-      ! ndkx1       = 1    ! dim of 3d flow horizontal interfaces (internal + boundary), (0:kmx)
       ! lnkx        = 0    ! dim of 3d flow links (internal + boundary)
 
       mxlayz = 1 ! max nr of z     layers in flow domain
-      mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
       layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
       iturbulencemodel = TURBULENCE_MODEL_KEPS !< 0 = none, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
-      ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       z_layer_growth_factor = 1.0_dp
 
       ! Remaining of variables is handled in reset_flow()
