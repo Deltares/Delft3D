@@ -27,12 +27,10 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_turbulence
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    ! Coefficients of turbulence model
    real(kind=dp), parameter :: CMUKEP = 0.09_dp
@@ -68,18 +66,18 @@ module m_turbulence
    real(kind=dp) :: bk(0:kmxx)
    real(kind=dp) :: ck(0:kmxx)
    real(kind=dp) :: dk(0:kmxx)
-   real(kind=dp) :: ek(0:kmxx) ! Reused tridag workspace, contents are not used, but global module variable can prevent stack overflows
+   real(kind=dp) :: ek(0:kmxx) !< Reused tridag workspace, contents are not used, but global module variable can prevent stack overflows.
    real(kind=dp) :: dz(0:kmxx)
    real(kind=dp) :: dke(0:kmxx)
 
-   real(kind=dp) :: ucxref(kmxx) !< for reference/plotting:
-   real(kind=dp) :: ucm(kmxx) !< for reference/plotting:
+   real(kind=dp) :: ucxref(kmxx)
+   real(kind=dp) :: ucm(kmxx)
    real(kind=dp) :: dijdijref(0:kmxx)
    real(kind=dp) :: tkin1ref(0:kmxx)
    real(kind=dp) :: teps1ref(0:kmxx)
    real(kind=dp) :: vicwref(0:kmxx)
-   real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
-   real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
+   real(kind=dp) :: hcref(kmxx) !< Mid-layer heigths.
+   real(kind=dp) :: hwref(0:kmxx) !< Layer interface height, 0=bed.
 
    real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
    real(kind=dp) :: tke_min
@@ -90,38 +88,38 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu_old !< [m2/s3] Old turbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
    real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu !< [m2/s3] xTurbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
 
-   real(kind=dp), allocatable, dimension(:) :: vius !< Flowlink-averaged horizontal viscosity (viu) at s-point
-   real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
+   real(kind=dp), allocatable, dimension(:) :: vius !< [m2/s] Flowlink-averaged horizontal viscosity at s-point.
+   real(kind=dp), allocatable, dimension(:) :: vicwwu !< [m2/s] Vertical eddy viscosity at layer interface at u point.
    real(kind=dp), allocatable, target, dimension(:) :: vicwws !< [m2/s] turbulent vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: vicwws_total !< [m2/s] total vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: difwws !< [m2/s] turbulent vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: difwws_total !< [m2/s] total vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, dimension(:) :: vicwwu_total !< [m2/s] total vertical eddy viscosity at layer interface at u point
-   real(kind=dp), allocatable, dimension(:) :: rich !< Richardson number at velocity-point
-   real(kind=dp), allocatable, dimension(:) :: richs !< Richardson number at pressure-point
+   real(kind=dp), allocatable, dimension(:) :: vicwwu_total !< [m2/s] total vertical eddy viscosity at layer interface at u point.
+   real(kind=dp), allocatable, dimension(:) :: rich !< [-] Richardson number at velocity-point.
+   real(kind=dp), allocatable, dimension(:) :: richs !< [-] Richardson number at pressure-point.
 
-   real(kind=dp), allocatable, dimension(:), target :: in_situ_density ! Pressure dependent water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:), target :: potential_density ! Potential water density at cell centres (kg/m3)
-   real(kind=dp), dimension(:), pointer :: rho ! Water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
-   real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
-   real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
-   real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures ! baroclinic pressures (/ag), at pressure points
-   real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures ! depth-integrated baroclinic pressures (/ag), at pressure points
+   real(kind=dp), allocatable, dimension(:), target :: in_situ_density !< [kg/m3] Pressure dependent water density at cell centres.
+   real(kind=dp), allocatable, dimension(:), target :: potential_density !< [kg/m3] Potential water density at cell centres.
+   real(kind=dp), dimension(:), pointer :: rho !< [kg/m3] Water density at cell centres.
+   real(kind=dp), allocatable, dimension(:) :: drhodz !< [kg/m4] Vertical density gradient.
+   real(kind=dp), allocatable, dimension(:) :: rhosww !< [kg/m3] Deviatoric density at vertical interfaces, w points.
+   real(kind=dp), allocatable, dimension(:) :: rhowat !< [kg/m3] Density at cell centres, only salt and temp.
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev !< Previous step baroclinic force, at u points.
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures !< [1/ag] Baroclinic pressures, at pressure points.
+   real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures !< [1/ag] Depth-integrated baroclinic pressures, at pressure points.
 
-   real(kind=dp), allocatable, dimension(:) :: rhou !< density at flow links (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhou !< [kg/m3] Density at flow links.
 
-   real(kind=dp) :: Schmidt_number_salinity = 0.7_dp !< Turbulent Schmidt number for salinity
-   real(kind=dp) :: Prandtl_number_temperature = 0.7_dp !< Turbulent Prandtl number for temperature
-   real(kind=dp) :: Schmidt_number_tracer = 1.0_dp !< Turbulent Schmidt number for tracers
+   real(kind=dp) :: Schmidt_number_salinity = 0.7_dp !< [-] Turbulent Schmidt number for salinity.
+   real(kind=dp) :: Prandtl_number_temperature = 0.7_dp !< [-] Turbulent Prandtl number for temperature.
+   real(kind=dp) :: Schmidt_number_tracer = 1.0_dp !< [-] Turbulent Schmidt number for tracers.
 
-   real(kind=dp), allocatable, dimension(:) :: sigsed !< prandtl schmidt per sediment fraction
-   real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
-   real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
+   real(kind=dp), allocatable, dimension(:) :: sigsed !< [-] Prandtl schmidt per sediment fraction.
+   real(kind=dp), allocatable, dimension(:) :: sigdifi !< [-] Inverse prandtl schmidt nrs.
+   real(kind=dp), allocatable, dimension(:) :: wsf !< [m/s] Fall velocities of all numconst constituents.
 
-   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< Turbulent kinetic energy at vertical face center at layer interface c. {size=ndkx}
-   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< turbulent_dissipation_ws !< Turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< [m2/s2] Turbulent kinetic energy (k) at vertical face center at layer interface c. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< [m2/s3] Turbulent dissipation (epsilon) at vertical face center at layer interface c. {size=ndkx}
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turbulent_kinetic_energy_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turbulent_dissipation_ws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
