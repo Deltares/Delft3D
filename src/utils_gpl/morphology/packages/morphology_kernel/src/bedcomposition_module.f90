@@ -243,7 +243,9 @@ type bedcomp_settings
     !
     ! integers
     !
-    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment (0: no, 1: yes).
+    integer :: imixtr                                !< Whether to mix the transport layer with layers below during replenishment:
+                                                     !< 0: No.
+                                                     !< 1: Yes.
     integer :: nconlyr                               !< Number of consolidating layers used.
     integer :: iconsolidate                          !< Consolidation model selector:
                                                      !< 0: No consolidation.
@@ -251,7 +253,9 @@ type bedcomp_settings
                                                      !< 2: Dynamic Equilibrium Consolidation (DECON).
                                                      !< 3: Terzaghi loading model.
                                                      !< 4: Terzaghi loading model including peat.
-    integer :: idiffusion                            !< Switch for diffusion between layers (0: off, 1: on).
+    integer :: idiffusion                            !< Switch for diffusion between layers:
+                                                     !< 0: Off.
+                                                     !< 1: On.
     integer :: ierosion                              !< Cohesive-sediment erodibility model selector:
                                                      !< 0: Independent of bed composition.
                                                      !< 1: Whitehouse (2001).
@@ -259,7 +263,9 @@ type bedcomp_settings
                                                      !< 3: Alonso et al. (2021).
                                                      !< 4: Winterwerp (2013).
                                                      !< 5: MUSA.
-    integer :: ifractions                            !< Fraction representation returned by getfrac (1: mass, 2: solid volume).
+    integer :: ifractions                            !< Fraction representation returned by getfrac:
+                                                     !< 1: Mass fractions.
+                                                     !< 2: Solid-volume fractions.
     integer :: iporosity                             !< Porosity model selector:
                                                      !< 0: Porosity is included in densities.
                                                      !< 1: Frings (2009).
@@ -267,7 +273,9 @@ type bedcomp_settings
                                                      !< 3: Initial solid-volume fraction.
                                                      !< 4: Weighted mean of the initial mud and sand solid-volume fractions.
                                                      !< 5: Shared-porosity variant of POROS_IN_DENSITY.
-    integer :: iunderlyr                             !< Underlayer concept selector (1: fully mixed, 2: layered).
+    integer :: iunderlyr                             !< Underlayer concept:
+                                                     !< 1: Fully mixed.
+                                                     !< 2: Layered.
     integer :: imobility                             !< Mobility model selector:
                                                      !< 0: Not used.
                                                      !< 1: Discrete.
@@ -287,21 +295,25 @@ type bedcomp_settings
     integer :: ndiff                                 !< Number of vertical diffusion coefficients.
     integer :: nmlb                                  !< First segment index.
     integer :: nmub                                  !< Last segment index.
-    integer :: updtoplyr                             !< Top-layer porosity update mode (1: reset for the new mixture, 2: update for newly added sediment).
+    integer :: updtoplyr                             !< Top-layer porosity update mode:
+                                                     !< 1: Reset for the new mixture.
+                                                     !< 2: Update for newly added sediment.
     integer :: updbaselyr                            !< Base-layer update mode:
                                                      !< 1: Update composition and thickness independently.
                                                      !< 2: Keep composition fixed and conserve total mass.
                                                      !< 3: Copy composition from the layer above and conserve total mass.
                                                      !< 4: Keep composition and thickness fixed.
                                                      !< 5: Update composition while keeping thickness fixed.
-   integer  :: peatfrac                              !< Sediment-fraction index representing peat; zero disables peat.
-   integer  :: max_mud_sedtyp                        !< Highest sediment-type code considered to be a mud fraction.
-   integer  :: active_layer_diffusion                !< Switch for applying diffusion in the active layer model:
-                                                      !< 0: No diffusion (default).
-                                                      !< 1: X-Y diffusion file.
-   integer  :: active_layer_to_substrate_flux        !< Active-layer to substrate flux model:
-                                                      !< 1: Existing uniform-composition transfer.
-                                                      !< 2: Deposit immobile sediment first.
+    integer  :: peatfrac                             !< Sediment-fraction index representing peat:
+                                                     !< 0: Peat disabled.
+                                                     !< 1 to nfrac: Peat fraction index.
+    integer  :: max_mud_sedtyp                       !< Highest sediment-type code considered to be a mud fraction.
+    integer  :: active_layer_diffusion               !< Switch for applying diffusion in the active layer model:
+                                                     !< 0: No diffusion (default).
+                                                     !< 1: X-Y diffusion file.
+    integer  :: active_layer_to_substrate_flux       !< Active-layer to substrate flux model:
+                                                     !< 1: Existing uniform-composition transfer.
+                                                     !< 2: Deposit immobile sediment first.
     !
     ! pointers
     !
