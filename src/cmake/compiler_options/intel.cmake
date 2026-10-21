@@ -6,12 +6,12 @@ if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion /fp:precise")
     # Set global linker flags for Fortran
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:${DFLOWFM_STACK_SIZE_BYTES}")
     # Set global C/C++ compiler flags that apply for each C/C++ project
-    string(APPEND CMAKE_C_FLAGS " /MP")
-    string(APPEND CMAKE_CXX_FLAGS " /MP")
+    string(APPEND CMAKE_C_FLAGS " /MP /fp:precise")
+    string(APPEND CMAKE_CXX_FLAGS " /MP /fp:precise")
 
     # Set optional flags:
     message(STATUS "Setting optional Intel Fortran compiler flags in Windows")
@@ -77,10 +77,18 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO           "-g -O2")
     set(CMAKE_CXX_FLAGS_RELEASE                  "-O2")
     set(CMAKE_C_FLAGS                            "-fPIC")
+    # -fp-model is Intel-only; the C/C++ compiler may be GNU on Linux (e.g. g++), which rejects it.
+    # GNU compilers are value-safe by default, so no equivalent flag is needed for them.
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+        string(APPEND CMAKE_CXX_FLAGS " -fp-model precise")
+    endif()
+    if (CMAKE_C_COMPILER_ID MATCHES "Intel")
+        string(APPEND CMAKE_C_FLAGS " -fp-model precise")
+    endif()
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO             "-g -O2")
     set(CMAKE_C_FLAGS_RELEASE                    "-O2")
-    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448 -assume recursion")
+    set(CMAKE_Fortran_FLAGS                      "-fPIC -diag-disable 10448 -assume recursion -fp-model precise")
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2")
     set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO       "-g -O2")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0")
