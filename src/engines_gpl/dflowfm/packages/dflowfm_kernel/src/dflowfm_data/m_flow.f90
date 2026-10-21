@@ -281,8 +281,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: vih !< [m2/s] Horizontal eddy viscosity in cell center.
    real(kind=dp), allocatable, dimension(:) :: qin !< [m3/s] Rain, evap, qlat and src netto inloop.
 
-   real(kind=dp) :: errmas !< [m3] (cumulative) mass error.
-
    ! Link related, dim = lnkx
    real(kind=dp), allocatable, target, dimension(:) :: u0 !< [m/s] Flow velocity at start of timestep.
    real(kind=dp), allocatable, target, dimension(:) :: u1 !< [m/s] Flow velocity at end of timestep. {"location": "edge", "shape": ["lnkx"]}
@@ -452,9 +450,6 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: a0tot !< [m2] Total wet surface area start of timestep.
    real(kind=dp) :: a1tot !< [m2] Total wet surface area   end of timestep.
    real(kind=dp) :: a1ini !< [m2] Total model area rain evap.
-   real(kind=dp) :: ek1tot !< [m2/s2] Volume averaged kin energy end of timestep.
-   real(kind=dp) :: ep1tot !< [m2/s2] Volume averaged pot energy end of timestep.
-   real(kind=dp) :: ep1rela !< [m2/s2] Time av ep1tot.
    real(kind=dp) :: hsaver !< [m] Average waterdepth, vol/are.
 
    ! basis zout
@@ -633,9 +628,6 @@ contains
       a0tot = 0 ! total wet surface area start of timestep (m2)
       a1tot = 0 ! total wet surface area   end of timestep (m2)
       a1ini = 0 ! total model       area                   (m2)
-      ek1tot = 0 ! volume averaged kin energy (m2/s2) end of timestep
-      ep1tot = 0 ! volume averaged pot energy (m2/s2) end of timestep
-      ep1rela = 0 ! time relaxe ep1tot
       hsaver = 0 ! average waterdepth (m), vol/are
 
       difmaxlev = 0 ! max lev diff (m3)
