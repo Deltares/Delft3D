@@ -13,9 +13,9 @@ ADD test/deltares_testbench/pip/lnx-requirements.txt /tmp/lnx-requirements.txt
 # Install system dependencies and clean up packages afterwards
 RUN set -eo pipefail && \
     dnf update --assumeyes && \
-    # Install Python (try 3.12 first, then 3.11, then fallback to default python3)
-    (dnf install --assumeyes python3.12 expect && ln -sf /usr/bin/python3.12 /usr/bin/python3) || \
-    (dnf install --assumeyes python3.11 expect && ln -sf /usr/bin/python3.11 /usr/bin/python3) || \
+    # Install Python (try 3.14 first, then 3.13, then fallback to default python3)
+    (dnf install --assumeyes python3.14 expect && ln -sf /usr/bin/python3.14 /usr/bin/python3) || \
+    (dnf install --assumeyes python3.13 expect && ln -sf /usr/bin/python3.13 /usr/bin/python3) || \
     dnf install --assumeyes python3 expect && \
     dnf clean all && \
     rm --recursive --force /var/cache/dnf

@@ -137,9 +137,9 @@ export UV_PYTHON_BIN_DIR=/opt/uv/bin
 export UV_TOOL_BIN_DIR=/opt/uv/bin
 
 # Install python and python tools.
-uv python install 3.12 --default
-uv tool install 'conan ~= 2.29.0'
+uv python install 3.14 --default
+uv tool install 'conan ~= 2.33.0'
 EOF
 
-# Add python 3.12 and uv tools to PATH for all users.
+# Add python 3.14 and uv tools to PATH for all users.
 ENV PATH=/opt/uv/bin:$PATH

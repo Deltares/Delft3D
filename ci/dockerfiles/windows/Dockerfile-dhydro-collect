@@ -18,8 +18,8 @@ RUN Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -Out
     Start-Process -FilePath 'C:\vc_redist.x64.exe' -ArgumentList '/install /passive /norestart' -Wait; `
     Remove-Item 'C:\vc_redist.x64.exe'
 
-# Download and install Python 3.12.10.
-RUN Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe' -OutFile 'C:\python.exe' -UseBasicParsing; `
+# Download and install Python 3.14.9.
+RUN Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.14.9/python-3.14.9-amd64.exe' -OutFile 'C:\python.exe' -UseBasicParsing; `
     Start-Process -FilePath 'C:\python.exe' -ArgumentList '/quiet InstallAllUsers=1' -Wait; `
     Remove-Item 'C:\python.exe'
 RUN New-Item -ItemType SymbolicLink -Path 'C:\Program Files\Python312\python3.exe' -Target 'C:\Program Files\Python312\python.exe'

@@ -26,7 +26,7 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 ### Windows
 - Git
 - Powershell
-- Python: 3.12
+- Python: 3.14
 
 ### Linux (devcontainer)
 - Git: `git` and `gh` (GitHub CLI tool)

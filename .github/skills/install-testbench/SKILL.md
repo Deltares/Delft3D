@@ -20,26 +20,26 @@ It does all the set-up required to run `TestBench.py`:
 
 ## Steps
 
-1. Make sure python 3.12 is installed. There are known problems installing the 
-python dependencies when python > 3.12 is used to run `TestBench.py`. In particular
+1. Make sure python 3.14 is installed. There are known problems installing the 
+python dependencies when python > 3.14 is used to run `TestBench.py`. In particular
 the `numpy` and `lxml` packages include compiled binaries that may not be available
-in the python package index pre-built. Please ask the user to install python 3.12 or
+in the python package index pre-built. Please ask the user to install python 3.14 or
 `uv`. If `uv` is already available in the current environment, you can go to the next
 step.
 
 2. Create the "venv" in `/test/deltares_testbench`. Always create it in this folder.
 If `uv` is installed you can use the following command with `/test/deltares_testbench`
-as the working directory: `uv venv --python 3.12`. If `uv` is not installed, use:
-`python -m venv .venv`, where `python` points to the python installation of python 3.12.
+as the working directory: `uv venv --python 3.14`. If `uv` is not installed, use:
+`python -m venv .venv`, where `python` points to the python installation of python 3.14.
 
 3. Install the dependencies. *Always* activate the virtual environment first:
 
-On Windows:
+On Windows (make sure python 3.14 is used):
 ```powershell
 # In test/deltares_testbench
 .venv/Scripts/activate
 ```
-On Linux:
+On Linux (make sure python 3.14 is used):
 ```bash
 # In test/deltares_testbench
 source .venv/bin/activate
