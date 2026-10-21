@@ -55,7 +55,7 @@ contains
                         baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, &
                         keepzlayeringatbed, kmxd, workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, &
                         spirucm, ht_xx, spirfx, spirsrc, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, &
-                        dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
+                        dsall, dteml, jatidep, jaselfal, tidep, limtypmom, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &

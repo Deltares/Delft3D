@@ -203,7 +203,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, dimension(:) :: uc1D !< [m/s] 1D cell center velocities.
    real(kind=dp), allocatable, dimension(:) :: alpha_mom_1D !< [-] Ratio of incoming momentum versus initial estimate of outgoing momentum.
    real(kind=dp), allocatable, dimension(:) :: alpha_ene_1D !< [-] Ratio of incoming energy versus initial estimate of outgoing energy.
-   real(kind=dp), allocatable, dimension(:) :: cfli !< [-] Sum of incoming courants (    ) = sum( Dt*Qj/Vi).
    real(kind=dp), allocatable, dimension(:) :: dvxc !< [m3/s2] Cell center stress term, global x-dir.
    real(kind=dp), allocatable, dimension(:) :: dvyc !< [m3/s2] Cell center stress term, global y-dir.
    real(kind=dp), allocatable, dimension(:) :: squ !< [m3/s] Cell center outgoing flux.
@@ -286,8 +285,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target, dimension(:) :: q1_main !< [m3/s] Discharge in main channel at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, dimension(:) :: qa !< [m3/s] Discharge used in advection, qa=au(n)*u1(n+1) instead of u1(n+1) alone.
    real(kind=dp), allocatable, dimension(:) :: map_fixed_weir_energy_loss !< [m2/s2] Fixed weir energy loss at end of timestep. {"location": "edge", "shape": ["lnkx"]}
-   real(kind=dp), allocatable, dimension(:) :: cflj !< [-] Courant number for link j to downwind volume i = Dt*Qj/Vi.
-   real(kind=dp), allocatable, dimension(:) :: tetaj !< [-] 1-1/sum(upwind incoming courants).
    real(kind=dp), allocatable, target, dimension(:) :: au !< [m2] Flow area at u point. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_nostrucs !< [m2] Flow area at u point without structures. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, dimension(:) :: ucxu !< [m/s] Upwind link ucx.
