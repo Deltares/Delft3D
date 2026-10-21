@@ -169,14 +169,14 @@ contains
       call f90_assert_true(isempty(messages), "unexpected message during mixed bed deposition")
 
       bed%settings%morlyrnum%mass_shortage_thresh = 0.1_fp
-      bed%settings%morlyrnum%max_num_shortage_warnings = 5
+      bed%settings%morlyrnum%mass_shortage_max_num_warnings = 5
       dbodsd(:, 1) = [-2.5_fp, 0.0_fp]
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
       call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed erosion update failed")
       call f90_assert_near(dz(1), -1.5_fp, 1.0e-6_fp, "unexpected mixed bed erosion level change")
       call f90_assert_near(bed%state%sedshort(1, 1), -1.0_fp, 1.0e-6_fp, "unexpected mixed bed sediment shortage")
-      call f90_assert_near(real(bed%settings%morlyrnum%max_num_shortage_warnings, fp), 4.0_fp, 0.0_fp, &
+      call f90_assert_near(real(bed%settings%morlyrnum%mass_shortage_max_num_warnings, fp), 4.0_fp, 0.0_fp, &
                            "unexpected shortage warning count")
       call getmessage(messages, message)
       call f90_assert_true(index(message, "Sediment erosion shortage at NM") > 0, "missing sediment shortage message")

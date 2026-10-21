@@ -2171,7 +2171,7 @@ contains
 
          end select
 
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = nf90_def_var(irstfile, 'sedshort', nf90_double, [id_sedtotdim, id_flowelemdim, id_timedim], id_sedshort)
             ierr = nf90_put_att(irstfile, id_sedshort, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
             ierr = nf90_put_att(irstfile, id_sedshort, 'long_name', 'Sediment shortage of transport layer in flow cell center')
@@ -3240,7 +3240,7 @@ contains
             end if
          end select
          ! sedshort
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), [1, 1, itim], [stmpar%lsedtot, ndxi, 1])
          end if
          ! mfluff
@@ -4658,7 +4658,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, nc_precision, UNC_LOC_U, 'aldiff', '', 'Diffusion coefficient applied to active layer mass', 'm s-2', dimids=[-2, -1], jabndnd=jabndnd_)
                end if
             end select
-            if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
             end if
             !
@@ -5894,7 +5894,7 @@ contains
          case default
             ! do nothing
          end select
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
          end if
          if (stmpar%morpar%moroutput%taub) then

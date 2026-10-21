@@ -101,9 +101,9 @@ end interface
 !
 !> Numerical controls for sediment-shortage tracking and diagnostics.
 type morlyrnumericstype
-    logical  :: track_mass_shortage       !< Whether sediment-shortage tracking is enabled.
+    logical  :: mass_shortage_track       !< Whether sediment-shortage tracking is enabled.
     real(fp) :: mass_shortage_thresh      !< Minimum sediment mass deficit that triggers a shortage warning [kg/m2].
-    integer  :: max_num_shortage_warnings !< Maximum number of shortage warnings remaining.
+    integer  :: mass_shortage_max_num_warnings !< Maximum number of shortage warnings remaining.
 end type morlyrnumericstype
 
 !
@@ -427,14 +427,14 @@ subroutine handle_sediment_shortage(mass, mass_available, mass_change, shortage,
     character(message_len) :: message
 
     if (mass < 0.0_fp) then
-        if (mass < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings > 0) then
-            morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
+        if (mass < -morlyrnum%mass_shortage_thresh .and. morlyrnum%mass_shortage_max_num_warnings > 0) then
+            morlyrnum%mass_shortage_max_num_warnings = morlyrnum%mass_shortage_max_num_warnings - 1
             write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
                 & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
                 & ' Mass available   : ', mass_available, &
                 & ' Mass to be eroded: ', mass_change
             call addmessage(messages, message)
-            if (morlyrnum%max_num_shortage_warnings == 0) then
+            if (morlyrnum%mass_shortage_max_num_warnings == 0) then
                 message = 'Sediment erosion shortage messages suppressed'
                 call addmessage(messages, message)
             endif
@@ -635,7 +635,7 @@ subroutine updmorlyr_layered_bed_without_coarse_layer(this, dbodsd, dz, dtmor, m
     thlyr => this%state%thlyr
     preload => this%state%preload
     depos_time => this%state%depos_time
-    track_shortage = this%settings%morlyrnum%track_mass_shortage
+    track_shortage = this%settings%morlyrnum%mass_shortage_track
 
     do nm = this%settings%nmlb,this%settings%nmub
         call getsedthick_1point(this, nm, seddep0)
@@ -1064,7 +1064,7 @@ subroutine updmorlyr_mixed_bed(this, dbodsd, dz, messages)
     bodsed => this%state%bodsed
     dpsed => this%state%dpsed
     sedshort => this%state%sedshort
-    track_shortage = this%settings%morlyrnum%track_mass_shortage
+    track_shortage = this%settings%morlyrnum%mass_shortage_track
 
     do nm = this%settings%nmlb,this%settings%nmub
         seddep0   = dpsed(nm)
@@ -3188,9 +3188,9 @@ function initmorlyr(this) result (istat)
     !
     allocate (settings%morlyrnum , stat = istat)
     if (istat == 0) then
-       settings%morlyrnum%track_mass_shortage = .true.
+       settings%morlyrnum%mass_shortage_track = .true.
        settings%morlyrnum%mass_shortage_thresh = 0.0_fp
-       settings%morlyrnum%max_num_shortage_warnings = 100
+       settings%morlyrnum%mass_shortage_max_num_warnings = 100
     endif
     !
     settings%keuler     = 2
@@ -3686,8 +3686,8 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
        val => this%settings%exchlyr
     case ('coarse_layer_initialized','initcl')
        val => this%settings%initcl
-    case ('track_mass_shortage')
-       val => this%settings%morlyrnum%track_mass_shortage
+    case ('mass_shortage_track')
+       val => this%settings%morlyrnum%mass_shortage_track
     case default
        val => NULL()
        istat = -1
@@ -3739,8 +3739,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%nlyr
     case ('number_of_consolidating_layers','nconlyr')
        val => this%settings%nconlyr
-    case ('max_num_shortage_warnings')
-       val => this%settings%morlyrnum%max_num_shortage_warnings
+    case ('mass_shortage_max_num_warnings')
+       val => this%settings%morlyrnum%mass_shortage_max_num_warnings
     case ('number_of_eulerian_layers','neulyr')
        val => this%settings%neulyr
     case ('number_of_lagrangian_layers','nlalyr')
