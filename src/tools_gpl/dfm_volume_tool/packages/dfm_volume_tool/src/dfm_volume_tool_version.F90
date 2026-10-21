@@ -30,21 +30,23 @@ module dfm_volume_tool_version_module
 
     implicit none
 
-    character(*),  public, parameter :: dfm_volume_tool_version_full = version_prefix // ', ' // product_name // version_suffix
-    character(*),  public, parameter :: dfm_volume_tool_version_id   = version_prefix_id // ', ' // product_name // ' ' // version_suffix_full
+    character(*), public, parameter :: DFM_VOLUME_TOOL_VERSION_FULL = &
+        TOOL_VERSION_PREFIX // ', ' // TOOL_PRODUCT_NAME // TOOL_VERSION_SUFFIX
+    character(*), public, parameter :: DFM_VOLUME_TOOL_VERSION_ID = &
+        TOOL_VERSION_PREFIX_ID // ', ' // TOOL_PRODUCT_NAME // ' ' // TOOL_VERSION_SUFFIX_FULL
 
 contains
 
     subroutine getfullversionstring_dfm_volume_tool(stringout)
         character(*), intent(out) :: stringout
 
-        stringout = dfm_volume_tool_version_id(offset:)
+        stringout = DFM_VOLUME_TOOL_VERSION_ID(offset:)
     end subroutine getfullversionstring_dfm_volume_tool
 
     subroutine getbranch_dfm_volume_tool(stringout)
         character(*), intent(out) :: stringout
 
-        stringout = branch
+        stringout = TOOL_BRANCH
     end subroutine getbranch_dfm_volume_tool
 
 end module dfm_volume_tool_version_module

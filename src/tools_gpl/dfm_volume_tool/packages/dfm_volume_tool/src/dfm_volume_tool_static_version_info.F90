@@ -26,26 +26,29 @@
 module dfm_volume_tool_static_version_info
     implicit none
 
-    character(*),  public, parameter :: company      = COMPANY_NAME
-    character(*),  public, parameter :: company_url  = COMPANY_URL
+    character(*),  public, parameter :: TOOL_COMPANY      = COMPANY_NAME
+    character(*),  public, parameter :: TOOL_COMPANY_URL  = COMPANY_URL
 
-    character(*),  public, parameter :: product_name = PRODUCT_NAME
-    character(*),  public, parameter :: base_name    = BASE_NAME
+    character(*),  public, parameter :: TOOL_PRODUCT_NAME = PRODUCT_NAME
+    character(*),  public, parameter :: TOOL_BASE_NAME    = BASE_NAME
 
-    character(*),  public, parameter :: build_nr     = BUILD_NR
-    character(*),  public, parameter :: major        = MAJOR_STR
-    character(*),  public, parameter :: minor        = MINOR_STR
-    character(*),  public, parameter :: revision     = REVISION_STR
-    character(*),  public, parameter :: branch       = BRANCH
+    character(*),  public, parameter :: TOOL_BUILD_NR     = BUILD_NR
+    character(*),  public, parameter :: TOOL_MAJOR        = MAJOR_STR
+    character(*),  public, parameter :: TOOL_MINOR        = MINOR_STR
+    character(*),  public, parameter :: TOOL_REVISION     = REVISION_STR
+    character(*),  public, parameter :: TOOL_BRANCH       = BRANCH
 
-    character(*),  public, parameter :: version      = trim(major)//'.'//trim(minor)//'.'//trim(revision)//'.'//trim(build_nr)
-    character(*),  public, parameter :: version_full = trim(company)//', '//trim(product_name)//' Version '//version//', '//__DATE__//', '//__TIME__
-    character(*),  public, parameter :: version_id   = '@(#)'//version_full
+    character(*), public, parameter :: TOOL_VERSION = &
+        trim(TOOL_MAJOR)//'.'//trim(TOOL_MINOR)//'.'//trim(TOOL_REVISION)//'.'//trim(TOOL_BUILD_NR)
+    character(*), public, parameter :: TOOL_VERSION_FULL = &
+        trim(TOOL_COMPANY)//', '//trim(TOOL_PRODUCT_NAME)//' Version '//TOOL_VERSION//', '//__DATE__//', '//__TIME__
+    character(*), public, parameter :: TOOL_VERSION_ID = '@(#)'//TOOL_VERSION_FULL
 
-    character(*),  public, parameter :: version_prefix      = company
-    character(*),  public, parameter :: version_prefix_id   = '@(#)'// company
-    character(*),  public, parameter :: version_suffix      = version_full
-    character(*),  public, parameter :: version_suffix_full = 'Version '//version_suffix//', '//__DATE__//', '//__TIME__
+    character(*), public, parameter :: TOOL_VERSION_PREFIX = TOOL_COMPANY
+    character(*), public, parameter :: TOOL_VERSION_PREFIX_ID = '@(#)'//TOOL_COMPANY
+    character(*), public, parameter :: TOOL_VERSION_SUFFIX = TOOL_VERSION_FULL
+    character(*), public, parameter :: TOOL_VERSION_SUFFIX_FULL = &
+        'Version '//TOOL_VERSION_SUFFIX//', '//__DATE__//', '//__TIME__
 
     ! While in principle we can use a literal constant, this allows the complier/linker to get rid of the
     ! literal string. Since we want that string to be present in the executable or DLL, we need to use
@@ -54,4 +57,3 @@ module dfm_volume_tool_static_version_info
     integer, protected, save :: offset = 5
 
 end module dfm_volume_tool_static_version_info
-
