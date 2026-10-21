@@ -14207,7 +14207,11 @@ contains
       if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
 
       ! --- Resolve optional arguments ---
-      jabndnd_ = merge(jabndnd, 1, present(jabndnd))
+      if (present(jabndnd)) then
+         jabndnd_ = jabndnd
+      else
+         jabndnd_ = 1
+      end if
 
       if (present(layer_count) .and. present(layer_type) .and. present(layer_zs) .and. present(interface_zs)) then
          layer_count_ = layer_count

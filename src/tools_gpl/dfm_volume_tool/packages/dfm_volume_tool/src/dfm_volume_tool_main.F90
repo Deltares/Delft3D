@@ -70,7 +70,7 @@ double precision     :: bedlevel, toplevel
 character(len=Idlen) :: output_type
 character(len=Idlen) :: output_file, grid_output_file
 type(c_ptr)          :: xptr
-integer              :: numpoints, numlinks, lnx, numbnd
+integer              :: numpoints, numgridpoints, numlinks, lnx, numbnd
 integer, pointer     :: integer_pointer
 logical              :: computeTotal
 logical              :: computeOnBranches
@@ -93,7 +93,8 @@ integer,          dimension(:),   allocatable   :: mask, tablecount
 integer,          dimension(:,:), pointer       :: bndindex
 integer,          dimension(:,:), allocatable   :: ln2nd
 integer,          dimension(:,:), pointer       :: lnog !Don't modify this!!!
-integer,          dimension(:)  , pointer       :: kcu2, shapearray
+integer,          dimension(:)  , pointer       :: kcu2
+integer,          dimension(:)  , allocatable   :: shapearray
 integer,                          pointer       :: ndx2d
 double precision, dimension(:),   pointer       :: bndvalues
 double precision, dimension(:,:), pointer       :: inslevtube
@@ -195,9 +196,8 @@ if (ierr==0) then
    call c_f_pointer(xptr, integer_pointer)
    lnx = integer_pointer
 
-   call BMI_GET_VAR_SHAPE(dfm, string_to_char_array('zbndz'), xptr)  
    allocate(shapearray(MAXDIMS)) 
-   call c_f_pointer(xptr, shapearray)
+   call BMI_GET_VAR_SHAPE(dfm, string_to_char_array('zbndz'), shapearray)
    numbnd = shapearray(1)
    
    call BMI_GET_VAR_POINTER(dfm, string_to_char_array('ndx2d'), xptr)
@@ -205,8 +205,11 @@ if (ierr==0) then
    
    call BMI_GET_VAR_POINTER(dfm, string_to_char_array('ndx'), xptr)
    call c_f_pointer(xptr, integer_pointer)
-   
    numpoints = integer_pointer - ndx2d
+
+   call BMI_GET_VAR_POINTER(dfm, string_to_char_array('ndxi'), xptr)
+   call c_f_pointer(xptr, integer_pointer)
+   numgridpoints = integer_pointer - ndx2d
    
    allocate(inslevtube(2,lnx), ln2nd(2,lnx), lnog(2,lnx), bndvalues(numbnd), bndindex(6,numbnd),kcu2(lnx))
    call bmi_get_var(dfm, 'bob', inslevtube, 2*lnx)
@@ -271,6 +274,8 @@ if (ierr==0) then
    
    surface = 0d0
    volume  = 0d0
+   storage = 0d0
+   deadstorage = 0d0
 
    do i = 1, numlevels
       levels(i) = (i-1)*increment
@@ -304,7 +309,7 @@ if (ierr==0) then
                         increment, branches(i)%uPointsCount, numlevels, branches(i)%lin, ln2nd)
       enddo
    endif
-   
+
    ioutput = nc_create(output_file)
    call write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, deadstorage, numlevels, numids)
          
@@ -312,12 +317,17 @@ if (ierr==0) then
       !compute maximum volume table length
       
       allocate(gridsurface(numlevels,numpoints),griddeadstorage(numlevels,numpoints),gridvolume(numlevels,numpoints),gridstorage(numlevels,numpoints),bedlevels(numpoints),topheights(numpoints),tablecount(numpoints))
+
+      gridsurface = 0d0
+      gridvolume = 0d0
+      gridstorage = 0d0
+      griddeadstorage = 0d0
    
       do i = 1, numpoints   
          bedlevels(i)   = volumetable(i)%bedlevel
          topheights(i)  = volumetable(i)%topheight
          tablecount(i)  = volumetable(i)%count
-         call AddVolumeAndSurface(volume(:,1), surface(:,1), griddeadstorage(:,i), wl_deadstorage(i), volumetable(i), volumetable(i)%bedlevel, increment, numlevels)
+         call AddVolumeAndSurface(gridvolume(:,i), gridsurface(:,i), griddeadstorage(:,i), wl_deadstorage(i), volumetable(i), volumetable(i)%bedlevel, increment, numlevels)
          do j = 1,volumetable(i)%count
             gridsurface(j,i) = volumetable(i)%sur(j)
             gridvolume (j,i) = volumetable(i)%vol(j)
@@ -329,8 +339,10 @@ if (ierr==0) then
       ! Write the output to the netcdf file
       call write_1d_flowgeom_ugrid(dfm, ncid)
       
-      call write_volume_table_gridpoint_data(ncid,bedlevels,topheights,gridvolume,gridsurface, &
-           gridstorage,griddeadstorage,wl_deadstorage,tablecount,numpoints,increment)
+      call write_volume_table_gridpoint_data(ncid,bedlevels(1:numgridpoints),topheights(1:numgridpoints), &
+           gridvolume(:,1:numgridpoints),gridsurface(:,1:numgridpoints),gridstorage(:,1:numgridpoints), &
+           griddeadstorage(:,1:numgridpoints),wl_deadstorage(1:numgridpoints),tablecount(1:numgridpoints), &
+           numgridpoints,increment)
    endif
             
    deallocate(surface,volume, levels, ids, mask)
