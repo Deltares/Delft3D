@@ -74,7 +74,10 @@ contains
       real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
       real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
-      real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
+      real(kind=dp) :: zz, z00, ac1, ac2
+      real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
+      real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
+      real(kind=dp) :: epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
@@ -237,8 +240,8 @@ contains
 
          do LL = 1, lnx ! all this at velocity points
 
-            tkesur = 0.0_dp
-            tkebot = 0.0_dp
+            turbulent_kinetic_energy_top = 0.0_dp
+            turbulent_kinetic_energy_bottom = 0.0_dp
 
             Lt = Ltop(LL) ! surface layer index = surface interface index
             Lb = Lbot(LL) ! bed layer index
@@ -275,8 +278,8 @@ contains
                   advi(Lb) = advi(Lb) + cfuhi3D
                end if
 
-               tkebot = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
-               tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
+               turbulent_kinetic_energy_bottom = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
+               turbulent_kinetic_energy_top = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
 
                if (ieps == 3) then ! as Delft3D
                   vicwwu(Lb0) = vonkar * ustb(LL) * z00
@@ -318,7 +321,7 @@ contains
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
-                        tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
+                        turbulent_kinetic_energy_top = turbulent_kinetic_energy_top + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
                      else
                         pkwmag = 0.0_dp
                      end if
@@ -449,12 +452,12 @@ contains
                ak(kxL) = 0.0_dp
                bk(kxL) = 1.0_dp
                ck(kxL) = 0.0_dp
-               dk(kxL) = tkesur
+               dk(kxL) = turbulent_kinetic_energy_top
                ! TKE at the bed:
                ak(0) = 0.0_dp
                bk(0) = 1.0_dp
                ck(0) = 0.0_dp
-               dk(0) = tkebot
+               dk(0) = turbulent_kinetic_energy_bottom
 
                if (javau > 0 .or. javakeps > 0) then
                   call calculate_womegu(womegu, LL)
@@ -781,7 +784,7 @@ contains
                         z1 = 1.0_dp - zint
                         k1 = ln(1, L)
                         k2 = ln(1, L)
-                        tke = tkebot * z1 + tkesur * zint
+                        tke = turbulent_kinetic_energy_bottom * z1 + turbulent_kinetic_energy_top * zint
                         zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic visc
                         vicwww = zz * max(0.001_dp, ustb(LL)) * vonkar
                         eps = cmukep * tke * tke / vicwww
@@ -795,11 +798,11 @@ contains
                      end if
                      epsbot = max(epsbot, eps_min)
                      epssur = max(epssur, eps_min)
-                     tke = max(tke_min, tkesur)
+                     tke = max(tke_min, turbulent_kinetic_energy_top)
                      turbulent_kinetic_energy_wu(Lt) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lt)
                      eps = epssur / (hu(Lt) - hu(Lt - 1))
                      turbulent_dissipation_wu(Lt) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lt)
-                     tke = max(tke_min, tkebot)
+                     tke = max(tke_min, turbulent_kinetic_energy_bottom)
                      turbulent_kinetic_energy_wu(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turbulent_kinetic_energy_wu(Lb - 1)
                      eps = epsbot / (hu(Lb) - hu(Lb - 1))
                      turbulent_dissipation_wu(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * turbulent_dissipation_wu(Lb - 1)
