@@ -2147,7 +2147,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     real(fp)                                :: sinkfrac !< fraction immobile sediment that sinks from active to coarse layer
     real(fp)                                :: qs !< total sediment transport, units : m2/s
     real(fp), dimension(this%settings%nfrac):: pdown !< composition of sediment that sinks from active to coarse layer
-    real(fp), dimension(this%settings%nfrac):: pup !< composition of sediment that replaces the sinking flux
     !
     real(fp)   , pointer                    :: a_max
     real(fp)   , pointer                    :: sinkfrac_max
@@ -2173,7 +2172,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     !
     ! compute mobile sediment fractions in active and coarse layer
     !
-    pup      = 0.0_fp
     pdown    = 0.0_fp
     mtot_ac  = 0.0_fp
     do l = 1, this%settings%nfrac
@@ -2188,14 +2186,13 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
         pmob_ac  = pmob_ac/mtot_ac
     endif
     !
-    ! compute composition of sink and replacement flux
+    ! compute composition of sink flux
     !
     do l = 1, this%settings%nfrac
-        !if (mtot_crs > 0.0_fp .and. pmob_crs > 0.0_fp) pup(l)   = mobile(l,nm)*msed(l,2,nm)/mtot_crs/pmob_crs
         if (mtot_ac  > 0.0_fp .and. pmob_ac  < 1.0_fp) pdown(l) = (1.0_fp-mobile(l,nm))*msed(l,1,nm)/mtot_ac/(1.0_fp-pmob_ac)
     enddo
     !
-    ! compute total sink and replacement flux
+    ! compute total sink flux
     !
     !> The timescale for sediment flux from the active layer to the
     !! coarse layer is
