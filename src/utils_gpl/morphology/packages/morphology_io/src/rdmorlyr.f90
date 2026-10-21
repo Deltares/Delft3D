@@ -256,12 +256,12 @@ contains
       select case (active_layer_to_substrate_flux)
       case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM)
          txtput1 = 'Active-layer substrate flux'
-         txtput2 = 'UNIFORM'
+         txtput2 = 'Uniform'
       case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
          txtput1 = 'Active-layer substrate flux'
-         txtput2 = 'IMMOBILE_FIRST'
+         txtput2 = 'Immobile first'
       case default
-         errmsg = 'ALSflux should be 1 (UNIFORM) or 2 (IMMOBILE_FIRST) in '//trim(filmor)
+         errmsg = 'ALSflux should be 1 (Uniform) or 2 (Immobile first) in '//trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
          return
@@ -269,7 +269,7 @@ contains
       write (lundia, '(3a)') txtput1, ':', txtput2
       if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
           & iunderlyr /= BED_LAYERED) then
-         errmsg = 'ALSflux=2 (IMMOBILE_FIRST) requires IUnderLyr=2 in '//trim(filmor)
+         errmsg = 'ALSflux=2 (Immobile first) requires IUnderLyr=2 in '//trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
          return
@@ -301,7 +301,7 @@ contains
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
          if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. crslyr) then
-            errmsg = 'ALSflux=2 (IMMOBILE_FIRST) cannot be used with CrsLyr in '//trim(filmor)
+            errmsg = 'ALSflux=2 (Immobile first) cannot be used with CrsLyr in '//trim(filmor)
             call write_error(errmsg, unit=lundia)
             error = .true.
             return
@@ -794,7 +794,7 @@ contains
             write (lundia, '(3a)') txtput1, ':', txtput3
             if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
                 & imobility == MOBILITY_OFF) then
-               errmsg = 'ALSflux=2 (IMMOBILE_FIRST) requires IMobility different from 0 in '//trim(filmor)
+               errmsg = 'ALSflux=2 (Immobile first) requires IMobility different from 0 in '//trim(filmor)
                call write_error(errmsg, unit=lundia)
                error = .true.
                return
