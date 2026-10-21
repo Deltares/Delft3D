@@ -261,8 +261,6 @@ contains
                tkebot = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
                tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
 
-               vicwwu(Lb0) = vonkar * ustb(LL) * z00
-
                turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
                tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
 
