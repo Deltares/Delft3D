@@ -127,7 +127,9 @@ call cli%init(progname    = base_name,                                          
 !! setting Command Line Arguments
 call cli%add(switch='--mdufile',  switch_ab='-f', help='Name of the input mdu file.',required=.true.,act='store',def=char(0),valname='FILE')
 call cli%add(switch='--increment',switch_ab='-i', help='required interval for the volume tables',required=.true.,act='store',def='',valname='INCREMENT')
-call cli%add(switch='--output',switch_ab='-o', help='output type: "Total", "Branches", "Gridpoints", "All"',required=.false.,act='store',def='',valname='OUTPUT_TYPE')
+call cli%add(switch='--output',switch_ab='-o', &
+             help='output type: "Total" (default), "Branches", "Gridpoints" (separate file only), "All"', &
+             required=.false.,act='store',def='Total',valname='OUTPUT_TYPE')
 call cli%add(switch='--outputfile',switch_ab='-p', help='name of the output file',required=.false.,act='store',def='',valname='OUTPUT_FILE')
 call cli%add(switch='--gridoutputfile',switch_ab='-g', help='name of the per-gridpoint output file',required=.false.,act='store',def='',valname='GRID_OUTPUT_FILE')
 
@@ -145,6 +147,14 @@ output_file = ''
 if (ierr==0) call cli%get(switch='--mdufile', val = mdufile, error=ierr)
 if (ierr==0) call cli%get(switch='--increment', val = increment, error=ierr)
 if (ierr==0) call cli%get(switch='--output', val = output_type, error=ierr)
+if (ierr==0) then
+   if (.not. (strcmpi(output_type, 'Total') .or. strcmpi(output_type, 'Branches') .or. &
+              strcmpi(output_type, 'Gridpoints') .or. strcmpi(output_type, 'All'))) then
+      call SetMessage(LEVEL_ERROR, 'Invalid --output value: "'//trim(output_type)// &
+                      '". Expected Total, Branches, Gridpoints, or All.')
+      stop 1
+   endif
+endif
 if (ierr==0) then
    output_file = ''
    call cli%get(switch='--outputfile', val = output_file, error=ierr)
@@ -211,7 +221,7 @@ if (ierr==0) then
    call c_f_pointer(xptr, integer_pointer)
    numgridpoints = integer_pointer - ndx2d
    
-   allocate(inslevtube(2,lnx), ln2nd(2,lnx), lnog(2,lnx), bndvalues(numbnd), bndindex(6,numbnd),kcu2(lnx))
+   allocate(inslevtube(2,lnx), ln2nd(2,lnx), bndvalues(numbnd))
    call bmi_get_var(dfm, 'bob', inslevtube, 2*lnx)
    if (numbnd > 0) then
       call bmi_get_var(dfm, 'zbndz', bndvalues, numbnd)
@@ -310,8 +320,10 @@ if (ierr==0) then
       enddo
    endif
 
-   ioutput = nc_create(output_file)
-   call write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, deadstorage, numlevels, numids)
+   if ((computeTotal .or. computeOnBranches) .and. numids > 0) then
+      ioutput = nc_create(output_file)
+      call write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, deadstorage, numlevels, numids)
+   endif
          
    if (computeOnGridpoints) then !Gridpoints are written separately
       !compute maximum volume table length
