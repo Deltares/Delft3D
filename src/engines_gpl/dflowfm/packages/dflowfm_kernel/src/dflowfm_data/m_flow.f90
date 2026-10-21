@@ -250,7 +250,6 @@ module m_flow ! flow arrays-999
    real(kind=dp), dimension(:), allocatable :: spiratx !< [-] x component of normalised vector in direction of depth averaged velocity.
    real(kind=dp), dimension(:), allocatable :: spiraty !< [-] y component of normalised vector in direction of depth averaged velocity.
 
-   real(kind=dp) :: spirE = 0.0_dp !< [-] Factor for weighing the effect of the spiral flow intensity on transport angle, Eq 11.45 of Delft3D manual.
    real(kind=dp) :: spirbeta = 0.0_dp !< [-] Factor for weighing the effect of the spiral flow on flow dispersion stresses, Eq 9.155 of Delft3D manual.
    integer :: numoptsf
 
@@ -258,15 +257,12 @@ module m_flow ! flow arrays-999
    real(kind=dp), dimension(:), allocatable :: dsalL !< [ppt*m3/s] The flux of salinity on flow linkes for anti-creep.
    real(kind=dp), dimension(:), allocatable :: dtemL !< [degC*m3/s] The flux of temperature on flow nodes  for anti-creep.
 
-   real(kind=dp), allocatable, target, dimension(:) :: sa0 !< [ppt] Salinity at start of timestep. {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: sa1 !< [ppt] Salinity at end of timestep. {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: satop !< [ppt] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target, dimension(:) :: sabot !< [ppt] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, dimension(:) :: supq !< [ppt*m3/s] Summed upwind salinity fluxes.
    real(kind=dp), allocatable, dimension(:) :: qsho !< [ppt*m3/s] Higher order part of upwind salinity fluxes.
-   real(kind=dp), allocatable, target, dimension(:) :: tem0 !< [degC] water temperature at start of timestep. {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: tem1 !< [degC] water temperature at end of timestep. {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, dimension(:) :: qtho !< [ppt*m3/s] Higher order part of upwind temperature fluxes. {size=lnkx}
 
    real(kind=dp), allocatable, dimension(:) :: ww1 !< [m/s] Vertical velocity end of timestep.
    real(kind=dp), allocatable, dimension(:) :: qw !< [m3/s] Vertical flux through interface.
