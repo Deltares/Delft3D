@@ -53,7 +53,7 @@ contains
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
-                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -174,7 +174,7 @@ contains
 
          end do
 
-      case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
+      case (TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU)
 
          call calculate_drhodz(zws, drhodz)
 
@@ -351,7 +351,7 @@ contains
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
-                     if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                     if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                         if (bruva(k) > 0.0_dp) then
                            dk(k) = dk(k) + buoflu(k)
                            bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
@@ -388,7 +388,7 @@ contains
 
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
 
-                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                      sinktu = tureps0(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
@@ -525,7 +525,7 @@ contains
                               tauinv = c2e * sqrt(cmukep) * (wk / xlveg**2)**r3
                               teps = 0.5_dp * (tureps0(L) + tureps0(L))
                               tkin = 0.5_dp * (turkin0(L) + turkin0(L))
-                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                                  tauinf = c2e * teps / tkin !
                               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  tauinf = c2e / teps
@@ -533,7 +533,7 @@ contains
                               if (tauinf > tauinv) then ! turb damping not governed by plants => free flow damping only
                                  tauinv = 0.0_dp ! tauinv = max(tauinv, tauinf)
                               end if
-                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                              if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                                  wke = wk * tauinv
                               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                                  wke = wk * (1.0_dp - tureps1(L) * tauinv) * tureps1(L) / turkin1(L)
@@ -598,7 +598,7 @@ contains
                              + difd * (tureps0(L - 1) - tureps0(L)) * tetm1
                   end if
 
-                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
 
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
@@ -655,7 +655,7 @@ contains
 
                end do
 
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then ! Boundary conditions
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then ! Boundary conditions
 
                   ak(kxL) = -1.0_dp ! Flux at the free surface:
                   bk(kxL) = 1.0_dp
@@ -794,7 +794,7 @@ contains
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * turkin1(Lb0:Lt) / tureps1(Lb0:Lt))
                else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
