@@ -74,7 +74,7 @@ namespace pre_c_sumo
         std::string unique_id;
         int subgrid_model_nr{};
         double current_time_seconds{};
-        std::vector<std::string> constituent_names;
+        std::vector<std::string_view> constituent_names;
         FarFieldPoint2D diffuser;
         std::optional<FarFieldPoint2D> intake;
         std::vector<FarFieldPoint2D> ambient_points;
