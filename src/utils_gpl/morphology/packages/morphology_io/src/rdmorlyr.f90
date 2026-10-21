@@ -1309,14 +1309,6 @@ contains
                     return
                  endif
 
-                 call prop_get(mor_ptr, 'peat', 'ymodpeat', morlyr%settings%ymodpeat)
-                 txtput1 = 'ymod'
-                 write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ymodpeat
-
-                 call prop_get(mor_ptr, 'peat', 'ccpeat', morlyr%settings%ccpeat)
-                 txtput1 = 'cc'
-                 write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ccpeat
-
                  call prop_get(mor_ptr, 'peat', 'LOI', morlyr%settings%peatloi)
                  txtput1 = 'LOI'
                  write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%peatloi
@@ -1350,9 +1342,6 @@ contains
               txtput1 = 'consolidation rate of sand fraction'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crsand
 
-              call prop_get(mor_ptr, 'Consolidate', 'ptr', morlyr%settings%ptr)
-              txtput1 = 'percentage of thickness reduction'
-              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ptr
           endif
 
           write (lundia, '(a)') '*** End   of consolidation input'

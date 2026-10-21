@@ -224,8 +224,6 @@ type bedcomp_settings
     real(fp) :: thtrconcr                            !< Critical transport-layer thickness above which consolidation is called [m].
                                                      ! Choose a small value to avoid numerical issues, e.g., 10E-6 m.
     real(fp) :: thtrempty                            !< Critical transport-layer thickness below which the layer is considered empty [m].
-    real(fp) :: ymodpeat                             !< Young's modulus of peat [Pa].
-    real(fp) :: ccpeat                               !< Consolidation rate of peat (Terzaghi, 1942) [-].
     real(fp) :: peatloi                              !< Loss on ignition, representing the organic-matter fraction in peat [-].
     real(fp) :: peatthick                            !< Initial thickness of the peat layer [m].
     real(fp) :: parb                                 !< Coefficient of the logarithmic time-dependent peat-strain relation (Van Asselen, 2009) [-].
@@ -237,9 +235,6 @@ type bedcomp_settings
     real(fp) :: crsand                               !< Compressibility coefficient of sand used for primary consolidation [-].
     real(fp) :: crmsec                               !< Secondary-consolidation coefficient for mud [-].
     real(fp) :: porini                               !< Initial porosity threshold before consolidation starts [-].
-    ! water density and thickness-reduction controls
-    real(fp) :: rhow_const                           !< Constant water density used by consolidation [kg/m3].
-    real(fp) :: ptr                                  !< Fraction of the nominal layer-thickness reduction applied to the solid volume [-].
     !
     ! integers
     !
@@ -351,8 +346,7 @@ type bedcomp_state
     real(prec) , dimension(:,:)  , pointer :: bodsed       !< Sediment mass per unit horizontal area for each fraction [kg/m2].
     real(fp)   , dimension(:,:)  , pointer :: mobile       !< Sediment mobility parameter from immobile to fully mobile [-].
     real(fp)   , dimension(:)    , pointer :: dpsed        !< Total sediment depth [m].
-    real(fp)   , dimension(:)    , pointer :: dzc          !< Bed subsidence [m].
-    real(fp)   , dimension(:,:,:), pointer :: msed         !< Sediment mass per unit horizontal area for each fraction and morphological layer [kg/m2].
+    real(fp)   , dimension(:,:,:) , pointer :: msed         !< Sediment mass per unit horizontal area for each fraction and morphological layer [kg/m2].
     real(fp)   , dimension(:,:)  , pointer :: preload      !< Historical maximum overburden mass per unit horizontal area [kg/m2].
     real(fp)   , dimension(:,:)  , pointer :: depos_time   !< Morphological time of the latest load increment that initiates primary compaction [days since reference date].
     real(fp)   , dimension(:)    , pointer :: rhow         !< Water density at the grid locations [kg/m3].
@@ -388,7 +382,6 @@ type bedcomp_work
     real(fp), dimension(:)   , pointer :: svfracsand0p5  !< New sand solid-volume fraction after consolidation [-].
     real(fp), dimension(:)   , pointer :: svfracmud0p5   !< New mud solid-volume fraction after consolidation [-].
 
-    real(fp), dimension(:)   , pointer :: svfracnew      !< New solid-volume fraction after consolidation [-].
 end type bedcomp_work
 !
 !> Complete bed-composition data object.
@@ -2636,7 +2629,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     real(fp)                   , pointer :: nf !< fractal dimension nf [-]
     real(fp)                   , pointer :: kk !< permeability coefficient [m/s]
     !
-    real(fp)                   , pointer :: rhow_const
     !
     real(fp) , dimension(:,:,:), pointer :: msed
     real(fp) , dimension(:,:)  , pointer :: svfrac
@@ -2691,7 +2683,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     nf             => this%settings%nf
     kk             => this%settings%kk
     rhofrac        => this%settings%rhofrac
-    rhow_const     => this%settings%rhow_const
     !
     A                => this%settings%erosion%A
     alpha            => this%settings%erosion%alpha
@@ -3261,7 +3252,6 @@ function initmorlyr(this) result (istat)
     settings%crmsec       = 3.0E-04_fp             ! secondary consolidation of mud
     settings%porini       = 0.75_fp                !
     !critical bed shear stress
-    settings%rhow_const   = 1000.0_fp              ! water density [kg/m3]
     settings%ky           = 1.0E3_fp               ! vertical permeability [Pa]
 
     ! erosion settings
@@ -3291,10 +3281,7 @@ function initmorlyr(this) result (istat)
     !! input parameters for Dynamic Equilibrium CONsolidation (DECON)
     settings%nconlyr      = 6                      !
     settings%plyrstr      = '0.05 0.05 0.10 0.15 0.20 0.45'
-    settings%ptr          = 0.0_fp                 ! percentage of thickness reduction
     !! Peat
-    settings%ccpeat       = 0.0_fp                 !
-    settings%ymodpeat     = 0.0_fp                 !
     settings%peatfrac     = 0                      !
     settings%peatloi      = 0.0_fp                 !
     settings%parb         = 0.009_fp               !
@@ -3320,7 +3307,6 @@ function initmorlyr(this) result (istat)
     !
     nullify(state%bodsed)
     nullify(state%dpsed)
-    nullify(state%dzc)
     nullify(state%msed)
     nullify(state%mobile)
     nullify(state%preload)
@@ -3436,8 +3422,6 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) settings%zdiff = 0.0_fp
        if (istat == 0) allocate (settings%thtrlyr(nmlb:nmub), stat = istat)
        if (istat == 0) settings%thtrlyr = 0.0_fp
-       if (istat == 0) allocate (state%dzc(nmlb:nmub), stat = istat)
-       if (istat == 0) state%dzc = 0.0_fp
        !
        if (settings%crslyr) then
           if (istat == 0) allocate (settings%thclyr(nmlb:nmub), stat = istat)
@@ -3867,8 +3851,6 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
        val => this%settings%thexlyr
     case ('thickness_of_transport_layer','thtrlyr')
        val => this%settings%thtrlyr
-    case ('dzc')
-       val => this%state%dzc
     case ('diffusion_levels','zdiff')
        val => this%settings%zdiff
     case ('percentage_layerthk','plyrthk')
@@ -4064,7 +4046,7 @@ subroutine bedcomp_use_bodsed(this)
           enddo
           !
           call getporosity(this, mfrac, poros)
-          svf = (1.0_fp - poros) !* this%settings%ptr
+          svf = (1.0_fp - poros)
           !
           thsed = 0.0_fp
           do ised = 1, this%settings%nfrac
