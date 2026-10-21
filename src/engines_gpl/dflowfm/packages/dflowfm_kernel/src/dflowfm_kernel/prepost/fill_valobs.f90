@@ -49,7 +49,7 @@ contains
                         s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
-                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, viskin, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
@@ -701,8 +701,8 @@ contains
                         valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
                      end if
                      if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
-                        valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
-                        valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
+                        valobs(i, IPNT_TKIN + klay - 1) = turbulent_kinetic_energy_wu(L)
+                        valobs(i, IPNT_TEPS + klay - 1) = turbulent_dissipation_wu(L)
                      end if
                      if (idensform > 0 .and. jaRichardsononoutput > 0) then
                         valobs(i, IPNT_RICH + klay - 1) = rich(L)

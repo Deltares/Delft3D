@@ -199,7 +199,7 @@ contains
          zlin = ifrcutp(LL)
       else if (linval == 41) then
          if (kmx > 0) then
-            zlin = turkin0(L)
+            zlin = turbulent_kinetic_energy_wu_old (L)
          else
             if (LL <= lnx1D) then
                zlin = prof1D(1, LL)
@@ -207,7 +207,7 @@ contains
          end if
       else if (linval == 42) then
          if (kmx > 0) then
-            zlin = tureps0(L)
+            zlin = turbulent_dissipation_wu_old(L)
          else
             if (LL <= lnx1D) then
                zlin = prof1D(2, LL)

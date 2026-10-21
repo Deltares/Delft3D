@@ -2038,7 +2038,7 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CONST, &
                              'Wrimap_sediment', 'const', 'Constituents', &
                              '', '-', UNC_LOC_S, description='Write constiuents to map file')
-      call add_output_config(config_set_map, IDX_MAP_TURKIN1, &
+      call add_output_config(config_set_map, IDX_MAP_TURBULENT_KINETIC_ENERGY_WU, &
                              'Wrimap_turbulence', 'turkin1', 'turbulent kinetic energy', &
                              'specific_turbulent_kinetic_energy_of_sea_water', 'm2 s-2', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_VICWWU, &
@@ -3171,7 +3171,7 @@ contains
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TEM1                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_SED                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_CONST                                                     )
-      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TURKIN1                                                   )
+      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TURBULENT_KINETIC_ENERGY_WU                                                   )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_VICWWU                                                    )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TUREPS1                                                   )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TUREPS1_3                                                 )

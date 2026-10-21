@@ -1387,7 +1387,7 @@ contains
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
                         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, &
                         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
-                        fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
+                        fvcoro, vicwwu, turbulent_dissipation_wu, turbulent_kinetic_energy_wu, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
                         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
       use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_waveconst, only: WAVE_SURFBEAT
@@ -1460,7 +1460,7 @@ contains
          id_flowelemdomain, id_flowelemglobalnr, id_flowlink, id_netelemnode, id_netlink, &
          id_flowelemxzw, id_flowelemyzw, id_flowlinkxu, id_flowlinkyu, &
          id_flowelemxbnd, id_flowelemybnd, id_bl, id_s0bnd, id_s1bnd, id_blbnd, &
-         id_unorma, id_vicwwu, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
+         id_unorma, id_vicwwu, id_tureps1, id_turbulent_kinetic_energy_wu, id_qw, id_qa, id_squ, id_sqi, &
          id_squbnd, id_sqibnd, &
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
@@ -1804,12 +1804,12 @@ contains
             ierr = nf90_put_att(irstfile, id_vicwwu, '_FillValue', dmiss)
 
             ! Definition and attributes of kinetic energy
-            ierr = nf90_def_var(irstfile, 'turkin1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_turkin1)
-            ierr = nf90_put_att(irstfile, id_turkin1, 'coordinates', 'FlowLink_xu FlowLink_yu')
-            ierr = nf90_put_att(irstfile, id_turkin1, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
-            ierr = nf90_put_att(irstfile, id_turkin1, 'long_name', 'turbulent kinetic energy')
-            ierr = nf90_put_att(irstfile, id_turkin1, 'units', 'm2 s-2')
-            ierr = nf90_put_att(irstfile, id_turkin1, '_FillValue', dmiss)
+            ierr = nf90_def_var(irstfile, 'turkin1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_turbulent_kinetic_energy_wu)
+            ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'coordinates', 'FlowLink_xu FlowLink_yu')
+            ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
+            ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'long_name', 'turbulent kinetic energy')
+            ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, 'units', 'm2 s-2')
+            ierr = nf90_put_att(irstfile, id_turbulent_kinetic_energy_wu, '_FillValue', dmiss)
 
             ! Definition and attributes of energy_dissipation or turbulence_time_scale
             ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
@@ -2913,27 +2913,27 @@ contains
             end do
             ierr = nf90_put_var(irstfile, id_vicwwu, work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
 
-            ! write tureps1
+            ! write turbulent_dissipation_wu
             work0 = dmiss
             do LL = 1, lnx
                call getLbotLtopmax(LL, Lb, Ltx)
                call getlayerindicesLmax(LL, nlaybL, nrlayLx)
                do L = Lb - 1, Ltx
-                  work0(L - Lb + nlaybL, LL) = tureps1(L)
+                  work0(L - Lb + nlaybL, LL) = turbulent_dissipation_wu(L)
                end do
             end do
             ierr = nf90_put_var(irstfile, id_tureps1, work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
 
-            ! write turkin1
+            ! write turbulent_kinetic_energy_wu
             work0 = dmiss
             do LL = 1, lnx
                call getLbotLtopmax(LL, Lb, Ltx)
                call getlayerindicesLmax(LL, nlaybL, nrlayLx)
                do L = Lb - 1, Ltx
-                  work0(L - Lb + nlaybL, LL) = turkin1(L)
+                  work0(L - Lb + nlaybL, LL) = turbulent_kinetic_energy_wu(L)
                end do
             end do
-            ierr = nf90_put_var(irstfile, id_turkin1, work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
+            ierr = nf90_put_var(irstfile, id_turbulent_kinetic_energy_wu, work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
          end if
 
          ! qw
@@ -4403,7 +4403,7 @@ contains
          ! Turbulence.
          if (map_write_settings%tur > 0 .and. kmx > 0) then
             if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turbulent_kinetic_energy_wu, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
@@ -5408,12 +5408,12 @@ contains
                end do
             end do
             call links_to_centers(vicwws_total, vicwwu_total)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, UNC_LOC_WU, turkin1, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turbulent_kinetic_energy_wu, UNC_LOC_WU, turbulent_kinetic_energy_wu, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, UNC_LOC_WU, vicwwu, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, UNC_LOC_W, vicwws, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, UNC_LOC_W, vicwws_total, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, UNC_LOC_W, difwws_total, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, UNC_LOC_WU, tureps1, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, UNC_LOC_WU, turbulent_dissipation_wu, jabndnd=jabndnd_)
          end if
       end if
 
@@ -6742,7 +6742,7 @@ contains
          id_duneheight, id_dunelength, id_ksd, id_ksr, id_ksmr, id_ks, &
          id_taurat, id_dm, id_dg, id_dgsd, id_frac, id_mudfrac, id_sandfrac, id_fixfac, id_hidexp, id_mfluff, id_scrn, id_urmscc, id_Fxcc, id_Fycc, &
          id_sscx, id_sscy, id_sscx_reconstructed, id_sscy_reconstructed, &
-         id_turkin1, id_tureps1, id_vicwwu, id_vicwws, id_vicwws_total, id_difwws_total, id_swanbl, &
+         id_turbulent_kinetic_energy_wu, id_tureps1, id_vicwwu, id_vicwws, id_vicwws_total, id_difwws_total, id_swanbl, &
          id_rnveg, id_diaveg, id_veg_stemheight
 
       integer, dimension(:, :), allocatable, save :: id_dxx ! fractions
@@ -7303,12 +7303,12 @@ contains
 
             if (map_write_settings%tur > 0 .and. kmx > 0) then
                if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-                  ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turkin1(iid))
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'long_name', 'turbulent kinetic energy')
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'units', 'm2 s-2')
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), '_FillValue', dmiss)
+                  ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turbulent_kinetic_energy_wu(iid))
+                  ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+                  ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
+                  ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'long_name', 'turbulent kinetic energy')
+                  ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), 'units', 'm2 s-2')
+                  ierr = nf90_put_att(imapfile, id_turbulent_kinetic_energy_wu(iid), '_FillValue', dmiss)
 
                   ierr = nf90_def_var(imapfile, 'vicwwu', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_vicwwu(iid))
                   ierr = nf90_put_att(imapfile, id_vicwwu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -8220,7 +8220,7 @@ contains
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
             end if
             if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
-               ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
+               ierr = nf90_inq_varid(imapfile, 'turkin1', id_turbulent_kinetic_energy_wu(iid))
                ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
                ierr = nf90_inq_varid(imapfile, 'vicwwu', id_vicwwu(iid))
             end if
@@ -8754,16 +8754,16 @@ contains
                   call getLbotLtopmax(LL, Lb, Ltx)
                   call getlayerindicesLmax(LL, nlaybL, nrlayLx)
                   do L = Lb - 1, Ltx
-                     work0(L - Lb + nlaybL, LL) = turkin1(L)
+                     work0(L - Lb + nlaybL, LL) = turbulent_kinetic_energy_wu(L)
                   end do
                end do
-               ierr = nf90_put_var(imapfile, id_turkin1(iid), work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
+               ierr = nf90_put_var(imapfile, id_turbulent_kinetic_energy_wu(iid), work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
                do LL = 1, lnx
                   work0(:, LL) = dmiss ! For proper fill values in z-model runs.
                   call getLbotLtopmax(LL, Lb, Ltx)
                   call getlayerindicesLmax(LL, nlaybL, nrlayLx)
                   do L = Lb - 1, Ltx
-                     work0(L - Lb + nlaybL, LL) = tureps1(L)
+                     work0(L - Lb + nlaybL, LL) = turbulent_dissipation_wu(L)
                   end do
                end do
                ierr = nf90_put_var(imapfile, id_tureps1(iid), work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
@@ -12467,24 +12467,24 @@ contains
             call check_error(ierr, 'vicwwu')
             call readyy('Reading map data', 0.76_dp)
 
-            ! tureps1
-            ierr = get_var_and_shift(imapfile, 'tureps1', tureps1, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+            ! turbulent_dissipation_wu
+            ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
             call check_error(ierr, 'tureps1')
             call readyy('Reading map data', 0.77_dp)
 
-            ! turkin1
-            ierr = get_var_and_shift(imapfile, 'turkin1', turkin1, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
+            ! turbulent_kinetic_energy_wu
+            ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
             call check_error(ierr, 'turkin1')
             call readyy('Reading map data', 0.78_dp)
 
             ! ghost
             if (um%jafillghost == 1) then
-               ierr = get_var_and_shift(imapfile, 'tureps1', tureps1, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+               ierr = get_var_and_shift(imapfile, 'tureps1', turbulent_dissipation_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
                call check_error(ierr, 'tureps1_ghost_cells')
-               ierr = get_var_and_shift(imapfile, 'turkin1', turkin1, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
+               ierr = get_var_and_shift(imapfile, 'turkin1', turbulent_kinetic_energy_wu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_ghost, it_read, &
                                         um%jamergedmap, um%ilink_ghost, um%ilinkghost_merge)
                call check_error(ierr, 'turkin1_ghost_cells')
             end if
