@@ -38,7 +38,7 @@ contains
    subroutine get_ustb_cfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
-      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, VON_KARMAN, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
+      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, VON_KARMAN, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, VISKIN, vicwwu, vicoww, jafrculin, frculin
       use m_get_ustwav, only: getustwav
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
@@ -319,7 +319,7 @@ contains
             end if
          end if
 
-         r = umod * hu(Lb) / viskin ! Local re-number:
+         r = umod * hu(Lb) / VISKIN ! Local re-number:
          r = max(r, 0.001_dp)
          er = e * r
          if (r < rv) then ! Viscous sublayer:

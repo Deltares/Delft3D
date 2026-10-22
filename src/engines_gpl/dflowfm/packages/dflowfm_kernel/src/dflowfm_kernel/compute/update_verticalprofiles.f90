@@ -51,7 +51,7 @@ contains
                         EPS4, trsh_u1lb, ustw, ieps, turbulent_kinetic_energy_wu_old , zws, turbulent_dissipation_wu_old, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
                         rhomean, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
@@ -335,14 +335,14 @@ contains
                   end if
                end if
 
-               turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                ! Setting up system of equations for turbulent kinetic energy (k)
                do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
                   turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
@@ -597,13 +597,13 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
                   turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
