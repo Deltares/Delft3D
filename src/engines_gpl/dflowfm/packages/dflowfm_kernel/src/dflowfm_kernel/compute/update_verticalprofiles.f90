@@ -73,7 +73,11 @@ contains
 
       real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
-      real(kind=dp) :: vicu, vicd, difu, difd, sourtu, sinktu
+      real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above.
+      real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
+      real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above.
+      real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below.
+      real(kind=dp) :: sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2
       real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
       real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
@@ -299,8 +303,6 @@ contains
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old , turbulent_kinetic_energy_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave /= NO_WAVES) then
                   if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
@@ -333,25 +335,27 @@ contains
                   end if
                end if
 
+               turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
+
                ! Setting up system of equations for turbulent kinetic energy (k)
                do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / dzw(k) * dzu(k)
-                  difu = vicu / dzw(k) * dzu(ku)
+                  turbulent_diffusion_down = turbulent_viscosity_down / dzw(k) * dzu(k)
+                  turbulent_diffusion_up = turbulent_viscosity_up / dzw(k) * dzu(ku)
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_kinetic_energy_wu_old (L) - turbulent_kinetic_energy_wu_old (Lu)) * theta_complement &
-                             + difd * (turbulent_kinetic_energy_wu_old (L - 1) - turbulent_kinetic_energy_wu_old (L)) * theta_complement
+                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_kinetic_energy_wu_old (L) - turbulent_kinetic_energy_wu_old (Lu)) * theta_complement &
+                             + turbulent_diffusion_down * (turbulent_kinetic_energy_wu_old (L - 1) - turbulent_kinetic_energy_wu_old (L)) * theta_complement
                   end if
 
                   !c Source and sink terms                                                                           k turkin
@@ -593,26 +597,26 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+               turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
-                  vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
+                  turbulent_viscosity_down = turbulent_viscosity_up
+                  turbulent_viscosity_up = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
 
-                  difd = vicd / dzw(k) * dzu(k)
-                  difu = vicu / dzw(k) * dzu(ku)
+                  turbulent_diffusion_down = turbulent_viscosity_down / dzw(k) * dzu(k)
+                  turbulent_diffusion_up = turbulent_viscosity_up / dzw(k) * dzu(ku)
 
-                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
                   if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - difu * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
-                             + difd * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
+                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
+                             + turbulent_diffusion_down * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
                   end if
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
