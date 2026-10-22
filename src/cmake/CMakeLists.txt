@@ -95,16 +95,21 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Set compiler flags
 enable_language(Fortran C CXX)
 
+# Ensure we are using the supported compilers
+if(NOT "${CMAKE_Fortran_COMPILER_ID}" STREQUAL "IntelLLVM")
+    message(FATAL_ERROR "Intel IFX is the only supported Fortran compiler")
+endif()
+if(NOT "${CMAKE_C_COMPILER_ID}" MATCHES "^(MSVC|IntelLLVM)$")
+    message(FATAL_ERROR "Only MSVC or IntelLLVM are supported C compilers")
+endif()
+if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "^(MSVC|GNU)$")
+    message(FATAL_ERROR "Only MSVC or g++ are supported C++ compilers")
+endif()
+
 # DFlowFM stack size in bytes, used for OpenMP thread stack and Windows linker /STACK flag
 set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes")
 
-if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
-    include(compiler_options/gnu.cmake)
-elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    include(compiler_options/intel.cmake)
-else()
-    message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
-endif()
+include(compiler_options/compiler_options.cmake)
 include(compiler_options/compiler_warning_targets.cmake)
 include(compiler_options/fortran_styler.cmake)
 
