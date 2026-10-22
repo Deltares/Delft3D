@@ -37,10 +37,10 @@ module m_turbulence
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
    integer, parameter :: SIGDIF = 1
-   integer, parameter :: SIGTKE = 1
-   integer, parameter :: SIGTKEI = 1
-   real(kind=dp), parameter :: SIGEPS = 1.3_dp
-   real(kind=dp), parameter :: SIGEPSI = 1.0_dp / SIGEPS
+   real(kind=dp), parameter :: SIGMA_TURBULENT_KINETIC_ENERGY = 1.0_dp
+   real(kind=dp), parameter :: SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE = 1 / SIGMA_TURBULENT_KINETIC_ENERGY
+   real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION = 1.3_dp
+   real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION_INVERSE = 1.0_dp / SIGMA_TURBULENT_DISSIPATION
    real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
    real(kind=dp), parameter :: C2E = 1.92_dp
    real(kind=dp), parameter :: C2T = 1.0_dp - C2E
@@ -134,7 +134,7 @@ contains
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
       use m_physcoef, only: VON_KARMAN
-      c1e = c2e - VON_KARMAN**2 / (sigeps * sqrt(cmukep))
+      c1e = c2e - VON_KARMAN**2 / (SIGMA_TURBULENT_DISSIPATION * sqrt(cmukep))
       c1t = (1.0_dp - c1e) * cmukep
       c3t_unstable = (1.0_dp - c1e) * cmukep
       c3e_stable = 0.0_dp

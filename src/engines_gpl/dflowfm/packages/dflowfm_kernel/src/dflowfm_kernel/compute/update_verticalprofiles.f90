@@ -62,7 +62,7 @@ contains
       use m_sferic, only: pi
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
-      use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
+      use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE, SIGMA_TURBULENT_DISSIPATION_INVERSE, cde, &
                   c3t_stable, c3t_unstable
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
@@ -297,7 +297,7 @@ contains
                   call apply_horizontal_coupling(turbulent_kinetic_energy_wu_old , turbulent_kinetic_energy_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
+               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave /= NO_WAVES) then
@@ -335,7 +335,7 @@ contains
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigtkei
+                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
@@ -593,13 +593,13 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
+               vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                do L = Lb, Lt - 1
                   Lu = L + 1
 
                   vicd = vicu
-                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigepsi
+                  vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
 
                   k = L - Lb + 1
                   ku = k + 1
@@ -661,7 +661,7 @@ contains
                      gradk = gradd + gradu
                      grad = gradk - gradt ! D_kt - D_tt
 
-                     grad = -grad * sigepsi * cmukep ! This is positive advection, dc/dt + wdc/dz
+                     grad = -grad * SIGMA_TURBULENT_DISSIPATION_INVERSE * cmukep ! This is positive advection, dc/dt + wdc/dz
                      grad = grad / dzw(k) ! dzw is receiving volume
                      if (grad > 0.0_dp) then
                         bk(k) = bk(k) + grad
