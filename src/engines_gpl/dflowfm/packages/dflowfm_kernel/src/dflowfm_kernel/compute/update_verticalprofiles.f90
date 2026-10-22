@@ -50,7 +50,7 @@ contains
                         a1, vicwwu, VON_KARMAN, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, THETA_KEPS_DIFFUSION, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
-                        c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
+                        c1e, c1t, c2t, C9OF1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
@@ -685,7 +685,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = 0.0_dp
                   if (ustb(LL) > 0) then
-                     dk(0) = VON_KARMAN * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
+                     dk(0) = VON_KARMAN * C9OF1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
                   else
                      dk(0) = 0.0_dp
                   end if

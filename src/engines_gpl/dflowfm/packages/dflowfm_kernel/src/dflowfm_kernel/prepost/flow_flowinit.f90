@@ -2386,7 +2386,7 @@ contains
             Lt = Ltop(LL)
             do L = Lb, Lt
                zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
-               u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / VON_KARMAN
+               u1(L) = cs * ustb(LL) * log(C9OF1 + zz / z00) / VON_KARMAN
             end do
          end do
 

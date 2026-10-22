@@ -177,7 +177,7 @@ contains
 
             do k = kb, kt
                kk = k - kb + 1
-               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / VON_KARMAN
+               ucxref(kk) = sg * ustbref * log(C9OF1 + hcref(kk) / z00) / VON_KARMAN
             end do
 
             if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then

@@ -80,14 +80,14 @@ module m_physcoef
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp), parameter :: c9of1 = 9.0_dp !< VON_KARMAN/log(c9of1 + dzb / z0)
+   real(kind=dp), parameter :: C9OF1 = 9.0_dp !< VON_KARMAN/log(C9OF1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
    real(kind=dp), parameter :: VISKIN = 1e-6_dp !< kinematic  viscosity water in keps model
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
-   real(kind=dp), parameter :: difmolsal = VISKIN / 700.0_dp !< molecular diffusivity of salinity
-   real(kind=dp), parameter :: difmoltem = VISKIN / 6.7_dp !< diffusivity of temperature
-   integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
+   real(kind=dp), parameter :: DIFMOLSAL = VISKIN / 700.0_dp !< molecular diffusivity of salinity
+   real(kind=dp), parameter :: DIFMOLTEM = VISKIN / 6.7_dp !< diffusivity of temperature
+   real(kind=dp), parameter :: DIFMOLTRACER = 0.0_dp !< diffusivity of tracers
 
    real(kind=dp) :: tracer_concentration_min !< lower limit for tracer concentration
    logical :: tracer_concentration_min_enabled !< is lower limit for tracer concentration enabled?
@@ -97,7 +97,7 @@ module m_physcoef
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
 
-   real(kind=dp), parameter :: viskinair = 1.5e-5_dp !< kinematic air viscosity
+   real(kind=dp), parameter :: VISKINAIR = 1.5e-5_dp !< kinematic air viscosity
    real(kind=dp) :: backgroundwatertemperature !< background water temp (C)
    real(kind=dp) :: backgroundsalinity !< background salinity (ppt), in eq of state, if salinity not computed
    real(kind=dp), parameter :: BACKGROUND_AIR_PRESSURE = 101325.0_dp !< background air pressure (Pa)
