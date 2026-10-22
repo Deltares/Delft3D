@@ -49,9 +49,9 @@ module m_physcoef
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
 
-   real(kind=dp), parameter :: frcunistreetinlet = 0.035_dp
-   real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035_dp
-   real(kind=dp), parameter :: frcuniroof = 0.030_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp
 
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
