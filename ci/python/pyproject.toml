@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "black-ops", email = "black-ops@deltares.nl" }
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "httpx~=0.28.1",
     "minio==7.2.15",
@@ -31,7 +31,7 @@ verschilanalyse = [
 ]
 dimrset_delivery = [
     "requests~=2.32.4",
-    "paramiko~=4.0.0", 
+    "paramiko~=5.1.0",
     "scp~=0.15.0",
     "python-certifi-win32~=1.6.1 ; platform_system == 'Windows'",
     "openpyxl~=3.1.5",
