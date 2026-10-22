@@ -38,101 +38,101 @@ module m_physcoef
    
    implicit none(type, external)
 
-   real(kind=dp) :: ag !< gravitational acceleration (m/s2)
-   real(kind=dp) :: sag !< sqrt(ag)
-   integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
+   real(kind=dp) :: ag !< [m/s2] Gravitational acceleration.
+   real(kind=dp) :: sag !< [m^(1/2)/s] Square root of gravitational acceleration.
+   integer :: jahelmert = 0 !< [-] 1=use Helmerts equation for agp only.
 
-   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< von Karman constant ()
-   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< von Karman constant used in wind formulations
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant.
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations.
 
-   real(kind=dp) :: frcuni !< uniform friction coeff 2D
-   real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
-   real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
+   real(kind=dp) :: frcuni !< [-] Uniform friction coeff 2D.
+   real(kind=dp) :: frcuni1D !< [-] Uniform friction coeff 1D.
+   real(kind=dp) :: frcuni1D2D !< [-] Uniform friction coeff 1D2D.
 
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet.
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe.
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< [-] Uniform friction coefficient for roof.
 
-   real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
-   real(kind=dp) :: frcmax !< max friction coeff in frcu
-   integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
-   real(kind=dp) :: frcu_no_vegetation !< base (Manning) friction (without vegetation), default 0.023 [s/m^(1/3)]
-   real(kind=dp) :: droot !< root depth for dynamic roughness vegetation, range 0-100m, default 0.5m
-   real(kind=dp) :: dstem !< stem height for dynamic roughness vegetation, range 0-100m, default 0.5m
+   real(kind=dp) :: frcuni1Dgrounlay !< [-] Uniform friction coeff groundlayer.
+   real(kind=dp) :: frcmax !< [-] Max friction coeff in frcu.
+   integer :: dynroughveg !< [-] 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction.
+   real(kind=dp) :: frcu_no_vegetation !< [s/m^(1/3)] Base (Manning) friction (without vegetation), default 0.023.
+   real(kind=dp) :: droot !< [m] Root depth for dynamic roughness vegetation, range 0-100m, default 0.5m.
+   real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
-   integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
-   real(kind=dp) :: frcunilin !< uniform friction coeff
-   real(kind=dp) :: umodlin !< linear friction umod, friction type 4,5,6
+   integer :: ifrctypuni !< [-] 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D).
+   real(kind=dp) :: frcunilin !< [-] Uniform friction coefficient.
+   real(kind=dp) :: umodlin !< [m/s] Linear friction umod, friction type 4,5,6.
 
-   real(kind=dp) :: wall_ks !< vertical wall Nikuradse roughness (m)
-   real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
+   real(kind=dp) :: wall_ks !< [m] Vertical wall Nikuradse roughness.
+   real(kind=dp) :: wall_z0 !< [m] z0 for vertical walls, ~= Ks/30.
                             !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
-   real(kind=dp) :: z0 !< z0
+   real(kind=dp) :: z0 !< [m] z0.
 
-   real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
-   real(kind=dp) :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
+   real(kind=dp) :: vicouv !< [m2/s] Constant horizontal eddy viscosity for momentum.
+   real(kind=dp) :: dicouv !< [m2/s] Constant horizontal eddy diffusivity for salinity and sediment.
 
-   real(kind=dp) :: Elder !< add Elder viscosity
-   real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
+   real(kind=dp) :: Elder !< [-] Add Elder viscosity.
+   real(kind=dp) :: Smagorinsky !< [-] Add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S.
 
-   type(t_array_or_scalar), target :: dicoww !< background vertical eddy diffusivity (m2/s)
-   type(t_array_or_scalar), target :: vicoww !< background vertical eddy viscosity (m2/s)
+   type(t_array_or_scalar), target :: dicoww !< [m2/s] Background vertical eddy diffusivity.
+   type(t_array_or_scalar), target :: vicoww !< [m2/s] Background vertical eddy viscosity.
 
-   real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
-   real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp), parameter :: C9OF1 = 9.0_dp !< VON_KARMAN/log(C9OF1 + dzb / z0)
+   real(kind=dp) :: rhomean !< [kg/m3] Mean ambient density.
+   real(kind=dp) :: rhog !< [N/m3] rhomean * gravitational acceleration.
+   real(kind=dp), parameter :: C9OF1 = 9.0_dp !< [-] VON_KARMAN/log(C9OF1 + dzb / z0)
 
-   !< Molecular diffusivity coefficients (m2/s):
-   real(kind=dp), parameter :: VISKIN = 1e-6_dp !< kinematic  viscosity water in keps model
-   real(kind=dp) :: vismol !< molecular viscosity (m2/s)
-   real(kind=dp), parameter :: DIFMOLSAL = VISKIN / 700.0_dp !< molecular diffusivity of salinity
-   real(kind=dp), parameter :: DIFMOLTEM = VISKIN / 6.7_dp !< diffusivity of temperature
-   real(kind=dp), parameter :: DIFMOLTRACER = 0.0_dp !< diffusivity of tracers
+   ! Molecular diffusivity coefficients:
+   real(kind=dp), parameter :: VISKIN = 1e-6_dp !< [m2/s] Kinematic  viscosity water in keps model.
+   real(kind=dp) :: vismol !< [m2/s] Molecular viscosity.
+   real(kind=dp), parameter :: DIFMOLSAL = VISKIN / 700.0_dp !< [m2/s] Molecular diffusivity of salinity.
+   real(kind=dp), parameter :: DIFMOLTEM = VISKIN / 6.7_dp !< [m2/s] Diffusivity of temperature.
+   real(kind=dp), parameter :: DIFMOLTRACER = 0.0_dp !< [m2/s] Diffusivity of tracers.
 
-   real(kind=dp) :: tracer_concentration_min !< lower limit for tracer concentration
-   logical :: tracer_concentration_min_enabled !< is lower limit for tracer concentration enabled?
-   real(kind=dp) :: tracer_concentration_max !< upper limit for tracer concentration
-   logical :: tracer_concentration_max_enabled !< is upper limit for tracer concentration enabled?
+   real(kind=dp) :: tracer_concentration_min !< [kg/m3] Lower limit for tracer concentration.
+   logical :: tracer_concentration_min_enabled !< [-] Is lower limit for tracer concentration enabled?
+   real(kind=dp) :: tracer_concentration_max !< [kg/m3] Upper limit for tracer concentration.
+   logical :: tracer_concentration_max_enabled !< [-] Is upper limit for tracer concentration enabled?
 
-   real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
-   real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
+   real(kind=dp) :: vicwminb !< [m2/s] Minimum eddy viscosity in production terms shear and buoyancy
+   real(kind=dp) :: xlozmidov !< [m] Ozmidov length scale.
 
-   real(kind=dp), parameter :: VISKINAIR = 1.5e-5_dp !< kinematic air viscosity
-   real(kind=dp) :: backgroundwatertemperature !< background water temp (C)
-   real(kind=dp) :: backgroundsalinity !< background salinity (ppt), in eq of state, if salinity not computed
-   real(kind=dp), parameter :: BACKGROUND_AIR_PRESSURE = 101325.0_dp !< background air pressure (Pa)
-   real(kind=dp), parameter :: BACKGROUND_AIR_TEMPERATURE = 20.0_dp !< background air temperature (degrees Celsius)
-   real(kind=dp), parameter :: BACKGROUND_CLOUDINESS = 50.0_dp !< (%) cloudiness for non-specified points
-   real(kind=dp), parameter :: BACKGROUND_HUMIDITY = 50.0_dp !< (%) relative humidity for non-specified points
+   real(kind=dp), parameter :: VISKINAIR = 1.5e-5_dp !< [m2/s] Kinematic air viscosity.
+   real(kind=dp) :: backgroundwatertemperature !< [degC] Background water temp.
+   real(kind=dp) :: backgroundsalinity !< [ppt] Background salinity, in eq of state, if salinity not computed.
+   real(kind=dp), parameter :: BACKGROUND_AIR_PRESSURE = 101325.0_dp !< [Pa] Background air pressure.
+   real(kind=dp), parameter :: BACKGROUND_AIR_TEMPERATURE = 20.0_dp !< [degC] Background air temperature.
+   real(kind=dp), parameter :: BACKGROUND_CLOUDINESS = 50.0_dp !< [%] Cloudiness for non-specified points.
+   real(kind=dp), parameter :: BACKGROUND_HUMIDITY = 50.0_dp !< [%] Relative humidity for non-specified points.
 
    ! Secchi depth variables
-   real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation
-   real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
-   real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation
-   real(kind=dp), parameter :: POOLE_ATKINS_PARAMETER = 1.7_dp !< [-] Parameter for conversion of Secchi depth to diffuse attenuation coefficient
+   real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation.
+   real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation.
+   real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation.
+   real(kind=dp), parameter :: POOLE_ATKINS_PARAMETER = 1.7_dp !< [-] Parameter for conversion of Secchi depth to diffuse attenuation coefficient.
 
-   real(kind=dp) :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
-   real(kind=dp) :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
-   real(kind=dp) :: temperature_max = -999.0_dp !< upper temperature limit
-   real(kind=dp) :: temperature_min = 0.0_dp !< lower temperature limit
-   logical :: use_salinity_freezing_point = .false. !< a flag to use a salinity dependent freezing point
-   real(kind=dp) :: salinity_max = -999.0_dp !< upper salinity limit
-   real(kind=dp) :: salinity_min = 0.0_dp !< lower salinity limit
-   real(kind=dp) :: epshstem = 0.001_dp !< only compute heatflx + evap if depth > trsh
-   real(kind=dp) :: surftempsmofac = 0.0_dp !< surface temperature smoothing factor (0 - 10^5)
-   real(kind=dp) :: Soiltempthick = 0.0_dp !< if soil buffer desired make thick > 0, e.g. 0.2 m
+   real(kind=dp) :: Stanton !< [-] Coeff for convective heat flux, if negative, take wind Cd.
+   real(kind=dp) :: Dalton !< [-] Coeff for evaporative heat flux, if negative, take wind Cd.
+   real(kind=dp) :: temperature_max = -999.0_dp !< [degC] Upper temperature limit.
+   real(kind=dp) :: temperature_min = 0.0_dp !< [degC] Lower temperature limit.
+   logical :: use_salinity_freezing_point = .false. !< [-] A flag to use a salinity dependent freezing point.
+   real(kind=dp) :: salinity_max = -999.0_dp !< [ppt] Upper salinity limit.
+   real(kind=dp) :: salinity_min = 0.0_dp !< [ppt] Lower salinity limit.
+   real(kind=dp) :: epshstem = 0.001_dp !< [m] Only compute heatflx + evap if depth > trsh.
+   real(kind=dp) :: surftempsmofac = 0.0_dp !< [-] Surface temperature smoothing factor (0 - 10^5).
+   real(kind=dp) :: Soiltempthick = 0.0_dp !< [m] If soil buffer desired make thick > 0, e.g. 0.2 m.
 
-   integer :: Jadelvappos !< only positive forced evaporation fluxes
-   real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
+   integer :: Jadelvappos !< [-] Only positive forced evaporation fluxes.
+   real(kind=dp) :: free_convection_coefficient !< [-] Free convection turbulence coefficient.
 
    real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents.
    real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion.
 
-   real(kind=dp) :: locsaltlev !< salinity level for case of lock exchange
-   real(kind=dp) :: locsaltmin !< minimum salinity for case of lock exchange
-   real(kind=dp) :: locsaltmax !< maximum salinity for case of lock exchange
+   real(kind=dp) :: locsaltlev !< [ppt] Salinity level for case of lock exchange.
+   real(kind=dp) :: locsaltmin !< [ppt] Minimum salinity for case of lock exchange.
+   real(kind=dp) :: locsaltmax !< [ppt] Maximum salinity for case of lock exchange.
 
-   integer :: NFEntrainmentMomentum = 0 !< 1: switched on: Momentum transfer in NearField related entrainment
+   integer :: NFEntrainmentMomentum = 0 !< [-] 1: switched on: Momentum transfer in NearField related entrainment.
 
 contains
 
