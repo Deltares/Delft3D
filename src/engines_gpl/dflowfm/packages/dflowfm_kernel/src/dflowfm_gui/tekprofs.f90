@@ -175,11 +175,11 @@ contains
             ustbref = sqcf * ugem ! ustb(LL)
             ustwref = ustw(LL)
 
-            viceld = vonkar * ustbref * h0 / 6.0_dp
+            viceld = VON_KARMAN * ustbref * h0 / 6.0_dp
 
             do k = kb, kt
                kk = k - kb + 1
-               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / vonkar
+               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / VON_KARMAN
             end do
 
             if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then
@@ -192,7 +192,7 @@ contains
                   zint = hwref(k) / h0
                   z1 = 1.0_dp - zint
                   zz = h0 * z1 * zint
-                  vicwref(k) = zz * ustbref * vonkar
+                  vicwref(k) = zz * ustbref * VON_KARMAN
                end do
                vicwref(0) = 0.0_dp
                vicwref(km) = 0.0_dp
@@ -223,7 +223,7 @@ contains
                tkin1ref(0) = turbulent_kinetic_energy_bottom
                teps1ref(0) = epsbot / (hwref(1) - hwref(0)) !  dzcs(kb)
 
-               dzkap = vonkar * 0.5_dp * (hwref(1) - hwref(0))
+               dzkap = VON_KARMAN * 0.5_dp * (hwref(1) - hwref(0))
                teps1ref(0) = epsbot / dzkap
                vicwref(0) = ustbref * dzkap
                vicwref(km) = 0.0_dp

@@ -44,7 +44,7 @@ contains
    !! sqrt(g/C2) in both in 2D and in 3D
    subroutine setcfuhi()
       use precision, only: dp
-      use m_flow, only: jatrt, frcmax, ifrctypuni, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, vonkar, sag, epsz0, z0urou
+      use m_flow, only: jatrt, frcmax, ifrctypuni, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, VON_KARMAN, sag, epsz0, z0urou
       use m_flowgeom, only: lnx, lnx1d
       use m_get_chezy, only: get_chezy
 
@@ -79,7 +79,7 @@ contains
                   if (frcn > 0.0_dp) then
                      cz = get_chezy(h0, frcn, u1(L), v(L), ifrcutp(L))
                      cfuhi(L) = ag / (h0 * cz * cz)
-                     z0ucur(L) = h0 * exp(-1.0_dp - vonkar * cz / sag)
+                     z0ucur(L) = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
                   else
                      cfuhi(L) = 0.0_dp
                      z0ucur(L) = epsz0

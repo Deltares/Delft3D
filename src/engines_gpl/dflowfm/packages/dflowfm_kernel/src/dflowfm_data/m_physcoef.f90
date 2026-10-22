@@ -41,8 +41,10 @@ module m_physcoef
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
-   real(kind=dp), parameter :: vonkar = 0.41_dp !< von Karman constant ()
-   real(kind=dp), parameter :: vonkarw = 0.40_dp !< von Karman constant used in wind formulations
+
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant.
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations.
+
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
@@ -76,7 +78,7 @@ module m_physcoef
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp), parameter :: c9of1 = 9.0_dp !< vonkar/log(c9of1 + dzb / z0)
+   real(kind=dp), parameter :: c9of1 = 9.0_dp !< VON_KARMAN/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
    real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
