@@ -236,16 +236,12 @@
      var_name = "ucx_mor"
   case(103)
      var_name = "ucy_mor"
-  case(104)
-     var_name = "sa0"
   case(105)
      var_name = "sa1"
   case(106)
      var_name = "satop"
   case(107)
      var_name = "sabot"
-  case(108)
-     var_name = "tem0"
   case(109)
      var_name = "tem1"
   case(110)
