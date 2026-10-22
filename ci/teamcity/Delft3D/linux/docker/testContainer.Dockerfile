@@ -5,6 +5,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /usr/local/bin/uv
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_NO_CACHE_DIR=1
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV UV_PYTHON_BIN_DIR=/usr/local/bin
 ENV PATH=/usr/local/bin:$PATH
 # Unset variable value because of libcurl version conflict.
 ENV LD_LIBRARY_PATH=
@@ -23,8 +24,7 @@ RUN set -eo pipefail && \
 
 # AlmaLinux 8 repositories do not provide Python 3.14.
 RUN set -eo pipefail && \
-    uv python install 3.14 && \
-    ln -s "$(uv python find --managed-python 3.14)" /usr/local/bin/python3 && \
+    uv python install 3.14 --default && \
     python3 -c 'import sys; assert sys.version_info[:2] == (3, 14), sys.version'
 
 # Install pip
