@@ -52,7 +52,7 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        rhomean, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, lnxi
@@ -77,6 +77,7 @@ contains
       real(kind=dp) :: zz, z00, ac1, ac2
       real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
       real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
+      real(kind=dp), dimension(kmxx) :: bruva
       real(kind=dp) :: buoyancy_flux !< [k: m2/s3, epsilon m2/s4] Buoyancy flux.
       real(kind=dp) :: epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
