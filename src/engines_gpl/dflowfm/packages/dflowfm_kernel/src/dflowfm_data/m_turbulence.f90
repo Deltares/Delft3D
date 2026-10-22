@@ -59,7 +59,6 @@ module m_turbulence
    integer, parameter :: TURB_LAX_CONNECTED = 2
 
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
-   real(kind=dp) :: buoflu(kmxx)
    real(kind=dp) :: bruva(kmxx)
 
    real(kind=dp) :: ak(0:kmxx)

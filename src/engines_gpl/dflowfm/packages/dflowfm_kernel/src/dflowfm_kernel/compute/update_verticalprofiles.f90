@@ -52,7 +52,7 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        rhomean, bruva, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, lnxi
@@ -77,6 +77,7 @@ contains
       real(kind=dp) :: zz, z00, ac1, ac2
       real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
       real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
+      real(kind=dp) :: buoyancy_flux !< [k: m2/s3, epsilon m2/s4] Buoyancy flux.
       real(kind=dp) :: epsbot, epssur
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
@@ -331,6 +332,7 @@ contains
                   end if
                end if
 
+               ! Setting up system of equations for turbulent kinetic energy (k)
                do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
@@ -367,24 +369,24 @@ contains
                      else ! Weighted average
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
-                     buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
+                     buoyancy_flux = max(vicwwu(L), vicwminb) * bruva(k)
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
                      if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                         if (bruva(k) > 0.0_dp) then
-                           dk(k) = dk(k) + buoflu(k)
-                           bk(k) = bk(k) + 2.0_dp * buoflu(k) / turbulent_kinetic_energy_wu_old (L)
+                           dk(k) = dk(k) + buoyancy_flux
+                           bk(k) = bk(k) + 2.0_dp * buoyancy_flux / turbulent_kinetic_energy_wu_old (L)
                            ! EdG: make buoyance term in matrix safer
-                           !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turbulent_kinetic_energy_wu_old (L), 1d-20)
+                           !  bk(k) = bk(k) + 2.0_dp*buoyancy_flux(k) / max(turbulent_kinetic_energy_wu_old (L), 1d-20)
                         elseif (bruva(k) < 0.0_dp) then
-                           dk(k) = dk(k) - buoflu(k)
+                           dk(k) = dk(k) - buoyancy_flux
                         end if
                      else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                         if (bruva(k) > 0.0_dp) then
-                           bk(k) = bk(k) + buoflu(k) / turbulent_kinetic_energy_wu_old (L)
+                           bk(k) = bk(k) + buoyancy_flux / turbulent_kinetic_energy_wu_old (L)
                         else if (bruva(k) < 0.0_dp) then
-                           dk(k) = dk(k) - buoflu(k)
+                           dk(k) = dk(k) - buoyancy_flux
                         end if
                      end if
                   end if
