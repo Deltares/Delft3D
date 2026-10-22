@@ -421,7 +421,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                  & r(yz)       ,r(guu)      ,r(gvv)      ,r(guv)      ,r(gvu)      , &
                  & r(gsqs)     ,r(gsqd)     ,r(guz)      ,r(gvz)      ,r(gud)      , &
                  & r(gvd)      ,r(gsqiu)    ,r(gsqiv)    ,gdp         )
-    ! INIPHY: set initial values for IRO, Z0, VONKAR, VICOM & SBOLTZ
+    ! INIPHY: set initial values for IRO, Z0, vonkar, VICOM & SBOLTZ
     !         and re-define ANGLAT and GRDANG for SFERIC = .true.
     !
     call iniphy(iro       ,z0        ,vonkar    ,vicmol    ,sboltz    , &

@@ -239,7 +239,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     real(fp)     :: rz
     real(fp)     :: s
     real(fp)     :: timest
-    real(fp)     :: tkebot
+    real(fp)     :: turbulent_kinetic_energy_at_bottom
     real(fp)     :: tkewin
     real(fp)     :: tkewav
     real(fp)     :: us
@@ -963,11 +963,11 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                           & + kfv(nm )*z0vrou(nm ) ) / ken
                    rz     = 1.0 + dz/z0s
                    s      = log(rz) / vonkar
-                   tkebot = utot*utot/(s*s*sqrt(cmukep))
+                   turbulent_kinetic_energy_at_bottom = utot*utot/(s*s*sqrt(cmukep))
                    aak(nm, kmin - 1) = 0.0
                    bbk(nm, kmin - 1) = 1.0
                    cck(nm, kmin - 1) = 0.0
-                   ddk(nm, kmin - 1) = cewall*tkebot**1.5/z0s
+                   ddk(nm, kmin - 1) = cewall*turbulent_kinetic_energy_at_bottom**1.5/z0s
                    !
                    ! Only perform additional specification of boundary flux for epsilon
                    ! when more than 1 layer is active
