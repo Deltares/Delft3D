@@ -87,7 +87,6 @@ module m_physcoef
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
    real(kind=dp), parameter :: difmolsal = VISKIN / 700.0_dp !< molecular diffusivity of salinity
    real(kind=dp), parameter :: difmoltem = VISKIN / 6.7_dp !< diffusivity of temperature
-   integer, parameter :: difmolsed = 0 !< diffusivity of sediment
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
    real(kind=dp) :: tracer_concentration_min !< lower limit for tracer concentration
@@ -111,8 +110,6 @@ module m_physcoef
    real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
    real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation
    real(kind=dp), parameter :: POOLE_ATKINS_PARAMETER = 1.7_dp !< [-] Parameter for conversion of Secchi depth to diffuse attenuation coefficient
-
-   integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
    real(kind=dp) :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
    real(kind=dp) :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
@@ -172,7 +169,6 @@ contains
       idensform = 2
       apply_thermobaricity = .false.
       thermobaricity_in_pressure_gradient = .false.
-      limiterhordif = 2
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp
       Jadelvappos = 0
