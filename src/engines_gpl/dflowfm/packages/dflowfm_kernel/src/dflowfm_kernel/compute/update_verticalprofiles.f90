@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, VON_KARMAN, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -165,7 +165,7 @@ contains
                do L = Lb, Lt
                   zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic
                   !           zz       = hu(L)*sqrt( ( 1.0_dp - hu(L)/ hu(LL) ) )     ! Bakhmetev
-                  vicwwu(L) = zz * ustb(LL) * vonkar
+                  vicwwu(L) = zz * ustb(LL) * VON_KARMAN
                end do
 
                call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
@@ -262,7 +262,7 @@ contains
                tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
 
                if (ieps == 3) then ! as Delft3D
-                  vicwwu(Lb0) = vonkar * ustb(LL) * z00
+                  vicwwu(Lb0) = VON_KARMAN * ustb(LL) * z00
                end if
 
                turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
@@ -301,7 +301,7 @@ contains
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
-                        tkesur = tkesur + (pkwmag * vonkar * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
+                        tkesur = tkesur + (pkwmag * VON_KARMAN * fwavpendep * hrmsLL / (30.0_dp * cde))**(2.0_dp / 3.0_dp)
                      else
                         pkwmag = 0.0_dp
                      end if
@@ -660,7 +660,7 @@ contains
                   ak(kxL) = -1.0_dp ! Flux at the free surface:
                   bk(kxL) = 1.0_dp
                   ck(kxL) = 0.0_dp
-                  dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
+                  dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
                   if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
                      dk(kxL) = dk(kxL) + dzu(Lt - Lb + 1) * pkwmag / (fwavpendep * hrmsLL)
                   end if
@@ -669,7 +669,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = -1.0_dp
                   if (ustb(LL) > 0 .and. kxL > 1) then
-                     dk(0) = dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
+                     dk(0) = dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -685,7 +685,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = 0.0_dp
                   if (ustb(LL) > 0) then
-                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
+                     dk(0) = VON_KARMAN * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -766,13 +766,13 @@ contains
                         k2 = ln(1, L)
                         tke = tkebot * z1 + tkesur * zint
                         zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic visc
-                        vicwww = zz * max(0.001_dp, ustb(LL)) * vonkar
+                        vicwww = zz * max(0.001_dp, ustb(LL)) * VON_KARMAN
                         eps = cmukep * tke * tke / vicwww
                         turkin1(L) = tke * (1.0_dp - alfaT) + alfaT * turkin1(L)
                         tureps1(L) = eps * (1.0_dp - alfaT) + alfaT * tureps1(L)
                      end do
-                     epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
-                     epssur = tureps1(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
+                     epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (VON_KARMAN * hdzb * hdzb)
+                     epssur = tureps1(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (VON_KARMAN * dzu(Lt - Lb + 1))
                      if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if

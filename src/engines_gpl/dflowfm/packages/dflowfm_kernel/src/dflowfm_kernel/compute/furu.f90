@@ -342,16 +342,16 @@ contains
                else if (abs(u1(Lb)) > 1.0e-4_dp .and. z00 > 0.0_dp) then
                   if (jaustarint == 0 .or. jaustarint == 3 .or. jaustarint == 1) then
                      dzb = hu(L) + c9of1 * z00
-                     sqcfi = (log(dzb / z00) - 1.0_dp) / vonkar
+                     sqcfi = (log(dzb / z00) - 1.0_dp) / VON_KARMAN
                   else if (jaustarint == 2) then
                      dzb = hu(L) / ee + c9of1 * z00
-                     sqcfi = (log(dzb / z00)) / vonkar
+                     sqcfi = (log(dzb / z00)) / VON_KARMAN
                   else if (jaustarint == 4) then
                      dzb = hu(L) / ee + c9of1 * z00 * 0.66_dp
-                     sqcfi = (log(dzb / z00)) / vonkar
+                     sqcfi = (log(dzb / z00)) / VON_KARMAN
                   else if (jaustarint == 5) then
                      dzb = hu(L)
-                     sqcfi = ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp) / vonkar
+                     sqcfi = ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp) / VON_KARMAN
                   end if
                   qk1 = hu(L) * ustbLL * sqcfi ! integral flux till level k
                   ru(L) = (qk1 - qk0) / (hu(L) - hu(L - 1))

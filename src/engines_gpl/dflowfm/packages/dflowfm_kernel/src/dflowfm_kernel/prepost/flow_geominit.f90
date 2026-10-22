@@ -1264,7 +1264,7 @@ contains
             call normalin(xk(k3), yk(k3), xk(k4), yk(k4), cs, sn, xh, yh, jsferic, jasfer3D, dxymis)
 
             if (wall_z0 > 0) then
-               sf = vonkar / log(c9of1 + dis / wall_z0)
+               sf = VON_KARMAN / log(c9of1 + dis / wall_z0)
                ! us  = utangential, un = unormal
                ! us  = ucx*cs + ucy*sn, ustar = sf*us
                walls(6, nw) = sf ! sux = -cs*ustar

@@ -31,24 +31,28 @@
 !! Modules with global data.
 !! call default_*() routines upon program startup and when loading a new MDU.
 !! call only reset_*() routines when reinitialising an active flow model.
-
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_array_or_scalar, only: t_array_or_scalar
+   
    implicit none(type, external)
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
-   real(kind=dp), parameter :: vonkar = 0.41_dp !< von Karman constant ()
-   real(kind=dp), parameter :: vonkarw = 0.40_dp !< von Karman constant used in wind formulations
+
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< von Karman constant ()
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< von Karman constant used in wind formulations
+
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
+
    real(kind=dp), parameter :: frcunistreetinlet = 0.035_dp
    real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035_dp
    real(kind=dp), parameter :: frcuniroof = 0.030_dp
+
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
    integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
@@ -76,7 +80,7 @@ module m_physcoef
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp), parameter :: c9of1 = 9.0_dp !< vonkar/log(c9of1 + dzb / z0)
+   real(kind=dp), parameter :: c9of1 = 9.0_dp !< VON_KARMAN/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
    real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
