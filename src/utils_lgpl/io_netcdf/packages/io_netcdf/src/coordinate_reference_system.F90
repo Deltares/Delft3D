@@ -283,7 +283,7 @@ end function get_proj_string_from_epsg
    end subroutine
 
    !> Transforms input arrays of projected x/y coordinates into lon/lat coordinates and directly writes them to a NetCDF dataset.
-   subroutine transform_and_put_latlon_coordinates(ncid, varid_lon, varid_lat, src_proj_string, src_x, src_y, start, count)
+   function transform_and_put_latlon_coordinates(ncid, varid_lon, varid_lat, src_proj_string, src_x, src_y, start, count) result(ierr)
       implicit none
 
       integer,                                         intent(in) :: ncid            !< NetCDF data set id.
@@ -297,7 +297,7 @@ end function get_proj_string_from_epsg
 
 
       real(kind=kind(1d0)), dimension(:), allocatable :: lon, lat
-      integer :: ierr
+      integer :: ierr !< Result status (NF90_NOERR if successful)
       integer, dimension(:), allocatable :: start_, count_
 
       if (present(start)) then
@@ -322,14 +322,11 @@ end function get_proj_string_from_epsg
       call transform_coordinates(src_proj_string, WGS84_PROJ_STRING, src_x, src_y, lon, lat)
       ierr = nf90_put_var(ncid, varid_lon, lon, start = start_, count = count_)
       if (ierr /= nf90_noerr) then
-         call mess(LEVEL_ERROR, 'transform_and_put_latlon_coordinates: writing longitude: '//trim(nf90_strerror(ierr)))
+         return
       end if
       ierr = nf90_put_var(ncid, varid_lat, lat, start = start_, count = count_)
-      if (ierr /= nf90_noerr) then
-         call mess(LEVEL_ERROR, 'transform_and_put_latlon_coordinates: writing latitude: '//trim(nf90_strerror(ierr)))
-      end if
 !   end if
-   end subroutine
+   end function transform_and_put_latlon_coordinates
 #endif
 
 end module coordinate_reference_system
