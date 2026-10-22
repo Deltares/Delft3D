@@ -243,10 +243,12 @@ TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesPropagatesValidationErrorWith
 {
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
     ASSERT_TRUE(settings.has_value()) << settings.error().message;
-    pre_c_sumo::Mesh mesh_2d{.coordinates = {1.0, 2.0},
-                             .forward_map = {pre_c_sumo::DiffuserMapping{}},
-                             .quantities = {{pre_c_sumo::water_levels_id, {0.0}}, {pre_c_sumo::bed_levels_id, {1.0}}}};
-    pre_c_sumo::Mesh mesh_3d{.forward_map = {pre_c_sumo::DiffuserMapping{}}};
+    pre_c_sumo::Mesh mesh_2d{};
+    mesh_2d.coordinates = {1.0, 2.0};
+    mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{}};
+    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0.0}}, {pre_c_sumo::bed_levels_id, {1.0}}};
+    pre_c_sumo::Mesh mesh_3d{};
+    mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{}};
     pre_c_sumo::FF2NFFileOperations file_operations;
     file_operations.create_directories =
         [](const std::filesystem::path&) -> std::expected<void, pre_c_sumo::WriteError> {
