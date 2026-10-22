@@ -47,7 +47,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, VON_KARMAN, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, VON_KARMAN, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, THETA_KEPS_DIFFUSION, &
                         EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -215,7 +215,7 @@ contains
             end do
          end if
 
-         tetm1 = 1.0_dp - tetavkeps
+         tetm1 = 1.0_dp - THETA_KEPS_DIFFUSION
          dtiL = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
@@ -326,10 +326,10 @@ contains
                   dzdz2 = dzw(k) * dzu(ku)
                   difu = vicu / dzdz2
 
-                  ak(k) = ak(k) - difd * tetavkeps
-                  bk(k) = bk(k) + (difd + difu) * tetavkeps
-                  ck(k) = ck(k) - difu * tetavkeps
-                  if (tetavkeps /= 1.0_dp) then
+                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
                      dk(k) = dk(k) - difu * (turkin0(L) - turkin0(Lu)) * tetm1 &
                              + difd * (turkin0(L - 1) - turkin0(L)) * tetm1
                   end if
@@ -590,10 +590,10 @@ contains
                   dzdz2 = dzw(k) * dzu(ku)
                   difu = vicu / dzdz2
 
-                  ak(k) = ak(k) - difd * tetavkeps
-                  bk(k) = bk(k) + (difd + difu) * tetavkeps
-                  ck(k) = ck(k) - difu * tetavkeps
-                  if (tetavkeps /= 1.0_dp) then
+                  ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
+                  bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
+                  ck(k) = ck(k) - difu * THETA_KEPS_DIFFUSION
+                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
                      dk(k) = dk(k) - difu * (tureps0(L) - tureps0(Lu)) * tetm1 &
                              + difd * (tureps0(L - 1) - tureps0(L)) * tetm1
                   end if
