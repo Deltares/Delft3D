@@ -73,7 +73,7 @@ contains
 
       real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
-      real(kind=dp) :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu
+      real(kind=dp) :: vicu, vicd, difu, difd, sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2
       real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
       real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
@@ -343,11 +343,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  dzdz1 = dzw(k) * dzu(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzw(k) * dzu(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / dzw(k) * dzu(k)
+                  difu = vicu / dzw(k) * dzu(ku)
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
@@ -607,11 +604,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  dzdz1 = dzw(k) * dzu(k)
-                  difd = vicd / dzdz1
-
-                  dzdz2 = dzw(k) * dzu(ku)
-                  difu = vicu / dzdz2
+                  difd = vicd / dzw(k) * dzu(k)
+                  difu = vicu / dzw(k) * dzu(ku)
 
                   ak(k) = ak(k) - difd * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (difd + difu) * THETA_KEPS_DIFFUSION
