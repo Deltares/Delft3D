@@ -1,44 +1,41 @@
-module m_getustbcfuhi
+!----- AGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
+module m_get_ustb_cfuhi
    use m_getvanrijnwci
    use m_waveconst
 
-   implicit none
+   implicit none(type, external)
 
 contains
 
-   !----- AGPL --------------------------------------------------------------------
-   !
-!  Copyright (C)  Stichting Deltares, 2017-2026.
-   !
-   !  This file is part of Delft3D (D-Flow Flexible Mesh component).
-   !
-   !  Delft3D is free software: you can redistribute it and/or modify
-   !  it under the terms of the GNU Affero General Public License as
-   !  published by the Free Software Foundation version 3.
-   !
-   !  Delft3D  is distributed in the hope that it will be useful,
-   !  but WITHOUT ANY WARRANTY; without even the implied warranty of
-   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   !  GNU Affero General Public License for more details.
-   !
-   !  You should have received a copy of the GNU Affero General Public License
-   !  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-   !
-   !  contact: delft3d.support@deltares.nl
-   !  Stichting Deltares
-   !  P.O. Box 177
-   !  2600 MH Delft, The Netherlands
-   !
-   !  All indications and logos of, and references to, "Delft3D",
-   !  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-   !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-   !
-   !-------------------------------------------------------------------------------
-
-   !
-   !
-
-   subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
+   subroutine get_ustb_cfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
       use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
@@ -382,6 +379,6 @@ contains
          cfuhi3D = cfuhi3D + frculin(LL) / hu(Lb)
       end if
 
-   end subroutine getustbcfuhi
+   end subroutine get_ustb_cfuhi
 
-end module m_getustbcfuhi
+end module m_get_ustb_cfuhi

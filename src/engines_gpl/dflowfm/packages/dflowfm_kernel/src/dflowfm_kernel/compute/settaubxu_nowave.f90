@@ -72,7 +72,7 @@ contains
             if (frcu(L) > 0.0_dp) then ! input, or result from trachytopes
                cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                z0urou(L) = max(1.0e-200_dp, hu(L) * exp(-1.0_dp - vonkar * cz / sag)) ! getczz0
-               rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with getustbcfuhi
+               rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with get_ustb_cfuhi
                cz = log(rz) / vonkar
                cwall = 1.0_dp / (cz**2)
                umod2 = velocity_pointer(LB) * velocity_pointer(LB) + v(Lb) * v(Lb)

@@ -32,7 +32,7 @@
 
 module m_furu
    use m_update_verticalprofiles, only: update_verticalprofiles
-   use m_getustbcfuhi
+   use m_get_ustb_cfuhi
    use m_furu_structures
    use m_furusobekstructures
    use m_waveconst
@@ -322,7 +322,7 @@ contains
             end if
             vLL = v(LL)
             v(LL) = 0.0_dp
-            call getustbcfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
+            call get_ustb_cfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
             ! JRE with HK, used to be in getustb
             if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM) then ! Ustokes correction at bed
                adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)

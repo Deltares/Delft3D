@@ -44,7 +44,7 @@ contains
    !!       Build a vertical tri-diagonal system to solve the k-equation. Idem for the the eps-equation.
    !! Update vicww (iturbulencemodel>=2)
    subroutine update_verticalprofiles()
-      use m_getustbcfuhi, only: getustbcfuhi
+      use m_get_ustb_cfuhi, only: get_ustb_cfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, turbulent_kinetic_energy_wu, turbulent_dissipation_wu, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
@@ -119,7 +119,7 @@ contains
                   dzu(k) = hu(L) - hu(L - 1)
                end do
 
-               call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
+               call get_ustb_cfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
                if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
@@ -154,7 +154,7 @@ contains
                   dzu(k) = hu(L) - hu(L - 1)
                end do
 
-               call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
+               call get_ustb_cfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
                if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
@@ -270,7 +270,7 @@ contains
                   dzw(k) = 0.5_dp * (dzu(k) + dzu(k + 1))
                end do
 
-               call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
+               call get_ustb_cfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
 
                if (hu(LL) < trsh_u1Lb) then
                   advi(Lb:Lt) = advi(Lb:Lt) + cfuhi3D / real(Lt - Lb + 1, kind=dp)
