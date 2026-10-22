@@ -1,125 +1,93 @@
-# D-Waves online pathway with Delft3D4 FLOW
+# Delft3D4-D-Waves communication model
 
-This page describes the classic structured-grid `d_hydro` / WAVE process
-pair. Delft3D4 FLOW and D-Flow FM are distinct engines: this pathway uses
-DelftIO for step synchronization and legacy FLOW com-files for gridded
-fields. Mode 2 is a fluid-mud extension of this pathway.
+**Delft3D4 owns the time loop. DelftIO carries commands/status;
+Delft3D4 NEFIS com-files carry fields.** Delft3D4 and D-Waves are separately
+launched processes. This is not the D-Flow FM/DIMR route.
 
-## Detailed diagram
+![Delft3D4 communication model](../include/dwaves_pathway_delft3d4_detailed.svg)
 
-![Detailed Delft3D4 FLOW-D-Waves pathway](../include/dwaves_pathway_delft3d4_detailed.svg)
+[DOT source](../include/dwaves_pathway_delft3d4_detailed.dot)
 
-Graphviz source: [DOT](../include/dwaves_pathway_delft3d4_detailed.dot).
+## Participants and channels
 
-## Startup and initialization
+| Channel | Sender/writer | Receiver/reader | Contents |
+|---|---|---|---|
+| DelftIO | Delft3D4 | D-Waves | Initialization metadata, step/time and finalize commands. |
+| DelftIO | D-Waves | Delft3D4 | Calculation completion/status. |
+| Delft3D4 NEFIS com-files | Delft3D4 | D-Waves | Selected hydrodynamic fields on Delft3D4 grids. |
+| Same com-files | D-Waves, with `WriteCOM` | Delft3D4 | Wave fields already mapped onto Delft3D4 grids. |
+| D-Waves/SWAN staged files | D-Waves / SWAN | SWAN / D-Waves | Solver inputs, nesting boundaries and results; internal to D-Waves execution. |
 
-The coupled-run script starts `d_hydro` and `wave <mdw-file> 1` as separate
-processes. The WAVE mode argument selects `flow_online = 1`; a blank
-`swan_run%flowgridfile` selects the classic DelftIO route. WAVE does not call
-Delft3D4 FLOW's `tricom_init`: FLOW reaches that routine through its own
-`trisim` / `trisim_init` initialization path.
+`WaveOL` configures Delft3D4's online behavior; it does not launch D-Waves.
+The launcher starts both processes. Mode 1 and a blank D-Flow FM
+`[Output] COMFile` select the classic D-Waves handshake.
 
-On the FLOW side, the MDF `WaveOL` option determines whether the FLOW engine
-uses offline, mimic, or online behavior; online coupling initializes DelftIO
-when wave support is enabled. That FLOW-side setting does not launch WAVE:
-both processes must be started and configured to rendezvous.
+**Com-file format.** Delft3D4's `FLNcdf` keyword can make the Delft3D4 map,
+Fourier, history and drogue files NetCDF, but the com-file cannot: Delft3D4
+stops when `com` or `all` is listed. The D-Waves coupling com-file is therefore
+always NEFIS (`com-<runid>.dat/def`). D-Waves' NetCDF com-file reader expects
+the D-Flow FM unstructured layout and is not a Delft3D4 route.
 
-On the WAVE side, `flow_init` waits for FLOW's DelftIO initialization,
-receives domain identifiers and timing information, and establishes the
-classic connection. WAVE then initializes FLOW and SWAN grids and prepares
-the spatial maps. File/grid setup and field acquisition are separate:
-`flow_init` establishes the connection, while `get_flow_fields` reads
-configured fields during each WAVE calculation.
+## Startup and repeated exchange
 
-## Step synchronization and data channels
+1. Delft3D4 initializes its DelftIO connection; D-Waves receives domain
+   identifiers and time metadata, reads geometry and prepares maps.
+2. Delft3D4 advances internal timesteps to a configured wave-coupling point.
+   All participating Delft3D4 domains update their com-files before the master
+   requests a D-Waves calculation.
+3. D-Waves receives the step/time, reads selected Delft3D4 fields and maps them to
+   each SWAN grid. It runs the grids in configured order, including nested
+   computations using parent boundary output.
+4. D-Waves accumulates mapped results on Delft3D4 grids and writes the com-files
+   (`WriteCOM` is mandatory online). It then reports completion through DelftIO.
+5. Delft3D4's command call returns; it reads wave fields through `setwav` at
+   its read point and continues its time loop. D-Waves waits for the next
+   command. Delft3D4 sends finalize at the end.
 
-Delft3D4 FLOW owns the simulation time loop. At its configured wave/com-file
-coupling points (`itwav = itcomc`), the FLOW time loop issues a perform-step
-command and timestep index through DelftIO. WAVE receives the command, updates
-its time with `settimtscale`, runs the calculation, then reports completion.
-FLOW waits for that status before continuing. WAVE is called at the configured
-coupling cadence, not necessarily at every internal FLOW timestep.
+The coupling interval need not equal Delft3D4's numerical timestep. The
+com-files are the shared field store, not a replacement for synchronization.
+Delft3D4 input selections gate which fields D-Waves reads; the writeback path is
+always active online because `WriteCOM` is mandatory.
+For this Delft3D4 pathway, D-Waves starts SWAN as a separate executable, which
+uses OpenMP for parallelization. This is distinct from Delft3D4 domain
+partitioning; the DelftIO command/status exchange does not run SWAN as a
+D-Waves MPI library collective.
 
-The control and field channels have different roles:
+## Mapping and parallel execution
 
-| Channel | Contents |
+D-Waves prepares both mapping directions per Delft3D4/SWAN grid pair using
+`make_grid_map`/`mkmap`; `grmap` applies the stored weights each calculation.
+Delft3D4 and SWAN grids may differ in resolution and extent.
+
+For partitioned Delft3D4 runs, all domain com-files must be ready; the master
+partition performs the D-Waves command/status exchange while other partitions
+wait. This Delft3D4 partition coordination is separate from SWAN's OpenMP
+parallelism. The SWAN-grid/nest loop remains sequential; nests are not
+Delft3D4 partitions or MPI ranks.
+
+## Fluid-mud extension: preserve both dependencies
+
+Mode 2 adds a **second connection to the mud model**. D-Waves waits for both
+water and mud commands, reads mud density, viscosity, depth and level,
+and reports completion to both. The implementation requires one water
+domain and one mud domain with identical grids. This restriction concerns
+the water/mud grids, not the SWAN grid.
+
+This is a classic Delft3D4 extension, not a D-Flow FM/BMI mud capability or a
+general suspended-sediment option. Mode parsing alone does not establish
+the required mud connection; the D-Flow FM file branch does not initialize it.
+
+## Implementation links
+
+| Responsibility | Entry points |
 |---|---|
-| DelftIO `FLOW2WAVE_DATA` / `WAVE2FLOW_DATA` (and the corresponding MUD streams in mode 2) | Initialization, step/finalize commands, FLOW timestep index, and WAVE completion status. |
-| Legacy FLOW com-file(s), usually `com-<runid>` | Gridded FLOW fields read by WAVE and, when `WriteCOM` is enabled, selected WAVE results written back for FLOW. |
+| Launch and Delft3D4 initialization | [launcher](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh#L136), [trisim](../../../flow2d3d/packages/flow2d3d_manager/src/trisim.F90#L131), [tricom_init](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90#L1478) |
+| Delft3D4 writes, synchronization and wave reads | [tricom_step: postpr and rwbotc](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L670), [master command / partition wait](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L734), [setwav call](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L826) |
+| Command/status protocol | [sync_flowwave](../../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90#L330), [wave_master_step](../../packages/manager/src/wave_main.f90#L405) |
+| Remapping and grid loop | [grids_and_gridmaps](../../packages/kernel/src/grids_and_gridmaps.f90#L165), [get_flow_fields](../../packages/io/src/get_flow_fields.f90#L102), [swan_tot](../../packages/manager/src/swan_tot.f90#L106) |
+| Water/mud dependencies | [connection setup](../../packages/data/src/flow_data.f90#L139), [mud-field reads](../../packages/io/src/get_flow_fields.f90#L317), [SWAN mud input](../../packages/data/src/swan_input.f90#L3676) |
+| Com-file format (NEFIS only) | [FLNcdf parsing](../../../flow2d3d/packages/flow2d3d_io/src/input/rdprfl.f90#L140), [com rejected](../../../flow2d3d/packages/flow2d3d_io/src/input/rdprfl.f90#L162), [D-Waves NEFIS writeback branch](../../packages/io/src/put_wave_fields.f90#L18), [D-Waves NetCDF reader (D-Flow FM layout)](../../packages/io/src/get_var_netcdf.f90#L128) |
+| D-Waves MPI coordination | [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385), [run_swan](../../packages/kernel/src/run_swan.f90#L90), [worker barrier](../../packages/kernel/src/run_swan_slave.f90#L60) |
 
-DelftIO does not carry the gridded hydrodynamic or wave fields. WAVE reads
-configured bed level, water level, velocity, wind or other selected inputs
-from the legacy com-file through helpers such as `get_dep`, `get_lev`,
-`get_cur` and `get_wind`. FLOW-current vector conversion (`flow2wav`) is
-distinct from spatial interpolation. WAVE maps the fields from the FLOW
-grid(s) onto each SWAN grid using the precomputed map.
-
-When `[Output] WriteCOM` is enabled, WAVE maps selected SWAN outputs back to
-the FLOW grid, converts them for the legacy communication format, and writes
-them with `put_wave_fields`. FLOW discovers and reads the resulting wave
-record through `setwav` at its subsequent read point.
-
-## Grid mapping and calculation
-
-During WAVE initialization, `grids_and_gridmaps` prepares FLOW-to-SWAN and
-SWAN-to-FLOW maps for each configured grid pair. The classic route builds
-interpolation references and weights with `mkmap`; `grmap` applies those
-weights at runtime. Mapping weights are reused at each coupling point rather
-than recomputed for every field or timestep.
-
-The grids need not have identical dimensions or extents. Physical
-coordinates must be compatible, and FLOW domains/partitions should cover
-the parts of the SWAN computational grids that require FLOW forcing. The
-counts of SWAN grids, FLOW grids and MPI ranks are separate concepts.
-
-At each step `swan_tot` stages the SWAN inputs, calls `run_swan`, reads SWAN's
-results, and performs configured output mapping. The surrounding synchronization
-still uses DelftIO; the WAVE-to-SWAN input/output file interface is internal
-to WAVE and does not replace the FLOW-WAVE protocol.
-
-## Fluid-mud mode (mode 2)
-
-`flow_mud_online = 2` is a conditional extension of the classic mode-1
-pathway, not a separate driver, time loop, or FM/BMI feature. It adds:
-
-- A second mud-model connection and mud-domain identifiers.
-- A wait for both water FLOW and mud commands, and completion reporting to
-  both models.
-- Reads of mud density, viscosity, depth and level, which configure SWAN's
-  mud-layer input and physics.
-
-The implemented case requires one water domain and one mud domain with
-identical grids. It is not a general suspended-sediment switch.
-
-The manual's Appendix A.1.1 (printed pages 85–87) defines `FlowFile` as
-selecting online FLOW input and `FlowMudFile` as selecting the mud phase of
-a two-phase FLOW model. Those keyword descriptions do not specify the
-engine-specific branch behavior below; that distinction is verified against
-the current code.
-
-The parser's startup message saying that WAVE runs online with FLOW,
-including MUD, reports mode selection only. Nonblank `FlowFile` and
-`FlowMudFile` can assign mode 2, but this does not verify which route is
-selected or that the models have connected. With a nonblank FM
-`swan_run%flowgridfile`, `flow_init` takes the FM NetCDF branch and does not
-initialize the mud connection or `mudids` required by the mud-field reader.
-FM/BMI mud coupling is therefore not implemented by this path. The BMI
-wrapper also rejects the mode-2 end-time and timestep queries as not
-implemented.
-
-## Implementation references
-
-- [D-Waves User Manual, Appendix A.1.1](../include/D-Waves_User_Manual.pdf)
-  (printed pages 85–87): MDW `FlowFile` and `FlowMudFile` keyword descriptions.
-- [Delft3D4 coupled launcher](../../../flow2d3d/scripts/run_dflow2d3d_dwaves.sh#L131)
-- [Delft3D4 FLOW initialization path](../../../flow2d3d/packages/flow2d3d_manager/src/trisim.F90#L127)
-- [FLOW communication initialization](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_init.F90#L1478)
-- [FLOW coupling schedule and wave reads](../../../flow2d3d/packages/flow2d3d_manager/src/tricom_step.F90#L660)
-- [DelftIO synchronization commands and status](../../../../utils_lgpl/delftio/packages/delftio/src/delftio_sync/sync_flowwave.f90#L330)
-- [WAVE online loop and mode-2 waits](../../packages/manager/src/wave_main.f90#L405)
-- [Classic FLOW field reads and mapping](../../packages/io/src/get_flow_fields.f90#L102)
-- [Pairwise grid-map setup](../../packages/kernel/src/grids_and_gridmaps.f90#L165)
-- [Mode-2 connection setup](../../packages/data/src/flow_data.f90#L139)
-- [Mud-field input](../../packages/io/src/get_flow_fields.f90#L317)
-- [SWAN mud configuration](../../packages/data/src/swan_input.f90#L3676)
-- [FM branch in FLOW initialization](../../packages/data/src/flow_data.f90#L68)
+Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
+Appendix A.1.1 (`FlowFile` and `FlowMudFile`).

@@ -1,138 +1,94 @@
-# D-Waves pathway with D-Flow FM through DIMR/BMI
+# D-Flow FM-D-Waves communication model
 
-This page describes live D-Flow FM / WAVE orchestration through DIMR and the
-WAVE BMI library. The component lifecycle and timestep scheduling are
-controlled through BMI; gridded FM fields are exchanged through a NetCDF
-communication file, not through generic WAVE BMI field variables.
+**DIMR controls lifecycle and timing through BMI. D-Flow FM and D-Waves exchange
+fields through NetCDF com-files, not BMI field arrays.** D-Waves reads the
+D-Flow FM grid from those files and owns the spatial remapping in both directions.
 
-## Detailed diagram
+![D-Flow FM communication model](../include/dwaves_pathway_fm_bmi_detailed.svg)
 
-![Detailed D-Flow FM / BMI D-Waves pathway](../include/dwaves_pathway_fm_bmi_detailed.svg)
+[DOT source](../include/dwaves_pathway_fm_bmi_detailed.dot)
 
-Graphviz source: [DOT](../include/dwaves_pathway_fm_bmi_detailed.dot).
+## Participants and channels
 
-## DIMR and WAVE BMI lifecycle
+| Channel | Sender/writer | Receiver/reader | Contents |
+|---|---|---|---|
+| BMI calls | DIMR | D-Flow FM and D-Waves components | Initialize, update and finalize; D-Waves mode (`mode` variable) and communicator setup. |
+| NetCDF com-files | D-Flow FM | D-Waves | D-Flow FM geometry and selected hydrodynamic fields. |
+| Same com-files | D-Waves, with `WriteCOM` | D-Flow FM | Wave fields mapped onto the D-Flow FM grid; D-Flow FM reads through its external-forcing/EC path. |
+| D-Waves/SWAN staged files | D-Waves / SWAN | SWAN / D-Waves | Solver inputs, nesting boundaries and results, including in library mode. |
 
-The WAVE shared library exposes BMI `initialize`, `update` and `finalize`
-wrappers that delegate to `wave_main_init`, `wave_main_step(dt)` and
-`wave_main_finish`. DIMR initializes the designated master component first
-(normally D-Flow FM), sets the WAVE BMI `mode` to `flow_online = 1`, then
-initializes WAVE. DIMR subsequently schedules component updates and invokes
-WAVE's BMI `update(dt)` when WAVE is due.
+D-Flow FM writes its dedicated NetCDF communication format directly, usually
+`*_com.nc`; Delft3D4 instead uses NEFIS com-files.
+MDW `[Output] COMFile` selects the D-Flow FM file route. Input selections
+control which D-Flow FM fields D-Waves reads. Online D-Flow FM runs always
+require `WriteCOM = true` (D-Waves aborts otherwise), so wave writeback is not
+optional here.
 
-The WAVE BMI wrapper exposes `mode` and `engine_comm_world` through
-`get_var`, and accepts the `mode` key through `set_var`. It does not expose
-the SWAN grid or FM forcing fields as generic BMI variables. Nor is there a
-separate numeric FM mode: both FM/BMI and classic Delft3D4 online WAVE use
-mode 1; the configured file route selects the data path.
+## Startup and repeated exchange
 
-For the FM NetCDF route, MDW `[Output] COMFile` sets
-`swan_run%flowgridfile`. In non-standalone mode, WAVE advances its time by
-the `dt` supplied through BMI and performs one SWAN calculation per
-externally scheduled update. Initialization forces `nttide = 1` on this
-route so standalone MDW calculation-time lists do not cause multiple SWAN
-calculations inside one update. This is a number of calculation times, not a
-number of SWAN grids.
+1. In the normal D-Flow FM-master configuration, DIMR initializes D-Flow FM
+   first. Its initial external output creates/writes the geometry and initial
+   fields needed by D-Waves.
+2. DIMR sets D-Waves mode 1 and initializes it: when D-Waves is a `<start>` inside a
+   `<startGroup>` within a `<parallel>` block (the usual D-Flow FM coupling
+   layout), DIMR writes 1 to D-Waves' BMI `mode` variable before `initialize`.
+   A non-blank MDW `[General] FlowFile` forces mode 1 as well.
+   D-Waves checks the communication files, reads both grids and prepares maps for
+   each D-Flow FM-partition/SWAN-grid pair.
+3. DIMR advances components according to its configured schedule. D-Flow FM
+   uses internal numerical steps and writes com-file fields at its output
+   times; D-Waves' scheduled `update(dt)` advances its calculation time.
+4. Within that D-Waves update, D-Waves visits SWAN grids in configured order:
+   read/remap D-Flow FM fields, run SWAN, read results and accumulate any
+   D-Flow FM-grid output. Nested grids use parent-generated boundary output.
+5. D-Waves writes the accumulated wave fields (`WriteCOM` is mandatory online)
+   before returning from its update. D-Flow FM reads available wave fields
+   through EC during its forcing updates. The schedule repeats until DIMR
+   finalizes the components.
 
-The `[Output] COMFile` path is also available in standalone mode for reading
-saved FM output; in that case standalone scheduling applies. See the
-[standalone pathway](./D-Waves_pathway_standalone.md) for its file-backed
-and timing behavior.
+Coordinate the D-Waves schedule and D-Flow FM com-output times. The diagram
+separates responsibilities; it does not impose a universal D-Flow FM/D-Waves
+update order or imply simultaneous file access. DIMR does not transfer the
+gridded fields. Online D-Waves uses one calculation time per update, but can
+still run multiple SWAN grids/nests.
 
-## FM communication-file lifecycle
+## Mapping and parallel execution
 
-D-Flow FM writes a dedicated NetCDF communication file, usually named
-`*_com.nc`, directly from model state. This is not a conversion of ordinary
-FM map output to a classic Delft3D4 com-file.
+| Direction | Initialize once per grid pair | Apply at each calculation |
+|---|---|---|
+| D-Flow FM → SWAN | `make_grid_map` invokes ESMF weight generation and loads sparse weights. | `get_flow_fields` → `get_var_netcdf` → `grmap_esmf`. |
+| SWAN → D-Flow FM | `make_grid_map` → `mkmap` builds separate reference/weight tables. | With `WriteCOM`: `map_swan_output` → `grmap` → `wave2com` → `put_wave_fields`. |
 
-During DIMR initialization, the FM master component initializes first. Its
-initial external-output path calls `wricom` and creates/writes the
-communication file, including grid geometry and initial fields. DIMR then
-initializes WAVE. WAVE reads MDW configuration, checks the configured
-communication file(s) through `flow_init`, reads the FM and SWAN grids, and
-prepares spatial mappings before the first BMI update. It reads grid
-geometry from the file; it does not request the FM grid through a BMI
-`get_var` call.
+Both maps are constructed when D-Flow FM grids are initialized, even for
+read-only input. Reverse **application/writeback**, not map construction,
+requires `WriteCOM` (mandatory in online runs). Weights are reused throughout
+the run; the reverse map is not the inverse of the ESMF map. The legacy
+`wave2flow` conversion is not used.
 
-The manual's Section 5.4.1.1 (printed page 35) describes using D-Flow FM
-results from its communication file and says the associated com-file must
-be available in the working directory. Section 5.4.1.2 (printed page 36)
-describes the online-coupling timeframe, which is disabled by default in the
-manual's GUI workflow.
+D-Flow FM partitions, D-Waves MPI ranks and SWAN grids/nests are distinct.
+D-Waves reads the D-Flow FM partition com-files and constructs maps per grid pair.
+Within the D-Waves communicator, the master handles file I/O and remapping.
+For `SwanMode=lib`, workers join each `swan_lib` solve and synchronize before
+the master processes output files. The grid/nest loop is sequential, not
+one independent SWAN nest per rank. DIMR's `<parallel>` scheduling block
+should not be confused with either engine's spatial MPI decomposition.
 
-At calculation time, when `swan_run%useflowdata` is true, WAVE's
-`get_flow_fields` reads requested variables directly from the NetCDF
-communication file, including fields such as bed elevation, water level and
-velocity. It then maps those fields onto the SWAN computational grid.
-`[Output] COMFile` selects the file route, whereas FLOW input selections
-determine which fields WAVE reads.
+Standalone reading of existing D-Flow FM com-files uses the same mapping
+machinery without advancing D-Flow FM; see the
+[standalone model](./D-Waves_pathway_standalone.md).
+Mode-2 fluid mud remains a [Delft3D4-only extension](./D-Waves_pathway_delft3d4.md).
 
-FM updates the communication file from its external-output path at its
-configured output instants. DIMR's WAVE component schedule should be
-coordinated with this cadence so the required FM fields are available for
-each WAVE update. DIMR controls when components advance; the NetCDF file
-carries gridded fields between them.
+## Implementation links
 
-The manual's Section 5.4.9 (printed pages 60–61) explains the output-on-Flow-
-grid option and its communication-file requirement. Appendix A.1.3.4.2
-(printed page 94) gives an FM–D-Waves MDW example with `[Output] COMFile`
-and `WriteCOM`. These manual references cover configuration; the DIMR/BMI
-initialization order, file read/write sequence, and timing coordination
-above are established from source code.
-
-## Spatial mapping and optional writeback
-
-The FM-to-SWAN and SWAN-to-FM mapping paths are prepared separately for each
-configured FM-partition/SWAN-grid pair during WAVE initialization:
-
-| Direction | Setup and runtime behavior |
+| Responsibility | Entry points |
 |---|---|
-| FM → SWAN | WAVE generates/loads ESMF regridding weights for each pair. At runtime `get_flow_fields` reads the current FM values and `grmap_esmf` applies the stored sparse weights. |
-| SWAN → FM | If `[Output] WriteCOM` is enabled, WAVE builds an internal map with `mkmap`; `map_swan_output` applies it with `grmap` before `put_wave_fields` writes results to the NetCDF communication file. |
+| DIMR lifecycle and schedule | [runParallelInit and scheduler](../../../dimr/packages/dimr_lib/src/dimr.cpp#L429), [D-Waves mode 1 in a startGroup](../../../dimr/packages/dimr_lib/src/dimr.cpp#L515), [D-Waves mode 0 in a first start block](../../../dimr/packages/dimr_lib/src/bmi.cpp#L176), [example schedule](../../../../../examples/dflowfm/08_dflowfm_sequential_dwaves/dimr_config.xml) |
+| D-Waves BMI and grid setup | [wave_bmi](../../packages/wave/src/wave_bmi.f90#L63), [BMI mode variable](../../packages/wave/src/wave_bmi.f90#L308), [wave_init](../../packages/manager/src/wave_main.f90#L131), [grids_and_gridmaps](../../packages/kernel/src/grids_and_gridmaps.f90#L82) |
+| D-Flow FM writes communication fields | [flowinit initial output](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90#L263), [flow_externaloutput](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/flow_externaloutput.F90#L210), [wricom](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_io/wricom.f90#L44) |
+| D-Flow FM reads wave fields | [set_wave_parameters](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/fm_external_forcings_update.f90#L565), [set_all_wave_parameters / ecGetValues](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/timespace/fm_external_forcings_update.f90#L717) |
+| D-Waves remapping and writeback | [make_grid_map](../../packages/data/src/swan_flow_grid_maps.f90#L306), [get_flow_fields](../../packages/io/src/get_flow_fields.f90), [map_swan_output](../../packages/kernel/src/map_swan_output.f90), [swan_tot writeback](../../packages/manager/src/swan_tot.f90#L499) |
+| D-Waves MPI coordination | [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385), [run_swan](../../packages/kernel/src/run_swan.f90#L90), [worker barrier](../../packages/kernel/src/run_swan_slave.f90#L60) |
 
-The FM-to-SWAN mapping uses ESMF; the reverse SWAN-to-FM mapping does not.
-Weights are prepared once per grid pair per WAVE initialization and reused
-while grid geometry remains unchanged; they are not recomputed each timestep.
-With read-only FM input, only the FM-to-SWAN map is needed. The presence of
-an FM file does not make the exchange bidirectional.
-
-Flow input and FLOW-grid output are independent. `[Output] WriteCOM` can
-require FM communication-file and grid initialization even when
-`useflowdata` is false. For FM writeback, WAVE uses `wave2com` and
-`put_wave_fields`; the legacy `wave2flow` vector conversion is not used on
-this route. Writing WAVE results does not create a FLOW simulation or
-produce a complete set of FM results.
-
-## Mode-2 limitation
-
-Mode 2 (`flow_mud_online`) is implemented as a classic Delft3D4 fluid-mud
-extension and is not an FM/BMI coupling option. Although MDW parsing can
-assign mode 2 when `FlowFile` and `FlowMudFile` are nonblank, the FM NetCDF
-branch does not initialize the mud connection or `mudids` needed for mud
-field acquisition. The BMI wrapper also does not implement the mode-2
-time-query operations. See the [Delft3D4 pathway](./D-Waves_pathway_delft3d4.md)
-for the supported classic fluid-mud pathway.
-
-## Implementation references
-
-- [D-Waves User Manual, Sections 5.4.1.1–5.4.1.2](../include/D-Waves_User_Manual.pdf)
-  (printed pages 35–36), and Section 5.4.9 (printed pages 60–61): FM
-  communication-file configuration, coupling timeframe, and Flow-grid output.
-- [D-Waves User Manual, Appendix A.1.3.4.2](../include/D-Waves_User_Manual.pdf)
-  (printed page 94): FM–D-Waves MDW example using `COMFile` and `WriteCOM`.
-- [WAVE BMI lifecycle and variables](../../packages/wave/src/wave_bmi.f90#L63)
-- [WAVE shared-library target](../../packages/wave/wave_dll.cmake)
-- [DIMR component initialization and scheduling](../../../dimr/packages/dimr_lib/src/dimr.cpp#L429)
-- [WAVE initialization order and `nttide` adjustment](../../packages/manager/src/wave_main.f90#L179)
-- [FM communication-file route](../../packages/data/src/flow_data.f90#L68)
-- [FM and SWAN grid initialization](../../packages/kernel/src/grids_and_gridmaps.f90#L82)
-- [FM NetCDF grid reader](../../packages/kernel/src/grids_and_gridmaps.f90#L142)
-- [FM field acquisition and mapping](../../packages/io/src/get_flow_fields.f90#L102)
-- [FM NetCDF variable reader](../../packages/io/src/get_var_netcdf.f90#L123)
-- [FM BMI initialization](../../../dflowfm/packages/dflowfm_lib/src/unstruc_bmi.F90#L233)
-- [FM initial external output](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90#L263)
-- [FM communication-file output](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/flow_externaloutput.F90#L216)
-- [FM `wricom` writer](../../../dflowfm/packages/dflowfm_kernel/src/dflowfm_io/wricom.f90#L44)
-- [WAVE-to-FM mapping and writeback](../../packages/manager/src/swan_tot.f90#L412)
-- [Map construction and ESMF weights](../../packages/data/src/swan_flow_grid_maps.f90#L361)
-- [BMI time advancement](../../packages/wave/src/wave_bmi.f90#L130)
+Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
+Sections 5.4.1.1–5.4.1.2 and 5.4.9 (GUI), Appendices A.1.1 (MDW keywords) and
+A.1.3.4.2 (D-Flow FM example).

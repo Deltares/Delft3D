@@ -1,0 +1,64 @@
+digraph dwaves_communication_model {
+    graph [label="D-Waves communication models", labelloc=t, fontsize=20,
+           fontname="Helvetica", rankdir=LR, newrank=true, nodesep=0.6, ranksep=0.65,
+           pad=0.3, bgcolor="white"];
+    node [shape=box, style="rounded,filled", fillcolor="#E7F1FA",
+          color="#7890A2", fontname="Helvetica", fontsize=11];
+    edge [fontname="Helvetica", fontsize=10, color="#48647A"];
+
+    subgraph cluster_d4 {
+        label="Delft3D4 online"; color="#3B82A0";
+        d4 [label="Delft3D4\nowns the time loop"];
+        w4 [label="D-Waves process + SWAN\nSWAN executable; OpenMP parallelism"];
+        c4 [shape=cylinder, fillcolor="#FFF9ED",
+            label="Delft3D4 com-files\nNEFIS format"];
+        d4 -> w4 [style=dashed, label="DelftIO: step / time", constraint=false];
+        w4 -> d4 [style=dashed, label="DelftIO: completion", constraint=false];
+        d4 -> c4 [label="write Delft3D4 fields"];
+        c4 -> w4 [label="read Delft3D4 fields", constraint=false];
+        w4 -> c4 [label="write wave fields*\nwhen WriteCOM"];
+        c4 -> d4 [label="read wave fields", constraint=false];
+    }
+
+    subgraph cluster_fm {
+        label="D-Flow FM online"; color="#5A9A72";
+        dimr [fillcolor="#EAF5EC",
+              label="DIMR\nlifecycle / schedule"];
+        fm [fillcolor="#EAF5EC",
+            label="D-Flow FM\nowns hydrodynamic computation"];
+        wf [label="D-Waves MPI processes + SWAN\nSwanMode=lib: each D-Waves rank calls\nswan_lib collectively"];
+        cf [shape=cylinder, fillcolor="#FFF9ED",
+            label="D-Flow FM communication files\nNetCDF *_com.nc"];
+        dimr -> fm [style=dashed, label="BMI initialize / update"];
+        dimr -> wf [style=dashed, label="BMI initialize / update(dt)"];
+        fm -> cf [label="write D-Flow FM fields"];
+        cf -> wf [label="read D-Flow FM fields", constraint=false];
+        wf -> cf [label="write wave fields*\nwhen WriteCOM"];
+        cf -> fm [label="read wave fields", constraint=false];
+    }
+
+    subgraph cluster_solo {
+        label="Standalone"; color="#B28B42";
+        ws [fillcolor="#FCF5E6",
+            label="Standalone D-Waves + SWAN\nD-Waves owns the calculation schedule"];
+        cs [shape=cylinder, fillcolor="#FFF9ED",
+            label="Optional saved communication files\nDelft3D4 NEFIS / D-Flow FM NetCDF"];
+        os [shape=note, fillcolor="#F5F7F8", label="Configured D-Waves outputs"];
+        cs -> ws [label="read saved fields", constraint=false];
+        ws -> cs [label="write wave fields*\nwhen WriteCOM"];
+        ws -> os [label="configured output"];
+    }
+
+    {rank=min; dimr;}
+    {rank=same; d4; fm; ws;}
+    {rank=same; w4; wf;}
+    {rank=same; c4; cf; cs; os;}
+    d4 -> w4 [style=invis, weight=30];
+    fm -> wf [style=invis, weight=30];
+    w4 -> wf [style=invis, weight=30];
+
+    legend [shape=plaintext, style="", fontsize=10,
+            label="Solid arrows: field/file I/O. Dashed arrows: control.\n* Wave-field writeback requires WriteCOM\n(mandatory for online runs); hydrodynamic input is independently configurable.\nStandalone starts no Delft3D4 or D-Flow FM engine. preCICE is outside this model.\nDiagram created with Copilot from prompts, using existing code as reference."];
+    {rank=sink; legend;}
+    cs -> legend [style=invis];
+}

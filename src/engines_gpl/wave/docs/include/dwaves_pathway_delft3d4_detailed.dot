@@ -1,76 +1,54 @@
-digraph dwaves_pathway_delft3d4 {
-    graph [
-        label="D-Waves pathway detail: Coupling with Delft3D4 (online)",
-        labelloc=t,
-        fontsize=18,
-        fontname="Helvetica",
-        rankdir=TB,
-        nodesep=0.6,
-        ranksep=0.4,
-        pad=0.3,
-        bgcolor="white"
-    ];
-    node [fontname="Helvetica", fontsize=11, margin="0.15,0.09"];
-    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
-
-    launch [shape=box, style="rounded,filled", fillcolor="#E3F2F7", color="#7890A2",
-            label="run_dflow2d3d_dwaves.sh\nstarts d_hydro (FLOW) and\nwave <mdw-file> 1 (mode = flow_online)\nas separate processes"];
+digraph delft3d4_communication {
+    graph [label="Delft3D4 online: Delft3D4 controls time, synchronized file exchange",
+           labelloc=t, fontsize=18, fontname="Helvetica", rankdir=TB,
+           newrank=true, nodesep=0.6, ranksep=0.6, pad=0.3, bgcolor="white"];
+    node [shape=box, style="rounded,filled", fillcolor="#E7F1FA",
+          color="#7890A2", fontname="Helvetica", fontsize=11];
+    edge [fontname="Helvetica", fontsize=10, color="#48647A"];
 
     subgraph cluster_flow {
-        label="FLOW process (flow2d3d)";
-        color="#3B82A0";
-        style="rounded";
-        node [shape=box, style="rounded,filled", fillcolor="#E3F2F7", color="#7890A2"];
-        tricom_init   [label="trisim -> trisim_init -> tricom_init.F90\nif (wave .and. waveol==2):\ncall flow_to_wave_init(runid, it01, tscale,\nnumdomains, mudlay, parll)"];
-        tricom_step   [label="tricom_step.F90 time loop\nat configured coupling point (nst==itwav):\ncall flow_to_wave_command(\nflow_wave_comm_perform_step, numdomains, mudlay, nst)"];
-        spacer1 [shape=point, style=invis, width=0.01];
-        spacer2 [shape=point, style=invis, width=0.01];
-        tricom_read   [label="tricom_step.F90\nat subsequent read point:\nif (waverd), call setwav(comfil, ...)\nreads WAVE results from the com-file"];
-        tricom_finish [label="tricom_finish.F90\ncall flow_to_wave_command(\nflow_wave_comm_finalize, numdomains, mudlay)"];
-        tricom_init -> tricom_step [style=invis];
-        tricom_step -> spacer1 -> spacer2 -> tricom_read [style=invis];
-        tricom_read -> tricom_finish [style=invis];
+        label="Delft3D4 process(es)"; color="#3B82A0";
+        fi [label="Initialize Delft3D4 and DelftIO connection"];
+        step [label="Delft3D4 time loop\nadvance to wave-coupling point"];
+        publish [label="Update all domain com-files"];
+        wait [label="Master sends step/time; waits\nother Delft3D4 partitions wait"];
+        read [label="Read wave fields at Delft3D4 read point"];
+        fi -> step -> publish -> wait -> read;
+        read -> step [label="continue Delft3D4 steps", constraint=false];
     }
-
+    com [shape=cylinder, fillcolor="#FFF9ED",
+         label="Delft3D4 com-files\nper Delft3D4 domain\nDelft3D4 and wave fields (NEFIS)"];
     subgraph cluster_wave {
-        label="WAVE process (D-Waves)";
-        color="#3B82A0";
-        style="rounded";
-        node [shape=box, style="rounded,filled", fillcolor="#E7F1FA", color="#7890A2"];
-        wave_init_call [label="wave_main.f90 : wave_init() → flow_data.f90 : flow_init()\n(swan_run%flowgridfile == ' ' branch)\ncall wave_from_flow_init(subdom_names, it01, d_tscale, mud)\nmode 2: also initialize mud connection and mudids"];
-        master_step [label="wave_main.f90 : wave_master_step()\ndo while (command == flow_wave_comm_perform_step):\ncall wave_from_flow_command(command, mud, timtscale)\nmode 2: wait for both water and mud commands"];
-        settime [label="call settimtscale(wavedata%time, timtscale,\nswan_run%modsim, swan_run%nonstat_interval)"];
-        swan_tot [label="swan_tot.f90 : swan_tot(...)\nget_flow_fields() reads FLOW fields from com-file\nand maps FLOW -> SWAN; mode 2 reads mud fields\nWriteCOM maps/writes WAVE fields to com-file(s)"];
-        status [label="call wave_to_flow_status(\nflow_wave_comm_result_ok, mud)\nmode 2: report completion to both water and mud"];
-        wave_finish [label="wave_main_finish() → wave_master_finish()\n(loop exits on flow_wave_comm_finalize)"];
-        wave_init_call -> master_step -> settime -> swan_tot -> status;
-        status -> master_step [label="loop while\nperform_step", constraint=false];
-        status -> wave_finish [style=dashed, label="on finalize"];
+        label="D-Waves process"; color="#3B82A0";
+        wi [label="Connect; read grids; prepare maps"];
+        receive [label="Wait for step/time command"];
+        input [label="Read Delft3D4 fields; remap to\nnext SWAN grid"];
+        swan [label="Start SWAN as separate executable\n(SwanMode=exe default; OpenMP parallelism)\nread results; map wave fields if WriteCOM"];
+        more [shape=diamond, fillcolor="white", label="More SWAN grids?"];
+        write [label="Write accumulated wave fields\nif WriteCOM; report completion"];
+        wi -> receive -> input -> swan -> more;
+        more -> input [label="yes: next grid / nest", constraint=false];
+        more -> write [label="no"];
+        write -> receive [label="wait for next command", constraint=false];
     }
-
-    launch -> tricom_init;
-    launch -> wave_init_call;
-
-    { rank=same; tricom_init; wave_init_call; }
-    { rank=same; tricom_step; master_step; }
-    { rank=same; spacer1; settime; }
-    { rank=same; spacer2; swan_tot; }
-    { rank=same; tricom_read; status; }
-    { rank=same; tricom_finish; wave_finish; }
-
-    tricom_init -> wave_init_call [dir=both, label="flow_to_wave_init ↔\nwave_from_flow_init\n(sync_flowwave.f90)", constraint=false];
-    tricom_step -> master_step [dir=both, label="flow_to_wave_command ↔\nwave_from_flow_command", constraint=false];
-    status -> tricom_read [dir=both, label="wave_to_flow_status ↔\nflow_from_wave_status,\nthen setwav reads fields", constraint=false];
-    tricom_finish -> wave_finish [dir=both, style=dashed, label="flow_to_wave_command\n(finalize)", constraint=false];
-
-    node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
-    st_comminfo [label="comminfowater / comminfomud\n(dioplttype flow_to_wave / wave_to_flow,\nsync_flowwave.f90 module vars)"];
-    st_runids [label="runids(:) / num_subdomains /\nflow_data_initialized\n(flow_data.f90 module vars)"];
-    st_mode [label="wavedata%mode = flow_online (1), same as FM\nblank flowgridfile selects the DelftIO route\nmode 2: Delft3D4 fluid-mud extension ONLY, not FM/BMI\nsame driver and loop, with conditional mud operations\none water + one mud domain; identical grids\nwavedata%time%tscale from FLOW"];
-
-    { rank=same; tricom_init; wave_init_call; st_comminfo; st_runids; }
-    { rank=same; spacer1; settime; st_mode; }
-    tricom_init -> st_comminfo [style=dotted, arrowhead=none, constraint=false];
-    wave_init_call -> st_runids [style=dotted, arrowhead=none, constraint=false];
-    settime -> st_mode [style=dotted, arrowhead=none, constraint=false];
+    fi -> wi [style=dashed, label="DelftIO: domain IDs / time scale"];
+    wait -> receive [style=dashed, label="DelftIO: step / time", constraint=false];
+    write -> read [style=dashed, label="DelftIO: completion", constraint=false];
+    publish -> com [label="write Delft3D4 fields"];
+    com -> input [label="read Delft3D4 fields"];
+    write -> com [label="write wave fields*", constraint=false];
+    com -> read [label="read wave fields", constraint=false];
+    mud [shape=note, fillcolor="#F5F7F8",
+         label="Mode 2 (Delft3D4 only, not D-Flow FM/BMI):\nadditional mud-model connection and com-file.\nD-Waves waits for water + mud and reports completion to both.\nOne water domain + one mud domain, identical grids."];
+    finish [shape=note, fillcolor="#F5F7F8",
+            label="End: Delft3D4 sends DelftIO finalize; both components clean up.\nSolid: file I/O / local sequence. Dashed: inter-component control.\n* Requires WriteCOM (mandatory online); Delft3D4 input selections are independent."];
+    write -> mud [style=invis];
+    read -> finish [style=invis];
+    {rank=same; fi; wi;}
+    {rank=same; wait; receive;}
+    {rank=same; read; write;}
+    diagram_credit [shape=plaintext, fontsize=8,
+                    label="Created with Copilot from prompts, using existing code as reference."];
+    {rank=sink; diagram_credit;}
+    finish -> diagram_credit [style=invis];
 }

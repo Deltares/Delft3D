@@ -21,11 +21,11 @@ digraph dwaves_code_pathways {
         color="#3B82A0";
         penwidth=2;
         style="rounded";
-        flow4    [label="Delft3D4 FLOW\ntricom_init / FLOW time loop", fillcolor="#E3F2F7"];
+        flow4    [label="Delft3D4\ntricom_init / Delft3D4 time loop", fillcolor="#E3F2F7"];
         dio      [label="DelftIO sync_flowwave\nFLOW2WAVE_DATA ↔ WAVE2FLOW_DATA\ncommands + status only — not fields", fillcolor="#EAF4F7"];
-        wave4    [label="wave executable: flow_online (1), same as FM\nblank swan_run%flowgridfile selects DelftIO\nfluid-mud extension: flow_mud_online (2)", fillcolor="#E3F2F7"];
-        manager4 [label="wave_main_step\nwait → set WAVE time → swan_tot", fillcolor="#E7F1FA"];
-        swan4    [label="SWAN computation and WAVE results\nget/put fields via FLOW com-file;\nstatus reported back through DelftIO", fillcolor="#EAF4F7"];
+        wave4    [label="wave executable: flow_online (1), same as D-Flow FM\nblank swan_run%flowgridfile selects DelftIO\nfluid-mud extension: flow_mud_online (2)", fillcolor="#E3F2F7"];
+        manager4 [label="wave_main_step\nwait → set D-Waves time → swan_tot", fillcolor="#E7F1FA"];
+        swan4    [label="SWAN computation and D-Waves results\nget/put fields via Delft3D4 com-file;\nstatus reported back through DelftIO", fillcolor="#EAF4F7"];
         flow4 -> dio [label="initialize / synchronize"];
         dio -> wave4 [label="DIO handshake"];
         wave4 -> manager4;
@@ -38,11 +38,11 @@ digraph dwaves_code_pathways {
         color="#5A9A72";
         penwidth=2;
         style="rounded";
-        dimr     [label="DIMR orchestration\ninitializes Flow before Wave;\nsets flow_online (1), same as Delft3D4", fillcolor="#EAF5EC"];
-        fmcomp   [label="D-Flow FM BMI component\nFlow solver and configured couplers", fillcolor="#EAF5EC"];
+        dimr     [label="DIMR orchestration\ninitializes D-Flow FM before D-Waves;\nsets flow_online (1) for a startGroup\nD-Waves, same as Delft3D4", fillcolor="#EAF5EC"];
+        fmcomp   [label="D-Flow FM BMI component\nD-Flow FM solver and configured couplers", fillcolor="#EAF5EC"];
         bmi      [label="D-Waves shared library\nwave_bmi: initialize / update(dt) / finalize", fillcolor="#EAF5EC"];
         swan_fm  [label="wave_main_step(dt) → swan_tot\nget_flow_fields when configured", fillcolor="#F2F8F3"];
-        files_fm [label="FM NetCDF communication file(s)\n[Output] COMFile sets swan_run%flowgridfile\ninput when useflowdata; output when WriteCOM", fillcolor="#F2F8F3"];
+        files_fm [label="D-Flow FM NetCDF communication file(s)\n[Output] COMFile sets swan_run%flowgridfile\ninput when useflowdata; output when WriteCOM", fillcolor="#F2F8F3"];
         dimr -> fmcomp [label="BMI lifecycle"];
         fmcomp -> bmi [label="component order"];
         bmi -> swan_fm [label="update(dt)"];
@@ -57,9 +57,9 @@ digraph dwaves_code_pathways {
         style="rounded";
         exe       [label="wave executable\nmode defaults to stand_alone (0)", fillcolor="#FCF5E6"];
         init      [label="wave_main_init\nread MDW, initialize grids and forcing", fillcolor="#FCF5E6"];
-        step      [label="wave_main_step(-1)\nlegacy: MDW times in swan_tot\nFM: supplied step interval", fillcolor="#FCF5E6"];
-        swan_solo [label="swan_tot → SWAN\nstandard WAVE outputs", fillcolor="#FCF5E6"];
-        flowfile  [label="Optional Flow-file I/O\nFM: [Output] COMFile; legacy: [General] ComFile\ninput selections / WriteCOM control field I/O", fillcolor="#FFF9ED"];
+        step      [label="wave_main_step(-1)\nlegacy: MDW times in swan_tot\nD-Flow FM: supplied step interval", fillcolor="#FCF5E6"];
+        swan_solo [label="swan_tot → SWAN\nstandard D-Waves outputs", fillcolor="#FCF5E6"];
+        flowfile  [label="Optional hydrodynamic-file I/O\nD-Flow FM: [Output] COMFile; legacy Delft3D4: [General] ComFile\ninput selections / WriteCOM control field I/O", fillcolor="#FFF9ED"];
         exe -> init -> step -> swan_solo;
         flowfile -> swan_solo [label="when configured", dir=both, style=dashed, constraint=false];
     }
@@ -72,7 +72,7 @@ digraph dwaves_code_pathways {
         style="rounded,dashed";
         precice [label="preCICE setup\nconfiguration + time windows", fillcolor="#F4ECF7"];
         mesh    [label="wave_main preCICE hooks\nregister SWAN vertices / triangles", fillcolor="#F4ECF7"];
-        fields  [label="preCICE-aware SWAN loop\nread Flow fields / write Wave fields", fillcolor="#F4ECF7"];
+        fields  [label="preCICE-aware SWAN loop\nread hydrodynamic fields / write D-Waves fields", fillcolor="#F4ECF7"];
         advance [label="preCICE advance\ntime-window loop", fillcolor="#F4ECF7"];
         precice -> mesh -> fields -> advance [style=dashed];
         { rank=same; precice; mesh; fields; advance; }
@@ -89,4 +89,9 @@ digraph dwaves_code_pathways {
     swan4 -> precice [style=invis];
     files_fm -> precice [style=invis];
     flowfile -> precice [style=invis];
+
+    diagram_credit [shape=plaintext, fontsize=8, fontname="Helvetica",
+                    label="Created with Copilot from prompts, using existing code as reference."];
+    { rank=sink; diagram_credit; }
+    advance -> diagram_credit [style=invis];
 }

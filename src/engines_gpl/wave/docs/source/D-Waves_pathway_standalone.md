@@ -1,159 +1,81 @@
-# D-Waves standalone pathway
+# Standalone D-Waves communication model
 
-This page traces standalone WAVE execution, including optional use of saved
-FLOW results. It distinguishes the classic Delft3D4 file route from the
-FM NetCDF file route; standalone execution does not imply that a FLOW model
-is running.
+**D-Waves owns the calculation schedule. No Delft3D4 or D-Flow FM engine
+is launched or advanced.** D-Waves can run independently, read saved
+Delft3D4 or D-Flow FM fields, write wave fields onto the Delft3D4 or
+D-Flow FM grid, or combine the last two options.
 
-## Detailed diagram
+![Standalone communication model](../include/dwaves_pathway_standalone_detailed.svg)
 
-![Detailed standalone D-Waves pathway](../include/dwaves_pathway_standalone_detailed.svg)
+[DOT source](../include/dwaves_pathway_standalone_detailed.dot)
 
-Graphviz source: [DOT](../include/dwaves_pathway_standalone_detailed.dot).
+## Participants and channels
 
-## Mode, configuration and route selection
-
-The standalone executable defaults to `stand_alone = 0` and calls
-`wave_main_init`, `wave_main_step(-1)` and `wave_main_finish`. MDW parsing can
-change the mode: a nonblank `[General] FlowFile` selects `flow_online = 1`,
-and a nonblank `[General] FlowMudFile` in that branch selects mode 2.
-Consequently, launching the executable directly does not by itself guarantee
-standalone scheduling.
-
-Mode and data route are separate selectors:
-
-| MDW setting / internal state | Effect |
+| Participant / resource | Responsibility |
 |---|---|
-| `[General] ComFile` | Selects legacy Delft3D4 NEFIS com-file runids for saved FLOW input. |
-| `[Output] COMFile` | Sets `swan_run%flowgridfile` and selects the FM NetCDF communication-file route. It is not an MDW `FlowGridFile` keyword. |
-| FLOW input selections | Derive `swan_run%useflowdata`; this determines whether WAVE reads FLOW fields. |
-| `[Output] WriteCOM` | Sets `swan_run%swwav` and enables writing selected WAVE results to the configured FLOW communication file(s). |
+| D-Waves manager | Select times, prepare inputs, invoke SWAN, collect and write results. |
+| SWAN | Solve waves for each configured grid; exchange staged input/output files with D-Waves, including in library mode. |
+| Optional existing Delft3D4 or D-Flow FM com-files | Supply saved geometry and selected hydrodynamic fields. Accept wave fields only with `WriteCOM`. |
+| Boundary, forcing and D-Waves output files | Supply independent forcing and store configured wave results. |
 
-The presence of `[Output] COMFile` alone does not make a run online or imply
-that FLOW is advancing. In standalone mode it can identify saved FM output.
-Likewise, `useflowdata` is internal state, not an MDW keyword.
+Reading hydrodynamic fields and writing wave fields are independent choices.
+There is no live handshake and no feedback to an advancing Delft3D4 or
+D-Flow FM engine.
+Even with `WriteCOM`, this is an offline file workflow, not online coupling.
 
-The manual defines `FlowFile` and `FlowMudFile` in
-[Appendix A.1.1 of the D-Waves User Manual](../include/D-Waves_User_Manual.pdf)
-(printed pages 85–87). The parser behavior and the distinction between MDW
-settings and internal state described above are checked against the current
-implementation.
+## Calculation cycle and grids
 
-## Independent calculation or offline FLOW input
+1. Read configuration and SWAN grids. If hydrodynamic input or output on the
+   Delft3D4/D-Flow FM grid is requested, read the existing geometry and
+   prepare both mapping directions.
+2. For each selected calculation time, visit SWAN grids in configured order.
+   Prepare inputs, run SWAN, read results and accumulate any output on the
+   Delft3D4/D-Flow FM grid.
+   Nested domains use the parent-generated boundary files.
+3. After the grid loop, write accumulated wave fields to the com-files if
+   `WriteCOM` is enabled; configured D-Waves outputs are also produced.
+4. Continue with the next selected time, then finalize.
 
-Standalone describes how WAVE runs, not where all its inputs originate.
-An independent calculation can use WAVE-configured bathymetry, water level,
-currents, wind and wave boundary inputs without FLOW results. Alternatively,
-selected fields from a prior FLOW run can provide hydrodynamic conditions
-without a live FLOW process.
+The time selection is route-dependent: the Delft3D4 route processes MDW
+times in `swan_tot`; the standalone D-Flow FM-file route selects MDW times within
+the supplied step interval (or its no-explicit-times branch).
+The executable calls `wave_main_step(-1)`: **this is not a universal
+"run all MDW times" instruction for the D-Flow FM-file route.**
 
-`wave_init` calls `flow_init` when FLOW input or `WriteCOM` requires
-communication-file/grid setup. `flow_init` identifies the source files or
-domains; it does not read and map every field. During calculation,
-`swan_tot` calls `get_flow_fields` only when `swan_run%useflowdata` is true.
-The selected fields are read from the configured communication files and
-mapped onto the SWAN grids. Standalone WAVE neither launches nor advances
-Delft3D4 FLOW or D-Flow FM.
+| Saved-data route | Configuration | Runtime remapping |
+|---|---|---|
+| Delft3D4 NEFIS com-files | Mode 0; leave `[General] FlowFile` blank. `[General] ComFile` identifies runids, or the D-Waves runid is used. | `grmap` applies internal interpolation tables in both directions. |
+| D-Flow FM NetCDF com-files | `[Output] COMFile` identifies the existing communication file and partition variants. An arbitrary D-Flow FM map file is not a substitute. | D-Flow FM→SWAN uses `grmap_esmf`; SWAN→D-Flow FM uses `grmap`. |
 
-The saved-file options differ by engine:
+Weights are prepared once per grid pair per initialization and reused.
+Both directional maps are built when Delft3D4 or D-Flow FM grids exist, even in
+read-only use; **applying** the reverse map and writing wave fields require
+`WriteCOM`. The hydrodynamic and SWAN grids need not match, but coordinates
+and required coverage must.
+External meteo is a separate optional forcing source; configured external
+wind takes precedence over the wind from the Delft3D4 or D-Flow FM files.
 
-| Saved data | Configuration and behavior |
+## Parallel execution
+
+SWAN grids/nests, Delft3D4 or D-Flow FM partitions and MPI ranks are different
+counts.
+D-Waves visits the configured SWAN grids sequentially; nesting is not MPI
+decomposition. With `SwanMode=lib`, the D-Waves master handles mapping and file
+I/O and calls SWAN collectively with the other D-Waves ranks. Workers wait for
+SWAN commands and synchronize before the master reads/deletes SWAN files.
+`SwanMode=lib` requires an MPI-enabled D-Waves run; the default executable
+mode launches SWAN through a script.
+
+## Implementation links
+
+| Responsibility | Entry points |
 |---|---|
-| Delft3D4 FLOW | Use mode 0, leave `[General] FlowFile` blank, and select the runid(s) with `[General] ComFile` (or the default WAVE runid). No DelftIO handshake is performed. Legacy offline workflows should align WAVE calculation times with stored FLOW output times. |
-| D-Flow FM | Set `[Output] COMFile` to the FM NetCDF communication file. WAVE checks the file and any partition variants, reads its grid and fields, and does not run the FM model. The file must contain the grid and selected fields; an arbitrary FM map-output file is not a substitute. |
+| Lifecycle and time selection | [executable](../../packages/wave/src/wave_exe.f90), [wave_init](../../packages/manager/src/wave_main.f90#L131), [wave_master_step](../../packages/manager/src/wave_main.f90#L405) |
+| Existing file selection | [flow_init](../../packages/data/src/flow_data.f90#L79) |
+| Both map directions | [grids_and_gridmaps](../../packages/kernel/src/grids_and_gridmaps.f90#L165), [make_grid_map](../../packages/data/src/swan_flow_grid_maps.f90#L306) |
+| Time/grid loops and file exchange | [swan_tot](../../packages/manager/src/swan_tot.f90#L106), [get_flow_fields](../../packages/io/src/get_flow_fields.f90), [put_wave_fields](../../packages/io/src/put_wave_fields.f90) |
+| SWAN execution and MPI workers | [run_swan](../../packages/kernel/src/run_swan.f90#L90), [run_swan_slave](../../packages/kernel/src/run_swan_slave.f90#L53), [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385) |
 
-The manual's [Appendix A.1.2](../include/D-Waves_User_Manual.pdf) (printed
-page 89) describes the offline legacy FLOW workflow: remove `FlowFile`, use
-`ComFile` for alternate or partitioned com-files, and specify timepoints
-matching records in those files. The manual's [Section 5.4.1.1](../include/D-Waves_User_Manual.pdf)
-(printed page 35) describes D-Flow FM input through its communication file.
-The FM standalone behavior and route selection above are additionally
-verified against the implementation; Appendix A.1.2 describes the legacy
-com-file route, not FM NetCDF scheduling.
-
-The MDW time schedule and file route both affect when calculations occur:
-
-- With blank `swan_run%flowgridfile`, `wave_master_step` calls
-  `swan_tot(..., selectedtime=0)`. `swan_tot` processes the MDW `timwav`
-  schedule itself.
-- With nonblank `swan_run%flowgridfile`, standalone scheduling uses the
-  supplied `stepsize` to select MDW times in the step interval. If no explicit
-  times are present, a separate single-computation branch applies.
-
-The executable's `stepsize = -1` is therefore not a universal “run the whole
-simulation” value: it is unused by the legacy standalone branch, while the
-FM-file branch uses the interval logic. Do not confuse `[General] FlowFile`
-(mode selection) with `[Output] COMFile` (FM communication-file route).
-
-## Grids, forcing and field mapping
-
-`n_swan_grids` counts configured SWAN computational grids, generally the
-MDW `[Domain]` entries. `n_flow_grids` separately counts FLOW grids or
-partitions used for input and/or WAVE output. Neither count is the MPI rank
-count. Independent standalone runs can have no FLOW grids; FLOW-grid setup
-is still needed when `WriteCOM` is enabled even if no FLOW fields are read.
-
-FLOW and SWAN grids do not need identical dimensions, extents or resolution.
-During initialization, `grids_and_gridmaps` creates maps for each
-FLOW-grid/SWAN-grid pair. Forcing fields are read on their source FLOW grid
-and mapped to the SWAN grid. Their physical coordinates must be compatible,
-and the FLOW domains must cover the SWAN area where FLOW forcing is needed.
-The mode-2 identical-grid condition concerns the Delft3D4 water and mud
-grids, not the FLOW and SWAN grids.
-
-The mapping implementations differ by route:
-
-- **Legacy Delft3D4 files:** `mkmap` prepares interpolation references and
-  weights; `grmap` applies them during calculation.
-- **FM NetCDF files:** WAVE prepares ESMF regridding weights for
-  FLOW-to-SWAN mapping and applies them with `grmap_esmf`. If `WriteCOM` is
-  also enabled, WAVE separately prepares an internal SWAN-to-FLOW map and
-  applies it for writeback.
-
-Weights are prepared once per grid pair during WAVE initialization and reused
-for field values at calculation time. The temporary provider/receiver grid
-filename propagation in `grids_and_gridmaps` reuses serialized grid files;
-it is not where the overlap search or regridding weights are computed.
-
-External meteo forcing is another optional input source. `wave_init`
-registers the configured meteo sources and SWAN target grid. At calculation
-times `swan_tot` updates the meteo data and retrieves wind components (and
-ice fields when configured); these are staged for SWAN. External meteo wind
-takes precedence over FLOW wind when both are configured. The commented-out
-pressure retrieval in `swan_tot` is not an active pressure input path.
-
-## SWAN execution and optional WAVE output
-
-`swan_tot` is a WAVE manager routine, not the SWAN executable. It prepares
-inputs for each SWAN grid, writes the SWAN input file, calls `run_swan`,
-reads the results and handles mapping/writeback. `[General] SwanMode=exe`
-(the default) launches the SWAN program; `SwanMode=lib` invokes `swan_lib`
-inside the WAVE process and is restricted to MPI runs. The WAVE-SWAN file
-staging interface is used in either mode and is not the outer FLOW-WAVE
-control protocol.
-
-With `[Output] WriteCOM` enabled, standalone WAVE can map selected SWAN
-results onto the configured FLOW grid(s) and write them into the existing
-communication file(s). This does not start FLOW or create a FLOW simulation.
-The legacy route uses `wave2flow` for vector conversion before
-`wave2com`/`put_wave_fields`; the FM route skips the legacy `wave2flow`
-conversion and writes through `wave2com`/`put_wave_fields`. This is
-communication-file writeback, not ordinary WAVE map output.
-
-This matches the manual's Section 5.4.9 (printed pages 60–61), which says
-that output on the Flow grid uses a communication file, and its example in
-[Appendix A.1.3.4.2](../include/D-Waves_User_Manual.pdf) (printed page 94),
-which sets `[Output] WriteCOM` and `[Output] COMFile`. The exact mapping and
-file-write calls described here are implementation details.
-
-## Implementation references
-
-- [WAVE executable entry point](../../packages/wave/src/wave_exe.f90#L82)
-- [Initialization, mode and standalone scheduling](../../packages/manager/src/wave_main.f90#L180)
-- [MDW route and input selection](../../packages/data/src/swan_input.f90#L915)
-- [FLOW file/domain initialization](../../packages/data/src/flow_data.f90#L79)
-- [Grid and mapping initialization](../../packages/kernel/src/grids_and_gridmaps.f90#L82)
-- [FLOW field reads and mapping](../../packages/io/src/get_flow_fields.f90#L102)
-- [Per-grid SWAN orchestration and writeback](../../packages/manager/src/swan_tot.f90#L138)
-- [Meteo initialization and cleanup](../../packages/manager/src/wave_main.f90#L255)
-- [SWAN executable/library selection](../../packages/kernel/src/run_swan.f90#L65)
+Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
+Sections 5.4.1.1 and 5.4.9 (GUI), Appendix A.1.1 (MDW keywords), A.1.2
+(Delft3D4 offline workflow) and A.1.3.4.2 (D-Flow FM com-file example).
