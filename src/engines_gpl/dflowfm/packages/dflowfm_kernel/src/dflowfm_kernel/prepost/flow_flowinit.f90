@@ -700,7 +700,7 @@ contains
    subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
-      use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
+      use m_physcoef, only: frcuni1d, frcuni1d2d, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
@@ -717,12 +717,12 @@ contains
                if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = frcuni1d2d
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
-                  ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
-                  frcu(link) = frcunistreetinlet
+                  ! Because UNIFORM_FRICTION_COEFFICIENT_STREET_INLET is not available in the mdu file, the friction type is always manning.
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
                   ifrcutp(link) = MANNING
                else if (kcu(link) == LINK_1D2D_ROOF) then
-                  ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
-                  frcu(link) = frcuniroofgutterpipe
+                  ! Because UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE is not available in the mdu file, the friction type is always manning
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
                   ifrcutp(link) = MANNING
                else
                   frcu(link) = frcuni1d

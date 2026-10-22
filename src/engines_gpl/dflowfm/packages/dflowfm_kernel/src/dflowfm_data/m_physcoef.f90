@@ -31,11 +31,11 @@
 !! Modules with global data.
 !! call default_*() routines upon program startup and when loading a new MDU.
 !! call only reset_*() routines when reinitialising an active flow model.
-
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_array_or_scalar, only: t_array_or_scalar
+
    implicit none(type, external)
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
@@ -48,9 +48,9 @@ module m_physcoef
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
-   real(kind=dp), parameter :: frcunistreetinlet = 0.035_dp
-   real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035_dp
-   real(kind=dp), parameter :: frcuniroof = 0.030_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
    integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
