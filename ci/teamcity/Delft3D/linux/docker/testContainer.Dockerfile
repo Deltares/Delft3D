@@ -2,8 +2,7 @@ FROM runtime-container
 
 COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /usr/local/bin/uv
 
-ENV PIP_ROOT_USER_ACTION=ignore
-ENV PIP_NO_CACHE_DIR=1
+ENV UV_NO_CACHE=1
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
 ENV UV_PYTHON_BIN_DIR=/usr/local/bin
 ENV PATH=/usr/local/bin:$PATH
@@ -27,11 +26,10 @@ RUN set -eo pipefail && \
     uv python install 3.14 --default && \
     python3 -c 'import sys; assert sys.version_info[:2] == (3, 14), sys.version'
 
-# Install pip
+# Install directly into the managed interpreter in this dedicated test container.
 RUN set -eo pipefail && \
-    python3 -m ensurepip --upgrade && \
-    python3 -m pip install --upgrade pip --break-system-packages && \
-    python3 -m pip install --requirement "/tmp/lnx-requirements.txt" --break-system-packages --ignore-installed && \
+    uv pip install --python /usr/local/bin/python3 --system --break-system-packages \
+        --requirement "/tmp/lnx-requirements.txt" && \
     rm --verbose "/tmp/lnx-requirements.txt"
 
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
