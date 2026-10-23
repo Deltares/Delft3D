@@ -13,7 +13,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
                 & buy       ,uvdwk     ,vvdwk     ,rscale    ,dzu1      , &
                 & dzv1      ,aakl      ,bbkl      ,cckl      ,ddkl      , &
                 & dzs1      ,areau     ,areav     ,volum0    ,volum1    , &
-                & guu       ,gvv       ,bruvai    ,sedtyp    ,seddif    , &
+                & guu       ,gvv       ,bruvai    ,seddif    , &
                 & ws        ,lsed      ,lsal      ,ltem      ,eqmbcsand , &
                 & eqmbcmud  ,lsts      ,s1        ,dps       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -110,6 +110,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
     integer                             , pointer :: nh_level
     integer                             , pointer :: nudge
     integer                             , pointer :: max_mud_sedtyp
+    integer, dimension(:), pointer :: sedtyp
 !
 ! Global variables
 !
@@ -122,7 +123,6 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
     integer                                                  , intent(in)  :: lstsc     ! Description and declaration in dimens.igs
     integer                                                                :: lsts      ! Description and declaration in esm_alloc_int.f90
     integer                                                                :: lsal      ! Description and declaration in iidim.f90 
-    integer, dimension(lsed)                                 , intent(in)  :: sedtyp    ! sediment type: 0=total/1=noncoh/2=coh    
     integer                                                                :: lundia    ! Description and declaration in inout.igs
     integer                                                                :: nmmax     ! Description and declaration in dimens.igs
     integer                                                                :: nmmaxj    ! Description and declaration in dimens.igs
@@ -297,6 +297,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
     nudge       => gdp%gdnumeco%nudge
     dzmin       => gdp%gdzmodel%dzmin
     max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
+    sedtyp              => gdp%gdsedpar%sedtyp
     !
     if (lstsci == 0) goto 9999
     !
