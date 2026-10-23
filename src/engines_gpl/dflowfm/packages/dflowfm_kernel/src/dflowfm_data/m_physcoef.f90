@@ -42,15 +42,15 @@ module m_physcoef
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
 
-   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant.
-   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations.
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< {former:frcunistreetinlet}
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< {former:frcuniroofgutterpipe}
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< {former:frcuniroof}
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
    integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
@@ -126,8 +126,8 @@ module m_physcoef
    integer :: Jadelvappos !< only positive forced evaporation fluxes
    real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
 
-   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents.
-   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion.
+   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents. {former:tetav}
+   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion. {former:tetakeps}
    
    real(kind=dp) :: locsaltlev !< salinity level for case of lock exchange
    real(kind=dp) :: locsaltmin !< minimum salinity for case of lock exchange

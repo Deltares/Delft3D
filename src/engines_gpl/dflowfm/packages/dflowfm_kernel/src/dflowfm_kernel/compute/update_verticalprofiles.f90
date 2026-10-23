@@ -71,24 +71,24 @@ contains
       use m_alloc, only: aerr
       use m_waveconst
 
-      real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta).
-      real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
-      real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above.
-      real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
-      real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above.
-      real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below.
+      real(kind=dp) :: theta_complement !< [-] Complement of theta (1-theta). {former:tetm1}
+      real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev). {former:dtiL}
+      real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above. {former:vicu}
+      real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below. {former:vicd}
+      real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above. {former:difu}
+      real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below. {former:difd}
       real(kind=dp) :: sourtu, sinktu
       real(kind=dp) :: zz, z00, ac1, ac2
-      real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
-      real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
+      real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition. {former:tkebot}
+      real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition. {former:tkesur}
+      real(kind=dp) :: turbulent_dissipation_bottom !< [m2/s3] Turbulent dissipation at the bottom layer. {former:epsbot}
+      real(kind=dp) :: turbulent_dissipation_top !< [m2/s3] Turbulent dissipation at the top layer. {former:epssur}
       real(kind=dp), dimension(kmxx) :: bruva
-      real(kind=dp) :: buoyancy_flux !< [k: m2/s3, epsilon m2/s4] Buoyancy flux.
-      real(kind=dp) :: turbulent_dissipation_bottom !< [m2/s3] Turbulent dissipation at the bottom layer.
-      real(kind=dp) :: turbulent_dissipation_top !< [m2/s3] Turbulent dissipation at the top layer.
+      real(kind=dp) :: buoyancy_flux !< [k: m2/s3, epsilon m2/s4] Buoyancy flux. {former:buoflu}
       real(kind=dp) :: hdzb, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
-      real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface.
+      real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface. {former:qqq}
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
