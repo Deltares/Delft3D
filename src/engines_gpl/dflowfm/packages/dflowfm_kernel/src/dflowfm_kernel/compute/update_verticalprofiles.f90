@@ -348,8 +348,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  turbulent_diffusion_down = turbulent_viscosity_down / dzw(k) * dzu(k)
-                  turbulent_diffusion_up = turbulent_viscosity_up / dzw(k) * dzu(ku)
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
 
                   ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
@@ -609,8 +609,8 @@ contains
                   k = L - Lb + 1
                   ku = k + 1
 
-                  turbulent_diffusion_down = turbulent_viscosity_down / dzw(k) * dzu(k)
-                  turbulent_diffusion_up = turbulent_viscosity_up / dzw(k) * dzu(ku)
+                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
+                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
 
                   ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
                   bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
