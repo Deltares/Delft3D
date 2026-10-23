@@ -39,7 +39,7 @@ module m_physcoef
    implicit none(type, external)
 
    real(kind=dp) :: ag !< [m/s2] Gravitational acceleration.
-   real(kind=dp) :: sag !< [m^(1/2)/s] Square root of gravitational acceleration.
+   real(kind=dp) :: square_root_ag !< [m^(1/2)/s] Square root of gravitational acceleration.
    integer :: use_helmert = 0 !< [-] Use Helmerts equation for agp only (0: no, 1: yes).
 
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
@@ -189,7 +189,7 @@ contains
 
    !> Calculates derived coefficients.
    subroutine calculate_derived_physcoef()
-      sag = sqrt(ag)
+      square_root_ag = sqrt(ag)
       rhog = ag * rhomean
       vismol = 4.0_dp / (20.0_dp + backgroundwatertemperature) * 1e-5_dp ! Van Rijn, 1993, from iniphys.f90
    end subroutine calculate_derived_physcoef

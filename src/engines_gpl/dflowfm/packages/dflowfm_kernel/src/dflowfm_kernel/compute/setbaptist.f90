@@ -42,7 +42,7 @@ contains
 
    subroutine setbaptist()
       use precision, only: dp
-      use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, arealeaf, ag, sag, VON_KARMAN, cfuhi, alfav, cfuveg, alfaveg
+      use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, arealeaf, ag, square_root_ag, VON_KARMAN, cfuhi, alfav, cfuveg, alfaveg
       use m_flowgeom, only: ln, lnx
       use m_get_chezy, only: get_chezy
 
@@ -108,7 +108,7 @@ contains
                Czr = sqrt(1.0_dp / ap)
 
                if (stemhL < hu(L) - 0.01_dp) then
-                  Czr = Czr + (sag / VON_KARMAN) * log(hu(L) / stemhL) ! resulting Baptist Chezy
+                  Czr = Czr + (square_root_ag / VON_KARMAN) * log(hu(L) / stemhL) ! resulting Baptist Chezy
                end if
                if (jaBaptist == 1) then
                   cfuhi(L) = ag / (Czr * Czr * hu(L)) ! use as is, wrong morpho ?

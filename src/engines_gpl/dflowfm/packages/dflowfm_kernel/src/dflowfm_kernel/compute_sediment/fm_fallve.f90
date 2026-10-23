@@ -49,7 +49,7 @@ contains
       !              Fall velocity at layer interfaces.
    !!--declarations----------------------------------------------------------------
       use precision
-      use m_physcoef, only: ag, sag, VON_KARMAN, backgroundsalinity, backgroundwatertemperature, vismol
+      use m_physcoef, only: ag, square_root_ag, VON_KARMAN, backgroundsalinity, backgroundwatertemperature, vismol
       use m_sediment, only: stmpar, mtd
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
@@ -167,7 +167,7 @@ contains
          end if
          !
          h0 = s1(k) - bl(k)
-         chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / VON_KARMAN ! consistency with getczz0
+         chezy = square_root_ag * log(h0 / ee / max(epsz0, z0rou(k))) / VON_KARMAN ! consistency with getczz0
          !
          ! compute depth-averaged velocities
          !

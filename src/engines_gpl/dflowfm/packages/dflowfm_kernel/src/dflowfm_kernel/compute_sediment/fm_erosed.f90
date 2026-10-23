@@ -82,7 +82,7 @@ contains
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, VON_KARMAN, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
+      use m_physcoef, only: ag, VON_KARMAN, square_root_ag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
@@ -459,7 +459,7 @@ contains
                end if
             end if
             !
-            z0u = hu(L) * exp(-VON_KARMAN * czu / sag - 1.0_dp) ! differs from delft3d
+            z0u = hu(L) * exp(-VON_KARMAN * czu / square_root_ag - 1.0_dp) ! differs from delft3d
             if (Lf < 0) then
                z0curk(k) = z0curk(k) + wcl(1, L) * z0u
             else
@@ -783,7 +783,7 @@ contains
             z0rou = z0curk(nm) ! currents+potentially trachy
          end if
          !
-         chezy = sag * log(h1 / ee / z0rou) / VON_KARMAN ! consistent with getczz0
+         chezy = square_root_ag * log(h1 / ee / z0rou) / VON_KARMAN ! consistent with getczz0
          !
          ! bed shear stress as used in flow, or
          ! skin fiction following Soulsby; "Bed shear stress under
@@ -822,7 +822,7 @@ contains
          !
          ! Compute effective depth averaged velocity
          !
-         utot = ustarc * chezy / sag
+         utot = ustarc * chezy / square_root_ag
          ulocal = utot * uuu(nm) / (umod(nm) + eps)
          vlocal = utot * vvv(nm) / (umod(nm) + eps)
          !

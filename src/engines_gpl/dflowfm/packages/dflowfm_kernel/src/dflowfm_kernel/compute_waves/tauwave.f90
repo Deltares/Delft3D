@@ -47,7 +47,7 @@ contains
       use m_flowparameters
       use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, ifrctypuni, frcuni, taubxu, taubu
       use m_flowgeom
-      use m_physcoef, only: rhomean, sag, VON_KARMAN
+      use m_physcoef, only: rhomean, square_root_ag, VON_KARMAN
       use m_waves
       use m_bedform, only: bfmpar
       use m_vegetation
@@ -130,7 +130,7 @@ contains
          else
             cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
-         z0 = huL / (ee * (exp(VON_KARMAN * cz / sag) - 1.0_dp))
+         z0 = huL / (ee * (exp(VON_KARMAN * cz / square_root_ag) - 1.0_dp))
 
          if (modind > 0 .and. modind < 10) then
             !
@@ -217,7 +217,7 @@ contains
          ! Wave enhanced roughness heights
          if (modind == 0) then
             umod = sqrt(umodsq) ! no limitation
-            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
+            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / square_root_ag)
             rz = huL / (ee * z0urou(L))
             cf = log(rz) / VON_KARMAN
             cwall = 1.0_dp / (cf**2)
@@ -226,7 +226,7 @@ contains
             cfwavhi(L) = cfuhi(L)
          else if (modind == 10) then
             umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbu * fsqrtt)**2)
-            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
+            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / square_root_ag)
             rz = huL / (ee * z0urou(L))
             cf = log(rz) / VON_KARMAN
             cwall = 1.0_dp / (cf**2)
@@ -238,7 +238,7 @@ contains
             umod = sqrt(umodsq) ! no limitation
             ust = sqrt(tauwci / rhoL)
             if (ust > waveps) then
-               cf = min(umod / ust, 40.0_dp) ! cz/sag
+               cf = min(umod / ust, 40.0_dp) ! cz/square_root_ag
                z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cf)
                z0urou(L) = min(z0urou(L), 10.0_dp)
                !

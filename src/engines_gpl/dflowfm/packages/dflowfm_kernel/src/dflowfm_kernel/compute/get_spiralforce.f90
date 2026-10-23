@@ -39,7 +39,7 @@ contains
    subroutine get_spiralforce ! Effect of secondary flow on momentum equations
       ! This subroutine calculates the forces fx and fy for momentum equations
       use precision, only: dp
-      use m_flow, only: ht_xx, ht_xy, spirucm, hs, epshu, sag, VON_KARMAN, czssf, spirbeta, spirint, ucx, ucy, spirfx, spirfy, adve
+      use m_flow, only: ht_xx, ht_xy, spirucm, hs, epshu, square_root_ag, VON_KARMAN, czssf, spirbeta, spirint, ucx, ucy, spirfx, spirfy, adve
       use m_flowgeom, only: ndxi, lnxi, lnx, ln, nd, xz, yz, acl, csu, snu
 
       implicit none
@@ -61,7 +61,7 @@ contains
          if (hs(k) < epshu) then
             cycle
          end if
-         alfa = sag / VON_KARMAN / czssf(k)
+         alfa = square_root_ag / VON_KARMAN / czssf(k)
          betas = spirbeta * (5.0_dp * alfa - 15.6_dp * alfa**2 + 37.5_dp * alfa**3)
          beta = betas * spirint(k) / spirucm(k)
          ht_xx(k) = -2.0_dp * hs(k) * beta * ucx(k) * ucy(k)

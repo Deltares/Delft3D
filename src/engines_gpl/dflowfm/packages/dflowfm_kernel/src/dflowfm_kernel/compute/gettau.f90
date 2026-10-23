@@ -95,7 +95,7 @@ contains
             else
                ust = ust + taubxu(LL) * ar
             end if
-            !z00 = z00 + ar*hu(LL)*exp(-1d0 - VON_KARMAN*cz/sag)   ! z0ucur, to avoid double counting
+            !z00 = z00 + ar*hu(LL)*exp(-1d0 - VON_KARMAN*cz/square_root_ag)   ! z0ucur, to avoid double counting
             z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
          end if
       end do

@@ -123,7 +123,7 @@ contains
       end if
 
       call getczz0(hsk, frcuni, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
-      sqcf = sag / cz ! sqrt(g)/C  ( )
+      sqcf = square_root_ag / cz ! sqrt(g)/C  ( )
 
       ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90
 
@@ -164,7 +164,7 @@ contains
                   if (hu(LL) > 0.0_dp) then
                      ar = au(LL) * dx(LL)
                      wa = wa + ar ! area  weigthed
-                     !z00 = z00 + ar*hu(LL)*exp(-1d0 - VON_KARMAN*cz/sag)   ! z0ucur, to avoid double counting
+                     !z00 = z00 + ar*hu(LL)*exp(-1d0 - VON_KARMAN*cz/square_root_ag)   ! z0ucur, to avoid double counting
                      z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
                   end if
                end do

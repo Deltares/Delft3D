@@ -697,7 +697,7 @@ contains
    subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
-      use m_physcoef, only: VON_KARMAN, sag
+      use m_physcoef, only: VON_KARMAN, square_root_ag
       use m_flow, only: vol1, hu, u1, v, frcu, ifrcutp, vicushp, viclu, viu, viusp, dvxc, dvyc
       use m_get_chezy, only: get_chezy
       use m_prefetch, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner_1, uycorner_1, uxcorner_2, uycorner_2
@@ -729,7 +729,7 @@ contains
 
       L1 = lnx1D + 1
       L2 = lnx
-      vksag6 = VON_KARMAN * sag / 6.0_dp
+      vksag6 = VON_KARMAN * square_root_ag / 6.0_dp
 
       call realloc(dvx1,lnx)
       call realloc(dvy1,lnx)
