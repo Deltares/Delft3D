@@ -2180,7 +2180,7 @@ contains
       if (jadiusp == 1) then
          do L = 1, lnx
             if (diusp(L) == dmiss) then
-               diusp(L) = dicouv
+               diusp(L) = uniform_horizontal_eddy_diffusivity
             end if
          end do
       end if

@@ -5296,14 +5296,14 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks and layers add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks and layers add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             ! Values for inactive layers are set to missing in function unc_put_var_map.
             call realloc(work1d, lnkx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                call getLbotLtopmax(LL, Lb, Lt)
                do L = Lb, Lt
@@ -5320,13 +5320,13 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             call realloc(work1d, lnx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                work1d(LL) = viu(LL) / 0.7 + dicc
             end do
@@ -8716,7 +8716,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   do L = Lb, Ltx
                      work1(L - Lb + nlaybL, LL) = viu(L) / 0.7 + dicc
@@ -8846,7 +8846,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   work1(1, LL) = viu(LL) * 0.7 + dicc
                end do

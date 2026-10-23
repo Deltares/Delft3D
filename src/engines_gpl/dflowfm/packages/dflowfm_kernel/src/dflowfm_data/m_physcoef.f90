@@ -70,7 +70,7 @@ module m_physcoef
    real(kind=dp) :: z0 !< [m] z0.
 
    real(kind=dp) :: vicouv !< [m2/s] Constant horizontal eddy viscosity for momentum.
-   real(kind=dp) :: dicouv !< [m2/s] Constant horizontal eddy diffusivity for salinity and sediment.
+   real(kind=dp) :: uniform_horizontal_eddy_diffusivity !< [m2/s] Uniform horizontal eddy diffusivity for constituents. {former:dicouv}
 
    real(kind=dp) :: Elder !< [-] Add Elder viscosity.
    real(kind=dp) :: Smagorinsky !< [-] Add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S.
@@ -150,7 +150,7 @@ contains
       umodlin = 1.0_dp
       wall_ks = 0.0_dp
       vicouv = 0.1_dp
-      dicouv = 0.1_dp
+      uniform_horizontal_eddy_diffusivity = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
       dicoww%scalar = 1e-6_dp

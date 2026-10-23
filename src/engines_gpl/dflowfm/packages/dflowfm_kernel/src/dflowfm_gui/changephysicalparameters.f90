@@ -74,7 +74,7 @@ contains
       it(2 * 5) = 6
       OPTION(6) = 'Vicoww                           (m2/s) '
       it(2 * 6) = 6
-      OPTION(7) = 'Dicouv                           ( )    '
+      OPTION(7) = 'uniform_horizontal_eddy_diffusivity                           ( )    '
       it(2 * 7) = 6
       OPTION(8) = 'Dicoww                           ( )    '
       it(2 * 8) = 6
@@ -186,7 +186,7 @@ contains
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
       call IFormPutDouble(2 * 5, vicouv, '(e9.2)')
       call IFormPutDouble(2 * 6, vicoww%scalar, '(e8.3)')
-      call IFORMPUTdouble(2 * 7, dicouv, '(e8.3)')
+      call IFORMPUTdouble(2 * 7, uniform_horizontal_eddy_diffusivity, '(e8.3)')
       call IFORMPUTdouble(2 * 8, dicoww%scalar, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
       call IFormPutDouble(2 * 10, Smagorinsky, '(F8.3)')
@@ -239,7 +239,7 @@ contains
             call IFormGetDouble(2 * 4, winddir)
             call IFormGetDouble(2 * 5, vicouv)
             call IFormGetDouble(2 * 6, vicoww%scalar)
-            call IFORMGetdouble(2 * 7, dicouv)
+            call IFORMGetdouble(2 * 7, uniform_horizontal_eddy_diffusivity)
             call IFORMGetdouble(2 * 8, dicoww%scalar)
             call IFormGetDouble(2 * 9, wall_ks)
             call IFormGetDouble(2 * 10, Smagorinsky)

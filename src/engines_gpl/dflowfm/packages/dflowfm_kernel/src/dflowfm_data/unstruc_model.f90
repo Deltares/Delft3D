@@ -1213,7 +1213,11 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
-      call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
+      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Dicouv', uniform_horizontal_eddy_diffusivity)
+      end if
+
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
@@ -3386,7 +3390,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
 
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
-      call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww%scalar, 'Uniform vertical eddy viscosity (m2/s)')
          call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww%scalar, 'Uniform vertical eddy diffusivity (m2/s)')

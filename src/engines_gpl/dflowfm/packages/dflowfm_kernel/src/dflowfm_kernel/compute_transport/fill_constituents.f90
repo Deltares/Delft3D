@@ -48,7 +48,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, dicoww, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, dicoww, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
@@ -113,7 +113,7 @@ contains
 !  diffusion coefficients
 
       if (ISALT /= 0) then
-         if (dicouv >= 0.0_dp) then
+         if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
             difsedu(ISALT) = DIFMOLSAL
          end if
          if (use_vertical_molecular_diffusion) then
@@ -123,7 +123,7 @@ contains
       end if
 
       if (ITEMP /= 0) then
-         if (dicouv >= 0.0_dp) then
+         if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
             difsedu(ITEMP) = DIFMOLTEM
          end if
          if (use_vertical_molecular_diffusion) then
@@ -141,7 +141,7 @@ contains
       if (ISED1 /= 0) then
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
-            if (dicouv >= 0.0_dp) then
+            if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
                difsedu(iconst) = 0.0_dp
             end if
             if (use_vertical_molecular_diffusion) then
