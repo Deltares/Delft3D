@@ -16,7 +16,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "mypy~=1.15.0",
-    "pyfakefs~=5.7.4",
+    "pyfakefs>=5.10.2",
     "pytest~=8.4.0",
     "pytest-cov~=6.2.0",
     "pytest-mock~=3.14.1",
