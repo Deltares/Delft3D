@@ -1,0 +1,2 @@
+SEG_FUNCTIONS
+ErodIM1 ErodIM2 ErodIM3
