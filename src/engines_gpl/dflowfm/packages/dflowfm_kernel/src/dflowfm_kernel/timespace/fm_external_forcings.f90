@@ -2172,7 +2172,7 @@ contains
       if (javiusp == 1) then
          do L = 1, lnx
             if (viusp(L) == dmiss) then
-               viusp(L) = vicouv
+               viusp(L) = uniform_horizontal_eddy_viscosity
             end if
          end do
       end if

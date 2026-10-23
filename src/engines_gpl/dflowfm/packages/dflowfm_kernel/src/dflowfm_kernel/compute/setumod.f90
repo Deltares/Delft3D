@@ -358,14 +358,14 @@ contains
       !updvertp
 
       ihorvic = 0
-      if (vicouv > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. Elder > 0 .or. kmx > 0) then
+      if (uniform_horizontal_eddy_viscosity > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. Elder > 0 .or. kmx > 0) then
          ihorvic = 1
       end if
       if (ihorvic > 0 .or. jaconveyance2D >= 3 .or. ndraw(29) == 37) then
          call setcornervelocities() ! must be called after ucx, ucy have been set
          call prefetch_corner_velocities(ucnx, ucny)
       end if
-      if (vicouv < 0.0_dp) then
+      if (uniform_horizontal_eddy_viscosity < 0.0_dp) then
          ihorvic = 0
       end if
 
@@ -377,7 +377,7 @@ contains
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
-               call compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+               call compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
             else
                !$OMP PARALLEL DO                                  &
                !$OMP PRIVATE(L,k1,k2)
@@ -407,7 +407,7 @@ contains
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
                   else
-                     vicc = vicouv
+                     vicc = uniform_horizontal_eddy_viscosity
                   end if
                   do L = Lb, Lt
                      vicL = 0.0_dp
@@ -625,7 +625,7 @@ contains
                if (javiusp == 1) then
                   vicl = viusp(L)
                else
-                  vicl = vicouv
+                  vicl = uniform_horizontal_eddy_viscosity
                end if
 
                delty = ba(k1) / wuw ! cell area / wall width is distance between internal point and mirror point
@@ -694,7 +694,7 @@ contains
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
-   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
       use m_physcoef, only: VON_KARMAN, sag
@@ -707,7 +707,7 @@ contains
       use m_flowtimes, only: dti
       use m_alloc, only: realloc
 
-      real(dp), intent(in) :: Smagorinsky, Elder, vicouv, vicuship, nuhfac, rhomean
+      real(dp), intent(in) :: Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, vicuship, nuhfac, rhomean
       integer, intent(in) :: javiusp, nshiptxy, ja_timestep_auto_visc
       integer, intent(in) :: jawave, swave, roller, jsferic, jasfer3D
 
@@ -819,7 +819,7 @@ contains
          if (javiusp == 1) then
             vicc = vicc + viusp(L)
          else
-            vicc = vicc + vicouv
+            vicc = vicc + uniform_horizontal_eddy_viscosity
          end if
          vicL = vicL + vicc
 

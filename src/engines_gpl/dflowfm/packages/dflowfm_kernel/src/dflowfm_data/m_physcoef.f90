@@ -69,7 +69,7 @@ module m_physcoef
                             !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
    real(kind=dp) :: z0 !< [m] z0.
 
-   real(kind=dp) :: vicouv !< [m2/s] Constant horizontal eddy viscosity for momentum.
+   real(kind=dp) :: uniform_horizontal_eddy_viscosity !< [m2/s] Uniform horizontal eddy viscosity for momentum. {former:vicouv}
    real(kind=dp) :: uniform_horizontal_eddy_diffusivity !< [m2/s] Uniform horizontal eddy diffusivity for constituents. {former:dicouv}
 
    real(kind=dp) :: Elder !< [-] Add Elder viscosity.
@@ -149,7 +149,7 @@ contains
       frcunilin = 0.0_dp
       umodlin = 1.0_dp
       wall_ks = 0.0_dp
-      vicouv = 0.1_dp
+      uniform_horizontal_eddy_viscosity = 0.1_dp
       uniform_horizontal_eddy_diffusivity = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp

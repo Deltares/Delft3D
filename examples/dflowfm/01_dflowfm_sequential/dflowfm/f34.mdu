@@ -77,7 +77,7 @@ Epshu                             = 0.0001                                      
 [physics]
 UnifFrictCoef                     = 65                                                                  # Uniform friction coefficient (0: no friction)
 UnifFrictType                     = 0                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
-Vicouv                            = 2                                                                   # Uniform horizontal eddy viscosity
+uniformHorizontalEddyViscosity                            = 2                                                                   # Uniform horizontal eddy viscosity
 Dicouv                            = 10                                                                  # Uniform horizontal eddy diffusivity
 Vicoww                            = 1E-06                                                               # Uniform vertical eddy viscosity
 Dicoww                            = 1E-06                                                               # Uniform vertical eddy diffusivity

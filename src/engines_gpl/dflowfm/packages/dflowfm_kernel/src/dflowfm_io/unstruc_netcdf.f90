@@ -8833,7 +8833,7 @@ contains
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
                   else
-                     vicc = vicouv
+                     vicc = uniform_horizontal_eddy_viscosity
                   end if
                   work1(1, LL) = viu(LL) + vicc
                end do

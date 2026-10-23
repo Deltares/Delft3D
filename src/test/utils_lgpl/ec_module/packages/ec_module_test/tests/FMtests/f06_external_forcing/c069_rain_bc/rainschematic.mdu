@@ -87,7 +87,7 @@ UnifFrictType                        = 2                                     # 0
 UnifFrictCoef1D                      = 2.3d-2                                # Uniform friction coefficient in 1D links, 0=no friction
 UnifFrictCoefLin                     = 0.                                    # Uniform linear friction coefficient for ocean models (m/s), 0=no
 Umodlin                              = 0                                     # Use 1 for linear friction umod, for ifrctyp=4,5,6
-Vicouv                               = 0.0                                   # Uniform horizontal eddy viscosity (m2/s)
+uniformHorizontalEddyViscosity                               = 0.0                                   # Uniform horizontal eddy viscosity (m2/s)
 Dicouv                               = 0.0000000                             # Uniform horizontal eddy diffusivity (m2/s)
 Vicoww                               = 0.                                    # Uniform vertical eddy viscosity  (m2/s)
 Dicoww                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)

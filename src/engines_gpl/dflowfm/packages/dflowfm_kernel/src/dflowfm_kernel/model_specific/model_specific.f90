@@ -774,7 +774,7 @@ contains
          bedslope = -0.0e-5_dp ! SPvdP: now old mdu-files still work
       end if
 
-      hev = vicouv ! horizontal eddy viscosity
+      hev = uniform_horizontal_eddy_viscosity ! horizontal eddy viscosity
 
       c0 = -0.5_dp * ag * bedslope ! g*i/2
       c2 = 0.0

@@ -366,7 +366,7 @@ contains
 
       else if (friction_type == 11) then ! Noslip
 
-         !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+vicouv)/hu(Lb)**2
+         !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+uniform_horizontal_eddy_viscosity)/hu(Lb)**2
          cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww%get(LL)) / hu(Lb)**2
 
       end if

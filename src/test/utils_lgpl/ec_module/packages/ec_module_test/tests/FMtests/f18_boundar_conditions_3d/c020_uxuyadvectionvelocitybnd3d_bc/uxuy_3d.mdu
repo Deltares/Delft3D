@@ -40,7 +40,7 @@ Hdam             = 0.                  # Threshold for minimum bottomlevel step 
 [physics]
 UnifFrictCoef    = 2.8d-2              # Uniform friction coefficient, 0=no friction
 UnifFrictType    = 1                   # 0=Chezy, 1=Manning, 2=White Colebrook, 3=z0 etc
-Vicouv           = 0.                  # Uniform horizontal eddy viscosity
+uniformHorizontalEddyViscosity           = 0.                  # Uniform horizontal eddy viscosity
 Smagorinsky      = 0.                  # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
 Elder            = 0.                  # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
 irov             = 0                   # 0=free slip, 1 = partial slip using wall_ks

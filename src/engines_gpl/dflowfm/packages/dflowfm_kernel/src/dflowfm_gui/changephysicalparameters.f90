@@ -70,7 +70,7 @@ contains
       it(2 * 3) = 6
       OPTION(4) = 'Winddirection ( ) 90= to East 0=to North'
       it(2 * 4) = 6
-      OPTION(5) = 'vicouv                           (m2/s) '
+      OPTION(5) = 'uniform_horizontal_eddy_viscosity                           (m2/s) '
       it(2 * 5) = 6
       OPTION(6) = 'Vicoww                           (m2/s) '
       it(2 * 6) = 6
@@ -184,7 +184,7 @@ contains
       call IFORMPUTinteger(2 * 2, ifrctypuni)
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
-      call IFormPutDouble(2 * 5, vicouv, '(e9.2)')
+      call IFormPutDouble(2 * 5, uniform_horizontal_eddy_viscosity, '(e9.2)')
       call IFormPutDouble(2 * 6, vicoww%scalar, '(e8.3)')
       call IFORMPUTdouble(2 * 7, uniform_horizontal_eddy_diffusivity, '(e8.3)')
       call IFORMPUTdouble(2 * 8, dicoww%scalar, '(e8.3)')
@@ -237,7 +237,7 @@ contains
             call IFORMGETinteger(2 * 2, ifrctypuni)
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
-            call IFormGetDouble(2 * 5, vicouv)
+            call IFormGetDouble(2 * 5, uniform_horizontal_eddy_viscosity)
             call IFormGetDouble(2 * 6, vicoww%scalar)
             call IFORMGetdouble(2 * 7, uniform_horizontal_eddy_diffusivity)
             call IFORMGetdouble(2 * 8, dicoww%scalar)
