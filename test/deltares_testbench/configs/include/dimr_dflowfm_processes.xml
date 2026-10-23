@@ -1489,6 +1489,99 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f030_c121_sedimentationTransportCoupling_validation_tracers" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c121_sedimentationTransportCoupling_validation_tracers</path>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_TR1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_TR2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_TR3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f030_c122_sedimentationTransportCoupling_sediments" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c122_sedimentationTransportCoupling_sediments</path>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM1S1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM2S1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM3S1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f030_c123_sedimentationTransportCoupling_sorption" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c123_sedimentationTransportCoupling_sorption</path>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_PO4" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_AAP" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_Cd" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_IM1S1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_AAPS1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_CdS1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_water_quality_output_9" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_water_quality_output_10" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_water_quality_output_11" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_water_quality_output_12" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f030_c124_sedimentationTransportCoupling_processes" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f030_water_quality_processes/c124_sedimentationTransportCoupling_processes</path>
+    <programs>
+      <program ref="dimr_plain" seq="1">
+        <arguments>
+          <argument>dimr.xml</argument>
+        </arguments>
+      </program>
+      <program ref="dimr_plain" seq="2">
+        <arguments>
+          <argument>dimr_DTP_hydro.xml</argument>
+        </arguments>
+      </program>
+      <program ref="dimr_plain" seq="3">
+        <arguments>
+          <argument>dimr_noSTC.xml</argument>
+        </arguments>
+      </program>
+    </programs>
+    <checks>
+      <file name="output/FlowFM_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_OXY" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_CBOD5" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+      <file name="output/FlowFM_DTP_hydro_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_OXY" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_CBOD5" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+      <file name="output/FlowFM_noSTC_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_OXY" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+          <parameter name="mesh2d_CBOD5" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
     <maxRunTime>1140</maxRunTime>
