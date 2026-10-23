@@ -18,6 +18,12 @@ object ReportVerschilanalyse: BuildType({
         summaries
     """.trimIndent()
 
+    features {
+        approval {
+            approvalRules = "group:VERSCHILANALYSE:1"
+        }
+    }
+
     params {
         param("current_prefix", "output/weekly/development")
         param("reference_prefix", "output/release/2025.01")

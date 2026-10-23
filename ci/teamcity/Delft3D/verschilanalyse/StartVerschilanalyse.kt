@@ -18,6 +18,12 @@ object StartVerschilanalyse : BuildType({
         cleanCheckout = true
     }
 
+    features {
+        approval {
+            approvalRules = "group:VERSCHILANALYSE:1"
+        }
+    }
+
     params {
         text("harbor_webhook.image.tag", "development", display = ParameterDisplay.PROMPT)
         param("va_harbor_protocol", "docker")
