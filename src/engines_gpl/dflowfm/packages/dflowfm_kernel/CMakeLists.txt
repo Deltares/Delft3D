@@ -166,6 +166,7 @@ target_link_libraries(${library_name} PRIVATE
                       waq_utils_c
                       waq_utils_f
                       spherepack
+                      dflowfm_io_fortran
                       PETSc::PETSc
 )
 

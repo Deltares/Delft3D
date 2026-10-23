@@ -1,0 +1,581 @@
+#include <gtest/gtest.h>
+#include <string>
+
+#include <dflowfm_io/IssueReport.h>
+
+namespace dflowfm_io::test
+{
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, DefaultConstructed_IsEmpty)
+    {
+        IssueReport report;
+
+        EXPECT_TRUE(report.GetIssues().empty());
+    }
+
+    TEST(IssueReportTest, DefaultConstructed_FormatReturnsEmptyString)
+    {
+        IssueReport report;
+
+        EXPECT_EQ(report.Format(), "");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddError (no line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddError_AddsOneIssue)
+    {
+        IssueReport report;
+
+        report.AddError("An error occurred");
+
+        EXPECT_EQ(report.GetIssues().size(), 1);
+    }
+
+    TEST(IssueReportTest, AddError_IssueHasErroreverity)
+    {
+        IssueReport report;
+
+        report.AddError("An error occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
+    }
+
+    TEST(IssueReportTest, AddError_IssueHasCorrectMessage)
+    {
+        IssueReport report;
+
+        report.AddError("An error occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "An error occurred");
+    }
+
+    TEST(IssueReportTest, AddError_IssueHasNoLineNumber)
+    {
+        IssueReport report;
+
+        report.AddError("An error occurred");
+
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddError_WithFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddError("Error code: {}", 42);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddWarning (no line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddWarning_AddsOneIssue)
+    {
+        IssueReport report;
+
+        report.AddWarning("A warning occurred");
+
+        EXPECT_EQ(report.GetIssues().size(), 1);
+    }
+
+    TEST(IssueReportTest, AddWarning_IssueHasWarningeverity)
+    {
+        IssueReport report;
+
+        report.AddWarning("A warning occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
+    }
+
+    TEST(IssueReportTest, AddWarning_IssueHasCorrectMessage)
+    {
+        IssueReport report;
+
+        report.AddWarning("A warning occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "A warning occurred");
+    }
+
+    TEST(IssueReportTest, AddWarning_IssueHasNoLineNumber)
+    {
+        IssueReport report;
+
+        report.AddWarning("A warning occurred");
+
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddWarning_WithFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddWarning("Warning on field: {}", "fieldName");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddInfo (no line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddInfo_AddsOneIssue)
+    {
+        IssueReport report;
+
+        report.AddInfo("An info message");
+
+        EXPECT_EQ(report.GetIssues().size(), 1);
+    }
+
+    TEST(IssueReportTest, AddInfo_IssueHasInfoeverity)
+    {
+        IssueReport report;
+
+        report.AddInfo("An info message");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
+    }
+
+    TEST(IssueReportTest, AddInfo_IssueHasCorrectMessage)
+    {
+        IssueReport report;
+
+        report.AddInfo("An info message");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "An info message");
+    }
+
+    TEST(IssueReportTest, AddInfo_IssueHasNoLineNumber)
+    {
+        IssueReport report;
+
+        report.AddInfo("An info message");
+
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddInfo_WithFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddInfo("Processed {} items", 5);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddDebug (no line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddDebug_AddsOneIssue)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report.GetIssues().size(), 1);
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasDebugeverity)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasCorrectMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "A debug message");
+    }
+
+    TEST(IssueReportTest, AddDebug_IssueHasNoLineNumber)
+    {
+        IssueReport report;
+
+        report.AddDebug("A debug message");
+
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddDebug_WithFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug("Debug value: {}", 7);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddError (with line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddError_WithLineNumber_IssueHasLineNumber)
+    {
+        IssueReport report;
+
+        report.AddError(10, "An error occurred");
+
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
+    }
+
+    TEST(IssueReportTest, AddError_WithLineNumber_IssueHasErroreverity)
+    {
+        IssueReport report;
+
+        report.AddError(10, "An error occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
+    }
+
+    TEST(IssueReportTest, AddError_WithLineNumberAndFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddError(10, "Error code: {}", 42);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddWarning (with line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasLineNumber)
+    {
+        IssueReport report;
+
+        report.AddWarning(20, "A warning occurred");
+
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 20);
+    }
+
+    TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasWarningeverity)
+    {
+        IssueReport report;
+
+        report.AddWarning(20, "A warning occurred");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
+    }
+
+    TEST(IssueReportTest, AddWarning_WithLineNumberAndFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddWarning(20, "Warning on field: {}", "fieldName");
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddInfo (with line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasLineNumber)
+    {
+        IssueReport report;
+
+        report.AddInfo(30, "An info message");
+
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 30);
+    }
+
+    TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasInfoeverity)
+    {
+        IssueReport report;
+
+        report.AddInfo(30, "An info message");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
+    }
+
+    TEST(IssueReportTest, AddInfo_WithLineNumberAndFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddInfo(30, "Processed {} items", 5);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
+    }
+
+    // -------------------------------------------------------------------------
+    // AddDebug (with line number)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasLineNumber)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "A debug message");
+
+        ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 40);
+    }
+
+    TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasDebugeverity)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "A debug message");
+
+        EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
+    }
+
+    TEST(IssueReportTest, AddDebug_WithLineNumberAndFormatArgs_FormatsMessage)
+    {
+        IssueReport report;
+
+        report.AddDebug(40, "Debug value: {}", 7);
+
+        EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
+    }
+
+    // -------------------------------------------------------------------------
+    // Sorting by line number
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, AddIssues_WithLineNumbers_SortedByLineNumber)
+    {
+        IssueReport report;
+
+        report.AddError(30, "Error at 30");
+        report.AddWarning(10, "Warning at 10");
+        report.AddInfo(20, "Info at 20");
+
+        ASSERT_EQ(report.GetIssues().size(), 3);
+        EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
+        EXPECT_EQ(*report.GetIssues()[1].lineNumber, 20);
+        EXPECT_EQ(*report.GetIssues()[2].lineNumber, 30);
+    }
+
+    TEST(IssueReportTest, AddIssues_WithAndWithoutLineNumbers_IssuesWithoutLineNumberComeFirst)
+    {
+        IssueReport report;
+
+        report.AddError(5, "Error at 5");
+        report.AddWarning("Warning without line");
+
+        ASSERT_EQ(report.GetIssues().size(), 2);
+        EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
+        EXPECT_TRUE(report.GetIssues()[1].lineNumber.has_value());
+    }
+
+    TEST(IssueReportTest, AddIssues_MultipleWithoutLineNumbers_PreservesInsertionOrder)
+    {
+        IssueReport report;
+
+        report.AddError("First error");
+        report.AddWarning("Second warning");
+        report.AddInfo("Third info");
+
+        ASSERT_EQ(report.GetIssues().size(), 3);
+        EXPECT_EQ(report.GetIssues()[0].message, "First error");
+        EXPECT_EQ(report.GetIssues()[1].message, "Second warning");
+        EXPECT_EQ(report.GetIssues()[2].message, "Third info");
+    }
+
+    // -------------------------------------------------------------------------
+    // Format
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, Format_SingleErrorWithoutLineNumber_ReturnsFormattedString)
+    {
+        IssueReport report;
+        report.AddError("Something went wrong");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Error: Something went wrong\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleWarningWithoutLineNumber_ReturnsFormattedString)
+    {
+        IssueReport report;
+        report.AddWarning("Something is suspicious");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Warning: Something is suspicious\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleInfoWithoutLineNumber_ReturnsFormattedString)
+    {
+        IssueReport report;
+        report.AddInfo("Something happened");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Info: Something happened\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleDebugWithoutLineNumber_ReturnsFormattedString)
+    {
+        IssueReport report;
+        report.AddDebug("Some detail");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Debug: Some detail\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleErrorWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddError(42, "Something went wrong");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Error on line 42: Something went wrong\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleWarningWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddWarning(25, "Something is suspicious");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Warning on line 25: Something is suspicious\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleInfoWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddInfo(30, "Something happened");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Info on line 30: Something happened\n");
+    }
+
+    TEST(IssueReportTest, Format_SingleDebugWithLineNumber_ReturnsFormattedStringWithLineNumber)
+    {
+        IssueReport report;
+        report.AddDebug(15, "Some detail");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Debug on line 15: Some detail\n");
+    }
+
+    TEST(IssueReportTest, Format_MultipleIssues_ReturnsAllFormattedLines)
+    {
+        IssueReport report;
+        report.AddError("An error");
+        report.AddWarning(5, "A warning");
+
+        const std::string result = report.Format();
+
+        EXPECT_EQ(result, "Error: An error\nWarning on line 5: A warning\n");
+    }
+
+    // -------------------------------------------------------------------------
+    // Format (minSeverity)
+    // -------------------------------------------------------------------------
+
+    TEST(IssueReportTest, Format_MinSeverityDebug_IncludesAllIssues)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Debug);
+
+        EXPECT_EQ(result,
+                  "Debug: A debug\n"
+                  "Info: An info\n"
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityInfo_ExcludesDebug)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Info);
+
+        EXPECT_EQ(result,
+                  "Info: An info\n"
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityWarning_ExcludesDebugAndInfo)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Warning);
+
+        EXPECT_EQ(result,
+                  "Warning: A warning\n"
+                  "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityError_IncludesOnlyErrors)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+        report.AddWarning("A warning");
+        report.AddError("An error");
+
+        const std::string result = report.Format(Severity::Error);
+
+        EXPECT_EQ(result, "Error: An error\n");
+    }
+
+    TEST(IssueReportTest, Format_MinSeverityExcludesAll_ReturnsEmptyString)
+    {
+        IssueReport report;
+        report.AddDebug("A debug");
+        report.AddInfo("An info");
+
+        const std::string result = report.Format(Severity::Warning);
+
+        EXPECT_EQ(result, "");
+    }
+
+    TEST(IssueReportTest, GetIssues_ReturnsRecordedIssues)
+    {
+        IssueReport report;
+        report.AddError("Error");
+        report.AddWarning("Warning");
+        report.AddInfo("Info");
+
+        const auto issues = report.GetIssues();
+
+        ASSERT_EQ(issues.size(), 3);
+        EXPECT_EQ(issues[0].message, "Error");
+        EXPECT_EQ(issues[1].message, "Warning");
+        EXPECT_EQ(issues[2].message, "Info");
+    }
+
+} // namespace dflowfm_io::test

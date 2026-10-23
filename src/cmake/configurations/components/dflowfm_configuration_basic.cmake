@@ -1,4 +1,14 @@
 # Specify the modules to be included
+
+# dflowfm_io (C++ libraries via FetchContent)
+if(NOT TARGET dflowfm_io)
+    # Group the fetched dflowfm_io targets in a subfolder to avoid cluttering up the VS solution
+    block()
+        set(CMAKE_FOLDER "dflowfm_io")
+        FetchContent_MakeAvailable(dflowfm_io)
+    endblock()
+endif()
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
