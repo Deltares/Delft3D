@@ -45,9 +45,9 @@ module m_physcoef
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
-   real(kind=dp) :: uniform_friction_coefficient !< [-] Uniform friction coefficient.
-   real(kind=dp) :: uniform_friction_coefficient_1D !< [-] Uniform friction coefficient in 1D links.
-   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [-] Uniform friction coefficient in 1D2D links.
+   real(kind=dp) :: uniform_friction_coefficient !< [depends on ifrctypuni] Uniform friction coefficient.
+   real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on ifrctypuni] Uniform friction coefficient in 1D links.
+   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on ifrctypuni] Uniform friction coefficient in 1D2D links.
 
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet. {former:frcunistreetinlet}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
