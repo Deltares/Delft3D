@@ -1,0 +1,23 @@
+{% set fflags = ["/fp:precise", "/arch:CORE-AVX2"] %}
+[settings]
+arch=x86_64
+compiler=msvc
+compiler.cppstd=20
+compiler.runtime=dynamic
+compiler.version=195
+fortran_compiler=ifx
+fortran_compiler.version=2026.1
+os=Windows
+
+[conf]
+## Conan has no Fortran flags conf. CMake based packages get the Fortran flags through
+## CMAKE_Fortran_FLAGS_INIT, which CMake extends with its own defaults (e.g. /nologo /fpp).
+## Packages that do not use CMakeToolchain (petsc) read user.delft3d:fflags.
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_GENERATOR_TOOLSET': {'value': 'fortran=ifx', 'cache': True, 'type': 'STRING', 'force': True}, 'CMAKE_Fortran_FLAGS_INIT': '{{ fflags | join(" ") }}'}
+tools.microsoft.bash:subsystem=cygwin
+tools.microsoft.bash:path=C:/cygwin64/bin/bash.exe
+tools.build:cflags=["/fp:precise", "/arch:AVX2"]
+tools.build:cxxflags=["/fp:precise", "/arch:AVX2"]
+user.delft3d:fflags={{ fflags }}
+## Make the flags part of the package id, so binaries built with other flags are never reused.
+tools.info.package_id:confs=["tools.build:cflags", "tools.build:cxxflags", "user.delft3d:fflags"]

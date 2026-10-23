@@ -1,0 +1,26 @@
+{% set fflags = ["-fp-model precise", "-arch CORE-AVX2"] %}
+[settings]
+arch=x86_64
+compiler=intel-cc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=2026.1
+compiler.mode=icx
+fortran_compiler=ifx
+fortran_compiler.version=2026.1
+os=Linux
+os.distro=Alma8
+
+[conf]
+tools.intel:setvars_args=--force
+tools.build:compiler_executables={"c": "/opt/intel/oneapi/compiler/2026.1/bin/icx", "cpp": "/opt/intel/oneapi/compiler/2026.1/bin/icpx", "fortran": "/opt/intel/oneapi/compiler/2026.1/bin/ifx"}
+tools.intel:installation_path="/opt/intel/oneapi"
+tools.build:cflags=["-mavx2", "-fp-model precise"]
+tools.build:cxxflags=["-mavx2", "-fp-model precise"]
+## Conan has no Fortran flags conf. CMake based packages get the Fortran flags through
+## CMAKE_Fortran_FLAGS_INIT, which CMake extends with its own defaults.
+## Packages that do not use CMakeToolchain (petsc) read user.delft3d:fflags.
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_Fortran_FLAGS_INIT': '{{ fflags | join(" ") }}'}
+user.delft3d:fflags={{ fflags }}
+## Make the flags part of the package id, so binaries built with other flags are never reused.
+tools.info.package_id:confs=["tools.build:cflags", "tools.build:cxxflags", "user.delft3d:fflags"]

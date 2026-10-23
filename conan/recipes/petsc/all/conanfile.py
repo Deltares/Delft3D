@@ -65,6 +65,28 @@ class PetscConan(ConanFile):
         cc, cxx = c_map[compiler]
         return cc, cxx, f_map[fortran]
 
+    def _extra_flags_args(self):
+        """Return PETSc configure args that add the compiler flags from the profile.
+
+        PETSc's configure does not use Conan's toolchain flags, so forward them
+        with the additive ``--<LANG>FLAGS+=`` options, which keep PETSc's default
+        (optimization) flags.
+        """
+        flags = {
+            "CFLAGS+": self.conf.get("tools.build:cflags", default=[], check_type=list),
+            "CXXFLAGS+": self.conf.get("tools.build:cxxflags", default=[], check_type=list),
+            "FFLAGS+": self.conf.get("user.delft3d:fflags", default=[], check_type=list),
+        }
+        args = []
+        for name, values in flags.items():
+            if self.settings.os == "Windows":
+                # Use the dash form of the MSVC / Intel options, like PETSc does with win32fe.
+                values = ["-" + v[1:] if v.startswith("/") else v for v in values]
+            if values:
+                joined = " ".join(values)
+                args.append(f'--{name}="{joined}"')
+        return args
+
     def validate(self):
         if self.settings.os not in ("Linux", "Windows"):
             raise ConanInvalidConfiguration(
@@ -132,6 +154,7 @@ class PetscConan(ConanFile):
             f"--with-precision={self.options.precision}",
             f"--with-64-bit-indices={1 if self.options.with_64_bit_indices else 0}",
         ]
+        args += self._extra_flags_args()
 
         self.run(f"./configure {' '.join(args)}", cwd=self.source_folder)
         self.run("make", cwd=self.source_folder)
@@ -161,6 +184,7 @@ class PetscConan(ConanFile):
                 f"--with-precision={self.options.precision}",
                 f"--with-64-bit-indices={1 if self.options.with_64_bit_indices else 0}",
             ]
+            + self._extra_flags_args()
         )
 
         src_dir = unix_path(self, self.source_folder)
