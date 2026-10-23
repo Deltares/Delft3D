@@ -700,7 +700,7 @@ contains
    subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
-      use m_physcoef, only: uniform_friction_coefficient_1D, uniform_friction_coefficient_1D2D, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, uniform_friction_coefficient, frcmax, uniform_friction_type
+      use m_physcoef, only: uniform_friction_coefficient_1D, uniform_friction_coefficient_1D2D, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, uniform_friction_coefficient, maximum_friction_coefficient, uniform_friction_type
       use m_missing, only: dmiss, imiss
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
@@ -734,8 +734,8 @@ contains
          if (ifrcutp(link) == imiss) then
             ifrcutp(link) = uniform_friction_type
          end if
-         if (frcu(link) > frcmax) then
-            frcmax = frcu(link)
+         if (frcu(link) > maximum_friction_coefficient) then
+            maximum_friction_coefficient = frcu(link)
          end if
       end do
       
