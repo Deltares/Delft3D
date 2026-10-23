@@ -207,7 +207,8 @@ contains
             if (.not. quiet_) then
                message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             end if
-            message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
+            message = 'Could not add time-space relation for forcing '''//trim(name)//''' at location '''//trim(location)// &
+                      ''' from file '''//trim(forcingfile)//'''. Check that the file is readable and contains the requested quantity.'
             call mess(LEVEL_ERROR, message)
 
             goto 1234

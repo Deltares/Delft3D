@@ -5,11 +5,18 @@
 #include <vector>
 #include <string>
 #include <expected>
+#include <array>
+#include <string_view>
 
 namespace pre_c_sumo
 {
     /* Maximum number of communicated constituents */
     constexpr int max_number_of_consituents = 10;
+
+    /// Ordered constituent slots shared by the preCICE exchange and FF2NF output.
+    inline constexpr auto constituent_ids =
+        std::to_array<std::string_view>({"C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10"});
+    static_assert(constituent_ids.size() == max_number_of_consituents);
 
     /**
      * @brief Error returned when we entounted a runtime problem.
