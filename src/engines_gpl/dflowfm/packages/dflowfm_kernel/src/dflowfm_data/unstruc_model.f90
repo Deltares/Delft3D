@@ -1203,10 +1203,13 @@ contains
          ! Fallback to deprecated property name 'UnifFrictCoef1D2D' if 'uniformFrictionCoefficient1D2D' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
       end if
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', frcunilin)
+      call prop_get(md_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_linear_friction_coefficient)
+      end if
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', frcuni1Dgrounlay)
 
-      if (frcunilin > 0) then
+      if (uniform_linear_friction_coefficient > 0) then
          jafrculin = 1
       end if
 
@@ -3400,7 +3403,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'uniformFrictionType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on uniformFrictionType].')
-      call prop_set(prop_ptr, 'physics', 'unifFrictCoefLin', frcunilin, 'Uniform linear friction coefficient')
+      call prop_set(prop_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, 'Uniform linear friction coefficient.')
       if (writeall .or. frcuni1Dgrounlay > 0) then
          call prop_set(prop_ptr, 'physics', 'unifFrictCoef1DgrLay', frcuni1Dgrounlay, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
       end if

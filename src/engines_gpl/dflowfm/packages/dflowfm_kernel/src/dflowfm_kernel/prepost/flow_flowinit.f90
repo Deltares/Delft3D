@@ -812,7 +812,7 @@ contains
       use m_flowparameters, only: jafrculin
       use m_flowgeom, only: lnx
       use m_flow, only: frculin
-      use m_physcoef, only: frcunilin
+      use m_physcoef, only: uniform_linear_friction_coefficient
       use m_missing, only: dmiss
 
       implicit none
@@ -824,7 +824,7 @@ contains
       if (jafrculin == USE_LINEAR_FRICTION) then
          do link = 1, lnx
             if (frculin(link) == dmiss) then
-               frculin(link) = frcunilin
+               frculin(link) = uniform_linear_friction_coefficient
             end if
          end do
       end if
