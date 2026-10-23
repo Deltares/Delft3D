@@ -47,7 +47,7 @@ contains
       use m_flowparameters
       use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, ifrctypuni, frcuni, taubxu, taubu
       use m_flowgeom
-      use m_physcoef, only: rhomean, sag, vonkar
+      use m_physcoef, only: rhomean, sag, VON_KARMAN
       use m_waves
       use m_bedform, only: bfmpar
       use m_vegetation
@@ -130,7 +130,7 @@ contains
          else
             cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
-         z0 = huL / (ee * (exp(vonkar * cz / sag) - 1.0_dp))
+         z0 = huL / (ee * (exp(VON_KARMAN * cz / sag) - 1.0_dp))
 
          if (modind > 0 .and. modind < 10) then
             !
@@ -217,18 +217,18 @@ contains
          ! Wave enhanced roughness heights
          if (modind == 0) then
             umod = sqrt(umodsq) ! no limitation
-            z0urou(L) = huL * exp(-1.0_dp - vonkar * cz / sag)
+            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
             rz = huL / (ee * z0urou(L))
-            cf = log(rz) / vonkar
+            cf = log(rz) / VON_KARMAN
             cwall = 1.0_dp / (cf**2)
             taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
             taubxu(L) = cwall * rhoL * umod * umod
             cfwavhi(L) = cfuhi(L)
          else if (modind == 10) then
             umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbu * fsqrtt)**2)
-            z0urou(L) = huL * exp(-1.0_dp - vonkar * cz / sag)
+            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
             rz = huL / (ee * z0urou(L))
-            cf = log(rz) / vonkar
+            cf = log(rz) / VON_KARMAN
             cwall = 1.0_dp / (cf**2)
             taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
             taubxu(L) = cwall * rhoL * umod * umod
@@ -239,7 +239,7 @@ contains
             ust = sqrt(tauwci / rhoL)
             if (ust > waveps) then
                cf = min(umod / ust, 40.0_dp) ! cz/sag
-               z0urou(L) = huL * exp(-1.0_dp - vonkar * cf)
+               z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cf)
                z0urou(L) = min(z0urou(L), 10.0_dp)
                !
             end if

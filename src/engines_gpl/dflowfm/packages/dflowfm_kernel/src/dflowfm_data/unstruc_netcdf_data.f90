@@ -300,7 +300,7 @@ module m_unstruc_netcdf_data
       integer :: id_windstressx(MAX_ID_VAR) = -1 !< Variable ID for wind stress, on cell center, x-component
       integer :: id_windstressy(MAX_ID_VAR) = -1 !< Variable ID for wind stress, on cell center, y-component
       integer :: id_air_density(MAX_ID_VAR) = -1 !< Variable ID for air density
-      integer :: id_turkin1(MAX_ID_VAR) = -1 !< Variable ID for turbulent kinetic energy
+      integer :: id_turbulent_kinetic_energy_wu(MAX_ID_VAR) = -1 !< Variable ID for turbulent kinetic energy
       integer :: id_vicwwu(MAX_ID_VAR) = -1 !< Variable ID for turbulent vertical eddy viscosity at velocity points
       integer :: id_vicwws(MAX_ID_VAR) = -1 !< Variable ID for turbulent vertical eddy viscosity at pressure points
       integer :: id_vicwws_total(MAX_ID_VAR) = -1 !< Variable ID for total vertical eddy viscosity at pressure points

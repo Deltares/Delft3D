@@ -257,7 +257,7 @@ contains
          if (allocated(FrcInternalTides2D)) then
             znod = FrcInternalTides2D(kk)
          else
-            znod = turkinws(k)
+            znod = turbulent_kinetic_energy_ws(k)
          end if
       else if (nodval == 47 .and. (jagrw > 0 .or. jadhyd > 0)) then
          select case (grwhydopt)

@@ -55,8 +55,8 @@ contains
                         baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, &
                         keepzlayeringatbed, kmxd, workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, &
                         spirucm, ht_xx, spirfx, spirsrc, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, &
-                        dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
-                        tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
+                        dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turbulent_kinetic_energy_wu_old , &
+                        turbulent_dissipation_wu_old, vicwws, turbulent_kinetic_energy_wu, vicwwu, turbulent_dissipation_wu, tke_min, eps_min, turbulent_kinetic_energy_ws, turbulent_dissipation_ws, sum_inflowing_discharges_ws, sum_q_times_turbulent_kinetic_energy_ws, sum_q_times_turbulent_dissipation_ws, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
@@ -873,14 +873,14 @@ contains
 
       if (kmx > 0) then ! turbulence arrays
 
-         call realloc(turkin0, lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
-         call aerr('turkin0(lnkx)', ierr, lnkx)
-         call realloc(turkin1, lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
-         call aerr('turkin1(lnkx)', ierr, lnkx)
-         call realloc(tureps0, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
-         call aerr('tureps0(lnkx)', ierr, lnkx)
-         call realloc(tureps1, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
-         call aerr('tureps1(lnkx)', ierr, lnkx)
+         call realloc(turbulent_kinetic_energy_wu_old , lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
+         call aerr('turbulent_kinetic_energy_wu_old (lnkx)', ierr, lnkx)
+         call realloc(turbulent_kinetic_energy_wu, lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
+         call aerr('turbulent_kinetic_energy_wu(lnkx)', ierr, lnkx)
+         call realloc(turbulent_dissipation_wu_old, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
+         call aerr('turbulent_dissipation_wu_old(lnkx)', ierr, lnkx)
+         call realloc(turbulent_dissipation_wu, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
+         call aerr('turbulent_dissipation_wu(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
          call realloc(vicwwu_total, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -896,17 +896,17 @@ contains
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
-         call realloc(turkinws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('turkinws(ndkx)', ierr, ndkx)
-         call realloc(turepsws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('turepsws(ndkx)', ierr, ndkx)
+         call realloc(turbulent_kinetic_energy_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turbulent_kinetic_energy_ws(ndkx)', ierr, ndkx)
+         call realloc(turbulent_dissipation_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turbulent_dissipation_ws(ndkx)', ierr, ndkx)
 
-         call realloc(sqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('sqcu(ndkx)', ierr, ndkx)
-         call realloc(tqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('tqcu(ndkx)', ierr, ndkx)
-         call realloc(eqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('eqcu(ndkx)', ierr, ndkx)
+         call realloc(sum_inflowing_discharges_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sum_inflowing_discharges_ws(ndkx)', ierr, ndkx)
+         call realloc(sum_q_times_turbulent_kinetic_energy_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sum_q_times_turbulent_kinetic_energy_ws(ndkx)', ierr, ndkx)
+         call realloc(sum_q_times_turbulent_dissipation_ws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sum_q_times_turbulent_dissipation_ws(ndkx)', ierr, ndkx)
       end if
 
       call realloc(z0ucur, lnx, stat=ierr, fill=epsz0, keepExisting=.false.)

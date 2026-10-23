@@ -82,12 +82,12 @@ contains
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
+      use m_physcoef, only: ag, VON_KARMAN, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
                         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0, &
-                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -97,7 +97,7 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_turbulence, only: vicwws, turkinws, rhowat
+      use m_turbulence, only: vicwws, turbulent_kinetic_energy_ws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
@@ -401,7 +401,7 @@ contains
          select case (iturbulencemodel)
          case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur = 0
-         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
+         case (TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU)
             ltur = 2
          end select
       end if
@@ -459,7 +459,7 @@ contains
                end if
             end if
             !
-            z0u = hu(L) * exp(-vonkar * czu / sag - 1.0_dp) ! differs from delft3d
+            z0u = hu(L) * exp(-VON_KARMAN * czu / sag - 1.0_dp) ! differs from delft3d
             if (Lf < 0) then
                z0curk(k) = z0curk(k) + wcl(1, L) * z0u
             else
@@ -783,7 +783,7 @@ contains
             z0rou = z0curk(nm) ! currents+potentially trachy
          end if
          !
-         chezy = sag * log(h1 / ee / z0rou) / vonkar ! consistent with getczz0
+         chezy = sag * log(h1 / ee / z0rou) / VON_KARMAN ! consistent with getczz0
          !
          ! bed shear stress as used in flow, or
          ! skin fiction following Soulsby; "Bed shear stress under
@@ -811,10 +811,10 @@ contains
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
+         ustarc = umod(nm) * VON_KARMAN / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
-         !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
+         !ustarc = umod(nm)*VON_KARMAN/log(zumod(nm)/z0rou - 1d0)
          !
          !if (scour) then
          !
@@ -911,15 +911,15 @@ contains
          dll_reals(RP_VBED) = real(vbed, hp)
          dll_reals(RP_VELBD) = real(velb, hp)
          dll_reals(RP_ZVLBD) = real(zvelb, hp)
-         dll_reals(RP_VNKAR) = real(vonkar, hp)
+         dll_reals(RP_VNKAR) = real(VON_KARMAN, hp)
          dll_reals(RP_Z0CUR) = real(z0curk(nm), hp) !   potentially with trachytopes
          dll_reals(RP_Z0ROU) = real(z0rou, hp)
          dll_reals(RP_DG) = real(dg(nm), hp)
          dll_reals(RP_DM) = real(dxx(nm, i50), hp) ! d50 mixture, not dm; following Van Rijn 2007c
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
-         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
+            dll_reals(RP_KTUR) = real(turbulent_kinetic_energy_ws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)

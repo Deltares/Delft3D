@@ -73,9 +73,13 @@ contains
       integer :: n, kb, km, km1, k, kk, ku, kku, Lb0, Lb, Lt, Lm1, L, LL, La
       real(kind=dp) :: zmin, zmax
       real(kind=dp) :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
-      real(kind=dp) :: tkebot, tkesur, tkewin
+      real(kind=dp) :: turbulent_kinetic_energy_bottom !< [m2/s2] Turbulent kinetic energy at the bottom layer; boundary condition.
+      real(kind=dp) :: turbulent_kinetic_energy_top !< [m2/s2] Turbulent kinetic energy at the top layer; boundary condition.
+      real(kind=dp) :: tkewin
       real(kind=dp) :: cewall
-      real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg
+      real(kind=dp) :: turbulent_dissipation_bottom !< [m2/s3] Turbulent dissipation at the bottom layer.
+      real(kind=dp) :: turbulent_dissipation_top !< [m2/s3] Turbulent dissipation at the top layer.
+      real(kind=dp) :: dzkap, sqcf, ulx, sg
       real(kind=dp) :: VMAX2, VMIN2
       integer :: is, Ls, LLs, Lbs, Lts
       integer :: jabruv
@@ -173,11 +177,11 @@ contains
             ustbref = sqcf * ugem ! ustb(LL)
             ustwref = ustw(LL)
 
-            viceld = vonkar * ustbref * h0 / 6.0_dp
+            viceld = VON_KARMAN * ustbref * h0 / 6.0_dp
 
             do k = kb, kt
                kk = k - kb + 1
-               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / vonkar
+               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / VON_KARMAN
             end do
 
             if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then
@@ -190,39 +194,39 @@ contains
                   zint = hwref(k) / h0
                   z1 = 1.0_dp - zint
                   zz = h0 * z1 * zint
-                  vicwref(k) = zz * ustbref * vonkar
+                  vicwref(k) = zz * ustbref * VON_KARMAN
                end do
                vicwref(0) = 0.0_dp
                vicwref(km) = 0.0_dp
 
-            else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
+            else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
 
-               tkebot = ustbref**2 / sqrt(cmukep)
+               turbulent_kinetic_energy_bottom = ustbref**2 / sqrt(cmukep)
                tkewin = ustwref**2 / sqrt(cmukep)
-               tkesur = max(tkewin, ustbref**2)
-               ! tkesur = 0d0
-               epsbot = cewall * tkebot**1.5_dp
-               epssur = cewall * tkesur**1.5_dp
+               turbulent_kinetic_energy_top = max(tkewin, ustbref**2)
+               ! turbulent_kinetic_energy_top = 0d0
+               turbulent_dissipation_bottom = cewall * turbulent_kinetic_energy_bottom**1.5_dp
+               turbulent_dissipation_top = cewall * turbulent_kinetic_energy_top**1.5_dp
 
                ! TKE and epsilon at layer interfaces:
                do k = 1, km - 1
                   zint = hwref(k) / h0
                   z1 = 1.0_dp - zint
-                  tkin1ref(k) = tkebot * z1 + tkesur * zint
-                  teps1ref(k) = (epsbot / zint + epssur / z1) / h0
+                  tkin1ref(k) = turbulent_kinetic_energy_bottom * z1 + turbulent_kinetic_energy_top * zint
+                  teps1ref(k) = (turbulent_dissipation_bottom / zint + turbulent_dissipation_top / z1) / h0
                   teps1ref(k) = max(eps_min, teps1ref(k))
                   vicwref(k) = cmukep * tkin1ref(k)**2 / abs(teps1ref(k))
                end do
 
                ! TKE, epsilon and mixing coefficients at free surface:
-               tkin1ref(km) = tkesur
-               teps1ref(km) = epssur / (hwref(km) - hwref(km - 1))
+               tkin1ref(km) = turbulent_kinetic_energy_top
+               teps1ref(km) = turbulent_dissipation_top / (hwref(km) - hwref(km - 1))
                ! TKE, epsilon and mixing coefficients at bed:
-               tkin1ref(0) = tkebot
-               teps1ref(0) = epsbot / (hwref(1) - hwref(0)) !  dzcs(kb)
+               tkin1ref(0) = turbulent_kinetic_energy_bottom
+               teps1ref(0) = turbulent_dissipation_bottom / (hwref(1) - hwref(0)) !  dzcs(kb)
 
-               dzkap = vonkar * 0.5_dp * (hwref(1) - hwref(0))
-               teps1ref(0) = epsbot / dzkap
+               dzkap = VON_KARMAN * 0.5_dp * (hwref(1) - hwref(0))
+               teps1ref(0) = turbulent_dissipation_bottom / dzkap
                vicwref(0) = ustbref * dzkap
                vicwref(km) = 0.0_dp
             end if
@@ -235,11 +239,11 @@ contains
                   do Ls = Lbs, Lts
                      k = Ls - Lbs + 1
                      u1(Ls) = csu(LLs) * ucxref(k)
-                     turkin1(Ls) = tkin1ref(k)
-                     tureps1(Ls) = teps1ref(k)
+                     turbulent_kinetic_energy_wu(Ls) = tkin1ref(k)
+                     turbulent_dissipation_wu(Ls) = teps1ref(k)
                   end do
-                  turkin1(Lbs - 1) = tkin1ref(0)
-                  tureps1(Lbs - 1) = teps1ref(0)
+                  turbulent_kinetic_energy_wu(Lbs - 1) = tkin1ref(0)
+                  turbulent_dissipation_wu(Lbs - 1) = teps1ref(0)
 
                end do
 
@@ -307,26 +311,26 @@ contains
          vmin = -vmax
          call TEKFN(3, 6, 1, ww1(kb:kt), hwref(1:), km, vmin, vmax, zmin, zmax, KLPROF, 'ww1', 1, 2, 0.0_dp, kplot)
 
-         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
-               vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmax = max(vmax, maxval(turbulent_kinetic_energy_wu(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) then
                   call TEKFN(4, 7, 0, tkin1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'tkin1', 0, 1, 0.0_dp, 0) ! interfaces
                end if
-               call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
+               call TEKFN(4, 8, 1, turbulent_kinetic_energy_wu(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
-               vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmax = max(vmax, maxval(turbulent_dissipation_wu(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) then
                   call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0.0_dp, 0) ! interfaces
                end if
-               call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0.0_dp, kplot + 1)
+               call TEKFN(5, 10, 1, turbulent_dissipation_wu(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
          end if

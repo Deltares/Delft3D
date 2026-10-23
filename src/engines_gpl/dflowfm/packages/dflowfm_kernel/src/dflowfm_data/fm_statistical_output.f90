@@ -2038,7 +2038,7 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CONST, &
                              'Wrimap_sediment', 'const', 'Constituents', &
                              '', '-', UNC_LOC_S, description='Write constiuents to map file')
-      call add_output_config(config_set_map, IDX_MAP_TURKIN1, &
+      call add_output_config(config_set_map, IDX_MAP_TURBULENT_KINETIC_ENERGY_WU, &
                              'Wrimap_turbulence', 'turkin1', 'turbulent kinetic energy', &
                              'specific_turbulent_kinetic_energy_of_sea_water', 'm2 s-2', UNC_LOC_WU)
       call add_output_config(config_set_map, IDX_MAP_VICWWU, &
@@ -2721,15 +2721,15 @@ contains
          end if
          if (model_is_3D()) then
             if (his_write_settings%tur > 0) then
-               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKIN:IPNT_TKIN + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
                end if
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
                end if
-               if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS_TOTAL:IPNT_VICWWS_TOTAL + kmx)
@@ -3171,7 +3171,7 @@ contains
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TEM1                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_SED                                                      )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_CONST                                                     )
-      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TURKIN1                                                   )
+      !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TURBULENT_KINETIC_ENERGY_WU                                                   )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_VICWWU                                                    )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TUREPS1                                                   )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_TUREPS1_3                                                 )
