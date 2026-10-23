@@ -122,7 +122,7 @@ contains
          return
       end if
 
-      call getczz0(hsk, frcuni, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
+      call getczz0(hsk, uniform_friction_coefficient, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
       sqcf = square_root_ag / cz ! sqrt(g)/C  ( )
 
       ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90

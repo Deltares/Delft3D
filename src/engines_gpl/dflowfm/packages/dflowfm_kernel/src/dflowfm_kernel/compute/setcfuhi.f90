@@ -52,7 +52,7 @@ contains
       real(kind=dp) :: h0, cz, frcn
       integer :: l
 
-      ! NOTE: When frcuni==0, the initial friction fields in frcu also become noneffective:
+      ! NOTE: When uniform_friction_coefficient==0, the initial friction fields in frcu also become noneffective:
       if (jatrt == 0 .and. (frcmax == 0.0_dp .or. ifrctypuni == -999)) then
          cfuhi = 0
          return

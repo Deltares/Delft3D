@@ -150,7 +150,7 @@ contains
       use m_CrossSections, only: fill_hashtable
       use m_alloc, only: realloc
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
+      use m_physcoef, only: IFRCTYPUNI, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -343,7 +343,7 @@ contains
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
-               longculverts(nlongculverts)%friction_value = frcuni1D
+               longculverts(nlongculverts)%friction_value = uniform_friction_coefficient_1D
             end if
 
             call prop_set(block_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value)
@@ -502,7 +502,7 @@ contains
       use m_alloc, only: realloc
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
+      use m_physcoef, only: IFRCTYPUNI, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -663,7 +663,7 @@ contains
                end if
                call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%friction_value = frcuni1D
+                  longculverts(nlongculverts)%friction_value = uniform_friction_coefficient_1D
                end if
             end if
          end if

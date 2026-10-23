@@ -70,10 +70,10 @@ jaupwindsrc                 = 1                   # 1st-order upwind advection a
 jasfer3D                    = 0                   # corrections for spherical coordinates
 
 [physics]
-UnifFrictCoef               = 2.3d-2              # Uniform friction coefficient (0: no friction)
+uniformFrictionCoefficient               = 2.3d-2              # Uniform friction coefficient (0: no friction)
 UnifFrictType               = 1                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)
-UnifFrictCoef1D             = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
-UnifFrictCoef1D2D           = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficient1D             = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficient1D2D           = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
 UnifFrictCoefLin            = 0.                  # Uniform linear friction coefficient (0: no friction)
 UnifFrictCoef1DgrLay        = 5.d-2               # Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)
 uniformHorizontalEddyViscosity                      = 1.                  # Uniform horizontal eddy viscosity (m2/s)

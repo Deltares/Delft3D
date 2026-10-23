@@ -40,7 +40,7 @@ contains
 
    subroutine belanger()
       use precision, only: dp
-      use m_physcoef, only: frcuni, ifrctypuni, ag
+      use m_physcoef, only: uniform_friction_coefficient, ifrctypuni, ag
       use fm_external_forcings_data, only: kbndz
       use m_movabs, only: movabs
       use m_lnabs, only: lnabs
@@ -69,7 +69,7 @@ contains
       ! slope = 1d-4
 
       hav = 0.5 * (h0 + h1)
-      Chezy = get_chezy(hav, frcuni, u1(L), v(L), ifrctypuni)
+      Chezy = get_chezy(hav, uniform_friction_coefficient, u1(L), v(L), ifrctypuni)
       cf = ag / Chezy**2
 
       q = 1500.0_dp / 50.0_dp

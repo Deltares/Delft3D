@@ -45,9 +45,9 @@ module m_physcoef
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
-   real(kind=dp) :: frcuni !< [-] Uniform friction coeff 2D.
-   real(kind=dp) :: frcuni1D !< [-] Uniform friction coeff 1D.
-   real(kind=dp) :: frcuni1D2D !< [-] Uniform friction coeff 1D2D.
+   real(kind=dp) :: uniform_friction_coefficient !< [-] Uniform friction coefficient.
+   real(kind=dp) :: uniform_friction_coefficient_1D !< [-] Uniform friction coefficient in 1D links.
+   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [-] Uniform friction coefficient in 1D2D links.
 
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet. {former:frcunistreetinlet}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
@@ -66,7 +66,7 @@ module m_physcoef
 
    real(kind=dp) :: wall_ks !< [m] Vertical wall Nikuradse roughness.
    real(kind=dp) :: wall_z0 !< [m] z0 for vertical walls, ~= Ks/30.
-                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
+                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=uniform_friction_coefficient
    real(kind=dp) :: z0 !< [m] z0.
 
    real(kind=dp) :: uniform_horizontal_eddy_viscosity !< [m2/s] Uniform horizontal eddy viscosity for momentum. {former:vicouv}
@@ -140,9 +140,9 @@ contains
    subroutine default_physcoef()
 
       ag = 9.81_dp
-      frcuni = 0.023_dp
-      frcuni1D = frcuni
-      frcuni1D2D = frcuni
+      uniform_friction_coefficient = 0.023_dp
+      uniform_friction_coefficient_1D = uniform_friction_coefficient
+      uniform_friction_coefficient_1D2D = uniform_friction_coefficient
       frcuni1Dgrounlay = 0.05_dp
       frcmax = 0.0_dp
       ifrctypuni = 1

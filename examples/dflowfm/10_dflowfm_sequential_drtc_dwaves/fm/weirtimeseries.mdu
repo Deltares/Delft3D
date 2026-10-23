@@ -73,7 +73,7 @@ Epshu                             = 0.0001                                      
 [physics]
 Ag                                = 9.81                                                                # Gravitational acceleration
 Rhomean                           = 1000                                                                # Average water density
-UnifFrictCoef                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
+uniformFrictionCoefficient                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
 UnifFrictType                     = 1                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
 UnifFrictCoefLin                  = 0                                                                   # Uniform linear friction coefficient for ocean models (0: no friction)
 uniformHorizontalEddyViscosity                            = 0                                                                   # Uniform horizontal eddy viscosity
@@ -92,7 +92,7 @@ InitialTemperature                = 5                                           
 Secchidepth                       = 2                                                                   # Water clarity parameter
 Stanton                           = 0.0013                                                              # Coefficient for convective heat flux
 Dalton                            = 0.0013                                                              # Coefficient for evaporative heat flux
-UnifFrictCoef1D                   = 0.023                                                               # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficient1D                   = 0.023                                                               # Uniform friction coefficient in 1D links (0: no friction)
 Vicwminb                          = 0                                                                   # Minimum viscosity in prod and buoyancy term
 Idensform                         = 2                                                                   # Density calculation (0: uniform, 1: Eckart, 2: UNESCO, 3: baroclinic case)
 Doodsonstart                      = 55.565                                                              # TRIWAQ: 55.565, D3D: 57.555

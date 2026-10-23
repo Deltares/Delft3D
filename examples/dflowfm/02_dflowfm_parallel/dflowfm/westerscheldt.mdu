@@ -76,9 +76,9 @@ Epshu                             = 0.0001                                      
 FixedWeirRelaxationcoef           = 0.6                                                                 # Fixed weir relaxation coefficient for the computation of energy loss (0 <= coefficient <= 1)
 
 [physics]
-UnifFrictCoef                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
+uniformFrictionCoefficient                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
 UnifFrictType                     = 1                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
-UnifFrictCoef1D                   = 0.023                                                               # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficient1D                   = 0.023                                                               # Uniform friction coefficient in 1D links (0: no friction)
 UnifFrictCoefLin                  = 0                                                                   # Uniform linear friction coefficient for ocean models (0: no friction)
 uniformHorizontalEddyViscosity                            = 0                                                                   # Uniform horizontal eddy viscosity
 uniformHorizontalEddyDiffusivity                            = 0                                                                   # Uniform horizontal eddy diffusivity

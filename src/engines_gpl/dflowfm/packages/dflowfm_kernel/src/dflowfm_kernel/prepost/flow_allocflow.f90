@@ -96,7 +96,7 @@ contains
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
-      use m_physcoef, only: dynroughveg, frcuni
+      use m_physcoef, only: dynroughveg, uniform_friction_coefficient
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -1004,7 +1004,7 @@ contains
          call aerr('czu(lnx)', ierr, lnx)
       end if
       if (dynroughveg > 0) then
-         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+         call realloc(frcu0, lnx, stat=ierr, fill=uniform_friction_coefficient, keepexisting=.false.)
          call aerr('frcu0(lnx)', ierr, lnx)
          call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
          call aerr('dynveg(lnx)', ierr, lnx)

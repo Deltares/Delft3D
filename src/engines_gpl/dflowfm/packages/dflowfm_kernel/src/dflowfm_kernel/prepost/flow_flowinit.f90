@@ -700,7 +700,7 @@ contains
    subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
-      use m_physcoef, only: frcuni1d, frcuni1d2d, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, frcuni, frcmax, ifrctypuni
+      use m_physcoef, only: uniform_friction_coefficient_1D, uniform_friction_coefficient_1D2D, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, uniform_friction_coefficient, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
@@ -715,7 +715,7 @@ contains
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
                if (kcu(link) == LINK_1D2D_INTERNAL) then
-                  frcu(link) = frcuni1d2d
+                  frcu(link) = uniform_friction_coefficient_1D2D
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because UNIFORM_FRICTION_COEFFICIENT_STREET_INLET is not available in the mdu file, the friction type is always manning.
                   frcu(link) = UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
@@ -725,10 +725,10 @@ contains
                   frcu(link) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
                   ifrcutp(link) = MANNING
                else
-                  frcu(link) = frcuni1d
+                  frcu(link) = uniform_friction_coefficient_1D
                end if
             else
-               frcu(link) = frcuni
+               frcu(link) = uniform_friction_coefficient
             end if
          end if
          if (ifrcutp(link) == imiss) then
@@ -2378,7 +2378,7 @@ contains
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
             hu(LL) = 5.0_dp
-            frcu(LL) = frcuni
+            frcu(LL) = uniform_friction_coefficient
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
             ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
