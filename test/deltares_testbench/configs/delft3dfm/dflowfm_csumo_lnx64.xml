@@ -43,44 +43,22 @@
         <argument>-c</argument>
       </arguments>
     </program>
-    <program name="precsumo" logOutputToFile="true" programStringRemoveQuotes="true">
-      <location ref="reference_engines" type="reference">
-        <from>lnx64</from>
+    <program name="run_fm_csumo" logOutputToFile="true" programStringRemoveQuotes="true">
+      <path>../../../../tools/precice/run_fm_csumo.sh</path>
+      <shell ref="command_prompt"/>
+      <location ref="engines_to_compare" type="check">
+        <from>teamcity_artifacts/x64</from>
       </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-      </location>
-      <path>bin/preC-SUMO</path>
-    </program>
-    <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
-      <location ref="reference_engines" type="reference">
-        <from>lnx64</from>
-      </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-      </location>
-      <path>bin/dflowfm</path>
     </program>
   </programs>
   <!--
     default testCases
     -->
   <defaultTestCases>
-    <testCase name="precsumo_trunk">
+    <testCase name="runscript_trunk">
       <programs>
-        <program ref="precsumo" seq="1">
-          <workingDirectory>cosumo</workingDirectory> 
-          <arguments>
-            <argument>-c csumo_settings.xml</argument>
-            <argument>-p ../precice_config.xml</argument>
-          </arguments>
-        </program>
-        <program ref="dflowfm" seq="1">
-          <workingDirectory>fm</workingDirectory> 
-          <arguments>
-            <argument>FlowFM.mdu</argument>
-            <argument>--precice</argument>
-          </arguments>
+        <program ref="run_fm_csumo">
+          <workingDirectory>.</workingDirectory> 
         </program>
       </programs>
       <location ref="reference_results" type="reference">
@@ -91,6 +69,7 @@
       </location>
     </testCase>
   </defaultTestCases>
+
   <!-- ======================================================================== -->
   <!--
     testCases
