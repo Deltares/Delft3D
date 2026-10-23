@@ -1,0 +1,32 @@
+# written by HYDROLIB-core 1.0.0b1
+
+[Boundary]
+quantity     = dischargebnd
+locationFile = left06.pli
+forcingFile  = left06.bc
+
+[Boundary]
+quantity     = dischargebnd
+locationFile = left07.pli
+forcingFile  = left07.bc
+
+[Boundary]
+quantity     = dischargebnd
+locationFile = left08.pli
+forcingFile  = left08.bc
+
+[Boundary]
+quantity     = neumannbnd
+locationFile = right06.pli
+forcingFile  = right06.bc
+
+[Boundary]
+quantity     = neumannbnd
+locationFile = right07.pli
+forcingFile  = right07.bc
+
+[Boundary]
+quantity     = neumannbnd
+locationFile = right08.pli
+forcingFile  = right08.bc
+
