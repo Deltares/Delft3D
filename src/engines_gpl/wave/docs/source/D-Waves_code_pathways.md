@@ -16,19 +16,23 @@ Implementation links on each page connect those responsibilities to code.
 
 In all three cases, D-Waves manages the SWAN computations and maps fields
 between the hydrodynamic (Delft3D4 or D-Flow FM) and SWAN grids. In standalone
-runs, reading saved hydrodynamic input and
-writing wave fields (`[Output] WriteCOM`) are independent choices. **Online
-runs (modes 1 and 2) always require `WriteCOM = true`:** D-Waves aborts during
-input checking otherwise.
+runs, reading saved hydrodynamic input and writing wave fields
+(`[Output] WriteCOM`) are independent choices. **Online runs (modes 1 and 2)
+always require `WriteCOM = true`:** otherwise D-Waves aborts during input
+checking.
 
-![D-Waves Code Pathways Overview](../include/dwaves_code_pathways.svg)
+![D-Waves code entry points per pathway](../include/dwaves_code_pathways.svg)
+
+The diagram above is a developer view: it lists the main code entry points of
+each pathway side by side. The preCICE panel at the bottom is reference
+material only; see the preCICE comparison at the end of this page.
 
 ## Communication models
 
 These pathways differ in who controls the calculation schedule and how
 hydrodynamic and wave fields move between components. **Control is not field
-exchange:** DelftIO (Delft3D4) and DIMR (via BMI and D-Flow FM) coordinate execution; the
-com-files carry gridded fields.
+exchange:** DelftIO (Delft3D4) and DIMR/BMI (D-Flow FM) coordinate execution,
+while the com-files carry the gridded fields.
 
 ### Delft3D4 online
 
@@ -36,10 +40,10 @@ Delft3D4 owns the simulation time loop. Delft3D4 and D-Waves run as separate
 processes. DelftIO carries initialization metadata, step/time commands and
 completion status; it does not carry the gridded hydrodynamic or wave fields.
 Those fields are read from and, when `WriteCOM` is enabled, written to
-Delft3D4 com-files, which uses NEFIS. This is a different file format
-from the NetCDF communication files used by D-Flow FM. Delft3D4's `FLNcdf`
-keyword makes the map, Fourier, history and drogue files NetCDF, but Delft3D4
-stops if `com` (or `all`) is listed
+Delft3D4 com-files, which use NEFIS. This is a different file format from the
+NetCDF communication files used by D-Flow FM. Delft3D4's `FLNcdf` keyword can
+make the map, Fourier, history and drogue files NetCDF, but Delft3D4 stops if
+`com` (or `all`) is listed for NetCDF output
 ([rdprfl.f90](../../../flow2d3d/packages/flow2d3d_io/src/input/rdprfl.f90#L162)),
 so the com-file used for D-Waves coupling is always NEFIS.
 
@@ -50,61 +54,60 @@ exchange, see the [Delft3D4 pathway details](./D-Waves_pathway_delft3d4.md).
 
 ### D-Flow FM online through DIMR/BMI
 
-DIMR controls component lifecycle and the update schedule. In the usual
+DIMR controls the component lifecycle and the update schedule. In the usual
 configuration, it initializes D-Flow FM before D-Waves and calls the components
-according to the configured schedule. DIMR sets D-Waves' mode through the BMI
-`mode` variable before initializing it, depending on where D-Waves appears in the
-`<control>` section of `dimr_config.xml`:
+according to the configured schedule. Before initializing D-Waves, DIMR sets
+D-Waves' mode through the BMI `mode` variable. The value depends on where
+D-Waves appears in the `<control>` section of `dimr_config.xml`:
 
-- D-Waves is a `<start>` inside a `<startGroup>` within a `<parallel>` block, with
-  D-Flow FM as the `<parallel>` block's own `<start>` (as in the
+- D-Waves is a `<start>` inside a `<startGroup>` within a `<parallel>` block,
+  with D-Flow FM as the `<parallel>` block's own `<start>` (as in the
   [example configuration](../../../../../examples/dflowfm/08_dflowfm_sequential_dwaves/dimr_config.xml)):
   DIMR sets mode 1 (online).
-- D-Waves is a plain `<start>` directly under `<control>`, as the first block and
-  outside any `<parallel>` block, so that DIMR drives D-Waves on its own: DIMR sets
-  mode 0 (standalone, no D-Flow FM coupling).
+- D-Waves is a plain `<start>` directly under `<control>`, as the first block
+  and outside any `<parallel>` block, so that DIMR drives D-Waves on its own:
+  DIMR sets mode 0 (standalone, no D-Flow FM coupling).
 
-A non-blank MDW `[General] FlowFile` forces mode 1 regardless of what DIMR
-sets.
+A non-blank MDW `[General] FlowFile` forces mode 1 regardless of what DIMR sets.
 
-In the coupled layout, D-Flow FM and D-Waves
-exchange fields through NetCDF communication files; BMI controls component
-execution but does not transfer gridded fields.
+In the coupled layout, D-Flow FM and D-Waves exchange fields through NetCDF
+communication files. BMI controls component execution but does not transfer
+gridded fields.
 
 For parallel D-Waves runs configured with `SwanMode=lib`, multiple D-Waves MPI
 processes participate in the SWAN solve: the master handles input/output and
-mapping, while each D-Waves rank calls `swan_lib` collectively. This D-Waves/SWAN
-MPI parallelism is distinct from D-Flow FM partitioning and DIMR's component
-schedule. See the [D-Flow FM/BMI pathway details](./D-Waves_pathway_fm_bmi.md).
+mapping, while each D-Waves rank calls `swan_lib` collectively. This
+D-Waves/SWAN MPI parallelism is distinct from D-Flow FM partitioning and
+DIMR's component schedule. See the
+[D-Flow FM/BMI pathway details](./D-Waves_pathway_fm_bmi.md).
 
 ### Standalone
 
 Standalone D-Waves owns its calculation schedule and does not start or advance
 a Delft3D4 or D-Flow FM engine. It may read saved Delft3D4 NEFIS or D-Flow FM
-NetCDF communication files. Reading hydrodynamic fields and writing wave
-fields with `WriteCOM` are independent choices; writing fields does not make the run live coupling.
-See the [standalone pathway details](./D-Waves_pathway_standalone.md).
+NetCDF communication files. Reading hydrodynamic fields and writing wave fields
+with `WriteCOM` are independent choices; writing fields does not make the run
+live coupling. See the
+[standalone pathway details](./D-Waves_pathway_standalone.md).
 
 ### Shared execution model
 
-- D-Waves prepares both map
-  directions per grid pair at initialization. It applies reverse mapping
-  and writes wave fields only when `WriteCOM` enables writeback (always the
-  case online).
-- D-Waves visits SWAN grids in configured
-  order; nested grids use parent boundary output. Delft3D4 or D-Flow FM
-  partitions, SWAN nests and D-Waves ranks are separate counts.
-- Delft3D4 online starts SWAN as
-  an executable with OpenMP. In parallel D-Flow FM/BMI runs using
-  `SwanMode=lib`,
-  D-Waves MPI ranks call the SWAN library collectively.
+- D-Waves prepares both map directions per grid pair at initialization. It
+  applies the reverse mapping and writes wave fields only when `WriteCOM`
+  enables writeback (always the case online).
+- D-Waves visits the SWAN grids in the configured order; nested grids use the
+  boundary output of their parent grid. The numbers of Delft3D4 or D-Flow FM
+  partitions, SWAN nests and D-Waves ranks are independent of each other.
+- In Delft3D4 online runs, SWAN is started as an executable that uses OpenMP.
+  In parallel D-Flow FM/BMI runs with `SwanMode=lib`, the D-Waves MPI ranks
+  call the SWAN library collectively.
 
 ### Configuration and compatibility
 
 | Setting | Role |
 |---|---|
 | D-Waves mode 0 / 1 / 2 | Standalone / online / classic Delft3D4 water-plus-mud extension. The caller supplies the initial mode (the executable's second argument, default 0; DIMR through the BMI `mode` variable). A non-blank `[General] FlowFile` then forces mode 1, and a non-blank `FlowMudFile` mode 2. Both online engines normally use mode 1. |
-| `[General] FlowFile` | MDW switch for online mode (mode 1). Only when it is non-blank, it matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route, although the manual's D-Flow FM example (A.1.3.4.2) also sets it. `FlowMudFile` adds mode 2 within the same parser branch. |
+| `[General] FlowFile` | MDW switch for online mode (mode 1). Only whether it is non-blank matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route, although the manual's D-Flow FM example (A.1.3.4.2) also sets it. `FlowMudFile` adds mode 2 within the same parser branch. |
 | `[General] ComFile` | Existing Delft3D4 offline runid selection (manual A.1.2). Legacy; read only when `FlowFile` is blank. |
 | `[Output] COMFile` | D-Flow FM NetCDF communication-file path (must end in `com.nc`); selects the D-Flow FM file route, including offline use. The old `FlowGridForCom` keyword is no longer supported and aborts the run. |
 | Hydrodynamic input selections (`FlowBedLevel`, `FlowWaterLevel`, `FlowVelocity`, ...) | Select which Delft3D4 or D-Flow FM fields D-Waves reads. |

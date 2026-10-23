@@ -73,7 +73,8 @@ digraph dwaves_pathway_delft3d4 {
     tricom_init -> st_comminfo [style=dotted, arrowhead=none, constraint=false];
     wave_init_call -> st_runids [style=dotted, arrowhead=none, constraint=false];
     settime -> st_mode [style=dotted, arrowhead=none, constraint=false];
-    diagram_credit [shape=plaintext, fontsize=8,
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
                     label="Created with Copilot from prompts, using existing code as reference."];
     {rank=sink; diagram_credit;}
     wave_finish -> diagram_credit [style=invis];

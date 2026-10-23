@@ -412,8 +412,8 @@
 <!-- diagram_credit -->
 <g id="node30" class="node">
 <title>diagram_credit</title>
-<polygon fill="#f5f7f8" stroke="transparent" points="1181,-36 915,-36 915,0 1181,0 1181,-36"/>
-<text text-anchor="middle" x="1048" y="-16.1" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#000000">Created with Copilot from prompts, using existing code as reference.</text>
+<polygon fill="#fff176" stroke="#e0c200" points="1196,-36 900,-36 900,0 1196,0 1196,-36"/>
+<text text-anchor="middle" x="1048" y="-15.8" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#000000">Created with Copilot from prompts, using existing code as reference.</text>
 </g>
 <!-- wave_master_finish&#45;&gt;diagram_credit -->
 </g>

@@ -1,5 +1,5 @@
 digraph standalone_communication {
-    graph [label="Standalone: saved fields, no live Delft3D4 or D-Flow FM engine", labelloc=t,
+    graph [label="Standalone: reads saved fields, no live Delft3D4 or D-Flow FM engine", labelloc=t,
            fontsize=18, fontname="Helvetica", rankdir=TB, nodesep=0.5,
            ranksep=0.5, pad=0.3, bgcolor="white"];
     node [shape=box, style="rounded,filled", fillcolor="#FCF5E6",
@@ -14,11 +14,11 @@ digraph standalone_communication {
         label="D-Waves: calculation schedule and file I/O"; color="#B28B42";
         init [label="Initialize grids and mappings"];
         time [label="Select calculation time\n(route-dependent schedule)"];
-        inputs [label="Prepare inputs on next SWAN grid\nread/remap saved hydrodynamic fields if selected"];
-        swan [label="Run SWAN for this grid\nseparate executable or MPI library"];
-        collect [label="Read results; accumulate output on the\nhydrodynamic grid if WriteCOM"];
+        inputs [label="Prepare inputs for the next SWAN grid;\nread and remap saved hydrodynamic fields if selected"];
+        swan [label="Run SWAN for this grid\n(separate executable or MPI library)"];
+        collect [label="Read the results; if WriteCOM, accumulate\noutput on the hydrodynamic grid"];
         nests [shape=diamond, fillcolor="white", label="More SWAN grids?"];
-        outputs [label="Write configured D-Waves results\nand optional com-file wave fields"];
+        outputs [label="Write the configured D-Waves results\nand, optionally, the wave fields to the com-file"];
         times [shape=diamond, fillcolor="white", label="More selected times?"];
         done [label="Finalize"];
         init -> time -> inputs;
@@ -34,8 +34,9 @@ digraph standalone_communication {
     saved -> init [label="grid geometry"];
     saved -> inputs [label="saved hydrodynamic fields"];
     forcing -> inputs [label="configured forcing"];
-    outputs -> saved [label="wave fields: WriteCOM only", constraint=false];
-    diagram_credit [shape=plaintext, fontsize=8,
+    outputs -> saved [label="wave fields (only with WriteCOM)", constraint=false];
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
                     label="Created with Copilot from prompts, using existing code as reference."];
     {rank=sink; diagram_credit;}
     done -> diagram_credit [style=invis];

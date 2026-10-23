@@ -1,5 +1,5 @@
 digraph delft3d4_communication {
-    graph [label="Delft3D4 online: Delft3D4 controls time, synchronized file exchange",
+    graph [label="Delft3D4 online: Delft3D4 controls the time loop, with synchronized file exchange",
            labelloc=t, fontsize=18, fontname="Helvetica", rankdir=TB,
            newrank=true, nodesep=0.6, ranksep=0.6, pad=0.3, bgcolor="white"];
     node [shape=box, style="rounded,filled", fillcolor="#E7F1FA",
@@ -8,28 +8,28 @@ digraph delft3d4_communication {
 
     subgraph cluster_flow {
         label="Delft3D4 process(es)"; color="#3B82A0";
-        fi [label="Initialize Delft3D4 and DelftIO connection"];
-        step [label="Delft3D4 time loop\nadvance to wave-coupling point"];
+        fi [label="Initialize Delft3D4 and the DelftIO connection"];
+        step [label="Delft3D4 time loop:\nadvance to the wave-coupling point"];
         publish [label="Update all domain com-files"];
-        wait [label="Master sends step/time; waits\nother Delft3D4 partitions wait"];
-        read [label="Read wave fields at Delft3D4 read point"];
+        wait [label="Master sends step/time and waits;\nother Delft3D4 partitions wait"];
+        read [label="Read wave fields at the Delft3D4 read point"];
         fi -> step -> publish -> wait -> read;
         read -> step [label="continue Delft3D4 steps", constraint=false];
     }
     com [shape=cylinder, fillcolor="#FFF9ED",
-         label="Delft3D4 com-files\nper Delft3D4 domain\nDelft3D4 and wave fields (NEFIS)"];
+         label="Delft3D4 com-files (NEFIS),\none per Delft3D4 domain,\nwith Delft3D4 and wave fields"];
     subgraph cluster_wave {
         label="D-Waves process"; color="#3B82A0";
         wi [label="Connect; read grids; prepare maps"];
         receive [label="Wait for step/time command"];
-        input [label="Read Delft3D4 fields; remap to\nnext SWAN grid"];
-        swan [label="Start SWAN as separate executable\n(SwanMode=exe default; OpenMP parallelism)\nread results; map wave fields if WriteCOM"];
+        input [label="Read Delft3D4 fields; remap them to\nthe next SWAN grid"];
+        swan [label="Start SWAN as a separate executable\n(SwanMode=exe by default; OpenMP parallelism);\nread results; map wave fields if WriteCOM"];
         more [shape=diamond, fillcolor="white", label="More SWAN grids?"];
-        write [label="Write accumulated wave fields\nif WriteCOM; report completion"];
+        write [label="Write the accumulated wave fields\n(if WriteCOM); report completion"];
         wi -> receive -> input -> swan -> more;
         more -> input [label="yes: next grid / nest", constraint=false];
         more -> write [label="no"];
-        write -> receive [label="wait for next command", constraint=false];
+        write -> receive [label="wait for the next command", constraint=false];
     }
     fi -> wi [style=dashed, label="DelftIO: domain IDs / time scale"];
     wait -> receive [style=dashed, label="DelftIO: step / time", constraint=false];
@@ -39,15 +39,16 @@ digraph delft3d4_communication {
     write -> com [label="write wave fields*", constraint=false];
     com -> read [label="read wave fields", constraint=false];
     mud [shape=note, fillcolor="#F5F7F8",
-         label="Mode 2 (Delft3D4 only, not D-Flow FM/BMI):\nadditional mud-model connection and com-file.\nD-Waves waits for water + mud and reports completion to both.\nOne water domain + one mud domain, identical grids."];
+         label="Mode 2 (Delft3D4 only, not D-Flow FM/BMI):\nadditional mud-model connection and com-file.\nD-Waves waits for both the water and the mud command\nand reports completion to both.\nRequires one water domain and one mud domain with identical grids."];
     finish [shape=note, fillcolor="#F5F7F8",
-            label="End: Delft3D4 sends DelftIO finalize; both components clean up.\nSolid: file I/O / local sequence. Dashed: inter-component control.\n* Requires WriteCOM (mandatory online); Delft3D4 input selections are independent."];
+            label="End: Delft3D4 sends the DelftIO finalize command; both components clean up.\nSolid arrows: file I/O or local sequence. Dashed arrows: inter-component control.\n* Requires WriteCOM (mandatory online); the Delft3D4 input selections are independent of it."];
     write -> mud [style=invis];
     read -> finish [style=invis];
     {rank=same; fi; wi;}
     {rank=same; wait; receive;}
     {rank=same; read; write;}
-    diagram_credit [shape=plaintext, fontsize=8,
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
                     label="Created with Copilot from prompts, using existing code as reference."];
     {rank=sink; diagram_credit;}
     finish -> diagram_credit [style=invis];

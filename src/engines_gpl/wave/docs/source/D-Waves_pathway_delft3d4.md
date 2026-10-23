@@ -1,9 +1,8 @@
 # Delft3D4-D-Waves communication model
 
 **Delft3D4 owns the time loop. DelftIO carries commands/status;
-Delft3D4 NEFIS com-files carry fields.** 
-Delft3D4 and D-Waves are separately
-launched processes, usually done by a shell/batch script.
+Delft3D4 NEFIS com-files carry fields.** Delft3D4 and D-Waves are separate
+processes, usually started by a shell or batch script.
 
 ![Delft3D4 communication model](../include/dwaves_pathway_delft3d4_detailed.svg)
 
@@ -19,9 +18,10 @@ launched processes, usually done by a shell/batch script.
 | Same com-files | D-Waves, with `WriteCOM` | Delft3D4 | Wave fields already mapped onto Delft3D4 grids. |
 | D-Waves/SWAN staged files | D-Waves / SWAN | SWAN / D-Waves | Solver inputs, nesting boundaries and results; internal to D-Waves execution. |
 
-`WaveOL` keyword in the .mdf file configures Delft3D4's online behavior; it does not launch D-Waves.
-The launcher starts both processes. Mode 1 and a blank D-Flow FM
-`[Output] COMFile` select the classic D-Waves handshake.
+The `WaveOL` keyword in the `.mdf` file configures Delft3D4's online behavior;
+it does not launch D-Waves. The launcher starts both processes. Mode 1 together
+with a blank `[Output] COMFile` (that is, no D-Flow FM file route) selects the
+classic D-Waves handshake.
 
 **Com-file format.** The com-file that Delft3D4 and D-Waves exchange is always a
 NEFIS file pair (`com-<runid>.dat` and `.def`). Delft3D4 can write its map,
@@ -47,30 +47,31 @@ its own code for reading and writing it:
   Delft3D4 writes.
 
 D-Waves selects this NEFIS path when `[Output] COMFile` is blank
-([put_wave_fields.f90](../../packages/io/src/put_wave_fields.f90#L18)). 
+([put_wave_fields.f90](../../packages/io/src/put_wave_fields.f90#L18)).
 
 ## Startup and repeated exchange
 
-1. Delft3D4 initializes its DelftIO connection; D-Waves receives domain
-   identifiers and time metadata, reads geometry and prepares maps.
-2. Delft3D4 advances internal timesteps to a configured wave-coupling point.
-   All participating Delft3D4 domains update their com-files before the master
-   requests a D-Waves calculation.
-3. D-Waves receives the step/time, reads selected Delft3D4 fields and maps them to
-   each SWAN grid. It runs the grids in configured order, including nested
-   computations using parent boundary output.
-4. D-Waves accumulates mapped results on Delft3D4 grids and writes the com-files
-   (`WriteCOM` is mandatorywhen in online mode). It then reports completion through DelftIO to Delft3D4.
-5. Delft3D4's command call returns; it reads wave fields through `setwav` at
-   its read point and continues its time loop. D-Waves waits for the next
-   command. Delft3D4 sends finalize at the end.
+1. Delft3D4 initializes its DelftIO connection. D-Waves receives the domain
+   identifiers and time metadata, reads the geometry and prepares the maps.
+2. Delft3D4 advances its internal time steps to a configured wave-coupling
+   point. All participating Delft3D4 domains update their com-files before the
+   master requests a D-Waves calculation.
+3. D-Waves receives the step/time, reads the selected Delft3D4 fields and maps
+   them to each SWAN grid. It runs the grids in the configured order, including
+   nested computations that use the boundary output of their parent grid.
+4. D-Waves accumulates the mapped results on the Delft3D4 grids and writes the
+   com-files (`WriteCOM` is mandatory in online mode). It then reports
+   completion to Delft3D4 through DelftIO.
+5. Delft3D4's command call returns. Delft3D4 reads the wave fields through
+   `setwav` at its read point and continues its time loop, while D-Waves waits
+   for the next command. Delft3D4 sends a finalize command at the end.
 
-The coupling interval need not equal Delft3D4's numerical timestep. The
-com-files are the shared field data exchange method, not used for time synchronization.
-Delft3D4 input selections gate which fields D-Waves reads; the writeback path is
-always active online because `WriteCOM` is mandatory.
-For this Delft3D4 pathway, D-Waves starts SWAN as a separate executable, which
-uses OpenMP for parallelization. 
+The coupling interval need not equal Delft3D4's numerical time step. The
+com-files only carry the fields; they are not used for time synchronization.
+Delft3D4 input selections determine which fields D-Waves reads. The writeback
+path is always active online because `WriteCOM` is mandatory. In this pathway,
+D-Waves starts SWAN as a separate executable, which uses OpenMP for
+parallelization.
 
 ## Mapping and parallel execution
 
@@ -79,24 +80,26 @@ D-Waves prepares both mapping directions per Delft3D4/SWAN grid pair using
 Delft3D4 and SWAN grids may differ in resolution and extent.
 
 On writeback, `swan_tot` calls `wave2flow` before `wave2com` and
-`put_wave_fields`, only when the com-file is a Delft3D4 NEFIS file
+`put_wave_fields`. This happens only when the com-file is a Delft3D4 NEFIS file
 (`[Output] COMFile` blank,
-[swan_tot.f90](../../packages/manager/src/swan_tot.f90#L501)). `wave2flow`
-([wave2flow.f90](../../packages/kernel/src/wave2flow.f90#L1)) rotates the
-wave force vector (`fx`, `fy`) and the mass flux vector (`mx`, `my`), which
-were mapped onto the Delft3D4 grid in Cartesian orientation at water level
-points, into components along the grid's u- and v-directions at the u- and
-v-points of the staggered curvilinear grid, using the grid angle and spacing.
-It also adjusts the wave direction for the grid orientation (`dircor`). The
-D-Flow FM route does not call it, because that grid is unstructured and needs
-no such conversion. The same call is made when a saved Delft3D4 com-file is
-used in the standalone pathway.
+[swan_tot.f90](../../packages/manager/src/swan_tot.f90#L501)).
 
-For partitioned Delft3D4 runs, all domain com-files must be ready; the master
-partition performs the D-Waves command/status exchange while other partitions
-wait. This Delft3D4 partition coordination is separate from SWAN's OpenMP
-parallelism. The SWAN-grid/nest loop remains sequential since nested SWAN is not
-SWAN grid partition or SWAN MPI ranks.
+`wave2flow` ([wave2flow.f90](../../packages/kernel/src/wave2flow.f90#L1))
+converts the wave force vector (`fx`, `fy`) and the mass flux vector (`mx`,
+`my`) to the grid orientation. These vectors were mapped onto the Delft3D4 grid
+in Cartesian orientation at the water level points. `wave2flow` rotates them
+into components along the u- and v-directions of the staggered curvilinear
+grid, at the u- and v-points, using the grid angle and spacing. It also adjusts
+the wave direction for the grid orientation (`dircor`). The D-Flow FM route does
+not call it, because that grid is unstructured and needs no such conversion.
+The same call is made when a saved Delft3D4 com-file is used in the standalone
+pathway.
+
+For partitioned Delft3D4 runs, all domain com-files must be ready. The master
+partition performs the D-Waves command/status exchange while the other
+partitions wait. This partition coordination is separate from SWAN's OpenMP
+parallelism. The SWAN grid/nest loop remains sequential: SWAN nests are not
+Delft3D4 partitions or MPI ranks.
 
 ## Fluid-mud extension: preserve both dependencies
 
@@ -107,7 +110,7 @@ domain and one mud domain with identical grids. This restriction concerns
 the water/mud grids, not the SWAN grid.
 
 This is a classic Delft3D4 extension, not a D-Flow FM/BMI mud capability or a
-general suspended-sediment option. 
+general suspended-sediment option.
 
 ## Implementation links
 
