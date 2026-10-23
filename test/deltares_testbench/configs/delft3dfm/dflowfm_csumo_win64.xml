@@ -43,6 +43,9 @@
       </location>
     </program>
   </programs>
+  <!--
+    default testCases
+    -->
   <defaultTestCases>
     <testCase name="runscript_trunk">
       <programs>
@@ -58,5 +61,9 @@
       </location>
     </testCase>
   </defaultTestCases>
+  <!-- ======================================================================== -->
+  <!--
+    testCases
+    -->
   <xi:include href="../include/delft3dfm_dflowfm_csumo.xml"/>
 </deltaresTestbench_v3>

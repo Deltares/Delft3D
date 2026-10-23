@@ -1,11 +1,8 @@
-echo Current program directory: %~dp0
-echo Current working directory: %cd%
-dir
-
 @ echo off
 
+rem This script starts both D-Flow FM and preC-SUMO. It is a temporary solution for the testbench.
+
 setlocal
-set installDir=install_fm-suite
 set bindir=%~pd0..\..\data\engines\teamcity_artifacts\x64\bin
 
 dir %bindir%

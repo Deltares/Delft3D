@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# This script starts both D-Flow FM and preC-SUMO. It is a temporary solution for the testbench.
+
 scriptdir="$(dirname "$(readlink -f ${0})")"
-installdir="${scriptDir}/../../data/engines/teamcity_artifacts/x64"
+installdir="${scriptdir}/../../data/engines/teamcity_artifacts/x64"
 bindir="$(readlink -f "${installdir}/bin")"
 libdir="$(readlink -f "${installdir}/lib")"
 export PATH="${bindir}:${PATH}"
