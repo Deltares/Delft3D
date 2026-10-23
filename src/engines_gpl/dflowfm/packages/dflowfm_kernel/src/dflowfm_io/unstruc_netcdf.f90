@@ -4882,13 +4882,13 @@ contains
          ! Trachytope roughnesses on NET links
          if (map_write_settings%trachy > 0 .and. jatrt == 1) then
 
-            if (ifrctypuni == 0) then
+            if (uniform_friction_type == 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Chezy roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm0.5s-1')
-            else if (ifrctypuni == 1) then
+            else if (uniform_friction_type == 1) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Manning roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'sm-0.333')
-            else if ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+            else if ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'White-Colebrook roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm')
             else
@@ -7874,13 +7874,13 @@ contains
             if (map_write_settings%trachy > 0 .and. jatrt == 1) then
                ! Roughness data on net-links
                ierr = nf90_def_var(imapfile, 'cftrt', nf90_double, [id_netlinkdim(iid), id_timedim(iid)], id_cftrt(iid))
-               if (ifrctypuni == 0) then
+               if (uniform_friction_type == 0) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Chezy roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm0.5s-1') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif (ifrctypuni == 1) then
+               elseif (uniform_friction_type == 1) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Manning roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'sm-0.333') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+               elseif ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'White-Colebrook roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm')
                else

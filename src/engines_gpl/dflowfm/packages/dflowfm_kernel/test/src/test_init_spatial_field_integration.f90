@@ -2471,7 +2471,7 @@ contains
    subroutine test_frictioncoefficient_with_explicit_frictiontype() bind(C)
       use m_flow, only: frcu, ifrcutp
       use m_flowgeom, only: lnx, xu, yu
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use m_Roughness, only: frictionTypeStringToInteger
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
@@ -2494,9 +2494,9 @@ contains
                        "    interpolationMethod = triangulation", &
                        "    frictionType        = Manning"])
 
-      ! ARRANGE: get expected integer for Manning and force ifrctypuni /= it
+      ! ARRANGE: get expected integer for Manning and force uniform_friction_type /= it
       call frictionTypeStringToInteger('Manning', expected_friction_type)
-      ifrctypuni = 0
+      uniform_friction_type = 0
 
       call setup_minimal_grid()
       lnx = 1

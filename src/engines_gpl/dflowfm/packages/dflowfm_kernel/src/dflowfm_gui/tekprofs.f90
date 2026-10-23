@@ -167,7 +167,7 @@ contains
          zinc = abs(zinc)
 
          if (uniform_friction_coefficient > 0 .and. jaref > 0) then
-            call getczz0(h0, uniform_friction_coefficient, ifrctypuni, cz, z00)
+            call getczz0(h0, uniform_friction_coefficient, uniform_friction_type, cz, z00)
             ugem = Cz * sqrt(h0 * zinc)
             sqcf = square_root_ag / Cz
             ustbref = sqcf * ugem ! ustb(LL)

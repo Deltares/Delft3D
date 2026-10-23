@@ -45,9 +45,9 @@ module m_physcoef
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
-   real(kind=dp) :: uniform_friction_coefficient !< [depends on ifrctypuni] Uniform friction coefficient.
-   real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on ifrctypuni] Uniform friction coefficient in 1D links.
-   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on ifrctypuni] Uniform friction coefficient in 1D2D links.
+   real(kind=dp) :: uniform_friction_coefficient !< [depends on uniform_friction_type] Uniform friction coefficient.
+   real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D links.
+   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D2D links.
 
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet. {former:frcunistreetinlet}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
@@ -60,7 +60,7 @@ module m_physcoef
    real(kind=dp) :: droot !< [m] Root depth for dynamic roughness vegetation, range 0-100m, default 0.5m.
    real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
-   integer :: ifrctypuni !< [-] 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D).
+   integer :: uniform_friction_type !< [-] Uniform friction type (0: chezy, 1: manning, 2: white colebrook D3D, 3: white colebrook Waqua (now only 2D)).
    real(kind=dp) :: frcunilin !< [-] Uniform friction coefficient.
    real(kind=dp) :: umodlin !< [m/s] Linear friction umod, friction type 4,5,6.
 
@@ -145,7 +145,7 @@ contains
       uniform_friction_coefficient_1D2D = uniform_friction_coefficient
       frcuni1Dgrounlay = 0.05_dp
       frcmax = 0.0_dp
-      ifrctypuni = 1
+      uniform_friction_type = 1
       frcunilin = 0.0_dp
       umodlin = 1.0_dp
       wall_ks = 0.0_dp

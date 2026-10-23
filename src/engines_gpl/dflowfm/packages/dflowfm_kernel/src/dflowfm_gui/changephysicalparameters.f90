@@ -64,7 +64,7 @@ contains
       NLEVEL = 4
       OPTION(1) = 'uniform_friction_coefficient                                  '
       it(2 * 1) = 6
-      OPTION(2) = 'ifrctypuni Friction formulation         '
+      OPTION(2) = 'uniform_friction_type Friction formulation         '
       it(2 * 2) = 2
       OPTION(3) = 'Windspeed     (m/s)                     '
       it(2 * 3) = 6
@@ -181,7 +181,7 @@ contains
 
       frcuniorg = uniform_friction_coefficient
       call IFormPutDouble(2 * 1, uniform_friction_coefficient, '(F8.3)')
-      call IFORMPUTinteger(2 * 2, ifrctypuni)
+      call IFORMPUTinteger(2 * 2, uniform_friction_type)
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
       call IFormPutDouble(2 * 5, uniform_horizontal_eddy_viscosity, '(e9.2)')
@@ -234,7 +234,7 @@ contains
          if (KEY == 22) then
 
             call IFormGetDouble(2 * 1, uniform_friction_coefficient)
-            call IFORMGETinteger(2 * 2, ifrctypuni)
+            call IFORMGETinteger(2 * 2, uniform_friction_type)
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
             call IFormGetDouble(2 * 5, uniform_horizontal_eddy_viscosity)

@@ -45,7 +45,7 @@ contains
       use m_getymxpar, only: getymxpar
       use m_sferic
       use m_flowparameters
-      use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, ifrctypuni, uniform_friction_coefficient, taubxu, taubu
+      use m_flow, only: rhomean, ag, hu, jaconveyance2D, u1, v, frcu, ifrcutp, z0urou, cfuhi, uniform_friction_type, uniform_friction_coefficient, taubxu, taubu
       use m_flowgeom
       use m_physcoef, only: rhomean, square_root_ag, VON_KARMAN
       use m_waves
@@ -128,7 +128,7 @@ contains
          if (frcu(L) > 0.0_dp) then
             cz = get_chezy(huL, real(frcu(L), kind=dp), u1(L), v(L), ifrcutp(L))
          else
-            cz = get_chezy(huL, uniform_friction_coefficient, u1(L), v(L), ifrctypuni)
+            cz = get_chezy(huL, uniform_friction_coefficient, u1(L), v(L), uniform_friction_type)
          end if
          z0 = huL / (ee * (exp(VON_KARMAN * cz / square_root_ag) - 1.0_dp))
 

@@ -72,7 +72,7 @@ TransportMethod                      = 1                                     # T
  
 [physics]
 uniformFrictionCoefficient                        = 65.0000000                            # Uniform friction coefficient, 0=no friction
-UnifFrictType                        = 0                                     # 0=Chezy, 1=Manning, 2=White Colebrook, 3=idem, WAQUA style
+uniformFrictiontype                        = 0                                     # 0=Chezy, 1=Manning, 2=White Colebrook, 3=idem, WAQUA style
 uniformFrictionCoefficient1D                      = 2.3d-2                                # Uniform friction coefficient in 1D links, 0=no friction
 UnifFrictCoefLin                     = 0.                                    # Uniform linear friction coefficient for ocean models (m/s), 0=no
 Umodlin                              = 0                                     # linear friction umod , ifrctyp 4,5,6

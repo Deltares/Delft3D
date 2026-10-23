@@ -86,7 +86,7 @@ SetHorizontalBobsFor1d2d= 1
 
 [physics]
 uniformFrictionCoefficient     = 0.023
-UnifFrictType     = 1
+uniformFrictiontype     = 1
 uniformFrictionCoefficient1D   = 0.023
 UnifFrictCoefLin  = 0
 Umodlin           = 0

@@ -71,7 +71,7 @@ jasfer3D                    = 0                   # corrections for spherical co
 
 [physics]
 uniformFrictionCoefficient               = 2.3d-2              # Uniform friction coefficient (0: no friction)
-UnifFrictType               = 1                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)
+uniformFrictiontype               = 1                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)
 uniformFrictionCoefficient1D             = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
 uniformFrictionCoefficient1D2D           = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
 UnifFrictCoefLin            = 0.                  # Uniform linear friction coefficient (0: no friction)

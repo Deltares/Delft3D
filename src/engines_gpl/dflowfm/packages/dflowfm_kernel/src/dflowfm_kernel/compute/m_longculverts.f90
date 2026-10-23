@@ -150,7 +150,7 @@ contains
       use m_CrossSections, only: fill_hashtable
       use m_alloc, only: realloc
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, uniform_friction_coefficient_1D
+      use m_physcoef, only: uniform_friction_type, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -333,7 +333,7 @@ contains
 
             call prop_get(str_ptr, '', 'frictionType', typestr, success)
             if (.not. success) then
-               longculverts(nlongculverts)%friction_type = ifrctypuni
+               longculverts(nlongculverts)%friction_type = uniform_friction_type
             else
                call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
             end if
@@ -502,7 +502,7 @@ contains
       use m_alloc, only: realloc
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, uniform_friction_coefficient_1D
+      use m_physcoef, only: uniform_friction_type, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -657,7 +657,7 @@ contains
                end if
                call prop_get(str_ptr, '', 'frictionType', typestr, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%friction_type = ifrctypuni
+                  longculverts(nlongculverts)%friction_type = uniform_friction_type
                else
                   call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
                end if

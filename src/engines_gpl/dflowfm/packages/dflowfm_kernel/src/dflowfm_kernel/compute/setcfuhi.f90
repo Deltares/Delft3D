@@ -44,7 +44,7 @@ contains
    !! sqrt(g/C2) in both in 2D and in 3D
    subroutine setcfuhi()
       use precision, only: dp
-      use m_flow, only: jatrt, frcmax, ifrctypuni, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, VON_KARMAN, square_root_ag, epsz0, z0urou
+      use m_flow, only: jatrt, frcmax, uniform_friction_type, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, VON_KARMAN, square_root_ag, epsz0, z0urou
       use m_flowgeom, only: lnx, lnx1d
       use m_get_chezy, only: get_chezy
 
@@ -53,7 +53,7 @@ contains
       integer :: l
 
       ! NOTE: When uniform_friction_coefficient==0, the initial friction fields in frcu also become noneffective:
-      if (jatrt == 0 .and. (frcmax == 0.0_dp .or. ifrctypuni == -999)) then
+      if (jatrt == 0 .and. (frcmax == 0.0_dp .or. uniform_friction_type == -999)) then
          cfuhi = 0
          return
       end if
@@ -62,7 +62,7 @@ contains
       end if
 
       if (kmx <= 1) then ! 2D
-         if (ifrctypuni == 4) then
+         if (uniform_friction_type == 4) then
             cfuhi = 0
          else
 

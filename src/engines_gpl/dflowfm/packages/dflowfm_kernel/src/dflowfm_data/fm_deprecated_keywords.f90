@@ -47,6 +47,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef', DEPRECATED, 'Use uniformFrictionCoefficient instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef1D', DEPRECATED, 'Use uniformFrictionCoefficient1D instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef1D2D', DEPRECATED, 'Use uniformFrictionCoefficient1D2D instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'UnifFrictType', DEPRECATED, 'Use uniformFrictionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'vicouv', DEPRECATED, 'Use uniformHorizontalEddyViscosity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'dicouv', DEPRECATED, 'Use uniformHorizontalEddyDiffusivity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
