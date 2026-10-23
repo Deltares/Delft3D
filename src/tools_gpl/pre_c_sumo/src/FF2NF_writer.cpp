@@ -40,7 +40,7 @@ namespace
         parent.append_child(child_name).text() = text;
     }
 
-    void addConstituentNames(pugi::xml_node& subgrid_model, const std::vector<std::string_view>& names)
+    void addConstituentNames(pugi::xml_node& subgrid_model, const std::vector<std::string>& names)
     {
         addMultiLineChild(subgrid_model, "constituentsNames", names);
     }
