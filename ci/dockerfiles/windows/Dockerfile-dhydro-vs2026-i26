@@ -69,8 +69,8 @@ ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
 
 # Install python and conan
 RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH\"
-RUN uv python install 3.12 --default
-RUN uv tool install 'conan ~= 2.30.0'
+RUN uv python install 3.14 --default
+RUN uv tool install 'conan ~= 2.33.0'
 
 ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
 # Install and clean up the package cache in a single layer. The cache uses very

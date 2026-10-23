@@ -39,7 +39,7 @@ object TestPythonCiTools : BuildType({
     }
 
     params {
-        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
+        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.14")
     }  
 
     triggers {
