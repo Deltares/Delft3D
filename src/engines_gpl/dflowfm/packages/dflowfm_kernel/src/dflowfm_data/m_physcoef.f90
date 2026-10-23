@@ -53,7 +53,7 @@ module m_physcoef
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< [-] Uniform friction coefficient for roof. {former:frcuniroof}
 
-   real(kind=dp) :: frcuni1Dgrounlay !< [-] Uniform friction coeff groundlayer.
+   real(kind=dp) :: uniform_groundlayer_friction_coefficient !< [m/s] Uniform groundlayer friction coefficient for ocean models.
    real(kind=dp) :: frcmax !< [-] Max friction coeff in frcu.
    integer :: dynroughveg !< [-] 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction.
    real(kind=dp) :: frcu_no_vegetation !< [s/m^(1/3)] Base (Manning) friction (without vegetation), default 0.023.
@@ -143,7 +143,7 @@ contains
       uniform_friction_coefficient = 0.023_dp
       uniform_friction_coefficient_1D = uniform_friction_coefficient
       uniform_friction_coefficient_1D2D = uniform_friction_coefficient
-      frcuni1Dgrounlay = 0.05_dp
+      uniform_groundlayer_friction_coefficient = 0.05_dp
       frcmax = 0.0_dp
       uniform_friction_type = 1
       uniform_linear_friction_coefficient = 0.0_dp

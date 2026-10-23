@@ -1203,11 +1203,18 @@ contains
          ! Fallback to deprecated property name 'UnifFrictCoef1D2D' if 'uniformFrictionCoefficient1D2D' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
       end if
+
       call prop_get(md_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, success)
       if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoefLin' if 'uniformLinearFrictionCoefficient' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_linear_friction_coefficient)
       end if
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', frcuni1Dgrounlay)
+
+      call prop_get(md_ptr, 'physics', 'uniformGroundlayerFrictionCoefficient', uniform_groundlayer_friction_coefficient, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoef1DgrLay' if 'uniformGroundlayerFrictionCoefficient' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', uniform_groundlayer_friction_coefficient)
+      end if
 
       if (uniform_linear_friction_coefficient > 0) then
          jafrculin = 1
@@ -3404,8 +3411,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on uniformFrictionType].')
       call prop_set(prop_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, 'Uniform linear friction coefficient.')
-      if (writeall .or. frcuni1Dgrounlay > 0) then
-         call prop_set(prop_ptr, 'physics', 'unifFrictCoef1DgrLay', frcuni1Dgrounlay, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
+      if (writeall .or. uniform_groundlayer_friction_coefficient > 0) then
+         call prop_set(prop_ptr, 'physics', 'uniformGroundlayerFrictionCoefficient', uniform_groundlayer_friction_coefficient, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
       end if
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
