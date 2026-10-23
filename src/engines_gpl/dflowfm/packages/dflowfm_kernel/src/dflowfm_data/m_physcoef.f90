@@ -42,16 +42,16 @@ module m_physcoef
    real(kind=dp) :: sag !< [m^(1/2)/s] Square root of gravitational acceleration.
    integer :: jahelmert = 0 !< [-] 1=use Helmerts equation for agp only.
 
-   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant.
-   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations.
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
    real(kind=dp) :: frcuni !< [-] Uniform friction coeff 2D.
    real(kind=dp) :: frcuni1D !< [-] Uniform friction coeff 1D.
    real(kind=dp) :: frcuni1D2D !< [-] Uniform friction coeff 1D2D.
 
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet.
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe.
-   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< [-] Uniform friction coefficient for roof.
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet. {former:frcunistreetinlet}
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
+   real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< [-] Uniform friction coefficient for roof. {former:frcuniroof}
 
    real(kind=dp) :: frcuni1Dgrounlay !< [-] Uniform friction coeff groundlayer.
    real(kind=dp) :: frcmax !< [-] Max friction coeff in frcu.
@@ -125,8 +125,8 @@ module m_physcoef
    integer :: Jadelvappos !< [-] Only positive forced evaporation fluxes.
    real(kind=dp) :: free_convection_coefficient !< [-] Free convection turbulence coefficient.
 
-   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents.
-   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion.
+   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents. {former:tetav}
+   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion. {former:tetavkeps}
 
    real(kind=dp) :: locsaltlev !< [ppt] Salinity level for case of lock exchange.
    real(kind=dp) :: locsaltmin !< [ppt] Minimum salinity for case of lock exchange.
