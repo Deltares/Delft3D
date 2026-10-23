@@ -717,7 +717,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'AngLat', anglat)
       call prop_get(md_ptr, 'geometry', 'AngLon', anglon)
 
-      call prop_get(md_ptr, 'geometry', 'Helmert', jaHelmert)
+      call prop_get(md_ptr, 'geometry', 'Helmert', use_helmert)
 
       call prop_get(md_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D)
       call prop_get(md_ptr, 'geometry', 'Conveyance3D', Jaconveyance3D)
@@ -1176,26 +1176,54 @@ contains
 
       ! Physics
 
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
+      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient', uniform_friction_coefficient, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoef' if 'uniformFrictionCoefficient' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient)
+      end if
 
-      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of frcuni
-      frcuni1D = frcuni
-      frcuni1D2D = frcuni
+      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of uniform_friction_coefficient
+      uniform_friction_coefficient_1D = uniform_friction_coefficient
+      uniform_friction_coefficient_1D2D = uniform_friction_coefficient
 
-      call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', frcunilin)
-      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', frcuni1Dgrounlay)
+      call prop_get(md_ptr, 'physics', 'uniformFrictiontype', uniform_friction_type, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictType' if 'uniformFrictiontype' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
+      end if
 
-      if (frcunilin > 0) then
+      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoef1D' if 'uniformFrictionCoefficient1D' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoef1D2D' if 'uniformFrictionCoefficient1D2D' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoefLin' if 'uniformLinearFrictionCoefficient' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_linear_friction_coefficient)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'uniformGroundlayerFrictionCoefficient', uniform_groundlayer_friction_coefficient, success)
+      if (.not. success) then
+         ! Fallback to deprecated property name 'UnifFrictCoef1DgrLay' if 'uniformGroundlayerFrictionCoefficient' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', uniform_groundlayer_friction_coefficient)
+      end if
+
+      if (uniform_linear_friction_coefficient > 0) then
          jafrculin = 1
       end if
 
       ! Additions for dynamic roughness for storm impacts with morphology
       call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynroughveg)
       if (dynroughveg /= 0) then
-         if (ifrctypuni /= 1) then
+         if (uniform_friction_type /= 1) then
             call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness. Switched off.')
             dynroughveg = 0
          else
@@ -1212,8 +1240,18 @@ contains
       end if
 
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
-      call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
-      call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
+      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, success)
+      if (.not. success) then
+         ! Fallback to the deprecated name if 'uniformHorizontalEddyViscosity' is not found.
+         call prop_get(md_ptr, 'physics', 'Vicouv', uniform_horizontal_eddy_viscosity)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, success)
+      if (.not. success) then
+         ! Fallback to the deprecated name if 'uniformHorizontalEddyDiffusivity' is not found.
+         call prop_get(md_ptr, 'physics', 'Dicouv', uniform_horizontal_eddy_diffusivity)
+      end if
+
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww%scalar)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
@@ -2872,8 +2910,8 @@ contains
       call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N [deg], 0 = on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling.')
       call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W [deg], 0 = Greenwich Mean Time. Only required for heat flux modelling.')
 
-      if (writeall .or. jahelmert > 0) then
-         call prop_set(prop_ptr, 'geometry', 'Helmert', jaHelmert, 'HELMERT yes/no, 1/0')
+      if (writeall .or. use_helmert > 0) then
+         call prop_set(prop_ptr, 'geometry', 'Helmert', use_helmert, 'Use Helmerts equation for agp only (0: no, 1: yes)')
       end if
 
       call prop_set(prop_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D, '-1: R=HU,0: R=H, 1: R=A/P, 2: K=analytic-1D conv, 3: K=analytic-2D conv')
@@ -3368,13 +3406,13 @@ contains
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
 
       ! Physics
-      call prop_set(prop_ptr, 'physics', 'unifFrictCoef', frcuni, 'Uniform friction coefficient [the unit depends on unifFrictType].')
-      call prop_set(prop_ptr, 'physics', 'unifFrictType', ifrctypuni, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
-      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D', frcuni1D, 'Uniform friction coefficient in 1D links [the unit depends on unifFrictType].')
-      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D2D', frcuni1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on unifFrictType].')
-      call prop_set(prop_ptr, 'physics', 'unifFrictCoefLin', frcunilin, 'Uniform linear friction coefficient')
-      if (writeall .or. frcuni1Dgrounlay > 0) then
-         call prop_set(prop_ptr, 'physics', 'unifFrictCoef1DgrLay', frcuni1Dgrounlay, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
+      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient', uniform_friction_coefficient, 'Uniform friction coefficient [the unit depends on uniformFrictionType].')
+      call prop_set(prop_ptr, 'physics', 'uniformFrictionType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
+      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
+      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on uniformFrictionType].')
+      call prop_set(prop_ptr, 'physics', 'uniformLinearFrictionCoefficient', uniform_linear_friction_coefficient, 'Uniform linear friction coefficient.')
+      if (writeall .or. uniform_groundlayer_friction_coefficient > 0) then
+         call prop_set(prop_ptr, 'physics', 'uniformGroundlayerFrictionCoefficient', uniform_groundlayer_friction_coefficient, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
       end if
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
@@ -3385,8 +3423,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', frcu_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
       call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
 
-      call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
-      call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww%scalar, 'Uniform vertical eddy viscosity (m2/s)')
          call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww%scalar, 'Uniform vertical eddy diffusivity (m2/s)')

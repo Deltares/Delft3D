@@ -49,7 +49,7 @@ contains
                         s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
-                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, VISKIN, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
@@ -174,7 +174,7 @@ contains
          do LL = 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb - 1, Lt
-               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+               vicwwu_total(L) = VISKIN + vicwwu(L) + vicoww%get(LL)
             end do
          end do
          call links_to_centers(vicwws_total, vicwwu_total)

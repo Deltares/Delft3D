@@ -166,18 +166,18 @@ contains
          end if
          zinc = abs(zinc)
 
-         if (frcuni > 0 .and. jaref > 0) then
-            call getczz0(h0, frcuni, ifrctypuni, cz, z00)
+         if (uniform_friction_coefficient > 0 .and. jaref > 0) then
+            call getczz0(h0, uniform_friction_coefficient, uniform_friction_type, cz, z00)
             ugem = Cz * sqrt(h0 * zinc)
-            sqcf = sag / Cz
+            sqcf = square_root_ag / Cz
             ustbref = sqcf * ugem ! ustb(LL)
             ustwref = ustw(LL)
 
-            viceld = vonkar * ustbref * h0 / 6.0_dp
+            viceld = VON_KARMAN * ustbref * h0 / 6.0_dp
 
             do k = kb, kt
                kk = k - kb + 1
-               ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / vonkar
+               ucxref(kk) = sg * ustbref * log(C9OF1 + hcref(kk) / z00) / VON_KARMAN
             end do
 
             if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then
@@ -190,7 +190,7 @@ contains
                   zint = hwref(k) / h0
                   z1 = 1.0_dp - zint
                   zz = h0 * z1 * zint
-                  vicwref(k) = zz * ustbref * vonkar
+                  vicwref(k) = zz * ustbref * VON_KARMAN
                end do
                vicwref(0) = 0.0_dp
                vicwref(km) = 0.0_dp
@@ -221,7 +221,7 @@ contains
                tkin1ref(0) = tkebot
                teps1ref(0) = epsbot / (hwref(1) - hwref(0)) !  dzcs(kb)
 
-               dzkap = vonkar * 0.5_dp * (hwref(1) - hwref(0))
+               dzkap = VON_KARMAN * 0.5_dp * (hwref(1) - hwref(0))
                teps1ref(0) = epsbot / dzkap
                vicwref(0) = ustbref * dzkap
                vicwref(km) = 0.0_dp
@@ -295,7 +295,7 @@ contains
          end if
 
          ! vmax = 0.1d0  ; vmin = 0d0
-         ! if (frcuni > 0 .and. ndraw(35) == 1 ) then
+         ! if (uniform_friction_coefficient > 0 .and. ndraw(35) == 1 ) then
          ! call TEKFN(3, 5, 0, dijdijref(1:), hwref(1:) , km-1, vmin, vmax, zmin, zmax,  31, 'dijdij'    , 0, 1 , 0d0,0)   ! interfaces
          ! endif
          ! call TEKFN(3, 6, 1, dijdij(1:)   , hwref(1:) , km-1, vmin, vmax, zmin, zmax, KLAXS, 'dijdij'    , 0, 2 , 0d0,kplot)
@@ -309,7 +309,7 @@ contains
 
          if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
 
-            if (frcuni > 0 .and. ndraw(35) == 1) then
+            if (uniform_friction_coefficient > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
                vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin + 1.0e-5_dp)
@@ -319,7 +319,7 @@ contains
                call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
-            if (frcuni > 0 .and. ndraw(35) == 1) then
+            if (uniform_friction_coefficient > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp
                vmax = 0.0_dp
                vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1.0e-5_dp)
@@ -351,7 +351,7 @@ contains
             !   call TEKFN(6,11, 1, constituents(iconst,kb:kt)  , hcref  , km, vmin, vmax, zmin, zmax, 221, 'all seds', 1, 2 , 0d0,kplot)
             !end do
 
-         else if (frcuni > 0 .and. ndraw(35) == 1 .and. LL > 0) then
+         else if (uniform_friction_coefficient > 0 .and. ndraw(35) == 1 .and. LL > 0) then
             ! if (jaref > 0) call TEKFN(5, 9, 0, teps1ref    , hwref   , km1, vmin, vmax, zmin, zmax,  31, 'teps1'      , 0, 1 , 0d0,0)   ! interfaces
             dijdij(1:km - 1) = (vicwwu(Lb:Lt - 1) + vicoww%get(LL)) * (u1(Lb + 1:Lt) - u1(Lb:Lt - 1)) * 2.0_dp / (hu(Lb + 1:Lt) + hu(Lb:Lt - 1))
             dijdij(0) = ustb(L) * ustb(L)

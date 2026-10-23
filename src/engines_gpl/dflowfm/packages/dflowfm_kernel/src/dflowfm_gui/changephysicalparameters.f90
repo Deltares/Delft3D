@@ -62,19 +62,19 @@ contains
       real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
-      OPTION(1) = 'frcuni                                  '
+      OPTION(1) = 'uniform_friction_coefficient                                  '
       it(2 * 1) = 6
-      OPTION(2) = 'ifrctypuni Friction formulation         '
+      OPTION(2) = 'uniform_friction_type Friction formulation         '
       it(2 * 2) = 2
       OPTION(3) = 'Windspeed     (m/s)                     '
       it(2 * 3) = 6
       OPTION(4) = 'Winddirection ( ) 90= to East 0=to North'
       it(2 * 4) = 6
-      OPTION(5) = 'vicouv                           (m2/s) '
+      OPTION(5) = 'uniform_horizontal_eddy_viscosity                           (m2/s) '
       it(2 * 5) = 6
       OPTION(6) = 'Vicoww                           (m2/s) '
       it(2 * 6) = 6
-      OPTION(7) = 'Dicouv                           ( )    '
+      OPTION(7) = 'uniform_horizontal_eddy_diffusivity                           ( )    '
       it(2 * 7) = 6
       OPTION(8) = 'Dicoww                           ( )    '
       it(2 * 8) = 6
@@ -179,21 +179,21 @@ contains
          call IFORMATTRIBUTEN(IR, 0, 0, 7)
       end do
 
-      frcuniorg = frcuni
-      call IFormPutDouble(2 * 1, frcuni, '(F8.3)')
-      call IFORMPUTinteger(2 * 2, ifrctypuni)
+      frcuniorg = uniform_friction_coefficient
+      call IFormPutDouble(2 * 1, uniform_friction_coefficient, '(F8.3)')
+      call IFORMPUTinteger(2 * 2, uniform_friction_type)
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
-      call IFormPutDouble(2 * 5, vicouv, '(e9.2)')
+      call IFormPutDouble(2 * 5, uniform_horizontal_eddy_viscosity, '(e9.2)')
       call IFormPutDouble(2 * 6, vicoww%scalar, '(e8.3)')
-      call IFORMPUTdouble(2 * 7, dicouv, '(e8.3)')
+      call IFORMPUTdouble(2 * 7, uniform_horizontal_eddy_diffusivity, '(e8.3)')
       call IFORMPUTdouble(2 * 8, dicoww%scalar, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
       call IFormPutDouble(2 * 10, Smagorinsky, '(F8.3)')
       call IFormPutDouble(2 * 11, Elder, '(F8.3)')
-      call IFormPutDouble(2 * 12, frcuni1D, '(F8.3)')
-      call IFormPutDouble(2 * 13, frcuni1D2D, '(F8.3)')
-      call IFormPutDouble(2 * 14, frcuni1Dgrounlay, '(F8.3)')
+      call IFormPutDouble(2 * 12, uniform_friction_coefficient_1D, '(F8.3)')
+      call IFormPutDouble(2 * 13, uniform_friction_coefficient_1D2D, '(F8.3)')
+      call IFormPutDouble(2 * 14, uniform_groundlayer_friction_coefficient, '(F8.3)')
       call IFormPutDouble(2 * 15, rainuni, '(F8.3)')
 
       !  Display the form with numeric fields left justified
@@ -233,24 +233,24 @@ contains
       else if (KEY == 22 .or. KEY == 23) then
          if (KEY == 22) then
 
-            call IFormGetDouble(2 * 1, frcuni)
-            call IFORMGETinteger(2 * 2, ifrctypuni)
+            call IFormGetDouble(2 * 1, uniform_friction_coefficient)
+            call IFORMGETinteger(2 * 2, uniform_friction_type)
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
-            call IFormGetDouble(2 * 5, vicouv)
+            call IFormGetDouble(2 * 5, uniform_horizontal_eddy_viscosity)
             call IFormGetDouble(2 * 6, vicoww%scalar)
-            call IFORMGetdouble(2 * 7, dicouv)
+            call IFORMGetdouble(2 * 7, uniform_horizontal_eddy_diffusivity)
             call IFORMGetdouble(2 * 8, dicoww%scalar)
             call IFormGetDouble(2 * 9, wall_ks)
             call IFormGetDouble(2 * 10, Smagorinsky)
             call IFormGetDouble(2 * 11, Elder)
-            call IFormGetDouble(2 * 12, frcuni1D)
-            call IFormGetDouble(2 * 13, frcuni1D2D)
-            call IFormGetDouble(2 * 14, frcuni1Dgrounlay)
+            call IFormGetDouble(2 * 12, uniform_friction_coefficient_1D)
+            call IFormGetDouble(2 * 13, uniform_friction_coefficient_1D2D)
+            call IFormGetDouble(2 * 14, uniform_groundlayer_friction_coefficient)
             call IFormGetDouble(2 * 15, rainuni)
 
-            if (allocated(frcu) .and. frcuniorg /= frcuni) then
-               frcu = frcuni
+            if (allocated(frcu) .and. frcuniorg /= uniform_friction_coefficient) then
+               frcu = uniform_friction_coefficient
             end if
 
             if (rainuni > 0.0_dp) then

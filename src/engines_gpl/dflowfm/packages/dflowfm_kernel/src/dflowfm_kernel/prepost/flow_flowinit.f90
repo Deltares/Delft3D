@@ -575,12 +575,12 @@ contains
 !> Set ihorvic related to horizontal viscosity
    subroutine set_ihorvic_related_to_horizontal_viscosity()
       use m_flowparameters, only: ihorvic, javiusp
-      use m_physcoef, only: vicouv, Smagorinsky, Elder
+      use m_physcoef, only: uniform_horizontal_eddy_viscosity, Smagorinsky, Elder
 
       implicit none
 
       ihorvic = OFF
-      if (vicouv > OFF .or. javiusp == ON .or. Smagorinsky > OFF .or. Elder > OFF) then
+      if (uniform_horizontal_eddy_viscosity > OFF .or. javiusp == ON .or. Smagorinsky > OFF .or. Elder > OFF) then
          ihorvic = ON
       end if
 
@@ -700,7 +700,7 @@ contains
    subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
-      use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
+      use m_physcoef, only: uniform_friction_coefficient_1D, uniform_friction_coefficient_1D2D, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, uniform_friction_coefficient, maximum_friction_coefficient, uniform_friction_type
       use m_missing, only: dmiss, imiss
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
@@ -715,27 +715,27 @@ contains
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
                if (kcu(link) == LINK_1D2D_INTERNAL) then
-                  frcu(link) = frcuni1d2d
+                  frcu(link) = uniform_friction_coefficient_1D2D
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
-                  ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
-                  frcu(link) = frcunistreetinlet
+                  ! Because UNIFORM_FRICTION_COEFFICIENT_STREET_INLET is not available in the mdu file, the friction type is always manning.
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
                   ifrcutp(link) = MANNING
                else if (kcu(link) == LINK_1D2D_ROOF) then
-                  ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
-                  frcu(link) = frcuniroofgutterpipe
+                  ! Because UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE is not available in the mdu file, the friction type is always manning
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
                   ifrcutp(link) = MANNING
                else
-                  frcu(link) = frcuni1d
+                  frcu(link) = uniform_friction_coefficient_1D
                end if
             else
-               frcu(link) = frcuni
+               frcu(link) = uniform_friction_coefficient
             end if
          end if
          if (ifrcutp(link) == imiss) then
-            ifrcutp(link) = ifrctypuni
+            ifrcutp(link) = uniform_friction_type
          end if
-         if (frcu(link) > frcmax) then
-            frcmax = frcu(link)
+         if (frcu(link) > maximum_friction_coefficient) then
+            maximum_friction_coefficient = frcu(link)
          end if
       end do
       
@@ -812,7 +812,7 @@ contains
       use m_flowparameters, only: jafrculin
       use m_flowgeom, only: lnx
       use m_flow, only: frculin
-      use m_physcoef, only: frcunilin
+      use m_physcoef, only: uniform_linear_friction_coefficient
       use m_missing, only: dmiss
 
       implicit none
@@ -824,7 +824,7 @@ contains
       if (jafrculin == USE_LINEAR_FRICTION) then
          do link = 1, lnx
             if (frculin(link) == dmiss) then
-               frculin(link) = frcunilin
+               frculin(link) = uniform_linear_friction_coefficient
             end if
          end do
       end if
@@ -2378,7 +2378,7 @@ contains
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
             hu(LL) = 5.0_dp
-            frcu(LL) = frcuni
+            frcu(LL) = uniform_friction_coefficient
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
             ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
@@ -2386,7 +2386,7 @@ contains
             Lt = Ltop(LL)
             do L = Lb, Lt
                zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
-               u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
+               u1(L) = cs * ustb(LL) * log(C9OF1 + zz / z00) / VON_KARMAN
             end do
          end do
 

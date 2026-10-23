@@ -4882,13 +4882,13 @@ contains
          ! Trachytope roughnesses on NET links
          if (map_write_settings%trachy > 0 .and. jatrt == 1) then
 
-            if (ifrctypuni == 0) then
+            if (uniform_friction_type == 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Chezy roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm0.5s-1')
-            else if (ifrctypuni == 1) then
+            else if (uniform_friction_type == 1) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Manning roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'sm-0.333')
-            else if ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+            else if ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'White-Colebrook roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm')
             else
@@ -5296,14 +5296,14 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks and layers add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks and layers add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             ! Values for inactive layers are set to missing in function unc_put_var_map.
             call realloc(work1d, lnkx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                call getLbotLtopmax(LL, Lb, Lt)
                do L = Lb, Lt
@@ -5320,13 +5320,13 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             call realloc(work1d, lnx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                work1d(LL) = viu(LL) / 0.7 + dicc
             end do
@@ -5404,7 +5404,7 @@ contains
             do LL = 1, lnx
                call getLbotLtopmax(LL, Lb, Ltx)
                do L = Lb - 1, Ltx
-                  vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+                  vicwwu_total(L) = VISKIN + vicwwu(L) + vicoww%get(LL)
                end do
             end do
             call links_to_centers(vicwws_total, vicwwu_total)
@@ -7874,13 +7874,13 @@ contains
             if (map_write_settings%trachy > 0 .and. jatrt == 1) then
                ! Roughness data on net-links
                ierr = nf90_def_var(imapfile, 'cftrt', nf90_double, [id_netlinkdim(iid), id_timedim(iid)], id_cftrt(iid))
-               if (ifrctypuni == 0) then
+               if (uniform_friction_type == 0) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Chezy roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm0.5s-1') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif (ifrctypuni == 1) then
+               elseif (uniform_friction_type == 1) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Manning roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'sm-0.333') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+               elseif ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'White-Colebrook roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm')
                else
@@ -8716,7 +8716,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   do L = Lb, Ltx
                      work1(L - Lb + nlaybL, LL) = viu(L) / 0.7 + dicc
@@ -8833,7 +8833,7 @@ contains
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
                   else
-                     vicc = vicouv
+                     vicc = uniform_horizontal_eddy_viscosity
                   end if
                   work1(1, LL) = viu(LL) + vicc
                end do
@@ -8846,7 +8846,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   work1(1, LL) = viu(LL) * 0.7 + dicc
                end do

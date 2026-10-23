@@ -39,7 +39,7 @@ module m_get_prof_1D
 contains
    subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
       use precision, only: dp
-      use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, frcuni1dgrounlay
+      use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, uniform_groundlayer_friction_coefficient
       use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
       use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
       use m_cross_helper, only: getconveyance, getcrossdischarge
@@ -290,7 +290,7 @@ contains
 
             if (jagrounlay > 0) then
                if (grounlay(LL) > 0) then
-                  czg = get_chezy(hydrad, frcuni1Dgrounlay, u1(L), v(L), friction_type)
+                  czg = get_chezy(hydrad, uniform_groundlayer_friction_coefficient, u1(L), v(L), friction_type)
                   alfg = wigr(LL) / perim
                   cfuhi(L) = (ag / hydrad) * (alfg / czg**2 + (1.0_dp - alfg) / cz**2)
                end if

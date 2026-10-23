@@ -48,7 +48,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, dicoww, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
@@ -113,21 +113,21 @@ contains
 !  diffusion coefficients
 
       if (ISALT /= 0) then
-         if (dicouv >= 0.0_dp) then
-            difsedu(ISALT) = difmolsal
+         if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
+            difsedu(ISALT) = DIFMOLSAL
          end if
          if (use_vertical_molecular_diffusion) then
-            molecular_diffusion_coeff(ISALT) = difmolsal
+            molecular_diffusion_coeff(ISALT) = DIFMOLSAL
             sigdifi(ISALT) = 1.0_dp / Schmidt_number_salinity
          end if
       end if
 
       if (ITEMP /= 0) then
-         if (dicouv >= 0.0_dp) then
-            difsedu(ITEMP) = difmoltem
+         if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
+            difsedu(ITEMP) = DIFMOLTEM
          end if
          if (use_vertical_molecular_diffusion) then
-            molecular_diffusion_coeff(ITEMP) = difmoltem
+            molecular_diffusion_coeff(ITEMP) = DIFMOLTEM
             sigdifi(ITEMP) = 1.0_dp / Prandtl_number_temperature
          end if
       end if
@@ -141,7 +141,7 @@ contains
       if (ISED1 /= 0) then
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
-            if (dicouv >= 0.0_dp) then
+            if (uniform_horizontal_eddy_diffusivity >= 0.0_dp) then
                difsedu(iconst) = 0.0_dp
             end if
             if (use_vertical_molecular_diffusion) then
@@ -156,9 +156,9 @@ contains
 
       if (ITRA1 > 0) then
          do jtra = ITRA1, ITRAN
-            difsedu(jtra) = difmoltracer
+            difsedu(jtra) = DIFMOLTRACER
             if (use_vertical_molecular_diffusion) then
-               molecular_diffusion_coeff(jtra) = difmoltracer
+               molecular_diffusion_coeff(jtra) = DIFMOLTRACER
                sigdifi(jtra) = 1.0_dp / Schmidt_number_tracer
             end if
             wsf(jtra) = wstracers(jtra - ITRA1 + 1)
@@ -233,11 +233,11 @@ contains
                if (icorio > 0 .and. jsferic == 1) then
                   fcoriocof = fcoris(kk)
                end if
-               alpha = sqrt(ag) / vonkar / max(czssf(kk), 20.0_dp)
+               alpha = sqrt(ag) / VON_KARMAN / max(czssf(kk), 20.0_dp)
                spir_ce = fcorio * hs(kk) * 0.5_dp
                spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
                spir_e = spir_be - spir_ce
-               alength_a = (1.0_dp - 2.0_dp * alpha) * hs(kk) / (2.0_dp * vonkar * vonkar * alpha) !TO DO: this term should be expanded to prevent negative alength_a for alpha > 0.5
+               alength_a = (1.0_dp - 2.0_dp * alpha) * hs(kk) / (2.0_dp * VON_KARMAN * VON_KARMAN * alpha) !TO DO: this term should be expanded to prevent negative alength_a for alpha > 0.5
                time_a = alength_a / spirucm(kk)
                !const_sour(ISPIR,kk) =  ( spir_e - spirint(kk) ) / time_a !* dvoli    ! S=(I_eq - I)/Ta
                const_sour(ISPIR, kk) = const_sour(ISPIR, kk) + spir_e / time_a

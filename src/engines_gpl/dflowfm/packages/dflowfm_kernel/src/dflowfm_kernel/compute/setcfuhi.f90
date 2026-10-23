@@ -44,7 +44,7 @@ contains
    !! sqrt(g/C2) in both in 2D and in 3D
    subroutine setcfuhi()
       use precision, only: dp
-      use m_flow, only: jatrt, frcmax, ifrctypuni, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, vonkar, sag, epsz0, z0urou
+      use m_flow, only: jatrt, maximum_friction_coefficient, uniform_friction_type, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, VON_KARMAN, square_root_ag, epsz0, z0urou
       use m_flowgeom, only: lnx, lnx1d
       use m_get_chezy, only: get_chezy
 
@@ -52,8 +52,8 @@ contains
       real(kind=dp) :: h0, cz, frcn
       integer :: l
 
-      ! NOTE: When frcuni==0, the initial friction fields in frcu also become noneffective:
-      if (jatrt == 0 .and. (frcmax == 0.0_dp .or. ifrctypuni == -999)) then
+      ! NOTE: When uniform_friction_coefficient==0, the initial friction fields in frcu also become noneffective:
+      if (jatrt == 0 .and. (maximum_friction_coefficient == 0.0_dp .or. uniform_friction_type == -999)) then
          cfuhi = 0
          return
       end if
@@ -62,7 +62,7 @@ contains
       end if
 
       if (kmx <= 1) then ! 2D
-         if (ifrctypuni == 4) then
+         if (uniform_friction_type == 4) then
             cfuhi = 0
          else
 
@@ -79,7 +79,7 @@ contains
                   if (frcn > 0.0_dp) then
                      cz = get_chezy(h0, frcn, u1(L), v(L), ifrcutp(L))
                      cfuhi(L) = ag / (h0 * cz * cz)
-                     z0ucur(L) = h0 * exp(-1.0_dp - vonkar * cz / sag)
+                     z0ucur(L) = h0 * exp(-1.0_dp - VON_KARMAN * cz / square_root_ag)
                   else
                      cfuhi(L) = 0.0_dp
                      z0ucur(L) = epsz0

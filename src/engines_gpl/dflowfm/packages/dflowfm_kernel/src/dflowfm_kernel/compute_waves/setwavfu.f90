@@ -52,7 +52,7 @@ contains
       use m_xbeach_data, only: xb_hminlw => hminlw, gammaxxb
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
-      use m_physcoef, only: sag
+      use m_physcoef, only: square_root_ag
 
       implicit none
 
@@ -84,7 +84,7 @@ contains
          gammaloc = gammaxxb
       end if
 
-      facmax = 0.25_dp * sag * rhomean * gammaloc**2
+      facmax = 0.25_dp * square_root_ag * rhomean * gammaloc**2
       limit_wave_forces = jawave /= WAVE_NC_OFFLINE .or. waveforcing /= WAVEFORCING_RADIATION_STRESS .or. &
                  wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
 

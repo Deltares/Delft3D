@@ -45,7 +45,7 @@ contains
 
    subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
       use precision, only: dp
-      use m_flow, only: kmxx, jafilter, u0, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
+      use m_flow, only: kmxx, jafilter, u0, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, use_helmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
       use m_flowgeom, only: acl, ln, lnxi, iadv, yu, dxi, iadv_subgrid_weir, iadv_rajaratnam_weir, iadv_villemonte_weir, bob, teta
       use m_flowtimes, only: dti
       use m_waves, only: ustokes
@@ -104,9 +104,9 @@ contains
 
          vstress = (vicwwu(L) + vicoww%get(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
-         ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
+         ! vstress  = (vicwwu(L) + vicoww + VISKIN ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 
-         ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
+         ! vstress  = ( max(vicwwu(L), vicoww) + VISKIN ) / dzLw                 ! 23-12-14 : D3D like
          
          adv = 0.0_dp
          adv1 = 0.0_dp
@@ -243,7 +243,7 @@ contains
       end do
 
       agp = ag
-      if (jahelmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
+      if (use_helmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
          st2 = sin(dg2rd * yu(LL))**2
          agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
       end if

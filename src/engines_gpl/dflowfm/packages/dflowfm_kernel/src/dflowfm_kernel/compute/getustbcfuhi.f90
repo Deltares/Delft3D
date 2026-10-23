@@ -41,7 +41,7 @@ contains
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
-      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
+      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, C9OF1, jaustarint, VON_KARMAN, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, VISKIN, vicwwu, vicoww, jafrculin, frculin
       use m_get_ustwav, only: getustwav
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
@@ -107,29 +107,29 @@ contains
          if (frcn > 0.0_dp) then
             call getczz0(hu(LL), frcn, friction_type, cz, z00)
 
-            hdzb = 0.5_dp * hu(Lb) + c9of1 * z00 ! half bottom layer plus 9z0
+            hdzb = 0.5_dp * hu(Lb) + C9OF1 * z00 ! half bottom layer plus 9z0
 
             if (z00 > 0.0_dp) then
 
                if (jaustarint == 0) then
-                  ! sqcf = vonkar/log(c9of1 + hdzb/z00)            ! till 012015
-                  sqcf = vonkar / log(hdzb / z00)
+                  ! sqcf = VON_KARMAN/log(C9OF1 + hdzb/z00)            ! till 012015
+                  sqcf = VON_KARMAN / log(hdzb / z00)
                else if (jaustarint == 1) then ! Yoeri 2014 long time default for jaustarint == 1
-                  dzb = hu(Lb) + c9of1 * z00
-                  sqcf = vonkar / (log(dzb / z00) - 1.0_dp)
+                  dzb = hu(Lb) + C9OF1 * z00
+                  sqcf = VON_KARMAN / (log(dzb / z00) - 1.0_dp)
                else if (jaustarint == 2) then ! remobilised through jaustarint == 2, good convergence
-                  dzb = hu(Lb) / ee + c9of1 * z00
-                  sqcf = vonkar / (log(dzb / z00))
+                  dzb = hu(Lb) / ee + C9OF1 * z00
+                  sqcf = VON_KARMAN / (log(dzb / z00))
                else if (jaustarint == 3) then ! Delft3D
                   hdzb = 0.5_dp * hu(Lb) + z00
-                  sqcf = vonkar / (log(1.0_dp + 0.5_dp * hu(Lb) / z00))
+                  sqcf = VON_KARMAN / (log(1.0_dp + 0.5_dp * hu(Lb) / z00))
                else if (jaustarint == 4) then
-                  !hdzb  = 0.5_dp*hu(Lb)     + c9of1*z00/0.65_dp
-                  dzb = hu(Lb) / ee + c9of1 * z00 * 0.66_dp
-                  sqcf = vonkar / (log(dzb / z00))
+                  !hdzb  = 0.5_dp*hu(Lb)     + C9OF1*z00/0.65_dp
+                  dzb = hu(Lb) / ee + C9OF1 * z00 * 0.66_dp
+                  sqcf = VON_KARMAN / (log(dzb / z00))
                else if (jaustarint == 5) then
                   dzb = hu(Lb)
-                  sqcf = vonkar / ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp)
+                  sqcf = VON_KARMAN / ((1.0_dp + C9OF1 * z00 / dzb) * log(dzb / z00 + C9OF1) - C9OF1 * z00 / dzb * log(C9OF1) - 1.0_dp)
                end if
                z0ucur(LL) = z00
             else
@@ -166,19 +166,19 @@ contains
                if (LL == Lb) then ! take into account layer integral approach on bnd
                   u2dh = umod
                else
-                  ! here we assume that z0/dzb is small and c9of1==1, ie we use jaustarint==1 approach, cf 3D validation doc Mohamed
+                  ! here we assume that z0/dzb is small and C9OF1==1, ie we use jaustarint==1 approach, cf 3D validation doc Mohamed
                   if (jawavevellogprof == 0) then
                      depth = hu(LL)
                      z0log = max(z00, epsz0)
 
                      if (ustbLL > 0.0_dp .and. depth > 0.0_dp) then
-                        eta = c9of1 * z0log / depth
+                        eta = C9OF1 * z0log / depth
 
                         logfac = (1.0_dp + eta) * &
-                                 log(depth / z0log + c9of1) - &
-                                 eta * log(c9of1) - 1.0_dp
+                                 log(depth / z0log + C9OF1) - &
+                                 eta * log(C9OF1) - 1.0_dp
 
-                        u2dh = max(0.0_dp, ustbLL * logfac / vonkar)
+                        u2dh = max(0.0_dp, ustbLL * logfac / VON_KARMAN)
                      else
                         u2dh = 0.0_dp
                      end if
@@ -238,12 +238,12 @@ contains
                   select case (jaustarint)
                   case (0)
                      z0urou(LL) = 0.5_dp * hu(Lb) / &
-                                  (exp(vonkar / sqcf) - c9of1)
+                                  (exp(VON_KARMAN / sqcf) - C9OF1)
                   case (3)
                      z0urou(LL) = 0.5_dp * hu(Lb) / &
-                                  (exp(vonkar / sqcf) - 1.0_dp)
+                                  (exp(VON_KARMAN / sqcf) - 1.0_dp)
                   case default
-                     z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                     z0urou(LL) = dzb * exp(-VON_KARMAN / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
                   end select
                   z0urou(LL) = min(z0urou(LL), 10.0_dp)
                else
@@ -322,7 +322,7 @@ contains
             end if
          end if
 
-         r = umod * hu(Lb) / viskin ! Local re-number:
+         r = umod * hu(Lb) / VISKIN ! Local re-number:
          r = max(r, 0.001_dp)
          er = e * r
          if (r < rv) then ! Viscous sublayer:
@@ -334,7 +334,7 @@ contains
             nit = nit + 1
             sd = s
             ers = max(er / sd, 1.0001_dp)
-            s = log(ers) / vonkar
+            s = log(ers) / VON_KARMAN
 
             if (nit >= nitm) then
                call error('***ERROR in USTAR: no convergence.', ' ', ' ')
@@ -366,7 +366,7 @@ contains
 
       else if (friction_type == 11) then ! Noslip
 
-         !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+vicouv)/hu(Lb)**2
+         !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+uniform_horizontal_eddy_viscosity)/hu(Lb)**2
          cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww%get(LL)) / hu(Lb)**2
 
       end if
