@@ -189,6 +189,8 @@ module m_flowparameters
    integer, parameter :: PILLAR_VEGETATION_BAPTIST = 2 !< pillar_method using vegetation approach of
    integer, parameter :: PILLAR_DELFT3D_FLOWLINK = 3 !< pillar_method based on reduced cross-sectional area (side view)
 
+   character(len=28) :: md_pillar_method = ''
+   
    integer :: jaequili !< secondary flow intensity gets calculated as equilibrium (0=no, 1=yes)
 
    integer :: javiusp !< if 1 spatially varying horizontal eddy viscosity

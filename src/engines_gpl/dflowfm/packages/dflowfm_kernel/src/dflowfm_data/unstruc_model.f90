@@ -662,9 +662,6 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
       call prop_get(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
-      if (len_trim(md_pillarfile) > 0) then
-         pillar_method = PILLAR_DELFT3D_FLOWLINK
-      end if
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
@@ -1153,6 +1150,24 @@ contains
       end select
 
       call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
+      call prop_get(md_ptr, 'numerics', 'PillarMethod', md_pillar_method, success)
+      call str_lower(md_pillar_method)
+      select case (md_pillar_method)
+      case ('pillar_delft3d_flownode')
+         pillar_method = PILLAR_DELFT3D_FLOWNODE
+      case ('pillar_vegetation_baptist')
+         pillar_method = PILLAR_VEGETATION_BAPTIST
+      case ('pillar_delft3d_flowlink')
+         pillar_method = PILLAR_DELFT3D_FLOWLINK
+      case default
+         if (len_trim(md_pillarfile) > 0) then
+            md_pillar_method = 'pillar_delft3d_flowlink'
+            pillar_method = PILLAR_DELFT3D_FLOWLINK
+         else
+            pillar_method = ''
+            pillar_method = PILLAR_NONE
+         end if
+      end select
 
       !implicit1d
       call prop_get(md_ptr, 'implicit1d', 'omega', f1dimppar%omega)
@@ -3357,7 +3372,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
-
+      call prop_set(prop_ptr, 'numerics', 'PillarMethod', trim(md_pillar_method), 'Method for computing bridge pillars (pillar_delft3d_flownode, pillar_vegetation_baptist, pillar_delft3d_flowlink (default)).' )
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
       end if
