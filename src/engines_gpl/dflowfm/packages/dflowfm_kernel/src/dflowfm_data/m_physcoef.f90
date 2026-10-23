@@ -39,29 +39,29 @@ module m_physcoef
    implicit none(type, external)
 
    real(kind=dp) :: ag !< [m/s2] Gravitational acceleration.
-   real(kind=dp) :: square_root_ag !< [m^(1/2)/s] Square root of gravitational acceleration.
-   integer :: use_helmert = 0 !< [-] Use Helmerts equation for agp only (0: no, 1: yes).
+   real(kind=dp) :: square_root_ag !< [m^(1/2)/s] Square root of gravitational acceleration. {former:sag}
+   integer :: use_helmert = 0 !< [-] Use Helmerts equation for agp only (0: no, 1: yes). {former:jahelmert}
 
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
-   real(kind=dp) :: uniform_friction_coefficient !< [depends on uniform_friction_type] Uniform friction coefficient.
-   real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D links.
-   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D2D links.
+   real(kind=dp) :: uniform_friction_coefficient !< [depends on uniform_friction_type] Uniform friction coefficient. {former:frcuni}
+   real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D links. {former:frcuni1d}
+   real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D2D links. {former:frcuni1d2d}
 
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET = 0.035_dp !< [-] Uniform friction coefficient for street inlet. {former:frcunistreetinlet}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE = 0.035_dp !< [-] Uniform friction coefficient for roof gutter pipe. {former:frcuniroofgutterpipe}
    real(kind=dp), parameter :: UNIFORM_FRICTION_COEFFICIENT_ROOF = 0.030_dp !< [-] Uniform friction coefficient for roof. {former:frcuniroof}
 
-   real(kind=dp) :: uniform_groundlayer_friction_coefficient !< [m/s] Uniform groundlayer friction coefficient for ocean models.
-   real(kind=dp) :: maximum_friction_coefficient !< [-] Maximum friction coefficient for variable frcu.
+   real(kind=dp) :: uniform_groundlayer_friction_coefficient !< [m/s] Uniform groundlayer friction coefficient for ocean models. {former:frcuni1Dgrounlay}
+   real(kind=dp) :: maximum_friction_coefficient !< [-] Maximum friction coefficient for variable frcu. {former:frcmax}
    integer :: dynroughveg !< [-] 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction.
    real(kind=dp) :: frcu_no_vegetation !< [s/m^(1/3)] Base (Manning) friction (without vegetation), default 0.023.
    real(kind=dp) :: droot !< [m] Root depth for dynamic roughness vegetation, range 0-100m, default 0.5m.
    real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
-   integer :: uniform_friction_type !< [-] Uniform friction type (0: chezy, 1: manning, 2: white colebrook D3D, 3: white colebrook Waqua (now only 2D)).
-   real(kind=dp) :: uniform_linear_friction_coefficient !< [-] Uniform linear friction coefficient.
+   integer :: uniform_friction_type !< [-] Uniform friction type (0: chezy, 1: manning, 2: white colebrook D3D, 3: white colebrook Waqua (now only 2D)). {former:ifrctypuni}
+   real(kind=dp) :: uniform_linear_friction_coefficient !< [-] Uniform linear friction coefficient. {former:frcunilin}
    real(kind=dp) :: umodlin !< [m/s] Linear friction umod, friction type 4,5,6.
 
    real(kind=dp) :: wall_ks !< [m] Vertical wall Nikuradse roughness.
