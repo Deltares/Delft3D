@@ -96,8 +96,9 @@ module m_source_sink
       procedure :: realloc => realloc_source_sinks
       procedure, private :: realloc_xy => realloc_xy_source_sinks
 
-      procedure :: add => add_source_sink
+      procedure :: add => add_source_sink_by_xy
       procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
+      procedure, private :: add_source_sink_by_flowcell
       procedure :: update_discharges => update_source_sink_discharges
 
    end type SourceSinks
@@ -358,7 +359,7 @@ contains
    end subroutine add_source_sink_from_polyline_file
 
    !> Add a source-sink to the model.
-   subroutine add_source_sink(self, name, x_points, y_points, z_source, z_sink, area, ierr)
+   subroutine add_source_sink_by_xy(self, name, x_points, y_points, z_source, z_sink, area, ierr)
       use m_GlobalParameters, only: INDTP_ALL
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
@@ -376,14 +377,19 @@ contains
 
       ! Local variables
       integer :: source_sink_index !< Source/sink index
-      integer :: sink_flowcell_index !< Flowcell index of sink
-      integer :: source_flowcell_index !< Flowcell index of source
+      integer, dimension(2) :: flowcell_indices !< Flowcell indices for the source and sink.
       integer, dimension(1) :: dummy_flowcell_index !< Dummy flowcell index for readout
+      real(kind=dp), dimension(2) :: discharge_cosine !< Discharge cosine for sink (1) and source (2) side.
+      real(kind=dp), dimension(2) :: discharge_sine !< Discharge sine for sink (1) and source (2) side.
       integer :: jakdtree
       integer :: num_points !< Number of points in the polyline representing the source/sink.
       character(len=IdLen), dimension(1) :: temporary_name !< Temporary name of the source/sink
 
+      ! Initialization
       ierr = DFM_WRONGINPUT
+      flowcell_indices = 0
+      discharge_cosine = 0.0_dp
+      discharge_sine = 0.0_dp
 
       ! Check if number of points is larger than zero.
       num_points = size(x_points)
@@ -408,24 +414,19 @@ contains
       self%x(self%num_total, 1:num_points) = x_points(1:num_points)
       self%y(self%num_total, 1:num_points) = y_points(1:num_points)
       self%max_xy_points(self%num_total) = num_points
-      sink_flowcell_index = 0
-      source_flowcell_index = 0
-
-      ! Set source/sink name.
-      self%name(self%num_total) = name
 
       temporary_name(1) = name//' source'
       jakdtree = 0
       dummy_flowcell_index(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
          call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
-         source_flowcell_index = dummy_flowcell_index(1)
+         flowcell_indices(2) = dummy_flowcell_index(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
       if (num_points == 1) then
 
-         sink_flowcell_index = 0 ! Only keep the source-side (source_flowcell_index), and disable momentum discharge
+         flowcell_indices(1) = 0 ! Only keep the source-side (source_flowcell_index), and disable momentum discharge
          if (area /= dmiss .and. area /= 0.0_dp) then
             ! User specified an area for momentum discharge, but that does not apply to POINT sources.
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
@@ -438,30 +439,22 @@ contains
          dummy_flowcell_index(1) = 0
          if (self%x(self%num_total, 1) /= dmiss) then
             call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
-            sink_flowcell_index = dummy_flowcell_index(1)
+            flowcell_indices(1) = dummy_flowcell_index(1)
          end if
 
-         if (sink_flowcell_index /= 0 .or. source_flowcell_index /= 0) then
+         if (flowcell_indices(1) /= 0 .or. flowcell_indices(2) /= 0) then
             self%area(self%num_total) = area
          end if
       end if
 
-      if (sink_flowcell_index == 0 .and. source_flowcell_index == 0) then
+      if (flowcell_indices(1) == 0 .and. flowcell_indices(2) == 0) then
          write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
          return
       end if
 
-      self%indices(self%num_total, FLOWCELL_SINK) = sink_flowcell_index
-      self%z_bottom(self%num_total, SINK_SIDE) = z_sink(1)
-      self%z_top(self%num_total, SINK_SIDE) = z_sink(1)
-
-      self%indices(self%num_total, FLOWCELL_SOURCE) = source_flowcell_index
-      self%z_bottom(self%num_total, SOURCE_SIDE) = z_source(1)
-      self%z_top(self%num_total, SOURCE_SIDE) = z_source(1)
-
-      if (sink_flowcell_index > 0) then
+      if (flowcell_indices(1) > 0) then
          if (z_sink(2) /= dmiss) then
             self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
          end if
@@ -472,8 +465,8 @@ contains
                self%y(self%num_total, 1), &
                self%x(self%num_total, 2), &
                self%y(self%num_total, 2), &
-               self%discharge_cosine(self%num_total, SINK_SIDE), &
-               self%discharge_sine(self%num_total, SINK_SIDE), &
+               discharge_cosine(1), &
+               discharge_sine(1), &
                self%x(self%num_total, 1), &
                self%y(self%num_total, 1), &
                jsferic, jasfer3D, dxymis &
@@ -481,18 +474,18 @@ contains
          end if
 
          do source_sink_index = 1, self%num_total - 1
-            if (self%indices(source_sink_index, FLOWCELL_SINK) /= 0 .and. sink_flowcell_index == self%indices(source_sink_index, FLOWCELL_SINK)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(source_sink_index))
+            if (self%indices(source_sink_index, FLOWCELL_SINK) /= 0 .and. flowcell_indices(1) == self%indices(source_sink_index, FLOWCELL_SINK)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(name), ' coincides with FROM point of ', trim(self%name(source_sink_index))
                call warn_flush()
-            else if (self%indices(source_sink_index, FLOWCELL_SOURCE) /= 0 .and. sink_flowcell_index == self%indices(source_sink_index, FLOWCELL_SOURCE)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(source_sink_index))
+            else if (self%indices(source_sink_index, FLOWCELL_SOURCE) /= 0 .and. flowcell_indices(1) == self%indices(source_sink_index, FLOWCELL_SOURCE)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(name), ' coincides with TO   point of ', trim(self%name(source_sink_index))
                call warn_flush()
             end if
          end do
 
       end if
 
-      if (source_flowcell_index > 0) then
+      if (flowcell_indices(2) > 0) then
          if (z_source(2) /= dmiss) then
             self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
@@ -504,8 +497,8 @@ contains
                self%y(self%num_total, num_points - 1), &
                self%x(self%num_total, num_points), &
                self%y(self%num_total, num_points), &
-               self%discharge_cosine(self%num_total, SOURCE_SIDE), &
-               self%discharge_sine(self%num_total, SOURCE_SIDE), &
+               discharge_cosine(2), &
+               discharge_sine(2), &
                self%x(self%num_total, num_points), &
                self%y(self%num_total, num_points), &
                jsferic, jasfer3D, dxymis &
@@ -513,9 +506,56 @@ contains
          end if
       end if
 
+      call self%add_source_sink_by_flowcell(name, flowcell_indices, z_source, z_sink, discharge_cosine, discharge_sine, area)
+
       ierr = DFM_NOERR
 
-   end subroutine add_source_sink
+   end subroutine add_source_sink_by_xy
+
+   !> Add a source/sink by specifying the flowcell indices for the sink and source sides.
+   subroutine add_source_sink_by_flowcell(self, name, flowcell_index, z_source, z_sink, discharge_cosine, discharge_sine, area)
+      ! Arguments
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance.
+      character(len=*), intent(in) :: name !< Name of the source/sink
+      integer, dimension(2), intent(in) :: flowcell_index !< Flowcell index of sink (1) and source (2) side.
+      real(kind=dp), dimension(2), intent(in) :: z_source !< Bottom (1) and top (2) elevations of the source.
+      real(kind=dp), dimension(2), intent(in) :: z_sink !< Bottom (1) and top (2) elevations of the sink.
+      real(kind=dp), dimension(2), intent(in) :: discharge_cosine !< Discharge cosine of sink (1) and source (2) side.
+      real(kind=dp), dimension(2), intent(in) :: discharge_sine !< Discharge sine of sink (1) and source (2) side.
+      real(kind=dp), intent(in) :: area !< Area of the source/sink
+
+      ! Set source/sink name and area.
+      self%name(self%num_total) = name
+      self%area(self%num_total) = area
+
+      ! Set source/sink indices based on the provided flowcell indices.
+      if (flowcell_index(1) > 0 .and. flowcell_index(2) > 0) then ! Coupled source/sink
+         self%indices(self%num_total, FLOWCELL_SINK) = flowcell_index(1)
+         self%indices(self%num_total, FLOWCELL_SOURCE) = flowcell_index(2)
+      else if (flowcell_index(1) > 0 .and. flowcell_index(2) <= 0) then ! Point sink
+         self%indices(self%num_total, FLOWCELL_SINK) = flowcell_index(1)
+      else if (flowcell_index(1) <= 0 .and. flowcell_index(2) > 0) then ! Point source
+         self%indices(self%num_total, FLOWCELL_SOURCE) = flowcell_index(2)
+      end if
+
+      ! Set bottom and top elevations for sink and source if they exist.
+      if (self%indices(self%num_total, FLOWCELL_SINK) > 0) then
+         self%z_bottom(self%num_total, SINK_SIDE) = z_sink(1)
+         self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
+      end if
+      if (self%indices(self%num_total, FLOWCELL_SOURCE) > 0) then
+         self%z_bottom(self%num_total, SOURCE_SIDE) = z_source(1)
+         self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
+      end if
+
+      if (self%area(self%num_total) > 0.0_dp) then
+         self%discharge_cosine(self%num_total, SINK_SIDE) = discharge_cosine(1)
+         self%discharge_sine(self%num_total, SINK_SIDE) = discharge_sine(1)
+         self%discharge_cosine(self%num_total, SOURCE_SIDE) = discharge_cosine(2)
+         self%discharge_sine(self%num_total, SOURCE_SIDE) = discharge_sine(2)
+      end if
+
+   end subroutine add_source_sink_by_flowcell
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine update_source_sink_discharges(self)
