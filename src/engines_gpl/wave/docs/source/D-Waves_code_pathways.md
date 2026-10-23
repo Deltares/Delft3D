@@ -6,8 +6,6 @@ Implementation links on each page connect those responsibilities to code.
 
 ![D-Waves communication models](../include/dwaves_communication_model.svg)
 
-[Communication-model DOT](../include/dwaves_communication_model.dot)
-
 ## Available scenarios
 
 | Scenario | Time/control owner | Field channel | Details |
@@ -22,6 +20,8 @@ runs, reading saved hydrodynamic input and
 writing wave fields (`[Output] WriteCOM`) are independent choices. **Online
 runs (modes 1 and 2) always require `WriteCOM = true`:** D-Waves aborts during
 input checking otherwise.
+
+![D-Waves Code Pathways Overview](../include/dwaves_code_pathways.svg)
 
 ## Communication models
 
@@ -87,14 +87,14 @@ See the [standalone pathway details](./D-Waves_pathway_standalone.md).
 
 ### Shared execution model
 
-- **Mapping setup and application are separate.** D-Waves prepares both map
+- D-Waves prepares both map
   directions per grid pair at initialization. It applies reverse mapping
   and writes wave fields only when `WriteCOM` enables writeback (always the
   case online).
-- **Nesting is not MPI parallelism.** D-Waves visits SWAN grids in configured
+- D-Waves visits SWAN grids in configured
   order; nested grids use parent boundary output. Delft3D4 or D-Flow FM
   partitions, SWAN nests and D-Waves ranks are separate counts.
-- **SWAN execution depends on the pathway.** Delft3D4 online starts SWAN as
+- Delft3D4 online starts SWAN as
   an executable with OpenMP. In parallel D-Flow FM/BMI runs using
   `SwanMode=lib`,
   D-Waves MPI ranks call the SWAN library collectively.
@@ -104,7 +104,7 @@ See the [standalone pathway details](./D-Waves_pathway_standalone.md).
 | Setting | Role |
 |---|---|
 | D-Waves mode 0 / 1 / 2 | Standalone / online / classic Delft3D4 water-plus-mud extension. The caller supplies the initial mode (the executable's second argument, default 0; DIMR through the BMI `mode` variable). A non-blank `[General] FlowFile` then forces mode 1, and a non-blank `FlowMudFile` mode 2. Both online engines normally use mode 1. |
-| `[General] FlowFile` | MDW switch for online mode (mode 1). Only whether it is non-blank matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route, although the manual's D-Flow FM example (A.1.3.4.2) also sets it. `FlowMudFile` adds mode 2 within the same parser branch. |
+| `[General] FlowFile` | MDW switch for online mode (mode 1). Only when it is non-blank, it matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route, although the manual's D-Flow FM example (A.1.3.4.2) also sets it. `FlowMudFile` adds mode 2 within the same parser branch. |
 | `[General] ComFile` | Existing Delft3D4 offline runid selection (manual A.1.2). Legacy; read only when `FlowFile` is blank. |
 | `[Output] COMFile` | D-Flow FM NetCDF communication-file path (must end in `com.nc`); selects the D-Flow FM file route, including offline use. The old `FlowGridForCom` keyword is no longer supported and aborts the run. |
 | Hydrodynamic input selections (`FlowBedLevel`, `FlowWaterLevel`, `FlowVelocity`, ...) | Select which Delft3D4 or D-Flow FM fields D-Waves reads. |

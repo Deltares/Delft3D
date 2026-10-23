@@ -1,7 +1,6 @@
 # Standalone D-Waves communication model
 
-**D-Waves owns the calculation schedule. No Delft3D4 or D-Flow FM engine
-is launched or advanced.** D-Waves can run independently, read saved
+In the standalone mode, D-Waves can run independently, read saved
 Delft3D4 or D-Flow FM fields, write wave fields onto the Delft3D4 or
 D-Flow FM grid, or combine the last two options.
 
@@ -20,8 +19,11 @@ D-Flow FM grid, or combine the last two options.
 
 Reading hydrodynamic fields and writing wave fields are independent choices.
 There is no live handshake and no feedback to an advancing Delft3D4 or
-D-Flow FM engine.
-Even with `WriteCOM`, this is an offline file workflow, not online coupling.
+D-Flow FM engine. In both routes below, D-Waves reads com-files produced by
+an earlier hydrodynamic run; it does not couple online to Delft3D4 or
+D-Flow FM. If `[Output] WriteCOM` is enabled, D-Waves writes wave fields to
+the com-files as an offline file operation, not as feedback to a running
+hydrodynamic model.
 
 ## Calculation cycle and grids
 
@@ -36,11 +38,47 @@ Even with `WriteCOM`, this is an offline file workflow, not online coupling.
    `WriteCOM` is enabled; configured D-Waves outputs are also produced.
 4. Continue with the next selected time, then finalize.
 
-The time selection is route-dependent: the Delft3D4 route processes MDW
-times in `swan_tot`; the standalone D-Flow FM-file route selects MDW times within
-the supplied step interval (or its no-explicit-times branch).
-The executable calls `wave_main_step(-1)`: **this is not a universal
-"run all MDW times" instruction for the D-Flow FM-file route.**
+The two routes below are both standalone input routes. The MDW keyword
+`[Output] COMFile` selects the route (blank: Delft3D4 NEFIS com-files; set:
+D-Flow FM NetCDF com-file), and with it the format of the existing com-files
+D-Waves reads. The selected route also affects how calculation times are
+chosen (see `wave_master_step`,
+[wave_main.f90](../../packages/manager/src/wave_main.f90#L405)). In the text
+below, "step size" is the `stepsize` argument of `wave_main_step` and
+`wave_master_step`, not an MDW keyword. The MDW `[General] TimeStep` and
+`TimeInterval` are unrelated to it: they are only read for
+`SimMode = non-stationary` and are written into the SWAN input
+([swan_input.f90](../../packages/data/src/swan_input.f90#L901)).
+
+- **Existing Delft3D4 NEFIS com-files** (`[General] FlowFile` blank; existing
+  runids supplied by `[General] ComFile`, or the D-Waves runid): `swan_tot` is
+  called once by `wave_master_step` ([wave_main.f90](../../packages/manager/src/wave_main.f90#L489))
+  and loops over all `[Timepoint]` values in the MDW
+  ([swan_tot.f90](../../packages/manager/src/swan_tot.f90#L106)). The MDW
+  `[Timepoint]` `Time` values are read into `timwav` in
+  [`read_keyw_mdw`](../../packages/data/src/swan_input.f90#L1076). The
+  `stepsize` argument is not used on this route.
+- **Existing D-Flow FM NetCDF com-files** (`[Output] COMFile` set to the
+  existing `*_com.nc` file): the `stepsize` argument matters. Each call covers
+  the interval from the current time to the current time plus `stepsize`. If
+  the MDW lists `[Timepoint]` values, `wave_master_step` computes only those
+  inside that interval ([wave_main.f90](../../packages/manager/src/wave_main.f90#L502),
+  [time selection and call](../../packages/manager/src/wave_main.f90#L512)).
+  Those MDW `Time` values are read into `timwav` by
+  [`read_keyw_mdw`](../../packages/data/src/swan_input.f90#L1076). If it lists
+  no times, the standalone branch makes one calculation at the end of the
+  interval ([wave_main.f90](../../packages/manager/src/wave_main.f90#L491)).
+
+The standalone executable always calls `wave_main_step(-1)`
+([wave_exe.f90](../../packages/wave/src/wave_exe.f90#L104)); the value is
+fixed in the code and cannot be set from the MDW. In the Delft3D4 com file
+route, this value is ignored and all MDW `[Timepoint]` values are processed.
+In the D-Flow FM com file route, the code treats it as `stepsize`, so the
+calculation interval ends before the current time. **This does not mean "run
+all MDW times."** For the usual non-negative MDW times, the interval contains
+no `[Timepoint]` values; the standalone executable therefore appears to do no
+calculation on this route. This conclusion is based on code reading by copilot and has
+not been verified by running the executable.
 
 | Saved-data route | Configuration | Runtime remapping |
 |---|---|---|
@@ -50,21 +88,48 @@ The executable calls `wave_main_step(-1)`: **this is not a universal
 Weights are prepared once per grid pair per initialization and reused.
 Both directional maps are built when Delft3D4 or D-Flow FM grids exist, even in
 read-only use; **applying** the reverse map and writing wave fields require
-`WriteCOM`. The hydrodynamic and SWAN grids need not match, but coordinates
-and required coverage must.
-External meteo is a separate optional forcing source; configured external
-wind takes precedence over the wind from the Delft3D4 or D-Flow FM files.
+`WriteCOM`. 
+External meteo is a separate optional forcing source. When the MDW lists one or
+more `meteofile` entries (in `[General]` or in a `[Domain]`) and the same domain
+also requests wind from the com-file (`FlowWind` > 0), the meteo-file wind takes
+precedence: the input parser resets that domain's `FlowWind` selection to 0, so
+the wind from the Delft3D4 or D-Flow FM com-file is not read
+([swan_input.f90](../../packages/data/src/swan_input.f90#L2052)). The resulting
+selection is then used at run time: the com-file wind is read only if the
+selection is above 0 ([get_flow_fields.f90](../../packages/io/src/get_flow_fields.f90#L226)),
+and the meteo wind is read only if it is 0
+([swan_tot.f90](../../packages/manager/src/swan_tot.f90#L178)). The `useflowdata` flag also ignores a wind selection when meteofiles are present, so
+wind alone does not make D-Waves read the com-file
+([swan_input.f90](../../packages/data/src/swan_input.f90#L2077)). This
+applies to `meteofile` entries only; a plain `extforce` entry does not trigger
+the override.
 
 ## Parallel execution
 
-SWAN grids/nests, Delft3D4 or D-Flow FM partitions and MPI ranks are different
-counts.
-D-Waves visits the configured SWAN grids sequentially; nesting is not MPI
-decomposition. With `SwanMode=lib`, the D-Waves master handles mapping and file
-I/O and calls SWAN collectively with the other D-Waves ranks. Workers wait for
-SWAN commands and synchronize before the master reads/deletes SWAN files.
-`SwanMode=lib` requires an MPI-enabled D-Waves run; the default executable
-mode launches SWAN through a script.
+Parallelism in the standalone pathway concerns D-Waves and SWAN only. The
+hydrodynamic run that produced the com-files is finished, so whether it was
+parallel does not affect how D-Waves runs; it only determines how many
+com-files D-Waves has to read as input:
+
+- **Delft3D4:** one or more runids listed in `[General] ComFile` (or the
+  D-Waves runid), each read as a separate com-file
+  ([flow_data.f90](../../packages/data/src/flow_data.f90#L99)).
+- **D-Flow FM:** the file named in `[Output] COMFile`, or its numbered
+  partition files (`..._0000_com.nc`, `..._0001_com.nc`, ...), which are
+  detected by `checkcomfiles`
+  ([flow_data.f90](../../packages/data/src/flow_data.f90#L84)).
+
+D-Waves handles the SWAN grids and nests sequentially, in the configured
+order; nesting is not MPI decomposition. How SWAN is executed is selected by
+`SwanMode` ([swan_input.f90](../../packages/data/src/swan_input.f90#L829)):
+
+- **`exe` (default):** SWAN is launched as a separate executable through a
+  script.
+- **`lib`:** requires an MPI-enabled D-Waves run. The D-Waves master handles
+  mapping and file I/O and calls SWAN collectively with the other D-Waves
+  ranks ([run_swan.f90](../../packages/kernel/src/run_swan.f90#L90)). Workers
+  wait for SWAN commands and synchronize before the master reads and deletes
+  the SWAN files ([run_swan_slave.f90](../../packages/kernel/src/run_swan_slave.f90#L53)).
 
 ## Implementation links
 
