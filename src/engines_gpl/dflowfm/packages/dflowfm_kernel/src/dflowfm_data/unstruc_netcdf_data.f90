@@ -171,6 +171,7 @@ module m_unstruc_netcdf_data
       integer :: id_timestep = -1 !< Variable ID for
       integer :: id_numlimdt(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_s1(MAX_ID_VAR) = -1 !< Variable ID for water level (on 1D, 2D, 3D grid parts resp.)
+      integer :: id_volerr(MAX_ID_VAR) = -1 !< Variable ID for volume error
       integer :: id_evap(MAX_ID_VAR) = -1 !< Variable ID for prescribed evaporation
       integer :: id_potevap(MAX_ID_VAR) = -1 !< Variable ID for potential evaporation
       integer :: id_qin(MAX_ID_VAR) = -1 !< Variable ID for sum of all influxes
