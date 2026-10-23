@@ -145,8 +145,11 @@ contains
       IVAL_ZWS = 0
       IVAL_ZWU = 0
       IVAL_BRUV = 0
+      IVAL_BRUV_U = 0
       IVAL_TKIN = 0
       IVAL_TEPS = 0
+      IVAL_TKINS = 0
+      IVAL_TEPSS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
       IVAL_VICWWS_TOTAL = 0
@@ -419,9 +422,12 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
+         IVAL_BRUV_U = next_index(i)
          if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
+            IVAL_TKINS = next_index(i)
+            IVAL_TEPSS = next_index(i)
             IVAL_VICWWS = next_index(i)
             IVAL_VICWWS_TOTAL = next_index(i)
             IVAL_DIFWWS = next_index(i)
@@ -504,8 +510,11 @@ contains
       IPNT_ZWS = ivalpoint(IVAL_ZWS, kmx, nlyrs)
       IPNT_ZWU = ivalpoint(IVAL_ZWU, kmx, nlyrs)
       IPNT_BRUV = ivalpoint(IVAL_BRUV, kmx, nlyrs)
+      IPNT_BRUV_U = ivalpoint(IVAL_BRUV_U, kmx, nlyrs)
       IPNT_TKIN = ivalpoint(IVAL_TKIN, kmx, nlyrs)
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
+      IPNT_TKINS = ivalpoint(IVAL_TKINS, kmx, nlyrs)
+      IPNT_TEPSS = ivalpoint(IVAL_TEPSS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
       IPNT_VICWWS_TOTAL = ivalpoint(IVAL_VICWWS_TOTAL, kmx, nlyrs)
