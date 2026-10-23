@@ -717,7 +717,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'AngLat', anglat)
       call prop_get(md_ptr, 'geometry', 'AngLon', anglon)
 
-      call prop_get(md_ptr, 'geometry', 'Helmert', jaHelmert)
+      call prop_get(md_ptr, 'geometry', 'Helmert', use_helmert)
 
       call prop_get(md_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D)
       call prop_get(md_ptr, 'geometry', 'Conveyance3D', Jaconveyance3D)
@@ -2882,8 +2882,8 @@ contains
       call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N [deg], 0 = on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling.')
       call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W [deg], 0 = Greenwich Mean Time. Only required for heat flux modelling.')
 
-      if (writeall .or. jahelmert > 0) then
-         call prop_set(prop_ptr, 'geometry', 'Helmert', jaHelmert, 'HELMERT yes/no, 1/0')
+      if (writeall .or. use_helmert > 0) then
+         call prop_set(prop_ptr, 'geometry', 'Helmert', use_helmert, 'Use Helmerts equation for agp only (0: no, 1: yes)')
       end if
 
       call prop_set(prop_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D, '-1: R=HU,0: R=H, 1: R=A/P, 2: K=analytic-1D conv, 3: K=analytic-2D conv')

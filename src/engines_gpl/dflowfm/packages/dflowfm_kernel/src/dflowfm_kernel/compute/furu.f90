@@ -140,7 +140,7 @@ contains
                end if
 
                agp = ag
-               if (jahelmert > 0 .and. jsferic > 0) then
+               if (use_helmert > 0 .and. jsferic > 0) then
                   st2 = sin(dg2rd * yu(L))**2
                   agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
                end if

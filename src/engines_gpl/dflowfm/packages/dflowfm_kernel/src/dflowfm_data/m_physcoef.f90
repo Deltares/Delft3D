@@ -40,7 +40,7 @@ module m_physcoef
 
    real(kind=dp) :: ag !< [m/s2] Gravitational acceleration.
    real(kind=dp) :: sag !< [m^(1/2)/s] Square root of gravitational acceleration.
-   integer :: jahelmert = 0 !< [-] 1=use Helmerts equation for agp only.
+   integer :: use_helmert = 0 !< [-] Use Helmerts equation for agp only (0: no, 1: yes).
 
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
