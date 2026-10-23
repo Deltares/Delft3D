@@ -87,7 +87,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -108,7 +108,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -126,7 +126,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -146,7 +146,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -164,7 +164,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -185,7 +185,7 @@ object DIMRbak : BuildType({
             workingDir = "ci/python/"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[all]"
+                pipArgs = "--editable .[dimrset_delivery]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
