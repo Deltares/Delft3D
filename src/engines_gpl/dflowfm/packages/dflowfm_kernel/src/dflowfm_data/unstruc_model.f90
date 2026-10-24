@@ -1155,12 +1155,11 @@ contains
       select case (md_pillar_method)
       case ('pillar_delft3d_flownode')
          pillar_method = PILLAR_DELFT3D_FLOWNODE
-      case ('pillar_vegetation_baptist')
-         pillar_method = PILLAR_VEGETATION_BAPTIST
       case ('pillar_delft3d_flowlink')
          pillar_method = PILLAR_DELFT3D_FLOWLINK
       case default
          if (len_trim(md_pillarfile) > 0) then
+            ! default behavior when PillarFile is specified is to use pillar_delft3d_flowlink
             md_pillar_method = 'pillar_delft3d_flowlink'
             pillar_method = PILLAR_DELFT3D_FLOWLINK
          else
@@ -1350,8 +1349,12 @@ contains
       ierror = DFM_NOERR
 
       call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
-      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
-         javeg = 1
+      if (javeg == 1) then
+         if (len_trim(md_pillarfile) == 0) then
+            pillar_method = PILLAR_VEGETATION_BAPTIST
+         else
+            call mess(LEVEL_ERROR, "[veg] Vegetationmodelnr=1 cannot be used together with [geometry] PillarFile.")
+         end if
       end if
       if (kmx == 0 .and. javeg > 0) then
          jabaptist = javeg
@@ -3372,7 +3375,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
-      call prop_set(prop_ptr, 'numerics', 'PillarMethod', trim(md_pillar_method), 'Method for computing bridge pillars (pillar_delft3d_flownode, pillar_vegetation_baptist, pillar_delft3d_flowlink (default)).' )
+      call prop_set(prop_ptr, 'numerics', 'PillarMethod', trim(md_pillar_method), 'Method for computing bridge pillars (pillar_delft3d_flownode, pillar_delft3d_flowlink (default)).' )
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
       end if
