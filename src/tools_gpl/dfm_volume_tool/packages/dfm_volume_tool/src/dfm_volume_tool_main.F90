@@ -228,7 +228,7 @@ program dfm_volume_tool
       lnx = integer_pointer
 
       allocate (shape_array(MAXDIMS))
-      call bmi_get_var_shape(dfm, string_to_char_array('zbndz'), shape_array)
+      call bmi_get_var_shape(dfm, 'zbndz', shape_array)
       num_boundaries = shape_array(1)
 
       call bmi_get_var_pointer(dfm, string_to_char_array('ndx2d'), xptr)
