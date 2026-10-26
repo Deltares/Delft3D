@@ -1473,7 +1473,7 @@ contains
       end if
 
       call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
-      call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
+      call prop_get(md_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
       call prop_get(md_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, success)
       if (success) then
@@ -3515,7 +3515,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air-sea interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
-      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
+      call prop_set(prop_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
       call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
       call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
