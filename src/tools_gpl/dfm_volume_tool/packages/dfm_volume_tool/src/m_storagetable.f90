@@ -51,54 +51,54 @@ module m_storage_table
 contains
 
 !> Generate the total volume/surface
-   subroutine generate_total_volume_table(volume, surface, storage, deadstorage, wl_deadstorage, voltb, &
-                                          bedlevel, increment, numpoints, numlevels, nodes)
+   subroutine generate_total_volume_table(volume, surface, storage, dead_storage, wl_dead_storage, voltb, &
+                                          bedlevel, increment, num_points, num_levels, nodes)
 
       use unstruc_channel_flow
       real(kind=DP), dimension(:), intent(out) :: volume !< Aggregated volume per level
       real(kind=DP), dimension(:), intent(out) :: surface !< Aggregated areas per level
-      real(kind=DP), dimension(:), intent(out) :: storage !< Aggregated storage per level (=volume - deadstorage)
-      real(kind=DP), dimension(:), intent(out) :: deadstorage !< Aggregated dead storage per level
-      real(kind=DP), dimension(:), intent(in) :: wl_deadstorage !< Dead storage waterlevel on each grid point
+      real(kind=DP), dimension(:), intent(out) :: storage !< Aggregated storage per level (=volume - dead_storage)
+      real(kind=DP), dimension(:), intent(out) :: dead_storage !< Aggregated dead storage per level
+      real(kind=DP), dimension(:), intent(in) :: wl_dead_storage !< Dead storage waterlevel on each grid point
       type(t_voltable), dimension(:), intent(inout) :: voltb !< Volume tables; summer-dike state is updated during evaluation.
       real(kind=DP), intent(in) :: bedlevel !< Bed level of the model
       real(kind=DP), intent(in) :: increment !< Requested increment
-      integer, intent(in) :: numpoints !< number of 1d grid points also the size of voltb
-      integer, intent(in) :: numlevels !< number of levels in volume, surface and levels
+      integer, intent(in) :: num_points !< number of 1d grid points also the size of voltb
+      integer, intent(in) :: num_levels !< number of levels in volume, surface and levels
       integer, dimension(:), intent(in) :: nodes !< mask array for defining a sub set on nodes.
 
       integer :: j, ipoint
 
       volume = 0.0_dp
-      deadstorage = 0.0_dp
+      dead_storage = 0.0_dp
       storage = 0.0_dp
       surface = 0.0_dp
-      do j = 1, numpoints
+      do j = 1, num_points
          ipoint = nodes(j)
-         call add_volume_and_surface(volume, surface, deadstorage, wl_deadstorage(ipoint), &
-                                     voltb(ipoint), bedlevel, increment, numlevels)
+         call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ipoint), &
+                                     voltb(ipoint), bedlevel, increment, num_levels)
       end do
 
-      call compute_surface_and_storage(volume, surface, storage, deadstorage, increment, numlevels)
+      call compute_surface_and_storage(volume, surface, storage, dead_storage, increment, num_levels)
 
    end subroutine generate_total_volume_table
 
 !> Generate the total volume/surface (TODO: and the totalised volume/surface for each branch).
-   subroutine generate_volume_table_on_branches(volume, surface, storage, deadstorage, wl_deadstorage, voltb_on_links, &
-                                                bedlevel, increment, numpoints, numlevels, links, ln2nd)
+   subroutine generate_volume_table_on_branches(volume, surface, storage, dead_storage, wl_dead_storage, voltb_on_links, &
+                                                bedlevel, increment, num_points, num_levels, links, ln2nd)
 
       use unstruc_channel_flow
       real(kind=DP), dimension(:), intent(out) :: volume !< Aggregated volume per level
       real(kind=DP), dimension(:), intent(out) :: surface !< Aggregated areas per level
-      real(kind=DP), dimension(:), intent(out) :: storage !< Aggregated storage per level (=volume - deadstorage)
-      real(kind=DP), dimension(:), intent(out) :: deadstorage !< Aggregated dead storage per level
-      real(kind=DP), dimension(:), intent(in) :: wl_deadstorage !< Water level for dead storage
+      real(kind=DP), dimension(:), intent(out) :: storage !< Aggregated storage per level (=volume - dead_storage)
+      real(kind=DP), dimension(:), intent(out) :: dead_storage !< Aggregated dead storage per level
+      real(kind=DP), dimension(:), intent(in) :: wl_dead_storage !< Water level for dead storage
       !> Volume tables; summer-dike state is updated during evaluation.
       type(t_voltable), dimension(:, :), intent(inout) :: voltb_on_links
       real(kind=DP), intent(in) :: bedlevel !< Bed level of the model
       real(kind=DP), intent(in) :: increment !< Requested increment
-      integer, intent(in) :: numpoints !< Number of 1d grid points also the size of voltb
-      integer, intent(in) :: numlevels !< Number of levels in volume, surface and levels
+      integer, intent(in) :: num_points !< Number of 1d grid points also the size of voltb
+      integer, intent(in) :: num_levels !< Number of levels in volume, surface and levels
       integer, dimension(:), intent(in) :: links !< Mask array for defining a sub set on flow links.
       integer, dimension(:, :), intent(in) :: ln2nd !< Indirection array links to nodes.
 
@@ -107,55 +107,55 @@ contains
       volume = 0.0_dp
       surface = 0.0_dp
       storage = 0.0_dp
-      deadstorage = 0.0_dp
+      dead_storage = 0.0_dp
 
-      do j = 1, numpoints
+      do j = 1, num_points
          l = links(j)
-         call add_volume_and_surface(volume, surface, deadstorage, wl_deadstorage(ln2nd(1, l)), &
-                                     voltb_on_links(1, l), bedlevel, increment, numlevels)
-         call add_volume_and_surface(volume, surface, deadstorage, wl_deadstorage(ln2nd(2, l)), &
-                                     voltb_on_links(2, l), bedlevel, increment, numlevels)
+         call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ln2nd(1, l)), &
+                                     voltb_on_links(1, l), bedlevel, increment, num_levels)
+         call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ln2nd(2, l)), &
+                                     voltb_on_links(2, l), bedlevel, increment, num_levels)
       end do
 
-      call compute_surface_and_storage(volume, surface, storage, deadstorage, increment, numlevels)
+      call compute_surface_and_storage(volume, surface, storage, dead_storage, increment, num_levels)
 
    end subroutine generate_volume_table_on_branches
 
 !> Add the volume and surface for this gridpoints volume table to the aggregated volume and surface
-   subroutine add_volume_and_surface(vol, sur, deadstorage, wl_deadstorage, voltb, bedlevel, increment, numlevels)
+   subroutine add_volume_and_surface(vol, sur, dead_storage, wl_dead_storage, voltb, bedlevel, increment, num_levels)
       real(kind=DP), dimension(:), intent(inout) :: vol !< Aggregated volume
       real(kind=DP), dimension(:), intent(inout) :: sur !< Aggregated surface
-      real(kind=DP), dimension(:), intent(inout) :: deadstorage !< Aggregated dead storage
-      real(kind=DP), intent(in) :: wl_deadstorage !< Aggregated dead storage
+      real(kind=DP), dimension(:), intent(inout) :: dead_storage !< Aggregated dead storage
+      real(kind=DP), intent(in) :: wl_dead_storage !< Aggregated dead storage
       type(t_voltable), intent(inout) :: voltb !< Volume table; summer-dike state is updated during evaluation.
-      integer, intent(in) :: numlevels !< Number of levels in the aggregated data
+      integer, intent(in) :: num_levels !< Number of levels in the aggregated data
       real(kind=DP), intent(in) :: bedlevel !< Bed level
       real(kind=DP), intent(in) :: increment !< Requested increment
 
       integer :: i
-      real(kind=DP) :: waterlevel
+      real(kind=DP) :: water_level
 
-      do i = 2, numlevels
-         waterlevel = bedlevel + real(i - 1, kind=DP) * increment
+      do i = 2, num_levels
+         water_level = bedlevel + real(i - 1, kind=DP) * increment
          ! Compute 1d volume, using volume tables (still excl. 1D2D contributions)
-         vol(i) = vol(i) + voltb%getvolume(waterlevel)
-         sur(i) = sur(i) + voltb%getsurface(waterlevel)
-         if (wl_deadstorage >= waterlevel) then
-            deadstorage(i) = deadstorage(i) + voltb%getvolume(waterlevel)
+         vol(i) = vol(i) + voltb%get_volume(water_level)
+         sur(i) = sur(i) + voltb%get_surface(water_level)
+         if (wl_dead_storage >= water_level) then
+            dead_storage(i) = dead_storage(i) + voltb%get_volume(water_level)
          else
-            deadstorage(i) = deadstorage(i) + voltb%getvolume(wl_deadstorage)
+            dead_storage(i) = dead_storage(i) + voltb%get_volume(wl_dead_storage)
          end if
       end do
 
    end subroutine add_volume_and_surface
 
 !> derive the surface areas from the volume table
-   subroutine compute_surface_and_storage(vol, sur, storage, deadstorage, increment, numlevels)
+   subroutine compute_surface_and_storage(vol, sur, storage, dead_storage, increment, num_levels)
       real(kind=DP), dimension(:), intent(in) :: vol !< Aggregated volume
       real(kind=DP), dimension(:), intent(inout) :: sur !< Aggregated surface
       real(kind=DP), dimension(:), intent(inout) :: storage !< Aggregated storage
-      real(kind=DP), dimension(:), intent(in) :: deadstorage !< Aggregated dead storage
-      integer, intent(in) :: numlevels !< Number of levels in the aggregated data
+      real(kind=DP), dimension(:), intent(in) :: dead_storage !< Aggregated dead storage
+      integer, intent(in) :: num_levels !< Number of levels in the aggregated data
       real(kind=DP), intent(in) :: increment !< Requested increment
 
       integer :: i
@@ -166,16 +166,16 @@ contains
       end if
 
       storage(1) = 0.0_dp
-      do i = 2, numlevels
+      do i = 2, num_levels
          sur(i - 1) = (vol(i) - vol(i - 1)) / increment
-         storage(i) = vol(i) - deadstorage(i)
+         storage(i) = vol(i) - dead_storage(i)
       end do
    end subroutine compute_surface_and_storage
 
 !> Determine the lowest level and the highest level in the volume table.
-   subroutine get_bed_top_level(voltb, numpoints, toplevel, bedlevel)
-      type(t_voltable), dimension(:), pointer, intent(in) :: voltb !< (numpoints) volume table for individual grid points.
-      integer, intent(in) :: numpoints !< Number of grid points in the input volume table.
+   subroutine get_bed_top_level(voltb, num_points, toplevel, bedlevel)
+      type(t_voltable), dimension(:), pointer, intent(in) :: voltb !< (num_points) volume table for individual grid points.
+      integer, intent(in) :: num_points !< Number of grid points in the input volume table.
       !> Highest absolute level in the model at cross sections or storage nodes.
       real(kind=DP), intent(out) :: toplevel
       real(kind=DP), intent(out) :: bedlevel !< Lowest (bed)level in the model, where cross sections or storage nodes are defined.
@@ -184,7 +184,7 @@ contains
       toplevel = -huge(1.0_dp)
       bedlevel = huge(1.0_dp)
 
-      do n = 1, numpoints
+      do n = 1, num_points
          toplevel = max(toplevel, voltb(n)%topheight + voltb(n)%bedlevel)
          bedlevel = min(bedlevel, voltb(n)%bedlevel)
       end do
@@ -192,8 +192,8 @@ contains
    end subroutine get_bed_top_level
 
 !> Calculate the dead storage using boundary conditions, turn off levels of pumping stations and the geometry of the network.
-   subroutine calculate_dead_storage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, &
-                                     ln2nd, kcu2, numlinks, numpoints, numboundaries)
+   subroutine calculate_dead_storage(wl_dead_storage, network, bnd_values, inslevtube, bnd_index, &
+                                     ln2nd, kcu2, num_links, num_points, num_boundaries)
 
       use m_flowgeom
       use m_network
@@ -201,15 +201,15 @@ contains
       use m_pump
 
       type(t_network), intent(in) :: network !< Network definition of the model.
-      real(kind=DP), dimension(:), intent(out) :: wl_deadstorage !< Minimal water levels after the model is drained.
-      real(kind=DP), dimension(:), intent(in) :: bndvalues !< Boundary condition values. See ZBNDZ in D-FlowFM.
+      real(kind=DP), dimension(:), intent(out) :: wl_dead_storage !< Minimal water levels after the model is drained.
+      real(kind=DP), dimension(:), intent(in) :: bnd_values !< Boundary condition values. See ZBNDZ in D-FlowFM.
       real(kind=DP), dimension(:, :), intent(in) :: inslevtube !< Inside level tubes. See BOB in D-FlowFM.
-      integer, dimension(:, :), intent(in) :: bndindex !< Index numbers for boundary condtions. See KBNDZ in D-FfowFM.
+      integer, dimension(:, :), intent(in) :: bnd_index !< Index numbers for boundary condtions. See KBNDZ in D-FfowFM.
       integer, dimension(:, :), intent(in) :: ln2nd !< Link nodes to node numbers. See LN in D-FfowFM.
       integer, dimension(:), intent(in) :: kcu2 !< Link type
-      integer, intent(in) :: numpoints !< Number of 1d points in volume tables.
-      integer, intent(in) :: numlinks !< Number of 1d internal links
-      integer, intent(in) :: numboundaries !< Number of water level boundaries
+      integer, intent(in) :: num_points !< Number of 1d points in volume tables.
+      integer, intent(in) :: num_links !< Number of 1d internal links
+      integer, intent(in) :: num_boundaries !< Number of water level boundaries
 
       integer :: number_of_changes
       integer :: i, n, k1, k2, kb, l, j
@@ -222,16 +222,16 @@ contains
       type(t_pump), pointer :: pump
 
       ! Set water levels to large value
-      wl_deadstorage = huge(1.0_dp)
+      wl_dead_storage = huge(1.0_dp)
 
       ! Set the boundary conditions
 
-      do n = 1, numboundaries
-         kb = bndindex(1, n)
-         k2 = bndindex(2, n)
-         l = bndindex(3, n)
-         boundary_type = bndindex(4, n)
-         wl_deadstorage(kb) = bndvalues(n)
+      do n = 1, num_boundaries
+         kb = bnd_index(1, n)
+         k2 = bnd_index(2, n)
+         l = bnd_index(3, n)
+         boundary_type = bnd_index(4, n)
+         wl_dead_storage(kb) = bnd_values(n)
       end do
 
       ! Set the waterlevel at the suction side of a pump to the turn off level.
@@ -251,16 +251,16 @@ contains
 
             nstages = pump%nrstages
             do j = 1, nstages
-               wl_deadstorage(suction_side_node) = min(wl_deadstorage(suction_side_node), pump%ss_offlevel(j))
+               wl_dead_storage(suction_side_node) = min(wl_dead_storage(suction_side_node), pump%ss_offlevel(j))
             end do
          end do
       end if
 
       ! Now iterate over all flow links in order to find the lowest level in the model
-      number_of_changes = numpoints
+      number_of_changes = num_points
       do while (number_of_changes > 0)
          number_of_changes = 0
-         do l = 1, numlinks
+         do l = 1, num_links
             if (kcu2(l) /= 1) then
                cycle
             end if
@@ -270,9 +270,9 @@ contains
                else
                   k2 = 1
                end if
-               if (wl_deadstorage(ln2nd(k1, l)) > max(inslevtube(1, l), inslevtube(2, l), wl_deadstorage(ln2nd(k2, l)))) then
+               if (wl_dead_storage(ln2nd(k1, l)) > max(inslevtube(1, l), inslevtube(2, l), wl_dead_storage(ln2nd(k2, l)))) then
                   number_of_changes = number_of_changes + 1
-                  wl_deadstorage(ln2nd(k1, l)) = max(inslevtube(1, l), inslevtube(2, l), wl_deadstorage(ln2nd(k2, l)))
+                  wl_dead_storage(ln2nd(k1, l)) = max(inslevtube(1, l), inslevtube(2, l), wl_dead_storage(ln2nd(k2, l)))
                end if
             end do
          end do

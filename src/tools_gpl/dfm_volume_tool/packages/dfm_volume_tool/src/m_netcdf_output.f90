@@ -88,41 +88,41 @@ contains
 
 !> Write the volumes and surfaces per gridpoint to an open Netcdf file
    subroutine write_volume_table_gridpoint_data(ioutput, bedlevel, topheight, volume, surface, storage, &
-                                                deadstorage, wl_deadstorage, count, numnodes, increment)
+                                                dead_storage, wl_dead_storage, count, num_nodes, increment)
       use messagehandling
 
       integer, intent(in) :: ioutput !< NetCDF dataset ID for the already opened output file.
-      real(kind=DP), dimension(:), intent(in) :: bedlevel !< (numnodes) Absolute bed levels for each gridpoint.
-      real(kind=DP), dimension(:), intent(in) :: topheight !< (numnodes) Highest tabulated water level relative to bed level.
-      real(kind=DP), dimension(:, :), intent(in) :: volume !< (levels, numnodes) Tabulated volumes.
-      real(kind=DP), dimension(:, :), intent(in) :: surface !< (levels, numnodes) Tabulated wet surface area.
-      real(kind=DP), dimension(:, :), intent(in) :: storage !< (levels, numnodes) Tabulated storage.
-      real(kind=DP), dimension(:, :), intent(in) :: deadstorage !< (levels, numnodes) Tabulated dead storage.
-      real(kind=DP), dimension(:), intent(in) :: wl_deadstorage !< (numnodes) dead storage water level on gridpoint
+      real(kind=DP), dimension(:), intent(in) :: bedlevel !< (num_nodes) Absolute bed levels for each gridpoint.
+      real(kind=DP), dimension(:), intent(in) :: topheight !< (num_nodes) Highest tabulated water level relative to bed level.
+      real(kind=DP), dimension(:, :), intent(in) :: volume !< (levels, num_nodes) Tabulated volumes.
+      real(kind=DP), dimension(:, :), intent(in) :: surface !< (levels, num_nodes) Tabulated wet surface area.
+      real(kind=DP), dimension(:, :), intent(in) :: storage !< (levels, num_nodes) Tabulated storage.
+      real(kind=DP), dimension(:, :), intent(in) :: dead_storage !< (levels, num_nodes) Tabulated dead storage.
+      real(kind=DP), dimension(:), intent(in) :: wl_dead_storage !< (num_nodes) dead storage water level on gridpoint
       integer, dimension(:), intent(in) :: count !< Number of levels in the volume/surface table
-      integer, intent(in) :: numnodes !< Number of nodes (gridpoints) in the volume table
+      integer, intent(in) :: num_nodes !< Number of nodes (gridpoints) in the volume table
       real(kind=DP), intent(in) :: increment !< increment between two volume table levels
 
       integer :: dimid_levels, dimid_nodes, dimid_increment
-      integer :: varid_volume, varid_surface, varid_numlevels, varid_bedlevel, varid_topheight, varid_increment
-      integer :: varid_storage, varid_deadstorage, varid_wl_deadstorage
+      integer :: varid_volume, varid_surface, varid_num_levels, varid_bedlevel, varid_topheight, varid_increment
+      integer :: varid_storage, varid_dead_storage, varid_wl_dead_storage
       integer :: ierr
-      integer :: numlevels, mesh1d_num_nodes
+      integer :: num_levels, mesh1d_num_nodes
       character(len=NF90_MAX_NAME) :: mesh1d_num_nodes_name
 
-      numlevels = maxval(count)
+      num_levels = maxval(count)
 
       ierr = nf90_redef(ioutput)
       if (ierr /= NF90_EINDEFINE) then
          call nc_error(ierr, 'nc_write_redef')
       end if
-      ierr = nf90_def_dim(ioutput, 'levels', numlevels, dimid_levels) ! ... if not, make this an unlimited dimension
+      ierr = nf90_def_dim(ioutput, 'levels', num_levels, dimid_levels) ! ... if not, make this an unlimited dimension
       call nc_error(ierr, 'nc_write_def_dim')
       ierr = nf90_inq_dimid(ioutput, 'mesh1d_nNodes', dimid_nodes)
       call nc_error(ierr, 'nc_write_inq_dimid')
       ierr = nf90_inquire_dimension(ioutput, dimid_nodes, mesh1d_num_nodes_name, mesh1d_num_nodes)
       call nc_error(ierr, 'nc_write_inq_dim')
-      if (mesh1d_num_nodes /= numnodes) then
+      if (mesh1d_num_nodes /= num_nodes) then
          call nc_error(-57, 'nc_write')
       end if
       ierr = nf90_def_dim(ioutput, 'increment', 1, dimid_increment)
@@ -130,36 +130,36 @@ contains
 
       varid_volume = setup_variable(ioutput, 'volume', NF90_DOUBLE, (/dimid_levels, dimid_nodes/), '', 'Volume', 'm3')
       varid_surface = setup_variable(ioutput, 'surface', NF90_DOUBLE, (/dimid_levels, dimid_nodes/), '', 'Surface', 'm2')
-      varid_numlevels = setup_variable(ioutput, 'numlevels', NF90_INT, (/dimid_nodes/), '', 'Number of levels', '')
+      varid_num_levels = setup_variable(ioutput, 'numlevels', NF90_INT, (/dimid_nodes/), '', 'Number of levels', '')
       varid_bedlevel = setup_variable(ioutput, 'bedlevel', NF90_DOUBLE, (/dimid_nodes/), '', 'Bedlevel', 'm')
       varid_topheight = setup_variable(ioutput, 'topheight', NF90_DOUBLE, (/dimid_nodes/), '', 'TopHeight', 'm')
       varid_increment = setup_variable(ioutput, 'increment', NF90_DOUBLE, (/dimid_increment/), '', 'Increment', 'm')
       varid_storage = setup_variable(ioutput, 'storage', NF90_DOUBLE, (/dimid_levels, dimid_nodes/), '', 'Storage', 'm3')
-      varid_deadstorage = setup_variable(ioutput, 'deadstorage', NF90_DOUBLE, &
-                                         (/dimid_levels, dimid_nodes/), '', 'Dead Storage', 'm3')
-      varid_wl_deadstorage = setup_variable(ioutput, 'wl_deadstorage', NF90_DOUBLE, &
-                                            (/dimid_nodes/), '', 'Dead Storage Water Level', 'm')
+      varid_dead_storage = setup_variable(ioutput, 'deadstorage', NF90_DOUBLE, &
+                                          (/dimid_levels, dimid_nodes/), '', 'Dead Storage', 'm3')
+      varid_wl_dead_storage = setup_variable(ioutput, 'wl_deadstorage', NF90_DOUBLE, &
+                                             (/dimid_nodes/), '', 'Dead Storage Water Level', 'm')
 
       ierr = nf90_enddef(ioutput)
       call nc_error(ierr, 'nc_write_enddef')
 
-      ierr = nf90_put_var(ioutput, varid_volume, volume, start=(/1, 1/), count=(/numlevels, numnodes/))
+      ierr = nf90_put_var(ioutput, varid_volume, volume, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_vol')
-      ierr = nf90_put_var(ioutput, varid_surface, surface, start=(/1, 1/), count=(/numlevels, numnodes/))
+      ierr = nf90_put_var(ioutput, varid_surface, surface, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_surf')
-      ierr = nf90_put_var(ioutput, varid_numlevels, count)
+      ierr = nf90_put_var(ioutput, varid_num_levels, count)
       call nc_error(ierr, 'nc_write_put_numl')
-      ierr = nf90_put_var(ioutput, varid_bedlevel, bedlevel, start=(/1/), count=(/numnodes/))
+      ierr = nf90_put_var(ioutput, varid_bedlevel, bedlevel, start=(/1/), count=(/num_nodes/))
       call nc_error(ierr, 'nc_write_put_bedl')
-      ierr = nf90_put_var(ioutput, varid_topheight, topheight, start=(/1/), count=(/numnodes/))
+      ierr = nf90_put_var(ioutput, varid_topheight, topheight, start=(/1/), count=(/num_nodes/))
       call nc_error(ierr, 'nc_write_put_toph')
       ierr = nf90_put_var(ioutput, varid_increment, increment)
       call nc_error(ierr, 'nc_write_put_incr')
-      ierr = nf90_put_var(ioutput, varid_storage, storage, start=(/1, 1/), count=(/numlevels, numnodes/))
+      ierr = nf90_put_var(ioutput, varid_storage, storage, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_stor')
-      ierr = nf90_put_var(ioutput, varid_deadstorage, deadstorage, start=(/1, 1/), count=(/numlevels, numnodes/))
+      ierr = nf90_put_var(ioutput, varid_dead_storage, dead_storage, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_deadstor')
-      ierr = nf90_put_var(ioutput, varid_wl_deadstorage, wl_deadstorage, start=(/1/), count=(/numnodes/))
+      ierr = nf90_put_var(ioutput, varid_wl_dead_storage, wl_dead_storage, start=(/1/), count=(/num_nodes/))
       call nc_error(ierr, 'nc_write_put_bedl')
 
       ierr = nf90_close(ioutput)
@@ -168,7 +168,7 @@ contains
    end subroutine write_volume_table_gridpoint_data
 
 !> Write the volumes and surfaces to the Netcdf file
-   subroutine write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, deadstorage, numlevels, numids)
+   subroutine write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, dead_storage, num_levels, num_ids)
 
       use messagehandling
 
@@ -177,19 +177,19 @@ contains
       real(kind=DP), dimension(:), intent(in) :: levels !< Levels w.r.t. the bedlevel.
       real(kind=DP), dimension(:, :), intent(in) :: volume !< Volumes.
       real(kind=DP), dimension(:, :), intent(in) :: surface !< Wet surface area.
-      real(kind=DP), dimension(:, :), intent(in) :: deadstorage !< Dead storage
-      real(kind=DP), dimension(:, :), intent(in) :: storage !< Storage (=volume - deadstorage)
-      integer, intent(in) :: numlevels !< Number of levels in the volume table
-      integer, intent(in) :: numids !< Number of volume tables (per Id)
+      real(kind=DP), dimension(:, :), intent(in) :: dead_storage !< Dead storage
+      real(kind=DP), dimension(:, :), intent(in) :: storage !< Storage (=volume - dead_storage)
+      integer, intent(in) :: num_levels !< Number of levels in the volume table
+      integer, intent(in) :: num_ids !< Number of volume tables (per Id)
 
       integer :: dimid_levels, dimid_ids, dimid_chars
-      integer :: varid_id, varid_levels, varid_volume, varid_surface, varid_storage, varid_deadstorage
+      integer :: varid_id, varid_levels, varid_volume, varid_surface, varid_storage, varid_dead_storage
       integer :: ierr
 
-      ierr = nf90_def_dim(ioutput, 'levels', numlevels, dimid_levels) ! ... if not, make this an unlimited dimension
+      ierr = nf90_def_dim(ioutput, 'levels', num_levels, dimid_levels) ! ... if not, make this an unlimited dimension
       call nc_error(ierr, 'nc_write')
 
-      ierr = nf90_def_dim(ioutput, 'id', numids, dimid_ids)
+      ierr = nf90_def_dim(ioutput, 'id', num_ids, dimid_ids)
       call nc_error(ierr, 'nc_write')
       ierr = nf90_def_dim(ioutput, 'id_charlen', IDLEN, dimid_chars)
       call nc_error(ierr, 'nc_write')
@@ -201,7 +201,7 @@ contains
       varid_levels = setup_variable(ioutput, 'levels', NF90_DOUBLE, (/dimid_levels/), '', 'Levels', 'm')
       varid_volume = setup_variable(ioutput, 'volume', NF90_DOUBLE, (/dimid_levels, dimid_ids/), '', 'Volume', 'm3')
       varid_surface = setup_variable(ioutput, 'surface', NF90_DOUBLE, (/dimid_levels, dimid_ids/), '', 'Surface', 'm2')
-      varid_deadstorage = setup_variable(ioutput, 'dead_storage', NF90_DOUBLE, (/dimid_levels, dimid_ids/), '', 'Dead storage', 'm3')
+      varid_dead_storage = setup_variable(ioutput, 'dead_storage', NF90_DOUBLE, (/dimid_levels, dimid_ids/), '', 'Dead storage', 'm3')
       varid_storage = setup_variable(ioutput, 'storage', NF90_DOUBLE, (/dimid_levels, dimid_ids/), '', 'Storage', 'm3')
       ierr = nf90_put_att(ioutput, varid_volume, 'coordinates', 'id levels')
       call nc_error(ierr, 'nc_write')
@@ -214,17 +214,17 @@ contains
 
       call nc_error(ierr, 'nc_write')
 
-      ierr = nf90_put_var(ioutput, varid_id, ids(1:numids), start=(/1, 1/), count=(/IDLEN, numids/))
+      ierr = nf90_put_var(ioutput, varid_id, ids(1:num_ids), start=(/1, 1/), count=(/IDLEN, num_ids/))
       call nc_error(ierr, 'nc_write')
-      ierr = nf90_put_var(ioutput, varid_levels, levels, start=(/1/), count=(/numlevels/))
+      ierr = nf90_put_var(ioutput, varid_levels, levels, start=(/1/), count=(/num_levels/))
       call nc_error(ierr, 'nc_write')
-      ierr = nf90_put_var(ioutput, varid_volume, volume, start=(/1, 1/), count=(/numlevels, numids/))
+      ierr = nf90_put_var(ioutput, varid_volume, volume, start=(/1, 1/), count=(/num_levels, num_ids/))
       call nc_error(ierr, 'nc_write')
-      ierr = nf90_put_var(ioutput, varid_surface, surface, start=(/1, 1/), count=(/numlevels, numids/))
+      ierr = nf90_put_var(ioutput, varid_surface, surface, start=(/1, 1/), count=(/num_levels, num_ids/))
       call nc_error(ierr, 'nc_write')
-      ierr = nf90_put_var(ioutput, varid_deadstorage, deadstorage, start=(/1, 1/), count=(/numlevels, numids/))
+      ierr = nf90_put_var(ioutput, varid_dead_storage, dead_storage, start=(/1, 1/), count=(/num_levels, num_ids/))
       call nc_error(ierr, 'nc_write')
-      ierr = nf90_put_var(ioutput, varid_storage, storage, start=(/1, 1/), count=(/numlevels, numids/))
+      ierr = nf90_put_var(ioutput, varid_storage, storage, start=(/1, 1/), count=(/num_levels, num_ids/))
       call nc_error(ierr, 'nc_write')
 
       ierr = nf90_close(ioutput)

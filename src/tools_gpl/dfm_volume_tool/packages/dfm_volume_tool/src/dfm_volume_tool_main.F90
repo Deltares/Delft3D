@@ -59,15 +59,15 @@ program dfm_volume_tool
    integer :: dia
    integer :: i, j, l
    integer :: id_index
-   integer :: numids
-   integer :: numbranches
+   integer :: num_ids
+   integer :: num_branches
    integer :: ioutput, ncid
    real(kind=DP) :: increment
    real(kind=DP) :: bedlevel, toplevel
    character(len=IDLEN) :: output_type
    character(len=IDLEN) :: output_file, grid_output_file
    type(c_ptr) :: xptr
-   integer :: numpoints, numgridpoints, numlinks, lnx, numbnd
+   integer :: num_points, num_grid_points, num_links, lnx, num_boundaries
    integer, pointer :: integer_pointer
    logical :: compute_total
    logical :: compute_on_branches
@@ -76,26 +76,26 @@ program dfm_volume_tool
    real(kind=DP), dimension(:, :), pointer :: volume
    real(kind=DP), dimension(:, :), pointer :: surface
    real(kind=DP), dimension(:, :), pointer :: storage
-   real(kind=DP), dimension(:, :), pointer :: deadstorage
+   real(kind=DP), dimension(:, :), pointer :: dead_storage
    real(kind=DP), dimension(:), pointer :: levels
 
    character(len=IDLEN), dimension(:), allocatable :: ids
-   integer :: numlevels
-   type(t_voltable), dimension(:), pointer :: volumetable
+   integer :: num_levels
+   type(t_voltable), dimension(:), pointer :: volume_table
    type(t_voltable), dimension(:, :), pointer :: volume_table_on_links
    type(t_network), pointer :: network
    type(t_branch), dimension(:), pointer :: branches
-   integer, dimension(:), allocatable :: mask, tablecount
-   integer, dimension(:, :), pointer :: bndindex
+   integer, dimension(:), allocatable :: mask, table_count
+   integer, dimension(:, :), pointer :: bnd_index
    integer, dimension(:, :), allocatable :: ln2nd
    integer, dimension(:, :), pointer :: lnog !Don't modify this!!!
    integer, dimension(:), pointer :: kcu2
-   integer, dimension(:), allocatable :: shapearray
+   integer, dimension(:), allocatable :: shape_array
    integer, pointer :: ndx2d
-   real(kind=DP), dimension(:), pointer :: bndvalues
+   real(kind=DP), dimension(:), pointer :: bnd_values
    real(kind=DP), dimension(:, :), pointer :: inslevtube
-   real(kind=DP), dimension(:, :), pointer :: gridvolume, gridsurface, griddeadstorage, gridstorage
-   real(kind=DP), dimension(:), allocatable :: wl_deadstorage, bedlevels, topheights
+   real(kind=DP), dimension(:, :), pointer :: grid_volume, grid_surface, grid_dead_storage, grid_storage
+   real(kind=DP), dimension(:), allocatable :: wl_dead_storage, bedlevels, topheights
    integer, parameter :: MAXDIMS = 6
 ! externals
 
@@ -114,7 +114,7 @@ program dfm_volume_tool
    call getbranch_dfm_volume_tool(msgbuf)
    call msg_flush()
 
-   numids = 0
+   num_ids = 0
 !-----------------------------------------------------------------------------------------------------------------------------------
 !! initializing Command Line Interface
    call cli%init(progname=TOOL_BASE_NAME, &
@@ -221,31 +221,31 @@ program dfm_volume_tool
       ! Retrieve data from the D-FLOW FM dll
       call bmi_get_var_pointer(dfm, string_to_char_array('lnx1D'), xptr)
       call c_f_pointer(xptr, integer_pointer)
-      numlinks = integer_pointer
+      num_links = integer_pointer
 
       call bmi_get_var_pointer(dfm, string_to_char_array('lnx'), xptr)
       call c_f_pointer(xptr, integer_pointer)
       lnx = integer_pointer
 
-      allocate (shapearray(MAXDIMS))
-      call bmi_get_var_shape(dfm, string_to_char_array('zbndz'), shapearray)
-      numbnd = shapearray(1)
+      allocate (shape_array(MAXDIMS))
+      call bmi_get_var_shape(dfm, string_to_char_array('zbndz'), shape_array)
+      num_boundaries = shape_array(1)
 
       call bmi_get_var_pointer(dfm, string_to_char_array('ndx2d'), xptr)
       call c_f_pointer(xptr, ndx2d)
 
       call bmi_get_var_pointer(dfm, string_to_char_array('ndx'), xptr)
       call c_f_pointer(xptr, integer_pointer)
-      numpoints = integer_pointer - ndx2d
+      num_points = integer_pointer - ndx2d
 
       call bmi_get_var_pointer(dfm, string_to_char_array('ndxi'), xptr)
       call c_f_pointer(xptr, integer_pointer)
-      numgridpoints = integer_pointer - ndx2d
+      num_grid_points = integer_pointer - ndx2d
 
-      allocate (inslevtube(2, lnx), ln2nd(2, lnx), bndvalues(numbnd))
+      allocate (inslevtube(2, lnx), ln2nd(2, lnx), bnd_values(num_boundaries))
       call bmi_get_var(dfm, 'bob', inslevtube, 2 * lnx)
-      if (numbnd > 0) then
-         call bmi_get_var(dfm, 'zbndz', bndvalues, numbnd)
+      if (num_boundaries > 0) then
+         call bmi_get_var(dfm, 'zbndz', bnd_values, num_boundaries)
          !call get_variable_pointer(dfm, string_to_char_array('kbndz'), xptr)
       end if
       call bmi_get_var_pointer(dfm, string_to_char_array('kcu'), xptr)
@@ -255,17 +255,17 @@ program dfm_volume_tool
       call c_f_pointer(xptr, lnog, (/2, lnx/))
 
       call bmi_get_var_pointer(dfm, string_to_char_array('kbndz'), xptr)
-      call c_f_pointer(xptr, bndindex, (/MAXDIMS, numbnd/))
+      call c_f_pointer(xptr, bnd_index, (/MAXDIMS, num_boundaries/))
 
       call bmi_get_var_pointer(dfm, string_to_char_array('vltb'), xptr)
-      call c_f_pointer(xptr, volumetable, (/numpoints/))
+      call c_f_pointer(xptr, volume_table, (/num_points/))
       call bmi_get_var_pointer(dfm, string_to_char_array('vltbOnLinks'), xptr)
-      call c_f_pointer(xptr, volume_table_on_links, (/2, numlinks/))
+      call c_f_pointer(xptr, volume_table_on_links, (/2, num_links/))
       call bmi_get_var_pointer(dfm, string_to_char_array('network'), xptr)
       call c_f_pointer(xptr, network)
 
       ! Determine the number of levels for the aggregated volume tables
-      call get_bed_top_level(volumetable, numpoints, toplevel, bedlevel)
+      call get_bed_top_level(volume_table, num_points, toplevel, bedlevel)
 
       ln2nd = lnog
 
@@ -275,100 +275,101 @@ program dfm_volume_tool
          end if
       end do
 
-      numlevels = 0
-      do i = 1, numpoints
-         numlevels = max(numlevels, volumetable(i)%count)
+      num_levels = 0
+      do i = 1, num_points
+         num_levels = max(num_levels, volume_table(i)%count)
       end do
 
       compute_total = .false.
       compute_on_branches = .false.
       compute_on_gridpoints = .false.
-      numbranches = network%brs%count
+      num_branches = network%brs%count
       if (strcmpi(output_type, 'Total')) then
          compute_total = .true.
-         numids = 1
+         num_ids = 1
       else if (strcmpi(output_type, 'Branches')) then
          compute_on_branches = .true.
-         numids = numbranches
+         num_ids = num_branches
       else if (strcmpi(output_type, 'Gridpoints')) then
          compute_on_gridpoints = .true.
       else if (strcmpi(output_type, 'All')) then
          compute_total = .true.
          compute_on_branches = .true.
          compute_on_gridpoints = .true.
-         numids = numbranches + 1
+         num_ids = num_branches + 1
       end if
 
-      allocate (surface(numlevels, numids), volume(numlevels, numids), storage(numlevels, numids), deadstorage(numlevels, numids))
-      allocate (levels(numlevels), ids(numids), mask(numpoints), wl_deadstorage(numpoints))
+      allocate (surface(num_levels, num_ids), volume(num_levels, num_ids), storage(num_levels, num_ids), &
+                dead_storage(num_levels, num_ids))
+      allocate (levels(num_levels), ids(num_ids), mask(num_points), wl_dead_storage(num_points))
 
       surface = 0.0_dp
       volume = 0.0_dp
       storage = 0.0_dp
-      deadstorage = 0.0_dp
+      dead_storage = 0.0_dp
 
-      do i = 1, numlevels
+      do i = 1, num_levels
          levels(i) = real(i - 1, kind=DP) * increment
       end do
       tableincrement = increment
 
-      call calculate_dead_storage(wl_deadstorage, network, bndvalues, inslevtube, bndindex, &
-                                  ln2nd, kcu2, numlinks, numpoints, numbnd)
+      call calculate_dead_storage(wl_dead_storage, network, bnd_values, inslevtube, bnd_index, &
+                                  ln2nd, kcu2, num_links, num_points, num_boundaries)
 
       id_index = 0
       if (compute_total) then
          id_index = 1
          !> setup the mask array for the complete model
-         do i = 1, numpoints
+         do i = 1, num_points
             mask(i) = i
          end do
 
          !> Calculate the total volumes and surfaces for this model
          ids(1) = 'Total'
-         call generate_total_volume_table(volume(:, 1), surface(:, 1), storage(:, 1), deadstorage(:, 1), &
-                                          wl_deadstorage, volumetable, bedlevel, increment, numpoints, numlevels, mask)
+         call generate_total_volume_table(volume(:, 1), surface(:, 1), storage(:, 1), dead_storage(:, 1), &
+                                          wl_dead_storage, volume_table, bedlevel, increment, num_points, num_levels, mask)
 
       end if
 
       if (compute_on_branches) then
          branches => network%brs%branch
-         do i = 1, numbranches
+         do i = 1, num_branches
             id_index = id_index + 1
             ids(id_index) = branches(i)%id
             call generate_volume_table_on_branches(volume(:, id_index), surface(:, id_index), &
-                                                   storage(:, id_index), deadstorage(:, id_index), &
-                                                   wl_deadstorage, volume_table_on_links, bedlevel, &
-                                                   increment, branches(i)%upointscount, numlevels, branches(i)%lin, ln2nd)
+                                                   storage(:, id_index), dead_storage(:, id_index), &
+                                                   wl_dead_storage, volume_table_on_links, bedlevel, &
+                                                   increment, branches(i)%upointscount, num_levels, branches(i)%lin, ln2nd)
          end do
       end if
 
-      if ((compute_total .or. compute_on_branches) .and. numids > 0) then
+      if ((compute_total .or. compute_on_branches) .and. num_ids > 0) then
          ioutput = nc_create(output_file)
-         call write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, deadstorage, numlevels, numids)
+         call write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, dead_storage, num_levels, num_ids)
       end if
 
       if (compute_on_gridpoints) then !Gridpoints are written separately
          !compute maximum volume table length
 
-         allocate (gridsurface(numlevels, numgridpoints), griddeadstorage(numlevels, numgridpoints), &
-                   gridvolume(numlevels, numgridpoints), gridstorage(numlevels, numgridpoints), &
-                   bedlevels(numgridpoints), topheights(numgridpoints), tablecount(numgridpoints))
+         allocate (grid_surface(num_levels, num_grid_points), grid_dead_storage(num_levels, num_grid_points), &
+                   grid_volume(num_levels, num_grid_points), grid_storage(num_levels, num_grid_points), &
+                   bedlevels(num_grid_points), topheights(num_grid_points), table_count(num_grid_points))
 
-         gridsurface = 0.0_dp
-         gridvolume = 0.0_dp
-         gridstorage = 0.0_dp
-         griddeadstorage = 0.0_dp
+         grid_surface = 0.0_dp
+         grid_volume = 0.0_dp
+         grid_storage = 0.0_dp
+         grid_dead_storage = 0.0_dp
 
-         do i = 1, numgridpoints
-            bedlevels(i) = volumetable(i)%bedlevel
-            topheights(i) = volumetable(i)%topheight
-            tablecount(i) = volumetable(i)%count
-            call add_volume_and_surface(gridvolume(:, i), gridsurface(:, i), griddeadstorage(:, i), &
-                                        wl_deadstorage(i), volumetable(i), volumetable(i)%bedlevel, increment, numlevels)
-            do j = 1, volumetable(i)%count
-               gridsurface(j, i) = volumetable(i)%sur(j)
-               gridvolume(j, i) = volumetable(i)%vol(j)
-               gridstorage(j, i) = gridvolume(j, i) - griddeadstorage(j, i)
+         do i = 1, num_grid_points
+            bedlevels(i) = volume_table(i)%bedlevel
+            topheights(i) = volume_table(i)%topheight
+            table_count(i) = volume_table(i)%count
+            call add_volume_and_surface(grid_volume(:, i), grid_surface(:, i), grid_dead_storage(:, i), &
+                                        wl_dead_storage(i), volume_table(i), volume_table(i)%bedlevel, increment, num_levels)
+            do j = 1, volume_table(i)%count
+               grid_surface(j, i) = volume_table(i)%sur(j)
+               grid_volume(j, i) = volume_table(i)%vol(j)
+               grid_storage(j, i) = grid_volume(j, i) - grid_dead_storage(j, i)
             end do
          end do
 
@@ -376,11 +377,11 @@ program dfm_volume_tool
          ! Write the output to the netcdf file
          call write_1d_flowgeom_ugrid(dfm, ncid)
 
-         call write_volume_table_gridpoint_data(ncid, bedlevels(1:numgridpoints), topheights(1:numgridpoints), &
-                                                gridvolume(:, 1:numgridpoints), gridsurface(:, 1:numgridpoints), &
-                                                gridstorage(:, 1:numgridpoints), griddeadstorage(:, 1:numgridpoints), &
-                                                wl_deadstorage(1:numgridpoints), tablecount(1:numgridpoints), &
-                                                numgridpoints, increment)
+         call write_volume_table_gridpoint_data(ncid, bedlevels(1:num_grid_points), topheights(1:num_grid_points), &
+                                                grid_volume(:, 1:num_grid_points), grid_surface(:, 1:num_grid_points), &
+                                                grid_storage(:, 1:num_grid_points), grid_dead_storage(:, 1:num_grid_points), &
+                                                wl_dead_storage(1:num_grid_points), table_count(1:num_grid_points), &
+                                                num_grid_points, increment)
       end if
 
       deallocate (surface, volume, levels, ids, mask)
