@@ -2,8 +2,8 @@
 
 # This script starts both D-Flow FM and preC-SUMO. It is a temporary solution for the testbench.
 
-scriptdir="$(dirname "$(readlink -f ${0})")"
-installdir="${scriptdir}/../../data/engines/teamcity_artifacts/x64"
+scriptdir="$(dirname "$(readlink -f "${0}")")"
+installdir="${scriptdir}/../../data/engines/teamcity_artifacts/lnx64"
 bindir="$(readlink -f "${installdir}/bin")"
 libdir="$(readlink -f "${installdir}/lib")"
 export PATH="${bindir}:${PATH}"
@@ -23,8 +23,8 @@ rm -f precice-profiling/*.txt
 rm -rf precice-run
 
 cd cosumo
-${bindir}/preC-SUMO -c csumo_settings.xml -p ../precice_config.xml &
+"${bindir}/preC-SUMO" -c csumo_settings.xml -p ../precice_config.xml &
 cd ..
 cd fm
-${bindir}/dflowfm FlowFM.mdu --precice
+"${bindir}/dflowfm" FlowFM.mdu --precice
 cd ..

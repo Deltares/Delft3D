@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <!-- ======================================================================== -->
-  <testCase name="e38_f02_c01_simple" ref="runscript_trunk">
+  <testCase name="e38_f02_c01_simple" ref="dflowfm_csumo_template">
     <path version="DVC">e38_dflowfm-cosumo/f02_precice/c01_simple</path>
     <checks>
       <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
@@ -15,7 +15,7 @@
     </checks>
   </testCase>
   <!-- ======================================================================== -->
-  <testCase name="e38_f02_c02_momentum" ref="runscript_trunk">
+  <testCase name="e38_f02_c02_momentum" ref="dflowfm_csumo_template">
     <path version="DVC">e38_dflowfm-cosumo/f02_precice/c02_momentum</path>
     <checks>
       <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">

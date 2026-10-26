@@ -47,7 +47,7 @@
     default testCases
     -->
   <defaultTestCases>
-    <testCase name="runscript_trunk">
+    <testCase name="dflowfm_csumo_template">
       <programs>
         <program ref="run_fm_csumo">
           <workingDirectory>.</workingDirectory> 

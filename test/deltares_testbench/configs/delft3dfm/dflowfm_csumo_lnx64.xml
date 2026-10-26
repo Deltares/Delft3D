@@ -32,11 +32,6 @@
     Programs
     -->
   <programs>
-    <!--
-        The order is important. Start with the following programs:
-            command_prompt
-            mpi
-        -->
     <program name="command_prompt">
       <path>/bin/bash</path>
       <arguments>
@@ -47,7 +42,7 @@
       <path>../../../../tools/precice/run_fm_csumo.sh</path>
       <shell ref="command_prompt"/>
       <location ref="engines_to_compare" type="check">
-        <from>teamcity_artifacts/x64</from>
+        <from>teamcity_artifacts/lnx64</from>
       </location>
     </program>
   </programs>
@@ -55,7 +50,7 @@
     default testCases
     -->
   <defaultTestCases>
-    <testCase name="runscript_trunk">
+    <testCase name="dflowfm_csumo_template">
       <programs>
         <program ref="run_fm_csumo">
           <workingDirectory>.</workingDirectory> 
