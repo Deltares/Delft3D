@@ -50,11 +50,14 @@ contains
       use m_crspath
       use m_crspath_on_flowgeom
       use unstruc_model, only: md_pillar_use_far_field_velocity
+      use m_mathconstants, only: PI_HP
+      use messagehandling, only: LEVEL_ERROR, mess
+
 
       integer :: i, j, k, L, Lf, La, m, n
       real(kind=dp) :: pi
       integer, dimension(:), allocatable :: npil
-      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link 
+      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link
       real(kind=dp), dimension(:), allocatable :: Aeff !< effective area of cell (pillartype=1) of width of link (pillartype=3) available for flow (not occupied by pillars)
       real(kind=dp) :: velocity_squared_correction_per_width !< correction factor for velocity squared per unit width to be used in pillar drag calculation
       integer, dimension(:), allocatable :: linktype
@@ -62,55 +65,18 @@ contains
       type(tcrspath), dimension(:), allocatable :: Path
       integer, dimension(:), allocatable :: idum
 
-      if (allocated(Cpil)) then
-         deallocate (Cpil)
-      end if
-      if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
-         allocate (Cpil(ndx))
-      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
-         allocate (Cpil(lnx))
-      end if
-
-      if (allocated(idum)) then
-         deallocate (idum)
-      end if
-      allocate (idum(1))
-      idum = 0
-
-      pi = 4.0_dp * atan(1.0_dp)
-
-      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
-         if (allocated(cdeq)) then
-            deallocate (cdeq, npil)
+      select case (pillar_method)
+      case (PILLAR_DELFT3D_FLOWNODE)
+         pi = real(PI_HP, kind=dp)
+         if (allocated(Cpil)) then
+            deallocate (Cpil)
          end if
-         allocate (cdeq(ndx), npil(ndx))
-         cdeq = 0.0_dp
-         npil = 0
-         do m = 1, size(pillar)
-            do i = 1, pillar(m)%np
-               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) then
-                  cycle
-               end if
-               call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), j)
-               if (j == 0) then
-                  cycle
-               end if
-               rnveg(j) = rnveg(j) + pillar(m)%dia(i)**2 * pi * 0.25_dp / ba(j)
-               cdeq(j) = cdeq(j) + pillar(m)%cd(i) * pillar(m)%dia(i)
-               npil(j) = npil(j) + 1
-            end do
-         end do
-         do j = 1, ndx
-            if (npil(j) == 0) then
-               cycle
-            end if
-            diaveg(j) = diaveg(j) + cdeq(j) / npil(j)
-            stemheight(j) = 1.0e30_dp
-         end do
-         deallocate (cdeq)
-         deallocate (npil)
-
-      elseif (pillar_method == PILLAR_DELFT3D_FLOWNODE) then ! Delft3D implimentation, but modified version on flow cells
+         allocate (Cpil(ndx))
+         if (allocated(idum)) then
+            deallocate (idum)
+         end if
+         allocate (idum(1))
+         idum = 0
          if (allocated(Aeff)) then
             deallocate (Aeff, cdeq)
          end if
@@ -145,8 +111,16 @@ contains
          end do
          deallocate (Aeff)
          deallocate (cdeq)
-
-      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then ! Based on D3D approach on flow links
+      case (PILLAR_DELFT3D_FLOWLINK)
+         if (allocated(Cpil)) then
+            deallocate (Cpil)
+         end if
+         allocate (Cpil(lnx))
+         if (allocated(idum)) then
+            deallocate (idum)
+         end if
+         allocate (idum(1))
+         idum = 0
          if (allocated(Aeff)) then
             deallocate (Aeff, cdeq, linktype)
          end if
@@ -202,7 +176,53 @@ contains
          deallocate (Aeff)
          deallocate (cdeq)
          deallocate (linktype)
-      end if
+      case (PILLAR_VEGETATION_BAPTIST)
+         if (allocated(Cpil)) then
+            deallocate (Cpil)
+         end if
+         if (allocated(cdeq)) then
+            deallocate (cdeq)
+         end if
+         if (allocated(npil)) then
+            deallocate (npil)
+         end if
+         allocate (cdeq(ndx))
+         allocate (npil(ndx))
+         if (allocated(idum)) then
+            deallocate (idum)
+         end if
+         allocate (idum(1))
+         idum = 0
+         cdeq = 0.0_dp
+         npil = 0
+         do m = 1, size(pillar)
+            do i = 1, pillar(m)%np
+               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) then
+                  cycle
+               end if
+               call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), j)
+               if (j == 0) then
+                  cycle
+               end if
+               rnveg(j) = rnveg(j) + pillar(m)%dia(i)**2 * pi * 0.25_dp / ba(j)
+               cdeq(j) = cdeq(j) + pillar(m)%cd(i) * pillar(m)%dia(i)
+               npil(j) = npil(j) + 1
+            end do
+         end do
+         do j = 1, ndx
+            if (npil(j) == 0) then
+               cycle
+            end if
+            diaveg(j) = diaveg(j) + cdeq(j) / npil(j)
+            stemheight(j) = 1.0e30_dp
+         end do
+         deallocate (cdeq)
+         deallocate (npil)
+      case default
+         call mess(LEVEL_ERROR, 'Invalid pillar method specified.')
+      end select
+
+
 
    end subroutine setpillars
 
