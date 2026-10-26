@@ -1556,23 +1556,23 @@ contains
                     'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                     nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WSTAR, &
-                    'Wrihis_bulk_exchange_coefficients', 'w_star', 'Free convective velocity scale', '', &
+                    'wriHis_BulkExchangeCoefficients', 'w_star', 'Free convective velocity scale', '', &
               'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
-                    'Wrihis_bulk_exchange_coefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
+                    'wriHis_BulkExchangeCoefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_bulk_exchange_coefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
