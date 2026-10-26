@@ -473,9 +473,7 @@ module m_flowparameters
    integer :: jaupwindsrc !< 1st-order upwind advection (1) or higher-order (0)
 
    integer :: jadiffusiononbnd = 1 !< 0 switches off diffusion on open boundaries
-
-   integer :: jajre !< 0: default, 1: sb
-
+   
    integer :: jasedtrails !< sedtrails custom averaged output - 0: no (default) ; 1: yes
 
    integer :: jasourcesink !< 1: source+sink 2:source 3:sink for sediment
@@ -869,7 +867,6 @@ contains
       Drop2D = 0.0_dp ! Apply droplosses in 2D yes or no 1 or 0
       Drop3D = 1.0_dp ! Apply droplosses in 3D yes or no 1 or 0
       jacstbnd = 0
-      jajre = 0
       jasourcesink = 1
 
       cflmx = 0.7_dp ! max Courant nr ()
