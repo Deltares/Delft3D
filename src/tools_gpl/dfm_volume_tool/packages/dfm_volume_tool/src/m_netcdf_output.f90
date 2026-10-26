@@ -39,6 +39,7 @@ module m_netcdf_output
    private
 
    public :: nc_create
+   public :: nc_close
    public :: write_volume_surface_arrays
    public :: write_volume_table_gridpoint_data
 
@@ -88,7 +89,7 @@ contains
 
 !> Write the volumes and surfaces per gridpoint to an open Netcdf file
    subroutine write_volume_table_gridpoint_data(ioutput, bedlevel, topheight, volume, surface, storage, &
-                                                dead_storage, wl_dead_storage, count, num_nodes, increment)
+                                                dead_storage, wl_dead_storage, table_count, increment)
       use messagehandling
 
       integer, intent(in) :: ioutput !< NetCDF dataset ID for the already opened output file.
@@ -99,18 +100,18 @@ contains
       real(kind=DP), dimension(:, :), intent(in) :: storage !< (levels, num_nodes) Tabulated storage.
       real(kind=DP), dimension(:, :), intent(in) :: dead_storage !< (levels, num_nodes) Tabulated dead storage.
       real(kind=DP), dimension(:), intent(in) :: wl_dead_storage !< (num_nodes) dead storage water level on gridpoint
-      integer, dimension(:), intent(in) :: count !< Number of levels in the volume/surface table
-      integer, intent(in) :: num_nodes !< Number of nodes (gridpoints) in the volume table
+      integer, dimension(:), intent(in) :: table_count !< (num_nodes) Number of levels in the volume/surface table
       real(kind=DP), intent(in) :: increment !< increment between two volume table levels
 
       integer :: dimid_levels, dimid_nodes, dimid_increment
       integer :: varid_volume, varid_surface, varid_num_levels, varid_bedlevel, varid_topheight, varid_increment
       integer :: varid_storage, varid_dead_storage, varid_wl_dead_storage
       integer :: ierr
-      integer :: num_levels, mesh1d_num_nodes
+      integer :: num_levels, num_nodes, mesh1d_num_nodes
       character(len=NF90_MAX_NAME) :: mesh1d_num_nodes_name
 
-      num_levels = maxval(count)
+      num_nodes = size(bedlevel)
+      num_levels = maxval(table_count)
 
       ierr = nf90_redef(ioutput)
       if (ierr /= NF90_EINDEFINE) then
@@ -147,7 +148,7 @@ contains
       call nc_error(ierr, 'nc_write_put_vol')
       ierr = nf90_put_var(ioutput, varid_surface, surface, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_surf')
-      ierr = nf90_put_var(ioutput, varid_num_levels, count)
+      ierr = nf90_put_var(ioutput, varid_num_levels, table_count)
       call nc_error(ierr, 'nc_write_put_numl')
       ierr = nf90_put_var(ioutput, varid_bedlevel, bedlevel, start=(/1/), count=(/num_nodes/))
       call nc_error(ierr, 'nc_write_put_bedl')
@@ -160,12 +161,19 @@ contains
       ierr = nf90_put_var(ioutput, varid_dead_storage, dead_storage, start=(/1, 1/), count=(/num_levels, num_nodes/))
       call nc_error(ierr, 'nc_write_put_deadstor')
       ierr = nf90_put_var(ioutput, varid_wl_dead_storage, wl_dead_storage, start=(/1/), count=(/num_nodes/))
-      call nc_error(ierr, 'nc_write_put_bedl')
-
-      ierr = nf90_close(ioutput)
-      call nc_error(ierr, 'nc_write_close')
+      call nc_error(ierr, 'nc_write_put_wl_deadstor')
 
    end subroutine write_volume_table_gridpoint_data
+
+!> Close the Netcdf file
+   subroutine nc_close(ioutput)
+      integer, intent(in) :: ioutput !< Handle to the output file.
+
+      integer :: ierr
+
+      ierr = nf90_close(ioutput)
+      call nc_error(ierr, 'nc_close')
+   end subroutine nc_close
 
 !> Write the volumes and surfaces to the Netcdf file
    subroutine write_volume_surface_arrays(ioutput, ids, levels, volume, surface, storage, dead_storage, num_levels, num_ids)
@@ -225,9 +233,6 @@ contains
       ierr = nf90_put_var(ioutput, varid_dead_storage, dead_storage, start=(/1, 1/), count=(/num_levels, num_ids/))
       call nc_error(ierr, 'nc_write')
       ierr = nf90_put_var(ioutput, varid_storage, storage, start=(/1, 1/), count=(/num_levels, num_ids/))
-      call nc_error(ierr, 'nc_write')
-
-      ierr = nf90_close(ioutput)
       call nc_error(ierr, 'nc_write')
 
    end subroutine write_volume_surface_arrays
