@@ -57,7 +57,7 @@ object PinAndTag : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[dimrset_delivery]"
+                pipArgs = "--editable .[all]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
@@ -77,7 +77,7 @@ object PinAndTag : BuildType({
             workingDir = "ci/python"
             environment = venv {
                 requirementsFile = ""
-                pipArgs = "--editable .[dimrset_delivery]"
+                pipArgs = "--editable .[all]"
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
