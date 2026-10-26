@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-module m_setuc1d
+module m_pure1d_advection
 
    implicit none
 
@@ -241,4 +241,4 @@ contains
 
    end subroutine setuc1d
 
-end module m_setuc1d
+end module m_pure1d_advection

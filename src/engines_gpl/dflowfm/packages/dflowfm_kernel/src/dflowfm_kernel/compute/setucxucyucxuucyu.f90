@@ -42,7 +42,7 @@ contains
 
    subroutine setucxucyucxuucyu()
       use precision, only: dp
-      use m_setuc1d, only: setuc1d
+      use m_pure1d_advection, only: setuc1d
       use m_flowgeom
       use m_flow, only: au_nostrucs, ucxq, ucyq, ucx, ucy, u1, u0, q1, hu, kmx, ln0, kmxl, hs, kbot, ktop, lbot, ltop, nbnduxy, struclink, zws, ducxdx, ducxdy, ducydx, ducydy, ucxu, ucyu, kmxn, kmxd, qa
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
