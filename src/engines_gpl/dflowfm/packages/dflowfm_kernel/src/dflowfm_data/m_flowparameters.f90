@@ -1055,6 +1055,23 @@ contains
 
    end subroutine convert_air_sea_interaction_model_string_to_integer
 
+   !> Converts an air-sea interaction model integer to its corresponding string representation.
+   subroutine convert_air_sea_interaction_model_integer_to_string(model_integer, model_string)
+      ! Arguments
+      integer, intent(in) :: model_integer !< Integer representation of the air-sea interaction model.
+      character(len=*), intent(out) :: model_string !< String representation of the air-sea interaction model.
+
+      select case (model_integer)
+      case (AIR_SEA_INTERACTION_MODEL_NONE)
+         model_string = 'none'
+      case (AIR_SEA_INTERACTION_MODEL_MOST)
+         model_string = 'most'
+      case default
+         model_string = ''
+      end select
+
+   end subroutine convert_air_sea_interaction_model_integer_to_string
+
    !> Converts an atmospheric stability function string to its corresponding integer representation.
    subroutine convert_atmospheric_stability_function_string_to_integer(model_string, model_integer)
       ! Arguments
@@ -1072,6 +1089,23 @@ contains
 
    end subroutine convert_atmospheric_stability_function_string_to_integer
 
+   !> Converts an atmospheric stability function integer to its corresponding string representation.
+   subroutine convert_atmospheric_stability_function_integer_to_string(model_integer, model_string)
+      ! Arguments
+      integer, intent(in) :: model_integer !< Integer representation of the stability function.
+      character(len=*), intent(out) :: model_string !< String representation of the stability function.
+
+      select case (model_integer)
+      case (ATMOSPHERIC_STABILITY_FUNCTION_NONE)
+         model_string = 'none'
+      case (ATMOSPHERIC_STABILITY_FUNCTION_ECMWF)
+         model_string = 'ecmwf'
+      case default
+         model_string = ''
+      end select
+
+   end subroutine convert_atmospheric_stability_function_integer_to_string
+
    !> Converts a free convection model string to its corresponding integer representation.
    subroutine convert_free_convection_string_to_integer(model_string, model_integer)
       ! Arguments
@@ -1088,6 +1122,23 @@ contains
       end select
 
    end subroutine convert_free_convection_string_to_integer
+
+   !> Converts a free convection model integer to its corresponding string representation.
+   subroutine convert_free_convection_integer_to_string(model_integer, model_string)
+      ! Arguments
+      integer, intent(in) :: model_integer !< Integer representation of the free convection model.
+      character(len=*), intent(out) :: model_string !< String representation of the free convection model.
+
+      select case (model_integer)
+      case (FREE_CONVECTION_OFF)
+         model_string = 'off'
+      case (FREE_CONVECTION_ON)
+         model_string = 'on'
+      case default
+         model_string = ''
+      end select
+
+   end subroutine convert_free_convection_integer_to_string
 
    !> Converts a salinity dependent evaporation method string to its corresponding integer representation.
    subroutine convert_salinity_dependent_evaporation_method_string_to_integer(method_string, method_integer)
@@ -1107,5 +1158,24 @@ contains
       end select
 
    end subroutine convert_salinity_dependent_evaporation_method_string_to_integer
+
+   !> Converts a salinity dependent evaporation method integer to its corresponding string representation.
+   subroutine convert_salinity_dependent_evaporation_method_integer_to_string(method_integer, method_string)
+      ! Arguments
+      integer, intent(in) :: method_integer !< Integer representation of the salinity dependent evaporation method.
+      character(len=*), intent(out) :: method_string !< String representation of the salinity dependent evaporation method.
+
+      select case (method_integer)
+      case (SALINITY_DEPENDENT_EVAPORATION_NONE)
+         method_string = 'none'
+      case (SALINITY_DEPENDENT_EVAPORATION_CONSTANT)
+         method_string = 'constant'
+      case (SALINITY_DEPENDENT_EVAPORATION_LINEAR)
+         method_string = 'linear'
+      case default
+         method_string = ''
+      end select
+
+   end subroutine convert_salinity_dependent_evaporation_method_integer_to_string
 
 end module m_flowparameters

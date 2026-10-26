@@ -3554,10 +3554,18 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
-      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', air_sea_interaction_model, 'Air-sea interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
-      call prop_set(prop_ptr, 'meteo', 'freeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
-      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
+      call convert_air_sea_interaction_model_integer_to_string(air_sea_interaction_model, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, 'Air-sea interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
+
+      call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', tmpstr, 'Atmospheric stability function (0: none, 1: ECMWF).')
+
+      call convert_free_convection_integer_to_string(free_convection, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'freeConvection', tmpstr, 'Free convection switch (0: off, 1: on).')
+
+      call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
+
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
