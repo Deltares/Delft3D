@@ -1,11 +1,16 @@
 #!/bin/bash
 
-# This script starts both D-Flow FM and preC-SUMO. It is a temporary solution for the testbench.
+# Run the coupled model from a directory containing the fm and cosumo subdirectories.
 
-scriptdir="$(dirname "$(readlink -f "${0}")")"
-installdir="${scriptdir}/../../data/engines/teamcity_artifacts/lnx64"
-bindir="$(readlink -f "${installdir}/bin")"
-libdir="$(readlink -f "${installdir}/lib")"
+bindir="$(dirname "$(readlink -f "${0}")")"
+export D3D_HOME="$(readlink -f "${bindir}/..")"
+for program in preC-SUMO dflowfm; do
+    if [[ ! -x "${bindir}/${program}" ]]; then
+        printf 'Required executable not found or not executable: %s\n' "${bindir}/${program}" >&2
+        exit 127
+    fi
+done
+libdir="${D3D_HOME}/lib"
 export PATH="${bindir}:${PATH}"
 export LD_LIBRARY_PATH="${libdir}:${LD_LIBRARY_PATH}"
 

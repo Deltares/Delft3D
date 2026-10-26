@@ -39,7 +39,7 @@
       </arguments>
     </program>
     <program name="run_fm_csumo" logOutputToFile="true" programStringRemoveQuotes="true">
-      <path>../../../../tools/precice/run_fm_csumo.sh</path>
+      <path>bin/run_fm_csumo.sh</path>
       <shell ref="command_prompt"/>
       <location ref="engines_to_compare" type="check">
         <from>teamcity_artifacts/lnx64</from>
