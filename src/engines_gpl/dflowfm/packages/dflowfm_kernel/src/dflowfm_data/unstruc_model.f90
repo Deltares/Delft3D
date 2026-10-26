@@ -1472,14 +1472,14 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
+      call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_sea_interaction_model)
       call prop_get(md_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function)
       call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
       call prop_get(md_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, success)
       if (success) then
          if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
             call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
-         elseif (.not. any(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE, SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
+         else if (.not. any(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE, SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
             call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod can only be set to 0, 1 or 2')
          end if
          if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
@@ -3514,7 +3514,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
-      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air-sea interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
+      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_sea_interaction_model, 'Air-sea interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
       call prop_set(prop_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
       call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
       call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')

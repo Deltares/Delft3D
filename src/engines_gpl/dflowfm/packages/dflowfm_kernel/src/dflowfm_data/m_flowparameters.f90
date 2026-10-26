@@ -123,9 +123,9 @@ module m_flowparameters
    integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3 !< Excess heat flux model
    integer, parameter :: TEMPERATURE_MODEL_COMPOSITE = 5 !< Composite heat flux model
 
-   integer :: air_water_interaction_model !< Air water interaction model, use one of AIR_WATER_INTERACTION_MODEL_... parameters
-   integer, parameter :: AIR_WATER_INTERACTION_MODEL_NONE = 0 !< No air water interaction model
-   integer, parameter :: AIR_WATER_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
+   integer :: air_sea_interaction_model !< Air-sea interaction model, use one of AIR_SEA_INTERACTION_MODEL_... parameters
+   integer, parameter :: AIR_SEA_INTERACTION_MODEL_NONE = 0 !< No air-sea interaction model
+   integer, parameter :: AIR_SEA_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
 
    integer :: atmospheric_stability_function !< Atmospheric stability function, use one of ATMOSPHERIC_STABILITY_FUNCTION_... parameters
    integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_NONE = 0 !< No atmospheric stability function
@@ -760,7 +760,7 @@ contains
 
       temperature_model = TEMPERATURE_MODEL_NONE ! Temperature model
 
-      air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
+      air_sea_interaction_model = AIR_SEA_INTERACTION_MODEL_NONE ! Air-water interaction model
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
       salinity_dependent_evaporation_method = SALINITY_DEPENDENT_EVAPORATION_NONE ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
