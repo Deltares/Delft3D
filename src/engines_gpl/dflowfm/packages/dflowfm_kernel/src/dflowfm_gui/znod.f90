@@ -220,8 +220,6 @@ contains
 
          if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
-         else
-            znod = 0.0_dp
          end if
 
       else if (nodval == 38) then
