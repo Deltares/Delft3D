@@ -51,6 +51,12 @@ namespace
      * @details Construct both preCICE 2d mesh coordinates and forward mappings from settings.
      * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
      * in preCICE communication buffers in O(1) time.
+     *
+     * \image html "preC-SUMO data mapping diagram-2D Mapping.drawio.svg" "2D Data mapping via preCICE" width=1000px
+     *
+     * \image html "preC-SUMO data mapping diagram-3D Mapping.drawio.svg" "3D Data mapping via preCICE" width=1000px
+     *
+     *
      */
     Mesh getMesh2D3D(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings,
                      const ZSpecification& z_spec)
@@ -143,16 +149,11 @@ namespace pre_c_sumo
         participant.setMeshVertices(csumo_3d_mesh.name, csumo_3d_mesh.coordinates, csumo_3d_mesh.vertex_ids);
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c01_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c02_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c03_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c04_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c05_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c06_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c07_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c08_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c09_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
-        csumo_3d_mesh.quantities[c10_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        csumo_3d_mesh.quantities[flow_velocities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes * 3);
+        for (const auto id : constituent_ids)
+        {
+            csumo_3d_mesh.quantities[id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
+        }
 
         double current_time_seconds = 0.0;
         if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
@@ -163,7 +164,8 @@ namespace pre_c_sumo
         }
         const std::vector<NF2FFReader> initial_nf2ff_readers =
             readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-        auto initial_result = convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers);
+        auto initial_result =
+            convertNFtoConnectedSinkSources(csumo_settings.value(), initial_nf2ff_readers, csumo_3d_mesh);
 
         if (!initial_result.has_value())
         {
@@ -199,7 +201,14 @@ namespace pre_c_sumo
             double coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
-            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
+            const auto ff2nf_result =
+                writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
+            if (!ff2nf_result.has_value())
+            {
+                std::println(stderr, "Error: Unable to write FF2NF data at time {} s: {}", current_time_seconds,
+                             ff2nf_result.error().message);
+                return -1;
+            }
             if (!waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
             {
                 std::println(stderr, "Error: Timeout on waiting for NF2FF data for time = {} seconds",
@@ -207,7 +216,8 @@ namespace pre_c_sumo
                 return -1;
             }
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), current_time_seconds);
-            auto conversion_result = convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers);
+            auto conversion_result =
+                convertNFtoConnectedSinkSources(csumo_settings.value(), nf2ff_readers, csumo_3d_mesh);
             if (!conversion_result.has_value())
             {
                 std::println(stderr, "Unable to convert NF to ConnectedSinkSources: {}",

@@ -59,19 +59,23 @@ contains
 
       real(kind=dp), intent(in) :: tim
       integer :: ierr
+      real(kind=dp) :: tem_dif
 
       ierr = 1
       if (ti_st > 0) then
          if (comparereal(tim, time_st, EPS10) >= 0) then
             call sedtrails_write_nc(time_st)
             call reset_sedtrails_stats()
-            if (ti_st > 0) then
-               time_st = max(ti_sts + (floor((tim - ti_sts) / ti_st) + 1) * ti_st, ti_sts)
+            if (comparereal(time_st, ti_ste, EPS10) == 0) then
+               time_st = tstop_user + 1.0_dp
             else
-               time_st = tstop_user
-            end if
-            if (comparereal(time_st, ti_ste, EPS10) == 1) then
-               time_st = tstop_user
+               tem_dif = (tim - ti_sts) / ti_st
+               time_st = max(ti_sts + (floor(tem_dif + 0.001_dp) + 1) * ti_st, ti_sts)
+
+               if (comparereal(time_st, ti_ste, EPS10) == 1) then
+                  ! next time_map would be beyond end of map-window, write one last map exactly at that end.
+                  time_st = ti_ste
+               end if
             end if
          end if
       end if

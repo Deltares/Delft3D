@@ -38,7 +38,7 @@ subroutine wri_jet3d(u0    ,v0    ,rho    ,thick ,kmax      ,dps   ,&
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

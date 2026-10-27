@@ -22,20 +22,20 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: BASE_DIR = "."
    integer, parameter :: NUM_SCALAR_METEO_CASES = 15
    character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
-      'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
-      'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
-      'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
+                                                                                                 'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
+                                                                                                 'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
+                                                                                                 'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
    character(len=48), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VARIABLES = [character(len=48) :: &
-      'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
-      'sshf', 'tauu', 'tauv', 'u10', 'v10']
+                                                                                                'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
+                                                                                                'sshf', 'tauu', 'tauv', 'u10', 'v10']
    character(len=64), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_STANDARD_NAMES = [character(len=64) :: &
-      'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
-      'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
-      'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
-      'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
+                                                                                                     'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
+                                                                                                     'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
+                                                                                                     'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
+                                                                                                     'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
    real(dp), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VALUES = [ &
-      1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
-      50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
+                                                             1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
+                                                             50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
 
 contains
 
@@ -107,6 +107,111 @@ contains
       call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
       call check_netcdf(nf90_close(ncid))
    end subroutine create_scalar_netcdf
+
+   !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name !< NetCDF fixture path.
+      character(len=*), intent(in) :: variable_name !< Name of the data variable.
+      character(len=*), intent(in), optional :: standard_name !< CF standard name for the data variable.
+      character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
+      logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
+      integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
+      logical, intent(in), optional :: with_depth !< Include two depth levels; defaults to false.
+      integer :: ncid, x_dimid, y_dimid, time_dimid, depth_dimid
+      integer :: x_varid, y_varid, time_varid, field_varid, depth_varid
+      integer :: num_snapshots
+      real(dp), dimension(2, 2, 2) :: values
+      real(dp), dimension(2, 2, 2, 2) :: layered_values
+      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
+      logical :: has_time, has_depth
+
+      has_depth = .false.
+      if (present(with_depth)) then
+         has_depth = with_depth
+      end if
+      has_time = .true.
+      if (present(with_time)) then
+         has_time = with_time
+      end if
+      num_snapshots = 2
+      if (present(snapshot_count)) then
+         num_snapshots = snapshot_count
+      end if
+      values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
+      values(:, :, 2) = values(:, :, 1) + 10.0_dp
+      layered_values(:, :, 1, :) = values + 20.0_dp
+      layered_values(:, :, 2, :) = values
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
+      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      if (has_time) then
+         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
+      end if
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
+      if (has_depth) then
+         call check_netcdf(nf90_def_dim(ncid, 'depth', 2, depth_dimid))
+         call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [depth_dimid], depth_varid))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
+         call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
+      end if
+      if (has_time) then
+         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+         if (has_depth) then
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
+         else
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+         end if
+      else
+         if (has_depth) then
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
+         else
+            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
+         end if
+      end if
+      if (present(standard_name)) then
+         call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', standard_name))
+      else if (variable_name == 'secchi_depth') then
+         call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', 'secchi_depth'))
+      end if
+      if (present(unit)) then
+         call check_netcdf(nf90_put_att(ncid, field_varid, 'units', unit))
+      else
+         call check_netcdf(nf90_put_att(ncid, field_varid, 'units', 'm'))
+      end if
+      call check_netcdf(nf90_put_att(ncid, field_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
+      if (has_depth) then
+         call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
+      end if
+      if (has_time) then
+         call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
+         if (has_depth) then
+            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1:num_snapshots)))
+         else
+            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
+         end if
+      else
+         if (has_depth) then
+            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1)))
+         else
+            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
+         end if
+      end if
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_initial_gridded_netcdf
 
    subroutine create_netcdf_timeseries_with_coordinates(file_name)
       use netcdf
@@ -322,7 +427,7 @@ contains
       call f90_expect_eq(real(painp(1, 1), kind=dp), 4.0_dp, "the 2D representative should receive the polygon value")
       call f90_expect_eq(real(painp(1, 2), kind=dp), 4.0_dp, "the bottom layer should receive the polygon value")
       call f90_expect_eq(real(painp(1, 3), kind=dp), 4.0_dp, &
-                "the inactive layer above the water surface should receive the polygon value")
+                         "the inactive layer above the water surface should receive the polygon value")
 
       num_spatial_parameters = 0
       kmx = 0
@@ -735,9 +840,9 @@ contains
       integer ierr
 
       ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
-            call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
-                                      " 1.0 -1.0  1.5", &
-                                      " 0.0  1.0  1.5"])
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+                                     " 1.0 -1.0  1.5", &
+                                     " 0.0  1.0  1.5"])
 
       call create_file(QEXT_EXT, [ &
                        "[Spatial]", &
@@ -945,18 +1050,21 @@ contains
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
    subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
       use m_sferic, only: jsferic
       use m_wind, only: jawind, wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx, xu, yu
       use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+      use m_unstruc_model_data, only: extfile_new_list
 
       character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
       character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
       character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
-      type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
+      integer :: iresult
 
       call create_windxy_netcdf(NC_FILE)
       call create_file(EXT_FILE, [ &
@@ -990,16 +1098,11 @@ contains
       jsferic = 0
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
+      extfile_new_list = [character(len=64) :: EXT_FILE, FACTOR_EXT_FILE]
 
-      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
-      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
-      call tree_destroy(bnd_ptr)
-      call f90_expect_true(success, 'scalar NetCDF windxy initialization should succeed')
-
-      call parse_spatial_block(FACTOR_EXT_FILE, bnd_ptr, block_ptr)
-      success = init_spatial_fields(block_ptr, BASE_DIR, FACTOR_EXT_FILE, 'Spatial')
-      call tree_destroy(bnd_ptr)
-      call f90_expect_true(success, 'windxy dataValue multiply initialization should succeed')
+      iresult = DFM_NOERR
+      call init_new(iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'windxy NetCDF and dataValue inputs should initialize')
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
                                                irefdate, tzone, tunit, 0.0_dp)
@@ -1233,7 +1336,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_wl.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_wl.ext"
+      character(len=*), parameter :: EXT_FILE = "test_wl.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
                                      " 1.0 -1.0  1.5", &
@@ -1252,8 +1355,8 @@ contains
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1270,11 +1373,11 @@ contains
       call f90_expect_near(s1(1), 1.5_dp, 1.0e-6_dp, "s1(1) should match the sample value")
 
       ! CLEANUP
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
-      if (allocated(bl)) deallocate(bl)
-      if (allocated(s1)) deallocate(s1)
-      if (allocated(hs)) deallocate(hs)
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(hs)) deallocate (hs)
       call teardown_minimal_grid()
    end subroutine test_initialwaterlevel_static_field_populated_at_init
    !$f90tw)
@@ -1295,7 +1398,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_fr.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_fr.ext"
+      character(len=*), parameter :: EXT_FILE = "test_fr.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
@@ -1309,18 +1412,18 @@ contains
 
       ! ARRANGE: s-point grid for kcs/xz/yz plus a single u-point at (0,0)
       call setup_minimal_grid()
-      ndxi  = ndx
+      ndxi = ndx
       ndx2D = 0
-      lnx   = 1
+      lnx = 1
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
-      if (allocated(xu)) deallocate(xu)
-      if (allocated(yu)) deallocate(yu)
-      allocate(xu(lnx), yu(lnx))
-      call realloc(frcu,ndx, fill=0.0_dp, keepExisting=.false.)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx))
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
       xu = [0.0_dp]
       yu = [0.0_dp]
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1337,15 +1440,309 @@ contains
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, "frcu(1) should match the sample value")
 
       ! CLEANUP
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
-      lnx   = 0
-      if (allocated(bl))   deallocate(bl)
-      if (allocated(xu))   deallocate(xu)
-      if (allocated(yu))   deallocate(yu)
-      if (allocated(frcu)) deallocate(frcu)
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_static_field_populated_at_init
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_datavalue_with_static_input_is_applied_once, test_datavalue_with_static_input_is_applied_once,
+   subroutine test_datavalue_with_static_input_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flow, only: frcu
+      use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_friction.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_friction.ext'
+      integer :: ierr, iresult
+
+      call create_file(SAMPLE_FILE, ['-1.0 -1.0  0.02', &
+                                     ' 1.0 -1.0  0.02', &
+                                     ' 0.0  1.0  0.02'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    dataValue       = 0.04', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity            = frictioncoefficient', &
+                                  '    forcingFile         = '//SAMPLE_FILE, &
+                                  '    forcingFileType     = sample', &
+                                  '    interpolationMethod = triangulation', &
+                                  '    operand             = override'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      lnx = 1
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_friction_coefficient_time_dependent = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'combined static friction fields should initialize')
+      call f90_expect_eq(ja_friction_coefficient_time_dependent, 0, &
+                         'datavalue should remain static when all other inputs are static')
+      call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
+                           'the later sample field should override the datavalue')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
+                  'the first update should not reapply the static datavalue')
+
+      ndx2D = 0
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airdensity_datavalue_with_static_input_is_applied_once, test_airdensity_datavalue_with_static_input_is_applied_once,
+   !> A static airdensity datavalue must not be reapplied during runtime updates
+   !! after a later static field has replaced it.
+   subroutine test_airdensity_datavalue_with_static_input_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flowgeom, only: ndx2D
+      use m_meteo, only: ja_airdensity, ja_computed_airdensity, item_air_density
+      use m_ec_parameters, only: ec_undef_int
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use m_wind, only: air_density
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_airdensity.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_airdensity.ext'
+      integer :: ierr, iresult
+
+      call create_file(SAMPLE_FILE, ['-1.0 -1.0  1.0', &
+                                     ' 1.0 -1.0  1.0', &
+                                     ' 0.0  1.0  1.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = airdensity', &
+                                  '    dataValue       = 1.2', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity            = airdensity', &
+                                  '    forcingFile         = '//SAMPLE_FILE, &
+                                  '    forcingFileType     = sample', &
+                                  '    interpolationMethod = triangulation', &
+                                  '    operand             = override'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_airdensity = 0
+      ja_computed_airdensity = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'combined static airdensity fields should initialize')
+      call f90_expect_eq(ja_airdensity, 1, 'airdensity should be enabled after initialization')
+      call f90_expect_eq(item_air_density, ec_undef_int, 'static airdensity should not retain a runtime EC item')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the later sample field should override the datavalue during initialization')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'external forcing update should succeed')
+      call f90_expect_near(air_density(1), 1.0_dp, 1.0e-6_dp, &
+                           'the runtime update should not reapply the static datavalue')
+
+      ja_airdensity = 0
+      ndx2D = 0
+      if (allocated(air_density)) deallocate (air_density)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_windxy_multiple_targets_reports_error, test_static_windxy_multiple_targets_reports_error,
+   subroutine test_static_windxy_multiple_targets_reports_error() bind(C)
+      use m_flowgeom, only: lnx, xu, yu
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_unsupported_static_windxy.xyz'
+      character(len=*), parameter :: EXT_FILE = 'test_unsupported_static_windxy.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_file(SAMPLE_FILE, ['0.0 0.0 1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = windxy', &
+                       '    forcingFile         = '//SAMPLE_FILE, &
+                       '    forcingFileType     = sample', &
+                       '    interpolationMethod = triangulation'])
+
+      call setup_minimal_grid()
+      lnx = 1
+      allocate (xu(lnx), yu(lnx))
+      xu = 0.0_dp
+      yu = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, 'a static field with multiple mapped targets must fail initialization')
+
+      lnx = 0
+      deallocate (xu, yu)
+      if (allocated(wx)) deallocate (wx)
+      if (allocated(wy)) deallocate (wy)
+      if (allocated(wdsu)) deallocate (wdsu)
+      if (allocated(wdsu_x)) deallocate (wdsu_x)
+      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call teardown_minimal_grid()
+   end subroutine test_static_windxy_multiple_targets_reports_error
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
+   !> A static datavalue base must be reapplied before each dynamic multiplication,
+   !! rather than multiplying the previously updated target value cumulatively.
+   subroutine test_static_datavalue_dynamic_multiply_resets_base() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_flow, only: frcu
+      use m_flowgeom, only: ndx2D, bl, lnx, xu, yu
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_unstruc_model_data, only: extfile_new_list
+      use timers, only: timini
+      use m_fm_icecover, only: ja_icecover
+      use m_flowparameters, only: jatidep
+
+      character(len=*), parameter :: BC_FILE = 'test_dynamic_friction_multiplier.bc'
+      character(len=*), parameter :: EXT_FILE = 'test_static_friction_base.ext'
+      integer :: ierr, iresult
+
+      call create_file(BC_FILE, [ &
+                       '[General]', &
+                       '    fileVersion           = 1.01', &
+                       '    fileType              = boundConds', &
+                       '', &
+                       '[forcing]', &
+                       '    name                  = global', &
+                       '    function              = timeseries', &
+                       '    timeInterpolation     = linear', &
+                       '    quantity              = time', &
+                       '    unit                  = seconds since 2000-01-01 00:00:00', &
+                       '    quantity              = frictioncoefficient', &
+                       '    unit                  = 1', &
+                       '    0     2.0', &
+                       '    60    3.0'])
+      call create_file(EXT_FILE, [character(len=80) :: &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    dataValue       = 1.0', &
+                       '    operand         = override', &
+                       '', &
+                       '[Spatial]', &
+                       '    quantity        = frictioncoefficient', &
+                       '    forcingFile     = '//BC_FILE, &
+                       '    forcingFileType = bcascii', &
+                       '    operand         = multiply'])
+
+      allocate(ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      call setup_minimal_grid()
+      ndx2D = 0
+      lnx = 1
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(frcu, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      ja_friction_coefficient_time_dependent = 0
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, 'initialization should succeed')
+      call f90_expect_eq(ja_friction_coefficient_time_dependent, 1, &
+                         'friction coefficient should be marked as time dependent')
+
+      call set_external_forcings(0.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+      call f90_expect_near(frcu(1), 2.0_dp, 1.0e-6_dp, &
+                           'the base should be multiplied by the first time-varying value')
+
+      call set_external_forcings(60.0_dp, .false., iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'second external forcing update should succeed')
+      call f90_expect_near(frcu(1), 3.0_dp, 1.0e-6_dp, &
+                           'the second multiplier should apply to the reinitialized base, not the previous result')
+
+      ja_friction_coefficient_time_dependent = 0
+      ndx2D = 0
+      lnx = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
+      deallocate(ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine test_static_datavalue_dynamic_multiply_resets_base
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterdepth_derives_s1, test_initialwaterdepth_derives_s1,
@@ -1363,7 +1760,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_wd.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_wd.ext"
+      character(len=*), parameter :: EXT_FILE = "test_wd.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  2.0", &
                                      " 1.0 -1.0  2.0", &
@@ -1376,14 +1773,14 @@ contains
                        "    interpolationMethod = triangulation"])
 
       ! ARRANGE: bl=0 everywhere, so expected hs=2.0 and s1 = bl + hs = 2.0
-      ndx  = 1
+      ndx = 1
       ndxi = ndx
       ndx2D = 0
       call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
       call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
@@ -1402,7 +1799,7 @@ contains
       call f90_expect_near(s1(1), 2.0_dp, 1.0e-6_dp, &
                            "s1(1) must equal bl+hs=2.0 via enable_quantity post-processing")
 
-      ndxi  = 0
+      ndxi = 0
       ndx2D = 0
       if (allocated(bl)) deallocate (bl)
       if (allocated(s1)) deallocate (s1)
@@ -1411,11 +1808,611 @@ contains
    end subroutine test_initialwaterdepth_derives_s1
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_secchi_netcdf_interpolates_at_start, test_initial_secchi_netcdf_interpolates_at_start,
+   subroutine test_initial_secchi_netcdf_interpolates_at_start() bind(C)
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
+      use m_meteo, only: item_secchi_depth
+      use m_ec_parameters, only: ec_undef_int
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_secchi_explicit.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_secchi_explicit.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'custom_secchi')
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialSecchiDepth', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = custom_secchi', &
+                       '    operand             = override'])
+
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'initial NetCDF should be evaluated during spatial initialization')
+      if (success) then
+         call f90_expect_near(spatial_secchi_depth(1), 9.0_dp, 1.0e-6_dp, 'center value should interpolate in space and time')
+         call f90_expect_near(spatial_secchi_depth(2), 10.5_dp, 1.0e-6_dp, 'second location should retain spatial variation')
+      end if
+      call f90_expect_true(secchi_depth_is_spatially_varying, 'initial modifier should preserve base-quantity enablement')
+      call f90_expect_false(secchi_depth_is_time_varying, 'source timestamps must not make the initial target dynamic')
+      call f90_expect_eq(item_secchi_depth, ec_undef_int, 'one-shot relation must not remain registered for runtime updates')
+
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      tstart_user = 0.0_dp
+      if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
+      call teardown_minimal_grid()
+   end subroutine test_initial_secchi_netcdf_interpolates_at_start
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_timeless_netcdf, test_initial_waterlevel_timeless_netcdf,
+   subroutine test_initial_waterlevel_timeless_netcdf() bind(C)
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_timeless.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_timeless.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', with_time=.false.)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel', &
+                       '    operand             = override'])
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 1000.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'timeless initial water level should load through EC')
+      if (success) then
+         call f90_expect_near(s1(1), 4.0_dp, 1.0e-6_dp, 'timeless field should interpolate at the center')
+         call f90_expect_near(s1(2), 5.5_dp, 1.0e-6_dp, 'timeless field should retain spatial variation')
+      end if
+      tstart_user = 0.0_dp
+      if (allocated(s1)) then
+         deallocate (s1)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_initial_waterlevel_timeless_netcdf
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_snapshot_netcdf, test_initial_waterlevel_snapshot_netcdf,
+   subroutine test_initial_waterlevel_snapshot_netcdf() bind(C)
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_single_snapshot.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_snapshot_times.ext'
+      real(dp), dimension(5), parameter :: START_TIMES = [-100.0_dp, 0.0_dp, 50.0_dp, 100.0_dp, 1000.0_dp]
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      integer :: start_index
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', snapshot_count=1)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel', &
+                       '    operand             = override'])
+
+      do start_index = 1, size(START_TIMES)
+         call setup_minimal_grid_with_points(2)
+         xz = [0.0_dp, 0.5_dp]
+         yz = [0.0_dp, 0.5_dp]
+         call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+         irefdate = 20000101
+         tzone = 0.0_dp
+         tstart_user = START_TIMES(start_index)
+         jsferic = 0
+         threshold_abort = LEVEL_FATAL
+         call initialize_ec_module()
+
+         call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call tree_destroy(bnd_ptr)
+
+         call f90_expect_true(success, 'a single snapshot should initialize at any start time through the ordinary EC path')
+         if (success) then
+            call f90_expect_near(s1(1), 4.0_dp, 1.0e-6_dp, 'single snapshot should have the same center value at any start time')
+            call f90_expect_near(s1(2), 5.5_dp, 1.0e-6_dp, 'single snapshot should retain spatial variation')
+         end if
+
+         tstart_user = 0.0_dp
+         if (allocated(s1)) then
+            deallocate (s1)
+         end if
+         call teardown_minimal_grid()
+      end do
+   end subroutine test_initial_waterlevel_snapshot_netcdf
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchi_timeless_netcdf_is_constant, test_secchi_timeless_netcdf_is_constant,
+   subroutine test_secchi_timeless_netcdf_is_constant() bind(C)
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
+      use m_meteo, only: item_secchi_depth, ecInstancePtr, ec_gettimespacevalue_by_itemID
+      use m_ec_parameters, only: ec_undef_int
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_secchi_timeless.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_secchi_timeless.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'custom_secchi', with_time=.false.)
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = secchiDepth', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = custom_secchi', &
+                       '    operand             = override'])
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'timeless source should support a dynamic target')
+      if (success) then
+         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
+                                                -100.0_dp, spatial_secchi_depth)
+         call f90_expect_true(success, 'timeless source should evaluate before the reference date')
+         if (success) then
+            call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'first evaluation should interpolate spatially')
+            call f90_expect_near(spatial_secchi_depth(2), 5.5_dp, 1.0e-6_dp, 'first evaluation should retain spatial variation')
+         end if
+         spatial_secchi_depth = 42.0_dp
+         success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
+                                                1000.0_dp, spatial_secchi_depth)
+         call f90_expect_true(success, 'timeless source should evaluate at a later time without advancing records')
+         if (success) then
+            call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'later evaluation should restore the same source value')
+            call f90_expect_near(spatial_secchi_depth(2), 5.5_dp, 1.0e-6_dp, 'later evaluation should preserve spatial variation')
+         end if
+      end if
+      item_secchi_depth = ec_undef_int
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      if (allocated(spatial_secchi_depth)) then
+         deallocate (spatial_secchi_depth)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_secchi_timeless_netcdf_is_constant
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_netcdf_time_dimension_requires_coordinate, test_netcdf_time_dimension_requires_coordinate,
+   subroutine test_netcdf_time_dimension_requires_coordinate() bind(C)
+      use netcdf
+      use m_flow, only: s1
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+
+      character(len=*), parameter :: NC_FILE = 'test_missing_time_coordinate.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_missing_time_coordinate.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      integer :: ncid, time_dimid
+      logical :: success
+
+      call create_initial_gridded_netcdf(NC_FILE, 'waterlevel', with_time=.false.)
+      call check_netcdf(nf90_open(NC_FILE, NF90_WRITE, ncid))
+      call check_netcdf(nf90_redef(ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
+      call check_netcdf(nf90_close(ncid))
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialWaterlevel', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = waterlevel'])
+      call setup_minimal_grid()
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_false(success, 'a declared time dimension without a coordinate must not be treated as timeless')
+
+      if (allocated(s1)) then
+         deallocate (s1)
+      end if
+      call teardown_minimal_grid()
+   end subroutine test_netcdf_time_dimension_requires_coordinate
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_secchi_netcdf_is_applied_once, test_initial_secchi_netcdf_is_applied_once,
+   subroutine test_initial_secchi_netcdf_is_applied_once() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new, set_external_forcings
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
+      use m_flowgeom, only: ndx2D, bl
+      use m_flowparameters, only: jatidep
+      use m_fm_icecover, only: ja_icecover
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_unstruc_model_data, only: extfile_new_list
+      use m_sferic, only: jsferic
+      use timers, only: timini
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_secchi_once.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_secchi_once.ext'
+      integer :: iresult
+
+      call create_initial_gridded_netcdf(NC_FILE, 'secchi_depth')
+      call create_file(EXT_FILE, [character(len=80) :: &
+                                  '[Spatial]', &
+                                  '    quantity        = secchiDepth', &
+                                  '    dataValue       = 2.0', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity        = initialSecchiDepth', &
+                                  '    forcingFile     = '//NC_FILE, &
+                                  '    forcingFileType = netcdf', &
+                                  '    operand         = override'])
+
+      call setup_minimal_grid()
+      ndx2D = 0
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      allocate (ja_icecover)
+      ja_icecover = 0
+      jatidep = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      threshold_abort = LEVEL_FATAL
+      call timini()
+      call initialize_ec_module()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'initial NetCDF and static dataValue should initialize together')
+      call f90_expect_false(secchi_depth_is_time_varying, 'pre-scan must not classify initial NetCDF as dynamic')
+      if (iresult == DFM_NOERR) then
+         call f90_expect_near(spatial_secchi_depth(1), 9.0_dp, 1.0e-6_dp, 'NetCDF must override the earlier dataValue at initialization')
+         spatial_secchi_depth = 42.0_dp
+         call set_external_forcings(100.0_dp, .false., iresult)
+         call f90_expect_eq(iresult, DFM_NOERR, 'runtime forcing update should succeed')
+         call f90_expect_near(spatial_secchi_depth(1), 42.0_dp, 1.0e-6_dp, 'runtime update must preserve subsequent kernel changes')
+      end if
+
+      secchi_depth_is_spatially_varying = .false.
+      secchi_depth_is_time_varying = .false.
+      tstart_user = 0.0_dp
+      deallocate (ja_icecover)
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
+      call teardown_minimal_grid()
+   end subroutine test_initial_secchi_netcdf_is_applied_once
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_netcdf_interpolates_at_start, test_initial_temperature_netcdf_interpolates_at_start,
+   subroutine test_initial_temperature_netcdf_interpolates_at_start() bind(C)
+      use m_flow, only: tem1, kmx
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_missing, only: dmiss
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_temperature.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_temperature.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: saved_temperature_model, saved_initem2D, saved_kmx
+
+      call create_initial_gridded_netcdf(NC_FILE, 'thetao', 'sea_water_potential_temperature', 'degrees_Celsius')
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialTemperature', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = thetao', &
+                       '    operand             = override'])
+
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      saved_kmx = kmx
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(tem1, ndx, fill=dmiss, keepExisting=.false.)
+      kmx = 0
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'initial temperature NetCDF should initialize without nudging')
+      call f90_expect_eq(initem2D, 0, 'new-ext temperature initialization must leave the legacy expansion flag clear')
+      if (success) then
+         call f90_expect_near(tem1(1), 9.0_dp, 1.0e-6_dp, 'temperature should interpolate at simulation start')
+         call f90_expect_near(tem1(2), 10.5_dp, 1.0e-6_dp, 'temperature should retain spatial variation')
+      end if
+
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      kmx = saved_kmx
+      tstart_user = 0.0_dp
+      if (allocated(tem1)) deallocate (tem1)
+      call teardown_minimal_grid()
+   end subroutine test_initial_temperature_netcdf_interpolates_at_start
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_missing_explicit_variable_succeeds, test_initial_temperature_missing_explicit_variable_succeeds,
+   subroutine test_initial_temperature_missing_explicit_variable_succeeds() bind(C)
+      use m_flow, only: tem1, kmx
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_missing, only: dmiss
+      use m_ec_message, only: clear_ec_message
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_temperature_missing_variable.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_temperature_missing_variable.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: saved_temperature_model, saved_initem2D, saved_kmx
+
+      call create_initial_gridded_netcdf(NC_FILE, 'thetao', 'sea_water_potential_temperature', 'degrees_Celsius')
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialTemperature', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = missing_thetao', &
+                       '    operand             = override'])
+
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      saved_kmx = kmx
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(tem1, ndx, fill=dmiss, keepExisting=.false.)
+      kmx = 0
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call clear_ec_message()
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'initial temperature should succeed when the explicitly selected NetCDF variable is absent')
+      call f90_expect_eq(initem2D, 0, 'missing new-ext temperature data must not set the legacy expansion flag')
+
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      kmx = saved_kmx
+      tstart_user = 0.0_dp
+      if (allocated(tem1)) deallocate (tem1)
+      call clear_ec_message()
+      call teardown_minimal_grid()
+   end subroutine test_initial_temperature_missing_explicit_variable_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_salinity_netcdf_interpolates_at_start, test_initial_salinity_netcdf_interpolates_at_start,
+   subroutine test_initial_salinity_netcdf_interpolates_at_start() bind(C)
+      use m_flow, only: sa1, kmx
+      use m_flowparameters, only: jasal
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_missing, only: dmiss
+
+      character(len=*), parameter :: NC_FILE = 'test_initial_salinity.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_initial_salinity.ext'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: saved_jasal, saved_kmx
+
+      call create_initial_gridded_netcdf(NC_FILE, 'so', 'sea_water_salinity', '1e-3')
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity            = initialSalinity', &
+                       '    forcingFile         = '//NC_FILE, &
+                       '    forcingFileType     = netcdf', &
+                       '    operand             = override'])
+
+      saved_jasal = jasal
+      saved_kmx = kmx
+      call setup_minimal_grid_with_points(2)
+      xz = [0.0_dp, 0.5_dp]
+      yz = [0.0_dp, 0.5_dp]
+      call realloc(sa1, ndx, fill=dmiss, keepExisting=.false.)
+      kmx = 0
+      jasal = 1
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, 'initial salinity NetCDF should initialize without nudging')
+      if (success) then
+         call f90_expect_near(sa1(1), 9.0_dp, 1.0e-6_dp, 'salinity should interpolate at simulation start')
+         call f90_expect_near(sa1(2), 10.5_dp, 1.0e-6_dp, 'salinity should retain spatial variation')
+      end if
+
+      jasal = saved_jasal
+      kmx = saved_kmx
+      tstart_user = 0.0_dp
+      if (allocated(sa1)) deallocate (sa1)
+      call teardown_minimal_grid()
+   end subroutine test_initial_salinity_netcdf_interpolates_at_start
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_two_timestamps, test_initial_3d_salinity_two_timestamps,
+   subroutine test_initial_3d_salinity_two_timestamps() bind(C)
+      call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
+   end subroutine test_initial_3d_salinity_two_timestamps
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_one_timestamp, test_initial_3d_salinity_one_timestamp,
+   subroutine test_initial_3d_salinity_one_timestamp() bind(C)
+      call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
+   end subroutine test_initial_3d_salinity_one_timestamp
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_timeless, test_initial_3d_salinity_timeless,
+   subroutine test_initial_3d_salinity_timeless() bind(C)
+      call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
+   end subroutine test_initial_3d_salinity_timeless
+   !$f90tw)
+
+   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface)
+      use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
+      use m_flowparameters, only: jasal
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_sferic, only: jsferic
+      use m_ec_message, only: clear_ec_message, dump_ec_message_stack
+      use messagehandling, only: mess, LEVEL_WARN
+
+      character(len=*), intent(in) :: case_name
+      logical, intent(in) :: with_time
+      integer, intent(in) :: snapshot_count
+      real(dp), intent(in) :: expected_surface
+
+      character(len=64) :: nc_file, ext_file
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: saved_kmx, saved_ndkx, saved_layertype
+      integer :: saved_jasal
+      character(len=1024) :: ec_message
+
+      saved_kmx = kmx
+      saved_ndkx = ndkx
+      saved_layertype = layertype
+      saved_jasal = jasal
+      call setup_minimal_grid()
+      kmx = 2
+      ndkx = 3
+      layertype = LAYTP_SIGMA
+      jasal = 1
+      call realloc(kbot, ndx, fill=2, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=3, keepExisting=.false.)
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws = [-4.0_dp, -4.0_dp, -2.0_dp, 0.0_dp]
+      call realloc(zcs, ndkx, keepExisting=.false.)
+      call realloc(sa1, ndkx, keepExisting=.false.)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 50.0_dp
+      jsferic = 0
+      threshold_abort = LEVEL_FATAL
+
+      write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
+      write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
+      call initialize_ec_module()
+      call create_initial_gridded_netcdf(trim(nc_file), 'field', with_time=with_time, &
+                                         snapshot_count=snapshot_count, with_depth=.true.)
+      call create_file(trim(ext_file), [ &
+                       '[Spatial]', &
+                       '    quantity            = initialSalinity', &
+                       '    forcingFile         = '//trim(nc_file), &
+                       '    forcingFileType     = netcdf', &
+                       '    forcingVariableName = field', &
+                       '    targetLayer         = 3D', &
+                       '    operand             = override'])
+      sa1 = 42.0_dp
+      call clear_ec_message()
+      call parse_spatial_block(trim(ext_file), bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, trim(ext_file), 'Spatial')
+      call tree_destroy(bnd_ptr)
+      call f90_expect_true(success, 'explicit 3D salinity initialization should succeed without nudging')
+      if (success) then
+         call f90_expect_near(sa1(2), expected_surface + 20.0_dp, 1.0e-6_dp, 'bottom layer must retain its depth-specific value')
+         call f90_expect_near(sa1(3), expected_surface, 1.0e-6_dp, 'surface layer must retain its depth-specific value')
+         call f90_expect_eq(sa1(1), 42.0_dp, '3D loading must not use the horizontal representative entry')
+      end if
+
+      call initialize_ec_module()
+      call clear_ec_message()
+      kmx = saved_kmx
+      ndkx = saved_ndkx
+      layertype = saved_layertype
+      jasal = saved_jasal
+      tstart_user = 0.0_dp
+      deallocate (sa1, kbot, ktop, zws, zcs)
+      call teardown_minimal_grid()
+
+   end subroutine run_initial_3d_salinity_case
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
-   !> Verifies that a secchidepth [Spatial] block fills spatial_secchi_depth and sets
-   !! secchi_depth_is_spatially_varying=.true. via enable_quantity post-processing.
-   !! Both must fire together: a filled array with the flag still false would silently
-   !! cause the model to use the uniform fallback value instead.
    subroutine test_secchidepth_static_field_and_post_processing() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -1425,7 +2422,7 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_sd.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_sd.ext"
+      character(len=*), parameter :: EXT_FILE = "test_sd.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  3.5", &
                                      " 1.0 -1.0  3.5", &
@@ -1437,8 +2434,8 @@ contains
                        "    forcingFileType     = sample", &
                        "    interpolationMethod = triangulation"])
 
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       secchi_depth_is_spatially_varying = .false.
       threshold_abort = LEVEL_FATAL
@@ -1484,7 +2481,7 @@ contains
       logical :: success
       integer :: ierr, expected_friction_type
       character(len=*), parameter :: SAMPLE_FILE = "test_frtype.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_frtype.ext"
+      character(len=*), parameter :: EXT_FILE = "test_frtype.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
                                      " 1.0 -1.0  0.02", &
@@ -1514,8 +2511,8 @@ contains
       allocate (ifrcutp(lnx), stat=ierr)
       call aerr('ifrcutp(lnx)', ierr, lnx)
       ifrcutp = 0
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1533,9 +2530,9 @@ contains
                          "ifrcutp(1) must equal the Manning integer from frictionTypeStringToInteger")
 
       lnx = 0
-      if (allocated(xu))     deallocate (xu)
-      if (allocated(yu))     deallocate (yu)
-      if (allocated(frcu))   deallocate (frcu)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      if (allocated(frcu)) deallocate (frcu)
       if (allocated(ifrcutp)) deallocate (ifrcutp)
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_with_explicit_frictiontype
@@ -1579,9 +2576,9 @@ contains
                        "    value           = 3"])
 
       call setup_minimal_grid()
-      ndxi  = ndx
+      ndxi = ndx
       ndx2D = 0
-      lnx   = 1
+      lnx = 1
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       allocate (xu(lnx), yu(lnx), stat=ierr)
@@ -1591,8 +2588,8 @@ contains
       ! iadv is only pointered to by resolve_integer_target, not allocated there.
       ! Pre-allocate here so the pointer assignment does not dereference garbage.
       call realloc(iadv, lnx, fill=0, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1608,11 +2605,11 @@ contains
       call f90_expect_eq(iadv(1), 3, "iadv(1) should be 3 (value= keyword via transformcoef(1))")
 
       ! CLEANUP
-      lnx   = 0
-      ndxi  = 0
+      lnx = 0
+      ndxi = 0
       ndx2D = 0
-      if (allocated(xu))   deallocate (xu)
-      if (allocated(yu))   deallocate (yu)
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
       if (allocated(iadv)) deallocate (iadv)
       call teardown_minimal_grid()
    end subroutine test_advectiontype_integer_field_populated
@@ -1621,6 +2618,7 @@ contains
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
    subroutine test_waqbot_vertical_layer_selection() bind(C)
       use m_flow, only: kmx, kbot, ktop, kmxn
+      use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM
       use timespace_parameters, only: OPERAND_OVERRIDE
       use unstruc_inifields, only: apply_waqbot_target_layer
 
@@ -1635,19 +2633,30 @@ contains
       input_2d = 1.0_dp
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, 'bottom', 'initialwaqbottestbot', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_BOTTOM, 'initialwaqbottestbot', OPERAND_OVERRIDE)
       call f90_expect_true(success, "targetLayer should be accepted")
       call f90_expect_eq(output_3d(2), 1.0_dp, "targetLayer should select the active bottom layer")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "targetLayer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, '4', 'initialwaqbottestl4', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_TOP, 'initialwaqbottesttop', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "top targetLayer should be accepted")
+      call f90_expect_eq(output_3d(7), 1.0_dp, "top targetLayer should select the active top layer")
+      call f90_expect_eq(sum(output_3d), 1.0_dp, "top targetLayer should update one layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, TARGET_LAYER_UNIFORM, 'initialwaqbottestall', OPERAND_OVERRIDE)
+      call f90_expect_true(success, "all targetLayer should be accepted")
+      call f90_expect_eq(sum(output_3d), 6.0_dp, "all targetLayer should update every active layer")
+
+      output_3d = 0.0_dp
+      success = apply_waqbot_target_layer(input_2d, output_3d, 4, 'initialwaqbottestl4', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 4 should be accepted")
       call f90_expect_eq(output_3d(5), 1.0_dp, "layer 4 should be counted from the deepest model plane")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a fixed layer should update one layer")
 
       output_3d = 0.0_dp
-      success = apply_waqbot_target_layer(input_2d, output_3d, '8', 'initialwaqbottestl8', OPERAND_OVERRIDE)
+      success = apply_waqbot_target_layer(input_2d, output_3d, 8, 'initialwaqbottestl8', OPERAND_OVERRIDE)
       call f90_expect_true(success, "layer 8 should be accepted")
       call f90_expect_eq(output_3d(9), 1.0_dp, "an inactive maximum layer should be initialized for restart")
       call f90_expect_eq(sum(output_3d), 1.0_dp, "a maximum fixed layer should update one layer")
@@ -1751,11 +2760,11 @@ contains
       logical :: success
       integer :: ierr
       character(len=*), parameter :: SAMPLE_FILE = "test_sal.xyz"
-      character(len=*), parameter :: EXT_FILE    = "test_sal.ext"
+      character(len=*), parameter :: EXT_FILE = "test_sal.ext"
 
       call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
-                                      " 1.0 -1.0  1.5", &
-                                      " 0.0  1.0  1.5"])
+                                     " 1.0 -1.0  1.5", &
+                                     " 0.0  1.0  1.5"])
       call create_file(EXT_FILE, [ &
                        "[Initial]", &
                        "    quantity            = initialsalinity", &
@@ -1765,20 +2774,20 @@ contains
 
       ! ARRANGE
       call setup_minimal_grid()
-      ndxi    = ndx
-      ndx2D   = 0
-      kmx     = 0
-      ndkx    = ndx   ! for kmx=0: ndkx == ndx, one layer per cell
+      ndxi = ndx
+      ndx2D = 0
+      kmx = 0
+      ndkx = ndx ! for kmx=0: ndkx == ndx, one layer per cell
       NUMCONST = 1
-      ISALT    = 1
-      jasal    = 1
+      ISALT = 1
+      jasal = 1
 
       constituents = 0.0_dp
       call realloc(kbot, ndx, fill=1, keepExisting=.false.)
       call realloc(ktop, ndx, fill=1, keepExisting=.false.)
       call realloc(sa1, ndx, fill=0.0_dp, keepExisting=.false.)
-      irefdate    = 20000101
-      tzone       = 0.0_dp
+      irefdate = 20000101
+      tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
       call initialize_ec_module()
@@ -1795,16 +2804,16 @@ contains
                            "sa1 should match the sample value after 2D interp + 3D expansion")
 
       ! CLEANUP
-      jasal    = 0
+      jasal = 0
       NUMCONST = 0
-      ISALT    = 0
-      ndkx     = 0
-      kmx      = 0
-      ndxi     = 0
-      ndx2D    = 0
+      ISALT = 0
+      ndkx = 0
+      kmx = 0
+      ndxi = 0
+      ndx2D = 0
       if (allocated(constituents)) deallocate (constituents)
-      if (allocated(kbot))         deallocate (kbot)
-      if (allocated(ktop))         deallocate (ktop)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
       call teardown_minimal_grid()
    end subroutine test_initialsalinity_3d_field_populated
    !$f90tw)
@@ -1846,14 +2855,14 @@ contains
 
       ! Minimal flow geometry: 1 node, 1 sigma layer.
       call setup_minimal_grid()
-      ndxi = ndx        ! ndx == 1, set by setup_minimal_grid
+      ndxi = ndx ! ndx == 1, set by setup_minimal_grid
       ndx2D = 0
-      ndkx = ndx        ! for kmx=1 and 1 node: ndkx = 1
+      ndkx = ndx ! for kmx=1 and 1 node: ndkx = 1
 
       ! Resolver guard: jasal>0 and kmx>0 are required by resolve_initial_target.
       jasal = 1
       kmx = 1
-      layertype = 0      ! sigma layers, avoids the LAYTP_Z branch
+      layertype = 0 ! sigma layers, avoids the LAYTP_Z branch
 
       call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
       call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
@@ -1891,10 +2900,10 @@ contains
       ndkx = 0
       ndxi = 0
       ndx2D = 0
-      if (allocated(sa1))  deallocate (sa1)
+      if (allocated(sa1)) deallocate (sa1)
       if (allocated(kbot)) deallocate (kbot)
       if (allocated(ktop)) deallocate (ktop)
-      if (allocated(zws))  deallocate (zws)
+      if (allocated(zws)) deallocate (zws)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
    !$f90tw)
@@ -2070,7 +3079,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
-      character(len=*), parameter :: EXT_FILE     = "test_fr1d.ext"
+      character(len=*), parameter :: EXT_FILE = "test_fr1d.ext"
 
       call create_file(FIELD1D_FILE, [ &
                        "[General]", &
@@ -2089,7 +3098,7 @@ contains
                        "    forcingFileType = 1dField"])
 
       ! ARRANGE: one 1D flow link; no 1D network needed because there are no [Branch] blocks.
-      lnx   = 1
+      lnx = 1
       lnx1d = 1
       call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
       threshold_abort = LEVEL_FATAL
@@ -2108,13 +3117,12 @@ contains
                            "frcu(1) should equal the global value from the [Global] block")
 
       ! CLEANUP
-      lnx   = 0
+      lnx = 0
       lnx1d = 0
       if (allocated(frcu)) deallocate (frcu)
       call teardown_minimal_grid()
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
    !$f90tw)
-
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
    subroutine test_scalar_meteo_bcascii_matrix() bind(C)
@@ -2205,7 +3213,7 @@ contains
       call f90_expect_true(success, trim(quantity)//' should update at t=0')
       if (trim(forcing_file_type) == 'netcdf') then
          call f90_expect_near(ecInstancePtr%ecFileReadersPtr(1)%ptr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr(1), expected_value, &
-                  1.0e-6_dp, trim(quantity)//' source value at t=0')
+                              1.0e-6_dp, trim(quantity)//' source value at t=0')
       end if
       call f90_expect_near(target_data(1), expected_value, 1.0e-6_dp, trim(quantity)//' value at t=0')
 
@@ -2332,18 +3340,18 @@ contains
       do i = 1, NUM_SCALAR_METEO_CASES
          if (scalar_source) then
             call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
-                                                         [time_dimid], variable_ids(i)), &
-                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+                                                 [time_dimid], variable_ids(i)), &
+                                    'define '//trim(SCALAR_METEO_VARIABLES(i)))
          else
             call check_meteo_netcdf(nf90_def_var(ncid, trim(SCALAR_METEO_VARIABLES(i)), NF90_DOUBLE, &
-                                                         [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
-                                           'define '//trim(SCALAR_METEO_VARIABLES(i)))
+                                                 [x_dimid, y_dimid, time_dimid], variable_ids(i)), &
+                                    'define '//trim(SCALAR_METEO_VARIABLES(i)))
          end if
          call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'standard_name', trim(SCALAR_METEO_STANDARD_NAMES(i))), &
-                                        'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
+                                 'set '//trim(SCALAR_METEO_VARIABLES(i))//' standard name')
          if (.not. scalar_source) then
             call check_meteo_netcdf(nf90_put_att(ncid, variable_ids(i), 'coordinates', 'x y'), &
-                                           'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
+                                    'set '//trim(SCALAR_METEO_VARIABLES(i))//' coordinates')
          end if
       end do
 

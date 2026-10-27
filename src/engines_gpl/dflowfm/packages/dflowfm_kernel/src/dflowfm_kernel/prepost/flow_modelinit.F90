@@ -86,7 +86,7 @@ contains
       use unstruc_files, only: mdia
       use unstruc_netcdf
       use MessageHandling
-      use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
+      use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
       use m_fm_wq_processes, only: jawaqproc
       use m_vegetation
@@ -468,7 +468,7 @@ contains
       end if
       call timstop(handle_extra(26)) ! end dredging init
 
-      if (jawave == WAVE_SURFBEAT .and. jajre == 1) then
+      if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
          if (jampi == 0) then
             if (nwbnd == 0) then

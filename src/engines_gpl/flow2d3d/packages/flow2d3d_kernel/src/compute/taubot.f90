@@ -54,7 +54,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, ee, degrad
+    use m_mathconstants, only: pi, ee, degrad
     !
     use globaldata
     !

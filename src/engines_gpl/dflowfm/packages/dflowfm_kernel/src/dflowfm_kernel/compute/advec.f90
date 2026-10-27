@@ -59,7 +59,8 @@ contains
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, &
+         BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -320,13 +321,13 @@ contains
       do n = 1, source_sinks%num_total ! momentum
          if (source_sinks%area(n) > 0) then ! if momentum desired
             if (source_sinks%discharge(n) > 0) then
-               kk = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
-               ksb = source_sinks%indices(n, 5) ! cell nr
-               kst = source_sinks%indices(n, 6) ! cell nr
+               kk = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
+               ksb = source_sinks%indices(n, BOTTOM_LAYER_SOURCE) ! cell nr
+               kst = source_sinks%indices(n, TOP_LAYER_SOURCE) ! cell nr
             else
-               kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
-               ksb = source_sinks%indices(n, 2) ! cell nr
-               kst = source_sinks%indices(n, 3) ! cell nr
+               kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+               ksb = source_sinks%indices(n, BOTTOM_LAYER_SINK) ! cell nr
+               kst = source_sinks%indices(n, TOP_LAYER_SINK) ! cell nr
             end if
 
             if (kk > 0 .and. ksb > 0) then
@@ -351,12 +352,12 @@ contains
                   end if
 
                   if (source_sinks%discharge(n) > 0) then ! from 1 to 2
-                     uqcx(k) = uqcx(k) - uqn * source_sinks%discharge_cosine(n, 2)
-                     uqcy(k) = uqcy(k) - uqn * source_sinks%discharge_sine(n, 2)
+                     uqcx(k) = uqcx(k) - uqn * source_sinks%discharge_cosine(n, SOURCE_SIDE)
+                     uqcy(k) = uqcy(k) - uqn * source_sinks%discharge_sine(n, SOURCE_SIDE)
                      sqa(k) = sqa(k) - qn ! sqa : out - in
                   else ! from 2 to 1
-                     uqcx(k) = uqcx(k) + uqn * source_sinks%discharge_cosine(n, 1)
-                     uqcy(k) = uqcy(k) + uqn * source_sinks%discharge_sine(n, 1)
+                     uqcx(k) = uqcx(k) + uqn * source_sinks%discharge_cosine(n, SINK_SIDE)
+                     uqcy(k) = uqcy(k) + uqn * source_sinks%discharge_sine(n, SINK_SIDE)
                      sqa(k) = sqa(k) + qn ! sqa : out - in
                   end if
 
