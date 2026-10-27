@@ -46,7 +46,7 @@ contains
       use m_wind, only: wind_drag_type, cdb, wdb, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
                         CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
                         CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
-      use m_physcoef, only: vonkarw, viskinair
+      use m_physcoef, only: VON_KARMAN_WIND, viskinair
       use m_missing, only: dmiss
       use m_flow, only: ag, hs, jaCdwusp, Cdwusp
       use m_flowgeom, only: ln
@@ -118,7 +118,7 @@ contains
 
             nit = nit + 1
             sold = s
-            s = sold * (log(hsurf * ag * sold * sold / (max(0.001_dp, cdb(1) * uwi * uwi))) - 2.0_dp) / (vonkarw * sold - 2.0_dp)
+            s = sold * (log(hsurf * ag * sold * sold / (max(0.001_dp, cdb(1) * uwi * uwi))) - 2.0_dp) / (VON_KARMAN_WIND * sold - 2.0_dp)
 
             if (nit >= maxnit) then
                cd10 = 1.0e-3_dp
@@ -149,9 +149,9 @@ contains
             omw = twopi / max(0.1_dp, twav(k1)) ! wave frequency
             cdL2 = 0.001289_dp * (omw * uwi / ag)**0.815_dp ! Cd at half wavelength above surface(11a)    (A7)
 
-            dkpz0 = pi * exp(-vonkarw / sqrt(CdL2)) ! (5)                                         (A2)
+            dkpz0 = pi * exp(-VON_KARMAN_WIND / sqrt(CdL2)) ! (5)                                         (A2)
             call getwavenr(hs(k1), twav(k1), rk)
-            cd10 = (vonkarw / log(10.0_dp * rk / dkpz0))**2 ! (A4b)
+            cd10 = (VON_KARMAN_WIND / log(10.0_dp * rk / dkpz0))**2 ! (A4b)
          end if
 
       else if (wind_drag_type == CD_TYPE_WUEST2003) then ! Wuest 2003 & Smith en Banke, uit Rob's DPM
@@ -166,20 +166,20 @@ contains
       else if (wind_drag_type == CD_TYPE_HERSBACH2011) then ! Hans Hersbach, 2011, ECMWF fit (Charnock plus viscous term)
          ! Hersbach, H. (2011). Sea surface roughness and drag coefficient as functions of neutral wind speed. Journal of Physical Oceanography, 41(1), 247-251.
          ! https://journals.ametsoc.org/doi/full/10.1175/2010JPO4567.1
-         A = (cdb(1) * (vonkarw * uwi)**2) / (ag * hsurf)
+         A = (cdb(1) * (VON_KARMAN_WIND * uwi)**2) / (ag * hsurf)
          A10log = log(A) ! (2) shows that log actually means: ln
          balf = 2.65_dp - 1.44_dp * A10log - 0.015_dp * A10log * A10log
-         R = (hsurf * vonkarw * uwi) / (cdb(2) * viskinair)
+         R = (hsurf * VON_KARMAN_WIND * uwi) / (cdb(2) * viskinair)
          bvis = -1.47_dp + 0.93_dp * log(R)
          bfit = (bvis**p + balf**p)**pinv
-         cd10 = (vonkarw / bfit)**2
+         cd10 = (VON_KARMAN_WIND / bfit)**2
 
       else if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
 
          ust = uwi / 25.0_dp
          do nit = 1, 10 ! good for about 8 decimals of cd10
             z0w = cdb(1) * ust * ust / ag + cdb(2) * viskinair / ust
-            ust = uwi * vonkarw / log(hsurf / z0w)
+            ust = uwi * VON_KARMAN_WIND / log(hsurf / z0w)
          end do
          cd10 = (ust / uwi)**2
 

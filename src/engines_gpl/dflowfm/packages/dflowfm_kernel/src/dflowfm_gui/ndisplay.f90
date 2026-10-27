@@ -424,7 +424,7 @@ contains
          if (allocated(FrcInternalTides2D)) then
             OPTION(46) = 'FrcInternalTides2D                      '
          else
-            OPTION(46) = 'turkinws                                '
+            OPTION(46) = 'turbulent_kinetic_energy_ws                                '
          end if
 
          if (jagrw > 0 .or. jadhyd > 0) then
@@ -595,8 +595,8 @@ contains
          OPTION(38) = 'Timestep if jaautotimestep == 2  ( s   )'
          OPTION(39) = 'bottom slope (bl2-bl1)/dx        (     )'
          OPTION(40) = 'IFRCUTP friction type            (     )'
-         OPTION(41) = 'turkin0                          (m2/s2)'
-         OPTION(42) = 'tureps0                          (1/s  )'
+         OPTION(41) = 'turbulent_kinetic_energy_wu_old                           (m2/s2)'
+         OPTION(42) = 'turbulent_dissipation_wu_old                          (1/s  )'
          OPTION(43) = 'vicwwu                           (m2/s )'
          OPTION(44) = 'ustb                             (     )'
          if (jawind > 0) then

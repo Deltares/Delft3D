@@ -34,7 +34,7 @@ module m_get_czz0
 contains
    subroutine getczz0(h1, frcn, friction_type, cz, z0) ! basic get z0 (m),  this routine is not safe for frcn == 0
       use precision, only: dp
-      use m_physcoef, only: sag, vonkar
+      use m_physcoef, only: sag, VON_KARMAN
       use m_mathconstants, only: ee
       use m_flowparameters, only: epshu
 
@@ -50,25 +50,25 @@ contains
       h0 = max(h1, epshu)
       if (friction_type == 0) then ! Chezy type
          cz = frcn
-         ! z0   = h0 / ( exp (vonkar*cz/sag + 1d0) - c9of1) !
-         z0 = h0 * exp(-1.0_dp - vonkar * cz / sag)
+         ! z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1) !
+         z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else if (friction_type == 1) then ! Manning type
          cz = (h0**sixth) / frcn
-         !z0  = h0 / ( exp (vonkar*cz/sag + 1d0) - c9of1)
-         z0 = h0 * exp(-1.0_dp - vonkar * cz / sag)
+         !z0  = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else if (friction_type == 2) then ! White Colebrook Delft3D
          z0 = min(frcn / 30.0_dp, h0 * 0.3_dp)
-         sqcf = vonkar / log(h0 / (ee * z0)) ! true white colebrook d3d would be vonkar/log( 1d0+h0/(ee*z0) )
+         sqcf = VON_KARMAN / log(h0 / (ee * z0)) ! true white colebrook d3d would be VON_KARMAN/log( 1d0+h0/(ee*z0) )
          cz = sag / sqcf
       else if (friction_type == 3) then ! White Colebrook WAQUA
          hurou = max(0.5_dp, h0 / frcn)
          cz = 18.0_dp * log10(12.0_dp * hurou)
-         !z0   = h0 / ( exp (vonkar*cz/sag + 1d0) - c9of1)
-         z0 = h0 * exp(-1.0_dp - vonkar * cz / sag)
+         !z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else
          cz = 60.0_dp ! dummies for hydraulically smooth
-         !z0 = h0 / ( exp (vonkar*cz/sag + 1d0) - c9of1)
-         z0 = h0 * exp(-1.0_dp - vonkar * cz / sag)
+         !z0 = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       end if
    end subroutine getczz0
 end module m_get_czz0

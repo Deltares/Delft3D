@@ -40,7 +40,7 @@ contains
    subroutine doaddksources() ! add k sources
       use precision, only: dp
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, BOTTOM_LAYER_SOURCE
-      use m_flow, only: vol1, turkinws
+      use m_flow, only: vol1, turbulent_kinetic_energy_ws
       use m_flowtimes, only: dts
       implicit none
 
@@ -63,9 +63,9 @@ contains
             k = source_sinks%indices(n, BOTTOM_LAYER_SINK)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
-               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
+               turbulent_kinetic_energy_ws(k) = turbulent_kinetic_energy_ws(k) - dts * qsrck * dvoli * turbulent_kinetic_energy_ws(k)
             else if (qsrck < 0) then ! FROM k2 to k
-               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
+               turbulent_kinetic_energy_ws(k) = turbulent_kinetic_energy_ws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
             end if
          end if
 
@@ -73,9 +73,9 @@ contains
             k = source_sinks%indices(n, BOTTOM_LAYER_SOURCE)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
-               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
+               turbulent_kinetic_energy_ws(k) = turbulent_kinetic_energy_ws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2
             else if (qsrck < 0) then
-               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * turkinws(k)
+               turbulent_kinetic_energy_ws(k) = turbulent_kinetic_energy_ws(k) + dts * qsrck * dvoli * turbulent_kinetic_energy_ws(k)
             end if
          end if
 
