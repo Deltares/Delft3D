@@ -1517,7 +1517,7 @@ contains
             salinity_dependent_evaporation_method = ibuf
 
             if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
-               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod set to 2 but Salinity is turned off in mdu.')
+               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod is set to ''linear'' but Salinity is turned off in mdu.')
             end if
          end if
       end if
