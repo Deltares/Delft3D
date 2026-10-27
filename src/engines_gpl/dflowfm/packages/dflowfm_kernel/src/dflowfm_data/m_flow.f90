@@ -342,10 +342,10 @@ module m_flow
 
    real(kind=dp), allocatable, dimension(:) :: zn2rn !< [-] Weight from zn to rn, flownode to netnode.
 
-   real(kind=dp), allocatable, target, dimension(:) :: tausx !< [-] Vector components shear stress.
-   real(kind=dp), allocatable, target, dimension(:) :: tausy !< [-] Vector components shear stress.
-   real(kind=dp), allocatable, target, dimension(:) :: taubxu !< [-] Maximal bed shear stress.
-   real(kind=dp), allocatable, target, dimension(:) :: taubu !< [-] Mean bed shear stress.
+   real(kind=dp), allocatable, target, dimension(:) :: tausx !< [N/m2] Vector components shear stress.
+   real(kind=dp), allocatable, target, dimension(:) :: tausy !< [N/m2] Vector components shear stress.
+   real(kind=dp), allocatable, target, dimension(:) :: taubxu !< [N/m2] Maximal bed shear stress.
+   real(kind=dp), allocatable, target, dimension(:) :: taubu !< [N/m2] Mean bed shear stress.
    real(kind=dp), allocatable, dimension(:) :: q1waq !< [m3/s] Cumulative q1 within current waq-timestep.
    real(kind=dp), allocatable, dimension(:) :: qwwaq !< [m3/s] Cumulative qw within current waq-timestep.
 
