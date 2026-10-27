@@ -13,7 +13,6 @@ RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart 
     --add Microsoft.VisualStudio.Workload.NativeDesktop \
     --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 \
     --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0)
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
