@@ -14,6 +14,8 @@
 #include <cmath>   // for atan2,sin,cos
 #include <string>
 #include <fstream>
+#include <functional>
+#include <span>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -29,6 +31,10 @@ namespace pre_c_sumo
         std::vector<FarFieldLayer> layers;
         for (size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
         {
+            // Create a lambda to extract constituent values for the current layer
+            const auto from_constituent_id_to_value = [&mesh_3d, layer_index = index_3d + i](const auto id) {
+                return mesh_3d.quantities[id][layer_index];
+            };
             layers.emplace_back(FarFieldLayer{
                 // 3d.coordinates = (x1, y1, z1, x2, y2, z2, ...): skip "index_3d + i" points, then skip x and y
                 .z_coordinate = mesh_3d.coordinates[(index_3d + i) * 3 + 2],
@@ -36,13 +42,8 @@ namespace pre_c_sumo
                 .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
                 .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
-                .constituents = {mesh_3d.quantities[c01_id][index_3d + i], mesh_3d.quantities[c02_id][index_3d + i],
-                                 mesh_3d.quantities[c03_id][index_3d + i], mesh_3d.quantities[c04_id][index_3d + i],
-                                 mesh_3d.quantities[c05_id][index_3d + i], mesh_3d.quantities[c06_id][index_3d + i],
-                                 mesh_3d.quantities[c07_id][index_3d + i], mesh_3d.quantities[c08_id][index_3d + i],
-                                 mesh_3d.quantities[c09_id][index_3d + i], mesh_3d.quantities[c10_id][index_3d + i]
-
-                }, // constituents
+                .constituents = constituent_ids | std::views::transform(from_constituent_id_to_value) |
+                                std::ranges::to<std::vector>(),
             });
         }
         return FarFieldPoint2D{
@@ -55,20 +56,15 @@ namespace pre_c_sumo
 
     std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index)
     {
-        std::vector<double> constituents(max_number_of_consituents);
-        const std::vector<std::string_view> constituent_ids = {c01_id, c02_id, c03_id, c04_id, c05_id,
-                                                               c06_id, c07_id, c08_id, c09_id, c10_id};
         const std::size_t index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
-        const double number_of_layers = static_cast<double>(mesh_3d.number_of_zcoordinates);
-        for (std::size_t c = 0; c < max_number_of_consituents; c++)
-        {
-            for (std::size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
-            {
-                constituents[c] += mesh_3d.quantities[constituent_ids[c]][index_3d + i];
-            }
-            constituents[c] /= number_of_layers;
-        }
-        return constituents;
+        const auto number_of_layers = mesh_3d.number_of_zcoordinates;
+        // Create a lambda to compute the average value of a constituent over all layers at the intake point
+        const auto compute_depth_average = [&mesh_3d, index_3d, number_of_layers](const auto id) {
+            const std::span<const double> values(mesh_3d.quantities[id]);
+            const auto intake_layers = values.subspan(index_3d, number_of_layers);
+            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
+        };
+        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
     }
 
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
@@ -102,13 +98,15 @@ namespace pre_c_sumo
         }
     }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
-                         double current_time_seconds)
+    std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh,
+                                                    Mesh& csumo_3d_mesh, double current_time_seconds,
+                                                    const FF2NFFileOperations& file_operations)
     {
         // TODO: obtain these from the far-field model / coupling state
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature", "salinity",
-                                                            "tracer"}; // TODO: derive from settings
+        const auto constituent_names = constituent_ids |
+                                       std::views::transform([](const auto id) { return std::string(id); }) |
+                                       std::ranges::to<std::vector>();
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
@@ -130,11 +128,11 @@ namespace pre_c_sumo
 
             const auto ff2nf_filename = diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds);
 
-            const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
+            const auto nf2ff_wait_file = diffuser.nf2ffFilepath(subgrid_model_nr, current_time_seconds);
 
             auto ff2nf_config = FF2NFConfig{
                 .ff2nf_filename = ff2nf_filename.string(),
-                .wait_for_file = nf2ff_wait_file,
+                .wait_for_file = nf2ff_wait_file.string(),
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
                 .unique_id = "", // Do not use unique ID, run C-SUMO in different directories for now
@@ -149,14 +147,10 @@ namespace pre_c_sumo
                 .settings_xml_node = diffuser.settings_xml_node,
             };
 
-            const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);
-            if (!result.has_value())
-            {
-                std::println(stderr, "Error writing FF2NF file: {}", result.error().message);
-                continue;
-            }
+            RETURN_IF_ERROR(FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename, file_operations));
             std::println("Wrote FF2NF file: {}", ff2nf_filename.string());
         }
+        return {};
     }
 
     bool is_complete_nf2ff_file(std::filesystem::path filename)
