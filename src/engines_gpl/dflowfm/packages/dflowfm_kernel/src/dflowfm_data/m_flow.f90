@@ -248,11 +248,11 @@ module m_flow
    real(kind=dp), dimension(:), allocatable :: dsalL !< [ppt*m3/s] The flux of salinity on flow linkes for anti-creep.
    real(kind=dp), dimension(:), allocatable :: dtemL !< [degC*m3/s] The flux of temperature on flow nodes  for anti-creep.
 
-   real(kind=dp), allocatable, target, dimension(:) :: sa1 !< [ppt] Salinity at end of timestep. {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target, dimension(:) :: satop !< [ppt] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target, dimension(:) :: sabot !< [ppt] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, dimension(:) :: supq !< [ppt*m3/s] Summed upwind salinity fluxes.
-   real(kind=dp), allocatable, dimension(:) :: qsho !< [ppt*m3/s] Higher order part of upwind salinity fluxes.
+   real(kind=dp), allocatable, target, dimension(:) :: sa1 !< [1e-3] Salinity at end of timestep. {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: satop !< [1e-3] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: sabot !< [1e-3] Salinity help in initialise, deallocated. {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: supq !< [1e-3 m3/s] Summed upwind salinity fluxes.
+   real(kind=dp), allocatable, dimension(:) :: qsho !< [1e-3 m3/s] Higher order part of upwind salinity fluxes.
    real(kind=dp), allocatable, target, dimension(:) :: tem1 !< [degC] water temperature at end of timestep. {"location": "face", "shape": ["ndkx"]}
 
    real(kind=dp), allocatable, dimension(:) :: ww1 !< [m/s] Vertical velocity end of timestep.
