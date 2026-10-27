@@ -124,15 +124,28 @@ contains
                   noddifmaxlevm = 0
                end if
 
+               ! call mess(LEVEL_WARN, u0(1:ndx), get_partition_label() // "u0", ndx, columnfirst=.true., sliceorder=get_slices())
+               ! call mess(LEVEL_WARN, u0(ndx+1:), get_partition_label() // "u0(3d)", ndx, columnfirst=.true., sliceorder=get_slices())
                call s1ini()
                call pack_matrix()
+               ! call mess(LEVEL_WARN, qin(1:ndx), get_partition_label() // "qin(post-init)", ndx, columnfirst=.true., sliceorder=get_slices())
+               ! call mess(LEVEL_WARN, dd, get_partition_label() // "dd(post-init)", ndx, columnfirst=.true., sliceorder=get_slices())
+               ! call mess(LEVEL_WARN, s1, get_partition_label() // "s1(post-init)", ndx, columnfirst=.true., sliceorder=get_slices())
                if (jampi == 1) then
-                  call update_ghosts(ITYPE_Sall3D, 1, Ndkx, qin, ierror)
+                  ! 1. Update 2D cell part (indices 1:Ndx)
+                  call update_ghosts(ITYPE_Sall, 1, Ndx, qin(1:Ndx), ierror)
+                  ! 2. Update 3D vertical layers (indices kbot:ktop within Ndkx)
+                  if (kmx > 0) then
+                     call update_ghosts(ITYPE_Sall3D, 1, Ndkx, qin, ierror)
+                  end if
                end if
                !-----------------------------------------------------------------------------------------------
 
                nonlincont: do ! entry point for non-linear continuity interation
                   call s1nod()
+                  ! call mess(LEVEL_WARN, ddr, get_partition_label() // "ddr", ndx, columnfirst=.true., sliceorder=get_slices())
+                  ! call mess(LEVEL_WARN, bbr, get_partition_label() // "bbr", ndx, columnfirst=.true., sliceorder=get_slices())
+                  ! call mess(LEVEL_WARN, ccr, get_partition_label() // "ccr", size(ccr))
                   if (ifixedWeirScheme1d2d == 1) then
                      if (last_iteration) then
                         ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
@@ -151,7 +164,6 @@ contains
                   ! endif
 
 !    synchronise all water-levels
-                  ! call mess(LEVEL_WARN, s1, "s1(pre-gather)", ndx)
                   if (jampi == 1) then
                      if (jatimer == 1) then
                         call starttimer(IUPDSALL)
@@ -161,7 +173,7 @@ contains
                         call stoptimer(IUPDSALL)
                      end if
                   end if
-                  ! call mess(LEVEL_WARN, s1, "s1(post-gather)", ndx)
+                  ! call mess(LEVEL_WARN, s1, get_partition_label() //"s1(post-gather)", ndx, columnfirst=.true., sliceorder=get_slices())
 
                   if (firstnniteration .and. nonlin1D >= 3) then
                      ! At first try only check for positive water depths only
