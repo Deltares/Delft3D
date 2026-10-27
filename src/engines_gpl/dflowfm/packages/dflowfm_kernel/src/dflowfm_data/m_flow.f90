@@ -138,8 +138,8 @@ module m_flow
    integer, allocatable, dimension(:) :: nrlayn !< [-] Maximum number of layers. {size=ndx}
    integer, allocatable, dimension(:) :: nlaybn !< [-] Bed layer number. {size=ndx}
    real(kind=dp), allocatable, dimension(:, :) :: zslay !< [-] Z or S coordinate. {size=(:,maxlaydefs)}
-   real(kind=dp), allocatable, dimension(:, :) :: wflaynod !< [-] Weight factors to flownodes indlaynod. {size=(3,ndx)}
-   integer, allocatable, dimension(:, :) :: indlaynod !< [-] Indices of flownodes. {size=(3,ndx)}
+   real(kind=dp), allocatable, dimension(:, :) :: wflaynod !< [-] Weight factors for flow nodes in indlaynod. {size=(3,ndx)}
+   integer, allocatable, dimension(:, :) :: indlaynod !< [-] For each flow node: indices of nearest flownodes that have a layer definition. {size=(3,ndx)}
    real(kind=dp), allocatable, dimension(:) :: dkx !< [-] Sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
    real(kind=dp), allocatable, dimension(:) :: sdkx !< [-] Sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
 
