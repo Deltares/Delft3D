@@ -30,34 +30,47 @@
 !
 !
 module m_tridag
+   use precision, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
    public :: tridag
 
+   real(kind=dp), parameter :: PIVOT_FLOOR = 1.0e-15_dp
+
 contains
 
-   subroutine tridag(a, b, c, d, e, u, n)
-      use precision, only: dp
+   !> Solve a tridiagonal system with the Thomas algorithm, regularizing small pivots after the first row.
+   !! The first pivot is used unchanged, preserving the original solver behaviour.
+   !! Provide normalized_upper as function parameter such that its memory is handled by the caller.
+   !! A local array may cause stack overflows and a local save array may cause race conditions.
+   subroutine tridag(lower, diagonal, upper, rhs, normalized_upper, solution, n)
+      integer, intent(in) :: n !< Number of rows; must be at least one.
+      real(kind=dp), dimension(n), intent(in) :: lower !< Lower diagonal; lower(1) is unused.
+      real(kind=dp), dimension(n), intent(in) :: diagonal !< Main diagonal.
+      real(kind=dp), dimension(n), intent(in) :: upper !< Upper diagonal; upper(n) is unused.
+      real(kind=dp), dimension(n), intent(in) :: rhs !< Right-hand side.
+      real(kind=dp), dimension(n), intent(out) :: normalized_upper !< Normalized upper-diagonal scratch coefficients; entry 1 is unused.
+      real(kind=dp), dimension(n), intent(out) :: solution !< Solution.
 
-      integer :: n, j
-      real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1.0e-15_dp
+      integer :: row
+      real(kind=dp) :: pivot
 
-      bet = b(1)
-      u(1) = d(1) / bet
-      do j = 2, n
-         e(j) = c(j - 1) / bet
-         bet = b(j) - a(j) * e(j)
-         if (abs(bet) < accur) then
-            bet = sign(accur, bet)
+      pivot = diagonal(1)
+      solution(1) = rhs(1) / pivot
+      do row = 2, n
+         normalized_upper(row) = upper(row - 1) / pivot
+         pivot = diagonal(row) - lower(row) * normalized_upper(row)
+         if (abs(pivot) < PIVOT_FLOOR) then
+            pivot = sign(PIVOT_FLOOR, pivot)
          end if
-         u(j) = (d(j) - a(j) * u(j - 1)) / bet
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) / pivot
       end do
 
-      do j = n - 1, 1, -1
-         u(j) = u(j) - e(j + 1) * u(j + 1)
+      do row = n - 1, 1, -1
+         solution(row) = solution(row) - normalized_upper(row + 1) * solution(row + 1)
       end do
    end subroutine tridag
 
