@@ -27,22 +27,30 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_init
+module fm_external_forcings_init
    use precision_basics, only: dp
    use m_missing, only: dmiss, imiss
 
    implicit none(type, external)
 
+   private
+
    integer, parameter :: INI_VALUE_LEN = 256
    real(dp), dimension(1), save, target :: GLOBAL_DUMMY_TARGET = [1.0_dp] !> dummy coordinate necessary for unc_loc_global to point to as a valid target.
+
+   public :: init_new
+   public :: init_spatial_fields
+   public :: sourcesink_parse_coordinates
+   public :: adduniformtimerelation_objects
 
 contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_new(iresult)
+   subroutine init_new(iresult)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use fm_external_forcings_data, only: set_lateral_count
+      use fm_external_forcings_utils, only: init_registered_items
       use m_alloc, only: realloc
       use m_ec_parameters, only: provFile_uniform
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
@@ -461,6 +469,8 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
+      use fm_external_forcings_utils, only: quantity_pli_combination_is_registered, register_quantity_pli_combination
+      use fm_external_forcings_update_boundaries, only: addtimespacerelation_boundaries
       use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
@@ -768,6 +778,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
+      use fm_external_forcings_utils, only: ini_alloc_laterals
 
       ! Arguments
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -882,6 +893,7 @@ contains
                         qext, jaqin
       use m_flowgeom, only: ndx, lnx
       use string_module, only: str_tolower
+      use fm_external_forcings_utils, only: allocatewindarrays
 
       ! Arguments
       character(len=*), intent(in) :: quantity !< Name of the quantity.
@@ -1119,9 +1131,7 @@ contains
 
    end function init_field1d_block
 
-   !> Initialize a spatial block.
-   !! Static inputs are applied during initialization; dynamic inputs are registered as time-dependent forcings.
-   module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+   function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: istarts_with, str_tolower
@@ -1592,7 +1602,7 @@ contains
    end function enable_quantity
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
-   module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
+   function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
@@ -1695,7 +1705,6 @@ contains
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
-      logical :: is_successful
 
       ! Local variables
       character(len=INI_VALUE_LEN) :: sourcesink_id
@@ -1712,6 +1721,8 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
+      logical :: is_successful
+      logical :: relation_successful
       logical :: is_read
 
       ! Initialization
@@ -1805,14 +1816,12 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
-                                                              1, source_sink_all_discharges(1 + i_const, :))
-               continue
+               relation_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
+                                                                     1, source_sink_all_discharges(1 + i_const, :))
+               is_successful = is_successful .and. relation_successful
             end if
          end do
       end if
-
-      is_successful = .true.
 
    end function init_sourcesink_forcings
 
@@ -2178,4 +2187,134 @@ contains
 
    end function scan_for_heat_quantities
 
-end submodule fm_external_forcings_init
+   !> Calls the ec_addtimespacerelation with all proper dflowfm-specific
+   !! target arrays and element set masks for object parameters with
+   !! spatially uniform time series.
+   !! Also handles inside one function the old-style *.ext quantities and
+   !! the new style *.ext and structures.ini quantities.
+   function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
+      !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
+      use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_transportdata, only: NAMLEN
+      use string_module, only: istarts_with
+      use timespace_parameters, only: uniform, bcascii, spaceandtime
+      use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
+      use fm_external_forcings_utils, only: get_constituent_name
+
+      ! Arguments
+      character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
+      character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
+      character(len=*), intent(in) :: objtype !< Type name of the object for which this relation is set (e.g., 'lateral', for prettyprinting only).
+      character(len=*), intent(in) :: objid !< Id of the object for which this relation is set (for prettyprinting only).
+      character(len=*), intent(in) :: paramname !< Name of the parameter that is set in this relation (e.g., 'discharge', for prettyprinting only).
+      character(len=*), intent(in) :: paramvalue !< String containing the parameter value (either a scalar double, or 'REALTIME', or a filename)
+      integer, intent(in) :: targetindex !< Target index in target value array (typically, the current count of this object type, e.g. numlatsg).
+      integer, intent(in) :: vectormax !< The number of values per object ('kx'), typically 1.
+      logical :: success !< Return value. Whether relation was added successfully.
+      real(kind=dp), dimension(:), intent(inout), target :: targetarray !< The target array in which the value(s) will be stored. Either now with scalar, or later via ec_gettimespacevalue() calls.
+
+      ! Local variables
+      character(len=256) :: valuestring, fnam, qid_base
+      character(len=NAMLEN) :: const_name
+      real(kind=dp) :: valuedble
+      real(kind=dp), dimension(1) :: xdum, ydum
+      integer, dimension(1) :: kdum
+      integer :: ierr, L
+      real(kind=dp), dimension(:), pointer :: targetarrayptr
+      real(kind=dp), dimension(:), pointer :: dbleptr
+      integer :: tgtitem
+      integer, pointer :: intptr, multuniptr
+      logical :: file_exists
+
+      ! Initialization
+      success = .true.
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
+
+      if (len_trim(paramvalue) > 0) then
+         valuestring = paramvalue
+      else if (len_trim(location_file) > 0) then
+         ! Old-style *.ext:
+         ! Prepare time series relation, if the .pli file has an associated .tim file.
+         L = index(location_file, '.', back=.true.) - 1
+         valuestring = location_file(1:L)//'_0001.tim'
+         inquire (file=valuestring, exist=file_exists)
+         if (.not. file_exists) then
+            valuestring = location_file(1:L)//'.tim'
+            inquire (file=valuestring, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
+               success = .false.
+               return
+            end if
+         end if
+
+      else
+         call mess(LEVEL_ERROR, trim(objtype)//' '''//trim(objid)//''', '//paramname//' could not be read.')
+         success = .false.
+      end if
+
+      ! Now check the valuestring for either scalar/REALTIME/.tim filename
+      read (valuestring, *, iostat=ierr) valuedble
+      targetarrayptr => targetarray
+      tgtitem = ec_undef_int
+
+      if (ierr /= 0 .or. index(valuestring, '/') == 1) then ! No number or a string starting with '/': check for timeseries filename
+         if (strcmpi(trim(valuestring), 'REALTIME')) then
+            success = .true.
+            ! targetarray(targetindex) should be filled via DLL's API
+            write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
+            call dbg_flush()
+         else
+            qid_base = qid
+            call get_constituent_name(qid, const_name, qid_base)
+            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
+               success = .true.
+            else
+               success = .false.
+               write (msgbuf, '(a)') 'Unknown quantity '''//trim(qid)//'''.'
+               call err_flush()
+               return
+            end if
+
+            fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
+            ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
+            if (index(trim(fnam)//'|', '.tim|') > 0) then
+               ! uniform=single time series vectormax = 1
+               success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
+                                                 filetype=uniform, &
+                                                 method=spaceandtime, &
+                                                 operand=OPERAND_OVERRIDE, &
+                                                 tgt_data1=targetarrayptr, &
+                                                 tgt_item1=tgtitem, &
+                                                 multuni1=multuniptr, &
+                                                 targetIndex=targetindex)
+            elseif (index(trim(fnam)//'|', '.bc|') > 0) then
+               ! uniform=single time series vectormax = 1
+
+               success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
+                                                 filetype=bcascii, &
+                                                 method=spaceandtime, &
+                                                 operand=OPERAND_OVERRIDE, &
+                                                 tgt_data1=targetarrayptr, &
+                                                 tgt_item1=tgtitem, &
+                                                 multuni1=multuniptr, &
+                                                 targetIndex=targetindex, &
+                                                 forcingFile=fnam)
+            end if
+         end if
+      else
+         targetarray(targetindex) = valuedble ! Constant value for always, set it now already.
+      end if
+
+   end function adduniformtimerelation_objects
+
+end module fm_external_forcings_init

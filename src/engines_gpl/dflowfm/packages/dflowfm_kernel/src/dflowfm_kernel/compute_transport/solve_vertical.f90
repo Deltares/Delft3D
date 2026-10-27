@@ -47,7 +47,7 @@ contains
                              sumhorflux, fluxver, source, sink, &
                              sigdifi, vicwws, &
                              nsubsteps, jaupdate, ndeltasteps, sed, &
-                             a, b, c, d, e, sol, rhs)
+                             lower, diagonal, upper, column_rhs, normalized_upper, sol, rhs)
       use precision, only: dp
       use m_make_rhs, only: make_rhs
       use m_flowgeom, only: Ndxi, kfs, ba, ndx ! static mesh information
@@ -86,8 +86,8 @@ contains
       integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
 
-      real(kind=dp), dimension(kmx, NUMCONST) :: a, b, c, d ! work array: aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
-      real(kind=dp), dimension(kmx) :: ac, bc, cc, dc, sol, e ! work array: solution and dummy array in tridag, respectively
+      real(kind=dp), dimension(kmx, NUMCONST) :: lower, diagonal, upper, column_rhs ! Tridiagonal coefficients and column right-hand sides.
+      real(kind=dp), dimension(kmx) :: sol, normalized_upper ! Solution and normalized upper-diagonal scratch coefficients.
       real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
       real(kind=dp) :: fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
@@ -104,18 +104,16 @@ contains
 
       dt_loc = dts
       rhs = 0.0_dp
-      ac = 0.0_dp
-      bc = 0.0_dp
-      cc = 0.0_dp
-      dc = 0.0_dp
       difwws(:) = 0.0_dp
       difwws_total(:) = 0.0_dp
 
       call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
       ! construct and solve system
+      ! The following PRIVATE arrays have local values per OMP thread, they are kept global to prevent stack overflows.
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,lower,diagonal,upper,sol,j,column_rhs,k,n,dvol1i,dvol2i,fluxfac,normalized_upper,dtbazi,dtba, &
+      !$OMP ozmid,bruns,qw_loc,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -135,23 +133,23 @@ contains
          end if
 
          ktx = kb + kmxn(kk) - 1
-         a = 0.0_dp
-         c = 0.0_dp
+         lower = 0.0_dp
+         upper = 0.0_dp
          sol = 0.0_dp
 
 !     add linearized sinks to diagonal
          do k = kb, kt
             n = k - kb + 1 ! layer number
             do j = 1, NUMCONST
-               b(n, j) = 1.0_dp + dt_loc * sink(j, k)
+               diagonal(n, j) = 1.0_dp + dt_loc * sink(j, k)
             end do
          end do
 
          do j = 1, NUMCONST
-            d(1, j) = rhs(j, kb)
+            column_rhs(1, j) = rhs(j, kb)
             do k = kb, kt ! assume zero-fluxes at boundary and top
                n = k - kb + 1 ! layer number
-               d(n, j) = rhs(j, k)
+               column_rhs(n, j) = rhs(j, k)
             end do
          end do
 
@@ -188,11 +186,11 @@ contains
                   end if
                end if
 
-               b(n, j) = b(n, j) + fluxfac * dvol1i
-               c(n, j) = c(n, j) - fluxfac * dvol1i
+               diagonal(n, j) = diagonal(n, j) + fluxfac * dvol1i
+               upper(n, j) = upper(n, j) - fluxfac * dvol1i
 
-               b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
-               a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
+               diagonal(n + 1, j) = diagonal(n + 1, j) + fluxfac * dvol2i
+               lower(n + 1, j) = lower(n + 1, j) - fluxfac * dvol2i
 
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
@@ -209,11 +207,11 @@ contains
                   end if
                   fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
 
-                  a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
-                  b(n + 1, j) = b(n + 1, j) - fluxfac * dvol2i
+                  lower(n + 1, j) = lower(n + 1, j) - fluxfac * dvol2i
+                  diagonal(n + 1, j) = diagonal(n + 1, j) - fluxfac * dvol2i
 
-                  b(n, j) = b(n, j) + fluxfac * dvol1i
-                  c(n, j) = c(n, j) + fluxfac * dvol1i
+                  diagonal(n, j) = diagonal(n, j) + fluxfac * dvol1i
+                  upper(n, j) = upper(n, j) + fluxfac * dvol1i
                end if
 
                if (jaimplicitfallvelocity == 1) then
@@ -225,25 +223,20 @@ contains
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
                   if (fluxfac > 0.0_dp) then
-                     c(n, j) = c(n, j) - fluxfac * dvol1i
-                     b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
+                     upper(n, j) = upper(n, j) - fluxfac * dvol1i
+                     diagonal(n + 1, j) = diagonal(n + 1, j) + fluxfac * dvol2i
                   else if (fluxfac < 0.0_dp) then
-                     b(n, j) = b(n, j) - fluxfac * dvol1i
-                     a(n + 1, j) = a(n + 1, j) + fluxfac * dvol2i
+                     diagonal(n, j) = diagonal(n, j) - fluxfac * dvol1i
+                     lower(n + 1, j) = lower(n + 1, j) + fluxfac * dvol2i
                   end if
                end if
             end do
          end do
 
 !     solve system(s)
+         nel = kt - kb + 1
          do j = 1, NUMCONST
-            ! make this compiler safe, ie don't pass first element and assume memory contiguity
-            nel = kt - kb + 1
-            ac(1:nel) = a(1:nel, j)
-            bc(1:nel) = b(1:nel, j)
-            cc(1:nel) = c(1:nel, j)
-            dc(1:nel) = d(1:nel, j)
-            call tridag(ac, bc, cc, dc, e, sol, nel)
+            call tridag(lower(1:nel, j), diagonal(1:nel, j), upper(1:nel, j), column_rhs(1:nel, j), normalized_upper, sol, nel)
             sed(j, kb:kt) = sol(1:nel)
             sed(j, kt + 1:ktx) = sed(j, kt)
          end do

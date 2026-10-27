@@ -14,6 +14,33 @@
 
 namespace
 {
+    class FF2NFWriterFileTest : public ::testing::Test
+    {
+    protected:
+        FF2NFWriterFileTest()
+        {
+            file_operations.create_directories = [this](const std::filesystem::path& path) {
+                calls.emplace_back("create_directories");
+                directory = path;
+                return directory_result;
+            };
+            file_operations.write_file = [this](const std::filesystem::path& path, std::string_view content) {
+                calls.emplace_back("write_file");
+                filename = path;
+                xml = content;
+                return write_result;
+            };
+        }
+
+        std::vector<std::string> calls;
+        std::filesystem::path directory;
+        std::filesystem::path filename;
+        std::string xml;
+        std::expected<void, pre_c_sumo::WriteError> directory_result;
+        std::expected<void, pre_c_sumo::WriteError> write_result;
+        pre_c_sumo::FF2NFFileOperations file_operations;
+    };
+
     [[nodiscard]] pre_c_sumo::FF2NFConfig buildExampleConfig()
     {
         const std::vector<double> default_constituents = {15.0, 1.0}; // default temperature and tracer concentration
@@ -602,6 +629,79 @@ TEST(FF2NFWriterTest, DISABLED_WriteToFile)
     const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig()).toFile("FF2NF_test_output.xml");
     ASSERT_TRUE(result.has_value()) << result.error().message;
     EXPECT_TRUE(std::filesystem::exists("FF2NF_test_output.xml"));
+}
+
+TEST_F(FF2NFWriterFileTest, CreatesParentDirectoriesBeforeWritingGeneratedXml)
+{
+    const auto path = std::filesystem::path("output") / "nested" / "FF2NF.xml";
+    const pre_c_sumo::FF2NFWriter writer(buildExampleConfig());
+    const auto expected_xml = writer.generate();
+    ASSERT_TRUE(expected_xml.has_value()) << expected_xml.error().message;
+
+    const auto result = writer.toFile(path, file_operations);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_EQ(calls, (std::vector<std::string>{"create_directories", "write_file"}));
+    EXPECT_EQ(directory, path.parent_path());
+    EXPECT_EQ(filename, path);
+    EXPECT_EQ(xml, *expected_xml);
+}
+
+TEST_F(FF2NFWriterFileTest, BareFilenameSkipsDirectoryCreation)
+{
+    const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig()).toFile("FF2NF.xml", file_operations);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_EQ(calls, (std::vector<std::string>{"write_file"}));
+    EXPECT_EQ(filename, std::filesystem::path("FF2NF.xml"));
+}
+
+TEST_F(FF2NFWriterFileTest, ValidationFailureDoesNotPerformFileOperations)
+{
+    auto config = buildExampleConfig();
+    config.run_id.clear();
+    const auto result = pre_c_sumo::FF2NFWriter(std::move(config))
+                            .toFile(std::filesystem::path("output") / "FF2NF.xml", file_operations);
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "Run ID must not be empty");
+    EXPECT_TRUE(calls.empty());
+}
+
+TEST_F(FF2NFWriterFileTest, DirectoryFailureIsPropagatedWithoutWriting)
+{
+    directory_result = std::unexpected(pre_c_sumo::WriteError{"directory creation failed"});
+    const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig())
+                            .toFile(std::filesystem::path("output") / "FF2NF.xml", file_operations);
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "directory creation failed");
+    EXPECT_EQ(calls, (std::vector<std::string>{"create_directories"}));
+}
+
+TEST_F(FF2NFWriterFileTest, FileFailureIsPropagated)
+{
+    write_result = std::unexpected(pre_c_sumo::WriteError{"file writing failed"});
+    const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig())
+                            .toFile(std::filesystem::path("output") / "FF2NF.xml", file_operations);
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "file writing failed");
+    EXPECT_EQ(calls, (std::vector<std::string>{"create_directories", "write_file"}));
+}
+
+TEST_F(FF2NFWriterFileTest, FailedCallDoesNotAffectSubsequentCall)
+{
+    const pre_c_sumo::FF2NFWriter writer(buildExampleConfig());
+    auto failing_operations = file_operations;
+    failing_operations.write_file = [](const std::filesystem::path&,
+                                       std::string_view) -> std::expected<void, pre_c_sumo::WriteError> {
+        return std::unexpected(pre_c_sumo::WriteError{"file writing failed"});
+    };
+    const auto failed_result = writer.toFile("FF2NF.xml", failing_operations);
+    ASSERT_FALSE(failed_result.has_value());
+
+    const auto result = writer.toFile("FF2NF.xml", file_operations);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_EQ(calls, (std::vector<std::string>{"write_file"}));
 }
 
 // ---------------------------------------------------------------------------

@@ -126,7 +126,7 @@ module m_flowparameters
    integer :: air_water_interaction_model !< Air water interaction model, use one of AIR_WATER_INTERACTION_MODEL_... parameters
    integer, parameter :: AIR_WATER_INTERACTION_MODEL_NONE = 0 !< No air water interaction model
    integer, parameter :: AIR_WATER_INTERACTION_MODEL_MOST = 1 !< Bulk formulae for heat and momentum fluxes based on Monin-Obukhov Similarity Theory
-   
+
    integer :: atmospheric_stability_function !< Atmospheric stability function, use one of ATMOSPHERIC_STABILITY_FUNCTION_... parameters
    integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_NONE = 0 !< No atmospheric stability function
    integer, parameter :: ATMOSPHERIC_STABILITY_FUNCTION_ECMWF = 1 !< ECMWF atmospheric stability function
@@ -134,13 +134,13 @@ module m_flowparameters
    integer :: free_convection !< Switch for free convection, use one of FREE_CONVECTION_... parameters
    integer, parameter :: FREE_CONVECTION_OFF = 0 !< Free convection off
    integer, parameter :: FREE_CONVECTION_ON = 1 !< Free convection on
-   
+
    integer :: salinity_dependent_evaporation_method !< Switch for methods for determining salinity_reduction_factor_saturation_humidity
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_NONE = 0 !< salinity_reduction_factor_saturation_humidity is 1.0 (no reduction)
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_CONSTANT = 1 !< salinity_reduction_factor_saturation_humidity is constant
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
-   
+
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
@@ -183,7 +183,11 @@ module m_flowparameters
 
    integer :: jasecflow !< 0: no, 1: yes
 
-   integer :: japillar !< 0: no, 1: yes
+   integer :: pillar_method !< Switch for methods for computing bridge pillars
+   integer, parameter :: PILLAR_NONE = 0 !< pillar_method not active
+   integer, parameter :: PILLAR_DELFT3D_FLOWNODE = 1 !< pillar_method based on reduced surface area (top view)
+   integer, parameter :: PILLAR_VEGETATION_BAPTIST = 2 !< pillar_method using vegetation approach of
+   integer, parameter :: PILLAR_DELFT3D_FLOWLINK = 3 !< pillar_method based on reduced cross-sectional area (side view)
 
    integer :: jaequili !< secondary flow intensity gets calculated as equilibrium (0=no, 1=yes)
 
@@ -367,8 +371,7 @@ module m_flowparameters
    !                                                     4 = 1.0*dts, reduce au
    !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
-   integer :: Icgsolver !< 'Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS '
-   integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
+   integer :: Icgsolver !< Solver type: 1 = Sobek Guus Stelling OMP, 2 = Sobek Guus Stelling OMP (thread-safe), 4 = Sobek Guus Stelling + Saadilud, 6 = parallel/PETSc
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
@@ -469,9 +472,7 @@ module m_flowparameters
    integer :: jaupwindsrc !< 1st-order upwind advection (1) or higher-order (0)
 
    integer :: jadiffusiononbnd = 1 !< 0 switches off diffusion on open boundaries
-
-   integer :: jajre !< 0: default, 1: sb
-
+   
    integer :: jasedtrails !< sedtrails custom averaged output - 0: no (default) ; 1: yes
 
    integer :: jasourcesink !< 1: source+sink 2:source 3:sink for sediment
@@ -648,18 +649,6 @@ module m_flowparameters
    integer :: jawriteDFMinterpretedvalues !< Write interpretedvalues
    integer :: jawriteDetailedTimers !< Write detailed timers output file
 
-   ! parameters for parms solver
-   integer, parameter :: NPARMS_INT = 2 !< for parms solver, number of integer parameters
-   integer, parameter :: IPARMS_ILUTYPE = 1
-   integer, parameter :: IPARMS_NLEVEL = 2
-   character(len=128), dimension(NPARMS_INT), parameter :: iparmsnam = [character(len=128) :: 'ilutype', 'nlevel']
-   integer, dimension(NPARMS_INT) :: iparms
-
-   integer, parameter :: NPARMS_DBL = 1 !< for parms solver, number of real(kind=dp) parameters
-   integer, parameter :: IPARMS_DTOL = 1
-   character(len=128), dimension(NPARMS_DBL), parameter :: dparmsnam = [character(len=128) :: 'dtol']
-   real(kind=dp), dimension(NPARMS_DBL) :: dparms
-
    ! parameters for nudging
    real(kind=dp) :: Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time
 
@@ -759,7 +748,7 @@ contains
 
       jasecflow = 0 ! include secondary flow (0=no, 1=yes)
 
-      japillar = 0 ! include pillar (0=no, 1=yes)
+      pillar_method = PILLAR_NONE ! Switch for methods for computing bridge pillars
 
       jaequili = 0 ! equilibrium secondary flow (0=no, 1=yes)
 
@@ -768,7 +757,7 @@ contains
       jasal = 0 ! Include salinity (autoset by flow_initexternalforcings())
 
       temperature_model = TEMPERATURE_MODEL_NONE ! Temperature model
-      
+
       air_water_interaction_model = AIR_WATER_INTERACTION_MODEL_NONE ! Air-water interaction model
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
@@ -877,7 +866,6 @@ contains
       Drop2D = 0.0_dp ! Apply droplosses in 2D yes or no 1 or 0
       Drop3D = 1.0_dp ! Apply droplosses in 3D yes or no 1 or 0
       jacstbnd = 0
-      jajre = 0
       jasourcesink = 1
 
       cflmx = 0.7_dp ! max Courant nr ()
@@ -948,8 +936,7 @@ contains
       !                                4 = 1.0*dts, reduce au
       !                                5 = 0.7*dts, reduce au
       jsolpos = 0 ! in iterative solver force solution above bottom level
-      Icgsolver = 4 !    Icgsolver = 1      ! 1 = GS_OMP, 2 = GS_OMPthreadsafe, 3 = GS, 4 = Saadilud
-      ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
+      Icgsolver = 4
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
       hwetbed = 0.2_dp ! for case wetbed
@@ -988,9 +975,6 @@ contains
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
       ! call reset_flowparameters()
-
-      iparms = 0 ! parms-default
-      dparms = 0.0_dp ! parms-default
 
       jaupwindsrc = 1
       jalogsolverconvergence = 0
