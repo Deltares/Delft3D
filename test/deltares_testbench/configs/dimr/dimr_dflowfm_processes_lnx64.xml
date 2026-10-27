@@ -72,9 +72,6 @@
         <!-- just the first part of the directory structure, wil be file by TeamCity -->
       </location>
       <path>bin/run_dimr.sh</path>
-      <arguments>
-        <argument>-m</argument>
-      </arguments>
     </program>
     <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
       <location ref="reference_engines" type="reference">

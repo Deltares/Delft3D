@@ -1544,16 +1544,19 @@
     <programs>
       <program ref="dimr_plain" seq="1">
         <arguments>
+          <argument>-m</argument>
           <argument>dimr.xml</argument>
         </arguments>
       </program>
       <program ref="dimr_plain" seq="2">
         <arguments>
+          <argument>-m</argument>
           <argument>dimr_DTP_hydro.xml</argument>
         </arguments>
       </program>
       <program ref="dimr_plain" seq="3">
         <arguments>
+          <argument>-m</argument>
           <argument>dimr_noSTC.xml</argument>
         </arguments>
       </program>
