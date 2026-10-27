@@ -77,7 +77,6 @@ contains
          time1 = time0 + dts
       end if
 
-
       call flow_init_single_timestep(iresult)
       if (iresult /= DFM_NOERR) then
          goto 888

@@ -164,7 +164,6 @@ contains
                         call stoptimer(IUPDSALL)
                      end if
                   end if
-                  ! call mess(LEVEL_WARN, s1, get_partition_label() //"s1(post-gather)", ndx, columnfirst=.true., sliceorder=get_slices())
 
                   if (firstnniteration .and. nonlin1D >= 3) then
                      ! At first try only check for positive water depths only
