@@ -34,6 +34,7 @@ module m_get_surface_temperature
    use m_transport, only: constituents, itemp
    use m_flow, only: tem1
    use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE
+   use m_wind, only: sea_surface_temperature_available, sea_surface_temperature
    use MessageHandling, only: mess, LEVEL_ERROR
    
    implicit none
@@ -51,7 +52,11 @@ module m_get_surface_temperature
       integer :: n, kb, kt
       
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu')
+         if (sea_surface_temperature_available) then
+            surface_temperature = sea_surface_temperature
+         else
+            call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu')
+         end if
          return
       end if
 

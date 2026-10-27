@@ -3820,6 +3820,7 @@ module m_meteo
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
    integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
    integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
+   integer, target :: item_sea_surface_temperature !< 'seasurfacetemperature' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3995,6 +3996,7 @@ contains
       item_long_wave_radiation = ec_undef_int
       item_sensible_heat_flux = ec_undef_int
       item_latent_heat_flux = ec_undef_int
+      item_sea_surface_temperature = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4480,8 +4482,11 @@ contains
          itemPtr1 => item_sensible_heat_flux
          dataPtr1 => sensible_heat_flux
       case ('latentheatflux')
-          itemPtr1 => item_latent_heat_flux
+         itemPtr1 => item_latent_heat_flux
          dataPtr1 => latent_heat_flux
+      case ('seasurfacetemperature')
+         itemPtr1 => item_sea_surface_temperature
+         dataPtr1 => sea_surface_temperature
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
