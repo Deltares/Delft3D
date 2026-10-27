@@ -4,7 +4,7 @@ In standalone mode, D-Waves runs without a live Delft3D4 or D-Flow FM engine.
 It can read saved Delft3D4 or D-Flow FM fields, write wave fields onto the
 Delft3D4 or D-Flow FM grid, or do both.
 
-![Standalone communication model](../include/dwaves_pathway_standalone_detailed.svg)
+\dotfile dwaves_pathway_standalone_detailed.dot "Standalone communication model"
 
 [DOT source](../include/dwaves_pathway_standalone_detailed.dot)
 

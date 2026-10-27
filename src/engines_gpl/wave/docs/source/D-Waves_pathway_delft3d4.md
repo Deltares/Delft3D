@@ -4,7 +4,7 @@
 Delft3D4 NEFIS com-files carry fields.** Delft3D4 and D-Waves are separate
 processes, usually started by a shell or batch script.
 
-![Delft3D4 communication model](../include/dwaves_pathway_delft3d4_detailed.svg)
+\dotfile dwaves_pathway_delft3d4_detailed.dot "Delft3D4 communication model"
 
 [DOT source](../include/dwaves_pathway_delft3d4_detailed.dot)
 

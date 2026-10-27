@@ -5,7 +5,7 @@ fields through NetCDF com-files, not BMI field arrays.** D-Waves reads the
 D-Flow FM grid from those files and owns the spatial remapping in both
 directions.
 
-![D-Flow FM communication model](../include/dwaves_pathway_fm_bmi_detailed.svg)
+\dotfile dwaves_pathway_fm_bmi_detailed.dot "D-Flow FM communication model"
 
 [DOT source](../include/dwaves_pathway_fm_bmi_detailed.dot)
 
@@ -82,7 +82,7 @@ input for the ESMF weight generation.
    finalizes the components.
 
 The diagram at the top of this page
-([dwaves_pathway_fm_bmi_detailed](../include/dwaves_pathway_fm_bmi_detailed.svg))
+([DOT source](../include/dwaves_pathway_fm_bmi_detailed.dot))
 shows which component is responsible for what. It does not prescribe a fixed
 update order between D-Flow FM and D-Waves, and it does not imply that both
 access the com-file at the same time. The D-Waves update schedule and the

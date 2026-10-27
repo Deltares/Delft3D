@@ -1,3 +1,11 @@
-\mainpage D-Waves Developer Guide
+/*! \mainpage D-Waves Developer Guide
 
+## Communication models and code pathways
 
+The following pages describe execution control, field exchange and remapping:
+
+- [D-Waves communication models](D-Waves_code_pathways.md)
+- [Standalone D-Waves](D-Waves_pathway_standalone.md)
+- [Delft3D4 online coupling](D-Waves_pathway_delft3d4.md)
+- [D-Flow FM online coupling through DIMR/BMI](D-Waves_pathway_fm_bmi.md)
+*/

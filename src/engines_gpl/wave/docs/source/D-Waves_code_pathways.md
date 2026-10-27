@@ -4,7 +4,9 @@ This documentation explains **who controls time, where fields are exchanged,
 and who performs remapping** for the three current execution scenarios.
 Implementation links on each page connect those responsibilities to code.
 
-![D-Waves communication models](../include/dwaves_communication_model.svg)
+\dotfile dwaves_communication_model.dot "D-Waves communication models"
+
+[DOT source](../include/dwaves_communication_model.dot)
 
 ## Available scenarios
 
@@ -21,7 +23,9 @@ runs, reading saved hydrodynamic input and writing wave fields
 always require `WriteCOM = true`:** otherwise D-Waves aborts during input
 checking.
 
-![D-Waves code entry points per pathway](../include/dwaves_code_pathways.svg)
+\dotfile dwaves_code_pathways.dot "D-Waves code entry points per pathway"
+
+[DOT source](../include/dwaves_code_pathways.dot)
 
 The diagram above is a developer view: it lists the main code entry points of
 each pathway side by side. The preCICE panel at the bottom is reference
