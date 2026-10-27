@@ -918,8 +918,6 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
       call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
-      call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
-
       call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', vertical_advection_type, success)
       if (success) then
          call str_lower(vertical_advection_type)
@@ -927,11 +925,11 @@ contains
          case ('centralimplicit')
             javasal = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
             javatem = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
-            md_thetav_waq = 0.55_dp
+            theta_vertical_tracers = 0.55_dp
          case ('higherorderupwindexplicit')
             javasal = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
             javatem = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
-            md_thetav_waq = 0.0_dp
+            theta_vertical_tracers = 0.0_dp
          case default
             write (msgbuf, '(a,a)') 'Did not recognise VerticalAdvectionType value: ', trim(vertical_advection_type)
             call mess(LEVEL_ERROR, trim(msgbuf))
@@ -4056,9 +4054,6 @@ contains
       call prop_set(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
       call prop_set(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
-      if (len_trim(vertical_advection_type) == 0) then
-         call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
-      end if
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
