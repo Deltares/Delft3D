@@ -350,10 +350,10 @@ module m_flow
    real(kind=dp), allocatable, dimension(:) :: qwwaq !< [m3/s] Cumulative qw within current waq-timestep.
 
    ! solving related, dim = ndx for 2D, otherwise ndx*kmxd
-   real(kind=dp), allocatable, dimension(:) :: fu !< [-] Main diagonal. {size=lnx}
-   real(kind=dp), allocatable, dimension(:) :: ru !< [-] rhs. {size=lnx}
-   real(kind=dp), allocatable, dimension(:) :: bb !< [-] Main diagonal. {size=ndx}
-   real(kind=dp), allocatable, dimension(:) :: dd !< [-] rhs. {size=ndx}
+   real(kind=dp), allocatable, dimension(:) :: fu !< [1/s] Main diagonal. {"shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: ru !< [m/s] rhs. {"shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: bb !< [m2/s] Main diagonal. {"shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: dd !< [m3/s] rhs. {"shape": ["ndx"]}
 
    integer, allocatable, dimension(:) :: struclink
 
