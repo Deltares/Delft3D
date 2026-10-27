@@ -98,7 +98,9 @@ contains
     ! Units: gSi gC-1
     real function statusSC(NutCopt, NutCmin, resource, halfSat) result(NutStat)
         real, intent(in) :: NutCopt, NutCmin, resource, halfSat
-        NutStat = min(((resource / (resource + halfSat)) * (NutCopt / NutCmin)), 1.0)
+        real             :: r
+        r = max( 0.0, resource )
+        NutStat = min(((r / (r + halfSat)) * (NutCopt / NutCmin)), 1.0)
     end function statusSC
 
     ! Units: gC gC-1 d-1
