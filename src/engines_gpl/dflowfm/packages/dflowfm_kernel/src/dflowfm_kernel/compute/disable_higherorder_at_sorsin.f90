@@ -45,6 +45,7 @@ contains
       use m_alloc
 
       real(kind=dp), dimension(:, :), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: node_mask !< 1 for flow nodes with a source/sink (incl. ghost nodes), 0 otherwise
 
       integer, dimension(:), allocatable :: imask
 
@@ -57,32 +58,43 @@ contains
 
       if (jaall == 1) then
          ! disable all flowlink attached to flownodes with sources/sinks
+         ! a source/sink in a ghost cell has index -1, so mark the owned cells and ghost-update the mask:
+         ! links owned by this domain that are attached to such a ghost cell must also be disabled
+         allocate (node_mask(Ndx))
+         node_mask = 0.0_dp
          do n = 1, source_sinks%num_total
 
             kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
-
             if (kk > 0) then
-               do iL = 1, nd(kk)%lnx
-                  ! get 2D flink link
-                  LL = abs(nd(kk)%ln(iL))
-
-                  ! disable high-order reconstruction
-                  klnup(:, LL) = 0
-               end do
+               node_mask(kk) = 1.0_dp
             end if
 
             kk = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr FROM
-
             if (kk > 0) then
-               do iL = 1, nd(kk)%lnx
-                  ! get 2D flink link
-                  LL = abs(nd(kk)%ln(iL))
-
-                  ! disable high-order reconstruction
-                  klnup(:, LL) = 0
-               end do
+               node_mask(kk) = 1.0_dp
             end if
          end do
+
+         if (jampi == 1) then
+            call update_ghosts(ITYPE_Sall, 1, Ndx, node_mask, ierror)
+         end if
+
+         do kk = 1, Ndx
+            if (node_mask(kk) == 0.0_dp) then
+               cycle
+            end if
+
+!           loop over all attached flow links
+            do iL = 1, nd(kk)%lnx
+!              get 2D flink link
+               LL = abs(nd(kk)%ln(iL))
+
+!              disable high-order reconstruction
+               klnup(:, LL) = 0
+            end do
+         end do
+
+         deallocate (node_mask)
       else
          ! disable only flowlinks connecting two flownodes with sources/sinks
 
