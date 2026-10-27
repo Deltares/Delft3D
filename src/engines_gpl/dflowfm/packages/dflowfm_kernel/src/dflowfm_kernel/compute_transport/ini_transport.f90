@@ -53,7 +53,6 @@ contains
 
       use m_fm_wq_processes
       use m_alloc
-      use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
 
       character(len=8) :: str
@@ -220,7 +219,7 @@ contains
             end if
 
             itrac2const(itrace) = i
-
+            thetavert(i) = theta_vertical_tracers
          end do
       end if
 
@@ -246,8 +245,6 @@ contains
             i = itrac2const(isys2trac(isys))
             isys2const(isys) = i
             iconst2sys(i) = isys
-
-            thetavert(i) = md_thetav_waq
          end do
       end if
 
