@@ -20,22 +20,22 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: EXT_FILENAME = "test_spatial.ext"
    character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
    character(len=*), parameter :: BASE_DIR = "."
-   integer, parameter :: NUM_SCALAR_METEO_CASES = 15
+   integer, parameter :: NUM_SCALAR_METEO_CASES = 16
    character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
                                                                                                  'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
                                                                                                  'latentheatflux', 'longwaveradiation', 'netsolarradiation', 'solarradiation', &
-                                                                                                 'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy']
+                                                                                                 'sensibleheatflux', 'stressx', 'stressy', 'windx', 'windy', 'seasurfacetemperature']
    character(len=48), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VARIABLES = [character(len=48) :: &
                                                                                                 'p140209', 'msl', 't2m', 'tcc', 'd2m', 'rhum', 'slhf', 'strd', 'ssr', 'ssrd', &
-                                                                                                'sshf', 'tauu', 'tauv', 'u10', 'v10']
+                                                                                                'sshf', 'tauu', 'tauv', 'u10', 'v10', 'sst']
    character(len=64), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_STANDARD_NAMES = [character(len=64) :: &
                                                                                                      'air_density', 'air_pressure', 'air_temperature', 'cloud_area_fraction', 'dew_point_temperature', 'relative_humidity', &
                                                                                                      'surface_upward_latent_heat_flux', 'surface_net_downward_longwave_flux', 'surface_net_downward_shortwave_flux', &
                                                                                                      'surface_downwelling_shortwave_flux_in_air', 'surface_upward_sensible_heat_flux', &
-                                                                                                     'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind']
+                                                                                                     'surface_downward_eastward_stress', 'surface_downward_northward_stress', 'eastward_wind', 'northward_wind', 'sea_surface_temperature']
    real(dp), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_VALUES = [ &
                                                              1.2_dp, 101325.0_dp, 20.0_dp, 0.4_dp, 10.0_dp, 60.0_dp, 120.0_dp, 80.0_dp, 200.0_dp, 250.0_dp, &
-                                                             50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp]
+                                                             50.0_dp, 0.1_dp, 0.2_dp, 3.0_dp, 4.0_dp, 15.0_dp]
 
 contains
 
@@ -3225,9 +3225,9 @@ contains
    subroutine scalar_meteo_target(quantity, item_id, target_data)
       use m_meteo, only: item_air_density, item_airpressure, item_air_temperature, item_cloudiness, &
                          item_dew_point_temperature, item_relative_humidity, item_latent_heat_flux, item_long_wave_radiation, &
-                         item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy
+                         item_solar_radiation, item_sensible_heat_flux, item_stressx, item_stressy, item_windx, item_windy, item_sea_surface_temperature
       use m_wind, only: air_density, air_pressure, air_temperature, cloudiness, dew_point_temperature, relative_humidity, &
-                        latent_heat_flux, long_wave_radiation, solar_radiation, sensible_heat_flux, wx, wy
+                        latent_heat_flux, long_wave_radiation, solar_radiation, sensible_heat_flux, wx, wy, sea_surface_temperature
       use m_flow, only: wdsu_x, wdsu_y
       use string_module, only: str_tolower
 
@@ -3280,6 +3280,9 @@ contains
       case ('windy')
          item_id = item_windy
          target_data => wy
+      case ('seasurfacetemperature')
+         item_id = item_sea_surface_temperature
+         target_data => sea_surface_temperature
       end select
    end subroutine scalar_meteo_target
 
