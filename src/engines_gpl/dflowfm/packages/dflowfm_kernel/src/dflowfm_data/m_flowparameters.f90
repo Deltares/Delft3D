@@ -383,7 +383,12 @@ module m_flowparameters
 
    integer :: javau3onbnd = 0 !< vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd
 
-   integer :: javakeps !< vert. adv. keps : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
+   integer :: turbulent_advection_scheme !< Advection scheme to be used for turbulent quantities.
+                                         !! 0: none, 
+                                         !! 1: upwind explicit, 
+                                         !! 2: central explicit, 
+                                         !! 3: horizontally explicit and vertically implicit, 
+                                         !! 4: central implicit
 
    character(len=Idlen) :: vertical_advection_type !< Vertical advection type for turbulence quantities: CentralImplicit, HigherOrderUpwindExplicit
    integer, parameter :: VERTICAL_ADVECTION_CENTRAL_IMPLICIT = 4
@@ -943,7 +948,7 @@ contains
       hwetbed = 0.2_dp ! for case wetbed
 
       javau = 6 !< vert. adv. u1   : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=Quick, 6=centerbased upw. expl.
-      javakeps = 3 !< vert. adv. keps : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
+      turbulent_advection_scheme = 3 !< vert. adv. keps : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
       javasal = 6 !< vert. adv. sa1  : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=switched to 3 for neg stratif, 6=hoexplicit.
       javatem = 6 !< vert. adv. tem1 : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=switched to 3 for neg stratif.
       javased = 6 !< vert. adv. suspended sediment concentrations : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=switched to 3 for neg stratif., 6=higher-order upwind/explicit

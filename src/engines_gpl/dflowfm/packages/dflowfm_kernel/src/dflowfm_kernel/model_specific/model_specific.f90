@@ -228,7 +228,7 @@ contains
             end if
             ! call newfil(mout,'uprof.txt')
             do L = Lb - 1, Lt
-               call ENTRYFLOW(zw1, L - Lb + 2, uu(L - Lb + 2), dummy, turkin1(L), tureps1(L), dummy, dummy)
+               call ENTRYFLOW(zw1, L - Lb + 2, uu(L - Lb + 2), dummy, turbulent_kinetic_energy_wu(L), turbulent_dissipation_wu(L), dummy, dummy)
             end do
             ! write(mout,'(100f6.3)') ( zw1(j)/zw1(kxl+1), j = 1,kxL+1 )
             ! WRITE(MOUT,*) 'U'
@@ -788,8 +788,8 @@ contains
       yw = b / 2 - hdy
 
       if (irov == 1) then ! uniform mesh assumed, with cell size near wall dy (see above)
-         aa = vonkar / log(c9of1 + hdy / wall_z0)
-         !aa  = vonkar/log(1d0   + hdy/wall_z0)
+         aa = VON_KARMAN / log(c9of1 + hdy / wall_z0)
+         !aa  = VON_KARMAN/log(1d0   + hdy/wall_z0)
 
          ust = sqrt(abs(c0 * b))
 

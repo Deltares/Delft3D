@@ -127,7 +127,7 @@ end subroutine flocculate
 
 
 !> Calculate the turbulent shear and dissipation for different flow models
-subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, taub, waterdepth, localdepth, vonkar )
+subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, taub, waterdepth, localdepth, vonkar)
 !
 ! Global variables
 !

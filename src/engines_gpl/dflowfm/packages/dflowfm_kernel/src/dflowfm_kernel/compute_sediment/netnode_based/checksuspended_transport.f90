@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_check_einstein_garcia, only: check_einstein_garcia
       use m_filez, only: doclose, newfil
-      use m_physcoef, only: ag, vonkar
+      use m_physcoef, only: ag, VON_KARMAN
 
       real(kind=dp) :: hsk
       real(kind=dp) :: ucr, ueff, Ucur, Pmob, sster, wster, ws
@@ -101,7 +101,7 @@ contains
             d90 = 2.0_dp * d50 ! grainsize
             dks = 3.0_dp * d90 ! nikuradse
             z0k = dks / 30.0_dp ! z0
-            sqcf = vonkar / log(hsk / (ee * z0k)) ! sqrt(g)/C  ( )
+            sqcf = VON_KARMAN / log(hsk / (ee * z0k)) ! sqrt(g)/C  ( )
             ustar = sqcf * Ucur ! ustar
             hdune = 0.0_dp
             aref = max(dks, hdune) ! reference height is max of (nikuradse and half dune height) (m)
@@ -133,7 +133,7 @@ contains
 
             if (Tmob > 0.0_dp) then
 
-               rouse = ws / (vonkar * ustar)
+               rouse = ws / (VON_KARMAN * ustar)
                !deltaa = aref/hsk
                !call einstein_garcia(deltaa,rouse,dj1,dj2)                      ! einstein integrals following garcia 2008
                !garciaeinstein = dj1*log(hsk/z0k) + dj2                       ! garcia 2008(2-219) ( )
@@ -142,14 +142,14 @@ contains
                if (crefa > 0.65_dp) then
                   crefa = 0.65_dp ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
                end if
-               !qsseq = (crefa*ustar*hsk/vonkar)*garciaeinstein               ! equilibrium suspended transport, ( ). (m/s) . (m) =  ( m2/s) )
+               !qsseq = (crefa*ustar*hsk/VON_KARMAN)*garciaeinstein               ! equilibrium suspended transport, ( ). (m/s) . (m) =  ( m2/s) )
                !sseq  = qsseq/ ( max(ucur,1d-2)*hsk )                         ! ( ) dimensionless equilibrium suspended sediment concentration
 
                call check_einstein_garcia(aref, hsk, z0k, rouse, eincheck) ! numerical check einstein integrals slow, height is already in eincheck
 
                call check_einstein_garcia2(aref, hsk, z0k, rouse, eincheck2) ! numerical check einstein integrals fast, height is already in eincheck
 
-               qsseqcheck = (crefa * ustar / vonkar) * eincheck ! (conclusion : inaccuracy of einstein_garcia is about 10-20 % => improve if have time )
+               qsseqcheck = (crefa * ustar / VON_KARMAN) * eincheck ! (conclusion : inaccuracy of einstein_garcia is about 10-20 % => improve if have time )
 
                qssevr84 = 0.012_dp * Ucur * D50 * Pmob**2.4_dp * Dstar**(-0.6_dp) ! boek vanrijn (7.3.46), or 2007b
 

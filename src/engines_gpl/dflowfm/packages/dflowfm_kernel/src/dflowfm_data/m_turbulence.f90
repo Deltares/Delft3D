@@ -27,22 +27,20 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_turbulence
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    ! Coefficients of turbulence model
    real(kind=dp), parameter :: CMUKEP = 0.09_dp
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
    integer, parameter :: SIGDIF = 1
-   integer, parameter :: SIGTKE = 1
-   integer, parameter :: SIGTKEI = 1
-   real(kind=dp), parameter :: SIGEPS = 1.3_dp
-   real(kind=dp), parameter :: SIGEPSI = 1.0_dp / SIGEPS
+   integer, parameter :: SIGMA_TURBULENT_KINETIC_ENERGY = 1
+   integer, parameter :: SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE = 1
+   real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION = 1.3_dp
+   real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION_INVERSE = 1.0_dp / SIGMA_TURBULENT_DISSIPATION
    real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
    real(kind=dp), parameter :: C2E = 1.92_dp
    real(kind=dp), parameter :: C2T = 1.0_dp - C2E
@@ -61,8 +59,6 @@ module m_turbulence
    integer, parameter :: TURB_LAX_CONNECTED = 2
 
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
-   real(kind=dp) :: buoflu(kmxx)
-   real(kind=dp) :: bruva(kmxx)
 
    real(kind=dp) :: ak(0:kmxx)
    real(kind=dp) :: bk(0:kmxx)
@@ -85,14 +81,13 @@ module m_turbulence
    real(kind=dp) :: tke_min
    real(kind=dp) :: eps_min
 
-   real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
-   real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_wu_old ! [m2/s2] Old turbulent kinetic energy (k) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:), target :: turbulent_kinetic_energy_wu !< [m2/s2] Turbulent kinetic energy (k) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu_old ! [m2/s3] Old turbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_wu ! [m2/s3] Turbulent dissipation (epsilon) at horizontal flow links at layer interface. {size=lnkx}
 
-   real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
-   real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
-
-   real(kind=dp), allocatable, dimension(:) :: vius !< Flowlink-averaged horizontal viscosity (viu) at s-point
-   real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
+   real(kind=dp), allocatable, dimension(:) :: vius !< [m2/s] Flowlink-averaged horizontal viscosity (viu) at s-point
+   real(kind=dp), allocatable, dimension(:) :: vicwwu !< [m2/s] Vertical eddy viscosity at layer interface at u point
    real(kind=dp), allocatable, target, dimension(:) :: vicwws !< [m2/s] turbulent vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: vicwws_total !< [m2/s] total vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: difwws !< [m2/s] turbulent vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
@@ -101,12 +96,12 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: rich !< Richardson number at velocity-point
    real(kind=dp), allocatable, dimension(:) :: richs !< Richardson number at pressure-point
 
-   real(kind=dp), allocatable, dimension(:), target :: in_situ_density ! Pressure dependent water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:), target :: potential_density ! Potential water density at cell centres (kg/m3)
-   real(kind=dp), dimension(:), pointer :: rho ! Water density at cell centres (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
-   real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
-   real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
+   real(kind=dp), allocatable, dimension(:), target :: in_situ_density !< [kg/m3] Pressure dependent water density at cell centres
+   real(kind=dp), allocatable, dimension(:), target :: potential_density !< [kg/m3] Potential water density at cell centres
+   real(kind=dp), dimension(:), pointer :: rho ! [kg/m3] Water density at cell centres
+   real(kind=dp), allocatable, dimension(:) :: drhodz !< [kg/m4] Vertical density gradient
+   real(kind=dp), allocatable, dimension(:) :: rhosww !< [kg/m3] deviatoric density at vertical interfaces, w points
+   real(kind=dp), allocatable, dimension(:) :: rhowat !< [kg/m3] density at cell centres, only salt and temp
    real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
    real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures ! baroclinic pressures (/ag), at pressure points
    real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures ! depth-integrated baroclinic pressures (/ag), at pressure points
@@ -121,11 +116,17 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws_old !< [m2/s2] Old turbulent kinetic energy (k) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_kinetic_energy_ws !< [m2/s2] Turbulent kinetic energy (k) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws_old !< [m2/s3] Old turbulent dissipation (epsilon) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: turbulent_dissipation_ws !< [m2/s3] Turbulent dissipation (epsilon) at vertical face center at layer interface. {size=ndkx}
+
+   real(kind=dp), allocatable, dimension(:) :: sum_q_times_turbulent_kinetic_energy_ws !< [m5/s3] Sum of inflowing discharge times turbulent kinetic energy (k) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: sum_q_times_turbulent_dissipation_ws !< [m5/s4] Sum of inflowing discharge times turbulent dissipation (epsilon) at vertical face center at layer interface. {size=ndkx}
+   real(kind=dp), allocatable, dimension(:) :: sum_inflowing_discharges_ws !< [m3/s] Sum of inflowing discharges at vertical face center at layer interface. {size=ndkx}
+   
+   real(kind=dp), allocatable, dimension(:) :: ustbs ! ustb in cell centre (m/s) only iturbulencemodel=5
+   real(kind=dp), allocatable, dimension(:) :: ustws ! ustw in cell centre (m/s) only iturbulencemodel=5
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
@@ -136,8 +137,8 @@ contains
 
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
-      use m_physcoef, only: vonkar
-      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
+      use m_physcoef, only: VON_KARMAN
+      c1e = c2e - VON_KARMAN**2 / (SIGMA_TURBULENT_DISSIPATION * sqrt(cmukep))
       c1t = (1.0_dp - c1e) * cmukep
       c3t_unstable = (1.0_dp - c1e) * cmukep
       c3e_stable = 0.0_dp
