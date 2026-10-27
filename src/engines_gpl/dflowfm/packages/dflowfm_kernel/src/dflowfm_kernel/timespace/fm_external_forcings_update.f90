@@ -293,8 +293,7 @@ contains
          return
       end if
 
-      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE &
-          .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          if (jaheat_eachstep == 0) then
             call heatu(time_in_seconds / 3600.0_dp)
          end if
