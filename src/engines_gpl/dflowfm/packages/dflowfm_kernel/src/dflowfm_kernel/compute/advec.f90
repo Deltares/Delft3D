@@ -51,16 +51,17 @@ contains
 
    subroutine advec() ! advection, based on u0, q0 24
       use precision, only: dp
+      use m_pure1d_advection, only: advect_pure1d_sobek
       use m_flowgeom, only: lnxi, iadv, iadv_subgrid_weir, ln, lnx, ndxi, csu, snu, kcu, acl, iadv_pure1d_fm, iadv_pure1d_sobek, &
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
                         jarhoxu, qw, zws, kbot, ktop, rho, epshs, rhomean, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
-                        hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
+                        hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn, lateral_correction
       use m_sferic, only: jasfer3d
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, &
-         BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE, SINK_SIDE, SOURCE_SIDE
+                               BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -106,11 +107,6 @@ contains
       real(kind=dp) :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
       real(kind=dp) :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
       real(kind=dp) :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
-
-      real(kind=dp) :: am
-      real(kind=dp) :: qv
-      real(kind=dp) :: u_ene
-      real(kind=dp) :: u_mom
 
       japiaczek33 = 0
 
@@ -371,7 +367,7 @@ contains
       if (kmx == 0) then
 
          !$OMP PARALLEL DO                                                                   &
-         !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, u_ene, u_mom, am, qv)
+         !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
 
          do L = 1, lnx
 
@@ -496,55 +492,9 @@ contains
                   end if
 
                else if (iadvL == IADV_PURE1D_SOBEK) then
-                  ! Pure1D implementation SOBEK style
-
-                  advel = 0.0_dp
-                  ! weight of momentum versus energy conservation
-                  select case (jaPure1D)
-                  case (3) ! momentum conserving
-                     am = 1.0_dp
-                  case (4) ! weighted
-                     am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
-                  case (5) ! weighted in contractions, otherwise momentum conserving
-                     if ((u1(L) > 0.0_dp .and. au1D(1, L) > au1D(2, L)) .or. &
-                       & (u1(L) < 0.0_dp .and. au1D(1, L) < au1D(2, L))) then
-                        am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
-                     else
-                        am = 1.0_dp
-                     end if
-                  case (6) ! weighted in expansions, otherwise momentum conserving
-                     if ((u1(L) > 0.0_dp .and. au1D(1, L) < au1D(2, L)) .or. &
-                       & (u1(L) < 0.0_dp .and. au1D(1, L) > au1D(2, L))) then
-                        am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
-                     else
-                        am = 1.0_dp
-                     end if
-                  case (7) ! energy conserving
-                     am = 0.0_dp
-                  end select
-
-                  if (q1D(1, L) > 0) then
-                     ! flow entering link at node 1
-                     qv = q1D(1, L) / max(1.0e-5_dp, volu1D(L))
-                     u_mom = alpha_mom_1D(k1) * q1D(1, L) / au1D(1, L)
-                     u_ene = alpha_ene_1D(k1) * q1D(1, L) / au1D(1, L)
-                     advel = advel - am * (u_mom - u1(L)) * qv &
-                                 & - (1.0_dp - am) * (u_ene - u1(L)) * qv
-                  else
-                     ! flow leaving link at node 1
-                     ! outflow u = local u, so no contribution
-                  end if
-
-                  if (q1D(2, L) < 0) then ! flow entering link at node 2
-                     qv = q1D(2, L) / max(1.0e-5_dp, volu1D(L))
-                     u_mom = alpha_mom_1D(k2) * q1D(2, L) / au1D(2, L)
-                     u_ene = alpha_ene_1D(k2) * q1D(2, L) / au1D(2, L)
-                     advel = advel + am * (u_mom - u1(L)) * qv &
-                                 & + (1.0_dp - am) * (u_ene - u1(L)) * qv
-                  else
-                     ! flow leaving link at node 2
-                     ! outflow u = local u, so no contribution
-                  end if
+                  call advect_pure1d_sobek(jaPure1D, u1(L), au1d(1, L), au1d(2, L), q1D(1, L), q1D(2, L), &
+                                           volu1D(L), alpha_mom_1D(k1), alpha_ene_1D(k1), alpha_mom_1D(k2), &
+                                           alpha_ene_1D(k2), lateral_correction(L), advi(L), advel)
 
                else if (iadvL == 333) then ! explicit first order mom conservative
                   ! based upon cell center excess advection velocity

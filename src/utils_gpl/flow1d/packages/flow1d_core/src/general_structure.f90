@@ -346,7 +346,6 @@ contains
          fu(3) = 0.0_dp
          ru(3) = 0.0_dp
          au(3) = 0.0_dp
-         
       end if
 
       auL = (au(1) + au(2)) + au(3)

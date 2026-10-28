@@ -64,7 +64,8 @@ contains
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
+                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0, &
+                        lateral_correction, vol0_f, volume_change
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -379,7 +380,7 @@ contains
                if (stretch_type == STRETCH_UNI_OVER_EXP) then
                   zslay(0, j) = zmn
                   zslay(mx, j) = zmx
-                  
+
                   ! Fill top uniform layers, thickness equal to dzm
                   do k = mx - 1, mx - kuni, -1
                      zslay(k, j) = zslay(k + 1, j) - dzm
@@ -391,14 +392,14 @@ contains
                      dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
-                  
+
                else
                   ! Fill layers based on dzslay computed above, scaled to the actual depth range
                   zslay(0, j) = zmn
                   do k = 1, mx
                      zslay(k, j) = zslay(k - 1, j) + dzslay(k, j) * (zmx - zmn)
                   end do
-                  
+
                end if
             end if
          end do
@@ -450,7 +451,7 @@ contains
 
          ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
          call map_ndkx_to_ndx()
-         
+
          LL = Lnx ! Stapelen vanaf grondlaag
          do L = 1, lnx
             n1 = ln(1, L)
@@ -621,6 +622,10 @@ contains
       call aerr('vol1(ndkx)', ierr, ndkx)
       call realloc(vol1_f, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vol1_f(ndkx)', ierr, ndkx)
+      call realloc(vol0_f, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('vol0_f(ndkx)', ierr, ndkx)
+      call realloc(volume_change, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+      call aerr('volume_change(ndkx)', ierr, ndkx)
       call realloc(volerror, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('volerror(ndkx)', ierr, ndkx)
 
@@ -652,6 +657,8 @@ contains
             call aerr('sar1D(2,lnx)', ierr, lnx)
             call realloc(volu1D, lnx, stat=ierr, fill=0.0_dp, keepExisting=.false.)
             call aerr('volu1D(lnx)', ierr, lnx)
+            call realloc(lateral_correction, lnx, stat=ierr, fill=0.0_dp, keepExisting=.false.)
+            call aerr('lateral_correction(lnx)', ierr, lnx)
          end if
       end if
 
@@ -1241,6 +1248,6 @@ contains
       end if
 
       call set_kbot_ktop(jazws0=1)
-      
+
    end subroutine flow_allocflow
 end module m_flow_allocflow

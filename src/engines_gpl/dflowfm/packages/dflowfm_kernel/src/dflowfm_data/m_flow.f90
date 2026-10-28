@@ -157,6 +157,9 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: vol1 !< [m3] total volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable, target, dimension(:) :: vol0 !< [m3] total volume at start of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable, target, dimension(:) :: vol1_f !< [m3] Flow volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol0_f !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: volume_change !< flow volume change during last timestep at nodes, dim=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: lateral_correction !< [m3] Flow volume change due to lateral inflow during last timestep at nodes, dim=ndx
    real(kind=dp), allocatable, dimension(:) :: sq !< [m3/s] Total influx at water level point.
    real(kind=dp), allocatable, dimension(:) :: sqa !< [m3/s] Total outflux at s point, u1 based, non-conservative for iadvec==38.
    real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] Waterdepth at cell centre = s1 - bl. {"location": "face", "shape": ["ndx"]}
@@ -681,7 +684,7 @@ contains
    subroutine map_ndkx_to_ndx()
       use m_cell_geometry, only: ndx
       use m_alloc, only: realloc
-      
+
       integer :: n, k
 
       call realloc(ndkx_to_ndx, ndkx)

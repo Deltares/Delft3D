@@ -42,7 +42,7 @@ contains
 
    subroutine setucxucyucxuucyunew() ! and reclaim ucxq, ucyq for Coriolis without interfering with Morfology
       use precision, only: dp
-      use m_setuc1d, only: setuc1d
+      use m_pure1d_advection, only: setuc1d
       use m_flowgeom
       use precision_basics
       use m_flow
