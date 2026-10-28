@@ -111,7 +111,7 @@ live coupling. See the
 | Setting | Role |
 |---|---|
 | D-Waves mode 0 / 1 / 2 | Standalone / online / classic Delft3D4 water-plus-mud extension. The caller supplies the initial mode (the executable's second argument, default 0; DIMR through the BMI `mode` variable). A non-blank `[General] FlowFile` then forces mode 1, and a non-blank `FlowMudFile` mode 2. Both online engines normally use mode 1. |
-| `[General] FlowFile` | MDW switch for online mode (mode 1). Only whether it is non-blank matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route, although the manual's D-Flow FM example (A.1.3.4.2) also sets it. `FlowMudFile` adds mode 2 within the same parser branch. |
+| `[General] FlowFile` | MDW switch for online mode (mode 1). Only whether it is non-blank matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route. `FlowMudFile` adds mode 2 within the same parser branch. |
 | `[General] ComFile` | Existing Delft3D4 offline runid selection (manual A.1.2). Legacy; read only when `FlowFile` is blank. |
 | `[Output] COMFile` | D-Flow FM NetCDF communication-file path (must end in `com.nc`); selects the D-Flow FM file route, including offline use. The old `FlowGridForCom` keyword is no longer supported and aborts the run. |
 | Hydrodynamic input selections (`FlowBedLevel`, `FlowWaterLevel`, `FlowVelocity`, ...) | Select which Delft3D4 or D-Flow FM fields D-Waves reads. |
@@ -125,10 +125,10 @@ Mode alone does not identify the engine. A blank or non-blank
 handling. **Preserve the mode-2 water/mud dependencies for Delft3D4**;
 D-Flow FM/BMI does not implement that path.
 
-Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
-version 2027.01, revision 81307, Sections 3.3.1, 5.4.1.1–5.4.1.2 and 5.4.9
+Configuration reference: [D-Waves User Manual](https://content.oss.deltares.nl/dhydro/D-Waves_User_Manual.pdf),
+version 2027.01, revision 81378 (28 October 2026, DRAFT), Sections 3.3.1, 5.4.1.1–5.4.1.2 and 5.4.9
 (GUI), Appendices A.1.1 (MDW keywords, including `FlowFile`, `FlowMudFile` and
-`WriteCOM`), A.1.2 and A.1.3.4.2. Source links on the scenario pages establish
+`WriteCOM`) and A.1.2 (Delft3D4 offline workflow). Source links on the scenario pages establish
 the implementation behavior.
 
 ## Reference comparison: UNST-9075 preCICE proof of concept

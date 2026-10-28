@@ -148,6 +148,7 @@ order; nesting is not MPI decomposition. How SWAN is executed is selected by
 | Time/grid loops and file exchange | [swan_tot](../../packages/manager/src/swan_tot.f90#L106), [get_flow_fields](../../packages/io/src/get_flow_fields.f90), [put_wave_fields](../../packages/io/src/put_wave_fields.f90) |
 | SWAN execution and MPI workers | [run_swan](../../packages/kernel/src/run_swan.f90#L90), [run_swan_slave](../../packages/kernel/src/run_swan_slave.f90#L53), [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385) |
 
-Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
-Sections 5.4.1.1 and 5.4.9 (GUI), Appendix A.1.1 (MDW keywords), A.1.2
-(Delft3D4 offline workflow) and A.1.3.4.2 (D-Flow FM com-file example).
+Configuration reference: [D-Waves User Manual](https://content.oss.deltares.nl/dhydro/D-Waves_User_Manual.pdf),
+version 2027.01, revision 81378 (28 October 2026, DRAFT),
+Sections 5.4.1.1 and 5.4.9 (GUI), Appendices A.1.1 (MDW keywords) and A.1.2
+(Delft3D4 offline workflow).

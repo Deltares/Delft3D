@@ -124,5 +124,6 @@ general suspended-sediment option.
 | Com-file format (NEFIS only) | [FLNcdf parsing](../../../flow2d3d/packages/flow2d3d_io/src/input/rdprfl.f90#L140), [com rejected](../../../flow2d3d/packages/flow2d3d_io/src/input/rdprfl.f90#L162), [D-Waves NEFIS writeback branch](../../packages/io/src/put_wave_fields.f90#L18), [D-Waves NetCDF reader (D-Flow FM layout)](../../packages/io/src/get_var_netcdf.f90#L128) |
 | D-Waves MPI coordination | [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385), [run_swan](../../packages/kernel/src/run_swan.f90#L90), [worker barrier](../../packages/kernel/src/run_swan_slave.f90#L60) |
 
-Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
+Configuration reference: [D-Waves User Manual](https://content.oss.deltares.nl/dhydro/D-Waves_User_Manual.pdf),
+version 2027.01, revision 81378 (28 October 2026, DRAFT),
 Appendix A.1.1 (`FlowFile` and `FlowMudFile`).

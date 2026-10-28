@@ -132,6 +132,6 @@ machinery without advancing D-Flow FM; see the
 | D-Waves remapping and writeback | [make_grid_map](../../packages/data/src/swan_flow_grid_maps.f90#L306), [get_flow_fields](../../packages/io/src/get_flow_fields.f90), [map_swan_output](../../packages/kernel/src/map_swan_output.f90), [swan_tot writeback](../../packages/manager/src/swan_tot.f90#L499) |
 | D-Waves MPI coordination | [master/worker dispatch](../../packages/manager/src/wave_main.f90#L385), [run_swan](../../packages/kernel/src/run_swan.f90#L90), [worker barrier](../../packages/kernel/src/run_swan_slave.f90#L60) |
 
-Configuration reference: [D-Waves User Manual](../include/D-Waves_User_Manual.pdf),
-Sections 5.4.1.1–5.4.1.2 and 5.4.9 (GUI), Appendices A.1.1 (MDW keywords) and
-A.1.3.4.2 (D-Flow FM example).
+Configuration reference: [D-Waves User Manual](https://content.oss.deltares.nl/dhydro/D-Waves_User_Manual.pdf),
+version 2027.01, revision 81378 (28 October 2026, DRAFT),
+Sections 5.4.1.1–5.4.1.2 and 5.4.9 (GUI), Appendix A.1.1 (MDW keywords).
