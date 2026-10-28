@@ -1252,7 +1252,7 @@ contains
          call prop_get(md_ptr, 'physics', 'Dicouv', uniform_horizontal_eddy_diffusivity)
       end if
 
-      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww%scalar)
+      call prop_get(md_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar)
 
       call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, success)
       if (.not. success) then
@@ -3432,7 +3432,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
-         call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww%scalar, 'Uniform vertical eddy viscosity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
          call prop_set(prop_ptr, 'physics', backgroundVerticalEddyDiffusivity, background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (vicwminb > 0.0_dp)) then

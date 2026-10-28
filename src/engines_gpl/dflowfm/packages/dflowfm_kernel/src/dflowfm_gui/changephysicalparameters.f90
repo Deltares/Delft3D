@@ -72,11 +72,11 @@ contains
       it(2 * 4) = 6
       OPTION(5) = 'uniform horizontal eddy viscosity (m2/s) '
       it(2 * 5) = 6
-      OPTION(6) = 'Vicoww                            (m2/s) '
+      OPTION(6) = 'background vertical eddy viscosity (m2/s) '
       it(2 * 6) = 6
       OPTION(7) = 'uniform horizontal eddy diffusivity ( )  '
       it(2 * 7) = 6
-      OPTION(8) = 'background  vertical eddy diffusivity ( )'
+      OPTION(8) = 'background vertical eddy diffusivity ( ) '
       it(2 * 8) = 6
       OPTION(9) = 'Verticall Wall Nikuradse          (m)    '
       it(2 * 9) = 6
@@ -185,7 +185,7 @@ contains
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
       call IFormPutDouble(2 * 5, uniform_horizontal_eddy_viscosity, '(e9.2)')
-      call IFormPutDouble(2 * 6, vicoww%scalar, '(e8.3)')
+      call IFormPutDouble(2 * 6, background_vertical_eddy_viscosity%scalar, '(e8.3)')
       call IFORMPUTdouble(2 * 7, uniform_horizontal_eddy_diffusivity, '(e8.3)')
       call IFORMPUTdouble(2 * 8, background_vertical_eddy_diffusivity%scalar, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
@@ -238,7 +238,7 @@ contains
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
             call IFormGetDouble(2 * 5, uniform_horizontal_eddy_viscosity)
-            call IFormGetDouble(2 * 6, vicoww%scalar)
+            call IFormGetDouble(2 * 6, background_vertical_eddy_viscosity%scalar)
             call IFORMGetdouble(2 * 7, uniform_horizontal_eddy_diffusivity)
             call IFORMGetdouble(2 * 8, background_vertical_eddy_diffusivity%scalar)
             call IFormGetDouble(2 * 9, wall_ks)

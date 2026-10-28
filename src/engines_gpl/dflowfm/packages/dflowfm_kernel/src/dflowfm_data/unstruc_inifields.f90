@@ -1146,7 +1146,7 @@ contains
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_nudge, only: nudge_time, nudge_rate
-      use m_physcoef, only: background_vertical_eddy_diffusivity, vicoww
+      use m_physcoef, only: background_vertical_eddy_diffusivity, background_vertical_eddy_viscosity
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
@@ -1258,8 +1258,8 @@ contains
 
       case ('backgroundverticaleddyviscositycoefficient')
          target_location_type = UNC_LOC_U
-         call realloc(vicoww%values, lnx, keepExisting=.true., fill=vicoww%scalar, stat=ierr)
-         target_array => vicoww%values
+         call realloc(background_vertical_eddy_viscosity%values, lnx, keepExisting=.true., fill=background_vertical_eddy_viscosity%scalar, stat=ierr)
+         target_array => background_vertical_eddy_viscosity%values
 
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then

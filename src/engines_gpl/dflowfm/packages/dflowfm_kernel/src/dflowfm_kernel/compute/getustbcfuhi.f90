@@ -41,7 +41,7 @@ contains
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
-      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, C9OF1, jaustarint, VON_KARMAN, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, VISKIN, vicwwu, vicoww, jafrculin, frculin
+      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, C9OF1, jaustarint, VON_KARMAN, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, VISKIN, vicwwu, background_vertical_eddy_viscosity, jafrculin, frculin
       use m_get_ustwav, only: getustwav
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
@@ -367,7 +367,7 @@ contains
       else if (friction_type == 11) then ! Noslip
 
          !    advi(Lb) = advi(Lb) +  2.0_dp*(vicwwu(Lb)+uniform_horizontal_eddy_viscosity)/hu(Lb)**2
-         cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww%get(LL)) / hu(Lb)**2
+         cfuhi3D = 2.0_dp * (vicwwu(Lb) + background_vertical_eddy_viscosity%get(LL)) / hu(Lb)**2
 
       end if
 

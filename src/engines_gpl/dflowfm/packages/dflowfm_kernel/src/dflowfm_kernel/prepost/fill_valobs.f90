@@ -92,7 +92,7 @@ contains
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
       use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total, SIGRHO
-      use m_physcoef, only: vicoww
+      use m_physcoef, only: background_vertical_eddy_viscosity
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness, relativewind
@@ -174,7 +174,7 @@ contains
          do LL = 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb - 1, Lt
-               vicwwu_total(L) = VISKIN + vicwwu(L) + vicoww%get(LL)
+               vicwwu_total(L) = VISKIN + vicwwu(L) + background_vertical_eddy_viscosity%get(LL)
             end do
          end do
          call links_to_centers(vicwws_total, vicwwu_total)

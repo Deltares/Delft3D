@@ -75,7 +75,7 @@ module m_physcoef
    real(kind=dp) :: Elder !< [-] Add Elder viscosity.
    real(kind=dp) :: Smagorinsky !< [-] Add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S.
 
-   type(t_array_or_scalar), target :: vicoww !< [m2/s] Background vertical eddy viscosity.
+   type(t_array_or_scalar), target :: background_vertical_eddy_viscosity !< [m2/s] Background vertical eddy viscosity.
    type(t_array_or_scalar), target :: background_vertical_eddy_diffusivity !< [m2/s] Background vertical eddy diffusivity.
 
    real(kind=dp) :: rhomean !< [kg/m3] Mean ambient density.
@@ -154,7 +154,7 @@ contains
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
       background_vertical_eddy_diffusivity%scalar = 1e-6_dp
-      vicoww%scalar = 1e-6_dp
+      background_vertical_eddy_viscosity%scalar = 1e-6_dp
       rhomean = 1000.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
