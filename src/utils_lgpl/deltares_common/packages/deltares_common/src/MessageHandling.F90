@@ -500,15 +500,56 @@ subroutine resetMaxerrorLevel()
    maxErrorLevel = 0
 end subroutine
 
-
+!> Outputs the contents of a double precision array as messages, with various formatting options.
+!!
+!!
+!! With showonlynonnulls=.true., only nonzero elements are printed, one per line, with their
+!! original linear index as name=[i]. This takes precedence over all layout options.
+!!
+!! D-Flow FM diagnostic examples: 3D model fields can have a leading 2D part (1:ndx),
+!! followed by vertically stacked values per horizontal cell (ndx+1:). This is a packed model
+!! layout, not a rank-three Fortran array. Print the two parts separately: the 2D part normally,
+!! and the stacked part with columnfirst=.true. and splitsize=ndx. Each output column then
+!! represents a horizontal cell, and each output row a position within its vertical stack.
+!! This tabular view requires equally sized stacks; it does not interpret kbot/ktop or remap
+!! variable-length columns.
+!!
+!! @code{.f90}
+!! ! Constituent 1: horizontal values first, then a table of vertical stacks.
+!! call mess(LEVEL_WARN, constituents(1, 1:ndx), "const(1:ndx)", ndx)
+!! call mess(LEVEL_WARN, constituents(1, ndx+1:), "const(ndx+1:)", ndx, columnfirst=.true.)
+!!
+!! ! For ndx=3 and two entries per stack, suppose the selected constituent contains:
+!! ! 2D part: [10, 20, 30]; stacked part: [11, 12, 21, 22, 31, 32].
+!! ! The first call prints: 10, 20, 30.
+!! ! The second prints two rows: 11, 21, 31 and 12, 22, 32.
+!! ! Range labels in the second call are relative to the supplied slice, not constituents.
+!!
+!! ! Inspect qin before/after ghost updates, again keeping 2D and stacked parts separate.
+!! call mess(LEVEL_WARN, qin(1:ndx), "qin(2d)", ndx)
+!! call mess(LEVEL_WARN, qin(ndx+1:), "qin(3d)", ndx, columnfirst=.true.)
+!!\
+!! ! Select/reorder horizontal cells when comparing partition-local diagnostics.
+!! ! For the ndx=3 example above, show cells 3, 1, 2 in that order:
+!! ! rows become 31, 11, 21 and 32, 12, 22.
+!! call mess(LEVEL_WARN, constituents(1, ndx+1:), "const(reordered)", ndx, &
+!!           columnfirst=.true., sliceorder=[3,1,2])
+!!
+!! ! A 2D field has one row; sliceorder can similarly reorder its horizontal cells.
+!! call mess(LEVEL_WARN, s1, "s1(reordered)", ndx, columnfirst=.true., sliceorder=[3,1,2])
+!!
+!! ! Print only nonzero qin entries, one per line, with indices relative to qin.
+!! call mess(LEVEL_WARN, qin, "qin(nonzero)", showonlynonnulls=.true.)
+!! @endcode
 subroutine messagearraydbl(level, a, name, splitsize, showonlynonnulls, columnfirst, sliceorder)
-    integer, intent(in) :: level
-    double precision, dimension(:), intent(in) :: a
-    character(*), intent(in) :: name
-    integer, intent(in), optional :: splitsize
-    logical, intent(in), optional :: showonlynonnulls
-    logical, intent(in), optional :: columnfirst
-    integer, dimension(:), intent(in), optional :: sliceorder
+    integer, intent(in) :: level !< Message severity passed to SetMessage, e.g. LEVEL_DEBUG.
+    double precision, dimension(:), intent(in) :: a !< Values to print, flattened for multidimensional arrays.
+    character(*), intent(in) :: name !< Label prepended to each line along with an index or range.
+    integer, intent(in), optional :: splitsize !< Positive chunk size or column count; defaults to size(a).
+    logical, intent(in), optional :: showonlynonnulls !< Print only nonzero elements individually; default .false.
+    logical, intent(in), optional :: columnfirst !< Read values down columns instead of consecutively; default .false.
+    integer, dimension(:), intent(in), optional :: sliceorder !< Column indices in 1:splitsize; at most splitsize entries.
+    !! Only used with columnfirst=.true.; defaults to all columns in their original order.
     character(MAXSTRINGLEN*5)                 :: rec
     character(MAXSTRINGLEN)                 :: prefix
 

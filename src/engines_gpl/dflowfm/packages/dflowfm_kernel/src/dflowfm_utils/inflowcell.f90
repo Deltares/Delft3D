@@ -39,13 +39,13 @@ contains
       use m_flow, only: jins, dmiss, nbndz, kbndz
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use geometry_module, only: pinpok
-      use m_partitioninfo
+      use m_partitioninfo, only: idomain, my_rank, jampi
 
       real(kind=dp), intent(in) :: xp, yp
       integer, intent(inout) :: k !return value, if flowcell is found k = cell index
       integer, intent(in) :: jaoutside
       integer, intent(in) :: iLocTp !< Node type, one of INDTP_1D/2D/ALL.
-      logical, intent(in), optional :: prefferOwnDomain
+      logical, intent(in), optional :: prefferOwnDomain !< prefer own domain if multiple candidate nodes are found
 
       logical :: lprefferOwnDomain
       ! locals

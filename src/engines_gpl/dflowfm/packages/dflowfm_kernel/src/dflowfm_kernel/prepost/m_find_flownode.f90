@@ -60,7 +60,7 @@ contains
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
       integer, intent(in) :: iLocTp !< Node type, one of INDTP_1D/2D/ALL.
-      logical, intent(in),optional :: prefferOwnDomain
+      logical, intent(in),optional :: prefferOwnDomain !< prefer own domain if multiple candidate nodes are found
       integer :: ierror !< error (1) or not (0)
       integer :: i, k, k1b
       integer, dimension(1) :: idum

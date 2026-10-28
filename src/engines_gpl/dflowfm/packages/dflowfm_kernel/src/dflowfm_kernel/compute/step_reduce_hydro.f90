@@ -111,7 +111,6 @@ contains
          hs = max(hs, 0.0_dp)
          call furu() ! staat in s0
 
-
          if (itstep /= 4) then ! implicit time-step
 
             wetdry: do ! Entry point for drying- and flooding matrix update
