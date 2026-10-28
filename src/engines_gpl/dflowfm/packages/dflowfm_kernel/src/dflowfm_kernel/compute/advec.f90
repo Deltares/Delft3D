@@ -56,12 +56,12 @@ contains
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
-                        jarhoxu, qw, zws, kbot, ktop, rho, epshs, rhomean, hu, u1, vol1_f, qin, &
+                        jarhoxu, qw, zws, kbot, ktop, rho, epshs, rhomean, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
-                        hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
+                        hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn, lateral_correction
       use m_sferic, only: jasfer3d
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, &
-         BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE, SINK_SIDE, SOURCE_SIDE
+                               BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -494,7 +494,7 @@ contains
                else if (iadvL == IADV_PURE1D_SOBEK) then
                   call advect_pure1d_sobek(jaPure1D, u1(L), au1d(1, L), au1d(2, L), q1D(1, L), q1D(2, L), &
                                            volu1D(L), alpha_mom_1D(k1), alpha_ene_1D(k1), alpha_mom_1D(k2), &
-                                           alpha_ene_1D(k2), qin(k1), qin(k2), dx(L), au(L), advi(L), advel)
+                                           alpha_ene_1D(k2), lateral_correction(L), advi(L), advel)
 
                else if (iadvL == 333) then ! explicit first order mom conservative
                   ! based upon cell center excess advection velocity
