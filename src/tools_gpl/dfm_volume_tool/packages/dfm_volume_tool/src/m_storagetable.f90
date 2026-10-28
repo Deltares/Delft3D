@@ -52,7 +52,7 @@ contains
 
 !> Generate the total volume/surface
    subroutine generate_total_volume_table(volume, surface, storage, dead_storage, wl_dead_storage, voltb, &
-                                          bedlevel, increment, num_nodes, num_levels, nodes)
+                                          bedlevel, increment, num_grid_points, num_levels, nodes)
 
       use unstruc_channel_flow
       real(kind=DP), dimension(:), intent(out) :: volume !< Aggregated volume per level
@@ -63,7 +63,7 @@ contains
       type(t_voltable), dimension(:), intent(inout) :: voltb !< Volume tables; summer-dike state is updated during evaluation.
       real(kind=DP), intent(in) :: bedlevel !< Bed level of the model
       real(kind=DP), intent(in) :: increment !< Requested increment
-      integer, intent(in) :: num_nodes !< Number of nodes in the mask array; only internal 1d grid points should be included
+      integer, intent(in) :: num_grid_points !< Number of grid points in the mask array
       integer, intent(in) :: num_levels !< number of levels in volume, surface and levels
       integer, dimension(:), intent(in) :: nodes !< mask array for defining a sub set on nodes.
 
@@ -73,7 +73,7 @@ contains
       dead_storage = 0.0_dp
       storage = 0.0_dp
       surface = 0.0_dp
-      do j = 1, num_nodes
+      do j = 1, num_grid_points
          ipoint = nodes(j)
          call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ipoint), &
                                      voltb(ipoint), bedlevel, increment, num_levels)
@@ -85,7 +85,7 @@ contains
 
 !> Generate the total volume/surface (TODO: and the totalised volume/surface for each branch).
    subroutine generate_volume_table_on_branches(volume, surface, storage, dead_storage, wl_dead_storage, voltb_on_links, &
-                                                bedlevel, increment, num_links, num_levels, num_nodes_1d, links, ln2nd)
+                                                bedlevel, increment, num_links, num_levels, links, ln2nd)
 
       use unstruc_channel_flow
       real(kind=DP), dimension(:), intent(out) :: volume !< Aggregated volume per level
@@ -99,7 +99,6 @@ contains
       real(kind=DP), intent(in) :: increment !< Requested increment
       integer, intent(in) :: num_links !< Number of flow links in the mask array
       integer, intent(in) :: num_levels !< Number of levels in volume, surface and levels
-      integer, intent(in) :: num_nodes_1d !< Number of internal 1d nodes; link ends on boundary nodes are skipped
       integer, dimension(:), intent(in) :: links !< Mask array for defining a sub set on flow links.
       integer, dimension(:, :), intent(in) :: ln2nd !< Indirection array links to nodes.
 
@@ -113,10 +112,8 @@ contains
       do j = 1, num_links
          l = links(j)
          do side = 1, 2
-            if (ln2nd(side, l) <= num_nodes_1d) then
-               call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ln2nd(side, l)), &
-                                           voltb_on_links(side, l), bedlevel, increment, num_levels)
-            end if
+            call add_volume_and_surface(volume, surface, dead_storage, wl_dead_storage(ln2nd(side, l)), &
+                                        voltb_on_links(side, l), bedlevel, increment, num_levels)
          end do
       end do
 
@@ -176,9 +173,9 @@ contains
    end subroutine compute_surface_and_storage
 
 !> Determine the lowest level and the highest level in the volume table.
-   subroutine get_bed_top_level(voltb, num_nodes_1d, toplevel, bedlevel)
-      type(t_voltable), dimension(:), pointer, intent(in) :: voltb !< (num_nodes_1d) volume table for individual internal 1d nodes.
-      integer, intent(in) :: num_nodes_1d !< Number of internal 1d nodes in the input volume table.
+   subroutine get_bed_top_level(voltb, num_grid_points, toplevel, bedlevel)
+      type(t_voltable), dimension(:), pointer, intent(in) :: voltb !< (num_grid_points) volume table for individual 1d nodes.
+      integer, intent(in) :: num_grid_points !< Number of 1d grid points in the input volume table.
       !> Highest absolute level in the model at cross sections or storage nodes.
       real(kind=DP), intent(out) :: toplevel
       real(kind=DP), intent(out) :: bedlevel !< Lowest (bed)level in the model, where cross sections or storage nodes are defined.
@@ -187,7 +184,7 @@ contains
       toplevel = -huge(1.0_dp)
       bedlevel = huge(1.0_dp)
 
-      do n = 1, num_nodes_1d
+      do n = 1, num_grid_points
          toplevel = max(toplevel, voltb(n)%topheight + voltb(n)%bedlevel)
          bedlevel = min(bedlevel, voltb(n)%bedlevel)
       end do
@@ -196,7 +193,7 @@ contains
 
 !> Calculate the dead storage using boundary conditions, turn off levels of pumping stations and the geometry of the network.
    subroutine calculate_dead_storage(wl_dead_storage, network, bnd_values, inslevtube, bnd_index, &
-                                     ln2nd, kcu2, num_links, num_nodes_1d, num_boundaries)
+                                     ln2nd, kcu2, num_links, num_grid_points, num_boundaries)
 
       use m_flowgeom
       use m_network
@@ -204,13 +201,13 @@ contains
       use m_pump
 
       type(t_network), intent(in) :: network !< Network definition of the model.
-      real(kind=DP), dimension(:), intent(out) :: wl_dead_storage !< (num_nodes_1d) Minimal water levels after the model is drained.
-      real(kind=DP), dimension(:), intent(in) :: bnd_values !< Boundary condition values. See ZBNDZ in D-FlowFM.
+      real(kind=DP), dimension(:), intent(out) :: wl_dead_storage !< (num_grid_points) Minimal water levels after the model is drained.
+      real(kind=DP), dimension(:), intent(in) :: bnd_values !< Boundary condition values. See ZBNDZ in D-Flow FM.
       real(kind=DP), dimension(:, :), intent(in) :: inslevtube !< Inside level tubes. See BOB in D-FlowFM.
-      integer, dimension(:, :), intent(in) :: bnd_index !< Index numbers for boundary condtions. See KBNDZ in D-FfowFM.
-      integer, dimension(:, :), intent(in) :: ln2nd !< Link nodes to node numbers. See LN in D-FfowFM.
+      integer, dimension(:, :), intent(in) :: bnd_index !< Index numbers for boundary condtions. See KBNDZ in D-Flow FM.
+      integer, dimension(:, :), intent(in) :: ln2nd !< Link nodes to node numbers. See LN in D-Flow FM.
       integer, dimension(:), intent(in) :: kcu2 !< Link type
-      integer, intent(in) :: num_nodes_1d !< Number of internal 1d nodes.
+      integer, intent(in) :: num_grid_points !< Number of 1d grid points.
       integer, intent(in) :: num_links !< Number of 1d internal links
       integer, intent(in) :: num_boundaries !< Number of water level boundaries
 
@@ -226,7 +223,7 @@ contains
       real(kind=DP), dimension(:), allocatable :: wl_nodes ! Levels on all nodes, including boundary nodes
 
       ! Boundary nodes can have an index beyond the internal grid points
-      allocate (wl_nodes(max(num_nodes_1d, maxval(bnd_index(1, 1:num_boundaries)))))
+      allocate (wl_nodes(max(num_grid_points, maxval(bnd_index(1, 1:num_boundaries)))))
 
       ! Set water levels to large value
       wl_nodes = huge(1.0_dp)
@@ -264,7 +261,7 @@ contains
       end if
 
       ! Now iterate over all flow links in order to find the lowest level in the model
-      number_of_changes = num_nodes_1d
+      number_of_changes = num_grid_points
       do while (number_of_changes > 0)
          number_of_changes = 0
          do l = 1, num_links
@@ -286,7 +283,7 @@ contains
          continue
       end do
 
-      wl_dead_storage = wl_nodes(1:num_nodes_1d)
+      wl_dead_storage = wl_nodes(1:num_grid_points)
 
    end subroutine calculate_dead_storage
 
