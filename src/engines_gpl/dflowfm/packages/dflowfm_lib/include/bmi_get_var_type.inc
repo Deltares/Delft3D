@@ -236,15 +236,11 @@ select case(var_name)
     type_name = "double"
   case("ucy_mor")
     type_name = "double"
-  case("sa0")
-    type_name = "double"
   case("sa1")
     type_name = "double"
   case("satop")
     type_name = "double"
   case("sabot")
-    type_name = "double"
-  case("tem0")
     type_name = "double"
   case("tem1")
     type_name = "double"

@@ -49,7 +49,7 @@ object LifecycleScanCiTools : BuildType({
         triggers {
             schedule {
                 schedulingPolicy = daily {
-                    hour = 3
+                    hour = 2
                     minute = 30
                 }
                 branchFilter = "+:<default>"

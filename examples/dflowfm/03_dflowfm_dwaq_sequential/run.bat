@@ -1,5 +1,4 @@
 @ echo off
-
 rem Usage:
 rem     Either:
 rem         Call this script with one argument being the path to a Dimrset-bin folder containing a matching run script
@@ -10,13 +9,13 @@ rem         Execute this script
 rem 
 
 if "%~1" == "" (
-    set dimrset_bin="..\..\..\install_all\bin"
+    set "dimrset_bin=%~dp0..\..\..\install_all\bin"
 ) else (
-    set dimrset_bin=%1
+    set "dimrset_bin=%~1"
 )
+for %%I in ("%dimrset_bin%") do set "dimrset_bin=%%~fI"
 
-rem Remove quotes surrounding dimrset_bin, add the appropriate run script, re-add quotes
-call "%dimrset_bin:"=%\run_dimr.bat" dimr_config.xml
+call "%dimrset_bin%\run_dimr.bat" dimr_config.xml
 
 
 rem pause

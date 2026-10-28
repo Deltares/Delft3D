@@ -1,0 +1,100 @@
+digraph dwaves_pathway_fm_bmi {
+    graph [
+        label="D-Waves pathway detail: Coupling with D-Flow FM through BMI",
+        labelloc=t,
+        fontsize=18,
+        fontname="Helvetica",
+        rankdir=TB,
+        nodesep=0.55,
+        ranksep=0.35,
+        pad=0.3,
+        bgcolor="white"
+    ];
+    node [fontname="Helvetica", fontsize=11, margin="0.15,0.09", shape=box, style="rounded,filled", color="#7890A2"];
+    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
+
+    hdr_dimr [shape=plaintext, style="", fontsize=13, label="DIMR (dimr_lib)"];
+    hdr_bmi  [shape=plaintext, style="", fontsize=13, label="wave_bmi.f90 (D-Waves shared library)"];
+    hdr_wave [shape=plaintext, style="", fontsize=13, label="wave_main.f90 / swan_tot.f90 / flow_data.f90"];
+    { rank=same; hdr_dimr; hdr_bmi; hdr_wave; }
+    hdr_dimr -> hdr_bmi -> hdr_wave [style=invis];
+
+    node [fillcolor="#EAF5EC"];
+    dimr_master [label="dimr.cpp : runParallelInit()\nmasterComponent (e.g. D-Flow FM / dflowfm)\ninitialized before D-Waves"];
+    fm_init [label="D-Flow FM BMI initialize\nflowinit -> flow_modelinit\ninitial flow_externaloutput(time1) -> wricom\nwrites the initial *_com.nc"];
+    dimr_mode   [label="dimr.cpp\nfor COMP_TYPE_WAVE component:\ndllGetVar(\"mode\", &waveModePtr);\n*waveModePtr = 1;  // before dllInitialize"];
+    dimr_init   [label="dimr.cpp\nthisComponent->dllInitialize(inputFile)"];
+    dimr_update [label="dimr.cpp main loop\nthisComponent->dllUpdate(tStep)"];
+    dimr_finalize [label="dimr.cpp\nthisComponent->dllFinalize()"];
+    dimr_master -> fm_init -> dimr_mode -> dimr_init -> dimr_update -> dimr_finalize;
+
+    fm_comfile [shape=cylinder, fillcolor="#EAF5EC",
+                label="D-Flow FM NetCDF communication file\n*_com.nc\ninitial grid/fields and configured output records"];
+
+    bmi_getvar  [label="get_var(\"mode\") → x = c_loc(wave_mode)\nDIMR writes mode = 1 for a startGroup start\n(plain first start block: mode = 0) before initialize\nBMI also exposes engine_comm_world"];
+    bmi_init    [label="function initialize(c_mdw_file)\nretval = wave_main_init(wave_mode, mdw_file)"];
+    bmi_update  [label="function update(dt)\nretval = wave_main_step(real(dt,hp))"];
+    bmi_finalize [label="function finalize()\nretval = wave_main_finish()"];
+
+    node [fillcolor="#F2F8F3"];
+    wave_init   [label="wave_init(mode_in=wave_mode, mdw_file)\ncall setmode(wavedata, mode_in)\ncall read_dwaves_mdw(mdw_file, swan_run, wavedata)"];
+    branch [shape=diamond, fillcolor="#FFFFFF", label="swan_run%flowgridfile\n== ' ' ?"];
+    flow_init_fm [label="flow_data.f90 : flow_init()\n[when useflowdata .or. swwav]\ncheck D-Flow FM NetCDF file(s), incl. partitions\n(no classic DelftIO handshake)"];
+    flow_init_d4 [style="rounded,filled,dashed", fillcolor="#F6F6F6",
+                  label="flow_data.f90 : flow_init()\n[D3D4 branch] call wave_from_flow_init(...)\n(DelftIO wait — see Delft3D4 diagram)"];
+    master_step [label="wave_master_step()\nD-Flow FM file route skips DelftIO wait\nBMI update(dt) advances D-Waves time"];
+    settime [label="call settimsec(wavedata%time,\nwavedata%time%timsec + stepsize, ...)"];
+    swan_tot [label="swan_tot.f90 : swan_tot(...)\nwhen useflowdata: get_var_netcdf reads D-Flow FM fields\nand grmap_esmf maps D-Flow FM -> SWAN"];
+    write_out [label="SWAN results / map_swan_output\nwhen WriteCOM: map SWAN -> D-Flow FM with grmap\nwave2com() / put_wave_fields() writes file"];
+    wave_master_finish [label="wave_master_finish()\ndel_temp_files / dealloc_swan"];
+
+    wave_init -> branch;
+    branch -> flow_init_fm [label="non-blank (D-Flow FM)"];
+    branch -> flow_init_d4 [label="blank (classic D3D4)", style=dashed];
+    flow_init_fm -> master_step;
+    master_step -> settime -> swan_tot -> write_out;
+    fm_comfile -> flow_init_fm [style=dashed, constraint=false, label="grid read and file check"];
+    write_out -> fm_comfile [style=dashed, constraint=false, label="when WriteCOM"];
+    { rank=same; write_out; fm_comfile; }
+
+    hdr_dimr -> dimr_master [style=invis];
+    hdr_bmi -> bmi_getvar [style=invis];
+    hdr_wave -> wave_init [style=invis];
+
+    dimr_mode -> bmi_getvar [label="writes via\nget_var pointer"];
+    dimr_init -> bmi_init [label="BMI initialize"];
+    dimr_update -> bmi_update [label="BMI update(dt)"];
+    dimr_finalize -> bmi_finalize [label="BMI finalize"];
+    bmi_init -> wave_init;
+    bmi_update -> master_step;
+    bmi_finalize -> wave_master_finish [style=dashed];
+
+    { rank=same; dimr_master; bmi_getvar; }
+    { rank=same; dimr_init; bmi_init; wave_init; }
+    { rank=same; dimr_update; bmi_update; master_step; }
+    { rank=same; dimr_finalize; bmi_finalize; wave_master_finish; }
+
+    node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
+    st_wavemode [label="wave_mode (module var, wave_bmi.f90)\nDIMR sets flow_online = 1, same as Delft3D4\nno separate numeric D-Flow FM mode"];
+    st_commworld [label="engine_comm_world (get_var key)\nMPI communicator, parallel coordination"];
+    st_flowgridfile [label="swan_run%flowgridfile (swan_input.f90)\nset by [Output] COMFile\nselects legacy Delft3D4 vs D-Flow FM file route"];
+    st_flowdata [label="flow_data_initialized / num_subdomains\n(flow_data.f90 module vars)"];
+    st_bmi_data [label="BMI lifecycle and dt schedule only\nD-Flow FM fields are file-backed, not generic\nD-Waves BMI get_var arrays"];
+    st_maps [label="D-Flow FM -> SWAN: ESMF weights / grmap_esmf\nSWAN -> D-Flow FM: mkmap weights / grmap\nprepared per grid pair at initialization"];
+
+    { rank=same; bmi_getvar; st_wavemode; st_commworld; st_bmi_data; }
+    { rank=same; branch; st_flowgridfile; }
+    { rank=same; flow_init_fm; st_flowdata; }
+    { rank=same; swan_tot; st_maps; }
+    bmi_getvar -> st_wavemode [style=dotted, arrowhead=none, constraint=false];
+    bmi_getvar -> st_commworld [style=dotted, arrowhead=none, constraint=false];
+    branch -> st_flowgridfile [style=dotted, arrowhead=none, constraint=false];
+    flow_init_fm -> st_flowdata [style=dotted, arrowhead=none, constraint=false];
+    bmi_getvar -> st_bmi_data [style=dotted, arrowhead=none, constraint=false];
+    swan_tot -> st_maps [style=dotted, arrowhead=none, constraint=false];
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
+                    label="Created with Copilot from prompts, using existing code as reference."];
+    {rank=sink; diagram_credit;}
+    wave_master_finish -> diagram_credit [style=invis];
+}

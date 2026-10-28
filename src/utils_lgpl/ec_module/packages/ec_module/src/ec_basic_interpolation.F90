@@ -112,7 +112,7 @@ module m_ec_basic_interpolation
    use geometry_module
    use m_ec_triangle
    use m_ec_interpolationsettings
-   use mathconsts, only: degrad_hp
+   use m_mathconstants, only: degrad_hp
    use kdtree2Factory
    use m_alloc, only: aerr, realloc
 
@@ -881,8 +881,7 @@ contains
 
             !              compute triangle circumcenter
             if (jasfer3D == 1) then
-               !jsferic = CARTESIAN, dlaun output is not spherical safe!
-               call ave3D(3, xv, yv, xx(i), yy(i), CARTESIAN, jasfer3D)
+               call ave3D(3, xv, yv, xx(i), yy(i), jsferic, jasfer3D)
             else
                xx(i) = sum(xv(1:3)) / 3d0
                yy(i) = sum(yv(1:3)) / 3d0
@@ -931,7 +930,7 @@ contains
 
 !        get a point in the cell
             if (jasfer3D == 1) then
-               call ave3D(3, xv, yv, xz, yz, CARTESIAN, jasfer3D)
+               call ave3D(3, xv, yv, xz, yz, jsferic, jasfer3D)
             else
                xz = sum(xv(1:3)) / 3d0
                yz = sum(yv(1:3)) / 3d0

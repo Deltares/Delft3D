@@ -1,0 +1,6 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <testCase name="included_timeout">
+    <maxRunTime>900</maxRunTime>
+  </testCase>
+  <testCase name="included_default"/>
+</testCases>

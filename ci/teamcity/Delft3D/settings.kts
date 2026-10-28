@@ -158,6 +158,7 @@ project {
         buildType(LifecycleScanTestBench)
         buildType(LifecycleScanCiTools)
         buildType(CopyExamples)
+        buildType(TestbenchTimeoutReport)
 
         buildTypesOrder = arrayListOf(
             TestPythonCiTools,
@@ -169,6 +170,7 @@ project {
             LifecycleScanTestBench,
             LifecycleScanCiTools,
             CopyExamples,
+            TestbenchTimeoutReport,
         )
     }
 
@@ -206,7 +208,7 @@ project {
         feature {
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("secure:client-secret", "credentialsJSON:b8515224-16db-4011-853a-fdb009656a56")
             param("providerType", "teamcity-ksm")
         }
     }
