@@ -8,4 +8,14 @@ The following pages describe execution control, field exchange and remapping:
 - [Standalone D-Waves](D-Waves_pathway_standalone.md)
 - [Delft3D4 online coupling](D-Waves_pathway_delft3d4.md)
 - [D-Flow FM online coupling through DIMR/BMI](D-Waves_pathway_fm_bmi.md)
+
+## preCICE investigation and design proposal
+
+These pages distinguish the current implementation, the older proof of concept,
+and a proposed opt-in integration. The proposal is not implemented.
+
+- [Current Wave/FM pathway evidence](main_wave_fm_pathway_review.md)
+- [PoC preCICE detailed pathway](poc_precice_detailed_pathway.md)
+- [PoC impact on existing pathways](poc_precice_pathway_impact.md)
+- [Compatibility-preserving preCICE design proposal](precice_coupling_design_proposal.md)
 */

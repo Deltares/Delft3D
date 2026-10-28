@@ -1,0 +1,74 @@
+digraph poc_precice_detailed_pathway {
+    graph [
+        label="UNST-9075 preCICE proof of concept (PoC @ 0f9c6de2c5): what the source actually does\nSolid = exists in source. Dashed red = broken, unverified or absent. Nothing here is a validated bidirectional run.",
+        labelloc=t,
+        fontsize=16,
+        fontname="Helvetica",
+        rankdir=TB,
+        nodesep=0.4,
+        ranksep=0.4,
+        pad=0.3,
+        bgcolor="white",
+        compound=true
+    ];
+    node [fontname="Helvetica", fontsize=10, margin="0.12,0.07", shape=box, style="rounded,filled", color="#7890A2"];
+    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
+
+    subgraph cluster_cfg {
+        label="Shared configuration (examples/dflowfm/08_dflowfm_sequential_dwaves)";
+        style="rounded,filled"; fillcolor="#FEF9E7"; color="#B7950B"; fontname="Helvetica"; fontsize=11;
+        cfg [label="precice_config.xml\nparticipants fm, wave; meshes fm_flow_nodes, wave_nodes\nserial-explicit, first=wave, second=fm, window 3600 s\nlinear-cell-interpolation (read side), m2n:sockets\nfound at the hard-coded path ../precice_config.xml in BOTH codes", fillcolor="#FCF3CF"];
+        run [label="run_precice.sh\nstarts two OS processes:\ndflowfm f34.mdu   and   wave f34.mdw 1\n(not DIMR)", fillcolor="#FCF3CF"];
+    }
+
+    subgraph cluster_wave {
+        label="D-Waves executable (wave_exe.F90)";
+        style="rounded,filled"; fillcolor="#EAF5EC"; color="#5B9A68"; fontname="Helvetica"; fontsize=11;
+        w1 [label="wave_exe.F90:104\ninitialize_fm_coupling\nprecicef_create(\"wave\", \"../precice_config.xml\", rank=0, size=1)\n(wave_main.F90:67-82; runs BEFORE initialize_wave_mpi)", fillcolor="#DDF0E1"];
+        w2 [label="register_wave_nodes_with_precice (wave_main.F90:103)\nget_swan_grid reads FIRST Grid= of the mdw (195)\nvertices where kcs == 1, 2 triangles per fully active quad\nprecicef_initialize (82)", fillcolor="#DDF0E1"];
+        w3 [label="wave_exe.F90:106-110\nwave_main_init -> wave_main_step(0.0) -> advance_fm_time_window", fillcolor="#DDF0E1"];
+        w4 [label="loop wave_exe.F90:112-117\nstepsize = precicef_get_max_time_step_size\nwave_main_step(stepsize); precicef_advance", fillcolor="#DDF0E1"];
+        w5 [label="wave_master_step -> swan_tot (swan_tot.F90)\nget_flow_fields:278 -> precice_read_data (get_flow_fields.F90:109)\nrelTime 0.0; scatter where kcs /= 0", fillcolor="#DDF0E1"];
+        w6 [label="SWAN run (unchanged kernel)", fillcolor="#DDF0E1"];
+        w7 [label="swan_tot.F90:523 if i_swan == 1\nwrite_swan_data_to_precice (53)\nwrite_swan_field_to_precice, kcs == 1 only", fillcolor="#DDF0E1"];
+        w8 [label="wave_main_finish (789)\nprecicef_finalize at 812, unconditional", fillcolor="#DDF0E1"];
+    }
+
+    subgraph cluster_fm {
+        label="D-Flow FM executable (unstruc_api.F90)";
+        style="rounded,filled"; fillcolor="#EAF2FB"; color="#5D8AB8"; fontname="Helvetica"; fontsize=11;
+        f1 [label="flowinit(precice_state) (564), call at 658\ninitialize_precice_coupling (84)\nprecicef_create, or create_with_communicator when jampi == 1\nregister_flow_nodes_with_precice (115): xz/yz(1:ndxi)", fillcolor="#DCE9F7"];
+        f2 [label="precicef_requires_initial_data -> precice_write_data(bl, s1) (110)\nthen precicef_initialize (112)", fillcolor="#DCE9F7"];
+        f3 [label="flowstep (661)\nflow_usertimestep, then advance_precice_time_window (692)", fillcolor="#DCE9F7"];
+        f4 [label="advance_precice_time_window (195)\nif ongoing: precice_write_data, precicef_advance(dt_user)\nwrites -bl, s1, velocity, wind, vegetation", fillcolor="#DCE9F7"];
+        f5 [label="fm_external_forcings_update.F90:590 set_all_wave_parameters\nread_precice_wave_data (571), relTime = max_time_step\nhrms tp pdir fx fy wsbodyu/v mx my ubot dissip2/3\nlegacy ecGetValues calls replaced", fillcolor="#DCE9F7"];
+        f6 [label="flowfinalize (729)\nfinalize_precice_coupling at 742, unconditional", fillcolor="#DCE9F7"];
+    }
+
+    pc [label="preCICE: serial-explicit, one exchange per window\nm2n sockets, linear-cell-interpolation mapping", fillcolor="#F4ECF7", shape=ellipse];
+
+    cfg -> w1 [style=dotted]; cfg -> f1 [style=dotted]; run -> w1 [style=dotted]; run -> f1 [style=dotted];
+    w1 -> w2 -> w3 -> w4;
+    w4 -> w5 -> w6 -> w7 -> w4 [constraint=false, label="next window"];
+    w4 -> w8 [label="coupling ended"];
+    f1 -> f2 -> f3 -> f4 -> f3 [constraint=false, label="every dt_user"];
+    f3 -> f5 [label="forcing update"];
+    f3 -> f6 [label="end of run"];
+
+    f4 -> pc [label="bed_levels (=-bl), water_levels,\nflow_velocity, wind_velocity, vegetation_*", color="#1E8449", fontcolor="#1E8449"];
+    pc -> w5 [label="FM fields mapped onto wave_nodes", color="#1E8449", fontcolor="#1E8449"];
+    w7 -> pc [label="about 38 wave fields on wave_nodes", color="#1E8449", fontcolor="#1E8449"];
+    pc -> f5 [label="wave fields mapped onto fm_flow_nodes", color="#1E8449", fontcolor="#1E8449"];
+
+    subgraph cluster_gaps {
+        label="Not established or defective (see the Markdown report)";
+        style="rounded,filled"; fillcolor="#FDEDEC"; color="#C0392B"; fontname="Helvetica"; fontsize=11;
+        g1 [label="Rank 0 / size 1 passed to preCICE for wave in every case,\nbecause the call precedes MPI initialisation", fillcolor="#FADBD8", color="#C0392B", style="rounded,filled,dashed"];
+        g2 [label="Only grid 1 is registered, read and written:\nnested and multi-domain runs mismatch\n(example 12 has two domains)", fillcolor="#FADBD8", color="#C0392B", style="rounded,filled,dashed"];
+        g3 [label="BMI / DIMR route: wave_bmi.f90:144-148 passes a local,\nnever-created state; unstruc_bmi.F90:250,327 passes a dummy\nstate to flowinit, which then creates a participant", fillcolor="#FADBD8", color="#C0392B", style="rounded,filled,dashed"];
+        g4 [label="Legacy com-file write-back and ESMF mapping removed, not guarded\nprecicef_* calls and the config are unconditional", fillcolor="#FADBD8", color="#C0392B", style="rounded,filled,dashed"];
+    }
+    w1 -> g1 [style=dashed, color="#C0392B", lhead=cluster_gaps];
+
+    credit [shape=note, style=filled, fillcolor="#FFF9C4", color="#B7950B", label="Created with Copilot from source reading; no run of the PoC was performed."];
+}

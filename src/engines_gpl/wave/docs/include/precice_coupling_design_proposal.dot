@@ -1,0 +1,50 @@
+digraph precice_coupling_design_proposal {
+  rankdir=TB;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+  label="PROPOSED design (not implemented): opt-in preCICE endpoints on the existing D-Waves route";
+  labelloc=t; fontname="Helvetica"; fontsize=12;
+
+  subgraph cluster_legacy {
+    label="EXISTING main route (unchanged, default)"; style="dashed"; color="#808080"; fontname="Helvetica";
+    wi  [label="wave_init / flow_init\n(mdw parsing)", fillcolor="#e8e8e8"];
+    gg  [label="grids_and_gridmaps\n(ESMF mapping, nested grids)", fillcolor="#e8e8e8"];
+    gff [label="get_flow_fields\n(legacy com-file data; BMI/DelftIO control)", fillcolor="#e8e8e8"];
+    st  [label="swan_tot -> SWAN run\n(master + run_swan_slave workers)", fillcolor="#e8e8e8"];
+    pwf [label="map_swan_output / wave2flow\nput_wave_fields / wave2com", fillcolor="#e8e8e8"];
+    wi -> gg -> gff -> st -> pwf;
+  }
+
+  subgraph cluster_new {
+    label="PROPOSED additions (only active if Coupler = precice)"; style="filled"; color="#cfe8cf"; fillcolor="#f2fbf2"; fontname="Helvetica";
+    sel  [label="mdw keyword  Coupler=precice\nPreciceConfigFile=...\n(default off)", fillcolor="#ffffcc"];
+    fac  [label="wave_precice facade / builder / interface\n(module-level, mirrors FM precice_adapter)", fillcolor="#c8e6c8"];
+    stub [label="HAVE_PRECICE gate\nstub module: clear error if requested\nin a no-preCICE build", fillcolor="#c8e6c8"];
+    ep_r [label="endpoint READ\nFM fields on FM mesh -> same arrays\nget_flow_fields fills today", fillcolor="#c8e6c8"];
+    ep_w [label="endpoint WRITE\nwave fields -> adapter\ninstead of put_wave_fields", fillcolor="#c8e6c8"];
+    win  [label="time window (serial-explicit)\nWave: max_time_step\nrollback unsupported -> error", fillcolor="#c8e6c8"];
+    geom [label="v1: static FM geometry file, read once\nvalidate topology / global IDs / order\nno runtime com-file exchange", fillcolor="#c8e6c8"];
+    map [label="existing ESMF field mapping\ninside get_flow_fields\nall configured SWAN grids", fillcolor="#c8e6c8"];
+    sel -> fac; stub -> fac [style=dotted];
+    fac -> win;
+  }
+
+  subgraph cluster_fm {
+    label="FM side (existing main adapter, extended)"; color="#6699cc"; style="rounded"; fontname="Helvetica";
+    fmad [label="precice_adapter (facade/builder/adapter)\nmesh fm_flow_cells, --precice\nflow_finalize_usertimestep.f90", fillcolor="#cfe2f3"];
+    fmw  [label="NEW wave read/write quantities\n(hwavcom, twavcom, phiwav, sxwav, ...)\nsign/unit contract table", fillcolor="#fff2cc", style="rounded,filled,dashed"];
+    fmad -> fmw;
+  }
+
+  pc [label="preCICE config (user supplied)\nserial-explicit, first=wave second=fm\nm2n sockets, initialize= consistent", shape=note, fillcolor="#fde9d9"];
+
+  fac -> pc [style=dotted]; fmad -> pc [style=dotted];
+  gff -> ep_r [label="replaced only when\ncoupler active", style=dashed, color="#2e7d32"];
+  pwf -> ep_w [label="replaced only when\ncoupler active", style=dashed, color="#2e7d32"];
+  ep_r -> fac; ep_w -> fac;
+  fac -> fmad [label="data exchange\nmaster rank only", dir=both, style=dashed, color="#2e7d32"];
+  geom -> gg [label="initialization only", style=dashed, color="#2e7d32"];
+  ep_r -> map -> st [label="coupled fields", style=dashed, color="#2e7d32"];
+
+  credit [label="Design proposal only. Legacy modes and DIMR/BMI behaviour untouched;\nDIMR dual scheduling not claimed.", shape=note, fillcolor="#ffffaa"];
+}
