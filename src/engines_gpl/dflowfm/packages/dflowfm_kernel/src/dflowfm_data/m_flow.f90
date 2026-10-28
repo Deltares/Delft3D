@@ -89,10 +89,6 @@ module m_flow
    real(kind=dp) :: dztop = -999.0_dp !< [m] If specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx.
    real(kind=dp) :: zlaybot = -999.0_dp !< [m] If specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point.
    real(kind=dp) :: zlaytop = -999.0_dp !< [m] If specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level.
-   real(kind=dp), allocatable, dimension(:) :: aak !< [-] Coefficient vertical mom exchange of kmx layers.
-   real(kind=dp), allocatable, dimension(:) :: bbk !< [-] Coefficient vertical mom exchange of kmx layers.
-   real(kind=dp), allocatable, dimension(:) :: cck !< [-] Coefficient vertical mom exchange of kmx layers.
-   real(kind=dp), allocatable, dimension(:) :: ddk !< [-] Coefficient vertical mom exchange of kmx layers.
 
    real(kind=dp), allocatable, dimension(:) :: laycof !< [-] Coefficients for sigma layer.
                                                       !! If stretch_type = STRETCH_USER: Percentages of the layers, user defined, laycof(kmx).
