@@ -1124,6 +1124,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
 
       call prop_get(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
+      call prop_get(md_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses)
+      if (max_preconditioner_reuses < 0) then
+         call mess(LEVEL_ERROR, '[numerics] PetscPreconditionerReuse must be nonnegative.')
+      end if
       call prop_get(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
       call prop_get(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
       if (sdu_update_s1 < 0 .or. sdu_update_s1 > 1) then
@@ -3116,6 +3120,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: Sobek Guus Stelling OMP, 2: Sobek Guus Stelling OMP (thread-safe), 4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)')
+      call prop_set(prop_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses, 'Number of PETSc solves reusing a preconditioner after a rebuild (default 10; 0: rebuild every solve).')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
