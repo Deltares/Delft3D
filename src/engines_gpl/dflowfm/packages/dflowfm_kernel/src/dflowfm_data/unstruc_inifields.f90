@@ -1146,7 +1146,7 @@ contains
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_nudge, only: nudge_time, nudge_rate
-      use m_physcoef, only: dicoww, vicoww
+      use m_physcoef, only: background_vertical_eddy_diffusivity, vicoww
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
@@ -1253,8 +1253,8 @@ contains
 
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww%values, ndx, keepExisting=.true., fill=dicoww%scalar, stat=ierr)
-         target_array => dicoww%values
+         call realloc(background_vertical_eddy_diffusivity%values, ndx, keepExisting=.true., fill=background_vertical_eddy_diffusivity%scalar, stat=ierr)
+         target_array => background_vertical_eddy_diffusivity%values
 
       case ('backgroundverticaleddyviscositycoefficient')
          target_location_type = UNC_LOC_U

@@ -48,7 +48,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, dicoww, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, background_vertical_eddy_diffusivity, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
@@ -107,8 +107,8 @@ contains
       molecular_diffusion_coeff = 0.0_dp
       sigdifi = 0.0_dp
 
-      ! if the user supplied a positive value for dicoww, then use vertical molecular diffusion for salinity and temperature
-      use_vertical_molecular_diffusion = dicoww%scalar >= 0.0_dp
+      ! if the user supplied a positive value for background_vertical_eddy_diffusivity, then use vertical molecular diffusion for salinity and temperature
+      use_vertical_molecular_diffusion = background_vertical_eddy_diffusivity%scalar >= 0.0_dp
 
 !  diffusion coefficients
 
