@@ -63,7 +63,7 @@ contains
       call nc_error(ierr, 'nc_create')
       ierr = nf90_set_fill(ioutput, NF90_NOFILL, oldfillmode)
       call nc_error(ierr, 'nc_create')
-      ierr = nf90_put_att(ioutput, NF90_GLOBAL, 'institution', 'Deltares') !<-----RL666----------------- Aanpassen aan sobek
+      ierr = nf90_put_att(ioutput, NF90_GLOBAL, 'institution', 'Deltares')
       call nc_error(ierr, 'nc_create')
       ierr = nf90_put_att(ioutput, NF90_GLOBAL, 'references', 'http://www.deltares.nl')
       call nc_error(ierr, 'nc_create')
@@ -136,7 +136,7 @@ contains
       varid_topheight = setup_variable(ioutput, 'topheight', NF90_DOUBLE, (/dimid_nodes/), '', 'TopHeight', 'm')
       varid_increment = setup_variable(ioutput, 'increment', NF90_DOUBLE, (/dimid_increment/), '', 'Increment', 'm')
       varid_storage = setup_variable(ioutput, 'storage', NF90_DOUBLE, (/dimid_levels, dimid_nodes/), '', 'Storage', 'm3')
-      varid_dead_storage = setup_variable(ioutput, 'deadstorage', NF90_DOUBLE, &
+      varid_dead_storage = setup_variable(ioutput, 'dead_storage', NF90_DOUBLE, &
                                           (/dimid_levels, dimid_nodes/), '', 'Dead Storage', 'm3')
       varid_wl_dead_storage = setup_variable(ioutput, 'wl_deadstorage', NF90_DOUBLE, &
                                              (/dimid_nodes/), '', 'Dead Storage Water Level', 'm')
