@@ -82,7 +82,7 @@ contains
       use bedcomposition_module
       use morphology_data_module
       use sediment_basics_module
-      use m_physcoef, only: ag, VON_KARMAN, square_root_ag, backgroundsalinity, backgroundwatertemperature, vismol, uniform_friction_coefficient, uniform_friction_type
+      use m_physcoef, only: ag, VON_KARMAN, square_root_ag, backgroundsalinity, backgroundwatertemperature, vismol, uniform_friction_coefficient_2D, uniform_friction_type
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
@@ -449,13 +449,13 @@ contains
                   czu = 1.0_dp / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
-                  czu = get_chezy(hu(L), uniform_friction_coefficient, u1(L), v(L), uniform_friction_type)
+                  czu = get_chezy(hu(L), uniform_friction_coefficient_2D, u1(L), v(L), uniform_friction_type)
                end if
             else
                if (frcu_mor(L) > 0) then
                   czu = get_chezy(hu(L), frcu_mor(L), u1(L), v(L), ifrcutp(L))
                else
-                  czu = get_chezy(hu(L), uniform_friction_coefficient, u1(L), v(L), uniform_friction_type)
+                  czu = get_chezy(hu(L), uniform_friction_coefficient_2D, u1(L), v(L), uniform_friction_type)
                end if
             end if
             !

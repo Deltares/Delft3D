@@ -62,7 +62,7 @@ contains
       real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
-      OPTION(1) = 'uniform_friction_coefficient                                  '
+      OPTION(1) = 'uniform_friction_coefficient_2D                                  '
       it(2 * 1) = 6
       OPTION(2) = 'uniform_friction_type Friction formulation         '
       it(2 * 2) = 2
@@ -179,8 +179,8 @@ contains
          call IFORMATTRIBUTEN(IR, 0, 0, 7)
       end do
 
-      frcuniorg = uniform_friction_coefficient
-      call IFormPutDouble(2 * 1, uniform_friction_coefficient, '(F8.3)')
+      frcuniorg = uniform_friction_coefficient_2D
+      call IFormPutDouble(2 * 1, uniform_friction_coefficient_2D, '(F8.3)')
       call IFORMPUTinteger(2 * 2, uniform_friction_type)
       call IFormPutDouble(2 * 3, windsp, '(F8.3)')
       call IFormPutDouble(2 * 4, winddir, '(F8.3)')
@@ -233,7 +233,7 @@ contains
       else if (KEY == 22 .or. KEY == 23) then
          if (KEY == 22) then
 
-            call IFormGetDouble(2 * 1, uniform_friction_coefficient)
+            call IFormGetDouble(2 * 1, uniform_friction_coefficient_2D)
             call IFORMGETinteger(2 * 2, uniform_friction_type)
             call IFormGetDouble(2 * 3, windsp)
             call IFormGetDouble(2 * 4, winddir)
@@ -249,8 +249,8 @@ contains
             call IFormGetDouble(2 * 14, uniform_groundlayer_friction_coefficient)
             call IFormGetDouble(2 * 15, rainuni)
 
-            if (allocated(frcu) .and. frcuniorg /= uniform_friction_coefficient) then
-               frcu = uniform_friction_coefficient
+            if (allocated(frcu) .and. frcuniorg /= uniform_friction_coefficient_2D) then
+               frcu = uniform_friction_coefficient_2D
             end if
 
             if (rainuni > 0.0_dp) then

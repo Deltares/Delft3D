@@ -69,7 +69,7 @@ Maxvelocitydiff                   = 0               # Upper bound on velocity ch
 Epshu                             = 0.0001          # Threshold water depth for wet and dry cells
 
 [physics]
-uniformFrictionCoefficient                     = 0.023           # Uniform friction coefficient (0: no friction)
+uniformFrictionCoefficient2D                     = 0.023           # Uniform friction coefficient (0: no friction)
 uniformFrictiontype                     = 1               # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
 uniformFrictionCoefficient1D                   = 0.023           # Uniform friction coefficient in 1D links (0: no friction)
 uniformLinearFrictionCoefficient                  = 0               # Uniform linear friction coefficient for ocean models (0: no friction)

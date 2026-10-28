@@ -45,7 +45,7 @@ module m_physcoef
    real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< [-] von Karman constant. {former:vonkar}
    real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< [-] von Karman constant used in wind formulations. {former:vonkarw}
 
-   real(kind=dp) :: uniform_friction_coefficient !< [depends on uniform_friction_type] Uniform friction coefficient. {former:frcuni}
+   real(kind=dp) :: uniform_friction_coefficient_2D !< [depends on uniform_friction_type] Uniform friction coefficient for 2D. {former:frcuni}
    real(kind=dp) :: uniform_friction_coefficient_1D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D links. {former:frcuni1d}
    real(kind=dp) :: uniform_friction_coefficient_1D2D !< [depends on uniform_friction_type] Uniform friction coefficient in 1D2D links. {former:frcuni1d2d}
 
@@ -66,7 +66,7 @@ module m_physcoef
 
    real(kind=dp) :: wall_ks !< [m] Vertical wall Nikuradse roughness.
    real(kind=dp) :: wall_z0 !< [m] z0 for vertical walls, ~= Ks/30.
-                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=uniform_friction_coefficient
+                            !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=uniform_friction_coefficient_2D
    real(kind=dp) :: z0 !< [m] z0.
 
    real(kind=dp) :: uniform_horizontal_eddy_viscosity !< [m2/s] Uniform horizontal eddy viscosity for momentum. {former:vicouv}
@@ -140,9 +140,9 @@ contains
    subroutine default_physcoef()
 
       ag = 9.81_dp
-      uniform_friction_coefficient = 0.023_dp
-      uniform_friction_coefficient_1D = uniform_friction_coefficient
-      uniform_friction_coefficient_1D2D = uniform_friction_coefficient
+      uniform_friction_coefficient_2D = 0.023_dp
+      uniform_friction_coefficient_1D = uniform_friction_coefficient_2D
+      uniform_friction_coefficient_1D2D = uniform_friction_coefficient_2D
       uniform_groundlayer_friction_coefficient = 0.05_dp
       maximum_friction_coefficient = 0.0_dp
       uniform_friction_type = 1

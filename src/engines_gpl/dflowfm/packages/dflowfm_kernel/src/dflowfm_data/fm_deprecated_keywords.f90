@@ -44,7 +44,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef', DEPRECATED, 'Use uniformFrictionCoefficient instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef', DEPRECATED, 'Use uniformFrictionCoefficient2D instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef1D', DEPRECATED, 'Use uniformFrictionCoefficient1D instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'unifFrictCoef1D2D', DEPRECATED, 'Use uniformFrictionCoefficient1D2D instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'UnifFrictType', DEPRECATED, 'Use uniformFrictionType instead.')

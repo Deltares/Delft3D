@@ -91,7 +91,7 @@ SobekDFM_umin     = 0
 SetHorizontalBobsFor1d2d= 1
 
 [physics]
-uniformFrictionCoefficient     = 0.023
+uniformFrictionCoefficient2D     = 0.023
 uniformFrictiontype     = 1
 uniformFrictionCoefficient1D   = 0.023
 uniformLinearFrictionCoefficient  = 0

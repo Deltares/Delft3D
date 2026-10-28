@@ -128,7 +128,7 @@ contains
 
          tex = 'Teta    =            , Manlin =            , Umod =            '
          write (TEX(10:18), '(F9.5)') teta0
-         write (TEX(32:40), '(F9.5)') uniform_friction_coefficient
+         write (TEX(32:40), '(F9.5)') uniform_friction_coefficient_2D
          write (TEX(52:60), '(F9.5)') umodlin
          call ICTEXT(trim(TEX), 6, 36, 221)
 
@@ -328,10 +328,10 @@ contains
       g = ag
       h = abs(zkuni)
 
-      if (uniform_friction_coefficient == 0.0_dp) then
+      if (uniform_friction_coefficient_2D == 0.0_dp) then
          fr = 0
       else
-         czf = h**0.1666666 / uniform_friction_coefficient
+         czf = h**0.1666666 / uniform_friction_coefficient_2D
          fr = ag * umodlin / (czf * czf * h)
       end if
 

@@ -1176,15 +1176,15 @@ contains
 
       ! Physics
 
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient', uniform_friction_coefficient, success)
+      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient2D', uniform_friction_coefficient_2D, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoef' if 'uniformFrictionCoefficient' is not found.
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient)
+         ! Fallback to deprecated property name 'UnifFrictCoef' if 'uniformFrictionCoefficient2D' is not found.
+         call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient_2D)
       end if
 
-      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of uniform_friction_coefficient
-      uniform_friction_coefficient_1D = uniform_friction_coefficient
-      uniform_friction_coefficient_1D2D = uniform_friction_coefficient
+      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of uniform_friction_coefficient_2D
+      uniform_friction_coefficient_1D = uniform_friction_coefficient_2D
+      uniform_friction_coefficient_1D2D = uniform_friction_coefficient_2D
 
       call prop_get(md_ptr, 'physics', 'uniformFrictiontype', uniform_friction_type, success)
       if (.not. success) then
@@ -3406,7 +3406,7 @@ contains
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
 
       ! Physics
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient', uniform_friction_coefficient, 'Uniform friction coefficient [the unit depends on uniformFrictionType].')
+      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient2D', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on uniformFrictionType].')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on uniformFrictionType].')

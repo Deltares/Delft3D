@@ -84,7 +84,7 @@ Maxvelocitydiff   = 0
 Epshu             = 0.0001
 
 [physics]
-uniformFrictionCoefficient     = 0.023
+uniformFrictionCoefficient2D     = 0.023
 uniformFrictiontype     = 1
 uniformFrictionCoefficient1D   = 0.023
 uniformLinearFrictionCoefficient  = 0

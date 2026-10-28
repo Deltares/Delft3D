@@ -82,7 +82,7 @@ Maxvelocitydiff                      = 0.                                    # u
 Epshu                                = 1.d-4                                 # Input for threshold water depth for wet and dry cells
  
 [physics]
-uniformFrictionCoefficient                        = 2.4d-2                                # Uniform friction coefficient, 0=no friction
+uniformFrictionCoefficient2D                        = 2.4d-2                                # Uniform friction coefficient, 0=no friction
 uniformFrictiontype                        = 1                                     # 0=Chezy, 1=Manning, 2=White Colebrook, 3=idem, WAQUA style
 uniformFrictionCoefficient1D                      = 2.3d-2                                # Uniform friction coefficient in 1D links, 0=no friction
 uniformLinearFrictionCoefficient                     = 0.                                    # Uniform linear friction coefficient for ocean models (m/s), 0=no
