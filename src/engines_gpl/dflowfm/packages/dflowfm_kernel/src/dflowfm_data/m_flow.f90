@@ -132,20 +132,20 @@ module m_flow
    integer, allocatable, dimension(:) :: kmxc !< [-] As kmxn, for cornerpoints.
 
    integer :: mxlaydefs = 4 !< [-] Maximum number of layering definitions.
-   integer, allocatable, dimension(:) :: laydefnr !< [-] Pointer to laydef, if positive to unique laydef, otherwise interpolate in 1, 2, and 3. {size=ndx}
-   integer, allocatable, dimension(:) :: laytyp !< [-] 1 = sigma, 2 = z. {size=mxlaydefs}
-   integer, allocatable, dimension(:) :: laymx !< [-] Maximum number of layers. {size=mxlaydefs}
-   integer, allocatable, dimension(:) :: nrlayn !< [-] Maximum number of layers. {size=ndx}
-   integer, allocatable, dimension(:) :: nlaybn !< [-] Bed layer number. {size=ndx}
-   real(kind=dp), allocatable, dimension(:, :) :: zslay !< [-] Z or S coordinate. {size=(:,maxlaydefs)}
-   real(kind=dp), allocatable, dimension(:, :) :: wflaynod !< [-] Weight factors for flow nodes in indlaynod. {size=(3,ndx)}
-   integer, allocatable, dimension(:, :) :: indlaynod !< [-] For each flow node: indices of nearest flownodes that have a layer definition. {size=(3,ndx)}
-   real(kind=dp), allocatable, dimension(:) :: dkx !< [-] Sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
-   real(kind=dp), allocatable, dimension(:) :: sdkx !< [-] Sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {size=ndx}
+   integer, allocatable, dimension(:) :: laydefnr !< [-] Pointer to laydef, if positive to unique laydef, otherwise interpolate in 1, 2, and 3. {"shape": ["lnx"]}
+   integer, allocatable, dimension(:) :: laytyp !< [-] 1 = sigma, 2 = z. {"shape": ["mxlaydefs"]}
+   integer, allocatable, dimension(:) :: laymx !< [-] Maximum number of layers. {"shape": ["mxlaydefs"]}
+   integer, allocatable, dimension(:) :: nrlayn !< [-] Maximum number of layers. {"shape": ["ndx"]}
+   integer, allocatable, dimension(:) :: nlaybn !< [-] Bed layer number. {"shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:, :) :: zslay !< [-] Z or S coordinate. {"shape": [":","mxlaydefs"]}
+   real(kind=dp), allocatable, dimension(:, :) :: wflaynod !< [-] Weight factors for flow nodes in indlaynod. {"shape": ["3","ndx"]}
+   integer, allocatable, dimension(:, :) :: indlaynod !< [-] For each flow node: indices of nearest flownodes that have a layer definition. {"shape": ["3","ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: dkx !< [-] Sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {"shape": ["ndx"]}
+   real(kind=dp), allocatable, dimension(:) :: sdkx !< [-] Sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA). {"shape": ["ndx"]}
 
-   real(kind=dp), allocatable, dimension(:) :: ustb !< [m/s] Ustar at Lbot. {size=Lnx}
-   real(kind=dp), allocatable, dimension(:) :: ustw !< [m/s] Ustar at Ltop. {size=Lnx}
-   real(kind=dp), allocatable, dimension(:) :: ustbc !< [m/s] Ustar at bed at netnodes. {size=numk}
+   real(kind=dp), allocatable, dimension(:) :: ustb !< [m/s] Ustar at Lbot. {"shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: ustw !< [m/s] Ustar at Ltop. {"shape": ["lnx"]}
+   real(kind=dp), allocatable, dimension(:) :: ustbc !< [m/s] Ustar at bed at netnodes. {"shape": ["numk"]}
 
    integer :: nsigma
 
