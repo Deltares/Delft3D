@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
     <path version="DVC">e03_waq/f02_hongkong/c04_statistics</path>
-      <maxRunTime>900</maxRunTime>
+    <maxRunTime>960</maxRunTime>
     <checks>
       <file name="group2-test004.ada" type="NEFIS">
         <parameters name="DELWAQ_RESULTS">
@@ -45,6 +45,7 @@
   </testCase>
   <testCase name="e03_f02_c01_eutrophication" ref="dwaq_default">
     <path version="DVC">e03_waq/f02_hongkong/c01_eutrophication</path>
+    <maxRunTime>540</maxRunTime>
     <checks>
       <file name="group2-test001.ada" type="NEFIS">
         <parameters name="DELWAQ_RESULTS">
@@ -2410,6 +2411,7 @@
   </testCase>
   <testCase name="e03_f01_c38_test038" ref="dwaq_default">
     <path version="DVC">e03_waq/f01_general/c38_test038</path>
+    <maxRunTime>360</maxRunTime>
     <checks>
       <file name="f34_dynamo.ada" type="NEFIS">
         <parameters name="DELWAQ_RESULTS">

@@ -2304,6 +2304,7 @@
   </testCase>
   <testCase name="e02_f029_c606_Universal_Weir_WAQ" ref="dwaq_default">
     <path version="DVC">e02_dflowfm/f029_hyd_file/c606_Universal_Weir_WAQ</path>
+    <maxRunTime>480</maxRunTime>
     <programs>
       <program ref="dimr_waq" seq="1">
           </program>

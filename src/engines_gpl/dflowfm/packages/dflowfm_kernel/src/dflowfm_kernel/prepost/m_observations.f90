@@ -41,7 +41,7 @@ module m_observations
 
    implicit none
 
-   integer, parameter, private :: capacity_ = 1 !< Nr of additionally allocated elements when lists are full
+   integer, parameter, private :: capacity_ = 200 !< Initial observation capacity
    integer, private :: iUniq_ = 1
    character(len=*), parameter, private :: defaultName_ = 'Obs'
 
@@ -82,7 +82,8 @@ contains
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
                                   TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
-      use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
+      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, &
+         TURBULENCE_MODEL_KTAU, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
@@ -418,7 +419,7 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
-         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
+         if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)
@@ -586,6 +587,8 @@ contains
       IVAL_ICE_TEMPERATURE = conditional_next_index(hisout%ice_temperature, i)
       IVAL_SNOW_THICKNESS = conditional_next_index(hisout%snow_thickness, i)
       IVAL_SNOW_TEMPERATURE = conditional_next_index(hisout%snow_temperature, i)
+      IVAL_QH_AIR2ICE = conditional_next_index(hisout%qh_air2ice, i)
+      IVAL_QH_ICE2WAT = conditional_next_index(hisout%qh_ice2wat, i)
    end subroutine set_value_indices_for_ice
 
    !> increment the current index and returns it
@@ -629,6 +632,8 @@ contains
       IPNT_ICE_TEMPERATURE = conditional_ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
       IPNT_SNOW_THICKNESS = conditional_ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
       IPNT_SNOW_TEMPERATURE = conditional_ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+      IPNT_QH_AIR2ICE = conditional_ivalpoint(IVAL_QH_AIR2ICE, kmx, nlyrs)
+      IPNT_QH_ICE2WAT = conditional_ivalpoint(IVAL_QH_ICE2WAT, kmx, nlyrs)
    end subroutine set_valobs_pointers_for_ice
 
    !> retrieve pointer of variable in valobs work array
@@ -748,7 +753,7 @@ contains
       integer, optional, intent(in) :: iOP !< local index of obs that are defined via *.ini, in the m_network%network%obs set.
 
       logical :: isMoving_
-      integer :: i, inew, isize, loctype_
+      integer :: i, inew, isize, loctype_, new_capacity
 
       character(len=IdLen) :: name_
       name_ = ' '
@@ -779,19 +784,20 @@ contains
       end if
 
       if (isize <= numobs + nummovobs) then
-         call realloc(xobs, numobs + nummovobs + capacity_)
-         call realloc(yobs, numobs + nummovobs + capacity_)
-         call realloc(xyobs, 2 * (nummovobs + capacity_))
-         call realloc(kobs, numobs + nummovobs + capacity_)
-         call realloc(lobs, numobs + nummovobs + capacity_)
-         call realloc(neighbour_nodes_obs, [3, numobs + nummovobs + capacity_])
-         call realloc(neighbour_weights_obs, [3, numobs + nummovobs + capacity_])
-         call realloc(namobs, numobs + nummovobs + capacity_)
-         call realloc(smxobs, numobs + nummovobs + capacity_)
-         call realloc(cmxobs, numobs + nummovobs + capacity_)
-         call realloc(locTpObs, numobs + nummovobs + capacity_)
-         call realloc(obs2OP, numobs + nummovobs + capacity_)
-         call realloc(intobs, numobs + nummovobs + capacity_)
+         new_capacity = max(capacity_, 2 * isize, 2*(numobs + nummovobs))
+         call realloc(xobs, new_capacity)
+         call realloc(yobs, new_capacity)
+         call realloc(xyobs, 2 * new_capacity)
+         call realloc(kobs, new_capacity)
+         call realloc(lobs, new_capacity)
+         call realloc(neighbour_nodes_obs, [3, new_capacity])
+         call realloc(neighbour_weights_obs, [3, new_capacity])
+         call realloc(namobs, new_capacity)
+         call realloc(smxobs, new_capacity)
+         call realloc(cmxobs, new_capacity)
+         call realloc(locTpObs, new_capacity)
+         call realloc(obs2OP, new_capacity)
+         call realloc(intobs, new_capacity)
       end if
 
       ! Before adding new normal observation station:

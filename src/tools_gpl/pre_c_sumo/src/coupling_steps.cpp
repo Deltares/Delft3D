@@ -14,6 +14,8 @@
 #include <cmath>   // for atan2,sin,cos
 #include <string>
 #include <fstream>
+#include <functional>
+#include <span>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -29,13 +31,19 @@ namespace pre_c_sumo
         std::vector<FarFieldLayer> layers;
         for (size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
         {
+            // Create a lambda to extract constituent values for the current layer
+            const auto from_constituent_id_to_value = [&mesh_3d, layer_index = index_3d + i](const auto id) {
+                return mesh_3d.quantities[id][layer_index];
+            };
             layers.emplace_back(FarFieldLayer{
                 // 3d.coordinates = (x1, y1, z1, x2, y2, z2, ...): skip "index_3d + i" points, then skip x and y
                 .z_coordinate = mesh_3d.coordinates[(index_3d + i) * 3 + 2],
-                .x_velocity = 0.0, // TODO: obtain from far-field data
-                .y_velocity = 0.0, // TODO: obtain from far-field data
+                // 3d.velocities = (vx1, vy1, vz1, vx2, vy2, vz2, ...): skip "index_3d + i" points, then get x and y
+                .x_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 0],
+                .y_velocity = mesh_3d.quantities[flow_velocities_id][(index_3d + i) * 3 + 1],
                 .density = mesh_3d.quantities[densities_id][index_3d + i],
-                .constituents = {0.0, 0.0, 0.0}, // constituents, // TODO: obtain layered data from far-field
+                .constituents = constituent_ids | std::views::transform(from_constituent_id_to_value) |
+                                std::ranges::to<std::vector>(),
             });
         }
         return FarFieldPoint2D{
@@ -46,18 +54,31 @@ namespace pre_c_sumo
         };
     }
 
+    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index)
+    {
+        const std::size_t index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
+        const auto number_of_layers = mesh_3d.number_of_zcoordinates;
+        // Create a lambda to compute the average value of a constituent over all layers at the intake point
+        const auto compute_depth_average = [&mesh_3d, index_3d, number_of_layers](const auto id) {
+            const std::span<const double> values(mesh_3d.quantities[id]);
+            const auto intake_layers = values.subspan(index_3d, number_of_layers);
+            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
+        };
+        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
+    }
+
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumo_settings_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
-        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
+        auto expected_csumo_settings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
 
-        if (!expectedCsumoSettings.has_value())
+        if (!expected_csumo_settings.has_value())
         {
-            std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
-            return expectedCsumoSettings;
+            std::println(stderr, "Error parsing C-SUMO configuration: {}", expected_csumo_settings.error().message);
+            return expected_csumo_settings;
         }
-        auto csumo_settings = std::move(expectedCsumoSettings).value();
+        auto csumo_settings = std::move(expected_csumo_settings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return csumo_settings;
     }
@@ -77,19 +98,22 @@ namespace pre_c_sumo
         }
     }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
-                         double current_time_seconds)
+    std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh,
+                                                    Mesh& csumo_3d_mesh, double current_time_seconds,
+                                                    const FF2NFFileOperations& file_operations)
     {
         // TODO: obtain these from the far-field model / coupling state
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature", "salinity",
-                                                            "tracer"}; // TODO: derive from settings
+        const auto constituent_names = constituent_ids |
+                                       std::views::transform([](const auto id) { return std::string(id); }) |
+                                       std::ranges::to<std::vector>();
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             const auto mapping_index = static_cast<std::size_t>(index);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
+            DiffuserMapping& mapping_3d = csumo_3d_mesh.forward_map[mapping_index];
 
             // Collect all data for the ambient points
             std::vector<FarFieldPoint2D> ambient_points{};
@@ -97,17 +121,18 @@ namespace pre_c_sumo
             {
                 const std::size_t ambient_index =
                     static_cast<std::size_t>(position_index) + mapping.first_ambient_point_index;
-                ambient_points.emplace_back(makePoint(
-                    ambient_index, (ambient_index)*csumo_3d_mesh.number_of_zcoordinates, csumo_2d_mesh, csumo_3d_mesh));
+                const std::size_t ambient_index_3d =
+                    static_cast<std::size_t>(position_index) + mapping_3d.first_ambient_point_index;
+                ambient_points.emplace_back(makePoint(ambient_index, ambient_index_3d, csumo_2d_mesh, csumo_3d_mesh));
             }
 
             const auto ff2nf_filename = diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds);
 
-            const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
+            const auto nf2ff_wait_file = diffuser.nf2ffFilepath(subgrid_model_nr, current_time_seconds);
 
             auto ff2nf_config = FF2NFConfig{
                 .ff2nf_filename = ff2nf_filename.string(),
-                .wait_for_file = nf2ff_wait_file,
+                .wait_for_file = nf2ff_wait_file.string(),
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
                 .unique_id = "", // Do not use unique ID, run C-SUMO in different directories for now
@@ -115,21 +140,17 @@ namespace pre_c_sumo
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
                 .diffuser = makePoint(0, 0, csumo_2d_mesh, csumo_3d_mesh),
-                .intake = diffuser.intake.has_value() ? std::optional{makePoint(1, csumo_3d_mesh.number_of_zcoordinates,
-                                                                                csumo_2d_mesh, csumo_3d_mesh)}
-                                                      : std::nullopt,
+                .intake = mapping.has_intake ? std::optional{makePoint(mapping.intake_index, mapping_3d.intake_index,
+                                                                       csumo_2d_mesh, csumo_3d_mesh)}
+                                             : std::nullopt,
                 .ambient_points = ambient_points,
                 .settings_xml_node = diffuser.settings_xml_node,
             };
 
-            const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);
-            if (!result.has_value())
-            {
-                std::println(stderr, "Error writing FF2NF file: {}", result.error().message);
-                continue;
-            }
+            RETURN_IF_ERROR(FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename, file_operations));
             std::println("Wrote FF2NF file: {}", ff2nf_filename.string());
         }
+        return {};
     }
 
     bool is_complete_nf2ff_file(std::filesystem::path filename)
@@ -148,17 +169,14 @@ namespace pre_c_sumo
 
     bool waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
     {
-        constexpr int check_delay_in_ms = 50;
-        constexpr int timeout_in_ms = 10000;
+        constexpr int check_delay_in_ms = 50; // Wait 50ms before looking for a file again.
+        constexpr int timeout_in_ms = 10000;  // Hard limit of waiting at most for 10 seconds for all files.
         int total_delay_in_ms = 0;
         for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
-            // Wait for the NF2FF file to be available
-            // TODO: Might be necessary to check whether writing the file is finished too
             while (!std::filesystem::exists(file) && !is_complete_nf2ff_file(file) && total_delay_in_ms < timeout_in_ms)
             {
-                // Throttle CPU load.
                 std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
                 total_delay_in_ms += check_delay_in_ms;
             }
@@ -191,62 +209,12 @@ namespace pre_c_sumo
         return nf2ff_readers;
     }
 
-    void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings)
-    {
-        for (const auto& diffuser : csumo_settings.diffusers())
-        {
-            std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
-        }
-    }
-
-    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks)
-    {
-        std::println("Sending dummy sources/sinks data to far-field...");
-        // TESTDATA: set sources_sinks data
-        sources_sinks.clearData();
-        // data:
-        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.000, 350.365, -5.0, -5.0,
-                              0.20E+02); // sink 2, source 1
-        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.500, 350.365, -5.0, -5.0,
-                              0.20E+02); // sink 2, source 2
-
-        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.000, 350.365, -5.0, -5.0,
-                              0.50E+01); // intake fraction to source 1
-        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.500, 350.365, -5.0, -5.0,
-                              0.50E+01);                                               // intake fraction to source 2
-        sources_sinks.addData(1500.6, 1000.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10E+02); // intake sink
-        participant.writeData("sources_sinks_nodes", "sinks_x", sources_sinks.precice_ids, sources_sinks.sinks_x);
-        participant.writeData("sources_sinks_nodes", "sinks_y", sources_sinks.precice_ids, sources_sinks.sinks_y);
-        participant.writeData("sources_sinks_nodes", "sinks_z_min", sources_sinks.precice_ids,
-                              sources_sinks.sinks_z_min);
-        participant.writeData("sources_sinks_nodes", "sinks_z_max", sources_sinks.precice_ids,
-                              sources_sinks.sinks_z_max);
-        participant.writeData("sources_sinks_nodes", "sources_x", sources_sinks.precice_ids, sources_sinks.sources_x);
-        participant.writeData("sources_sinks_nodes", "sources_y", sources_sinks.precice_ids, sources_sinks.sources_y);
-        participant.writeData("sources_sinks_nodes", "sources_z_min", sources_sinks.precice_ids,
-                              sources_sinks.sources_z_min);
-        participant.writeData("sources_sinks_nodes", "sources_z_max", sources_sinks.precice_ids,
-                              sources_sinks.sources_z_max);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks.precice_ids,
-                              sources_sinks.discharges);
-    }
-
-    /**
-     * @brief Convert NF2FF output into connected source/sink entries.
-     *
-     * For each diffuser this constructs sink-source pairs based on sinks after the first
-     * sink point, and optionally intake-related pairs when intake is configured.
-     *
-     * @param csumoSettings Parsed C-SUMO settings.
-     * @param nf2ff_readers NF2FF snapshots for the current coupling time.
-     * @return std::expected with a ConnectedSinkSources object with source/sink data ready to be written via preCICE or
-     * a ConnectedSinkSourcesError on failure.
-     */
     std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertNFtoConnectedSinkSources(
-        const CSumoSettingsReader& csumoSettings, const std::vector<NF2FFReader>& nf2ff_readers)
+        const CSumoSettingsReader& csumo_settings, const std::vector<NF2FFReader>& nf2ff_readers,
+        pre_c_sumo::Mesh& csumo_3d_mesh)
     {
         ConnectedSinkSources connectedsinksources{};
-        const auto& diffuser_settings = csumoSettings.diffusers();
+        const auto& diffuser_settings = csumo_settings.diffusers();
 
         for (std::size_t diffuser_index = 0; diffuser_index < nf2ff_readers.size(); diffuser_index++)
         {
@@ -306,7 +274,59 @@ namespace pre_c_sumo
                     // (not implemented for coupling via preCICE yet)
                     connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
                                                    source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0);
+                                                   source_z_top, discharge, 0.0, 0.0, {});
+                }
+            }
+
+            // Process intakes and set up possibly modified constituents for sources
+            auto intakes = diffuser.intakes();
+            const double intake_flow_rate = diffuser.intakeFlowRate();
+            double intake_weight_norm = 0.0;
+            std::vector<double> constituents(diffuser.constituents());
+            // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
+            // for flow magnitudes and would let tiny positive numerical noise trigger
+            // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
+            // was failing with epsilon.
+            constexpr double minimum_intake_flow_rate = 1e-12;
+            if (intake_flow_rate > minimum_intake_flow_rate)
+            {
+                if (intakes.empty() && diffuser_index < diffuser_settings.size() &&
+                    diffuser_settings[diffuser_index].intake.has_value())
+                {
+                    // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
+                    const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
+                    intakes.emplace_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
+                                                    .y_coordinate = intake_xy.y_coordinate,
+                                                    .z_coordinate = 0.0,
+                                                    .weight = 0.0,
+                                                    .has_weight = false});
+                }
+                if (!intakes.empty())
+                {
+                    for (const auto& intake : intakes)
+                    {
+                        intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
+                    }
+                    // Intended behavior: intake weights are assumed to sum to >= 1.
+                    // Keep 1.0 as the lower bound so malformed/underspecified input does not amplify discharge.
+                    intake_weight_norm = std::max(intake_weight_norm, 1.0);
+
+                    // Intakes are sink-only terms (not connected to source points).
+                    // Update constituents from diffuser with weighted intake constituents if operator is excess.
+                    if (diffuser.constituentsOperator() == ConstituentsOperator::Excess)
+                    {
+                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh, diffuser_index);
+                        for (const auto& intake : intakes)
+                        {
+                            for (std::size_t constituent_index = 0; constituent_index < constituents.size();
+                                 constituent_index++)
+                            {
+                                constituents[constituent_index] += intake_constituents[constituent_index] *
+                                                                   (intake.has_weight ? intake.weight : 1.0) /
+                                                                   intake_weight_norm;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -330,6 +350,7 @@ namespace pre_c_sumo
             if (!sources.empty())
             {
                 const double source_flow_rate = diffuser.sourceFlowRate();
+
                 for (const auto& source : sources)
                 {
                     double weight_fraction = (source.has_weight ? source.weight : 1.0) / source_weight_norm;
@@ -341,56 +362,31 @@ namespace pre_c_sumo
                     double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate,
-                                                   source_z_bottom, source_z_top, discharge,
-                                                   source_moment_magnitude_weighted, source_moment_direction);
+                    connectedsinksources.add_entry(
+                        0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
+                        discharge, source_moment_magnitude_weighted, source_moment_direction, constituents);
                 }
             }
 
-            // Intake
-            auto intakes = diffuser.intakes();
-            const double intake_flow_rate = diffuser.intakeFlowRate();
-            // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
-            // for flow magnitudes and would let tiny positive numerical noise trigger
-            // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
-            // was failing with epsilon.
-            constexpr double minimum_intake_flow_rate = 1e-12;
+            // Dispatch optional intakes after source/sinks
             if (intake_flow_rate > minimum_intake_flow_rate)
             {
-                if (intakes.empty() && diffuser_index < diffuser_settings.size() &&
-                    diffuser_settings[diffuser_index].intake.has_value())
-                {
-                    // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
-                    const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
-                    intakes.emplace_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
-                                                    .y_coordinate = intake_xy.y_coordinate,
-                                                    .z_coordinate = 0.0,
-                                                    .weight = 0.0,
-                                                    .has_weight = false});
-                }
                 if (!intakes.empty())
                 {
-                    double intake_weight_norm = 0.0;
-                    for (const auto& intake : intakes)
-                    {
-                        intake_weight_norm += intake.has_weight ? intake.weight : 1.0;
-                    }
-                    // Intended behavior: intake weights are assumed to sum to >= 1.
-                    // Keep 1.0 as the lower bound so malformed/underspecified input does not amplify discharge.
-                    intake_weight_norm = std::max(intake_weight_norm, 1.0);
-
                     // Intakes are sink-only terms (not connected to source points).
                     for (const auto& intake : intakes)
                     {
+                        // Dispatch intake discharge.
                         const double intake_discharge =
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
                         connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
                                                        -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0);
+                                                       0.0, {});
                     }
                 }
             }
         }
+
         std::println("connectedsinksources size = {}", connectedsinksources.get_number_of_entries());
         return connectedsinksources;
     }
@@ -400,9 +396,6 @@ namespace pre_c_sumo
         // (Placeholder) logic to determine if the diffuser is modelled
         return diffuser.sources().size() > 1 || diffuser.sinks().size() == 0;
     }
-
-    // Do we still need this?
-    void processSourceLocations() { std::println("Processing source locations..."); }
 
     // Determine the flow nodes over which to distribute the diluted discharge:
     // Both sink and source point needed for direction connection line.

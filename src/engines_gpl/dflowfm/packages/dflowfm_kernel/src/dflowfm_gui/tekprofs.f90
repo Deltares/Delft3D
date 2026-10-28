@@ -180,11 +180,11 @@ contains
                ucxref(kk) = sg * ustbref * log(c9of1 + hcref(kk) / z00) / vonkar
             end do
 
-            if (iturbulencemodel == 1) then
+            if (iturbulencemodel == TURBULENCE_MODEL_CONSTANT) then
 
                vicwref = vicoww%get(LL)
 
-            else if (iturbulencemodel == 2) then
+            else if (iturbulencemodel == TURBULENCE_MODEL_ALGEBRAIC) then
 
                do k = 1, km - 1
                   zint = hwref(k) / h0
@@ -195,7 +195,7 @@ contains
                vicwref(0) = 0.0_dp
                vicwref(km) = 0.0_dp
 
-            else if (iturbulencemodel >= 3) then
+            else if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
 
                tkebot = ustbref**2 / sqrt(cmukep)
                tkewin = ustwref**2 / sqrt(cmukep)
@@ -307,7 +307,7 @@ contains
          vmin = -vmax
          call TEKFN(3, 6, 1, ww1(kb:kt), hwref(1:), km, vmin, vmax, zmin, zmax, KLPROF, 'ww1', 1, 2, 0.0_dp, kplot)
 
-         if (iturbulencemodel >= 3 .and. LL > 0) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. LL > 0) then
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
                vmin = 0.0_dp

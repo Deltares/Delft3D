@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <defaultTestCases>
+    <testCase name="dflowfm_default">
+      <maxRunTime>999</maxRunTime>
+    </testCase>
+  </defaultTestCases>
+  <testCases>
+    <testCase name="explicit_timeout" ref="dflowfm_default">
+      <maxRunTime>480</maxRunTime>
+    </testCase>
+    <testCase name="default_timeout" ref="dflowfm_default"/>
+    <testCase name="ignored_case" ignore="true">
+      <maxRunTime>10</maxRunTime>
+    </testCase>
+    <testCase name="conflict_case">
+      <maxRunTime>600</maxRunTime>
+    </testCase>
+  </testCases>
+  <xi:include href="../include/shared_cases.xml"/>
+</deltaresTestbench_v3>

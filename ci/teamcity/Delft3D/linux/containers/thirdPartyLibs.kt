@@ -10,7 +10,7 @@ import java.io.File
 
 object LinuxThirdPartyLibs : BuildType({
     name = "Third-party libraries"
-    description = "Add third-party libraries to the build-environment container image to build our Delf3D software in."
+    description = "Add third-party libraries to the build image."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(

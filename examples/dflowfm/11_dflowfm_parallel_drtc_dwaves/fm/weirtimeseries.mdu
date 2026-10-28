@@ -1,6 +1,3 @@
-# Generated on 2025-11-27 15:53:21
-# Deltares, Plugin D-FLOW FM Version 4.18.0.9276, D-Flow FM Version Deltares, D-Flow FM1.2.184.057d2f7ceeafda462a1b4e598efa4ce4f0c97cc5
-
 [General]
 Program                           = D-Flow FM                                                           # Program name
 Version                           = Deltares, D-Flow FM1.2.184.057d2f7ceeafda462a1b4e598efa4ce4f0c97cc5 # FM kernel Version
@@ -35,7 +32,6 @@ GridEnclosureFile                 =                                             
 PillarFile                        =                                                                     # Polyline file *.pliz, containing bridge pillars with rows x, y, drag coefficient and diameter
 VertplizFile                      =                                                                     # Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type
 ProfdefxyzFile                    =                                                                     # Channel profile definition file _profdefinition.def with definition for all profile numbers
-IniFieldFile                      =
 Uniformwidth1D                    = 2                                                                   # Uniform width for channel profiles not specified by profloc
 ManholeFile                       =                                                                     # File *.ini containing manholes
 Blmeanbelow                       = -999                                                                # If not -999d0, below this level the cell center bed level is the mean of surrouding net nodes
@@ -45,7 +41,7 @@ Nonlin2D                          = 0                                           
 Bamin                             = 1E-06                                                               # Minimum grid cell area, in combination with cut cells
 OpenBoundaryTolerance             = 3                                                                   # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                                                                   # Renumber the flow nodes (1: yes, 0: no)
-UseCaching                        = 1                                                                   # Use caching of flow model geometry input (1: yes, 0: no)
+UseCaching                        = 0                                                                   # Use caching of flow model geometry input (1: yes, 0: no)
 
 [numerics]
 AdvecType                         = 3                                                                   # Advection type (0: none, 1: Wenneker, 2: Wenneker q(uio-u), 3: Perot q(uio-u), 4: Perot q(ui-u), 5: Perot q(ui-u) without itself, 33: Perot q(uio-u) fast
@@ -67,8 +63,6 @@ CFLMax                            = 0.7                                         
 TimeStepType                      = 2                                                                   # Time step handling (0: only transport, 1: transport + velocity update, 2: full implicit step-reduce, 3: step-Jacobi, 4: explicit)
 FixedWeirRelaxationcoef           = 0.6                                                                 # Fixed weir relaxation coefficient for the computation of energy loss (0 <= coefficient <= 1)
 cstbnd                            = 0                                                                   # Delft3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)
-Maxitverticalforestersal          = 0                                                                   # Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)
-Maxitverticalforestertem          = 0                                                                   # Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)
 Turbulencemodel                   = 3                                                                   # Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau)
 Turbulenceadvection               = 3                                                                   # Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)
 AntiCreep                         = 0                                                                   # Include anti-creep calculation (0: no, 1: yes)
@@ -82,7 +76,6 @@ Rhomean                           = 1000                                        
 UnifFrictCoef                     = 0.023                                                               # Uniform friction coefficient (0: no friction)
 UnifFrictType                     = 1                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)
 UnifFrictCoefLin                  = 0                                                                   # Uniform linear friction coefficient for ocean models (0: no friction)
-Umodlin                           = 1                                                                   # Linear friction umod, for ifrctyp=4,5,6
 Vicouv                            = 0                                                                   # Uniform horizontal eddy viscosity
 Dicouv                            = 0                                                                   # Uniform horizontal eddy diffusivity
 Vicoww                            = 0                                                                   # Uniform vertical eddy viscosity
@@ -143,7 +136,6 @@ RestartFile                       =                                             
 RestartDateTime                   =                                                                     # Restart date and time when restarting from *_map.nc [YYYYMMDDHHMMSS]
 
 [external forcing]
-ExtForceFile                      =                                                                     # Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification
 ExtForceFileNew                   = dflow-fm_bnd.ext                                                    # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [output]
@@ -173,7 +165,7 @@ Wrishp_pump                       = 0                                           
 WAQOutputDir                      =                                                                     # Output directory of WAQ files, default: DFM_DELWAQ_<modelname>. Set to . for current dir.
 HisFile                           =                                                                     # History output file *_his.nc in NetCDF format
 MapFile                           =                                                                     # Map file output file *_map.nc in NetCDF format
-MapFormat                         = 4                                                                   # Map file format (1: NetCDF, 2: Tecplot, 3: NetCFD and Tecplot)
+MapFormat                         = 4                                                                   # Map file format (1: NetCDF, 4: NetCDF-UGRID)
 Wrihis_balance                    = 1                                                                   # Write mass balance totals to his file (1: yes, 0: no)
 Wrihis_sourcesink                 = 1                                                                   # Write sources-sinks statistics to his file (1: yes, 0: no)
 Wrihis_structure_gen              = 1                                                                   # Write general structure parameters to his file (1: yes, 0: no)

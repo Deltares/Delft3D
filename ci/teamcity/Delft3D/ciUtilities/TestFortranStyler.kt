@@ -11,10 +11,8 @@ import Delft3D.step.*
 
 object TestFortranStyler : BuildType({
     id("TestFortranStyler")
-    name = "Test Fortran Styler"
-    description = """
-        Runs tests and quality checks on the Fortran Styler.
-    """.trimIndent()
+    name = "Fortran styler"
+    description = "pytest for tools/deltares_fortran_styler."
 
     // The name `coverage.zip` for the pytest coverage report should not be changed.
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.

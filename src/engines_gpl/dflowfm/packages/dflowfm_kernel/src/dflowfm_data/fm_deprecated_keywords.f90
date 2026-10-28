@@ -8,7 +8,7 @@ module fm_deprecated_keywords
 
 contains
 
-   !> subroutine that initialises all deprecated keyword sets
+   !> Subroutine that initialises all deprecated keyword sets
    subroutine default_fm_deprecated_keywords()
 
       if (allocated(deprecated_mdu_keywords%deprecated_keyword_list)) then
@@ -35,8 +35,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'External Forcing', 'ExtForceFile', DEPRECATED, &
                                   'Use [external forcing] extForceFileNew instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Keepzlayeringatbed', DEPRECATED, 'Use [Geometry] keepZLayeringAtBed instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
@@ -46,7 +44,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
@@ -109,6 +106,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrimap_input_dt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrihis_heatflux', OBSOLETE, 'Renamed to [Output] wrihis_heatfluxes.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrishp_enc', OBSOLETE, 'Use [Output] Wrishp_dryarea instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', OBSOLETE, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', OBSOLETE, 'Process fluxes integration is always done by WAQ.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Sediment', 'MasBalMinDep', OBSOLETE)

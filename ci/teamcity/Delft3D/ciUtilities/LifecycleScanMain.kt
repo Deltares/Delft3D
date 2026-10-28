@@ -6,7 +6,9 @@ import Delft3D.template.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 object LifecycleScanMain : BuildType({
-    name = "Lifecycle Scan Main"
+    id("LifecycleScanMain")
+    name = "Nexus IQ (product)"
+    description = "SBOM and Nexus IQ scan of the product tree."
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {
@@ -69,7 +71,7 @@ object LifecycleScanMain : BuildType({
         triggers {
             schedule {
                 schedulingPolicy = daily {
-                    hour = 3
+                    hour = 0
                     minute = 30
                 }
                 branchFilter = "+:<default>"
@@ -79,16 +81,12 @@ object LifecycleScanMain : BuildType({
             schedule {
                 schedulingPolicy = weekly {
                     dayOfWeek = ScheduleTrigger.DAY.Sunday
-                    hour = 3
+                    hour = 1
                     minute = 30
                 }
 
                 branchFilter = """
-                    +:all/release/2026.02
-                    +:all/release/2026.01
-                    +:all/release/2025.02
-                    +:all/release/2025.01
-                    +:all/release/2024.02
+                    +:all/release/2027.01
                 """.trimIndent()
 
                 triggerBuild = always()
