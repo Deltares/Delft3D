@@ -77,14 +77,14 @@ contains
             ! Compute 1d volumes, using volume tables (still excl. 1D2D contributions)
             do n = ndx2d + 1, ndx
                n1d = n - ndx2d
-               vol1(n) = vltb(n1d)%getVolume(s1(n))
-               a1(n) = vltb(n1d)%getSurface(s1(n))
+               vol1(n) = vltb(n1d)%get_volume(s1(n))
+               a1(n) = vltb(n1d)%get_surface(s1(n))
             end do
             if (nonlin1D >= 2) then
                do n = ndx2d + 1, ndx
                   n1d = n - ndx2d
-                  vol1(n) = vol1(n) - vltb(n1d)%getVolumeDecreasing(s1m(n))
-                  a1m(n) = vltb(n1d)%getSurfaceDecreasing(s1m(n))
+                  vol1(n) = vol1(n) - vltb(n1d)%get_volume_decreasing(s1m(n))
+                  a1m(n) = vltb(n1d)%get_surface_decreasing(s1m(n))
                end do
             end if
          end if
