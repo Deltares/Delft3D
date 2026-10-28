@@ -125,7 +125,7 @@ sh install_cmake.sh --skip-license --prefix=/usr
 popd
 EOF
 
-RUN wget --quiet --output-document=- https://astral.sh/uv/0.11.11/install.sh | UV_INSTALL_DIR=/usr/bin sh
+RUN wget --quiet --output-document=- https://astral.sh/uv/0.13.6/install.sh | UV_INSTALL_DIR=/usr/bin sh
 
 RUN <<"EOF"
 set -eo pipefail
@@ -137,8 +137,8 @@ export UV_PYTHON_BIN_DIR=/opt/uv/bin
 export UV_TOOL_BIN_DIR=/opt/uv/bin
 
 # Install python and python tools.
-uv python install 3.12 --default
-uv tool install 'conan ~= 2.29.0'
+uv python install 3.12.16 --default
+uv tool install 'conan ~= 2.29.0' --with 'certifi >= 2026.10.23'
 EOF
 
 # Add python 3.12 and uv tools to PATH for all users.

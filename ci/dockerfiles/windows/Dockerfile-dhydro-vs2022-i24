@@ -50,7 +50,7 @@ RUN $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere
 
 # Install uv
 ENV UV_INSTALL_DIR="C:\Program Files\uv\install"
-RUN irm https://astral.sh/uv/0.11.26/install.ps1 | iex
+RUN irm https://astral.sh/uv/0.13.6/install.ps1 | iex
 
 ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
     UV_TOOL_DIR="C:\Program Files\uv\tools" \
@@ -59,8 +59,8 @@ ENV UV_PYTHON_INSTALL_DIR="C:\Program Files\uv\python" \
 
 # Install python and conan
 RUN setx /M PATH \"C:\Program Files\uv\bin;C:\Program Files\uv\install;$env:PATH\"
-RUN uv python install 3.12 --default
-RUN uv tool install 'conan ~= 2.30.0'
+RUN uv python install 3.12.16 --default
+RUN uv tool install 'conan ~= 2.30.0' --with 'certifi >= 2026.10.23'
 
 ADD setup-x86_64.exe C:\\cygwin-setup-x86_64.exe
 # Install and clean up the package cache in a single layer. The cache uses very
