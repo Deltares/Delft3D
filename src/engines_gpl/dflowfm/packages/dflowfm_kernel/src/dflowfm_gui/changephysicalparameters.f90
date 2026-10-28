@@ -193,7 +193,7 @@ contains
       call IFormPutDouble(2 * 11, Elder, '(F8.3)')
       call IFormPutDouble(2 * 12, uniform_friction_coefficient_1D, '(F8.3)')
       call IFormPutDouble(2 * 13, uniform_friction_coefficient_1D2D, '(F8.3)')
-      call IFormPutDouble(2 * 14, uniform_groundlayer_friction_coefficient, '(F8.3)')
+      call IFormPutDouble(2 * 14, uniform_friction_coefficient_groundlayer, '(F8.3)')
       call IFormPutDouble(2 * 15, rainuni, '(F8.3)')
 
       !  Display the form with numeric fields left justified
@@ -246,7 +246,7 @@ contains
             call IFormGetDouble(2 * 11, Elder)
             call IFormGetDouble(2 * 12, uniform_friction_coefficient_1D)
             call IFormGetDouble(2 * 13, uniform_friction_coefficient_1D2D)
-            call IFormGetDouble(2 * 14, uniform_groundlayer_friction_coefficient)
+            call IFormGetDouble(2 * 14, uniform_friction_coefficient_groundlayer)
             call IFormGetDouble(2 * 15, rainuni)
 
             if (allocated(frcu) .and. frcuniorg /= uniform_friction_coefficient_2D) then
