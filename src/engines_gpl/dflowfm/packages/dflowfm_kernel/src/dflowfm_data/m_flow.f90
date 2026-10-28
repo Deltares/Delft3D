@@ -216,7 +216,7 @@ module m_flow
    real(kind=dp), allocatable, dimension(:) :: vTotLat !< [m3] Total lateral net inflow, cumulative volume.
 
    ! link related, dim = lnx
-   real(kind=dp), allocatable, dimension(:) :: s1Gradient !< [-] For output purposes: water level gradient on flow links.
+   real(kind=dp), allocatable, dimension(:) :: s1Gradient !< [1] For output purposes: water level gradient on flow links.
 
    ! Secondary Flow
    real(kind=dp), allocatable, dimension(:) :: ducxdx !< [1/s] Cell center gradient of x-velocity in x-dir.
@@ -228,10 +228,10 @@ module m_flow
    real(kind=dp), dimension(:), allocatable :: spirfx !< [m/s2] Secondary flow force for momentum in x-dir.
    real(kind=dp), dimension(:), allocatable :: spirfy !< [m/s2] Secondary flow force for momentum in y-dir.
    real(kind=dp), dimension(:), allocatable :: spirucm !< [m/s] Velocity in the flow node.
-   real(kind=dp), dimension(:), allocatable :: ht_xx !< [-] Array hT_xx, for calculation of spirfx and spirfy.
-   real(kind=dp), dimension(:), allocatable :: ht_xy !< [-] Array hT_xy, for calculation of spirfx and spirfy.
-   real(kind=dp), dimension(:), allocatable :: czusf !< [-] Chezy coefficient on flow link.
-   real(kind=dp), dimension(:), allocatable :: czssf !< [-] Chezy coefficient in flow node.
+   real(kind=dp), dimension(:), allocatable :: ht_xx !< [m3/s2] Array hT_xx, for calculation of spirfx and spirfy.
+   real(kind=dp), dimension(:), allocatable :: ht_xy !< [m3/s2] Array hT_xy, for calculation of spirfx and spirfy.
+   real(kind=dp), dimension(:), allocatable :: czusf !< [m^0.5/s] Chezy coefficient on flow link.
+   real(kind=dp), dimension(:), allocatable :: czssf !< [m^0.5/s] Chezy coefficient in flow node.
    real(kind=dp), dimension(:), allocatable :: fcoris !< [m/s2] Coriolis force in the flow node.
 
    real(kind=dp), dimension(:), allocatable :: spiratx !< [-] x component of normalised vector in direction of depth averaged velocity.
@@ -331,7 +331,7 @@ module m_flow
    real(kind=dp), allocatable, dimension(:) :: fcori !< [1/s] Spatially variable fcorio coeff at u point.
    real(kind=dp), allocatable, dimension(:) :: fvcoro !< [m/s2] 3D adamsbashford u point.
 
-   real(kind=dp), allocatable, dimension(:) :: plotlin !< [-] For plotting on u points.
+   real(kind=dp), allocatable, dimension(:) :: plotlin !< [?] For plotting on u points.
    integer, allocatable, dimension(:) :: numlimdt !< [-] Number of times this point was the timestep limiting point.
    integer :: numlimdt_baorg = 0 !< [-] Number of times limiting > numlimdt_baorg, keep original ba.
    real(kind=dp) :: baorgfracmin = 0 !< [-] ba = max(cutarea, ba*baorgfracmin).
