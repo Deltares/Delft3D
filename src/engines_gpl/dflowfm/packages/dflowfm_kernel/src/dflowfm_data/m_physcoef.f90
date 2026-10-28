@@ -61,7 +61,7 @@ module m_physcoef
    real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
    integer :: uniform_friction_type !< [-] Uniform friction type (0: chezy, 1: manning, 2: white colebrook D3D, 3: white colebrook Waqua (now only 2D)). {former:ifrctypuni}
-   real(kind=dp) :: uniform_linear_friction_coefficient !< [-] Uniform linear friction coefficient. {former:frcunilin}
+   real(kind=dp) :: uniform_friction_coefficient_linear !< [-] Uniform linear friction coefficient. {former:frcunilin}
    real(kind=dp) :: umodlin !< [m/s] Linear friction umod, friction type 4,5,6.
 
    real(kind=dp) :: wall_ks !< [m] Vertical wall Nikuradse roughness.
@@ -146,7 +146,7 @@ contains
       uniform_friction_coefficient_groundlayer = 0.05_dp
       maximum_friction_coefficient = 0.0_dp
       uniform_friction_type = 1
-      uniform_linear_friction_coefficient = 0.0_dp
+      uniform_friction_coefficient_linear = 0.0_dp
       umodlin = 1.0_dp
       wall_ks = 0.0_dp
       uniform_horizontal_eddy_viscosity = 0.1_dp
