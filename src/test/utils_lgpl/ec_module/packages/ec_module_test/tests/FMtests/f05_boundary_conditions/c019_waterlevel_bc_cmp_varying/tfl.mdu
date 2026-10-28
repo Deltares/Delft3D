@@ -89,7 +89,7 @@ uniformFrictionCoefficientLinear                     = 0.                       
 Umodlin                              = 0                                     # Use 1 for linear friction umod, for ifrctyp=4,5,6
 uniformHorizontalEddyViscosity                               = 0.0000000                             # Uniform horizontal eddy viscosity (m2/s)
 uniformHorizontalEddyDiffusivity                               = 0.0000000                             # Uniform horizontal eddy diffusivity (m2/s)
-Vicoww                               = 0.0                                   # Uniform vertical eddy viscosity  (m2/s)
+background_vertical_eddy_viscosity                               = 0.0                                   # Uniform vertical eddy viscosity  (m2/s)
 backgroundVerticalEddyDiffusivity                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)
 Vicwminb                             = 0.                                    # Minimum visc in prod and buoyancy term (m2/s)
 Smagorinsky                          = 0.                                    # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1

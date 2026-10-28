@@ -45,7 +45,7 @@ Smagorinsky      = 0.                  # Add Smagorinsky horizontal turbulence :
 Elder            = 0.                  # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
 irov             = 0                   # 0=free slip, 1 = partial slip using wall_ks
 wall_ks          = 0.                  # Nikuradse roughness for side walls, wall_z0=wall_ks/30
-Vicoww           = 0.                  # Uniform vertical eddy viscosity
+background_vertical_eddy_viscosity           = 0.                  # Uniform vertical eddy viscosity
 TidalForcing     = 1                   # Tidal forcing (0=no, 1=yes) (only for jsferic == 1)
 Salinity         = 0                   # Include salinity, (0=no, 1=yes)
 

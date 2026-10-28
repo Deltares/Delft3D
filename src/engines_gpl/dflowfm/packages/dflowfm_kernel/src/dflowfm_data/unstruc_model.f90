@@ -1252,7 +1252,11 @@ contains
          call prop_get(md_ptr, 'physics', 'Dicouv', uniform_horizontal_eddy_diffusivity)
       end if
 
-      call prop_get(md_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar)
+      call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyViscosity', background_vertical_eddy_viscosity%scalar, success)
+      if (.not. success) then
+         ! Fallback to the deprecated name if 'backgroundVerticalEddyViscosity' is not found.
+         call prop_get(md_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar)
+      end if
 
       call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, success)
       if (.not. success) then
