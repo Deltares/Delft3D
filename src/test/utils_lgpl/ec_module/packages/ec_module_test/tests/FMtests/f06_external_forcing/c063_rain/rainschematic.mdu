@@ -90,7 +90,7 @@ Umodlin                              = 0                                     # U
 uniformHorizontalEddyViscosity                               = 0.0                                   # Uniform horizontal eddy viscosity (m2/s)
 uniformHorizontalEddyDiffusivity                               = 0.0000000                             # Uniform horizontal eddy diffusivity (m2/s)
 Vicoww                               = 0.                                    # Uniform vertical eddy viscosity  (m2/s)
-Dicoww                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)
+backgroundVerticalEddyDiffusivity                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)
 Vicwminb                             = 0.                                    # Minimum visc in prod and buoyancy term (m2/s)
 Smagorinsky                          = 0.                                    # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
 Elder                                = 0.                                    # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0

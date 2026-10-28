@@ -62,23 +62,23 @@ contains
       real(kind=dp) :: frcuniorg
 
       NLEVEL = 4
-      OPTION(1) = 'uniform_friction_coefficient_2D                                  '
+      OPTION(1) = 'uniform friction coefficient 2D          '
       it(2 * 1) = 6
-      OPTION(2) = 'uniform_friction_type Friction formulation         '
+      OPTION(2) = 'uniform friction type Friction formulatio'
       it(2 * 2) = 2
-      OPTION(3) = 'Windspeed     (m/s)                     '
+      OPTION(3) = 'Windspeed     (m/s)                      '
       it(2 * 3) = 6
-      OPTION(4) = 'Winddirection ( ) 90= to East 0=to North'
+      OPTION(4) = 'Winddirection ( ) 90= to East 0=to North '
       it(2 * 4) = 6
-      OPTION(5) = 'uniform_horizontal_eddy_viscosity                           (m2/s) '
+      OPTION(5) = 'uniform horizontal eddy viscosity (m2/s) '
       it(2 * 5) = 6
-      OPTION(6) = 'Vicoww                           (m2/s) '
+      OPTION(6) = 'Vicoww                            (m2/s) '
       it(2 * 6) = 6
-      OPTION(7) = 'uniform_horizontal_eddy_diffusivity                           ( )    '
+      OPTION(7) = 'uniform horizontal eddy diffusivity ( )  '
       it(2 * 7) = 6
-      OPTION(8) = 'Dicoww                           ( )    '
+      OPTION(8) = 'background  vertical eddy diffusivity ( )'
       it(2 * 8) = 6
-      OPTION(9) = 'Verticall Wall Nikuradse         (m)    '
+      OPTION(9) = 'Verticall Wall Nikuradse          (m)    '
       it(2 * 9) = 6
       OPTION(10) = 'Smagorinsky                      ( )    '
       it(2 * 10) = 6

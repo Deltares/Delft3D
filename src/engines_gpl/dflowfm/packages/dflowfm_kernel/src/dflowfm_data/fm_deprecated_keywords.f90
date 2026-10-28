@@ -52,6 +52,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'UnifFrictCoef1DgrLay', DEPRECATED, 'Use uniformFrictionCoefficientGroundlayer instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'vicouv', DEPRECATED, 'Use uniformHorizontalEddyViscosity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'dicouv', DEPRECATED, 'Use uniformHorizontalEddyDiffusivity instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'dicoww', DEPRECATED, 'Use backgroundVerticalEddyDiffusivity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
