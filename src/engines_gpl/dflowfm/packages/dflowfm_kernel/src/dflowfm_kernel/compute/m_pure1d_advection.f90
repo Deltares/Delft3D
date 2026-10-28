@@ -38,11 +38,13 @@ module m_pure1d_advection
 contains
 
    subroutine setuc1d()
-      use m_flow, only: kmx, jaJunction1D, jaPure1D, uc1D, u1, qa, qin, vol0, vol1, vol0_f, vol1_f, &
-                        u1Du, q1D, au1D, wu1D, sar1D, volu1D, alpha_mom_1D, alpha_ene_1D, s1, lateral_correction
+      use m_flow, only: kmx, jaJunction1D, jaPure1D, uc1D, u1, qa, qin, vol0_f, vol1_f, au, &
+                        u1Du, q1D, au1D, wu1D, sar1D, volu1D, alpha_mom_1D, alpha_ene_1D, s1, lateral_correction, &
+                        volume_change
       use m_flowgeom, only: lnx1D, ndx2D, ndxi, nd, kcu, lnxi, lnx, ln, dx, bob
+      use m_flowparameters, only: eps3
       use m_get_prof_1D, only: getprof_1D
-      use m_flowtimes, only:dts
+      use m_flowtimes, only: dts, tstart_user, time1
       use network_data, only: LINK_1D_BOUNDARY
       use precision, only: dp
       implicit none
@@ -128,6 +130,31 @@ contains
          uc1D(n) = sign(uc, u1(L1))
       end do
 
+      if (japure1d >=3) then
+         lateral_correction = 0.0_dp
+         if (time1 > tstart_user) then
+            ! calculate lateral correction at the flow links
+            lateral_flow = 0.0_dp
+            do n = ndx2D + 1, ndxi
+               nx = nd(n)%lnx
+               ! Lateral discharge into the node
+               lateral_flow = qin(n)
+               ! change in storage volume storage volume = (vol1(n) - vol1_f(n))
+               ! a positive change in storage volume means that the node is storing water, so the lateral flow into the node is reduced.
+               ! volume_change is the total volume of a cell. And is calculated in flow_f0isf1.
+               ! vol1_f and vol0_f are flow volumes in a cell and these are up to date at the current time step.
+               lateral_flow = lateral_flow - ((volume_change(n) - vol1_f(n) + vol0_f(n))) / dts
+               do LL = 1, nx ! loop over all links of the upstream node
+                  L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
+                  La = abs(L)
+                  if (au(La) > eps3) then
+                     lateral_correction(La) = lateral_correction(La) + lateral_flow / (real(nx, kind=dp) * au(La) * dx(La))
+                  end if
+
+               end do
+            end do
+         end if
+      end if
       do LL = lnxi + 1, lnx ! loop over open boundary links
          if (kcu(LL) == LINK_1D_BOUNDARY) then ! 1D boundary link
             n = Ln(1, LL)
@@ -246,7 +273,7 @@ contains
    end subroutine setuc1d
 
    pure subroutine advect_pure1d_sobek(jaPure1D, u1, au1d1, au1d2, q1d1, q1d2, volu1d, alpha_mom1, alpha_ene1, &
-                                      alpha_mom2, alpha_ene2, qin1, qin2, dx, au, advi, advel)
+                                       alpha_mom2, alpha_ene2, lateral_correction, advi, advel)
       use precision, only: dp
       implicit none
 
@@ -261,12 +288,9 @@ contains
       real(kind=dp), intent(in) :: alpha_ene1
       real(kind=dp), intent(in) :: alpha_mom2
       real(kind=dp), intent(in) :: alpha_ene2
-      real(kind=dp), intent(in) :: qin1
-      real(kind=dp), intent(in) :: qin2
-      real(kind=dp), intent(in) :: dx
-      real(kind=dp), intent(in) :: au
+      real(kind=dp), intent(in) :: lateral_correction
       real(kind=dp), intent(inout) :: advi
-      real(kind=dp), intent(out) :: advel
+      real(kind=dp), intent(inout) :: advel
 
       real(kind=dp) :: am
       real(kind=dp) :: qv
@@ -302,7 +326,7 @@ contains
          advel = advel - am * (u_mom - u1) * qv - (1.0_dp - am) * (u_ene - u1) * qv
       end if
 
-      advi = advi + 0.5_dp * (qin1 + qin2) / (dx * au)
+      advi = advi + max(0.0_dp, lateral_correction)
 
       if (q1d2 < 0.0_dp) then
          qv = q1d2 / max(1.0e-5_dp, volu1d)
