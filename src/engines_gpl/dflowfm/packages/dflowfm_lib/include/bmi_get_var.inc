@@ -236,16 +236,12 @@
      x = c_loc(ucx_mor)
   case("ucy_mor") !<  [m/s] cell center velocity for sedmor, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
      x = c_loc(ucy_mor)
-  case("sa0") !<  [1e-3] salinity (ppt) at start of timestep {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(sa0)
   case("sa1") !<  [1e-3] salinity (ppt) at end   of timestep {"location": "face", "shape": ["ndkx"]}
      x = c_loc(sa1)
   case("satop") !<  [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
      x = c_loc(satop)
   case("sabot") !<  [1e-3] salinity (ppt) help in initialise , deallocated {"location": "face", "shape": ["ndx"]}
      x = c_loc(sabot)
-  case("tem0") !<  [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(tem0)
   case("tem1") !<  [degC] water temperature at end of timestep {"location": "face", "shape": ["ndkx"]}
      x = c_loc(tem1)
   case("u1") !<  [m/s] flow velocity (m/s)  at   end of timestep {"location": "edge", "shape": ["lnkx"]}
