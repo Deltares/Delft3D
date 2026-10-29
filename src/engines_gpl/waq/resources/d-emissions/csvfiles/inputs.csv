@@ -1,4 +1,94 @@
 inpupr,inpuit,inpunm,inpude,inpudo,inpusx
+"Mod_Tempa ","ChTempaM01",   1,"N","x",1
+"Mod_Tempa ","ChTempaM02",   2,"N","x",1
+"Mod_Tempa ","ChTempaM03",   3,"N","x",1
+"Mod_Tempa ","ChTempaM04",   4,"N","x",1
+"Mod_Tempa ","ChTempaM05",   5,"N","x",1
+"Mod_Tempa ","ChTempaM06",   6,"N","x",1
+"Mod_Tempa ","ChTempaM07",   7,"N","x",1
+"Mod_Tempa ","ChTempaM08",   8,"N","x",1
+"Mod_Tempa ","ChTempaM09",   9,"N","x",1
+"Mod_Tempa ","ChTempaM10",  10,"N","x",1
+"Mod_Tempa ","ChTempaM11",  11,"N","x",1
+"Mod_Tempa ","ChTempaM12",  12,"N","x",1
+"Mod_Tempa ","ITIME     ",  13,"N","x",1
+"Mod_Tempa ","RefDay    ",  14,"N","x",1
+"Mod_Tempa ","AuxSys    ",  15,"Y","x",1
+"Mod_Tempa ","TempAirBL ",  16,"N","x",1
+"Mod_Tempa ","MdTempaMod",  17,"Y","x",1
+"Mod_Tempd ","ChTempDM01",   1,"N","x",1
+"Mod_Tempd ","ChTempDM02",   2,"N","x",1
+"Mod_Tempd ","ChTempDM03",   3,"N","x",1
+"Mod_Tempd ","ChTempDM04",   4,"N","x",1
+"Mod_Tempd ","ChTempDM05",   5,"N","x",1
+"Mod_Tempd ","ChTempDM06",   6,"N","x",1
+"Mod_Tempd ","ChTempDM07",   7,"N","x",1
+"Mod_Tempd ","ChTempDM08",   8,"N","x",1
+"Mod_Tempd ","ChTempDM09",   9,"N","x",1
+"Mod_Tempd ","ChTempDM10",  10,"N","x",1
+"Mod_Tempd ","ChTempDM11",  11,"N","x",1
+"Mod_Tempd ","ChTempDM12",  12,"N","x",1
+"Mod_Tempd ","ITIME     ",  13,"N","x",1
+"Mod_Tempd ","RefDay    ",  14,"Y","x",1
+"Mod_Tempd ","AuxSys    ",  15,"Y","x",1
+"Mod_Tempd ","temp_dewBL",  16,"N","x",1
+"Mod_Tempd ","MdTempDMod",  17,"Y","x",1
+"Mod_VWind ","ChVWindM01",   1,"N","x",1
+"Mod_VWind ","ChVWindM02",   2,"N","x",1
+"Mod_VWind ","ChVWindM03",   3,"N","x",1
+"Mod_VWind ","ChVWindM04",   4,"N","x",1
+"Mod_VWind ","ChVWindM05",   5,"N","x",1
+"Mod_VWind ","ChVWindM06",   6,"N","x",1
+"Mod_VWind ","ChVWindM07",   7,"N","x",1
+"Mod_VWind ","ChVWindM08",   8,"N","x",1
+"Mod_VWind ","ChVWindM09",   9,"N","x",1
+"Mod_VWind ","ChVWindM10",  10,"N","x",1
+"Mod_VWind ","ChVWindM11",  11,"N","x",1
+"Mod_VWind ","ChVWindM12",  12,"N","x",1
+"Mod_VWind ","ITIME     ",  13,"N","x",1
+"Mod_VWind ","RefDay    ",  14,"Y","x",1
+"Mod_VWind ","AuxSys    ",  15,"Y","x",1
+"Mod_VWind ","VWindBL   ",  16,"N","x",1
+"Mod_VWind ","MdVWindMod",  17,"Y","x",1
+"Mod_GlRad ","ChGLRadM01",   1,"N","x",1
+"Mod_GlRad ","ChGLRadM02",   2,"N","x",1
+"Mod_GlRad ","ChGLRadM03",   3,"N","x",1
+"Mod_GlRad ","ChGLRadM04",   4,"N","x",1
+"Mod_GlRad ","ChGLRadM05",   5,"N","x",1
+"Mod_GlRad ","ChGLRadM06",   6,"N","x",1
+"Mod_GlRad ","ChGLRadM07",   7,"N","x",1
+"Mod_GlRad ","ChGLRadM08",   8,"N","x",1
+"Mod_GlRad ","ChGLRadM09",   9,"N","x",1
+"Mod_GlRad ","ChGLRadM10",  10,"N","x",1
+"Mod_GlRad ","ChGLRadM11",  11,"N","x",1
+"Mod_GlRad ","ChGLRadM12",  12,"N","x",1
+"Mod_GlRad ","ITIME     ",  13,"N","x",1
+"Mod_GlRad ","RefDay    ",  14,"Y","x",1
+"Mod_GlRad ","AuxSys    ",  15,"Y","x",1
+"Mod_GlRad ","RadBL     ",  16,"N","x",1
+"Mod_GlRad ","MdGLRadMod",  17,"Y","x",1
+"Mod_ClCov ","ChClCovM01",   1,"N","x",1
+"Mod_ClCov ","ChClCovM02",   2,"N","x",1
+"Mod_ClCov ","ChClCovM03",   3,"N","x",1
+"Mod_ClCov ","ChClCovM04",   4,"N","x",1
+"Mod_ClCov ","ChClCovM05",   5,"N","x",1
+"Mod_ClCov ","ChClCovM06",   6,"N","x",1
+"Mod_ClCov ","ChClCovM07",   7,"N","x",1
+"Mod_ClCov ","ChClCovM08",   8,"N","x",1
+"Mod_ClCov ","ChClCovM09",   9,"N","x",1
+"Mod_ClCov ","ChClCovM10",  10,"N","x",1
+"Mod_ClCov ","ChClCovM11",  11,"N","x",1
+"Mod_ClCov ","ChClCovM12",  12,"N","x",1
+"Mod_ClCov ","ITIME     ",  13,"N","x",1
+"Mod_ClCov ","RefDay    ",  14,"Y","x",1
+"Mod_ClCov ","AuxSys    ",  15,"Y","x",1
+"Mod_ClCov ","CloudFrBL ",  16,"N","x",1
+"Mod_ClCov ","MdClCovMod",  17,"Y","x",1
+"StwCollect","SettlType ",   1,"N","x",1
+"StwCollect","SMODLim   ",   2,"N","x",1
+"StwCollect","FColUrban ",   3,"N","x",1
+"Rain_mm   ","TotArea   ",   1,"N","x",1
+"Rain_mm   ","Rainfall  ",   2,"N","x",1
 "EMEP_Nit  ","DDp_Nox   ",   1,"N","x",1
 "EMEP_Nit  ","DDp_Nred  ",   2,"N","x",1
 "EMEP_Nit  ","WDp_Nox   ",   3,"N","x",1
@@ -10,6 +100,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Soil_Pho  ","PDatThick ",   3,"Y","x",1
 "Soil_Pho  ","SoilPoros ",   4,"Y","x",1
 "Soil_Pho  ","RhoDM     ",   5,"Y","x",1
+"Soil_Pho  ","CBackRef  ",   6,"N","x",1
 "Soil_Nit  ","nit_layer1",   1,"N","x",1
 "Soil_Nit  ","nit_layer2",   2,"N","x",1
 "Soil_Nit  ","nit_layer3",   3,"Y","x",1
@@ -37,6 +128,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "SetFate   ","KdUnpaThet",   9,"Y","x",1
 "SetFate   ","KdSoiThet ",  10,"Y","x",1
 "SetFate   ","Tempair   ",  11,"Y","x",1
+"SetFate   ","Vwcproot  ",  12,"Y","x",1
+"SetFate   ","CritVwcp  ",  13,"Y","x",1
+"SetFate   ","OptVcwp   ",  14,"Y","x",1
 "SetSoiKd  ","SoilPoros ",   1,"Y","x",1
 "SetSoiKd  ","RhoDM     ",   2,"Y","x",1
 "SetSoiKd  ","SoilOM    ",   3,"Y","x",1
@@ -56,7 +150,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EM_GSS    ","RunoffUnp ",  12,"N","x",1
 "EM_GSS    ","Infiltr   ",  13,"N","x",1
 "EM_GSS    ","FacErod   ",  14,"Y","x",1
-"EM_GSS    ","ErodIM1   ",  15,"Y","x",1
+"EM_GSS    ","ErodIM1   ",  15,"O","x",1
 "EM_GSS    ","ErodIM2   ",  16,"Y","x",1
 "EM_GSS    ","ErodIM3   ",  17,"Y","x",1
 "EM_GSS    ","fComSew   ",  18,"Y","x",1

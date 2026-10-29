@@ -212,6 +212,9 @@ module process_registration
     use m_soinit
     use m_soipho
     use m_soiprt
+    use m_stwcol
+    use m_rainmm
+    use m_modinp
 
     implicit none
 
@@ -455,7 +458,9 @@ contains
                             process_routine_info('SOINIT', SOINIT), &
                             process_routine_info('SOIPHO', SOIPHO), &
                             process_routine_info('SOIPRT', SOIPRT), &
-                            process_routine_info('PRTMRT', protist_mortality_salinity) &
+                            process_routine_info('STWCOL', STWCOL), &
+                            process_routine_info('RAINMM', RAINMM), &
+                            process_routine_info('MODINP', MODINP) &
                     ]
 
             max_processes = size(process_routine)

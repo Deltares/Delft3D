@@ -1,4 +1,11 @@
 "Config:   ","Sobek     ","Delft3D   ","
+"Mod_Tempa ", , ,
+"Mod_Tempd ", , ,
+"Mod_VWind ", , ,
+"Mod_GlRad ", , ,
+"Mod_ClCov ", , ,
+"StwCollect", , ,
+"Rain_mm   ", , ,
 "EMEP_Nit  ",A,A,
 "Soil_Pho  ",A,A,
 "Soil_Nit  ",A,A,

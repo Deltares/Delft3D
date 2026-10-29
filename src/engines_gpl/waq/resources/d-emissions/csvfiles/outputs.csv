@@ -1,9 +1,21 @@
 outppr,outpit,outpnm,outpdo,outpsx
+"Mod_Tempa ","Tempair   ",   1,"x",1
+"Mod_Tempa ","ChTempair ",   2,"x",1
+"Mod_Tempd ","temp_dew  ",   1,"x",1
+"Mod_Tempd ","ChTemp_dew",   2,"x",1
+"Mod_VWind ","Vwind     ",   1,"x",1
+"Mod_VWind ","ChVWind   ",   2,"x",1
+"Mod_GlRad ","Rad       ",   1,"x",1
+"Mod_GlRad ","ChRad     ",   2,"x",1
+"Mod_ClCov ","CloudFrac ",   1,"x",1
+"Mod_ClCov ","ChCloudFr ",   2,"x",1
+"StwCollect","FrRainSew ",   1,"x",1
+"Rain_mm   ","Rain_mmd  ",   1,"x",1
 "EMEP_Nit  ","EF_DDp    ",   1,"x",1
 "EMEP_Nit  ","EF_WDp    ",   2,"x",1
 "EMEP_Nit  ","NDepTot   ",   3,"x",1
 "Soil_Pho  ","QTopSoil  ",   1,"x",1
-"Soil_Pho  ","FracPass  ",   2,"x",1
+"Soil_Pho  ","CBack     ",   2,"x",1
 "Soil_Nit  ","QTopSoil  ",   1,"x",1
 "InitSoi   ","QSoiTot   ",   1,"x",1
 "SetFate   ","DecPav    ",   1,"x",1
@@ -11,6 +23,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "SetFate   ","DecSoi    ",   3,"x",1
 "SetFate   ","KdUnpa    ",   4,"x",1
 "SetFate   ","KdSoi     ",   5,"x",1
+"SetFate   ","VwcFactor ",   6,"x",1
 "SetSoiKd  ","KdSoi     ",   1," ",1
 "EM_GSS    ","Emis_Sfw  ",   1,"x",1
 "EM_GSS    ","RO2ComSew ",   2,"x",1
@@ -22,8 +35,11 @@ outppr,outpit,outpnm,outpdo,outpsx
 "TempDifInf","Cloud     ",   1,"x",1
 "TempDifInf","TempWrk1  ",   2,"x",1
 "TempDifInf","TempWrk2  ",   3,"x",1
+"TempDifInf","InflowRO  ",   4,"x",1
+"TempDifInf","InflowSS  ",   5,"x",1
 "WFLOW_Hydr","Velocity  ",   1,"x",1
 "WFLOW_Hydr","Depth     ",   2,"x",1
 "WFLOW_Hydr","TotalDepth",   3,"x",1
 "WFLOW_Hydr","Tau       ",   4,"x",1
+"WFLOW_Hydr","Outflow   ",   5,"x",1
 "SedimLink ","TotErod   ",   1,"x",1

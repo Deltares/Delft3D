@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -208,6 +208,7 @@ contains
       integer(kind=int_wp), parameter :: ip_concroun = 5
       integer(kind=int_wp), parameter :: ip_concsew = 6
       integer(kind=int_wp), parameter :: ip_concdrain = 7
+      real, parameter :: unpthick = 0.05
 
       ! input items
       integer(kind=int_wp) :: nsrca, nsrcb, nrecin
@@ -604,8 +605,9 @@ contains
          ! PAVED SYSTEM --------
          ! discharge to sew OR stw depending on fraction of combined sewers
          !               m3/s  m2
+         ra_mmperday = rainfall / totsurf * 1000. ! already in m3/d
          ro_mmperday = ropaved / (totsurf * fpaved) * 1000.*86400.
-         fwashoff = (ro_mmperday - ro_lothr) / (ro_hithr - ro_lothr)
+         fwashoff = (ra_mmperday - ro_lothr) / (ro_hithr - ro_lothr)
          fwashoff = max(min(fwashoff, 1.0), 0.0)
 
          ! input
@@ -647,9 +649,8 @@ contains
 
          roun_mmperday = rounpaved / (totsurf * funpaved) * 1000.*86400.
          in_mmperday = infilt / (totsurf * funpaved) * 1000.*86400. ! BUGFIX 3 jan 2023 correction funpaved added
-         ra_mmperday = rainfall / totsurf * 1000. ! already in m3/d
-         ferosion = (ra_mmperday - ra_lothr) / (ra_hithr - ra_lothr)
-         ferosion = max(min(ferosion, 1.0), 0.0)
+         !ferosion = (ra_mmperday - ra_lothr) / (ra_hithr - ra_lothr)
+         !ferosion = max(min(ferosion, 1.0), 0.0)
          fdisp = (roun_mmperday + in_mmperday) / disp_hithr
          fdisp = max(min(fdisp, 1.0), 0.0)
          froun = roun_mmperday / (roun_mmperday + in_mmperday)
@@ -665,11 +666,18 @@ contains
          maxflux = mass / delt + totflxin(rec_unp) - fluxloss - fluxbur
          ! kd is now defined as the unbound share NOT the bound share
          ! the trick with the double precision is to make the subtraction valid
-         fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux ! Bound substance  flux
+         !fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux ! Bound substance  flux
          fluxunbound = kdunpaved * maxflux ! Unbound substance  flux
-         fluxero = fluxbound * ferosion
+         !fluxero = fluxbound * ferosion
          fluxinf = fluxunbound * fdisp * finf
          fluxroun = fluxunbound * fdisp * froun
+
+         !erosion term
+         ! kg         m                      kg/m3     m2
+         solids = (unpthick * (1.-soilpor)) * rhodm * (totsurf * funpaved)
+         ! g/g      g              kg      g/kg
+         qtopact = mass / (solids * 1000.)
+         fluxero = facerod * (ero1 + ero2 + ero3) / 86400.*qtopact
 
          ! some extra output
          if (rounpaved > 0.0) then

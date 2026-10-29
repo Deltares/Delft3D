@@ -1,4 +1,11 @@
 procid,procco,procfo,procnm
+"Mod_Tempa ",123,"MODINP    ","Change air temperature due to CC                  "
+"Mod_Tempd ",123,"MODINP    ","Change dewpoint temperature due to CC             "
+"Mod_VWind ",123,"MODINP    ","Change wind speed due to CC                       "
+"Mod_GlRad ",123,"MODINP    ","Change global rad. due to CC                      "
+"Mod_ClCov ",123,"MODINP    ","Change cloud cover due to CC                      "
+"StwCollect",123,"STWCOL    ","Set collection rate of storm water                "
+"Rain_mm   ",123,"RAINMM    ","Calculate rainfall in mm per day                  "
 "EMEP_Nit  ",123,"EMEPNI    ","Calculate atmosheric deposition parameters from EM"
 "Soil_Pho  ",123,"SOIPHO    ","Calculate top soil concentrations for a given data"
 "Soil_Nit  ",123,"SOINIT    ","Calculate top soil concentrations for a given data"
