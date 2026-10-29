@@ -142,6 +142,10 @@ module m_flowparameters
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
 
+   integer :: rain_temperature !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters
+   integer, parameter :: RAIN_TEMPERATURE_AIR = 1 !< Use the air temperature in rain temperature calculations.
+   integer, parameter :: RAIN_TEMPERATURE_WET_BULB = 2 !< Use the wet bulb temperature in rain temperature calculations.
+
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
@@ -1176,5 +1180,39 @@ contains
       end select
 
    end subroutine convert_salinity_dependent_evaporation_method_integer_to_string
+
+   !> Converts a rain temperature method string to its corresponding integer representation.
+   subroutine convert_rain_temperature_string_to_integer(method_string, method_integer)
+      ! Arguments
+      character(len=*), intent(in) :: method_string !< String representation of the rain temperature method.
+      integer, intent(out) :: method_integer !< Integer representation of the rain temperature method.
+
+      select case (trim(str_tolower(method_string)))
+      case ('air')
+         method_integer = RAIN_TEMPERATURE_AIR
+      case ('wet_bulb')
+         method_integer = RAIN_TEMPERATURE_WET_BULB
+      case default
+         method_integer = -1
+      end select
+
+   end subroutine convert_rain_temperature_string_to_integer
+
+   !> Converts a rain temperature method integer to its corresponding string representation.
+   subroutine convert_rain_temperature_integer_to_string(method_integer, method_string)
+      ! Arguments
+      integer, intent(in) :: method_integer !< Integer representation of the rain temperature method.
+      character(len=*), intent(out) :: method_string !< String representation of the rain temperature method.
+
+      select case (method_integer)
+      case (RAIN_TEMPERATURE_AIR)
+         method_string = 'air'
+      case (RAIN_TEMPERATURE_WET_BULB)
+         method_string = 'wet_bulb'
+      case default
+         method_string = ''
+      end select
+
+   end subroutine convert_rain_temperature_integer_to_string
 
 end module m_flowparameters
