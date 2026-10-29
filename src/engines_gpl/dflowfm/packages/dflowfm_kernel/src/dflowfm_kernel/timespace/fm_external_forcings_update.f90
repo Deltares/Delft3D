@@ -371,7 +371,7 @@ contains
       use m_get_surface_temperature, only: get_surface_temperature
       use m_get_surface_salinity, only: get_surface_salinity, get_salinity_reduction_factor_saturation_humidity
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
-      use m_atmospheric_stability, only: compute_scales_and_fluxes, atm_stability_options
+      use m_atmospheric_stability, only: atmospheric_stability
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_wind, only: relativewind
       use m_flow, only: ltop, u1, v
@@ -423,9 +423,8 @@ contains
          call get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity%values)
       end if
 
-      call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
-                                     air_pressure, charnock, surface_temperature_kelvin, salinity_reduction_factor_saturation_humidity, &
-                                     atm_stability_options)
+      call atmospheric_stability%compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
+                                     air_pressure, charnock, surface_temperature_kelvin, salinity_reduction_factor_saturation_humidity)
    end subroutine compute_air_water_interaction_most_fluxes
 
    !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
