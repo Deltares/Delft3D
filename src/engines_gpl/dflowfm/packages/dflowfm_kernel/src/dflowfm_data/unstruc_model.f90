@@ -3432,8 +3432,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
-         call prop_set(prop_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', backgroundVerticalEddyDiffusivity, background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyViscosity', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
