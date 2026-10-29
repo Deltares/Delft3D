@@ -29,7 +29,7 @@ object WindowsBuild2D3DSP : BuildType({
 
     params {
         param("product", "auto-select")
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("container.tag", "vs2026-intel2026-ltsc2025")
         param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))

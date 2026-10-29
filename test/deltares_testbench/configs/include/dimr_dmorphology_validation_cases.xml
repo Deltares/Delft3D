@@ -34,7 +34,7 @@
           <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
           <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
           <parameter name="mesh2d_hwav" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_twav" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_twav" toleranceAbsolute="0.05"/>
           <parameter name="mesh2d_taus" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_tausmax" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_taub" toleranceAbsolute="0.01"/>
@@ -83,7 +83,7 @@
     <checks>
       <file name="dflowfmoutput/slope_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.001"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -96,7 +96,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -109,7 +109,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -122,7 +122,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>

@@ -30,7 +30,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
     params {
         param("env..INTERACTER_DIR", """.\interacter\bin\win32\x64\""")
         text("product", "dflowfm_interacter", readOnly = true, allowEmpty = true)
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("container.tag", "vs2026-intel2026-ltsc2025")
         param("build.vcs.number", "${DslContext.settingsRoot.paramRefs.buildVcsNumber}")
         param("env.CONAN_HOME", "C:/conan-cache")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))

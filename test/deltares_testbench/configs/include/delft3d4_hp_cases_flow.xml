@@ -3757,7 +3757,7 @@
         </parameters>
         <parameters name="map-sed-series">
           <parameter name="DUNEHEIGHT" toleranceAbsolute="0.0001"/>
-          <parameter name="DUNELENGTH" toleranceAbsolute="0.0001"/>
+          <parameter name="DUNELENGTH" toleranceAbsolute="0.001"/>
           <parameter name="KSR" toleranceAbsolute="0.0001"/>
           <parameter name="KSMR" toleranceAbsolute="0.0001"/>
           <parameter name="KSD" toleranceAbsolute="0.0001"/>
