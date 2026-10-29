@@ -1519,7 +1519,7 @@ contains
             end if
          end if
       end if
-      
+
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
 
       tmpstr = ''
@@ -1529,7 +1529,7 @@ contains
          if (ibuf == -1) then
             call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''air'' or ''wet_bulb''.')
          else
-            rain_temperature = ibuf
+            rain_temperature_method = ibuf
          end if
       end if
 
@@ -3577,7 +3577,7 @@ contains
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
 
-      call convert_rain_temperature_integer_to_string(rain_temperature, tmpstr)
+      call convert_rain_temperature_integer_to_string(rain_temperature_method, tmpstr)
       call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''air'', ''wet_bulb'').')
 
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')

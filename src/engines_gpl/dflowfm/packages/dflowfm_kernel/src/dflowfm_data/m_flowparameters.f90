@@ -142,7 +142,7 @@ module m_flowparameters
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
 
-   integer :: rain_temperature !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters
+   integer :: rain_temperature_method !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters
    integer, parameter :: RAIN_TEMPERATURE_AIR = 1 !< Use the air temperature in rain temperature calculations.
    integer, parameter :: RAIN_TEMPERATURE_WET_BULB = 2 !< Use the wet bulb temperature in rain temperature calculations.
 
