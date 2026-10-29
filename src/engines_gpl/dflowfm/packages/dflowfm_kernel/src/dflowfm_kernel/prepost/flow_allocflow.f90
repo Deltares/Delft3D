@@ -58,7 +58,7 @@ contains
                         dsall, dteml, jatidep, jaselfal, tidep, limtypmom, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, uniform_friction_type, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
@@ -96,7 +96,7 @@ contains
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
-      use m_physcoef, only: dynroughveg, frcuni
+      use m_physcoef, only: dynroughveg, uniform_friction_coefficient_2D
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -920,7 +920,7 @@ contains
       end if
       call realloc(frcu_mor, lnx, stat=ierr, fill=dmiss, keepexisting=.false.)
       call aerr('frcu_mor(lnx)', ierr, lnx)
-      call realloc(ifrcutp, lnx, stat=ierr, fill=abs(ifrctypuni), keepexisting=.false.)
+      call realloc(ifrcutp, lnx, stat=ierr, fill=abs(uniform_friction_type), keepexisting=.false.)
       call aerr('ifrcutp(lnx)', ierr, lnx)
 
       call realloc(u0, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -993,7 +993,7 @@ contains
          call aerr('czu(lnx)', ierr, lnx)
       end if
       if (dynroughveg > 0) then
-         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+         call realloc(frcu0, lnx, stat=ierr, fill=uniform_friction_coefficient_2D, keepexisting=.false.)
          call aerr('frcu0(lnx)', ierr, lnx)
          call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
          call aerr('dynveg(lnx)', ierr, lnx)

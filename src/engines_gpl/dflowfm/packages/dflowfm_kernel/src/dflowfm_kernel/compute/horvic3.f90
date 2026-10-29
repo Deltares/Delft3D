@@ -38,7 +38,7 @@ contains
 
    real(kind=dp) function horvic3(n12, L) ! horizontal viscosity term, out of face normal and tang comp's
       use precision, only: dp
-      use m_flow, only: vicouv, ucx, ucy, javiusp, viusp
+      use m_flow, only: uniform_horizontal_eddy_viscosity, ucx, ucy, javiusp, viusp
       use m_flowgeom, only: csu, snu, ln, nd, lncn, dxi, ucnx, ucny, wui, wu, bai
       use m_cor2linx, only: cor2linx
       use m_cor2liny, only: cor2liny
@@ -67,7 +67,7 @@ contains
       csL = csu(L)
       snL = snu(L)
       k12 = ln(n12, L)
-      vicL = vicouv
+      vicL = uniform_horizontal_eddy_viscosity
 
       do LL = 1, nd(k12)%lnx ! loop over all attached links
 
@@ -129,7 +129,7 @@ contains
             if (javiusp == 1) then
                vicl = viusp(LLLL)
             else
-               vicl = vicouv
+               vicl = uniform_horizontal_eddy_viscosity
             end if
 
             txx_k12 = lin2nodx(LLLL, ik1, txx, tyy)

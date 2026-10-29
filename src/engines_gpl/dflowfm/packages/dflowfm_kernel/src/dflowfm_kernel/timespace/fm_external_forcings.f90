@@ -2025,7 +2025,6 @@ contains
       use m_get_prof_1D
       use m_mathconstants, only: pi
       use m_filez, only: doclose
-      use m_physcoef, only: dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: t_netcell_set
       use unstruc_inifields, only: finalize_1dfield_global_values
@@ -2172,7 +2171,7 @@ contains
       if (javiusp == 1) then
          do L = 1, lnx
             if (viusp(L) == dmiss) then
-               viusp(L) = vicouv
+               viusp(L) = uniform_horizontal_eddy_viscosity
             end if
          end do
       end if
@@ -2180,7 +2179,7 @@ contains
       if (jadiusp == 1) then
          do L = 1, lnx
             if (diusp(L) == dmiss) then
-               diusp(L) = dicouv
+               diusp(L) = uniform_horizontal_eddy_diffusivity
             end if
          end do
       end if

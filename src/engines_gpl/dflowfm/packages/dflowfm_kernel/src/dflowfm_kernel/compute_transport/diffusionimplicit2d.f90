@@ -72,7 +72,7 @@ contains
                if (jadiusp == 1) then
                   diuspL = diusp(L)
                else
-                  diuspL = dicouv
+                  diuspL = uniform_horizontal_eddy_diffusivity
                end if
                difcoeff = sigdifi(i) * viu(L) + difsedu(i) + diuspL
                ddx = dxiau(L) * max(0.0_dp, difcoeff) ! safety first...
