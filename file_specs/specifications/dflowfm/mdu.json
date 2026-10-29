@@ -6405,6 +6405,109 @@
                     "description": "Write snow temperature to his-file."
                 }
             ]
+        },
+        {
+            "name": "meteo",
+            "is_unique": true,
+            "description": "This section contains settings for the atmospheric stability module.",
+            "ini_properties": [
+                {
+                    "key": "airSeaInteractionModel",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Air-sea interaction model to be used in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No air-sea interaction model.",
+                        "most": "Monin-Obukhov similarity theory."
+                    }
+                },
+                {
+                    "key": "stabilityFunction",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Atmospheric stability function to be used in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No atmospheric stability function.",
+                        "ecmwf": "ECMWF atmospheric stability function."
+                    }
+                },
+                {
+                    "key": "freeConvection",
+                    "default_value": "off",
+                    "value_type": "enum",
+                    "description": "Free convection setting in the atmospheric stability module.",
+                    "enum_values": {
+                        "off": "Free convection is off.",
+                        "on": "Free convection is on."
+                    }
+                },
+                {
+                    "key": "salinityDependentEvaporationMethod",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Salinity dependent evaporation method setting in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No salinity dependent evaporation method.",
+                        "constant": "Constant salinity dependent evaporation method.",
+                        "linear": "Salinity dependent evaporation is a linear function of local salinity."
+                    }
+                },
+                {
+                    "key": "QsatFactor",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'linear'."
+                },
+                {
+                    "key": "windForcingHeight",
+                    "default_value": 10.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed wind velocity.",
+                    "unit": "m"
+                },
+                {
+                    "key": "airTemperatureForcingHeight",
+                    "default_value": 2.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed air temperature.",
+                    "unit": "m"
+                },
+                {
+                    "key": "humidityForcingHeight",
+                    "default_value": 2.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed humidity.",
+                    "unit": "m"
+                },
+                {
+                    "key": "charnockCoefficient",
+                    "default_value": 0.018,
+                    "value_type": "float",
+                    "description": "Charnock coefficient for surface roughness in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "airViscousMomentumCoefficient",
+                    "default_value": 0.11,
+                    "value_type": "float",
+                    "description": "Air viscous momentum coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "airViscousHeatCoefficient",
+                    "default_value": 0.40,
+                    "value_type": "float",
+                    "description": "Air viscous heat coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "AirViscousMoistureCoefficient",
+                    "default_value": 0.62,
+                    "value_type": "float",
+                    "description": "Air viscous moisture coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                }
+            ]
         }
     ]
 }

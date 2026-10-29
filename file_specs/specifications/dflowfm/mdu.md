@@ -26,6 +26,7 @@
   - [[particles]](#supported-keywords-and-options-particles)
   - [[veg]](#supported-keywords-and-options-veg)
   - [[ice]](#supported-keywords-and-options-ice)
+  - [[meteo]](#supported-keywords-and-options-meteo)
 - [Research keywords and options](#research-keywords-and-options)
 - [Deprecated keywords and options](#deprecated-keywords-and-options)
 - [Obsolete keywords and options](#obsolete-keywords-and-options)
@@ -900,6 +901,27 @@ This section contains setting for the ice module.
 | `wriHis_ice_temperature` | Write ice temperature to his-file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_snow_thickness` | Write snow thickness to his-file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_snow_temperature` | Write snow temperature to his-file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+
+
+<a id="supported-keywords-and-options-meteo"></a>
+## [meteo]
+
+This section contains settings for the atmospheric stability module.
+
+| Keyword | Description | Default | Supported values | Unit | Format |
+| ------- | ----------- | ------- | ---------------- | ---- | ------ |
+| `airSeaInteractionModel` | Air-sea interaction model to be used in the atmospheric stability module. | `none` | <ul><li>**`none`**: No air-sea interaction model.</li><li>**`most`**: Monin-Obukhov similarity theory.</li></ul> |  |  |
+| `stabilityFunction` | Atmospheric stability function to be used in the atmospheric stability module. | `none` | <ul><li>**`none`**: No atmospheric stability function.</li><li>**`ecmwf`**: ECMWF atmospheric stability function.</li></ul> |  |  |
+| `freeConvection` | Free convection setting in the atmospheric stability module. | `off` | <ul><li>**`off`**: Free convection is off.</li><li>**`on`**: Free convection is on.</li></ul> |  |  |
+| `salinityDependentEvaporationMethod` | Salinity dependent evaporation method setting in the atmospheric stability module. | `none` | <ul><li>**`none`**: No salinity dependent evaporation method.</li><li>**`constant`**: Constant salinity dependent evaporation method.</li><li>**`linear`**: Salinity dependent evaporation is a linear function of local salinity.</li></ul> |  |  |
+| `QsatFactor` | Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'linear'. | `1.0` |  |  |  |
+| `windForcingHeight` | Sensor height of prescribed wind velocity. | `10.0` |  | [m] |  |
+| `airTemperatureForcingHeight` | Sensor height of prescribed air temperature. | `2.0` |  | [m] |  |
+| `humidityForcingHeight` | Sensor height of prescribed humidity. | `2.0` |  | [m] |  |
+| `charnockCoefficient` | Charnock coefficient for surface roughness in the atmospheric stability module. | `0.018` |  | [-] |  |
+| `airViscousMomentumCoefficient` | Air viscous momentum coefficient in the atmospheric stability module. | `0.11` |  | [-] |  |
+| `airViscousHeatCoefficient` | Air viscous heat coefficient in the atmospheric stability module. | `0.4` |  | [-] |  |
+| `AirViscousMoistureCoefficient` | Air viscous moisture coefficient in the atmospheric stability module. | `0.62` |  | [-] |  |
 
 <a id="research-keywords-and-options"></a>
 # Research keywords and options
