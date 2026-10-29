@@ -124,7 +124,14 @@ contains
 
                call s1ini()
                call pack_matrix()
-
+               if (jampi == 1) then
+                  ! 1. Update 2D cell part (indices 1:Ndx)
+                  call update_ghosts(ITYPE_Sall, 1, Ndx, qin(1:Ndx), ierror)
+                  ! 2. Update 3D vertical layers (indices kbot:ktop within Ndkx)
+                  if (kmx > 0) then
+                     call update_ghosts(ITYPE_Sall3D, 1, Ndkx, qin, ierror)
+                  end if
+               end if
                !-----------------------------------------------------------------------------------------------
 
                nonlincont: do ! entry point for non-linear continuity interation
