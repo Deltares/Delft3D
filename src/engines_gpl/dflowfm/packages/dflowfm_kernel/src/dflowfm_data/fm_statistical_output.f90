@@ -1982,7 +1982,13 @@ contains
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_Q1_MAIN, &
                              'Wrimap_flow_flux_q1_main', 'q1_main', 'Main channel discharge through flow link at current time', &
-                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel to map file')
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel and both floodplains to map file')
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN1, &
+                             'Wrimap_flow_flux_q1_main', 'q1_floodplain1', 'First floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN2, &
+                             'Wrimap_flow_flux_q1_main', 'q1_floodplain2', 'Second floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
 
       call add_output_config(config_set_map, IDX_MAP_FIXED_WEIR_ENERGY_LOSS, &
                              'Wrimap_fixed_weir_energy_loss', 'fixed weir energy loss', 'Fixed weir energy loss', &

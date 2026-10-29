@@ -199,6 +199,8 @@ module m_unstruc_netcdf_data
       integer :: id_hu(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_q1(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_q1main(MAX_ID_VAR) = -1 !< Variable ID for main channel discharge (1D quantity)
+      integer :: id_q1floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain discharge (1D quantity)
+      integer :: id_q1floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain discharge (1D quantity)
       integer :: id_fwel(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_u1(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_u0(MAX_ID_VAR) = -1 !< Variable ID for

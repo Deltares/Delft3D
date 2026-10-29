@@ -59,7 +59,7 @@ contains
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
+                        u_to_umain, q1_main, q1_floodplain1, q1_floodplain2, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
@@ -972,6 +972,10 @@ contains
          call aerr('u_to_umain(lnkx)', ierr, lnkx)
          call realloc(q1_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('q1_main(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain2(lnkx)', ierr, lnkx)
       end if
 
       if (jacali == 1) then
