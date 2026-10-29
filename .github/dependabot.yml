@@ -19,6 +19,15 @@ updates:
       testbench-deps:
         patterns: ["*"]
 
+  # tools/deltares_fortran_styler is locked with uv
+  - package-ecosystem: "uv"
+    directory: "/tools/deltares_fortran_styler"
+    schedule:
+      interval: "weekly"
+    groups:
+      styler-deps:
+        patterns: ["*"]
+
   # GitHub Actions used in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"
