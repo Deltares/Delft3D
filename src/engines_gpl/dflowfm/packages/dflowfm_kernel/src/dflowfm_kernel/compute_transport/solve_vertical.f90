@@ -59,6 +59,7 @@ contains
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
+      use m_fm_wq_processes, only: iconstituent_to_fall_velocity_waq, fall_velocity_waq
 
       implicit none
 
@@ -194,10 +195,12 @@ contains
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
-                     if (jased < 4) then
-                        qw_loc = qw(k) - wsf(j) * a1(kk)
-                     else if (j >= ISED1 .and. j <= ISEDN) then
+                     if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                         qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
+                     else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                        qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * a1(kk)
+                     else
+                        qw_loc = qw(k) - wsf(j) * a1(kk)
                      end if
                   else
                      qw_loc = qw(k)
@@ -211,15 +214,11 @@ contains
                   upper(n, j) = upper(n, j) + fluxfac * dvol1i
                end if
 
-               if (jaimplicitfallvelocity == 1) then ! implicit fallvelocity
-                  fluxfac = 0.0_dp
-                  if (jased == 4) then
-                     if (j >= ISED1 .and. j <= ISEDN) then
-                        fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
-                     else
-                        ! tracers
-                        fluxfac = wsf(j) * a1(kk) * dt_loc
-                     end if
+               if (jaimplicitfallvelocity == 1) then
+                  if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
+                     fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
+                  else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                     fluxfac = fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * a1(kk) * dt_loc
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
