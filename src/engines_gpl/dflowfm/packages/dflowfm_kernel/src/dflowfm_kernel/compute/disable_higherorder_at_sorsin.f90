@@ -84,12 +84,12 @@ contains
                cycle
             end if
 
-!           loop over all attached flow links
+            ! loop over all attached flow links
             do iL = 1, nd(kk)%lnx
-!              get 2D flink link
+               ! get 2D flink link
                LL = abs(nd(kk)%ln(iL))
 
-!              disable high-order reconstruction
+               ! disable high-order reconstruction
                klnup(:, LL) = 0
             end do
          end do
