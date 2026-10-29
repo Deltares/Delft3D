@@ -1,0 +1,29 @@
+version: 2
+updates:
+  # ci/python is locked with uv
+  - package-ecosystem: "uv"
+    directory: "/ci/python"
+    schedule:
+      interval: "weekly"
+    groups:
+      python-deps:
+        patterns: ["*"]
+
+  # Testbench dependency ranges in pyproject.toml. The compiled pip/*-requirements.txt pins are not
+  # picked up by Dependabot and have to be recompiled with `uv pip compile` when these change.
+  - package-ecosystem: "pip"
+    directory: "/test/deltares_testbench"
+    schedule:
+      interval: "weekly"
+    groups:
+      testbench-deps:
+        patterns: ["*"]
+
+  # GitHub Actions used in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
