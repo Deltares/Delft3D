@@ -71,7 +71,7 @@ contains
       use m_heatfluxes
       use m_ec_interpolationsettings
       use unstruc_channel_flow
-      use m_atmospheric_stability, only: default_atmospheric_stability
+      use m_atmospheric_stability, only: atmospheric_stability
       use m_sobekdfm
       use m_fm_icecover, only: default_fm_icecover
       use m_waves, only: default_waves
@@ -118,7 +118,7 @@ contains
 
       call default_wind()
 
-      call default_atmospheric_stability()
+      call atmospheric_stability%default_atmospheric_stability()
 
       call default_lateral()
 

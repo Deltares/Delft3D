@@ -28,29 +28,8 @@ module m_atmospheric_stability
 
    private
 
-   public :: t_options
-   public :: t_scales
-   public :: t_fluxes
-   public :: atm_stability_options
-   public :: default_atmospheric_stability
-   public :: initialize_atmospheric_stability
-   public :: compute_scales_and_fluxes
-   public :: get_wind_stress
-   public :: get_latent_heat_flux
-   public :: get_sensible_heat_flux
-   public :: get_u_star
-   public :: get_t_star
-   public :: get_q_star
-   public :: get_z0_momentum
-   public :: get_z0_heat
-   public :: get_z0_humidity
-   public :: get_obukhov_length
-   public :: get_richardson_number
-   public :: get_bulk_exchange_diagnostics
-   public :: get_w_star
-   public :: get_transfer_coeff_momentum
-   public :: get_transfer_coeff_sensible_heat
-   public :: get_transfer_coeff_latent_heat
+   public :: atmospheric_stability
+   public :: t_atmospheric_stability
 
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
@@ -104,22 +83,50 @@ module m_atmospheric_stability
       real(kind=dp) :: sensible_heat_flux = 0.0_dp
    end type t_fluxes
 
-   type(t_scales), dimension(:), allocatable :: scaling_parameters !< Array of scaling parameters
-   type(t_fluxes), dimension(:), allocatable :: fluxes !< Array of fluxes
+   type :: t_atmospheric_stability
+      type(t_options) :: options !< Time-independent MOST options, set once at initial
+      type(t_scales), dimension(:), allocatable :: scaling_parameters !< Array of scaling parameters
+      type(t_fluxes), dimension(:), allocatable :: fluxes !< Array of fluxes
 
-   type(t_options) :: atm_stability_options !< Time-independent MOST options, set once at initialization.
+   contains
+         procedure :: default_atmospheric_stability
+         procedure :: initialize_atmospheric_stability
+         procedure :: compute_scales_and_fluxes
+         procedure :: get_wind_stress
+         procedure :: get_latent_heat_flux
+         procedure :: get_sensible_heat_flux
+         procedure :: get_u_star
+         procedure :: get_t_star
+         procedure :: get_q_star
+         procedure :: get_z0_momentum
+         procedure :: get_z0_heat
+         procedure :: get_z0_humidity
+         procedure :: get_obukhov_length
+         procedure :: get_richardson_number
+         procedure :: get_bulk_exchange_diagnostics
+         procedure :: get_w_star
+         procedure :: get_transfer_coeff_momentum
+         procedure :: get_transfer_coeff_sensible_heat
+         procedure :: get_transfer_coeff_latent_heat
+   end type t_atmospheric_stability
+
+   type(t_atmospheric_stability) :: atmospheric_stability
 
 contains
 
    !> Resets the module to its compile-time default state.
-   subroutine default_atmospheric_stability()
-      atm_stability_options = t_options()
+   subroutine default_atmospheric_stability(self)
+    class(t_atmospheric_stability), intent(inout) :: self
+    self%options = t_options()
+    if (allocated(self%scaling_parameters)) deallocate (self%scaling_parameters)
+    if (allocated(self%fluxes)) deallocate (self%fluxes)
    end subroutine default_atmospheric_stability
 
    !> Sets the time-independent MOST parameters once, to be called at the start of a simulation.
-   subroutine initialize_atmospheric_stability(include_stability, include_free_convection, &
+   subroutine initialize_atmospheric_stability(self, include_stability, include_free_convection, &
                                                 sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
                                                 alpha_m, alpha_h, alpha_q)
+      class(t_atmospheric_stability), intent(inout) :: self
       logical, intent(in) :: include_stability !< Enable stability-aware similarity corrections.
       logical, intent(in) :: include_free_convection !< Enable free-convection velocity scale.
       real(kind=dp), intent(in) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
@@ -129,15 +136,15 @@ contains
       real(kind=dp), intent(in) :: alpha_h !< Air viscous heat coefficient [-]
       real(kind=dp), intent(in) :: alpha_q !< Air viscous moisture coefficient [-]
 
-      atm_stability_options%include_stability = include_stability
-      atm_stability_options%include_free_convection = include_free_convection
-      atm_stability_options%sensor_height_wind_velocity = sensor_height_wind_velocity
-      atm_stability_options%sensor_height_air_temperature = sensor_height_air_temperature
-      atm_stability_options%sensor_height_humidity = sensor_height_humidity
-      atm_stability_options%alpha_m = alpha_m
-      atm_stability_options%alpha_h = alpha_h
-      atm_stability_options%alpha_q = alpha_q
-   end subroutine initialize_atmospheric_stability
+      self%options%include_stability = include_stability
+      self%options%include_free_convection = include_free_convection
+      self%options%sensor_height_wind_velocity = sensor_height_wind_velocity
+      self%options%sensor_height_air_temperature = sensor_height_air_temperature
+      self%options%sensor_height_humidity = sensor_height_humidity
+      self%options%alpha_m = alpha_m
+      self%options%alpha_h = alpha_h
+      self%options%alpha_q = alpha_q
+                                                end subroutine initialize_atmospheric_stability
 
    !> Compute turbulence scaling parameters for a point value.
    pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
@@ -181,7 +188,6 @@ contains
       associate (sensor_height_wind_velocity => options%sensor_height_wind_velocity, &
                  sensor_height_humidity => options%sensor_height_humidity, &
                  sensor_height_air_temperature => options%sensor_height_air_temperature)
-
          wind_velocity_magnitude = sqrt(wind_velocity_x**2 + wind_velocity_y**2)
          vapor_pressure = compute_saturation_pressure(dew_point_temperature)
          saturated_vapor_pressure = compute_saturation_pressure(air_temperature)
@@ -239,8 +245,8 @@ contains
                inverse_obukhov_length = 1.0_dp / obukhov_length
 
                call compute_psi_stability_corrections(sensor_height_wind_velocity, sensor_height_wind_velocity, &
-                                                   sensor_height_wind_velocity, z0_momentum, z0_heat, z0_humidity, &
-                                                   inverse_obukhov_length, psi_diff_momentum, psi_diff_heat, psi_diff_humidity)
+                                                      sensor_height_wind_velocity, z0_momentum, z0_heat, z0_humidity, &
+                                                      inverse_obukhov_length, psi_diff_momentum, psi_diff_heat, psi_diff_humidity)
 
                if (abs(sensor_height_wind_velocity - sensor_height_air_temperature) > 0.01_dp) then
                   heat_profile_correction = log(sensor_height_wind_velocity) - log(sensor_height_air_temperature) &
@@ -274,7 +280,6 @@ contains
             convergence_error = sqrt(((result%u_star - u_star) / max(abs(u_star), EPS8))**2 + &
                                      ((result%t_star - t_star) / max(abs(t_star), EPS8))**2 + &
                                      ((result%q_star - q_star) / max(abs(q_star), EPS8))**2)
-
             u_star = result%u_star
             t_star = result%t_star
             q_star = result%q_star
@@ -316,8 +321,9 @@ contains
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
    !! This routine gives no return values. It fills the module arrays with proper values.
-   subroutine compute_scales_and_fluxes(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
-                                        air_pressure, charnock, surface_temperature, salt_saturation_humidity_reduction_factor, options)
+   subroutine compute_scales_and_fluxes(self, wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
+                                        air_pressure, charnock, surface_temperature, salt_saturation_humidity_reduction_factor)
+      class(t_atmospheric_stability), intent(inout) :: self
       real(kind=dp), intent(in) :: wind_velocity_x(:) !< x-direction wind component [m/s].
       real(kind=dp), intent(in) :: wind_velocity_y(:) !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature(:) !< Air temperature [K].
@@ -326,7 +332,6 @@ contains
       real(kind=dp), intent(in) :: charnock(:) !< Charnock parameter [-].
       real(kind=dp), intent(in) :: surface_temperature(:) !< Surface temperature [K].
       type(t_array_or_scalar), intent(in) :: salt_saturation_humidity_reduction_factor !< Salinity reduction factor of saturation humidity [-]
-      type(t_options), intent(in) :: options !< Process options
 
       type(t_scales) :: scaling_parameter
       type(t_fluxes) :: flux
@@ -345,16 +350,14 @@ contains
          call err('compute_scales_and_fluxes: all input arrays must have the same size.')
       end if
 
-      if (allocated(scaling_parameters)) deallocate (scaling_parameters)
-      if (allocated(fluxes)) deallocate (fluxes)
-      allocate (scaling_parameters(number_of_elements))
-      allocate (fluxes(number_of_elements))
+      if (.not. allocated(self%scaling_parameters)) allocate (self%scaling_parameters(number_of_elements))
+      if (.not. allocated(self%fluxes)) allocate (self%fluxes(number_of_elements))
 
       do index = 1, number_of_elements
          scaling_parameter = compute_scaling_parameters(wind_velocity_x(index), wind_velocity_y(index), air_temperature(index), &
-                                                        dew_point_temperature(index), air_pressure(index), charnock(index), &
-                                                        surface_temperature(index), salt_saturation_humidity_reduction_factor%get(index), &
-                                                        options)
+                                              dew_point_temperature(index), air_pressure(index), charnock(index), &
+                                              surface_temperature(index), salt_saturation_humidity_reduction_factor%get(index), &
+                                              self%options)
 
          vapor_pressure = compute_saturation_pressure(dew_point_temperature(index))
          air_density = compute_air_density(air_temperature(index), air_pressure(index), vapor_pressure)
@@ -371,286 +374,302 @@ contains
          flux%latent_heat_flux = air_density * CONST_Lv * scaling_parameter%u_star * scaling_parameter%q_star
          flux%sensible_heat_flux = air_density * CONST_Cpd * scaling_parameter%u_star * scaling_parameter%t_star
 
-         scaling_parameters(index) = scaling_parameter
-         fluxes(index) = flux
+         self%scaling_parameters(index) = scaling_parameter
+         self%fluxes(index) = flux
       end do
    end subroutine compute_scales_and_fluxes
 
    !> Return wind-stress component arrays from module-stored fluxes.
-   subroutine get_wind_stress(wind_stress_x, wind_stress_y)
+   subroutine get_wind_stress(self, wind_stress_x, wind_stress_y)
+     class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: wind_stress_x !< Wind-stress x-component [N/m^2].
       real(kind=dp), allocatable, dimension(:), intent(out) :: wind_stress_y !< Wind-stress y-component [N/m^2].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(fluxes)) then
+      if (.not. allocated(self%fluxes)) then
          call err('get_wind_stress: module fluxes are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(fluxes)
+      number_of_elements = size(self%fluxes)
       allocate (wind_stress_x(number_of_elements))
       allocate (wind_stress_y(number_of_elements))
 
       do index = 1, number_of_elements
-         wind_stress_x(index) = fluxes(index)%wind_stress_x
-         wind_stress_y(index) = fluxes(index)%wind_stress_y
+         wind_stress_x(index) = self%fluxes(index)%wind_stress_x
+         wind_stress_y(index) = self%fluxes(index)%wind_stress_y
       end do
    end subroutine get_wind_stress
 
    !> Return latent heat flux array [W/m^2] from module-stored fluxes.
-   subroutine get_latent_heat_flux(heat_flux)
+   subroutine get_latent_heat_flux(self, heat_flux)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: heat_flux !< Latent heat flux [W/m^2].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(fluxes)) then
+      if (.not. allocated(self%fluxes)) then
          call err('get_latent_heat_flux: module fluxes are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(fluxes)
+      number_of_elements = size(self%fluxes)
       allocate (heat_flux(number_of_elements))
 
       do index = 1, number_of_elements
-         heat_flux(index) = fluxes(index)%latent_heat_flux
+         heat_flux(index) = self%fluxes(index)%latent_heat_flux
       end do
    end subroutine get_latent_heat_flux
 
    !> Return sensible heat flux array [W/m^2] from module-stored fluxes.
-   subroutine get_sensible_heat_flux(heat_flux)
+   subroutine get_sensible_heat_flux(self, heat_flux)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: heat_flux !< Sensible heat flux [W/m^2].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(fluxes)) then
+      if (.not. allocated(self%fluxes)) then
          call err('get_sensible_heat_flux: module fluxes are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(fluxes)
+      number_of_elements = size(self%fluxes)
       allocate (heat_flux(number_of_elements))
 
       do index = 1, number_of_elements
-         heat_flux(index) = fluxes(index)%sensible_heat_flux
+         heat_flux(index) = self%fluxes(index)%sensible_heat_flux
       end do
    end subroutine get_sensible_heat_flux
 
    !> Return u* array [m/s] from module-stored scaling parameters.
-   subroutine get_u_star(u_star)
+   subroutine get_u_star(self, u_star)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: u_star !< Friction velocity u* [m/s].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_u_star: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (u_star(number_of_elements))
 
       do index = 1, number_of_elements
-         u_star(index) = scaling_parameters(index)%u_star
+         u_star(index) = self%scaling_parameters(index)%u_star
       end do
    end subroutine get_u_star
 
    !> Return t* array [K] from module-stored scaling parameters.
-   subroutine get_t_star(t_star)
+   subroutine get_t_star(self, t_star)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: t_star !< Temperature scale t* [K].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_t_star: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (t_star(number_of_elements))
 
       do index = 1, number_of_elements
-         t_star(index) = scaling_parameters(index)%t_star
+         t_star(index) = self%scaling_parameters(index)%t_star
       end do
    end subroutine get_t_star
 
    !> Return q* array [kg/kg] from module-stored scaling parameters.
-   subroutine get_q_star(q_star)
+   subroutine get_q_star(self, q_star)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: q_star !< Humidity scale q* [kg/kg].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_q_star: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (q_star(number_of_elements))
 
       do index = 1, number_of_elements
-         q_star(index) = scaling_parameters(index)%q_star
+         q_star(index) = self%scaling_parameters(index)%q_star
       end do
    end subroutine get_q_star
 
    !> Return w* array [m/s] from module-stored scaling parameters.
-   subroutine get_w_star(w_star)
+   subroutine get_w_star(self, w_star)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: w_star !< Convective velocity scale w* [m/s].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_w_star: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (w_star(number_of_elements))
 
       do index = 1, number_of_elements
-         w_star(index) = scaling_parameters(index)%w_star
+         w_star(index) = self%scaling_parameters(index)%w_star
       end do
    end subroutine get_w_star
 
    !> Return bulk transfer coefficient of momentum flux [-] from module-stored scaling parameters.
-   subroutine get_transfer_coeff_momentum(c_d)
+   subroutine get_transfer_coeff_momentum(self, c_d)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_d !< Bulk momentum transfer coefficient [-].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_transfer_coeff_momentum: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (c_d(number_of_elements))
 
       do index = 1, number_of_elements
-         c_d(index) = scaling_parameters(index)%c_d
+         c_d(index) = self%scaling_parameters(index)%c_d
       end do
    end subroutine get_transfer_coeff_momentum
 
    !> Return bulk transfer coefficient of sensible heat flux [-] from module-stored scaling parameters.
-   subroutine get_transfer_coeff_sensible_heat(c_h)
+   subroutine get_transfer_coeff_sensible_heat(self, c_h)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_h !< Bulk sensible-heat transfer coefficient [-].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_transfer_coeff_sensible_heat: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (c_h(number_of_elements))
 
       do index = 1, number_of_elements
-         c_h(index) = scaling_parameters(index)%c_h
+         c_h(index) = self%scaling_parameters(index)%c_h
       end do
    end subroutine get_transfer_coeff_sensible_heat
 
    !> Return bulk transfer coefficient of latent heat flux [-] from module-stored scaling parameters.
-   subroutine get_transfer_coeff_latent_heat(c_e)
+   subroutine get_transfer_coeff_latent_heat(self, c_e)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_e !< Bulk latent-heat transfer coefficient [-].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_transfer_coeff_latent_heat: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (c_e(number_of_elements))
 
       do index = 1, number_of_elements
-         c_e(index) = scaling_parameters(index)%c_e
+         c_e(index) = self%scaling_parameters(index)%c_e
       end do
    end subroutine get_transfer_coeff_latent_heat
 
    !> Return momentum roughness length array [m] from module-stored scaling parameters.
-   subroutine get_z0_momentum(z0_momentum)
+   subroutine get_z0_momentum(self, z0_momentum)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: z0_momentum !< Momentum roughness length [m].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_z0_momentum: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (z0_momentum(number_of_elements))
 
       do index = 1, number_of_elements
-         z0_momentum(index) = scaling_parameters(index)%z0_momentum
+         z0_momentum(index) = self%scaling_parameters(index)%z0_momentum
       end do
    end subroutine get_z0_momentum
 
    !> Return heat roughness length array [m] from module-stored scaling parameters.
-   subroutine get_z0_heat(z0_heat)
+   subroutine get_z0_heat(self, z0_heat)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: z0_heat !< Heat roughness length [m].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_z0_heat: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (z0_heat(number_of_elements))
 
       do index = 1, number_of_elements
-         z0_heat(index) = scaling_parameters(index)%z0_heat
+         z0_heat(index) = self%scaling_parameters(index)%z0_heat
       end do
    end subroutine get_z0_heat
 
    !> Return humidity roughness length array [m] from module-stored scaling parameters.
-   subroutine get_z0_humidity(z0_humidity)
+   subroutine get_z0_humidity(self, z0_humidity)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: z0_humidity !< Humidity roughness length [m].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_z0_humidity: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (z0_humidity(number_of_elements))
 
       do index = 1, number_of_elements
-         z0_humidity(index) = scaling_parameters(index)%z0_humidity
+         z0_humidity(index) = self%scaling_parameters(index)%z0_humidity
       end do
    end subroutine get_z0_humidity
 
    !> Return Obukhov length array [m] from module-stored scaling parameters.
-   subroutine get_obukhov_length(obukhov_length)
+   subroutine get_obukhov_length(self, obukhov_length)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: obukhov_length !< Obukhov length [m].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_obukhov_length: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (obukhov_length(number_of_elements))
 
       do index = 1, number_of_elements
-         obukhov_length(index) = scaling_parameters(index)%obukhov_length
+         obukhov_length(index) = self%scaling_parameters(index)%obukhov_length
       end do
    end subroutine get_obukhov_length
 
    !> Return bulk Richardson number array [-] from module-stored scaling parameters.
-   subroutine get_richardson_number(richardson_number)
+   subroutine get_richardson_number(self, richardson_number)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: richardson_number !< Bulk Richardson number [-].
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_richardson_number: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (richardson_number(number_of_elements))
 
       do index = 1, number_of_elements
-         richardson_number(index) = scaling_parameters(index)%richardson_number
+         richardson_number(index) = self%scaling_parameters(index)%richardson_number
       end do
    end subroutine get_richardson_number
 
    !> Return a batch of atmospheric-stability diagnostics from module-stored scaling parameters.
-   subroutine get_bulk_exchange_diagnostics(w_star, obukhov_length, c_d, c_h, c_e, relative_humidity)
+   subroutine get_bulk_exchange_diagnostics(self, w_star, obukhov_length, c_d, c_h, c_e, relative_humidity)
+      class(t_atmospheric_stability), intent(in) :: self
       real(kind=dp), allocatable, dimension(:), intent(out) :: w_star !< Convective velocity scale w* [m/s].
       real(kind=dp), allocatable, dimension(:), intent(out) :: obukhov_length !< Obukhov length [m].
       real(kind=dp), allocatable, dimension(:), intent(out) :: c_d !< Bulk momentum transfer coefficient [-].
@@ -660,11 +679,11 @@ contains
       integer :: index
       integer :: number_of_elements
 
-      if (.not. allocated(scaling_parameters)) then
+      if (.not. allocated(self%scaling_parameters)) then
          call err('get_bulk_exchange_diagnostics: module scaling parameters are not available. Call compute_scales_and_fluxes first.')
       end if
 
-      number_of_elements = size(scaling_parameters)
+      number_of_elements = size(self%scaling_parameters)
       allocate (w_star(number_of_elements))
       allocate (obukhov_length(number_of_elements))
       allocate (c_d(number_of_elements))
@@ -673,12 +692,12 @@ contains
       allocate (relative_humidity(number_of_elements))
 
       do index = 1, number_of_elements
-         w_star(index) = scaling_parameters(index)%w_star
-         obukhov_length(index) = scaling_parameters(index)%obukhov_length
-         c_d(index) = scaling_parameters(index)%c_d
-         c_h(index) = scaling_parameters(index)%c_h
-         c_e(index) = scaling_parameters(index)%c_e
-         relative_humidity(index) = scaling_parameters(index)%relative_humidity
+         w_star(index) = self%scaling_parameters(index)%w_star
+         obukhov_length(index) = self%scaling_parameters(index)%obukhov_length
+         c_d(index) = self%scaling_parameters(index)%c_d
+         c_h(index) = self%scaling_parameters(index)%c_h
+         c_e(index) = self%scaling_parameters(index)%c_e
+         relative_humidity(index) = self%scaling_parameters(index)%relative_humidity
       end do
    end subroutine get_bulk_exchange_diagnostics
 
@@ -755,7 +774,7 @@ contains
       real(kind=dp), parameter :: MINIMUM_WIND_SPEED = 0.10_dp
 
       surface_specific_humidity = saturated_humidity_reduction_factor * compute_specific_humidity( &
-                                  compute_saturation_pressure(surface_temperature), air_pressure)
+                      compute_saturation_pressure(surface_temperature), air_pressure)
       surface_virtual_temperature = surface_temperature * (1.0_dp + CONST_EST * surface_specific_humidity)
       air_virtual_temperature = air_temperature * (1.0_dp + CONST_EST * air_specific_humidity)
       virtual_temperature_difference = air_virtual_temperature - surface_virtual_temperature

@@ -2,7 +2,7 @@ module test_atmospheric_stability
    use assertions_gtest
    use precision, only: dp
    use precision_basics, only: comparereal
-   use m_atmospheric_stability
+   use m_atmospheric_stability, only: t_atmospheric_stability
    use m_array_or_scalar, only: t_array_or_scalar
    use m_alloc, only: realloc
    implicit none
@@ -13,16 +13,17 @@ contains
    subroutine test_compute_scales_and_fluxes_moninobukhov_true() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
-      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
-      type(t_fluxes), allocatable, dimension(:) :: flux_array
       real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
       type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
-      type(t_options) :: options
+      type(t_atmospheric_stability) :: atmospheric_stability
       
-      options%include_stability = .true.
+      call atmospheric_stability%initialize_atmospheric_stability( &
+         include_stability=.true., include_free_convection=.false., &
+         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
+         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -34,24 +35,24 @@ contains
       call realloc(salinity_reduction_factor_saturation_humidity%values, size(surface_temperature), keepexisting=.true., fill=salinity_reduction_factor_saturation_humidity%scalar)
       salinity_reduction_factor_saturation_humidity%values = [1.0_dp, 0.99_dp, 0.98_dp]
       
-      call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
+      call atmospheric_stability%compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity)
 
-      call get_u_star(u_star)
-      call get_t_star(t_star)
-      call get_q_star(q_star)
-      call get_z0_momentum(z0_momentum)
-      call get_z0_heat(z0_heat)
-      call get_z0_humidity(z0_humidity)
-      call get_obukhov_length(obukhov_length)
-      call get_richardson_number(richardson_number)
-      call get_wind_stress(wind_stress_u, wind_stress_v)
-      call get_latent_heat_flux(latent_heat_flux)
-      call get_sensible_heat_flux(sensible_heat_flux)
-      call get_w_star(w_star)
-      call get_transfer_coeff_momentum(c_d)
-      call get_transfer_coeff_sensible_heat(c_h)
-      call get_transfer_coeff_latent_heat(c_e)
+      call atmospheric_stability%get_u_star(u_star)
+      call atmospheric_stability%get_t_star(t_star)
+      call atmospheric_stability%get_q_star(q_star)
+      call atmospheric_stability%get_z0_momentum(z0_momentum)
+      call atmospheric_stability%get_z0_heat(z0_heat)
+      call atmospheric_stability%get_z0_humidity(z0_humidity)
+      call atmospheric_stability%get_obukhov_length(obukhov_length)
+      call atmospheric_stability%get_richardson_number(richardson_number)
+      call atmospheric_stability%get_wind_stress(wind_stress_u, wind_stress_v)
+      call atmospheric_stability%get_latent_heat_flux(latent_heat_flux)
+      call atmospheric_stability%get_sensible_heat_flux(sensible_heat_flux)
+      call atmospheric_stability%get_w_star(w_star)
+      call atmospheric_stability%get_transfer_coeff_momentum(c_d)
+      call atmospheric_stability%get_transfer_coeff_sensible_heat(c_h)
+      call atmospheric_stability%get_transfer_coeff_latent_heat(c_e)
 
       call f90_expect_near(u_star(1), 0.483570419681275_dp, 1e-5_dp, "u_star(1) does not match expected value.")
       call f90_expect_near(t_star(1), -0.017773509539055_dp, 1e-7_dp, "t_star(1) does not match expected value.")
@@ -111,17 +112,17 @@ contains
    subroutine test_compute_scales_and_fluxes_moninobukhov_false() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
-      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
-      type(t_fluxes), allocatable, dimension(:) :: flux_array
       real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
       type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
-      real(kind=dp) :: tolerance = 1e-5_dp
-      type(t_options) :: options
+      type(t_atmospheric_stability) :: atmospheric_stability
       
-      options%include_stability = .false.
+      call atmospheric_stability%initialize_atmospheric_stability( &
+         include_stability=.false., include_free_convection=.false., &
+         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
+         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -131,24 +132,24 @@ contains
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
       
-      call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
+      call atmospheric_stability%compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity)
    
-      call get_u_star(u_star)
-      call get_t_star(t_star)
-      call get_q_star(q_star)
-      call get_z0_momentum(z0_momentum)
-      call get_z0_heat(z0_heat)
-      call get_z0_humidity(z0_humidity)
-      call get_obukhov_length(obukhov_length)
-      call get_richardson_number(richardson_number)
-      call get_wind_stress(wind_stress_u, wind_stress_v)
-      call get_latent_heat_flux(latent_heat_flux)
-      call get_sensible_heat_flux(sensible_heat_flux)
-      call get_w_star(w_star)
-      call get_transfer_coeff_momentum(c_d)
-      call get_transfer_coeff_sensible_heat(c_h)
-      call get_transfer_coeff_latent_heat(c_e)
+      call atmospheric_stability%get_u_star(u_star)
+      call atmospheric_stability%get_t_star(t_star)
+      call atmospheric_stability%get_q_star(q_star)
+      call atmospheric_stability%get_z0_momentum(z0_momentum)
+      call atmospheric_stability%get_z0_heat(z0_heat)
+      call atmospheric_stability%get_z0_humidity(z0_humidity)
+      call atmospheric_stability%get_obukhov_length(obukhov_length)
+      call atmospheric_stability%get_richardson_number(richardson_number)
+      call atmospheric_stability%get_wind_stress(wind_stress_u, wind_stress_v)
+      call atmospheric_stability%get_latent_heat_flux(latent_heat_flux)
+      call atmospheric_stability%get_sensible_heat_flux(sensible_heat_flux)
+      call atmospheric_stability%get_w_star(w_star)
+      call atmospheric_stability%get_transfer_coeff_momentum(c_d)
+      call atmospheric_stability%get_transfer_coeff_sensible_heat(c_h)
+      call atmospheric_stability%get_transfer_coeff_latent_heat(c_e)
 
       call f90_expect_near(u_star(1), 0.479416158782993_dp, 1e-5_dp, "u_star(1) does not match expected value.")
       call f90_expect_near(t_star(1), -0.021149163348618615_dp, 1e-7_dp, "t_star(1) does not match expected value.")
@@ -208,17 +209,17 @@ contains
    subroutine test_compute_scales_and_fluxes_moninobukhov_free_convection() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
-      type(t_scales), allocatable, dimension(:) :: scaling_parameter_array
-      type(t_fluxes), allocatable, dimension(:) :: flux_array
       real(kind=dp), allocatable, dimension(:) :: wind_stress_u, wind_stress_v
       real(kind=dp), allocatable, dimension(:) :: latent_heat_flux, sensible_heat_flux
       real(kind=dp), allocatable, dimension(:) :: u_star, t_star, q_star, w_star, z0_momentum, z0_heat, z0_humidity, &
                                     obukhov_length, richardson_number, c_d, c_h, c_e
       type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity
-      type(t_options) :: options
+      type(t_atmospheric_stability) :: atmospheric_stability
       
-      options%include_stability = .true.
-      options%include_free_convection = .true.
+      call atmospheric_stability%initialize_atmospheric_stability( &
+         include_stability=.true., include_free_convection=.true., &
+         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
+         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -228,24 +229,24 @@ contains
       surface_temperature = [286.743896484375000_dp, 286.676513671875000_dp, 282.813232421875000_dp]
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp
       
-      call compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
-                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity, options)
+      call atmospheric_stability%compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+                                  air_pressure, charnock, surface_temperature, salinity_reduction_factor_saturation_humidity)
 
-      call get_u_star(u_star)
-      call get_t_star(t_star)
-      call get_q_star(q_star)
-      call get_z0_momentum(z0_momentum)
-      call get_z0_heat(z0_heat)
-      call get_z0_humidity(z0_humidity)
-      call get_obukhov_length(obukhov_length)
-      call get_richardson_number(richardson_number)
-      call get_wind_stress(wind_stress_u, wind_stress_v)
-      call get_latent_heat_flux(latent_heat_flux)
-      call get_sensible_heat_flux(sensible_heat_flux)
-      call get_w_star(w_star)
-      call get_transfer_coeff_momentum(c_d)
-      call get_transfer_coeff_sensible_heat(c_h)
-      call get_transfer_coeff_latent_heat(c_e)
+      call atmospheric_stability%get_u_star(u_star)
+      call atmospheric_stability%get_t_star(t_star)
+      call atmospheric_stability%get_q_star(q_star)
+      call atmospheric_stability%get_z0_momentum(z0_momentum)
+      call atmospheric_stability%get_z0_heat(z0_heat)
+      call atmospheric_stability%get_z0_humidity(z0_humidity)
+      call atmospheric_stability%get_obukhov_length(obukhov_length)
+      call atmospheric_stability%get_richardson_number(richardson_number)
+      call atmospheric_stability%get_wind_stress(wind_stress_u, wind_stress_v)
+      call atmospheric_stability%get_latent_heat_flux(latent_heat_flux)
+      call atmospheric_stability%get_sensible_heat_flux(sensible_heat_flux)
+      call atmospheric_stability%get_w_star(w_star)
+      call atmospheric_stability%get_transfer_coeff_momentum(c_d)
+      call atmospheric_stability%get_transfer_coeff_sensible_heat(c_h)
+      call atmospheric_stability%get_transfer_coeff_latent_heat(c_e)
 
       call f90_expect_near(u_star(1), 0.48503892913306618_dp, 1e-5_dp, "u_star(1) does not match expected value.")
       call f90_expect_near(t_star(1), -0.017768759087295315_dp, 1e-7_dp, "t_star(1) does not match expected value.")
