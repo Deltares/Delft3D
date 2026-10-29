@@ -41,7 +41,7 @@ contains
       use precision, only: dp
       use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, his_write_settings, map_write_settings, &
                         temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep, &
-                        air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+                        air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flowgeom, only: ndxi, nd
       use m_sferic, only: anglon, anglat
       use m_wind, only: heatsrc0, sensible_heat_flux, latent_heat_flux
