@@ -73,7 +73,7 @@ contains
 
       nominal_solar_radiation = calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) ! for models not in spherical coordinates do this just once
       
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call atmospheric_stability%get_sensible_heat_flux(sensible_heat_flux)
          call atmospheric_stability%get_latent_heat_flux(latent_heat_flux)
       end if
