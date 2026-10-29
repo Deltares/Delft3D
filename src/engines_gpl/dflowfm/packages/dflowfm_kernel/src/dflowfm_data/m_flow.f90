@@ -272,6 +272,9 @@ module m_flow
    real(kind=dp), allocatable, dimension(:) :: qa !< [m3/s] Discharge used in advection, qa=au(n)*u1(n+1) instead of u1(n+1) alone.
    real(kind=dp), allocatable, dimension(:) :: map_fixed_weir_energy_loss !< [m2/s2] Fixed weir energy loss at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au !< [m2] Flow area at u point. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_main !< [m2] Main channel flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_floodplain1 !< [m2] First floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_floodplain2 !< [m2] Second floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_nostrucs !< [m2] Flow area at u point without structures. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, dimension(:) :: ucxu !< [m/s] Upwind link ucx.
    real(kind=dp), allocatable, dimension(:) :: ucyu !< [m/s] Upwind link ucy.

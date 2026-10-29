@@ -362,6 +362,9 @@ module m_output_config
    integer, public :: IDX_MAP_LIMTSTEP_CUM
    integer, public :: IDX_MAP_COURANT
    integer, public :: IDX_MAP_AU
+   integer, public :: IDX_MAP_AU_MAIN !< Output configuration index for main channel flow area
+   integer, public :: IDX_MAP_AU_FLOODPLAIN1 !< Output configuration index for first floodplain flow area
+   integer, public :: IDX_MAP_AU_FLOODPLAIN2 !< Output configuration index for second floodplain flow area
    integer, public :: IDX_MAP_U1
    integer, public :: IDX_MAP_U0
    integer, public :: IDX_MAP_UCXQ_EULERIAN
