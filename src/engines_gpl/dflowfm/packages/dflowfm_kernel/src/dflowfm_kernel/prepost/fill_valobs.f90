@@ -393,7 +393,7 @@ contains
                end do
             end if
 
-            ! Frome here: everything as snapped!!!
+            ! From here, everything as snapped observation points (as before). This is because the quantities are not needed for offline nesting and therefore not interpolated.
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
                valobs(i, IPNT_wy) = 0.0_dp

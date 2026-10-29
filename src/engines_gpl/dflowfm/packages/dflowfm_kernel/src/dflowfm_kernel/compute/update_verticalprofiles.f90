@@ -48,7 +48,7 @@ contains
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
+                        EPS4, trsh_u1lb, ustw, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
@@ -260,10 +260,6 @@ contains
 
                tkebot = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
                tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
-
-               if (ieps == 3) then ! as Delft3D
-                  vicwwu(Lb0) = vonkar * ustb(LL) * z00
-               end if
 
                turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
                tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
