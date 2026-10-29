@@ -67,6 +67,7 @@ contains
                         use_density, map_ndkx_to_ndx, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
+      use m_flow, only: au_main, au_floodplain1, au_floodplain2
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
@@ -965,6 +966,15 @@ contains
       if (jafrculin > 0) then
          call realloc(frculin, lnx, stat=ierr, fill=dmiss, keepexisting=.false.)
          call aerr('frculin(lnx)', ierr, lnx)
+      end if
+
+      if (map_write_settings%au_split == 1) then
+         call realloc(au_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_main(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain2(lnkx)', ierr, lnkx)
       end if
 
       if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then

@@ -179,6 +179,9 @@ module m_unstruc_netcdf_data
       integer :: id_hs(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_vol1(MAX_ID_VAR) = -1 !< Variable ID for volume
       integer :: id_au(MAX_ID_VAR) = -1 !< Variable ID for flow area
+      integer :: id_au_main(MAX_ID_VAR) = -1 !< Variable ID for main channel flow area
+      integer :: id_au_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain flow area
+      integer :: id_au_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain flow area
       integer :: id_taus(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausmax(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausx(MAX_ID_VAR) = -1 !< Variable ID for
