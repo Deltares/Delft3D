@@ -266,6 +266,9 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: u_to_umain !< [-] Factor for translating general velocity to the flow velocity in the main channel at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: q1 !< [m3/s] Discharge at end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: q1_main !< [m3/s] Discharge in main channel at end of timestep. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1_floodplain1 !< [m3/s] Discharge in first floodplain, computed with q1_main. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1_floodplain2 !< [m3/s] Discharge in second floodplain, computed with q1_main. {"location": "edge", "shape": ["lnkx"]}
+
    real(kind=dp), allocatable, dimension(:) :: qa !< [m3/s] Discharge used in advection, qa=au(n)*u1(n+1) instead of u1(n+1) alone.
    real(kind=dp), allocatable, dimension(:) :: map_fixed_weir_energy_loss !< [m2/s2] Fixed weir energy loss at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au !< [m2] Flow area at u point. {"location": "edge", "shape": ["lnkx"]}

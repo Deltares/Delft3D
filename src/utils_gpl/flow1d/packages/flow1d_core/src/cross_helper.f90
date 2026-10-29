@@ -172,6 +172,8 @@ contains
       double precision, parameter                :: eps_acrtot = 1d-10            ! accuracy weighted area parameter == 0d0
       double precision, parameter                :: eps_area = 1d-6               ! accuracy area == 0d0
       
+      q_sub = 0.d0
+      r_sub = 0.d0
       acrtot = 0.d0
       do isec = 1,3
           if (perim_sub(isec) > eps_perim) then

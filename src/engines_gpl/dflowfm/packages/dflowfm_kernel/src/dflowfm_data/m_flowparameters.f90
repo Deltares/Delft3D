@@ -576,7 +576,7 @@ module m_flowparameters
       integer :: diu = 1 !< horizontal diffusity to map file, 0: no, 1: yes
       integer :: rho = 1 !< flow density to map file, 0: no, 1: yes
       integer :: q1 = 1 !< flow flux to map file, 0: no, 1: yes
-      integer :: q1main = 0 !< main channel flow flux to map file, 0: no, 1: yes
+      integer :: q1main = 0 !< Main channel and both floodplain flow fluxes to map file, 0: no, 1: yes
       integer :: fw = 0 !< fixed weir energy loss to map file, 0: no, 1: yes
       integer :: spir = 1 !< spiral flow to map file, 0: no, 1: yes
       integer :: tidep = 1 !< tidal potential to map file, 0: no, 1: yes

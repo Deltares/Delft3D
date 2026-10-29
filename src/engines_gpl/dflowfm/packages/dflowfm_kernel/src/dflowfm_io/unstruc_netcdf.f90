@@ -4126,6 +4126,10 @@ contains
          if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, nc_precision, iLocU, 'q1_main', '', 'Main channel discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
             ierr = unc_put_att(mapids%ncid, mapids%id_q1main, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, nc_precision, iLocU, 'q1_floodplain1', '', 'First floodplain discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
+            ierr = unc_put_att(mapids%ncid, mapids%id_q1floodplain1, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain2, nc_precision, iLocU, 'q1_floodplain2', '', 'Second floodplain discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
+            ierr = unc_put_att(mapids%ncid, mapids%id_q1floodplain2, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
 
          if (map_write_settings%fw > 0) then
@@ -5282,6 +5286,8 @@ contains
 
       if (map_write_settings%q1main == 1 .and. allocated(q1_main)) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, iLocU, q1_main, 0.0_dp, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, iLocU, q1_floodplain1, 0.0_dp, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain2, iLocU, q1_floodplain2, 0.0_dp, jabndnd=jabndnd_)
       end if
 
       if (map_write_settings%fw == 1) then
@@ -6729,7 +6735,7 @@ contains
          id_sxtot, id_sytot, id_rsedeq, id_umod, id_zumod, id_ustar, id_dzdn, id_dzdt, id_morbl, id_aks, id_rca, &
          id_bodsed, id_dpsed, id_msed, id_lyrfrac, id_thlyr, id_poros, id_nlyrdim, &
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
-         id_q1main, &
+         id_q1main, id_q1floodplain1, id_q1floodplain2, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
          id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
@@ -7064,6 +7070,16 @@ contains
                ierr = nf90_put_att(imapfile, id_q1(iid), '_FillValue', dmiss)
             end if
             if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+               ierr = nf90_def_var(imapfile, 'q1_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'long_name', 'First floodplain discharge through flow link at current time')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'units', 'm3 s-1')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'q1_floodplain2', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'long_name', 'Second floodplain discharge through flow link at current time')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'units', 'm3 s-1')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), '_FillValue', dmiss)
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                !ierr = nf90_put_att(imapfile, id_q1main(iid)   ,'standard_name', 'discharge') ! not CF
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'long_name', 'flow flux in main channel')
@@ -8812,6 +8828,11 @@ contains
             if (kmx == 0) then
                ierr = nf90_put_var(imapfile, id_spircrv(iid), spircrv, [1, itim], [ndxndxi, 1])
             end if
+         end if
+
+         if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+            ierr = nf90_put_var(imapfile, id_q1floodplain1(iid), q1_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_q1floodplain2(iid), q1_floodplain2, [1, itim], [lnx, 1])
          end if
 
          if (kmx == 0) then

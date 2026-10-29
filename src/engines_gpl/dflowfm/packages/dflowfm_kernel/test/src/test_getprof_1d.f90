@@ -289,6 +289,7 @@ contains
    subroutine test_getprof_1d__network1d__friction() bind(C)
       use network_data, only: numl
       use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
+      use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_flowgeom, only: lnx
       use m_flow_geominit, only: flow_geominit
       use m_network, only: initialize_1dadmin, deallocnetwork
@@ -324,6 +325,8 @@ contains
       call realloc(frcu, lnx)
       call realloc(frcu_mor, lnx)
       call realloc(q1_main, lnx)
+      call realloc(q1_floodplain1, lnx, fill=42.0_dp)
+      call realloc(q1_floodplain2, lnx, fill=42.0_dp)
 
       call default_channel_flow()
       call initialize_1dadmin(network, network%numl, numl)
@@ -351,7 +354,42 @@ contains
       hydrad = area / perim
       chezy = get_chezy(hydrad, 0.013_dp, 1.0_dp, 1.0_dp, R_MANNING)
       call f90_assert_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result"//c_null_char)
+      call f90_assert_near(q1_main(1), q1(1), 1e-7_dp, "All discharge should be in main channel"//c_null_char)
+      call f90_assert_near(q1_floodplain1(1), 0.0_dp, 1e-7_dp, "First floodplain should be dry"//c_null_char)
+      call f90_assert_near(q1_floodplain2(1), 0.0_dp, 1e-7_dp, "Second floodplain should be dry"//c_null_char)
    end subroutine test_getprof_1d__network1d__friction
+   !$f90tw )
+
+   !$f90tw TESTCODE(TEST, test_getprof_1d, test_cross_discharge__floodplains, test_cross_discharge__floodplains,
+   subroutine test_cross_discharge__floodplains() bind(C)
+      use m_cross_helper, only: getCrossDischarge
+
+      real(kind=dp), dimension(3) :: area, perimeter, chezy, discharge, expected
+      integer :: i
+
+      area = [8.0_dp, 4.0_dp, 2.0_dp]
+      perimeter = [2.0_dp, 4.0_dp, 8.0_dp]
+      chezy = [30.0_dp, 20.0_dp, 10.0_dp]
+      expected = [480.0_dp, 80.0_dp, 10.0_dp]
+
+      call getCrossDischarge(perimeter, area, chezy, sum(expected), discharge)
+      do i = 1, 3
+         call f90_assert_near(discharge(i), expected(i), 1e-7_dp, "Unexpected subsection discharge"//c_null_char)
+      end do
+      call f90_assert_near(sum(discharge), sum(expected), 1e-7_dp, "Discharge should be conserved"//c_null_char)
+
+      call getCrossDischarge(perimeter, area, chezy, -sum(expected), discharge)
+      do i = 1, 3
+         call f90_assert_near(discharge(i), -expected(i), 1e-7_dp, "Unexpected reverse subsection discharge"//c_null_char)
+      end do
+
+      area = 0.0_dp
+      perimeter = 0.0_dp
+      call getCrossDischarge(perimeter, area, chezy, 0.0_dp, discharge)
+      do i = 1, 3
+         call f90_assert_near(discharge(i), 0.0_dp, 1e-7_dp, "Dry subsection discharge should be zero"//c_null_char)
+      end do
+   end subroutine test_cross_discharge__floodplains
    !$f90tw )
 
    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__full, test_getprof_1d__network1d__full,
@@ -682,4 +720,3 @@ contains
    !$f90tw )
 
 end module m_test_getprof_1d
-

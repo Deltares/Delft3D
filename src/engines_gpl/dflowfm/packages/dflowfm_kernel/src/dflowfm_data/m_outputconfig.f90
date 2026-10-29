@@ -378,6 +378,8 @@ module m_output_config
    integer, public :: IDX_MAP_DIU
    integer, public :: IDX_MAP_Q1
    integer, public :: IDX_MAP_Q1_MAIN
+   integer, public :: IDX_MAP_Q1_FLOODPLAIN1
+   integer, public :: IDX_MAP_Q1_FLOODPLAIN2
    integer, public :: IDX_MAP_FIXED_WEIR_ENERGY_LOSS
    integer, public :: IDX_MAP_SPIRCRV
    integer, public :: IDX_MAP_SPIRINT

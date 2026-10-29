@@ -40,6 +40,7 @@ contains
    subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
       use precision, only: dp
       use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, frcuni1dgrounlay
+      use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
       use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
       use m_cross_helper, only: getconveyance, getcrossdischarge
@@ -113,6 +114,8 @@ contains
             frcu_mor(L) = cz
             u_to_umain(L) = 1.0_dp
             q1_main(L) = q1(L)
+            q1_floodplain1(L) = 0.0_dp
+            q1_floodplain2(L) = 0.0_dp
             wu(L) = width
 
             if (hydrad > 0.0_dp .and. cz > 0.0_dp) then
@@ -134,6 +137,8 @@ contains
             call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub)
 
             if (calcConv == 1) then
+               q1_floodplain1(L) = 0.0_dp
+               q1_floodplain2(L) = 0.0_dp
                u1L = u1(LL)
                q1L = q1(LL)
                dpt = hu(L)
@@ -165,6 +170,8 @@ contains
                   frcu_mor(L) = cz_sub(1)
                   call getCrossDischarge(perim_sub, af_sub, cz_sub, q1(L), q_sub)
                   q1_main(L) = q_sub(1)
+                  q1_floodplain1(L) = q_sub(2)
+                  q1_floodplain2(L) = q_sub(3)
                else
                   u_to_umain(L) = 1.0_dp
                   cfuhi(L) = 0.0_dp

@@ -53,6 +53,7 @@ contains
       use m_flowgeom, only: ndx2d, ndx, lnx1d, kcu, wetlink2d, onlywetlinks, lnxi, lnx, wetlinkbnd, ja1d2dinternallinktype
       use unstruc_channel_flow, only: usevolumetables, network, get_volume, get_surface
       use m_flow, only: nonlin1d, nonlin2d, slotw1d, slotw2d, nonlin, vol1, s1, a1, s1m, a1m, nshiptxy, japressurehull, v1ship
+      use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_VolumeTables, only: vltb
       use m_storage, only: t_storage
       use network_data, only: LINK_1D_BOUNDARY, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
@@ -70,6 +71,16 @@ contains
       nl2 = nonlin2D
       sl1 = slotw1D
       sl2 = slotw2D
+
+      if (japerim == 1) then
+         ! Dry links are skipped below, so clear their previous floodplain discharges too.
+         if (allocated(q1_floodplain1)) then
+            q1_floodplain1 = 0.0_dp
+         end if
+         if (allocated(q1_floodplain2)) then
+            q1_floodplain2 = 0.0_dp
+         end if
+      end if
 
       if (japerim == 1 .or. nonlin > 0) then
 
