@@ -1468,20 +1468,60 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
-      call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
-      call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
-      call prop_get(md_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, success)
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, success)
       if (success) then
-         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
-            call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
-         elseif (.not. any(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE, SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
-            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod can only be set to 0, 1 or 2')
-         end if
-         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
-            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod set to 2 but Salinity is turned off in mdu.')
+         call convert_air_sea_interaction_model_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for airSeaInteractionModel. Should be ''none'' or ''most''.')
+         else
+            air_sea_interaction_model = ibuf
          end if
       end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'stabilityFunction', tmpstr, success)
+      if (success) then
+         call convert_atmospheric_stability_function_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunction. Should be ''none'' or ''ecmwf''.')
+         else
+            atmospheric_stability_function = ibuf
+         end if
+      end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'freeConvection', tmpstr, success)
+      if (success) then
+         call convert_free_convection_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for freeConvection. Should be ''off'' or ''on''.')
+         else
+            free_convection = ibuf
+         end if
+      end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, success)
+      if (success) then
+         call convert_salinity_dependent_evaporation_method_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for salinityDependentEvaporationMethod. Should be ''none'', ''constant'' or ''linear''.')
+         else
+            salinity_dependent_evaporation_method = ibuf
+
+            if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
+               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod is set to ''linear'' but Salinity is turned off in mdu.')
+            end if
+         end if
+      end if
+
+      call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
+
       call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
@@ -2046,7 +2086,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_windstress', his_write_settings%windstress, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bulk_exchange_coefficients', his_write_settings%bulk_exchange_coeff, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wriHis_BulkExchangeCoefficients', his_write_settings%bulk_exchange_coeff, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
@@ -3510,20 +3550,28 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
-      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
-      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
-      call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
-      call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
+      call convert_air_sea_interaction_model_integer_to_string(air_sea_interaction_model, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
+
+      call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', tmpstr, 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+
+      call convert_free_convection_integer_to_string(free_convection, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'freeConvection', tmpstr, 'Free convection switch (options: ''off'', ''on'').')
+
+      call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
-      call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
-      call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
-      call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
-      call prop_set(prop_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
+      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
+      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
 
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')

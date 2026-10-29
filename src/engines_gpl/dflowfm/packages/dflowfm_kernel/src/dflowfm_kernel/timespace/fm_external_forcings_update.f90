@@ -51,8 +51,8 @@ module fm_external_forcings_update
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       item_dambreak_crestlevel, item_dambreak_breachwidth, &
-                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
-                      AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
+                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_sea_interaction_model, &
+                      AIR_SEA_INTERACTION_MODEL_MOST, wx, wy, wcharnock
    use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
@@ -118,7 +118,7 @@ contains
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
       use fm_external_forcings_utils, only: print_error_message
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
 
       ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
@@ -157,7 +157,7 @@ contains
       if (ja_airdensity > 0) then
          call get_timespace_value_by_item_and_consider_success_value(item_air_density, time_in_seconds)
       end if
-      if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (ja_computed_airdensity == 1 .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       end if
 
@@ -179,7 +179,7 @@ contains
          call initialize_salinity_and_temperature_with_nudge_variables()
       end if
 
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call compute_air_water_interaction_most_fluxes(initialization)
       end if
 
@@ -294,7 +294,7 @@ contains
       end if
 
       if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE &
-          .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+          .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          if (jaheat_eachstep == 0) then
             call heatu(time_in_seconds / 3600.0_dp)
          end if

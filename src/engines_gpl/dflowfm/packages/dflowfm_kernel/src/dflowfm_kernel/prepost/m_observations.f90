@@ -81,7 +81,7 @@ contains
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
-                                  TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+                                  TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, &
          TURBULENCE_MODEL_KTAU, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
@@ -239,7 +239,7 @@ contains
          IVAL_WINDSTRESSX = next_index(i)
          IVAL_WINDSTRESSY = next_index(i)
       end if
-      if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          IVAL_WSTAR = next_index(i)
          IVAL_OBUKHOV_LENGTH = next_index(i)
          IVAL_TRANSFER_COEFF_MOMENTUM = next_index(i)
@@ -265,7 +265,7 @@ contains
          IVAL_WIND = next_index(i)
       end if
       ! heat flux
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             IVAL_QSUN = next_index(i)
             IVAL_QEVA = next_index(i)
             IVAL_QCON = next_index(i)
