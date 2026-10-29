@@ -2154,8 +2154,6 @@ contains
             if (var_laydimpos(iv, itopo) /= -1) then
                count_read(var_laydimpos(iv, itopo)) = kmx(itopo, noutfile)
                count_write(var_laydimpos(iv, itopo)) = kmx(itopo, noutfile)
-               ! TODO: AvD: UNST-993: support w-position quantities: difference between kmx and kmx1 !!
-               ! TODO: AvD: future work: what if kmx varies between input files?
             end if
             if (var_wdimpos(iv, itopo) /= -1) then
                count_read(var_wdimpos(iv, itopo)) = kmx(itopo, noutfile) + 1

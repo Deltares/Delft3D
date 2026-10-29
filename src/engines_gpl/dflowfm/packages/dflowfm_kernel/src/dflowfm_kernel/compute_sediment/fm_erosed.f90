@@ -819,15 +819,13 @@ contains
          !if (scour) then
          !
          tauadd = 0.0_dp
-         !
+         
          ! Compute effective depth averaged velocity
          !
          utot = ustarc * chezy / square_root_ag
          ulocal = utot * uuu(nm) / (umod(nm) + eps)
          vlocal = utot * vvv(nm) / (umod(nm) + eps)
-         !
-         ! sa0 and tem0 have no real meaning, sa1 and tem1 before transport are at the old time-level,
-         ! while after transport they are at the new time-level
+         
          if (jasal > 0) then
             salinity = constituents(isalt, kbed) ! r0(nm, kbed, lsal)
          else

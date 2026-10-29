@@ -1,0 +1,59 @@
+digraph dwaves_pathway_standalone {
+    graph [
+        label="D-Waves pathway detail: Standalone",
+        labelloc=t,
+        fontsize=18,
+        fontname="Helvetica",
+        rankdir=TB,
+        nodesep=0.5,
+        ranksep=0.35,
+        pad=0.3,
+        bgcolor="white"
+    ];
+    node [fontname="Helvetica", fontsize=11, margin="0.15,0.09"];
+    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
+
+    node [shape=box, style="rounded,filled", fillcolor="#FCF5E6", color="#7890A2"];
+    exe [label="wave_exe.f90 : waves_main\nmode_in = 0 (default)\ncall wave_main_init(mode_in, mdw_file)"];
+    main_init [label="wave_main.f90 : wave_main_init()\ninitialize_wavedata(wavedata)\ninitialize_wave_mpi()\nretval = wave_init(mode_in, mdw_file)"];
+    wave_init [label="wave_main.f90 : wave_init()\ncall setmode(wavedata, mode_in)\ncall read_dwaves_mdw(mdw_file, swan_run, wavedata)"];
+    flow_init_opt [label="flow_data.f90 : flow_init()\n[only if swan_run%useflowdata\n.or. swan_run%swwav]\nD-Flow FM NetCDF / legacy com-files; no live handshake", style="rounded,filled,dashed", fillcolor="#FFF9ED"];
+    grids [label="grids_and_gridmaps.f90 : grids_and_gridmaps()\nread SWAN/optional hydrodynamic grids, build pairwise maps"];
+    check [label="check_input.f90 : check_input()\nvalidate swan_run against wavedata"];
+    main_step [label="wave_exe.f90\nstepsize = -1.0_hp\ncall wave_main_step(stepsize)"];
+    master_step [label="wave_main.f90 : wave_master_step()\nblank flowgridfile: process MDW times\nnonblank: select times within step interval\nstepsize=-1 is not a universal run-all"];
+    swan_tot [label="swan_tot.f90 : swan_tot(..., selectedtime)\nloop over SWAN grids/times; prepare inputs\noptional get_flow_fields and meteo update"];
+    get_flow [label="get_flow_fields.f90 : get_flow_fields()\n[only if swan_run%useflowdata]\nreads hydrodynamic fields for this SWAN run", style="rounded,filled,dashed", fillcolor="#FFF9ED"];
+    run_swan [label="run_swan.f90 / map_swan_output.f90\nrun SWAN (exe or MPI library)\nmap results to hydrodynamic/output grids"];
+    write_out [label="write_wave_map(_netcdf) / write_wave_his_netcdf\nwrite wavm-/wavh- output files"];
+    put_back [label="wave2com() / put_wave_fields()\nwave2flow() for legacy route only\n[when WriteCOM sets swan_run%swwav]\nwrite D-Waves results back to existing Delft3D4/D-Flow FM com-file", style="rounded,filled,dashed", fillcolor="#FFF9ED"];
+    main_finish [label="wave_exe.f90\ncall wave_main_finish()"];
+    master_finish [label="wave_main.f90 : wave_master_finish()\ndel_temp_files / deallocmeteo /\ncleanup_boundary_spectrum_files / dealloc_swan"];
+
+    exe -> main_init -> wave_init;
+    wave_init -> flow_init_opt [style=dashed, label="when configured"];
+    wave_init -> grids -> check;
+    check -> main_step -> master_step -> swan_tot;
+    swan_tot -> get_flow [style=dashed, label="when useflowdata"];
+    swan_tot -> run_swan -> write_out;
+    write_out -> put_back [style=dashed, label="when configured"];
+    write_out -> main_finish -> master_finish;
+    { rank=same; flow_init_opt; grids; }
+
+    node [shape=note, style=filled, fillcolor="#F5F7F8", color="#7890A2", fontsize=10];
+    st_mode [label="wavedata%mode\n(wave_data_type, wave_data.f90)\nstand_alone = 0"];
+    st_swanrun [label="swan_run\n(type(swan_type), swan_input.f90)\nflowgridfile from [Output] COMFile\nuseflowdata derived from hydrodynamic input selections\ntimwav(:), nttide"];
+    st_counts [label="n_swan_grids / n_flow_grids / MPI ranks\nseparate counts; grids are not ranks\nswan_grids(:) / flow_grids(:)"];
+
+    { rank=same; main_init; st_mode; }
+    { rank=same; wave_init; st_swanrun; }
+    { rank=same; check; st_counts; }
+    main_init -> st_mode [style=dotted, arrowhead=none, constraint=false];
+    wave_init -> st_swanrun [style=dotted, arrowhead=none, constraint=false];
+    check -> st_counts [style=dotted, arrowhead=none, constraint=false];
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
+                    label="Created with Copilot from prompts, using existing code as reference."];
+    {rank=sink; diagram_credit;}
+    master_finish -> diagram_credit [style=invis];
+}

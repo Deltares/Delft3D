@@ -117,6 +117,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrimap_input_dt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrihis_heatflux', OBSOLETE, 'Renamed to [Output] wrihis_heatfluxes.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrishp_enc', OBSOLETE, 'Use [Output] Wrishp_dryarea instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', OBSOLETE, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', OBSOLETE, 'Process fluxes integration is always done by WAQ.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Sediment', 'MasBalMinDep', OBSOLETE)

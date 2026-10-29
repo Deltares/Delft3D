@@ -261,10 +261,6 @@ contains
                tkebot = ustb(LL)**2 / sqrt(cmukep) ! this has stokes incorporated when jawave>0
                tkesur = ustw(LL)**2 / sqrt(cmukep) ! only wind+ship contribution
 
-               if (ieps == 3) then ! as Delft3D
-                  vicwwu(Lb0) = VON_KARMAN * ustb(LL) * z00
-               end if
-
                turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
                tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
 
