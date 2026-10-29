@@ -547,6 +547,7 @@ module m_flowparameters
       integer :: hu = 0 !< Water depths on u point to map file, 0: no, 1: yes
       integer :: anc = 0 !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
       integer :: au = 0 !< Normal flow areas au to map file, 0: no, 1: yes
+      integer :: au_split = 0 !< Main channel and both floodplain flow areas to map file, 0: no, 1: yes
       integer :: u1 = 1 !< velocities to map file, 0: no, 1: yes
       integer :: u0 = 1 !< previous step velocities to map file, 0: no, 1: yes
       integer :: ucvec = 1 !< velocity vectors to map file, 0: no, 1: yes

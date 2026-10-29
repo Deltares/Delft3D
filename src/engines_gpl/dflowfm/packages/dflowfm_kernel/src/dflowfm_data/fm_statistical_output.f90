@@ -1926,6 +1926,15 @@ contains
       call add_output_config(config_set_map, IDX_MAP_AU, &
                              'Wrimap_flowarea_au', 'au', 'normal flow area between two neighbouring grid cells', &
                              '', 'm2', UNC_LOC_U, description='Write flow areas au to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_MAIN, &
+                             'Wrimap_flowarea_au_split', 'au_main', 'Main channel flow area at flow link', &
+                             '', 'm2', UNC_LOC_U, description='Write geometric 1D flow areas in main channel and both floodplains to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN1, &
+                             'Wrimap_flowarea_au_split', 'au_floodplain1', 'First floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN2, &
+                             'Wrimap_flowarea_au_split', 'au_floodplain2', 'Second floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_U1, &
