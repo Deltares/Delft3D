@@ -70,7 +70,7 @@ contains
       use fm_external_forcings, only: prepare_air_pressure_temperature_dew_point_temperature, &
          compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
-      use m_meteo, only: ja_computed_airdensity, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_meteo, only: ja_computed_airdensity, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
       use m_physcoef, only: dynroughveg
       use m_update_dynveg, only: update_dynveg
@@ -152,7 +152,7 @@ contains
       call timstop(handle_extra(43)) ! End setumod
 
       if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
-         if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         if (ja_computed_airdensity == 1 .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call prepare_air_pressure_temperature_dew_point_temperature(time0)
          end if
 
@@ -161,7 +161,7 @@ contains
             return
          end if
 
-         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call compute_air_water_interaction_most_fluxes(initialization=.false.)
          end if
 
