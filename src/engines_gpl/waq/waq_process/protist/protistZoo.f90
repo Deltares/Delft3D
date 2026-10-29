@@ -254,7 +254,11 @@ contains
                     ! INGESTION  -------------------------------------------------------------------------------
                     ! maximum ingestion
                     ! Units: gC gC-1 d-1
-                    maxIng = ((UmT + BR) / (1.0 - SDA)) / opAE
+                    if ( opAE /= 0.0 ) then
+                        maxIng = ((UmT + BR) / (1.0 - SDA)) / opAE
+                    else
+                        maxIng = 0.0
+                    endif
                     call protistIngestion(maxIng, sumCP, ingNC, ingPC, KI, ingSat, ingC, ingN, ingP)
 
 

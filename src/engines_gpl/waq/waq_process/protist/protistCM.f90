@@ -342,7 +342,11 @@ contains
                     ! LS: I removed the CfixPS part for now because it produced jumps which didn't look nice.
                     ! LS: I need to rethink this part
                     !reqPred = ((UmT + BR - CfixPS) / (1.0 - SDA)) / opAE ! MDK 23-11-2021: remove?
-                    reqPred = ((UmT + BR - 0.0) / (1.0 - SDA)) / opAE
+                    if ( opae /= 0.0 ) then
+                        reqPred = ((UmT + BR - 0.0) / (1.0 - SDA)) / opAE
+                    else
+                        reqPred = 0.0
+                    endif
 
                     ! maximum ingestion if needed
                     ! if 0.0 then there is no need for ingestion because of high Cfix

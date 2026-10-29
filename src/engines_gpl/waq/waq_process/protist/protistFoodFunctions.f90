@@ -89,7 +89,9 @@ contains
 
         !! assimilation efficiency for prey
         !! Units: (-)
-        opAE = (AEo + (AEm - AEo) * stoichP / (stoichP + kAE) * (1.0 + kAE)) * stoichP + 1.0E-20
+        !! Note: if opAE turns out to be zero (no food available), this is
+        !! taken care of in the using routine
+        opAE = (AEo + (AEm - AEo) * stoichP / (stoichP + kAE) * (1.0 + kAE)) * stoichP
 
     end subroutine protistFoodQuality
 
