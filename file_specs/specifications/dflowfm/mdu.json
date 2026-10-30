@@ -6456,7 +6456,13 @@
                     "key": "QsatFactor",
                     "default_value": 1.0,
                     "value_type": "float",
-                    "description": "Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'linear'."
+                    "description": "Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'constant'.",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
                 },
                 {
                     "key": "windForcingHeight",
