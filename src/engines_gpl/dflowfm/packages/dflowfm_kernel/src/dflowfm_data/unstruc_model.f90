@@ -1521,7 +1521,7 @@ contains
       end if
 
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, success)
-      if (success) then
+      if (success .and. salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          if (salinity_reduction_factor_saturation_humidity%scalar < 0 .or. salinity_reduction_factor_saturation_humidity%scalar > 1) then
             call mess(LEVEL_ERROR, 'Invalid entry for QsatFactor. Should be inclusive between 0 and 1.')
          end if
