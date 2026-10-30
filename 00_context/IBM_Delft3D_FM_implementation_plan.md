@@ -33,8 +33,9 @@ Continuity then stays exactly conservative with respect to the modified `ba`/`wu
 `s1ini`/`s1nod`/`volsur` only use those arrays. What FM does **not** have is the momentum side:
 
 - the immersed segment is not a wall: `walls` is built only from closed net links;
-- all momentum terms on cut links still use uncut geometry: `xz`, `dx/dxi`, `acl` and bed levels
-  from solid net nodes, so the pressure gradient uses wrong positions for `s1`;
+- all momentum terms on cut links still use uncut geometry: `xz`, `dx/dxi`, `acl`, and (with
+  `BedlevType = 1`) cut‑cell bed levels sampled at `xz`, possibly inside the solid. So the pressure
+  gradient uses wrong positions for `s1`;
 - cut‑cell centre velocities (`ucx`, `ucy`) are reconstructed with ad‑hoc weights (uncut
   centre‑to‑face distance, normalised by the sum of weight magnitudes, not the wet area) and no
   boundary constraint;
@@ -59,12 +60,14 @@ scoped momentum hooks, and keep the existing FM solver (`step_reduce_hydro`) unc
 3. **Momentum on cut cells (substantial — see §5.3).** Today, cut cells change only the
    continuity equation. Every momentum ingredient on and next to cut cells still uses the
    **uncut** geometry: cell centres `xz`, link distances `dx/dxi`, interpolation weights `acl`,
-   Perot reconstruction weights, and bed levels from solid net nodes. Four changes are needed:
+   Perot reconstruction weights, and cut‑cell bed levels sampled at `xz` (possibly inside the
+   solid). Four changes are needed:
    - **M1 — pressure gradient.** Make `g·dxi·Δs1` consistent with `s1` being the mean over the
      *wet* polygon. Step 1 is implicit: a normal‑projected wet‑centroid distance. Step 2 is an
      explicit tangential (non‑orthogonality) correction, which needs a stability study. This is
      the dominant near‑bank error and maps to paper §3.2.1, §3.2.2.2 and App. A.
-   - **M2 — cut‑link geometry.** Use wet‑geometry `acl` and bed levels at the wet edge.
+   - **M2 — cut‑link geometry.** Use wet‑geometry `acl`, and with `BedlevType = 1` (decided,
+     required for morphodynamics) evaluate cut‑cell `bl` at the wet centroid.
    - **M3 — velocity reconstruction.** Perot reconstruction over the wet polygon, with the
      immersed segment as a zero‑flux face. It is exact for any constant velocity tangential to
      the wall, so free slip is built in.
@@ -159,7 +162,7 @@ carries exactly zero flux.
 | Cut cells | `K/dflowfm_kernel/prepost/cutcelwu.f90:300‑420` | `cutcelwu(n12,…)` | `KC(k) = 1` ⇔ net node inside polygon (**solid**). In mode 5, a cut edge gets `wu` = distance from intersection to the outside node; all‑inside edges get `wu = 0`; `ba = max(polygon area, Baorgfracmin·ba)`, then `max(ba, BAMIN)`; `nd(n)%x/y` is replaced by the active polygon. Mode 6 closes links (`lnn < 0`). `xz/yz` are **not** moved. |
 | Cut‑cell weights | `K/dflowfm_kernel/prepost/setlinktocenterweights.f90:64‑97,141‑168` | `wcx1/wcy1/…`, `wcxy` | Perot weight = `csu·acl·wu·dx` (uncut centre‑to‑face distance). Normal cells: × `bai`. Cut cells (`kfs = 1`): ÷ `wcxy` = Σ\|weights\|, not the wet area. |
 | Link weights | `flow_geominit.f90:1057‑1065` | `acl(L)` | `acl = dxn1e/(dxn1e+dxn2e)` from distances of the **uncut** centres `xz` to the net link. Computed before `cutcell_list(5,3)`. |
-| Bed levels | `K/dflowfm_kernel/prepost/setbobs.f90:39‑152` | `setbobs`, `bob`, `bl` | `bob(1/2,L) = zk` of the link's net nodes; `bl(k)` from all cell nodes, **including nodes inside the solid**. |
+| Bed levels | `K/dflowfm_kernel/prepost/setbobs.f90:39‑152`; MDU description of `BedlevType` (e.g. `tt3.mdu` in `e02_f004_c080`) | `setbobs`, `ibedlevtyp`, `bob`, `bl` | `BedlevType = 1` (`BEDLEV_TYPE_WATERLEVEL`): `bl` is delivered at cell centres (tiles at `xz,yz`, e.g. via an `[Initial] quantity = bedlevel` block); `setbobs` only fills missing values; `bob = max(bl(k1), bl(k2))`. Types 3–6 derive `bob`/`bl` from net‑node `zk` (including nodes inside the solid). Example type‑1 case: `e02_dflowfm/f040_subsidence/c01_uniform_ibed_1`. |
 | Advection (default) | `K/dflowfm_kernel/compute/advec.f90:192‑203,397‑425` | `advec`, `uqcx/uqcy`, `sqa`, `volu` | `iadvec = 33`: per cell `uqc = Σ_faces qa·ucxu` (telescoping face fluxes), link term `(acl·qu1 + (1−acl)·qu2)/volu` with `volu = acl·vol1(k1) + (1−acl)·vol1(k2)`. No flux through a non‑existent face. |
 | Pressure term | `K/dflowfm_kernel/compute/furu.f90:147‑157` | `gdxi = ag·dxi(L)` | Enters `fu` (implicit part, hence the matrix via `s1ini`) and `du` (explicit part). |
 | Small cells | `K/dflowfm_data/m_flow.f90:336‑337`; `m_flowgeom.f90:310`; `unstruc_model.f90:1119‑1120` | `numlimdt_baorg`, `baorgfracmin` (default 0), `bamin = 1e‑6` | `[numerics] Numlimdt_baorg`, `Baorgfracmin`. |
@@ -236,8 +239,10 @@ Searched and not found: `isCartesian` or any structured‑origin flag; an FM per
   (`unc_put_var_map_output`, `CMakeLists.txt` comment at line 279).
 - A9: Whether `setucxucyucxuucyunew` builds `ucx/ucy`, `ucxq/ucyq` and the advection velocities
   `ucxu/ucyu` from the same `wcx1…` weights, so that M3 propagates to all of them.
-- A10: All `setbobs` call sites (initialisation and morphology/bathymetry updates), and which
-  `bedlevtype` values give `bob/bl` from net nodes, so that the M2 hook is complete.
+- A10: For `BedlevType = 1`, the initialisation order of the `bedlevel` initial field (interpolated
+  at `xz`) relative to `setbobs` (`flow_flowinit.f90:934`), and all later `setbobs`/`bl` updates
+  (morphology, `bathyupdate`). This places the M2 hook (re‑evaluate `bl` of cut cells at the
+  wet centroid, before `bob = max(bl)` is formed).
 - A11: Other users of `gdxi`/`dxi` in the momentum path that M1 must also cover. Known ones:
   `advecdriver.f90:76` (start‑up explicit step), `u1q1`, structures, fixed weirs, `iadvec`
   branches other than 33.
@@ -364,7 +369,8 @@ end type
    Global `dx`, `dxi` and `acl` are **not** overwritten. They are also used by transport,
    diffusion, walls and the Perot weights of neighbouring uncut cells. IBM values are used only at
    the IBM hooks (§5.4). The bed levels (`bob` of cut links, `bl` of cut cells) are overwritten
-   after `setbobs` (`flow_flowinit.f90:934`), because `hu`/`hs` must see the wet bed (M2).
+   **before** `bob` is formed in `setbobs` (`flow_flowinit.f90:934`), because `hu`/`hs` must see the
+   wet bed (M2, `BedlevType = 1`).
 5. **Every time step**: wet‑polygon reconstruction is already in the weights (M3). Added per step:
    - the optional free‑slip projection safeguard (default off);
    - the IBM pressure gradient in `furu` (M1);
@@ -417,7 +423,7 @@ end type
 | Narrow channel (< 2 fluid cells between banks) | IP stencil falls on the opposite bank. Use BI‑constrained interpolation. If still singular, fall back to the nearest fluid cell value and count it in `ndegenerate`. Warn when >0. |
 | Insufficient stencil (IP outside local domain) | MPI ghost layers (4) cover IP distances ≤ ~1.5 dx. If the stencil is not local: error naming the cell (do not silently degrade). |
 | Boundary near partition edge | Geometry is computed for owned and ghost cells. Ghost‑value fill uses only local data. `ucx/ucy` are already exchanged with `update_ghosts(ITYPE_SALL)`. |
-| Polygon crossing an open boundary | Error in the POC (inflow/outflow boundary links must be fully fluid). |
+| Polygon crossing an open boundary | Allowed: cut boundary links keep their cut `wu`. Cells adjacent to open boundaries are excluded from ghost stencils (nearest‑fluid fallback). |
 
 **Wall condition**: free slip only in the POC. The design keeps `nx, ny, seg_len` and the
 wall‑distance per cut cell, which is exactly what the existing `walls(:,nw)` treatment needs
@@ -434,7 +440,7 @@ writing a new one.
 | Small cells | Weighted vertical‑velocity averaging (3D) for cells < 25 %; ADI handles 2D | `Baorgfracmin` floor (existing). The POC accepts the area error and reports it. Cell merging is deferred. | Config only. |
 | Pressure gradient | Second‑order extrapolation of ζ from the cut‑cell centroid to the full‑cell centre (App. A); explicit version unstable in the coupled step, so partially implicit | Today: `g·dxi·(s1(k2)−s1(k1))` with `dxi` between **uncut** centres, while `s1` of a cut cell is the wet‑polygon mean ⇒ local gradient error up to O(1) (§5.3). M1 step 1: implicit `dxi_wet` (normal distance of wet centroids). M1 step 2: explicit tangential correction, with a stability study. | **Yes — M1 (step 1 in slice 1, step 2 in slice 2).** |
 | Velocity at the active part of the edge | Correction term `v − v_cut` (App. B) | `u1` is the average normal velocity over the wet part of the face (`au·u1` *is* the flux), so App. B has no direct analogue. Its momentum equation must be evaluated at the wet‑face midpoint `xm`, which is what M1/M2 do. | Via M1/M2. |
-| Bed/depth at the active edge | Interpolated to the active‑edge centre (Fig. 3c) | Today `bob`/`bl` include `zk` of **solid** nodes (`setbobs.f90`). M2: `bob` at the wet‑face end points and `bl` over the wet‑polygon vertices, with the solid‑side value taken at the intersection point and extrapolated from wet nodes. | **Yes — M2 (slice 1).** |
+| Bed/depth at the active edge | Interpolated to the active‑edge centre (Fig. 3c) | `BedlevType = 1` (decided, D7): `bl` at cell centres, `bob = max(bl(k1), bl(k2))`. Today `bl` of a cut cell is sampled at the uncut centre `xz`, which may lie inside the solid (bank top). M2: `bl` of cut cells evaluated at the wet centroid; `bob` then follows from `max(bl)` without node values. | **Yes — M2 (slice 1).** |
 | Momentum advection | Ghost points at GPs for stencils; extrapolation on edges < 50 % wet (Fig. 3d) | `iadvec = 33` face‑flux form: zero flux through the segment (no face). The link control volume `volu` and the `acl` weighting use uncut `acl` ⇒ M2 uses `acl_wet`. Small cut edges ⇒ M4 extrapolates `adve` from parallel wet links. Ghost values are needed only for stencils that read solid‑cell `ucx/ucy` (A2). | **Yes — M2/M4 (M4 slice 2); ghost fill slice 2.** |
 | Cell‑centre velocity (used by advection, friction `v`, viscosity, output) | Not applicable (u, v are separate points) | Today: ad‑hoc `wcxy`‑normalised weights in cut cells. M3: exact Perot over the wet polygon about the wet centroid, with the segment as a zero‑flux face (§5.3). An optional projection `u_c ← u_c − (u_c·n_b)n_b` is available as a switch (default off). | **Yes — M3 (slice 1).** |
 | Tangential condition | Neumann on `u_t` via ghost (Eq. 19–20) | Free slip = no wall stress (current `irov = 0` behaviour for walls). For immersed segments nothing is added to `suu`. | No. |
@@ -525,16 +531,25 @@ near‑bank velocity through the friction balance.
   an IBM hook in `advec` for `volu = acl_wet·vol1(k1) + (1−acl_wet)·vol1(k2)` and for the
   `acl·qu1 + (1−acl)·qu2` weighting (`advec.f90:411‑425`). Global `acl` is unchanged because the
   Perot weights of uncut neighbours and `walls(10/11)` use it.
-- *Bed levels* (paper Fig. 3c).
-  - After `setbobs` (`flow_flowinit.f90:934`), for cut links set the solid‑side end of
-    `bob(·,L)` to the bed at the face/polygon intersection, extrapolated from the wet node. The
-    POC default is constant extrapolation (= `zk` of the wet node); linear extrapolation using
-    the wet‑node bed gradient is an option.
-  - Recompute `bl(k)` of cut cells over the wet‑polygon vertices with the same rule. Without this,
-    a bank top in `zk` inside the solid raises `bob`/`bl` of near‑bank links and cells, and
+- *Bed levels* (paper Fig. 3c), for **`BedlevType = 1` only** (decision D7). Type 1 is the bed
+  level type required for morphodynamics, which is where this work is heading.
+  - In type 1, `bl(k)` is a cell‑centre (tile) value interpolated at `xz`, and
+    `bob(·,L) = max(bl(k1), bl(k2))`. No net‑node `zk` is involved, so the only problem is that
+    `xz` of a cut cell can lie **inside the solid** and pick up bank‑top bathymetry.
+  - M2 re‑evaluates `bl(k)` of cut cells at the wet centroid `c`. The step runs after the
+    `bedlevel` initial field is applied and before `bob` is formed in `setbobs` (A10).
+  - POC default: least‑squares linear extrapolation from the `bl` of uncut wet neighbours to `c`.
+    It does not depend on the input format and also works for samples, initial fields and
+    restart.
+  - Option (later): re‑interpolate the `bedlevel` initial field at `c` instead of `xz`, which is
+    more faithful for real bathymetry.
+  - `bob` then follows from the existing `max(bl)` rule, so cut links need no extra code.
+  - Without M2, a bank top inside the solid raises `bl`/`bob` of near‑bank cells and links, and
     biases `hu` and friction.
-  - `setbobs` has several `bedlevtype` branches. The POC supports only the `bedlevtype` confirmed
-    in W0 and rejects others when IBM is on.
+  - Morphodynamics (future): in type 1 the bed evolves at cell centres, including cut cells,
+    through the sediment balance over the wet faces. M2 is applied at initialisation only and must
+    not overwrite morphological updates. `setbobs` after `bathyupdate` keeps `bob = max(bl)`.
+  - Other `BedlevType` values are rejected when IBM is on.
 
 **M3 — wet‑polygon Perot reconstruction (free slip built in).** For a polygon Ω with wet area
 `A_w`, centroid `c`, wet faces `f` (length `l_f`, midpoint `x_f`, outward normal velocity `u_n,f`)
@@ -614,7 +629,8 @@ flow_modelinit
       → ibm_set_perot_weights (M3: overwrite wcx*/wcy* on cut‑cell sides)
       → ibm_report (dia)
   flow_flowinit
-    setbobs (line 934)          ► ibm_set_wet_bed (M2: bob of cut links, bl of cut cells)
+    bedlevel initial field (bl at xz) ► ibm_set_wet_bed (M2: bl of cut cells at wet centroid)
+    setbobs (line 934)          (existing; BedlevType 1 ⇒ bob = max(bl), so M2 propagates)
     setucxucyucxuucyunew (line 951) ► ibm_apply_velocity_bc (projection option, ghost fill)
 per step:
   flow_run_single_timestep: if Perot_weight_update == PEROT_UPDATE → rejected with IBM (or re‑apply M3)
@@ -694,7 +710,7 @@ Example messages (`mess(LEVEL_ERROR, …)`):
 
 - `ImmersedBoundary=1 requires a Cartesian 2D mesh: net link 1234 at (x,y) deviates 3.2e-3 (tol 1e-6) from axis alignment.`
 - `ImmersedBoundary=1 requires Cutcelllist with at least one polygon.`
-- `ImmersedBoundary=1 is not supported with kmx>0 / spherical coordinates / FlowSolver=<x> / Nonlin2D>0 / Perot weight update / BedlevType=<x>.`
+- `ImmersedBoundary=1 is not supported with kmx>0 / spherical coordinates / FlowSolver=<x> / Nonlin2D>0 / Perot weight update / BedlevType=<x> (only BedlevType=1).`
 - `ImmersedBoundary=1: active region of cell <k> is split by the immersed boundary; refine the grid or simplify the polygon.`
 
 Warnings: `irov /= 0` ("applies to mesh walls only; immersed boundary uses free slip");
@@ -762,7 +778,10 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
     (A9–A11);
   - measure, on the I3 set‑up, the size of the M1 error: compare `(ζ2−ζ1)·dxi` with the analytic
     `∂ζ/∂n` on links next to cut cells, for the oblique channel and the wind set‑up basin.
-    This quantifies the problem before any fix.
+    This quantifies the problem before any fix;
+  - reproduce the existing `Cutcelllist` SIGSEGV for polygons with > 100 vertices
+    (`cutcelwu.f90:98‑100`, `split_pol`) in a Debug build. Decide between fixing it (separate PR)
+    and limiting polygon size (§7.2 "Test‑case creation", item 6).
 - Completion: a short note answering A1–A11, with the M1 error measurement, attached to the PR.
 
 **W1 — Configuration**
@@ -828,8 +847,9 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
   - `K/dflowfm_kernel/compute/furu.f90:147` (`gdxi`), using a precomputed override array;
   - `K/dflowfm_kernel/compute/advec.f90:411‑425` (`volu`, `acl` weighting, `iadvL == 33` branch;
     other `iadvec` values are rejected with IBM in the POC);
-  - `K/dflowfm_kernel/prepost/setbobs.f90` (via a hook after the call in
-    `flow_flowinit.f90:934`, plus any other `setbobs` call site found in W0, e.g. morphology).
+  - `bl` of cut cells at the wet centroid (`BedlevType = 1`), hook between the `bedlevel`
+    initial‑field interpolation and `setbobs` (`flow_flowinit.f90:934`); exact location from W0
+    (A10).
 - Depends on: W3.
 - Algorithm: §5.3 M1 step 1 and M2. Clip `d_n ≥ 0.25·dx` (counted).
 - Compatibility: matrix structure unchanged (2‑point, symmetric); IBM off ⇒ override array
@@ -851,7 +871,8 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 - Objective: §7 cases I1–I5, I7 (annular), I8 (lake at rest) and I9 (wind set‑up), plus the
   analytical and momentum‑budget script.
 - Files:
-  - new cases under `test/deltares_testbench/data/cases/e02_dflowfm/<new feature folder>/…`,
+  - cases under `test/deltares_testbench/data/cases/e02_dflowfm/f600_ibm/…` (D5), created as
+    specified in §7.2 "Test‑case creation" (generator, inputs, docs, DVC);
     tracked with DVC (`HOW_TO_DVC.md`);
   - `<testCase>` entries in a new include or in `configs/include/dimr_dflowfm_*.xml`, wired into
     `configs/dimr/dimr_dflowfm_lnx64.xml` and the win64 counterpart.
@@ -957,7 +978,7 @@ Unit tests for the momentum operators (§5.3) live in a new file `test/src/test_
 | U26 | M1 step 2: LSQ gradient on cut stencils exact for linear ζ; corrected `∂ζ/∂n` exact for any linear ζ | ± 1e‑12 |
 | U27 | M3: wet‑polygon Perot with constant `u` tangential to the segment, for triangle, trapezoid and pentagon cuts and the 90° corner of U13 (two segments) | `u_c = u` ± 1e‑13. For `u` with a normal component, the result equals the analytic formula (documented). |
 | U28 | `acl_wet ∈ (0,1)`; equals `acl` for links not adjacent to cut cells; `d_n > 0`; clipping counted | exact |
-| U29 | Wet bed (M2): solid nodes with `zk` = +10 m (bank top) do not change `bob` of cut links or `bl` of cut cells | equals wet‑node values (constant extrapolation) |
+| U29 | Wet bed (M2, `BedlevType = 1`): with `bl` = +10 m (bank top) sampled at uncut centres `xz` inside the solid, `bl` of cut cells is re‑evaluated at the wet centroid from wet neighbours, and `bob = max(bl)` of cut links follows | exact for a planar wet bed (± 1e‑12) |
 | U30 | M4 extrapolation along a lattice row reproduces a linear `adve` field | ± 1e‑13 |
 
 These run in CI with the existing kernel gtest target, in well under 1 s total.
@@ -982,7 +1003,7 @@ Common set‑up [R]:
 |---|---|
 | Mesh | Cartesian, dx = dy = 25 m (≈ 17.6 cells across W). Refinement set: 50 / 25 / 12.5 m. |
 | Domain | x ∈ [0, 3000] m. Channel centreline y = y₀ + x·tan β; banks at ±W/(2 cos β) = ±250 m in y. Bounding box ≈ 3000 × 2120 m. The solid region is removed by `Cutcelllist` mode 6. Active cells ≈ 2.4k at 25 m. |
-| Bed | z_b(x, y) = z_ref − S·s, with s = x cos β + y sin β, prescribed at net nodes over the **whole** box (smooth through the solid). |
+| Bed | `BedlevType = 1`. z_b(x, y) = z_ref − S·s, with s = x cos β + y sin β, given as samples at all cell centres of the box via an `[Initial] quantity = bedlevel` block in `ExtForceFileNew` (triangulation, which is exact at coincident points; `IniFieldFile` is deprecated). The bed is smooth through the solid in I1–I6, so M2 is not exercised there. |
 | Inflow | Discharge boundary on the x = 0 grid line between the banks (500 m), Q = q_s·W ≈ 2202 m³/s. |
 | Outflow | Water‑level boundary on x = 3000. `.pli` with 2 points at the bank intersections, values ζ = z_b + 4 there. Linear along the line (exact for uniform flow). |
 | Friction | `UnifFrictType = 0`, `UnifFrictCoef = 65`. |
@@ -1003,7 +1024,7 @@ Common set‑up [R]:
 | I5 | I4 on 2 MPI partitions (`dimr_dflowfm_lnx64_parallel.xml` pattern, `-c 2`) | MPI consistency vs I4 | TestBench parallel config, CI |
 | I6 | I4, I7 and I9 at three resolutions (50 / 25 / 12.5 m; annulus 4 / 2 / 1 m), with their staircase and cut‑cell‑only variants | Resolution sensitivity / observed order | TestBench, **nightly** |
 | I7 | **Annular channel** (§4.2), staircase / cut‑cell‑only / IBM variants [**slice 1**] | Curved banks, superelevation (gradient across the channel) ⇒ sensitive to M1/M3. Near‑bank velocity. | TestBench, CI (≈ 2–5k cells) |
-| I8 | **Lake at rest**: oblique closed basin, bed sloping in x and y, `zk` = +10 m (bank top) at solid nodes, flat ζ, no forcing, IBM on | Well‑balancedness; M2 bed handling; reconstruction noise | TestBench, CI (< 30 s) |
+| I8 | **Lake at rest**: oblique closed basin, bed sloping in x and y, bed samples = +10 m (bank top) at cell centres inside the solid, flat ζ, no forcing, IBM on | Well‑balancedness; M2 bed handling; reconstruction noise | TestBench, CI (< 30 s) |
 | I9 | **Wind set‑up in a closed oblique basin**: basin rotated by β, flat bed, uniform wind along +x (oblique to every bank). Variants: staircase, cut‑cell only, IBM step 1, IBM step 1+2. | Exact equilibrium has **u = 0** with a planar ζ oblique to the banks, so any velocity is a spurious force from the pressure gradient (M1). | TestBench, CI (< 1 min) |
 | N1 | **Non‑Cartesian rejection**: triangular mesh (or perturbed curvilinear) with IBM on | Must stop with the Cartesian error | gtest U3/U4/U6 (CI). TestBench expected‑failure only if A5 confirms support. |
 | N2 | Non‑Cartesian mesh with IBM **off** and `Cutcelllist` | Existing behaviour unchanged (no new error) | Covered by the existing regression suite. Add a case if none exists. |
@@ -1032,11 +1053,106 @@ I9 parameters [R]:
 - 12 h run; spin‑up seiches damped by friction.
 - Metrics: `max|u|` and `mean|u|` at the end, and the plane‑fit residual of ζ.
 
-**Storage and versioning.** Each case gets a DVC‑tracked `input/`, `reference/` and `doc/`
-(`HOW_TO_DVC.md`). Inputs are generated by a committed, deterministic Python generator stored in
-the case `doc/` folder. It writes the `.nc` net, `.pol`, `.pli`, `.bc`, `.ext` and `.mdu`, and the
-parameters above are its only inputs. The `<path version="DVC">` convention is used as in
-`dimr_dflowfm_parallel.xml:489`.
+**Test‑case creation (to do in W6, not yet created).**
+
+1. **Location (D5).** Put the cases under
+   `test/deltares_testbench/data/cases/e02_dflowfm/f600_ibm/`. Follow `HOW_TO_DVC.md`:
+   - each case `cNN_<name>/` gets `input/` and `doc/`; add `reference_lnx64/` and
+     `reference_win64/` once results pass §8;
+   - run `dvc add` per folder, `dvc push`, then `git add -f` the `.dvc` files;
+   - add a family‑level `f600_ibm/doc/` with `functionality_report.tex` and
+     `chapters/testcases.tex` (pattern of `f040_subsidence/doc`);
+   - per‑case `doc/` contains `casedoc.tex` and `chapters/case_text.tex` (pattern of
+     `f004_bottomfriction/c080_chezy_uniform/doc`).
+2. **Case list.**
+
+   | Case | Plan ID | Solid applied as | IBM |
+   |---|---|---|---|
+   | c01_channel_aligned | I1 | `DryPointsFile` polygon (z = 1), banks on grid lines | off |
+   | c02_channel_aligned_ibm | I1b | `Cutcelllist`, banks on grid lines | on |
+   | c03_channel_oblique_staircase | I2 | `DryPointsFile` | off |
+   | c04_channel_oblique_cutcell | I3 | `Cutcelllist`, `Baorgfracmin = 0.1` | off |
+   | c05_channel_oblique_ibm | I4 | `Cutcelllist` | on |
+   | c06_channel_oblique_ibm_parallel | I5 | as c05; `dimr.xml` `<process>0 1</process>` + `DFM_COMM_DFMWORLD`; TestBench partitions with `--partition:ndomains=2:icgsolver=6` (pattern `e02_f014_c001`) | on |
+   | c07 / c08 / c09_annulus_{staircase, cutcell, ibm} | I7 | `DryPointsFile` / `Cutcelllist` / `Cutcelllist` | off / off / on |
+   | c10_lake_at_rest_ibm | I8 | `Cutcelllist` | on |
+   | c11_wind_setup_aligned | I9 floor | `DryPointsFile`, basin edges on grid lines | off |
+   | c12 / c13 / c14_wind_setup_{staircase, cutcell, ibm} | I9 | as above | off / off / on |
+   | c15_wind_setup_ibm_tangential | I9 | `Cutcelllist`, `ImmersedBoundaryTangentialCorrection = 1` | on |
+   | I6 refinement variants | I6 | same generator, other `dx` | nightly |
+
+3. **Generator.** Write a deterministic Python generator `f600_ibm/doc/generate_cases.py`
+   (numpy + netCDF4, both in the TestBench venv) that produces all inputs and case documents from
+   the parameters in §7.2. It writes:
+   - a UGRID‑1.0 net (`mesh2d_*`, 1‑based connectivity, counter‑clockwise faces, as in
+     `f011_wind/c030` `windcase_net.nc`);
+   - solid polygons (`.pol`, *inside = solid*), the `Cutcelllist` `.lst`, boundary `.pli` and
+     `.bc` (constant time series per support point);
+   - the new‑format `.ext`, bed and initial water‑level samples (`.xyz`) at all cell centres,
+     `.xyn`/crs `.pli`, a compact `.mdu` and `dimr.xml`.
+
+   Add a `README.md` mapping the plan IDs to the cases. Inputs are never edited by hand:
+   regenerate, then `dvc commit`.
+4. **Input conventions, checked against the current kernel.**
+   - `[geometry] IniFieldFile` is **deprecated** (`fm_deprecated_keywords.f90:32`). Put the
+     `bedlevel` and `initialWaterLevel` `[Initial]` blocks (`dataFileType = sample`,
+     `interpolationMethod = triangulation`, `locationType = 2d`) in the `[external forcing]
+     ExtForceFileNew` file. The old `waterlevel` quantity name is deprecated
+     (`unstruc_inifields.f90:1025‑1028`).
+   - `BedlevType = 1`; bed samples at **all** cell centres of the box, including the solid
+     (smooth bed for I1–I7, I9; +10 m bank top inside the solid for I8).
+   - Uniform wind: `[Meteo] quantity = windx/windy`, `forcingFileType = uniform` (pattern
+     `f011_wind/c030_comp_uniform_standard`); `[wind] ICdtyp = 1`, `Cdbreakpoints = 0.0012`,
+     `Rhoair = 1.2`.
+   - The IBM cases use the keywords of §5.5, which exist only after W1:
+     - `ImmersedBoundary`, `ImmersedBoundaryMinAreaFrac`, `ImmersedBoundaryTangentialCorrection`;
+     - `[output] Wrimap_immersed_boundary`.
+5. **Geometry choices.**
+   - *Open boundaries:* the boundary polylines span the whole domain edge, including the solid
+     part. This replaces the §5.1 rule "polygon crossing an open boundary ⇒ error": cut boundary
+     links are allowed, because continuity uses the cut `wu`. Cells next to open boundaries are
+     excluded from ghost stencils.
+   - *Oblique channel:* offset the centreline so that the bank/boundary intersections do not
+     coincide with net nodes (y₀ = 310 m at dx = 25 m). Leave the exact‑node degeneracy to I1b
+     and U11/U12.
+   - *Annulus:* open the ring north of the centre by removing net cells, giving a discharge inflow
+     on the east face and the analytical ζ(r) outflow on the west face, so no periodic boundary is
+     needed (A6). The removed strip must be **wider than 2 cells**. A pre‑implementation trial with
+     a 2‑cell strip (4 m at dx = 2 m) gave `Boundary link … already claimed` and **0** open
+     outflow cells: the inflow polyline claimed the outflow links. Use ≥ 4 cells and verify
+     `nr of open bndcells` for both boundaries in the `.dia` file.
+   - *Basin:* solid = four half‑plane quadrilaterals outside the rotated rectangle (no polygons
+     with holes).
+6. **Known limitation of the existing cut‑cell code (must be handled in W0/W3).** In a
+   pre‑implementation trial with the current Release build, `Cutcelllist` crashed
+   (SIGSEGV, `forrtl 174`) for a polygon with **more than 100 vertices**. That is the branch that
+   calls `split_pol(2, 2, 100, 100)` in `cutcelwu.f90:98‑100`. A 90‑vertex disk ran. Options:
+   - fix the `split_pol` path (an existing bug; separate small PR with a unit test); or
+   - limit the generator polygons to ≤ 100 vertices per polygon and split curved banks into
+     several polygons (the annulus outer bank as 8 sectors already does this; the inner disk needs
+     ≥ 2 pieces).
+
+   Decide in W0. The IBM geometry module itself must not have a vertex limit.
+7. **Pre‑implementation smoke‑run results** (non‑IBM variants only; Release build; for planning,
+   not as references):
+
+   | Case | 2D cells | Mean Δt | Wall time |
+   |---|---|---|---|
+   | c01 aligned (staircase) | 2160 | 11.7 s | 3.5 s |
+   | c03 oblique staircase | 2400 | 7.4 s | 5.1 s |
+   | c04 oblique cut cells (`Baorgfracmin = 0.1`) | 2582 | **1.0 s** | **32 s** |
+   | c07 annulus staircase | 1904 | 7.6 s | 1.9 s |
+
+   The existing cut cells reduce the mean Δt by ≈ 7× in the oblique channel. This confirms the
+   small‑cell CFL risk (§9): report the IBM Δt against c03/c04, and calibrate D3 (φ) in W6. All
+   cases are fast enough for CI.
+8. **Metrics script.** Write `f600_ibm/doc/verify_metrics.py` for the §7.2 metrics. It needs only
+   netCDF4 and numpy.
+9. **TestBench wiring.** Once references exist, add the `<testCase>` entries in a new include,
+   wired into `configs/dimr/dimr_dflowfm_lnx64.xml` (and win64), plus c06 in the parallel
+   config.
+
+The `<path version="DVC">` convention is used as in `dimr_dflowfm_parallel.xml:489`.
 
 **TestBench checks (regression).**
 
@@ -1107,7 +1223,7 @@ relative to I1's solver tolerance.
 | Momentum budget | R_mom(I4) ≤ max(1 %, 3 × R_mom(I1)) and ≤ 0.5 × R_mom(I3). |
 | Pressure‑gradient consistency | E_grad on links next to cut cells, in I9 and I7: ≤ 0.3 × the I3 value (M1 step 1 removes the normal part; the tangential remainder is accepted until stage 2). |
 | Wind set‑up (I9) | max \|u\|(IBM step 1) ≤ 0.3 × max \|u\|(I3) and ≤ 0.3 × max \|u\|(staircase); ζ plane‑fit residual ≤ 5 % of the total set‑up. |
-| Lake at rest (I8) | max \|u\| ≤ 1e‑8 m/s after 6 h; no cells dry because of bank‑top `zk`. |
+| Lake at rest (I8) | max \|u\| ≤ 1e‑8 m/s after 6 h; no cells dry because of bank‑top bed samples. |
 | Annular (I7) | Superelevation ζ(r_outer) − ζ(r_inner) within 30 % of Eqs. 23–24 and closer than staircase and I3. E_vθ near both banks ≤ E_vθ(I3). |
 | Depth uniformity | CV_h(I4) ≤ 0.5 × CV_h(I2) **and** ≤ 1 %. |
 | Depth error | E_h,L2(I4) ≤ 1 %, E_h,∞(I4) ≤ 3 %. |
@@ -1153,9 +1269,9 @@ the I7 L2 and Lmax norms as in paper Table I. This stage claims it only if measu
 | D2 | Interpretation of "β = tan(43/80)" | tan β = 43/80 (β ≈ 28.26°). |
 | D3 | Area floor φ default | 0.1, and calibrate in W6 (paper reports stable cells down to 1e‑5 with ADI; FM's explicit CFL cannot afford that). |
 | D4 | Which Cartesian grids to accept | Axis‑aligned uniform (dx ≠ dy allowed). Reject rotated and non‑uniform for now. |
-| D5 | Location of new test cases (`e02_dflowfm/<feature folder>`) and which config XML includes them | Ask the FM TestBench maintainers for the folder number. Do not reuse an existing family. |
+| D5 | Location of new test cases | **Decided:** `test/deltares_testbench/data/cases/e02_dflowfm/f600_ibm`. Still open: which config XML includes them (add once references exist). |
 | D6 | Scope of M1/M2 overrides: IBM‑local (`gdxi`/`acl_wet` only in momentum hooks) vs overwriting global `dxi`/`acl` | IBM‑local for the POC (no side effects on transport, walls or the weights of uncut cells). Revisit for W14. |
-| D7 | Which `iadvec` and `bedlevtype` values to support with IBM | `iadvec = 33` and the `bedlevtype` confirmed in W0 (A10); reject others. |
+| D7 | Which `iadvec` and `BedlevType` values to support with IBM | **Decided:** `BedlevType = 1` (cell‑centre bed, required for morphodynamics) and `iadvec = 33`; reject others. |
 | D8 | Acceptance of a partially implicit pressure correction that changes the `s1` matrix structure (if W7 fails) | Not part of the POC. Escalate at Checkpoint E with the W7 evidence. |
 
 **Can be deferred**: dedicated IBM polygon file; rotated grids (global rotation θ fitted from link
@@ -1174,7 +1290,8 @@ stencil generalises); immersed partial/no slip via pseudo‑walls; 3D; cell merg
 | `d_n` very small for sliver cut pairs | Stiff link, large `fu` | Clip `d_n ≥ 0.25·dx`, plus the area floor; counted in diagnostics. |
 | Wet‑polygon Perot weights interact with `Perot_weight_update` or other reconstruction options (`reconst2nd`, `Perot_type`) | IBM weights silently overwritten | Reject incompatible options with IBM (validated in W1); A9 confirms which arrays use the weights. |
 | Global `dxi`/`acl` kept uncut for transport and diffusion | Scalar diffusion near banks is inconsistent with the momentum change | Documented limitation (D6); W14 later. |
-| Bed levels at cut links taken from solid net nodes | Wrong `hu`/`bl` near banks (bank top in `zk`) | M2 in slice 1; I8 tests it with a +10 m bank top. Extrapolation rule configurable (constant/linear). |
+| Cut‑cell bed sampled at the uncut centre `xz` inside the solid (`BedlevType = 1`) | Wrong `bl`/`bob` and `hu` near banks (bank top) | M2 in slice 1 (re‑evaluate at the wet centroid); I8 tests it with a +10 m bank top. |
+| Existing `Cutcelllist` crashes for polygons with > 100 vertices (pre‑implementation trial; `split_pol` path in `cutcelwu.f90:98‑100`) | Curved or real banks with many vertices abort at initialisation | W0: reproduce in Debug, then fix (separate PR + unit test) or split polygons to ≤ 100 vertices. IBM geometry itself has no vertex limit. |
 | A1/A2 wrong (solid cells are present / stencils read them) | Ghost storage design changes | W0 spike before W7; the module API hides the storage. |
 | MPI geometry mismatch (A3) | Inconsistent `ba` across ranks | Test I5 plus an assertion in `ibm_crosscheck` comparing `ba` after `update_ghosts`. |
 | Restart | IBM changes `ndx` (solid cells removed) — the same as current `Cutcelllist` | A restart is valid only with the same mesh and polygon. Detect `ndx`/`lnx` mismatch (existing restart reader behaviour) and document it. No new restart fields. |
@@ -1252,7 +1369,7 @@ python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64_parallel.
 # Stage 0 regression: run the full dflowfm configs (or TeamCity), compare against main.
 
 # Analytical acceptance (per case, after a run)
-python data/cases/e02_dflowfm/<feature>/<case>/doc/verify_metrics.py <work_dir>/dflowfmoutput
+python data/cases/e02_dflowfm/f600_ibm/doc/verify_metrics.py <case> <work_dir>/dflowfmoutput
 ```
 
 **Evidence to attach to the first‑merge PR**:
