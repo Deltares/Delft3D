@@ -13,7 +13,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                 & bddx      ,bdx       ,bux       ,buux      ,buuux     , &
                 & uvdwk     ,vvdwk     ,areau     ,areav     ,volum0    , &
                 & volum1    ,aakl      ,bbkl      ,cckl      ,ddkl      , &
-                & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  ,sedtyp    , &
+                & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  , &
                 & seddif    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -104,6 +104,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     integer                             , pointer :: iro
     type (flwoutputtype)                , pointer :: flwoutput
     integer                             , pointer :: max_mud_sedtyp
+    integer, dimension(:), pointer :: sedtyp
 !
 ! Global variables
 !
@@ -135,7 +136,6 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                   , intent(in)  :: kfv        !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)             , intent(in)  :: kadu       !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)             , intent(in)  :: kadv       !  Description and declaration in esm_alloc_int.f90
-    integer , dimension(lsed)                                   , intent(in)  :: sedtyp     !  sediment type: 0=total/1=noncoh/2=coh
     logical                                                     , intent(in)  :: eqmbcsand  !  Description and declaration in morpar.igs
     logical                                                     , intent(in)  :: eqmbcmud   !  Description and declaration in morpar.igs
     real(fp)                                                    , intent(in)  :: timest     !  Half Integration time step [sec.]
@@ -272,6 +272,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     xlo         => gdp%gdturcoe%xlo
     ck          => gdp%gdturcoe%ck
     max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
+    sedtyp              => gdp%gdsedpar%sedtyp
     !
     ddb = gdp%d%ddbound
     icxy = max(icx, icy) 

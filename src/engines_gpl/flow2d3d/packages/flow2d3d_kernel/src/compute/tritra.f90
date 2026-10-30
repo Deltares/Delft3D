@@ -9,7 +9,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 & qyk       ,qzk       ,guu       ,gvv       ,guv       , &
                 & gvu       ,gsqs      ,rbnd      ,sigdif    ,sigmol    , &
                 & r0        ,r1        ,sour      ,sink      ,ws        , &
-                & sedtyp    ,thick     ,sig       ,dicuv     , &
+                & thick     ,sig       ,dicuv     , &
                 & vicww     ,dsdksi    ,dsdeta    ,dtdksi    ,dtdeta    , &
                 & aak       ,bbk       ,cck       ,bdddx     ,bddx      , &
                 & bdx       ,bux       ,buux      ,buuux     , &
@@ -223,7 +223,6 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(norow + nocol)                            :: wenf         !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(norow + nocol)                            :: wenl         !  Description and declaration in esm_alloc_real.f90
     character(13)                                     , intent(in)  :: trasol       !  Description and declaration in tricom.igs
-    integer, dimension(lsed)                                        :: sedtyp       !!  sediment type: 0=total/1=noncoh/2=coh
     character(8)                                      , intent(in)  :: stage        !!  First or second half time step
 !
 ! Local variables
@@ -300,7 +299,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & hv        ,dps       ,qxk       ,qykfac    ,qzk       , &  ! qykfac
                         & guu       ,gvv       ,guv       ,gvu       ,gsqs      , &
                         & rbnd      ,sigdif    ,sigmol    ,r0        ,r1        , &
-                        & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
+                        & sour      ,sink      ,ws        ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdksi    ,dsdeta    , &
                         & dtdksi    ,dtdeta    ,aak       ,bbk       ,cck       , &
                         & bdddx     ,bddx      ,bdx       ,bux       ,buux      , &
@@ -318,7 +317,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & hv        ,dps       ,qxk       ,qyk       ,qzk       , &  ! qyk
                         & guu       ,gvv       ,guv       ,gvu       ,gsqs      , &
                         & rbnd      ,sigdif    ,sigmol    ,r0        ,r1        , &
-                        & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
+                        & sour      ,sink      ,ws        ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdksi    ,dsdeta    , &
                         & dtdksi    ,dtdeta    ,aak       ,bbk       ,cck       , &
                         & bdddx     ,bddx      ,bdx       ,bux       ,buux      , &
@@ -438,7 +437,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                     & bddx      ,bdx       ,bux       ,buux      ,buuux     , &
                     & uvdwk     ,vvdwk     ,areau     ,areav     ,volum0    , &
                     & volum1    ,aakl      ,bbkl      ,cckl      ,ddkl      , &
-                    & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  ,sedtyp    , &
+                    & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  , &
                     & seddif    ,gdp       )
           call timer_stop(timer_tritra_rest, gdp)
        else
@@ -484,7 +483,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & hu        ,dps       ,qykfac    ,qxk       ,qzk       , &          ! qykfac
                         & gvv       ,guu       ,gvu       ,guv       ,gsqs      , &
                         & rbnd(1,1,1,norow+1)  ,sigdif    ,sigmol    ,r0        ,r1     , &
-                        & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
+                        & sour      ,sink      ,ws        ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdeta    ,dsdksi    , &
                         & dtdeta    ,dtdksi    ,aak       ,bbk       ,cck       , &
                         & bdddx     ,bddx      ,bdx       ,bux       ,buux      , &
@@ -502,7 +501,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & hu        ,dps       ,qyk       ,qxk       ,qzk       , &          ! qyk
                         & gvv       ,guu       ,gvu       ,guv       ,gsqs      , &
                         & rbnd(1,1,1,norow+1)  ,sigdif    ,sigmol    ,r0        ,r1     , &
-                        & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
+                        & sour      ,sink      ,ws        ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdeta    ,dsdksi    , &
                         & dtdeta    ,dtdksi    ,aak       ,bbk       ,cck       , &
                         & bdddx     ,bddx      ,bdx       ,bux       ,buux      , &
@@ -618,7 +617,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                     & bddx      ,bdx       ,bux       ,buux      ,buuux     , &
                     & uvdwk     ,vvdwk     ,areav     ,areau     ,volum0    , &
                     & volum1    ,aakl      ,bbkl      ,cckl      ,ddkl      , &
-                    & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  ,sedtyp    , &
+                    & bruvai    ,stage     ,eqmbcsand ,eqmbcmud  , &
                     & seddif    ,gdp       )
           call timer_stop(timer_tritra_rest, gdp)
        else
