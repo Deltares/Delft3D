@@ -365,6 +365,10 @@ module m_output_config
    integer, public :: IDX_MAP_AU_MAIN !< Output configuration index for main channel flow area
    integer, public :: IDX_MAP_AU_FLOODPLAIN1 !< Output configuration index for first floodplain flow area
    integer, public :: IDX_MAP_AU_FLOODPLAIN2 !< Output configuration index for second floodplain flow area
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS !< Output configuration index for total hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_MAIN !< Output configuration index for main channel hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1 !< Output configuration index for first floodplain hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2 !< Output configuration index for second floodplain hydraulic radius
    integer, public :: IDX_MAP_U1
    integer, public :: IDX_MAP_U0
    integer, public :: IDX_MAP_UCXQ_EULERIAN

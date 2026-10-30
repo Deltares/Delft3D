@@ -1935,6 +1935,19 @@ contains
       call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN2, &
                              'Wrimap_flowarea_au_split', 'au_floodplain2', 'Second floodplain flow area at flow link', &
                              '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius', 'Total hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U, &
+                             description='Write total and subsection 1D flow area / wet perimeter; dry=0, unavailable=missing')
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_MAIN, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_floodplain1', &
+                             'First floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_floodplain2', &
+                             'Second floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_U1, &
