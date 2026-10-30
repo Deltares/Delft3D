@@ -57,20 +57,20 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: qextreal !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), dimension(:), allocatable, target :: vextcum !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), dimension(:), allocatable, target :: air_temperature !< air temperature (degC)
-   real(kind=dp), dimension(:), allocatable, target :: dew_point_temperature !< dew_point_temperature temperature (degC)
-   real(kind=dp), dimension(:), allocatable, target :: relative_humidity !< air relative humidity (%)
-   real(kind=dp), dimension(:), allocatable, target :: cloudiness !< air cloudiness (%)
-   real(kind=dp), dimension(:), allocatable, target :: air_density !< air density (kg/m3)
-   real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
-   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< net solar radiation (W/m2) incl. albedo correction
-   real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
-   real(kind=dp), dimension(:), allocatable, target :: sensible_heat_flux !< sensible heat flux (W/m2)
-   real(kind=dp), dimension(:), allocatable, target :: latent_heat_flux !< latent heat flux (W/m2)
-   real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
-   real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
-   real(kind=dp), dimension(:), allocatable :: tbed !< bed temperature (degC)
-   real(kind=dp), dimension(:), allocatable :: cdwcof !< wind stress cd coefficient () , only if jatemp ==5
+   real(kind=dp), dimension(:), allocatable, target :: air_temperature !< [degC] Air temperature.
+   real(kind=dp), dimension(:), allocatable, target :: dew_point_temperature !< [degC] Dew point temperature temperature.
+   real(kind=dp), dimension(:), allocatable, target :: relative_humidity !< [%] Air relative humidity.
+   real(kind=dp), dimension(:), allocatable, target :: cloudiness !< [%] Air cloudiness.
+   real(kind=dp), dimension(:), allocatable, target :: air_density !< [kg/m3] Air density.
+   real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< [W/m2] Solar radiation.
+   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< [W/m2] Net solar radiation including albedo correction.
+   real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< [W/m2] Long wave radiation.
+   real(kind=dp), dimension(:), allocatable, target :: sensible_heat_flux !< [W/m2] Sensible heat flux.
+   real(kind=dp), dimension(:), allocatable, target :: latent_heat_flux !< [W/m2] Latent heat flux.
+   real(kind=dp), dimension(:), allocatable :: heatsrc !< [Km3/s] Resulting 2D or 3D heat source per cell.
+   real(kind=dp), dimension(:), allocatable :: heatsrc0 !< [Km3/s] Resulting 2D or 3D heat source per cell, only set at timeuser.
+   real(kind=dp), dimension(:), allocatable :: tbed !< [degC] Bed temperature.
+   real(kind=dp), dimension(:), allocatable :: cdwcof !< [-] Wind stress cd coefficient, only relevant if jatemp==5
 
    integer :: jawind !< use wind yes or no
    integer :: jaspacevarcharn !< use space and time varying Charnock coefficients yes or no
