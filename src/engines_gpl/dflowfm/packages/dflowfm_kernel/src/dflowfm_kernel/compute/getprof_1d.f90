@@ -44,6 +44,7 @@ contains
       use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_flow, only: au_main, au_floodplain1, au_floodplain2, map_write_settings
       use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
+      use m_flow, only: flow_width, flow_width_main, flow_width_floodplain1, flow_width_floodplain2
       use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
       use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
       use m_cross_helper, only: getconveyance, getcrossdischarge
@@ -67,6 +68,7 @@ contains
 
       real(kind=dp) :: frcn, cz, cf, conv, af_sub(3), perim_sub(3), cz_sub(3)
       real(kind=dp) :: q_sub(3) ! discharge per segment
+      real(kind=dp), dimension(3) :: width_sub
       integer :: LL, ka, kb, itp, itpa, friction_type, ibndsect
       integer :: k1, k2
       integer :: jacustombnd1d
@@ -104,6 +106,12 @@ contains
          k2 = ln(2, L)
 
          if ((japerim == 1) .and. (calcConv == 1)) then
+            if (map_write_settings%flow_width == 1) then
+               flow_width(L) = width
+               flow_width_main(L) = width
+               flow_width_floodplain1(L) = 0.0_dp
+               flow_width_floodplain2(L) = 0.0_dp
+            end if
             hydrad = area / perim
             perim_sub = [perim, 0.0_dp, 0.0_dp]
             af_sub = [area, 0.0_dp, 0.0_dp]
@@ -151,9 +159,16 @@ contains
             call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CSCalculationOption, network%adm%hysteresis_for_summerdike(:, LL))
          else ! japerim = 1: calculate flow area, conveyance and perimeter.
             cz = 0.0_dp
-            call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub)
+            call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, &
+                               maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub, width_sub=width_sub)
 
             if (calcConv == 1) then
+               if (map_write_settings%flow_width == 1) then
+                  flow_width(L) = width
+                  flow_width_main(L) = width_sub(1)
+                  flow_width_floodplain1(L) = width_sub(2)
+                  flow_width_floodplain2(L) = width_sub(3)
+               end if
                if (map_write_settings%hydraulic_radius == 1) then
                   call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
                end if
@@ -317,6 +332,13 @@ contains
       end if
 
       if (japerim == 1 .and. calcconv == 1) then
+
+         if (map_write_settings%flow_width == 1) then
+            flow_width(L) = width
+            flow_width_main(L) = width
+            flow_width_floodplain1(L) = 0.0_dp
+            flow_width_floodplain2(L) = 0.0_dp
+         end if
 
          if (map_write_settings%hydraulic_radius == 1) then
             if (abs(itp) == 101) then

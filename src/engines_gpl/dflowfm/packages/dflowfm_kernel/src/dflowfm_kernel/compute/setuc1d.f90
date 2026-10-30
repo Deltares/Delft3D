@@ -70,7 +70,7 @@ contains
       real(kind=dp) :: total_cs_area !< [m2] cross-sectional total (flow + storage) area
       real(kind=dp) :: link_surface_area !< [m2] surface area of half link
       real(kind=dp) :: surface_area !< [m2] total surface area of node -- equal to a1(n)
-      real(kind=dp) :: flow_width !< [m] surface width of flow area
+      real(kind=dp) :: flow_cs_width !< [m] surface width of flow area
       real(kind=dp) :: total_width !< [m] surface width of total (flow + storage) area
       real(kind=dp) :: dzw_dt !< [m/s] water level change rate
 
@@ -186,7 +186,7 @@ contains
 
                h = max(0.0_dp, s1(n) - bob(k, La)) ! cross sectional area
                call getprof_1D(La, h, total_cs_area, total_width, JACSTOT, CALCCONV, perim)
-               call getprof_1D(La, h, flow_cs_area, flow_width, JACSFLW, CALCCONV, perim)
+               call getprof_1D(La, h, flow_cs_area, flow_cs_width, JACSFLW, CALCCONV, perim)
                link_surface_area = total_width * half_link_length
                wu1D(k, La) = total_width
                au1D(k, La) = flow_cs_area
