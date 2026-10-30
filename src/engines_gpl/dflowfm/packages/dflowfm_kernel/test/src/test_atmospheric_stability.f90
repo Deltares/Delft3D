@@ -9,7 +9,7 @@ module test_atmospheric_stability
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_true, test_compute_scales_and_fluxes_moninobukhov_true,
+   !$gtest test
    subroutine test_compute_scales_and_fluxes_moninobukhov_true() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
@@ -105,9 +105,8 @@ contains
       call f90_expect_near(c_e(3), 0.0018662636169953025_dp, 1e-9_dp, "c_e(3) does not match expected value.")
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_true
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_false, test_compute_scales_and_fluxes_moninobukhov_false,
+   !$gtest test
    subroutine test_compute_scales_and_fluxes_moninobukhov_false() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
@@ -202,9 +201,8 @@ contains
       call f90_expect_near(c_e(3), 0.0018555879030520107_dp, 1e-9_dp, "c_e(3) does not match expected value.")
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_false
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_atmospheric_stability, test_compute_scales_and_fluxes_moninobukhov_free_convection, test_compute_scales_and_fluxes_moninobukhov_free_convection,
+   !$gtest test
    subroutine test_compute_scales_and_fluxes_moninobukhov_free_convection() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
@@ -299,6 +297,5 @@ contains
       call f90_expect_near(c_e(3), 0.0018676438346224369_dp, 1e-9_dp, "c_e(3) does not match expected value.")
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_free_convection
-   !$f90tw )
 
 end module test_atmospheric_stability

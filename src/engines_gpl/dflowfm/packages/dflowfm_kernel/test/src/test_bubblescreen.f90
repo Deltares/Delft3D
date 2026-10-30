@@ -9,7 +9,7 @@ module test_bubblescreen
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_bubblescreen, test_with_normal_source_sinks, test_with_normal_source_sinks,
+   !$gtest test
    !> Test bubble and normal source-sinks
    subroutine test_with_normal_source_sinks() bind(C)
       use fm_external_forcings, only: init_new
@@ -108,9 +108,8 @@ contains
       call f90_expect_near(bubblescreen_air_discharge(1), 201.38_dp, 1e-1_dp, "Bubble screen air discharge at 300 seconds should be approximately 201.38 m3/s")
 
    end subroutine test_with_normal_source_sinks
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bubblescreen, test_convert_discharge_air_to_water_default, test_convert_discharge_air_to_water_default,
+   !$gtest test
    !> Test conversion of air discharge to water discharge with default parameters
    subroutine test_convert_discharge_air_to_water_default() bind(C)
       ! Local variables
@@ -129,9 +128,8 @@ contains
       call f90_expect_true(comparereal(computed_water_discharge, expected_water_discharge) == 0, "Converted water discharge should match expected value")
 
    end subroutine test_convert_discharge_air_to_water_default
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bubblescreen, test_convert_discharge_air_to_water_custom, test_convert_discharge_air_to_water_custom,
+   !$gtest test
    !> Test conversion of air discharge to water discharge with custom parameters
    subroutine test_convert_discharge_air_to_water_custom() bind(C)
       ! Local variables
@@ -152,7 +150,6 @@ contains
         call f90_expect_true(comparereal(computed_water_discharge, expected_water_discharge) == 0, "Converted water discharge should match expected value")
 
    end subroutine test_convert_discharge_air_to_water_custom
-   !$f90tw)
 
 
 end module test_bubblescreen

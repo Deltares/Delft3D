@@ -274,7 +274,7 @@ contains
       if (status /= NF90_NOERR) error stop nf90_strerror(status)
    end subroutine check_netcdf
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_polygon_preserves_uncovered_values, test_polygon_preserves_uncovered_values,
+   !$gtest test
    subroutine test_polygon_preserves_uncovered_values() bind(C)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use fm_location_types, only: UNC_LOC_S
@@ -311,9 +311,8 @@ contains
       call f90_expect_eq(values(2), 7.0_dp, "an uncovered point should retain its existing value")
       ierr = m_polygon_destructor()
    end subroutine test_polygon_preserves_uncovered_values
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_preserves_uncovered_values, test_waqparameter_polygon_preserves_uncovered_values,
+   !$gtest test
    subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
       use m_flow, only: kmx, ndkx
       use m_polygon, only: m_polygon_destructor
@@ -371,9 +370,8 @@ contains
       ierr = m_polygon_destructor()
       call teardown_minimal_grid()
    end subroutine test_waqparameter_polygon_preserves_uncovered_values
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqparameter_polygon_populates_3d_layers, test_waqparameter_polygon_populates_3d_layers,
+   !$gtest test
    subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
       use m_flow, only: kmx, ndkx, kbot, ktop, kmxn, zws
       use m_polygon, only: m_polygon_destructor
@@ -441,9 +439,8 @@ contains
       ierr = m_polygon_destructor()
       call teardown_minimal_grid()
    end subroutine test_waqparameter_polygon_populates_3d_layers
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqsegmentnumber_finalization, test_waqsegmentnumber_finalization,
+   !$gtest test
    !> Verifies that encoded serial WAQ segment numbers are converted to the local
    !! process-space layer index and copied over each target water column.
    subroutine test_waqsegmentnumber_finalization() bind(C)
@@ -510,9 +507,8 @@ contains
       if (allocated(kmxn)) deallocate (kmxn)
       call reset_waq_segment_number_indices()
    end subroutine test_waqsegmentnumber_finalization
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
+   !$gtest test suite=test_init_spatial_field
    !> When no averaging keywords are present, read_averaging_input must return
    !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.
    subroutine test_averaging_params_defaults() bind(C)
@@ -539,9 +535,8 @@ contains
       call f90_expect_eq(avg%num_min, 1, "default num_min should be 1")
       call f90_expect_eq(avg%percentile, 0.0_dp, "default percentile should be 0")
    end subroutine test_averaging_params_defaults
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_to_transformcoef, test_averaging_params_to_transformcoef,
+   !$gtest test suite=test_init_spatial_field
    !> averaging_params_to_transformcoef must write the four averaging values
    !! into the correct transformcoef slots (4, 5, 7, 8) without touching others.
    subroutine test_averaging_params_to_transformcoef() bind(C)
@@ -567,9 +562,8 @@ contains
       call f90_expect_eq(tc(1), -999.0_dp, "transformcoef(1) should be untouched")
       call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
    end subroutine test_averaging_params_to_transformcoef
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_rainfall_bcascii_registers_ec_connection, test_rainfall_bcascii_registers_ec_connection,
+   !$gtest test
    !> Verifies that a [Spatial] block with forcingFileType=bcascii sets up the
    !! EC connection via the 'global' location path and activates jarain.
    !! This exercises the bcascii branch inside init_spatial_fields, which passes
@@ -620,9 +614,8 @@ contains
       call f90_expect_true(ecInstancePtr%nItems > 0, "EC instance should have at least one registered item after init_spatial_fields")
       call teardown_minimal_grid()
    end subroutine test_rainfall_bcascii_registers_ec_connection
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airpressure_bcascii_uses_generic_source_fallback, test_airpressure_bcascii_uses_generic_source_fallback,
+   !$gtest test
    !> Verifies that a simple recognized scalar can use the generic source-item
    !! connection when its provider-specific source mapping does not support BC.
    subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
@@ -681,9 +674,8 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_airpressure_bcascii_uses_generic_source_fallback
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_atmosphericpressure_alias_works_as_airpressure, test_atmosphericpressure_alias_works_as_airpressure,
+   !$gtest test
    !> Verifies that the 'atmosphericpressure' ext alias correctly works with 'airpressure' .bc data.
    subroutine test_atmosphericpressure_alias_works_as_airpressure() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
@@ -741,9 +733,8 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_atmosphericpressure_alias_works_as_airpressure
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,
+   !$gtest test
    !> Verifies that a [Spatial] block with an unrecognized quantity causes
    !! init_spatial_fields to return .false.. The 'default' branch in
    !! init_spatial_fields emits an error and returns .false..
@@ -770,9 +761,8 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_unknown_quantity_returns_error
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_conflicts_with_netsolarradiation, test_solarradiation_conflicts_with_netsolarradiation,
+   !$gtest test
    !> Verifies that enable_quantity returns .false. when netsolarradiation has
    !! already been registered. This guard in enable_quantity is only reachable
    !! after a successful EC connection, so integration tests never exercise it.
@@ -821,9 +811,8 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_solarradiation_conflicts_with_netsolarradiation
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_qext_static_field_populated_at_init, test_qext_static_field_populated_at_init,
+   !$gtest test
    !> Verifies that a qext [Spatial] block with forcingFileType=sample populates
    !! the qext array immediately at initialisation (static_field=.true. path).
    !! This is the regression test for the unified EC path introduced in Step 2:
@@ -867,17 +856,30 @@ contains
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for a valid qext sample block")
-      call f90_assert_true(allocated(qext), "qext array should be allocated after init")
+      if (.not. f90_assert_true(allocated(qext), "qext array should be allocated after init")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(qext) > 0, "qext must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_near(qext(1), 1.5_dp, 1.0e-6_dp, "qext(1) should match the sample point value")
 
-      ! CLEANUP
-      jaQext = 0
-      if (allocated(qext)) deallocate (qext)
-      call teardown_minimal_grid()
-   end subroutine test_qext_static_field_populated_at_init
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_qext_bcascii_registers_ec_connection, test_qext_bcascii_registers_ec_connection,
+   contains
+
+      subroutine cleanup()
+         jaQext = 0
+         if (allocated(qext)) then
+            deallocate (qext)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_qext_static_field_populated_at_init
+
+   !$gtest test
    !> Verifies that qext with forcingFileType=bcascii sets up a time-varying EC relation
    !! via the tgt_data1 bypass path (quantity not registered in fm_ext_force_name_to_ec_item).
    !! This proves that user freedom is preserved: qext is not locked to sample files.
@@ -931,8 +933,18 @@ contains
       call tree_destroy(bnd_ptr)
 
       ! ASSERT: EC relation established
-      call f90_expect_true(success, "init_spatial_fields should succeed for qext bcascii block")
-      call f90_assert_true(allocated(qext), "qext should be allocated")
+      if (.not. f90_assert_true(success, "init_spatial_fields should succeed for qext bcascii block")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(allocated(qext), "qext should be allocated")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(qext) > 0, "qext must not be empty")) then
+         call cleanup()
+         return
+      end if
 
       ! Get the qext EC item ID directly from the instance after init
       ec_item = ecInstancePtr%ecItemsPtr(ecInstancePtr%nItems)%ptr%id
@@ -947,13 +959,20 @@ contains
       call f90_expect_near(value_at_t0, 1.0_dp, 1.0e-6_dp, "qext at t=0 should be 1.0")
       call f90_expect_near(value_at_t50, 2.0_dp, 1.0e-6_dp, "qext at t=50 should be 2.0 (linearly interpolated)")
 
-      jaQext = 0
-      if (allocated(qext)) deallocate (qext)
-      call teardown_minimal_grid()
-   end subroutine test_qext_bcascii_registers_ec_connection
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_scalar_netcdf_broadcast, test_solarradiation_scalar_netcdf_broadcast,
+   contains
+
+      subroutine cleanup()
+         jaQext = 0
+         if (allocated(qext)) then
+            deallocate (qext)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_qext_bcascii_registers_ec_connection
+
+   !$gtest test
    subroutine test_solarradiation_scalar_netcdf_broadcast() bind(C)
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
       use m_sferic, only: jsferic
@@ -1005,9 +1024,8 @@ contains
       if (allocated(solar_radiation)) deallocate (solar_radiation)
       call teardown_minimal_grid()
    end subroutine test_solarradiation_scalar_netcdf_broadcast
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_located_timeseries_netcdf_is_not_scalar, test_located_timeseries_netcdf_is_not_scalar,
+   !$gtest test
    subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
       use m_meteo, only: initialize_ec_module
       use m_sferic, only: jsferic
@@ -1046,9 +1064,8 @@ contains
       if (allocated(solar_radiation)) deallocate (solar_radiation)
       call teardown_minimal_grid()
    end subroutine test_located_timeseries_netcdf_is_not_scalar
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_windxy_scalar_netcdf_override_and_multiply, test_windxy_scalar_netcdf_override_and_multiply,
+   !$gtest test
    subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new
@@ -1131,9 +1148,8 @@ contains
       if (allocated(wdsu_y)) deallocate (wdsu_y)
       call teardown_minimal_grid()
    end subroutine test_windxy_scalar_netcdf_override_and_multiply
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_netcdf_target_index_updates_complete_coordinate, test_scalar_netcdf_target_index_updates_complete_coordinate,
+   !$gtest test
    subroutine test_scalar_netcdf_target_index_updates_complete_coordinate() bind(C)
       use m_ec_converter, only: ecConverterPerformConversions
       use m_ec_parameters, only: convType_netcdf, EC_OPERAND_REPLACE, elmSetType_cartesian, elmSetType_scalar, &
@@ -1194,9 +1210,8 @@ contains
 
       deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
    end subroutine test_scalar_netcdf_target_index_updates_complete_coordinate
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqfunction_uses_global_ec_target, test_waqfunction_uses_global_ec_target,
+   !$gtest test
    !> Verifies that a time-varying WAQ function uses a one-element global target,
    !! matching the dummy target used by the old external-forcings initialization.
    subroutine test_waqfunction_uses_global_ec_target() bind(C)
@@ -1224,7 +1239,10 @@ contains
 
       irefdate = 20000101
       success = ymd2modified_jul(irefdate, refdate_mjd)
-      call f90_assert_true(success, "the test reference date should convert to MJD")
+      if (.not. f90_assert_true(success, "the test reference date should convert to MJD")) then
+         call cleanup()
+         return
+      end if
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       threshold_abort = LEVEL_FATAL
@@ -1240,31 +1258,64 @@ contains
       success = init_spatial_fields(block_ptr, BASE_DIR, WAQ_EXT, 'Spatial')
       call tree_destroy(bnd_ptr)
 
-      call f90_assert_true(success, "init_spatial_fields should succeed for a WAQ function")
-      call f90_assert_true(allocated(item_waqfun), "item_waqfun should be allocated")
-      call f90_assert_true(item_waqfun(1) > 0, "the WAQ function EC item should be registered")
+      if (.not. f90_assert_true(success, "init_spatial_fields should succeed for a WAQ function")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(allocated(item_waqfun), "item_waqfun should be allocated")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(item_waqfun) > 0, "item_waqfun must not be empty")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(item_waqfun(1) > 0, "the WAQ function EC item should be registered")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(associated(funinp), "WAQ function target storage should be allocated")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(funinp, 1) > 0 .and. size(funinp, 2) > 0, &
+                                "WAQ function target storage must not be empty")) then
+         call cleanup()
+         return
+      end if
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
                                                irefdate, tzone, tunit, 0.0_dp)
-      call f90_assert_true(success, "the WAQ function should update at t=0")
+      call f90_expect_true(success, "the WAQ function should update at t=0")
       call f90_expect_near(funinp(1, 1), 10.0_dp, 1.0e-6_dp, &
                            "the WAQ function value at t=0 should be 10")
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_waqfun(1), &
                                                irefdate, tzone, tunit, 3000.0_dp)
-      call f90_assert_true(success, "the WAQ function should update at t=3000 seconds")
+      call f90_expect_true(success, "the WAQ function should update at t=3000 seconds")
       call f90_expect_near(funinp(1, 1), 15.0_dp, 1.0e-6_dp, &
                            "the WAQ function value at 50 minutes should be linearly interpolated")
 
-      num_time_functions = 0
-      if (allocated(funame)) deallocate (funame)
-      if (associated(funinp)) deallocate (funinp)
-      if (allocated(item_waqfun)) deallocate (item_waqfun)
-      call teardown_minimal_grid()
-   end subroutine test_waqfunction_uses_global_ec_target
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_register_waq_targets, test_register_waq_targets,
+   contains
+
+      subroutine cleanup()
+         num_time_functions = 0
+         if (allocated(funame)) then
+            deallocate (funame)
+         end if
+         if (associated(funinp)) then
+            deallocate (funinp)
+         end if
+         if (allocated(item_waqfun)) then
+            deallocate (item_waqfun)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_waqfunction_uses_global_ec_target
+
+   !$gtest test
    !> Verifies that the new external-forcings pre-scan registers every WAQ input
    !! type handled by the legacy pre-scan before dependent arrays are sized.
    subroutine test_register_waq_targets() bind(C)
@@ -1293,33 +1344,70 @@ contains
       call register_waq_target('waqfunctionFunction')
       call register_waq_target('waqsegmentfunctionSegmentFunction')
 
-      call f90_expect_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")
-      call f90_assert_streq(cstr(paname(1)), cstr("Parameter"), cstr("the WAQ parameter suffix should be retained"))
-      call f90_assert_streq(cstr(paname(2)), cstr("Segment"), cstr("the WAQ segment-number suffix should be retained"))
+      if (.not. f90_assert_eq(num_spatial_parameters, 2, "two WAQ spatial parameters should be registered")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(allocated(painp), "WAQ parameter target storage should be allocated")) then
+         call cleanup()
+         return
+      end if
+      call f90_expect_streq(cstr(paname(1)), cstr("Parameter"), cstr("the WAQ parameter suffix should be retained"))
+      call f90_expect_streq(cstr(paname(2)), cstr("Segment"), cstr("the WAQ segment-number suffix should be retained"))
       call f90_expect_eq(size(painp, 2), ndkx, "spatial parameter storage should cover all WAQ segments")
-      call f90_expect_eq(num_time_functions, 1, "one WAQ function should be registered")
-      call f90_assert_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
+      if (.not. f90_assert_eq(num_time_functions, 1, "one WAQ function should be registered")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(associated(funinp), "WAQ function target storage should be allocated")) then
+         call cleanup()
+         return
+      end if
+      call f90_expect_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
       call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
-      call f90_expect_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")
-      call f90_assert_streq(cstr(sfunname(1)), cstr("SegmentFunction"), cstr("the WAQ segment function suffix should be retained"))
-      call f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")
+      if (.not. f90_assert_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")) then
+         call cleanup()
+         return
+      end if
+      call f90_expect_streq(cstr(sfunname(1)), cstr("SegmentFunction"), cstr("the WAQ segment function suffix should be retained"))
+      if (.not. f90_assert_true(associated(sfuninp), "WAQ segment function target storage should be allocated")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_eq(size(sfuninp, 1), 1, "target storage should contain one segment function")
       call f90_expect_eq(size(sfuninp, 2), ndkx, "target storage should cover all WAQ segments")
 
-      num_spatial_parameters = 0
-      num_time_functions = 0
-      num_spatial_time_fuctions = 0
-      if (allocated(paname)) deallocate (paname)
-      if (allocated(painp)) deallocate (painp)
-      if (allocated(funame)) deallocate (funame)
-      if (associated(funinp)) deallocate (funinp)
-      if (allocated(sfunname)) deallocate (sfunname)
-      if (associated(sfuninp)) deallocate (sfuninp)
-      ndkx = 0
-   end subroutine test_register_waq_targets
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
+   contains
+
+      subroutine cleanup()
+         num_spatial_parameters = 0
+         num_time_functions = 0
+         num_spatial_time_fuctions = 0
+         if (allocated(paname)) then
+            deallocate (paname)
+         end if
+         if (allocated(painp)) then
+            deallocate (painp)
+         end if
+         if (allocated(funame)) then
+            deallocate (funame)
+         end if
+         if (associated(funinp)) then
+            deallocate (funinp)
+         end if
+         if (allocated(sfunname)) then
+            deallocate (sfunname)
+         end if
+         if (associated(sfuninp)) then
+            deallocate (sfuninp)
+         end if
+         ndkx = 0
+      end subroutine cleanup
+   end subroutine test_register_waq_targets
+
+   !$gtest test
    !> Verifies that an initialwaterlevel [Spatial] block populates s1 immediately at
    !! initialisation via the new init_spatial_fields static field path.
    !! This is the regression test proving the quantity was successfully migrated from
@@ -1369,20 +1457,37 @@ contains
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for initialwaterlevel sample block")
-      call f90_assert_true(allocated(s1), "s1 should be allocated after init")
+      if (.not. f90_assert_true(allocated(s1), "s1 should be allocated after init")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(s1) > 0, "s1 must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_near(s1(1), 1.5_dp, 1.0e-6_dp, "s1(1) should match the sample value")
 
-      ! CLEANUP
-      ndxi = 0
-      ndx2D = 0
-      if (allocated(bl)) deallocate (bl)
-      if (allocated(s1)) deallocate (s1)
-      if (allocated(hs)) deallocate (hs)
-      call teardown_minimal_grid()
-   end subroutine test_initialwaterlevel_static_field_populated_at_init
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_static_field_populated_at_init, test_frictioncoefficient_static_field_populated_at_init,
+   contains
+
+      subroutine cleanup()
+         ndxi = 0
+         ndx2D = 0
+         if (allocated(bl)) then
+            deallocate (bl)
+         end if
+         if (allocated(s1)) then
+            deallocate (s1)
+         end if
+         if (allocated(hs)) then
+            deallocate (hs)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_initialwaterlevel_static_field_populated_at_init
+
+   !$gtest test
    !> Verifies that a frictioncoefficient [Spatial] block populates frcu immediately at
    !! initialisation via the new init_spatial_fields static field path.
    !! Also proves UNC_LOC_U routing is correct: xu/yu are used as target coordinates.
@@ -1436,22 +1541,41 @@ contains
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for frictioncoefficient sample block")
-      call f90_assert_true(allocated(frcu), "frcu should be allocated after init")
+      if (.not. f90_assert_true(allocated(frcu), "frcu should be allocated after init")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(frcu) > 0, "frcu must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, "frcu(1) should match the sample value")
 
-      ! CLEANUP
-      ndxi = 0
-      ndx2D = 0
-      lnx = 0
-      if (allocated(bl)) deallocate (bl)
-      if (allocated(xu)) deallocate (xu)
-      if (allocated(yu)) deallocate (yu)
-      if (allocated(frcu)) deallocate (frcu)
-      call teardown_minimal_grid()
-   end subroutine test_frictioncoefficient_static_field_populated_at_init
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_datavalue_with_static_input_is_applied_once, test_datavalue_with_static_input_is_applied_once,
+   contains
+
+      subroutine cleanup()
+         ndxi = 0
+         ndx2D = 0
+         lnx = 0
+         if (allocated(bl)) then
+            deallocate (bl)
+         end if
+         if (allocated(xu)) then
+            deallocate (xu)
+         end if
+         if (allocated(yu)) then
+            deallocate (yu)
+         end if
+         if (allocated(frcu)) then
+            deallocate (frcu)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_frictioncoefficient_static_field_populated_at_init
+
+   !$gtest test
    subroutine test_datavalue_with_static_input_is_applied_once() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new, set_external_forcings
@@ -1528,9 +1652,8 @@ contains
       deallocate(ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_datavalue_with_static_input_is_applied_once
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_airdensity_datavalue_with_static_input_is_applied_once, test_airdensity_datavalue_with_static_input_is_applied_once,
+   !$gtest test
    !> A static airdensity datavalue must not be reapplied during runtime updates
    !! after a later static field has replaced it.
    subroutine test_airdensity_datavalue_with_static_input_is_applied_once() bind(C)
@@ -1603,9 +1726,8 @@ contains
       deallocate(ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_windxy_multiple_targets_reports_error, test_static_windxy_multiple_targets_reports_error,
+   !$gtest test
    subroutine test_static_windxy_multiple_targets_reports_error() bind(C)
       use m_flowgeom, only: lnx, xu, yu
       use m_wind, only: wx, wy
@@ -1647,9 +1769,8 @@ contains
       if (allocated(wdsu_y)) deallocate (wdsu_y)
       call teardown_minimal_grid()
    end subroutine test_static_windxy_multiple_targets_reports_error
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_static_datavalue_dynamic_multiply_resets_base, test_static_datavalue_dynamic_multiply_resets_base,
+   !$gtest test
    !> A static datavalue base must be reapplied before each dynamic multiplication,
    !! rather than multiplying the previously updated target value cumulatively.
    subroutine test_static_datavalue_dynamic_multiply_resets_base() bind(C)
@@ -1743,9 +1864,8 @@ contains
       deallocate(ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_static_datavalue_dynamic_multiply_resets_base
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterdepth_derives_s1, test_initialwaterdepth_derives_s1,
+   !$gtest test
    !> Verifies that an initialwaterdepth [Spatial] block fills hs AND derives s1 = bl + hs.
    !! The s1 derivation is post-processing performed by enable_quantity, not by
    !! timespaceinitialfield itself. This proves enable_quantity fires correctly on the
@@ -1806,9 +1926,8 @@ contains
       if (allocated(hs)) deallocate (hs)
       call teardown_minimal_grid()
    end subroutine test_initialwaterdepth_derives_s1
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_secchi_netcdf_interpolates_at_start, test_initial_secchi_netcdf_interpolates_at_start,
+   !$gtest test
    subroutine test_initial_secchi_netcdf_interpolates_at_start() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
       use m_meteo, only: item_secchi_depth
@@ -1861,9 +1980,8 @@ contains
       if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
       call teardown_minimal_grid()
    end subroutine test_initial_secchi_netcdf_interpolates_at_start
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_timeless_netcdf, test_initial_waterlevel_timeless_netcdf,
+   !$gtest test
    subroutine test_initial_waterlevel_timeless_netcdf() bind(C)
       use m_flow, only: s1
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -1908,9 +2026,8 @@ contains
       end if
       call teardown_minimal_grid()
    end subroutine test_initial_waterlevel_timeless_netcdf
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_waterlevel_snapshot_netcdf, test_initial_waterlevel_snapshot_netcdf,
+   !$gtest test
    subroutine test_initial_waterlevel_snapshot_netcdf() bind(C)
       use m_flow, only: s1
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -1961,9 +2078,8 @@ contains
          call teardown_minimal_grid()
       end do
    end subroutine test_initial_waterlevel_snapshot_netcdf
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchi_timeless_netcdf_is_constant, test_secchi_timeless_netcdf_is_constant,
+   !$gtest test
    subroutine test_secchi_timeless_netcdf_is_constant() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
       use m_meteo, only: item_secchi_depth, ecInstancePtr, ec_gettimespacevalue_by_itemID
@@ -2025,9 +2141,8 @@ contains
       end if
       call teardown_minimal_grid()
    end subroutine test_secchi_timeless_netcdf_is_constant
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_netcdf_time_dimension_requires_coordinate, test_netcdf_time_dimension_requires_coordinate,
+   !$gtest test
    subroutine test_netcdf_time_dimension_requires_coordinate() bind(C)
       use netcdf
       use m_flow, only: s1
@@ -2070,9 +2185,8 @@ contains
       end if
       call teardown_minimal_grid()
    end subroutine test_netcdf_time_dimension_requires_coordinate
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_secchi_netcdf_is_applied_once, test_initial_secchi_netcdf_is_applied_once,
+   !$gtest test
    subroutine test_initial_secchi_netcdf_is_applied_once() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new, set_external_forcings
@@ -2139,9 +2253,8 @@ contains
       if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
       call teardown_minimal_grid()
    end subroutine test_initial_secchi_netcdf_is_applied_once
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_netcdf_interpolates_at_start, test_initial_temperature_netcdf_interpolates_at_start,
+   !$gtest test
    subroutine test_initial_temperature_netcdf_interpolates_at_start() bind(C)
       use m_flow, only: tem1, kmx
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
@@ -2199,9 +2312,8 @@ contains
       if (allocated(tem1)) deallocate (tem1)
       call teardown_minimal_grid()
    end subroutine test_initial_temperature_netcdf_interpolates_at_start
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_temperature_missing_explicit_variable_succeeds, test_initial_temperature_missing_explicit_variable_succeeds,
+   !$gtest test
    subroutine test_initial_temperature_missing_explicit_variable_succeeds() bind(C)
       use m_flow, only: tem1, kmx
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
@@ -2258,9 +2370,8 @@ contains
       call clear_ec_message()
       call teardown_minimal_grid()
    end subroutine test_initial_temperature_missing_explicit_variable_succeeds
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_salinity_netcdf_interpolates_at_start, test_initial_salinity_netcdf_interpolates_at_start,
+   !$gtest test
    subroutine test_initial_salinity_netcdf_interpolates_at_start() bind(C)
       use m_flow, only: sa1, kmx
       use m_flowparameters, only: jasal
@@ -2313,25 +2424,21 @@ contains
       if (allocated(sa1)) deallocate (sa1)
       call teardown_minimal_grid()
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_two_timestamps, test_initial_3d_salinity_two_timestamps,
+   !$gtest test
    subroutine test_initial_3d_salinity_two_timestamps() bind(C)
       call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
    end subroutine test_initial_3d_salinity_two_timestamps
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_one_timestamp, test_initial_3d_salinity_one_timestamp,
+   !$gtest test
    subroutine test_initial_3d_salinity_one_timestamp() bind(C)
       call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
    end subroutine test_initial_3d_salinity_one_timestamp
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initial_3d_salinity_timeless, test_initial_3d_salinity_timeless,
+   !$gtest test
    subroutine test_initial_3d_salinity_timeless() bind(C)
       call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
    end subroutine test_initial_3d_salinity_timeless
-   !$f90tw)
 
    subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface)
       use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
@@ -2412,7 +2519,7 @@ contains
 
    end subroutine run_initial_3d_salinity_case
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
+   !$gtest test
    subroutine test_secchidepth_static_field_and_post_processing() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2452,18 +2559,32 @@ contains
       call f90_expect_true(success, "init_spatial_fields should succeed for secchidepth")
       call f90_expect_true(secchi_depth_is_spatially_varying, &
                            "secchi_depth_is_spatially_varying must be .true. after init")
-      call f90_assert_true(allocated(spatial_secchi_depth), &
-                           "spatial_secchi_depth must be allocated")
+      if (.not. f90_assert_true(allocated(spatial_secchi_depth), &
+                               "spatial_secchi_depth must be allocated")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(spatial_secchi_depth) > 0, "spatial_secchi_depth must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_near(spatial_secchi_depth(1), 3.5_dp, 1.0e-6_dp, &
                            "spatial_secchi_depth(1) should match the sample value")
 
-      secchi_depth_is_spatially_varying = .false.
-      if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
-      call teardown_minimal_grid()
-   end subroutine test_secchidepth_static_field_and_post_processing
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_with_explicit_frictiontype, test_frictioncoefficient_with_explicit_frictiontype,
+   contains
+
+      subroutine cleanup()
+         secchi_depth_is_spatially_varying = .false.
+         if (allocated(spatial_secchi_depth)) then
+            deallocate (spatial_secchi_depth)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_secchidepth_static_field_and_post_processing
+
+   !$gtest test
    !> Verifies that a frictioncoefficient [Spatial] block with an explicit frictionType=
    !! keyword causes set_friction_type_values_explicit to populate ifrcutp.
    !! This is the only quantity that triggers a third call after enable_quantity and
@@ -2525,20 +2646,40 @@ contains
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for frictioncoefficient with frictionType")
-      call f90_assert_true(allocated(ifrcutp), "ifrcutp should be allocated")
+      if (.not. f90_assert_true(allocated(ifrcutp), "ifrcutp should be allocated")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(ifrcutp) > 0, "ifrcutp must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_eq(ifrcutp(1), expected_friction_type, &
                          "ifrcutp(1) must equal the Manning integer from frictionTypeStringToInteger")
 
-      lnx = 0
-      if (allocated(xu)) deallocate (xu)
-      if (allocated(yu)) deallocate (yu)
-      if (allocated(frcu)) deallocate (frcu)
-      if (allocated(ifrcutp)) deallocate (ifrcutp)
-      call teardown_minimal_grid()
-   end subroutine test_frictioncoefficient_with_explicit_frictiontype
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_advectiontype_integer_field_populated, test_advectiontype_integer_field_populated,
+   contains
+
+      subroutine cleanup()
+         lnx = 0
+         if (allocated(xu)) then
+            deallocate (xu)
+         end if
+         if (allocated(yu)) then
+            deallocate (yu)
+         end if
+         if (allocated(frcu)) then
+            deallocate (frcu)
+         end if
+         if (allocated(ifrcutp)) then
+            deallocate (ifrcutp)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_frictioncoefficient_with_explicit_frictiontype
+
+   !$gtest test
    !> Verifies that an advectiontype [Spatial] block populates the iadv integer array
    !! via the resolve_integer_target + timespaceinitialfield_int path.
    !! Uses forcingFileType=insidePolygon since triangulation is not supported by
@@ -2601,21 +2742,38 @@ contains
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for advectiontype insidePolygon block")
-      call f90_assert_true(allocated(iadv), "iadv should be allocated after init")
+      if (.not. f90_assert_true(allocated(iadv), "iadv should be allocated after init")) then
+         call cleanup()
+         return
+      end if
+      if (.not. f90_assert_true(size(iadv) > 0, "iadv must not be empty")) then
+         call cleanup()
+         return
+      end if
       call f90_expect_eq(iadv(1), 3, "iadv(1) should be 3 (value= keyword via transformcoef(1))")
 
-      ! CLEANUP
-      lnx = 0
-      ndxi = 0
-      ndx2D = 0
-      if (allocated(xu)) deallocate (xu)
-      if (allocated(yu)) deallocate (yu)
-      if (allocated(iadv)) deallocate (iadv)
-      call teardown_minimal_grid()
-   end subroutine test_advectiontype_integer_field_populated
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqbot_vertical_layer_selection, test_waqbot_vertical_layer_selection,
+   contains
+
+      subroutine cleanup()
+         lnx = 0
+         ndxi = 0
+         ndx2D = 0
+         if (allocated(xu)) then
+            deallocate (xu)
+         end if
+         if (allocated(yu)) then
+            deallocate (yu)
+         end if
+         if (allocated(iadv)) then
+            deallocate (iadv)
+         end if
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_advectiontype_integer_field_populated
+
+   !$gtest test
    subroutine test_waqbot_vertical_layer_selection() bind(C)
       use m_flow, only: kmx, kbot, ktop, kmxn
       use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM
@@ -2666,9 +2824,8 @@ contains
       if (allocated(ktop)) deallocate (ktop)
       if (allocated(kmxn)) deallocate (kmxn)
    end subroutine test_waqbot_vertical_layer_selection
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_waqmassbalancearea_polygon_populated, test_waqmassbalancearea_polygon_populated,
+   !$gtest test
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
    subroutine test_waqmassbalancearea_polygon_populated() bind(C)
@@ -2725,24 +2882,36 @@ contains
 
       call read_and_initialize_mass_balance_area(MBA_FILE)
 
-      call f90_expect_eq(nomba, 1, "one mass-balance area should be registered")
-      call f90_assert_streq(cstr(mbaname(1)), cstr("test_mba"), cstr("the mass-balance area suffix should be retained"))
+      if (.not. f90_assert_eq(nomba, 1, "one mass-balance area should be registered")) then
+         call cleanup()
+         return
+      end if
+      call f90_expect_streq(cstr(mbaname(1)), cstr("test_mba"), cstr("the mass-balance area suffix should be retained"))
       call f90_expect_eq(mbadef(1), 1, "the enclosed cell should belong to the registered area")
 
-      ti_mba = 0.0_dp
-      nomba = 0
-      ndxi = 0
-      ndkx = 0
-      ndx2D = 0
-      deallocate (kmxn)
-      if (allocated(mbaname)) deallocate (mbaname)
-      if (allocated(mbadef)) deallocate (mbadef)
-      ierr = m_polygon_destructor()
-      call teardown_minimal_grid()
-   end subroutine test_waqmassbalancearea_polygon_populated
-   !$f90tw)
+      call cleanup()
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
+   contains
+
+      subroutine cleanup()
+         ti_mba = 0.0_dp
+         nomba = 0
+         ndxi = 0
+         ndkx = 0
+         ndx2D = 0
+         deallocate (kmxn)
+         if (allocated(mbaname)) then
+            deallocate (mbaname)
+         end if
+         if (allocated(mbadef)) then
+            deallocate (mbadef)
+         end if
+         ierr = m_polygon_destructor()
+         call teardown_minimal_grid()
+      end subroutine cleanup
+   end subroutine test_waqmassbalancearea_polygon_populated
+
+   !$gtest test
    !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
    !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.
    !! constituents is pointered to by resolve_initial_3D_target and must be pre-allocated.
@@ -2816,9 +2985,8 @@ contains
       if (allocated(ktop)) deallocate (ktop)
       call teardown_minimal_grid()
    end subroutine test_initialsalinity_3d_field_populated
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsalinityprofile, test_initialverticalsalinityprofile,
+   !$gtest test
    !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
    !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
    !! calls setinitialverticalprofilez directly with the polygon profile file..
@@ -2906,9 +3074,8 @@ contains
       if (allocated(zws)) deallocate (zws)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsedfracprofile, test_initialverticalsedfracprofile,
+   !$gtest test
    !> Verifies that an initialverticalsedfracprofile [Spatial] block populates
    !! the selected sediment constituent using absolute z coordinates.
    subroutine test_initialverticalsedfracprofile() bind(C)
@@ -2983,9 +3150,8 @@ contains
       if (allocated(const_names)) deallocate (const_names)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsedfracprofile
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsigmasedfracprofile, test_initialverticalsigmasedfracprofile,
+   !$gtest test
    !> Verifies that an initialverticalsigmasedfracprofile [Spatial] block populates
    !! the selected sediment constituent using sigma coordinates.
    subroutine test_initialverticalsigmasedfracprofile() bind(C)
@@ -3064,9 +3230,8 @@ contains
       if (allocated(const_names)) deallocate (const_names)
       call teardown_minimal_grid()
    end subroutine test_initialverticalsigmasedfracprofile
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_field1d_global_value_applied_to_frictioncoefficient, test_field1d_global_value_applied_to_frictioncoefficient,
+   !$gtest test
    !> Verifies that a frictioncoefficient block with forcingFileType=1dField applies
    !! the [Global] value to all 1D links when no [Branch] blocks are present.
    !! Does not require a real 1D network: with no [Branch] blocks, spaceInit1dField
@@ -3122,9 +3287,8 @@ contains
       if (allocated(frcu)) deallocate (frcu)
       call teardown_minimal_grid()
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_bcascii_matrix, test_scalar_meteo_bcascii_matrix,
+   !$gtest test
    subroutine test_scalar_meteo_bcascii_matrix() bind(C)
       character(len=*), parameter :: BC_FILE = 'test_scalar_meteo.bc'
       character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo.ext'
@@ -3138,9 +3302,8 @@ contains
 
       call cleanup_scalar_meteo_state()
    end subroutine test_scalar_meteo_bcascii_matrix
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_scalar_meteo_netcdf_matrix, test_scalar_meteo_netcdf_matrix,
+   !$gtest test
    subroutine test_scalar_meteo_netcdf_matrix() bind(C)
       character(len=*), parameter :: NC_FILE = 'test_scalar_meteo.nc'
       character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo_netcdf.ext'
@@ -3154,9 +3317,8 @@ contains
 
       call cleanup_scalar_meteo_state()
    end subroutine test_scalar_meteo_netcdf_matrix
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_gridded_meteo_netcdf_matrix, test_gridded_meteo_netcdf_matrix,
+   !$gtest test
    subroutine test_gridded_meteo_netcdf_matrix() bind(C)
       character(len=*), parameter :: NC_FILE = 'test_gridded_meteo.nc'
       character(len=*), parameter :: EXT_FILE = 'test_gridded_meteo.ext'
@@ -3169,7 +3331,6 @@ contains
       end do
       call cleanup_scalar_meteo_state()
    end subroutine test_gridded_meteo_netcdf_matrix
-   !$f90tw)
 
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user

@@ -1,9 +1,65 @@
 # Unit Tests
 Back to main [development page](development.md).
 
-Note: This page is *draft*.
-We have unit tests located in `test/unit_test/` (described below) and unit tests located in `src/test/` (not yet described).
-The former tests are configured to be executed in the build folder, whereas the latter tests should run in the installation folder.
+## Fortran GoogleTest tests
+
+New Fortran tests use the Delft3D-owned
+[`gtest_fortran_wrapper`](../src/tools_gpl/gtest_fortran_wrapper/README.md).
+Test sources live alongside the corresponding library's `test/` or `gtest/`
+directory, and use the same assertions and discovery as C++ GoogleTest tests.
+
+```fortran
+module test_example
+   use assertions_gtest, only: f90_expect_eq
+   implicit none(type, external)
+contains
+   !$gtest test
+   subroutine test_addition() bind(C)
+      call f90_expect_eq(1 + 1, 2, "addition")
+   end subroutine test_addition
+end module test_example
+```
+
+```cmake
+add_fortran_gtest(test_example
+    SOURCES test_example.f90
+    LIBRARIES library_under_test
+    VISUAL_STUDIO_PATH tests/example
+)
+```
+
+The marker supplies the enclosing module's suite and the following procedure's
+test name. Only exceptions need `suite=` or `name=` overrides. CMake generates
+the C++ registrations directly using Python; no C++ bootstrap or duplicate source
+list is needed. Tests run from their executable's build directory and are
+individually discoverable by CTest and Visual Studio Test Explorer.
+
+Assertion messages accept ordinary Fortran strings. Existing NUL-terminated
+strings remain supported. Use `f90_expect_*` for independent result checks.
+Guard prerequisites with `if (.not. f90_assert_true(condition)) then` or
+`if (.not. f90_assert_eq(integer_status, expected_status)) then`, followed by
+cleanup as needed and an explicit `return`. Helpers must propagate failure to
+their callers. Assertions are logical functions, not subroutines; do not invoke
+them with `call`.
+See the wrapper documentation for supported kinds, array ranks, and parser rules.
+
+Configure, build, install, and run tests on Windows:
+
+```powershell
+python build.py --config fm-suite --build-type Debug --keep-build
+cmake --build build_fm-suite --config Debug --parallel
+cmake --install build_fm-suite --config Debug
+ctest --test-dir build_fm-suite --build-config Debug --output-on-failure
+```
+
+Use `-R "^test_example[.]test_addition$"` to select an individual test.
+Run the definitive suite serially because some tests share files. Some legacy
+integration tests require installed DLLs and are not runnable from a build alone.
+
+## Legacy ftnunit tests
+
+The remaining sections describe the existing `test/unit_test/` ftnunit framework.
+They do not apply to the Fortran GoogleTest integration above.
 
 ## 1. Create Unit tests
 

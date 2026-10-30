@@ -7,8 +7,7 @@ module test_ec_module_data_value
    private
 contains
 
-   !$f90tw TESTCODE(TEST, test_ec_module_data_value, 
-   !$f90tw test_data_value__windx_windy, test_data_value__windx_windy,
+   !$gtest test
    subroutine test_data_value__windx_windy() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windx, item_windy, item_windxy_x, item_windxy_y, ec_gettimespacevalue
@@ -79,12 +78,12 @@ contains
       quantity_name = "windx"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windx"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windx"))
 
       quantity_name = "windy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windy"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windy"))
 
       quantity_name = "windx"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
@@ -103,10 +102,8 @@ contains
 
       deallocate(wx, wy)
    end subroutine test_data_value__windx_windy
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_ec_module_data_value,
-   !$f90tw test_data_value__windxy, test_data_value__windxy,
+   !$gtest test
    subroutine test_data_value__windxy() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windxy_x, item_windxy_y, ec_gettimespacevalue
@@ -167,11 +164,11 @@ contains
       quantity_name = "windxy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windxy"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windxy"))
 
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=WINDSPEEDFACTOR)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windxy dataValue"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windxy dataValue"))
 
       ! Assert
       ok = ec_gettimespacevalue(ecInstancePtr, item_windxy_x, IREFDATE, tzone, tunit, 50.0_dp)
@@ -180,10 +177,8 @@ contains
 
       deallocate(wx, wy)
    end subroutine test_data_value__windxy
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_ec_module_data_value,
-   !$f90tw test_data_value__windx_windy_in_bc__windxy_datavalue, test_data_value__windx_windy_in_bc__windxy_datavalue,
+   !$gtest test
    subroutine test_data_value__windx_windy_in_bc__windxy_datavalue() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windx, item_windy, item_windxy_x, ec_gettimespacevalue
@@ -252,17 +247,17 @@ contains
       quantity_name = "windx"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windx"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windx"))
 
       quantity_name = "windy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windy"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windy"))
 
       quantity_name = "windxy"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=WINDSPEEDFACTOR)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for windxy dataValue"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for windxy dataValue"))
 
       ! Assert
       ! Get `item_windx` and `item_windy` first. Here the `WINDSPEEDFACTOR` data value is not applied yet.
@@ -279,10 +274,8 @@ contains
 
       deallocate(wx, wy)
    end subroutine test_data_value__windx_windy_in_bc__windxy_datavalue
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_ec_module_data_value,
-   !$f90tw test_data_value__solarradiation, test_data_value__solarradiation,
+   !$gtest test
    subroutine test_data_value__solarradiation() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_solar_radiation, ec_gettimespacevalue
@@ -339,11 +332,11 @@ contains
       quantity_name = "solarradiation"
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "global", &
          BCASCII, SPACEANDTIME, OPERAND_OVERRIDE, forcingfile=BC_FILE)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for solarradiation"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for solarradiation"))
 
       ok = ec_addtimespacerelation(quantity_name, x, y, mask, 1, "", &
          DATAVALUE, JUSTUPDATE, OPERAND_MULTIPLY, data_value=SOLARRADIATIONFACTOR)
-      call F90_EXPECT_TRUE(ok, cstr("ec_addtimespacerelation failed for solarradiation dataValue"))
+      call f90_expect_true(ok, cstr("ec_addtimespacerelation failed for solarradiation dataValue"))
 
       ! Assert
       ok = ec_gettimespacevalue(ecInstancePtr, item_solar_radiation, IREFDATE, tzone, tunit, 50.0_dp)
@@ -351,6 +344,5 @@ contains
 
       deallocate(solar_radiation)
    end subroutine test_data_value__solarradiation
-   !$f90tw )
 
 end module test_ec_module_data_value

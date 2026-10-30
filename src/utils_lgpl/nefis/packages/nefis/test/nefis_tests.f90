@@ -28,6 +28,7 @@
 !
 
 module m_nefis_tests
+   !$gtest suite=nefis_tests
    use assertions_gtest
    use tests_nefis_helper
    implicit none
@@ -36,7 +37,7 @@ module m_nefis_tests
 
 contains
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_04, test_04,
+   !$gtest test
    subroutine test_04() bind(C)
       integer * 4 fds
       integer ::&
@@ -241,9 +242,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_04
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_05, test_05,
+   !$gtest test
    subroutine test_05() bind(C)
       integer start, stop, incr
       parameter(start=1, stop=2, incr=3)
@@ -402,9 +402,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_05
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_07, test_07,
+   !$gtest test
    subroutine test_07() bind(C)
       integer * 4 fds
       integer clsdat,&
@@ -606,9 +605,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_07
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_08, test_08,
+   !$gtest test
    subroutine test_08() bind(C)
       integer START, stop, INCR
 
@@ -945,9 +943,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_08
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_09, test_09,
+   !$gtest test
    subroutine test_09() bind(C)
       integer * 4 fds, datfds
       integer START, stop, INCR
@@ -1096,9 +1093,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_09
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_12, test_12,
+   !$gtest test
    subroutine test_12() bind(C)
       integer * 4 fds_a,&
       &fds_b,&
@@ -1188,9 +1184,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_12
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, nefis_tests, test_15, test_15,
+   !$gtest test
    subroutine test_15() bind(C)
       integer ntimes, num_columns, num_rows, num_layers_grid, nsrc
       parameter(ntimes=3,&
@@ -1555,6 +1550,5 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_15
-   !$f90tw)
 
 end module m_nefis_tests

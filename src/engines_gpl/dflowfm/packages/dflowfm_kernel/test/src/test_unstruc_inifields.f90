@@ -14,7 +14,7 @@ module test_unstruc_inifields
 
    contains
    
-!$f90tw TESTCODE(TEST, test_unstruc_inifields, test_read_operand, test_read_operand,
+!$gtest test
    subroutine test_read_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
@@ -52,9 +52,8 @@ module test_unstruc_inifields
 
       call tree_destroy(inifield_ptr)
    end subroutine test_read_operand
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_unstruc_inifields, test_read_deprecated_operand, test_read_deprecated_operand,
+!$gtest test
    subroutine test_read_deprecated_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
@@ -98,9 +97,8 @@ module test_unstruc_inifields
 
       call tree_destroy(inifield_ptr)
    end subroutine test_read_deprecated_operand
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_unstruc_inifields, test_read_unknown_operand, test_read_unknown_operand,
+!$gtest test
    subroutine test_read_unknown_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
@@ -143,6 +141,5 @@ module test_unstruc_inifields
 
       call tree_destroy(inifield_ptr)
    end subroutine test_read_unknown_operand
-!$f90tw)
 
 end module test_unstruc_inifields

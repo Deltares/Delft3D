@@ -1,10 +1,11 @@
 module test_dflowfm_dambreak
+   !$gtest suite=test_skip_1d_flowlinks
    use assertions_gtest
    implicit none
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_skip_1d_flowlinks, test_skip_1d_flowlinks, test_skip_1d_flowlinks,
+   !$gtest test
    !> Test whether remove_1d_links_from_dambreak_polygon_list removes 1D flow links from the list of polygon vertices in a dambreak test case. This is necessary to prevent the 1D flow links
    subroutine test_skip_1d_flowlinks() bind(C)
       use precision, only: dp
@@ -23,5 +24,4 @@ contains
       call f90_expect_eq(num_cells, 5, "number of cells must be equal to 5")
       call f90_expect_true(all(cell_numbers(1:num_cells) == [1, 3, 4, 6, 8]), "cells numbers must be equal to [1, 3, 4, 6, 8]")
    end subroutine test_skip_1d_flowlinks
-   !$f90tw)
 end module test_dflowfm_dambreak

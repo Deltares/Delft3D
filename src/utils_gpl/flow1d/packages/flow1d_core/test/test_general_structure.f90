@@ -5,7 +5,7 @@ module test_general_structure
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_general_structure, test_genstru_1d2d_door_not_in_water, test_genstru_1d2d_door_not_in_water,
+   !$gtest test
    subroutine test_genstru_1d2d_door_not_in_water() bind(C)
    
       use precision, only: dp
@@ -41,9 +41,8 @@ contains
       call f90_expect_near(q_fully_opened_door_100_percent, q_fully_opened_door_50_percent, tolerance, "The discharge for no door is different from the discharge for a door partly hanging over the structure.")
       
    end subroutine test_genstru_1d2d_door_not_in_water
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_general_structure, test_genstru_1d2d_crestwidth_reduced, test_genstru_1d2d_crestwidth_reduced,
+   !$gtest test
    subroutine test_genstru_1d2d_crestwidth_reduced() bind(C)
    
       use precision, only: dp
@@ -77,7 +76,6 @@ contains
       
       
    end subroutine test_genstru_1d2d_crestwidth_reduced
-   !$f90tw)
  
    function compute(general_structure) result(q)
       use precision, only: dp

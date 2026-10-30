@@ -1,21 +1,15 @@
 set(USE_SLOW_NEFIS_TESTS OFF)
 
-f90twtest(nefis_tests
-    CFILES nefis_tests.cpp
-    F90FILES nefis_tests.f90 tests_nefis_helper.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/nefis_tests.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+add_fortran_gtest(nefis_tests
+    SOURCES nefis_tests.f90 tests_nefis_helper.f90
     LIBRARIES nefis
     INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/resources
     VISUAL_STUDIO_PATH utils_lgpl/nefis/tests
 ) 
 
 if(USE_SLOW_NEFIS_TESTS)
-   f90twtest(slow_nefis_tests
-       CFILES slow_nefis_tests.cpp
-       F90FILES slow_nefis_tests.f90 tests_nefis_helper.f90
-       F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/slow_nefis_tests.f90
-       OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+   add_fortran_gtest(slow_nefis_tests
+       SOURCES slow_nefis_tests.f90 tests_nefis_helper.f90
        LIBRARIES nefis
        INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/resources
        VISUAL_STUDIO_PATH utils_lgpl/nefis/slow_tests

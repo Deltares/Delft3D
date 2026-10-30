@@ -1,5 +1,6 @@
 !> Tests for tridiagonal solves, input preservation and small-pivot handling.
 module test_tridag
+   !$gtest suite=tests_tridag
    use assertions_gtest, only: f90_expect_near
    use precision, only: dp
    use m_tridag, only: tridag
@@ -12,7 +13,7 @@ module test_tridag
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_tridag, single_rhs, test_single_rhs,
+   !$gtest test name=single_rhs
    !> Check a known solution and preservation of the input matrix and right-hand side.
    subroutine test_single_rhs() bind(C)
       real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution
@@ -30,9 +31,8 @@ contains
       call f90_expect_near(upper, [-1.0_dp, -3.0_dp, 99.0_dp], 0.0_dp, "Upper diagonal unchanged")
       call f90_expect_near(rhs, [6.0_dp, -21.0_dp, 20.0_dp], 0.0_dp, "RHS unchanged")
    end subroutine test_single_rhs
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, tests_tridag, varying_sizes, test_varying_sizes,
+   !$gtest test name=varying_sizes
    !> Check known solutions and residuals for vector and constant right-hand sides with 1--64 rows.
    subroutine test_varying_sizes() bind(C)
       integer, parameter :: max_rows = 64
@@ -72,9 +72,8 @@ contains
       call f90_expect_near(upper, saved_upper, 0.0_dp, "Upper diagonal unchanged")
       call f90_expect_near(constant_vector, spread(constant_rhs, 1, max_rows), 0.0_dp, "Constant RHS unchanged")
    end subroutine test_varying_sizes
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, tests_tridag, zero_rhs, test_zero_rhs,
+   !$gtest test name=zero_rhs
    !> A zero right-hand side must produce a zero solution.
    subroutine test_zero_rhs() bind(C)
       real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution
@@ -88,9 +87,8 @@ contains
 
       call f90_expect_near(solution, [0.0_dp, 0.0_dp, 0.0_dp], 0.0_dp, "Zero RHS")
    end subroutine test_zero_rhs
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, tests_tridag, first_pivot, test_first_pivot,
+   !$gtest test name=first_pivot
    !> Preserve the original use of signed small first pivots without regularization.
    subroutine test_first_pivot() bind(C)
       real(kind=dp), dimension(6), parameter :: pivots = [0.5e-15_dp, -0.5e-15_dp, 1.0e-15_dp, -1.0e-15_dp, 2.0e-15_dp, -2.0e-15_dp]
@@ -109,9 +107,8 @@ contains
          call f90_expect_near(solution(1), expected(pivot_index), 0.0_dp, "First pivot used without regularization")
       end do
    end subroutine test_first_pivot
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, tests_tridag, eliminated_pivot, test_eliminated_pivot,
+   !$gtest test name=eliminated_pivot
    !> Check that zero and small pivots created by elimination are replaced with a sign-preserving minimum magnitude.
    subroutine test_eliminated_pivot() bind(C)
       real(kind=dp), dimension(3), parameter :: second_diagonals = [0.5_dp, 0.5_dp + 0.5e-15_dp, 0.5_dp - 0.5e-15_dp]
@@ -132,7 +129,6 @@ contains
                               tolerance, "Signed eliminated pivot solution")
       end do
    end subroutine test_eliminated_pivot
-   !$f90tw)
 
    pure function matrix_vector_product(lower, diagonal, upper, vector) result(product)
       real(kind=dp), dimension(:), intent(in) :: lower, diagonal, upper, vector
