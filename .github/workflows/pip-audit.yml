@@ -1,0 +1,65 @@
+name: pip-audit
+
+# Dependency-vulnerability scan. CVEs are disclosed over time against packages we already
+# ship, so besides every PR touching the Python dependencies the weekly schedule re-audits the
+# unchanged tree and catches a freshly disclosed vulnerability without needing a code change.
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "ci/python/pyproject.toml"
+      - "ci/python/uv.lock"
+      - "test/deltares_testbench/pyproject.toml"
+      - "test/deltares_testbench/pip/*.txt"
+      - ".github/workflows/pip-audit.yml"
+  schedule:
+    # Weekly, Monday 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci-tools:
+    # ci/python is locked with uv. The lockfile is exported to pinned requirements, which pip-audit
+    # checks against the PyPI/OSV advisory DB without installing anything.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Export locked requirements
+        working-directory: ci/python
+        run: uv export --frozen --all-extras --no-emit-project --no-hashes -o "${RUNNER_TEMP}/ci-tools-reqs.txt"
+
+      - name: Audit dependencies with pip-audit
+        run: uvx pip-audit --requirement "${RUNNER_TEMP}/ci-tools-reqs.txt" --no-deps --disable-pip --desc
+
+  testbench:
+    # The testbench pins are compiled per platform into test/deltares_testbench/pip/. The dev files are a
+    # superset of the runtime files, so auditing them covers both.
+    strategy:
+      fail-fast: false
+      matrix:
+        requirements: [lnx-dev-requirements.txt, win-dev-requirements.txt]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Audit dependencies with pip-audit
+        run: >
+          uvx pip-audit
+          --requirement test/deltares_testbench/pip/${{ matrix.requirements }}
+          --no-deps --disable-pip --desc
