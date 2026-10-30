@@ -408,6 +408,7 @@ module m_flowparameters
 
    integer :: flow_solver !< 1=stepreduce, 2=1d implicit, 3=frozen 1d/2d flow from restart
    character(len=28) :: md_flow_solver = 'generic1d2d3d'
+   character(len=255) :: sequence_file = ' '
    integer, parameter :: FLOW_SOLVER_FM = 1
    integer, parameter :: FLOW_SOLVER_SRE = 2
    integer, parameter :: FLOW_SOLVER_FROZEN_1D2D = 3
@@ -983,6 +984,7 @@ contains
       jastructurelayersactive = 1
       JaZerozbndinflowadvection = 0
       md_flow_solver = 'generic1d2d3d'
+      sequence_file = ''
 
       jaanalytic = 0 !< analytic solution available in black sideview => do not also show computed surface in black
       jaustarint = 1 !< 1=integral bed layer velocity,  0=velocity at half bed layer

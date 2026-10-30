@@ -253,9 +253,7 @@ contains
       call remember_initial_water_levels_at_water_level_boundaries()
       call make_volume_tables()
       jawelrestart = .false.
-      if (md_flow_solver /= 'sequence' .or. len_trim(md_restartfile) > 0) then
-         call load_restart_file(jawelrestart, error)
-      end if
+      call load_restart_file(jawelrestart, error)
       if (is_error_at_any_processor(error)) then
          call qnerror('Error occurs when reading the restart file.', ' ', ' ')
          return

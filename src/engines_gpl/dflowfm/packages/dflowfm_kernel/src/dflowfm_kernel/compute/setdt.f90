@@ -66,8 +66,9 @@ contains
       integer :: jareduced
 
       ! compute CFL-based maximum time step and limiting flownode/time step, per subomdain
+      jareduced = 0
       if (flow_solver == FLOW_SOLVER_FM) then
-          call setdtorg(jareduced) ! 7.1 2031
+         call setdtorg(jareduced) ! 7.1 2031
       else
          dts = dt_max
       end if

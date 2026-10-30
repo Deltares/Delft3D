@@ -553,7 +553,6 @@ contains
       logical :: dummylog
       character(len=1000) :: charbuf = ' '
       character(len=255) :: tmpstr, fnam, bnam
-      character(len=255) :: sequence_file
       real(kind=dp), allocatable :: tmpdouble(:)
       integer :: ibuf, ifil
       integer :: i, n, iostat, readerr, ierror
@@ -1814,7 +1813,7 @@ contains
       call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
       call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
       call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp, success)
-      if (md_flow_solver == 'sequence') then
+      if (flow_solver == FLOW_SOLVER_SEQUENCE) then
          call read_solver_sequence(sequence_file, istat)
          if (istat /= DFM_NOERR) return
          flow_solver = solver_sequence(1)%solver
@@ -2591,7 +2590,6 @@ contains
          solver_sequence(period)%tstart = start_time * tfac
          step_number = (solver_sequence(period)%tstart - tstart_user) / dt_user
          if (abs(step_number - anint(step_number)) > 1.0e-8_dp .or. &
-             abs(solver_sequence(period)%tstart / dt_user - anint(solver_sequence(period)%tstart / dt_user)) > 1.0e-8_dp .or. &
              solver_sequence(period)%tstart >= tstop_user) exit
          if (period == 1) then
             if (abs(solver_sequence(period)%tstart - tstart_user) > 1.0e-8_dp) exit
@@ -3425,6 +3423,9 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
+      if (flow_solver == FLOW_SOLVER_SEQUENCE) then
+         call prop_set(prop_ptr, 'numerics', 'solverSequence', trim(sequence_file), 'File containing solver sequence.')
+      end if
 
       ! Physics
       call prop_set(prop_ptr, 'physics', 'unifFrictCoef', frcuni, 'Uniform friction coefficient [the unit depends on unifFrictType].')
