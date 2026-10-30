@@ -19,7 +19,7 @@ module test_compute_horton_infiltration
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_compute_horton_infiltration, test_horton_infiltration_nochange, test_horton_infiltration_nochange,
+   !$gtest test
    !> Test whether HORTON_CAPSTATE_NOCHANGE infiltration capacity state is returned when min_inf_cap > max_inf_cap
    subroutine test_horton_infiltration_nochange() bind(C)
       ! Declare variables
@@ -46,9 +46,8 @@ contains
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_NOCHANGE, "Infiltration capacity state should be HORTON_CAPSTAT_NOCHANGE (0)")
 
    end subroutine test_horton_infiltration_nochange
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_compute_horton_infiltration, test_horton_infiltration_decreasing_rain, test_horton_infiltration_decreasing_rain,
+   !$gtest test
    !> Test decreasing infiltration capacity in wet conditions (rainfall > min_inf_cap, no waterdepth)
    subroutine test_horton_infiltration_decreasing_rain() bind(C)
       ! Declare variables
@@ -85,9 +84,8 @@ contains
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_DECREASE, "Infiltration capacity state should be HORTON_CAPSTAT_DECREASE (1)")
 
    end subroutine test_horton_infiltration_decreasing_rain
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_compute_horton_infiltration, test_horton_infiltration_decreasing_waterdepth, test_horton_infiltration_decreasing_waterdepth,
+   !$gtest test
    !> Test decreasing infiltration capacity in wet conditions (no rainfall, but waterdepth present)
    subroutine test_horton_infiltration_decreasing_waterdepth() bind(C)
       ! Declare variables
@@ -123,9 +121,8 @@ contains
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_DECREASE, "Infiltration capacity state should be HORTON_CAPSTAT_DECREASE (1)")
 
    end subroutine test_horton_infiltration_decreasing_waterdepth
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_compute_horton_infiltration, test_horton_infiltration_recovering_rain, test_horton_infiltration_recovering_rain,
+   !$gtest test
    !> Test recovering infiltration capacity in dry conditions (rainfall < min_inf_cap and no waterdepth)
    subroutine test_horton_infiltration_recovering_rain() bind(C)
       ! Declare variables
@@ -165,9 +162,8 @@ contains
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_RECOVERY, "Infiltration capacity state should be HORTON_CAPSTAT_RECOVERY (2)")
 
    end subroutine test_horton_infiltration_recovering_rain
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_compute_horton_infiltration, test_horton_infiltration_recovering_dry, test_horton_infiltration_recovering_dry,
+   !$gtest test
    !> Test recovering infiltration capacity in dry conditions (no rainfall and no waterdepth)
    subroutine test_horton_infiltration_recovering_dry() bind(C)
       ! Declare variables
@@ -203,7 +199,6 @@ contains
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_RECOVERY, "Infiltration capacity state should be HORTON_CAPSTAT_RECOVERY (2)")
 
    end subroutine test_horton_infiltration_recovering_dry
-   !$f90tw)
 
    !> Initializes the Horton infiltration test suite with default values
    subroutine initialize_horton_test_suite(config, ierr, n, include_rain, time_step, inf_cap, waterdepth, rainfall, inf_cap_state) bind(C)

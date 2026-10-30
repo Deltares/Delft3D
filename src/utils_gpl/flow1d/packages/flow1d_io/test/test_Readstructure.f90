@@ -1,4 +1,5 @@
 module test_Readstructure
+   !$gtest suite=test_read_weir_as_general_structure_missing_corrcoeff
    use assertions_gtest
    use precision, only: dp
    use precision_basics, only: comparereal, equal
@@ -7,7 +8,7 @@ module test_Readstructure
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_read_weir_as_general_structure_missing_corrcoeff, test_read_weir_as_general_structure_missing_corrcoeff, test_read_weir_as_general_structure_missing_corrcoeff,
+   !$gtest test
    !> Test that when a weir structure with a missing friction coefficient value (corrCoeff) is read out as a general structure, the correct default friction coefficient value is assigned to the general structure.
    subroutine test_read_weir_as_general_structure_missing_corrcoeff() bind(C)
       use m_forcinglist, only: t_forcingList
@@ -35,7 +36,6 @@ contains
       call f90_expect_eq(general_structure%cgf_pos, expected_cgf_pos, 'Default weir friction coefficient (`cgf_pos`) does not match expected value')
 
    end subroutine test_read_weir_as_general_structure_missing_corrcoeff
-   !$f90tw)
 
    !> Helper subroutine to create a tree_data structure representing a weir structure input, where the corrCoeff value is missing.
    subroutine create_weir_structure_input_pointer_without_corrcoeff(input_pointer)

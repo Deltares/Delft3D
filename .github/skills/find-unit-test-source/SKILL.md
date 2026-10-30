@@ -36,7 +36,7 @@ source file(s) that define it, instead of falling back to a broad repository-wid
    rg -l '<target-name>' src/**/CMakeLists.txt
    ```
    You'll find one of these patterns:
-   - `f90twtest(<target> CFILES ... F90FILES ... F2HFILES ...)` — source files are listed
+   - `add_fortran_gtest(<target> SOURCES ...)` — Fortran source files are listed
      directly as arguments.
    - `add_executable(<target> ...)` plus a nearby `gtest_discover_tests(<target>)`.
      Sources are listed in the `add_executable` call.
@@ -48,14 +48,14 @@ source file(s) that define it, instead of falling back to a broad repository-wid
    to the `CMakeLists.txt`. this repo's convention is to keep test sources there.
 
 4. **For a specific failing GoogleTest case** (not just the suite), grep the located
-   source file(s) for `TEST(<Suite>, <Case>` or `TEST_F(<Suite>, <Case>` to jump straight
-   to the failing assertion.
+   source file(s) for `TEST(<Suite>, <Case>` or `TEST_F(<Suite>, <Case>`. For Fortran,
+   find the `!$gtest test` marker and its following subroutine; `suite=` and `name=`
+   overrides preserve public names that differ from the module or procedure.
 
 ## Example
 Failing test: `test_deltares_common_gtest.test_dp_equal_within_tolerance`
 - Target: `test_deltares_common_gtest`
 - `rg -l test_deltares_common_gtest src/**/CMakeLists.txt` ->
   `src/utils_lgpl/deltares_common/packages/deltares_common/CMakeLists.txt`
-- That file's `f90twtest(...)` call lists
-  `CFILES ${gtest_path}/test_deltares_common_gtest.cpp` and
-  `F90FILES ${gtest_path}/test_deltares_common_gtest.f90`. Open the `.f90` file directly.
+- That file's `add_fortran_gtest(...)` call lists
+  `SOURCES ${gtest_path}/test_deltares_common_gtest.f90`. Open the `.f90` file directly.

@@ -1,4 +1,5 @@
 module m_test_precice_adapter
+   !$gtest suite=test_precice_adapter
    use assertions_gtest
    use precision, only: dp
    use precision_basics, only: comparereal
@@ -44,7 +45,7 @@ contains
 
    end subroutine cleanup_netcells
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_bottom_layer_offset, test_mesh_zcoords_bottom_layer_offset,
+   !$gtest test
    !> Check that the bottom mesh slot uses the first physical FM layer and its bed interface.
    subroutine test_mesh_zcoords_bottom_layer_offset() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -77,9 +78,8 @@ contains
       call f90_expect_near(coordinates(6), -9.0_dp, 1e-12_dp, "Bottom slot must average interfaces at (kbot - 1) and kbot")
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Z coordinates must use the bottom layer slot offset")
    end subroutine test_mesh_zcoords_bottom_layer_offset
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_layer_count_not_top_slot, test_mesh_zcoords_layer_count_not_top_slot,
+   !$gtest test
    !> Check that a layer count smaller than the bottom slot does not invalidate the physical layers.
    subroutine test_mesh_zcoords_layer_count_not_top_slot() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -111,9 +111,8 @@ contains
 
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Three physical layers must occupy slots four through six")
    end subroutine test_mesh_zcoords_layer_count_not_top_slot
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_mesh_zcoords_inactive_top_layers, test_mesh_zcoords_inactive_top_layers,
+   !$gtest test
    !> Check that allocated layer slots above the current wet top retain the invalid-coordinate sentinel.
    subroutine test_mesh_zcoords_inactive_top_layers() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -145,9 +144,8 @@ contains
 
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Slots above ktop must remain invalid despite allocated interfaces")
    end subroutine test_mesh_zcoords_inactive_top_layers
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_pack_3d_sigma_fields, test_pack_3d_sigma_fields,
+   !$gtest test
    subroutine test_pack_3d_sigma_fields() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, LAYTP_SIGMA
       use precice_adapter_utils, only: pack_cell_center_mesh_data
@@ -181,9 +179,8 @@ contains
       call f90_expect_near(vector_values(2::3), 2.0_dp * expected, 1e-12_dp, "Packed y velocity")
       call f90_expect_near(vector_values(3::3), 3.0_dp * expected, 1e-12_dp, "Packed z velocity")
    end subroutine test_pack_3d_sigma_fields
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_pack_3d_inactive_layers, test_pack_3d_inactive_layers,
+   !$gtest test
    subroutine test_pack_3d_inactive_layers() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
       use precice_adapter_utils, only: pack_cell_center_mesh_data, set_cell_center_mesh_zcoords
@@ -221,20 +218,17 @@ contains
       call f90_expect_near(mesh_values, expected, 1e-12_dp, "Only active z-layers receive data")
       call f90_expect_near(coordinates(3::3), expected_z, 1e-12_dp, "Coordinates and data use the same layer slots")
    end subroutine test_pack_3d_inactive_layers
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_fm_administration, test_adapter_add_to_fm_administration,
+   !$gtest test
    subroutine test_adapter_add_to_fm_administration() bind(C)
       call check_adapter_add_to_fm_administration(initialize_administration=.true.)
    end subroutine test_adapter_add_to_fm_administration
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_precice_adapter, test_adapter_add_to_uninitialized_fm_administration, test_adapter_add_to_uninitialized_fm_administration,
+   !$gtest test
    !> Check that preCICE can add the first sources/sinks to a model without conventional sources/sinks.
    subroutine test_adapter_add_to_uninitialized_fm_administration() bind(C)
       call check_adapter_add_to_fm_administration(initialize_administration=.false.)
    end subroutine test_adapter_add_to_uninitialized_fm_administration
-   !$f90tw )
 
    !> Exercise source/sink registration with or without an initialized FM administration.
    subroutine check_adapter_add_to_fm_administration(initialize_administration)
@@ -294,16 +288,22 @@ contains
       call precice_adapter_add_to_fm_administration(adapter)
       
       ! Assertions
-      call f90_assert_eq(source_sinks%num_total, 1, "Unexpected number of total source sinks"//c_null_char)
-      call f90_assert_eq(source_sinks%num_nearfield, 1, "Unexpected number of nearfield source sinks"//c_null_char)
-      call f90_assert_streq(trim(source_sinks%name(1)), "preC-SUMO_0123", "Unexpected name for source sink 1"//c_null_char)
-      call f90_assert_eq(source_sinks%indices(1, FLOWCELL_SINK), expected_sink_cell, "Unexpected indices(1,1) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_bottom(1, SINK_SIDE), -1.2_dp, 1e-5_dp, "Unexpected z_bottom(1,1) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_top(1, SINK_SIDE), 3.4_dp, 1e-5_dp, "Unexpected z_top(1,1) in source sinks"//c_null_char)
-      call f90_assert_eq(source_sinks%indices(1, FLOWCELL_SOURCE), expected_source_cell, "Unexpected indices(1,4) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_bottom(1, SOURCE_SIDE), 5.6_dp, 1e-5_dp, "Unexpected z_bottom(1,2) in source sinks"//c_null_char)
-      call f90_assert_near(source_sinks%z_top(1, SOURCE_SIDE), -7.8_dp, 1e-5_dp, "Unexpected z_top(1,2) in source sinks"//c_null_char)
-      call f90_assert_near(source_sink_all_discharges(1, 1), 9.10_dp, 1e-5_dp, "Unexpected source_sink_all_discharges(1, 1) in source sinks"//c_null_char)
+      if (.not. f90_assert_eq(source_sinks%num_total, 1, "Unexpected number of total source sinks")) then
+         call cleanup_netcells()
+         call precice_adapter_deallocate_read_arrays(adapter)
+         call resetfullflowmodel()
+         numconst = saved_numconst
+         return
+      end if
+      call f90_expect_eq(source_sinks%num_nearfield, 1, "Unexpected number of nearfield source sinks")
+      call f90_expect_streq(trim(source_sinks%name(1)), "preC-SUMO_0123", "Unexpected name for source sink 1")
+      call f90_expect_eq(source_sinks%indices(1, FLOWCELL_SINK), expected_sink_cell, "Unexpected indices(1,1) in source sinks")
+      call f90_expect_near(source_sinks%z_bottom(1, SINK_SIDE), -1.2_dp, 1e-5_dp, "Unexpected z_bottom(1,1) in source sinks")
+      call f90_expect_near(source_sinks%z_top(1, SINK_SIDE), 3.4_dp, 1e-5_dp, "Unexpected z_top(1,1) in source sinks")
+      call f90_expect_eq(source_sinks%indices(1, FLOWCELL_SOURCE), expected_source_cell, "Unexpected indices(1,4) in source sinks")
+      call f90_expect_near(source_sinks%z_bottom(1, SOURCE_SIDE), 5.6_dp, 1e-5_dp, "Unexpected z_bottom(1,2) in source sinks")
+      call f90_expect_near(source_sinks%z_top(1, SOURCE_SIDE), -7.8_dp, 1e-5_dp, "Unexpected z_top(1,2) in source sinks")
+      call f90_expect_near(source_sink_all_discharges(1, 1), 9.10_dp, 1e-5_dp, "Unexpected source_sink_all_discharges(1, 1) in source sinks")
       call f90_expect_near(source_sink_all_discharges(2:3, 1), [12.0_dp, 34.0_dp], 1e-12_dp, "Coupled constituents must be registered")
 
       ! Cleanup

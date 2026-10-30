@@ -32,7 +32,7 @@ contains
                        "    40 0"])
    end subroutine setup_block_from
 
-   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from, test_ec_block_from,
+   !$gtest test
    subroutine test_ec_block_from() bind(C)
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
@@ -57,9 +57,8 @@ contains
       end block
 
    end subroutine test_ec_block_from
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from_skip, test_ec_block_from_skip,
+   !$gtest test
    subroutine test_ec_block_from_skip() bind(C)
       integer :: status
       logical :: success
@@ -85,9 +84,8 @@ contains
       end block
 
    end subroutine test_ec_block_from_skip
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_to, test_ec_block_to,
+   !$gtest test
    subroutine test_ec_block_to() bind(C)
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
@@ -129,6 +127,5 @@ contains
       end block
 
    end subroutine test_ec_block_to
-   !$f90tw)
 
 end module test_ec_module_block

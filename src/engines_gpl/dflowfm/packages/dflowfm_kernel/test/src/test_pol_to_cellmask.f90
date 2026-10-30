@@ -11,7 +11,7 @@ module test_pol_to_cellmask
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_mixed_polygon, test_mixed_polygon,
+   !$gtest test
    subroutine test_mixed_polygon() bind(C)
       ! Test with both enclosure (-1) and dry point (1) polygons
       integer :: i, k
@@ -111,9 +111,8 @@ contains
       deallocate (xzw, yzw, xpl, ypl, zpl, cellmask)
 
    end subroutine test_mixed_polygon
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_cell_mask_from_multiple_polygon_files, test_cell_mask_from_multiple_polygon_files,
+   !$gtest test
    subroutine test_cell_mask_from_multiple_polygon_files() bind(C)
       use m_flowgeom, only: ndxi, ndx2d
       use m_sferic, only: jsferic
@@ -167,9 +166,8 @@ contains
       jins = original_jins
 
    end subroutine test_cell_mask_from_multiple_polygon_files
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_nested_drypoint_polygons, test_nested_drypoint_polygons,
+   !$gtest test
    subroutine test_nested_drypoint_polygons() bind(C)
       ! Test nested dry point polygons (odd-even rule)
       integer :: i, k
@@ -263,9 +261,8 @@ contains
       deallocate (xzw, yzw, xpl, ypl, zpl, cellmask)
 
    end subroutine test_nested_drypoint_polygons
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_basic, test_pinpok_raycast_basic,
+   !$gtest test
    subroutine test_pinpok_raycast_basic() bind(C)
       ! Test basic ray-casting algorithm directly
       real(kind=dp), dimension(5) :: x_poly, y_poly
@@ -314,9 +311,8 @@ contains
       call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertical edge: pinpok_legacy vs raycast")
 
    end subroutine test_pinpok_raycast_basic
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_edge_cases, test_pinpok_raycast_edge_cases,
+   !$gtest test
    subroutine test_pinpok_raycast_edge_cases() bind(C)
       ! Test edge cases and special geometries
       real(kind=dp), dimension(5) :: x_poly, y_poly
@@ -358,9 +354,8 @@ contains
       call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just outside: pinpok_legacy vs raycast")
 
    end subroutine test_pinpok_raycast_edge_cases
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_jins_modes, test_pinpok_raycast_jins_modes,
+   !$gtest test
    subroutine test_pinpok_raycast_jins_modes() bind(C)
       ! Test both jins=1 (inside) and jins=0 (outside) modes
       use m_missing, only: jins
@@ -412,9 +407,8 @@ contains
       jins = original_jins
 
    end subroutine test_pinpok_raycast_jins_modes
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_complex, test_pinpok_raycast_complex,
+   !$gtest test
    subroutine test_pinpok_raycast_complex() bind(C)
       ! Test complex polygon shapes (concave, with multiple crossings)
       real(kind=dp), dimension(9) :: x_poly, y_poly
@@ -449,9 +443,8 @@ contains
       call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape notch: pinpok_legacy vs raycast")
 
    end subroutine test_pinpok_raycast_complex
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_indexed_polygon_matches_full_scan, test_indexed_polygon_matches_full_scan,
+   !$gtest test
    subroutine test_indexed_polygon_matches_full_scan() bind(C)
       use m_missing, only: jins
 
@@ -513,9 +506,8 @@ contains
       jins = original_jins
 
    end subroutine test_indexed_polygon_matches_full_scan
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_binned_polygon_edge_cases, test_binned_polygon_edge_cases,
+   !$gtest test
    subroutine test_binned_polygon_edge_cases() bind(C)
       use m_missing, only: jins
 
@@ -563,9 +555,8 @@ contains
       jins = original_jins
 
    end subroutine test_binned_polygon_edge_cases
-   !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_basic_functionality, test_incells_basic_functionality,
+!$gtest test
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells
       use gridoperations, only: incells
@@ -627,9 +618,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_incells_basic_functionality
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_complex_geometry, test_incells_complex_geometry,
+!$gtest test
    subroutine test_incells_complex_geometry() bind(C)
       ! Test incells with more complex netcell geometries (triangles, pentagons, hexagons)
       use gridoperations, only: incells
@@ -679,9 +669,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_incells_complex_geometry
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_large_grid, test_incells_large_grid,
+!$gtest test
    subroutine test_incells_large_grid() bind(C)
       ! Test incells with a larger grid (performance sanity check)
       use gridoperations, only: incells
@@ -720,9 +709,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_incells_large_grid
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_cache_consistency, test_incells_cache_consistency,
+!$gtest test
    subroutine test_incells_cache_consistency() bind(C)
       ! Test that cache initialization produces consistent results
       use gridoperations, only: incells
@@ -766,9 +754,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_incells_cache_consistency
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_incells_edge_cases, test_incells_edge_cases,
+!$gtest test
    subroutine test_incells_edge_cases() bind(C)
       ! Test edge cases: empty grid, single cell, point at infinity
       use gridoperations, only: incells
@@ -828,9 +815,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_incells_edge_cases
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_samples_to_cellmask_basic, test_samples_to_cellmask_basic,
+!$gtest test
    subroutine test_samples_to_cellmask_basic() bind(C)
       ! Test samples_to_cellmask: mark cells that contain at least one sample
       use m_samples_to_cellmask, only: samples_to_cellmask
@@ -897,9 +883,8 @@ contains
       deallocate (xs, ys, cellmask)
 
    end subroutine test_samples_to_cellmask_basic
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_samples_to_cellmask_edge_cases, test_samples_to_cellmask_edge_cases,
+   !$gtest test
    subroutine test_samples_to_cellmask_edge_cases() bind(C)
       ! Test edge cases: no samples, samples outside all cells, samples on boundaries
       use m_samples_to_cellmask, only: samples_to_cellmask
@@ -969,9 +954,8 @@ contains
       deallocate (xs, ys, cellmask)
 
    end subroutine test_samples_to_cellmask_edge_cases
-   !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_simple, test_find_cells_crossed_by_polyline_simple,
+!$gtest test
    subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump
@@ -1037,9 +1021,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_simple
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_cases, test_find_cells_crossed_by_polyline_edge_cases,
+!$gtest test
    subroutine test_find_cells_crossed_by_polyline_edge_cases() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump
@@ -1099,9 +1082,8 @@ contains
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_cases
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_case2, test_find_cells_crossed_by_polyline_edge_case2,
+!$gtest test
    subroutine test_find_cells_crossed_by_polyline_edge_case2() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump
@@ -1150,7 +1132,6 @@ contains
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_case2
-!$f90tw)
 
 ! ============================================================================
 ! Helper subroutines for setting up test geometries

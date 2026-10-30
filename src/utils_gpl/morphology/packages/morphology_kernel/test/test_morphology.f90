@@ -37,6 +37,7 @@ module test_morphology
    use message_module, only: clearstack, getmessage, initstack, isempty, message_len, message_stack
 
    implicit none
+   private :: cleanup_bedcomposition_test
 
    type :: transport_defaults
       real(kind=fp) :: ag = 9.81_fp ! gravity acceleration [m/s^2]
@@ -105,7 +106,7 @@ contains
 
    end function set_coastal_transport_defaults
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_rotation_Van_Thiel_Van_Rijn, test_trab19,
+   !$gtest test name=test_rotation_Van_Thiel_Van_Rijn
    subroutine test_trab19() bind(C)
       type(coastal_transport_defaults) :: t
       type(coastal_transport_defaults) :: t_r
@@ -129,16 +130,15 @@ contains
                 & t_r%poros, t_r%chezy, t_r%dzdx, t_r%dzdy, t_r%sbcu, t_r%sbcv, t_r%cesus, &
                 & t_r%ua, t_r%va, t_r%ubot, t_r%kwtur, t_r%ubot_from_com)
 
-      call f90_assert_near(t_r%sbcu, -t%sbcv, 1.0e-08_fp, "sbcu is not near the expected value")
-      call f90_assert_near(t_r%sbcv, t%sbcu, 1.0e-11_fp, "sbcv is not near the expected value")
-      call f90_assert_near(t_r%cesus, t%cesus, 1.0e-07_fp, "cesus is not near the expected value")
-      call f90_assert_near(t_r%ua, -t%va, 1.0e-04_fp, "ua is not near the expected value")
-      call f90_assert_near(t_r%va, t%ua, 1.0e-08_fp, "va is not near the expected value")
+      call f90_expect_near(t_r%sbcu, -t%sbcv, 1.0e-08_fp, "sbcu is not near the expected value")
+      call f90_expect_near(t_r%sbcv, t%sbcu, 1.0e-11_fp, "sbcv is not near the expected value")
+      call f90_expect_near(t_r%cesus, t%cesus, 1.0e-07_fp, "cesus is not near the expected value")
+      call f90_expect_near(t_r%ua, -t%va, 1.0e-04_fp, "ua is not near the expected value")
+      call f90_expect_near(t_r%va, t%ua, 1.0e-08_fp, "va is not near the expected value")
 
    end subroutine test_trab19
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_mixed_bed_update, test_updmorlyr_mixed_bed_update,
+   !$gtest test
    subroutine test_updmorlyr_mixed_bed_update() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages
@@ -151,7 +151,10 @@ contains
 
       call initstack(messages)
       call initialize_bedcomposition_test(bed, BED_MIXED, .false., CONSOL_NONE, istat)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed setup failed")
+      if (.not. f90_assert_eq(istat, 0, "mixed bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
 
       bed%state%bodsed(:, 1) = [1.0_prec, 2.0_prec]
       bed%state%dpsed(1) = 3.0_fp
@@ -162,32 +165,37 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed update failed")
-      call f90_assert_near(dz(1), 0.75_fp, 1.0e-6_fp, "unexpected mixed bed level change")
-      call f90_assert_near(real(bed%state%bodsed(1, 1), fp), 1.5_fp, 1.0e-6_fp, "unexpected first mixed fraction mass")
-      call f90_assert_near(real(bed%state%bodsed(2, 1), fp), 2.25_fp, 1.0e-6_fp, "unexpected second mixed fraction mass")
-      call f90_assert_true(isempty(messages), "unexpected message during mixed bed deposition")
+      if (.not. f90_assert_eq(istat, 0, "mixed bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(dz(1), 0.75_fp, 1.0e-6_fp, "unexpected mixed bed level change")
+      call f90_expect_near(real(bed%state%bodsed(1, 1), fp), 1.5_fp, 1.0e-6_fp, "unexpected first mixed fraction mass")
+      call f90_expect_near(real(bed%state%bodsed(2, 1), fp), 2.25_fp, 1.0e-6_fp, "unexpected second mixed fraction mass")
+      call f90_expect_true(isempty(messages), "unexpected message during mixed bed deposition")
 
       bed%settings%morlyrnum%mass_shortage_thresh = 0.1_fp
       bed%settings%morlyrnum%mass_shortage_max_num_warnings = 5
       dbodsd(:, 1) = [-2.5_fp, 0.0_fp]
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed erosion update failed")
-      call f90_assert_near(dz(1), -1.5_fp, 1.0e-6_fp, "unexpected mixed bed erosion level change")
-      call f90_assert_near(bed%state%sedshort(1, 1), -1.0_fp, 1.0e-6_fp, "unexpected mixed bed sediment shortage")
-      call f90_assert_near(real(bed%settings%morlyrnum%mass_shortage_max_num_warnings, fp), 4.0_fp, 0.0_fp, &
+      if (.not. f90_assert_eq(istat, 0, "mixed bed erosion update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(dz(1), -1.5_fp, 1.0e-6_fp, "unexpected mixed bed erosion level change")
+      call f90_expect_near(bed%state%sedshort(1, 1), -1.0_fp, 1.0e-6_fp, "unexpected mixed bed sediment shortage")
+      call f90_expect_near(real(bed%settings%morlyrnum%mass_shortage_max_num_warnings, fp), 4.0_fp, 0.0_fp, &
                            "unexpected shortage warning count")
       call getmessage(messages, message)
-      call f90_assert_true(index(message, "Sediment erosion shortage at NM") > 0, "missing sediment shortage message")
+      call f90_expect_true(index(message, "Sediment erosion shortage at NM") > 0, "missing sediment shortage message")
       call clearstack(messages)
 
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mixed bed cleanup failed")
+      call f90_expect_eq(istat, 0, "mixed bed cleanup failed")
    end subroutine test_updmorlyr_mixed_bed_update
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_layered_bed_paths, test_updmorlyr_layered_bed_paths,
+   !$gtest test
    subroutine test_updmorlyr_layered_bed_paths() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages
@@ -199,7 +207,10 @@ contains
 
       call initstack(messages)
       call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed setup failed")
+      if (.not. f90_assert_eq(istat, 0, "layered bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
 
       bed%settings%thtrlyr(1) = 2.5_fp
       bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
@@ -213,18 +224,24 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed update failed")
-      call f90_assert_near(dz(1), 0.5_fp, 1.0e-6_fp, "unexpected layered bed level change")
-      call f90_assert_near(bed%state%msed(1, 1, 1), 1.5_fp, 1.0e-6_fp, "unexpected layered top fraction mass")
-      call f90_assert_near(bed%state%thlyr(1, 1), 2.5_fp, 1.0e-6_fp, "unexpected layered transport layer thickness")
-      call f90_assert_true(bed%settings%initcl, "layered bed was not marked initialized")
-      call f90_assert_true(isempty(messages), "unexpected message during layered bed deposition")
+      if (.not. f90_assert_eq(istat, 0, "layered bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(dz(1), 0.5_fp, 1.0e-6_fp, "unexpected layered bed level change")
+      call f90_expect_near(bed%state%msed(1, 1, 1), 1.5_fp, 1.0e-6_fp, "unexpected layered top fraction mass")
+      call f90_expect_near(bed%state%thlyr(1, 1), 2.5_fp, 1.0e-6_fp, "unexpected layered transport layer thickness")
+      call f90_expect_true(bed%settings%initcl, "layered bed was not marked initialized")
+      call f90_expect_true(isempty(messages), "unexpected message during layered bed deposition")
 
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "layered bed cleanup failed")
+      call f90_expect_eq(istat, 0, "layered bed cleanup failed")
 
       call initialize_bedcomposition_test(bed, BED_LAYERED, .true., CONSOL_NONE, istat)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed setup failed")
+      if (.not. f90_assert_eq(istat, 0, "coarse-layer bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
 
       bed%settings%thtrlyr(1) = 2.5_fp
       bed%settings%thclyr(1) = 1.5_fp
@@ -242,22 +259,24 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 1.0_fp, 100.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed update failed")
-      call f90_assert_near(dz(1), 0.0_fp, 1.0e-6_fp, "coarse-layer exchange changed total bed level")
-      call f90_assert_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected first coarse-layer top mass")
-      call f90_assert_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected second coarse-layer top mass")
-      call f90_assert_near(bed%state%msed(1, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected first coarse-layer mass")
-      call f90_assert_near(bed%state%msed(2, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected second coarse-layer mass")
-      call f90_assert_near(real(bed%state%tdecon, fp), 7.0_fp, 1.0e-6_fp, "coarse-layer update changed DECON schedule")
-      call f90_assert_true(bed%settings%initcl, "coarse-layer bed was not marked initialized")
-      call f90_assert_true(isempty(messages), "unexpected message during coarse-layer exchange")
+      if (.not. f90_assert_eq(istat, 0, "coarse-layer bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(dz(1), 0.0_fp, 1.0e-6_fp, "coarse-layer exchange changed total bed level")
+      call f90_expect_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected first coarse-layer top mass")
+      call f90_expect_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, "unexpected second coarse-layer top mass")
+      call f90_expect_near(bed%state%msed(1, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected first coarse-layer mass")
+      call f90_expect_near(bed%state%msed(2, 2, 1), 0.75_fp, 1.0e-6_fp, "unexpected second coarse-layer mass")
+      call f90_expect_near(real(bed%state%tdecon, fp), 7.0_fp, 1.0e-6_fp, "coarse-layer update changed DECON schedule")
+      call f90_expect_true(bed%settings%initcl, "coarse-layer bed was not marked initialized")
+      call f90_expect_true(isempty(messages), "unexpected message during coarse-layer exchange")
 
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "coarse-layer bed cleanup failed")
+      call f90_expect_eq(istat, 0, "coarse-layer bed cleanup failed")
    end subroutine test_updmorlyr_layered_bed_paths
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_updmorlyr_active_layer_to_substrate_flux, test_updmorlyr_active_layer_to_substrate_flux,
+   !$gtest test
    subroutine test_updmorlyr_active_layer_to_substrate_flux() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages
@@ -270,8 +289,11 @@ contains
       call initstack(messages)
 
       call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed setup failed")
-      call f90_assert_near(real(bed%settings%active_layer_to_substrate_flux, fp), &
+      if (.not. f90_assert_eq(istat, 0, "uniform-flux bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(real(bed%settings%active_layer_to_substrate_flux, fp), &
                            real(ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM, fp), 0.0_fp, &
                            "active-layer substrate flux did not default to UNIFORM")
 
@@ -287,22 +309,28 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed update failed")
-      call f90_assert_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, &
+      if (.not. f90_assert_eq(istat, 0, "uniform-flux bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(bed%state%msed(1, 1, 1), 1.25_fp, 1.0e-6_fp, &
                            "uniform flux changed the first active-layer fraction")
-      call f90_assert_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, &
+      call f90_expect_near(bed%state%msed(2, 1, 1), 1.25_fp, 1.0e-6_fp, &
                            "uniform flux changed the second active-layer fraction")
-      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "uniform flux did not conserve first-fraction mass")
-      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "uniform flux did not conserve second-fraction mass")
-      call f90_assert_true(isempty(messages), "unexpected message during uniform-flux transfer")
+      call f90_expect_true(isempty(messages), "unexpected message during uniform-flux transfer")
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "uniform-flux bed cleanup failed")
+      call f90_expect_eq(istat, 0, "uniform-flux bed cleanup failed")
 
       call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat, &
                                           ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed setup failed")
+      if (.not. f90_assert_eq(istat, 0, "immobile-first bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
       bed%settings%imobility = MOBILITY_DISCRETE
       bed%settings%thtrlyr(1) = 2.5_fp
       bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
@@ -314,22 +342,28 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed update failed")
-      call f90_assert_near(bed%state%msed(1, 1, 1), 1.625_fp, 1.0e-6_fp, &
+      if (.not. f90_assert_eq(istat, 0, "immobile-first bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(bed%state%msed(1, 1, 1), 1.625_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not prioritize immobile sediment")
-      call f90_assert_near(bed%state%msed(2, 1, 1), 0.875_fp, 1.0e-6_fp, &
+      call f90_expect_near(bed%state%msed(2, 1, 1), 0.875_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not preserve the requested thickness")
-      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not conserve first-fraction mass")
-      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not conserve second-fraction mass")
-      call f90_assert_true(isempty(messages), "unexpected message during immobile-first transfer")
+      call f90_expect_true(isempty(messages), "unexpected message during immobile-first transfer")
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "immobile-first bed cleanup failed")
+      call f90_expect_eq(istat, 0, "immobile-first bed cleanup failed")
 
       call initialize_bedcomposition_test(bed, BED_LAYERED, .false., CONSOL_NONE, istat, &
                                           ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed setup failed")
+      if (.not. f90_assert_eq(istat, 0, "mobile-remainder bed setup failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
       bed%settings%imobility = MOBILITY_DISCRETE
       bed%settings%thtrlyr(1) = 1.0_fp
       bed%state%msed(:, 1, 1) = [1.0_fp, 1.0_fp]
@@ -341,21 +375,23 @@ contains
 
       istat = updmorlyr(bed, dbodsd, dz, dunelength, sbot, 0.0_fp, 0.0_hp, messages)
 
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed update failed")
-      call f90_assert_near(bed%state%msed(1, 1, 1), 0.5_fp, 1.0e-6_fp, &
+      if (.not. f90_assert_eq(istat, 0, "mobile-remainder bed update failed")) then
+         call cleanup_bedcomposition_test(bed, messages)
+         return
+      end if
+      call f90_expect_near(bed%state%msed(1, 1, 1), 0.5_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not use mobile sediment for the remainder")
-      call f90_assert_near(bed%state%msed(2, 1, 1), 0.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(bed%state%msed(2, 1, 1), 0.5_fp, 1.0e-6_fp, &
                            "immobile-first transfer did not preserve the requested thickness")
-      call f90_assert_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(1, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "mobile-remainder transfer did not conserve first-fraction mass")
-      call f90_assert_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
+      call f90_expect_near(sum(bed%state%msed(2, :, 1)), 2.5_fp, 1.0e-6_fp, &
                            "mobile-remainder transfer did not conserve second-fraction mass")
-      call f90_assert_true(isempty(messages), "unexpected message during mobile-remainder transfer")
+      call f90_expect_true(isempty(messages), "unexpected message during mobile-remainder transfer")
 
       istat = clrmorlyr(bed)
-      call f90_assert_near(real(istat, fp), 0.0_fp, 0.0_fp, "mobile-remainder bed cleanup failed")
+      call f90_expect_eq(istat, 0, "mobile-remainder bed cleanup failed")
    end subroutine test_updmorlyr_active_layer_to_substrate_flux
-   !$f90tw)
 
    subroutine initialize_bedcomposition_test(bed, bed_mode, coarse_layer, consolidation_mode, istat, substrate_flux)
       type(bedcomp_data), intent(inout) :: bed
@@ -365,6 +401,7 @@ contains
       integer, intent(out) :: istat
       integer, intent(in), optional :: substrate_flux
 
+      nullify (bed%settings, bed%state, bed%work)
       istat = initmorlyr(bed)
       if (istat /= 0) then
          return
@@ -385,5 +422,18 @@ contains
          bed%settings%rhofrac = 1.0_fp
       endif
    end subroutine initialize_bedcomposition_test
+
+   subroutine cleanup_bedcomposition_test(bed, messages)
+      type(bedcomp_data), intent(inout) :: bed
+      type(message_stack), intent(inout) :: messages
+      integer :: istat
+
+      call clearstack(messages)
+      if (associated(bed%settings) .or. associated(bed%state) .or. associated(bed%work)) then
+         istat = clrmorlyr(bed)
+         call f90_expect_eq(istat, 0, "bed cleanup failed after assertion")
+         nullify (bed%settings, bed%state, bed%work)
+      end if
+   end subroutine cleanup_bedcomposition_test
 
 end module test_morphology

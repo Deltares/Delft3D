@@ -1,11 +1,12 @@
 module test_accumulate_distance
+   !$gtest suite=tests_accumulate_distance
    use assertions_gtest
    use m_accumulatedistance, only: accumulateDistance
    implicit none
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_accumulate_distance, test_simple_path, test_simple_path,
+   !$gtest test
    subroutine test_simple_path() bind(C)
       use precision, only: dp
       integer, parameter :: PATH_LENGTH = 2
@@ -20,5 +21,4 @@ contains
 
       call f90_expect_near(running_distance, expected_running_distance, tolerance, "path length is not square root of 2")
    end subroutine test_simple_path
-   !$f90tw)
 end module test_accumulate_distance
