@@ -20,6 +20,8 @@ f90twtest(${test_target}
         src/test_tridag.f90
         src/test_3d_layer_administration.f90
         src/test_pol_to_cellmask.f90
+        src/test_ibm_cartesian.f90
+        src/test_ibm_geometry.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
         src/test_bubblescreen.f90
@@ -45,6 +47,8 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_tridag.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ibm_cartesian.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ibm_geometry.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bubblescreen.f90

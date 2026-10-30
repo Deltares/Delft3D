@@ -46,17 +46,20 @@ contains
    subroutine CUTCELWU(n12, jamasks, ipoly)
       use precision, only: dp
       use m_crosslinkpoly, only: crosslinkpoly
+      use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK, BOUNDARY_ALL
       use m_tekpolygon
       use m_netw
       use m_flowgeom
       use kdtree2Factory
       use m_missing, only: dmiss, jins
       use m_cutcells
-      use messagehandling, only: LEVEL_INFO, mess
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol, dbdistance
       use m_sferic, only: jsferic, jasfer3D
       use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
+      use m_flowparameters, only: immersed_boundary
+      use precision_basics, only: comparereal
       use m_readyy
 
       integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells
@@ -64,16 +67,18 @@ contains
       integer, intent(in) :: ipoly ! polygon number for masks
 
       integer :: ja, KMOD
-      integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN, KL
+      integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN, KL, ninside
       integer, allocatable :: KNP(:)
+      integer, allocatable :: ibm_link_cross_count(:)
 
       real(kind=dp) :: XM, YM, XXC(8), YYC(8), DAREA, DLENGTH, DLENMX
+      real(kind=dp), allocatable :: ibm_link_cross_x(:), ibm_link_cross_y(:)
 
       real(kind=dp), dimension(:), allocatable :: xmL, ymL ! intersection coordinates
       integer, dimension(:), allocatable :: Lmask ! link mask
 
       real(kind=dp) :: cx, cy, R2search, Area, cof0
-      integer :: i, ip1, num, k_start, k_end, numsam
+      integer :: i, ip1, num, k_start, k_end, numsam, ierror
       integer :: jadelete
       integer :: jakdtree
       integer :: jasplitpol, numpolies, ip
@@ -81,6 +86,7 @@ contains
       type(tpoly), dimension(:), allocatable :: pli_loc
 
       real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp) :: xmin, xmax, ymin, ymax, cell_tol
 
       jakdtree = 1
 
@@ -205,6 +211,17 @@ contains
       end if
 
       if (n12 >= 4) then ! 4, 5, or 6
+         if (immersed_boundary == 1) then
+            allocate (ibm_link_cross_count(numL), ibm_link_cross_x(numL), ibm_link_cross_y(numL))
+            call ibm_find_crossed_links(ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y, ierror)
+            if (ierror /= 0) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundary=1 could not find polygon/link intersections.')
+               deallocate (ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y)
+               call READYY('CUTCELWU', -1.0_dp)
+               return
+            end if
+         end if
+
          allocate (KNP(NUMP))
          KNP = 0
 
@@ -219,6 +236,48 @@ contains
             end do
             !     ENDIF
          end do
+
+         if (immersed_boundary == 1) then
+            do N = 1, NUMP
+               if (KNP(N) == 1) then
+                  cycle
+               end if
+               NN = netcell(N)%N
+               do LL = 1, NN
+                  L = netcell(N)%LIN(LL)
+                  if (ibm_link_cross_count(L) > 0) then
+                     KNP(N) = 1
+                     exit
+                  end if
+               end do
+               if (KNP(N) == 1) then
+                  cycle
+               end if
+
+               xmin = huge(1.0_dp)
+               xmax = -huge(1.0_dp)
+               ymin = huge(1.0_dp)
+               ymax = -huge(1.0_dp)
+               do LL = 1, NN
+                  K1 = netcell(N)%nod(LL)
+                  xmin = min(xmin, xk(K1))
+                  xmax = max(xmax, xk(K1))
+                  ymin = min(ymin, yk(K1))
+                  ymax = max(ymax, yk(K1))
+               end do
+               cell_tol = 1.0e-8_dp * min(xmax - xmin, ymax - ymin)
+               do i = 1, NPL
+                  if (comparereal(xpl(i), dmiss) == 0) then
+                     cycle
+                  end if
+                  if (xpl(i) > xmin + cell_tol .and. xpl(i) < xmax - cell_tol .and. &
+                      ypl(i) > ymin + cell_tol .and. ypl(i) < ymax - cell_tol) then
+                     KNP(N) = 1
+                     exit
+                  end if
+               end do
+            end do
+         end if
 
          KMOD = max(1, NUMP / 100)
 
@@ -248,6 +307,20 @@ contains
             if (KNP(N) == 1) then ! AT LEAST 1 POINT INSIDE POLYGON, SO CHECK CUTC
 
                NN = netcell(N)%N
+               if (immersed_boundary == 1 .and. n12 == 5) then
+                  ninside = 0
+                  do LL = 1, NN
+                     K1 = netcell(N)%nod(LL)
+                     if (KC(K1) == 1) then
+                        ninside = ninside + 1
+                     end if
+                  end do
+                  if (ninside == 0) then
+                     call mess(LEVEL_ERROR, &
+                               'ImmersedBoundary=1: a cut cell has no active grid node; refine the grid or simplify the polygon.')
+                     cycle
+                  end if
+               end if
 
                IC = 0
                do LL = 1, NN
@@ -274,7 +347,32 @@ contains
                   K1 = NETCELL(N)%NOD(LL)
                   K2 = NETCELL(N)%NOD(LLU)
 
-                  if (jamasks == 0 .or. jamasks == 1) then
+                  if (immersed_boundary == 1) then
+                     if (ibm_link_cross_count(L) > 1) then
+                        call mess(LEVEL_ERROR, 'ImmersedBoundary=1: multiple polygon crossings on net link ', L)
+                        ja = 0
+                     else if (jamasks == 0 .or. jamasks == 1) then
+                        if (ibm_link_cross_count(L) == 1) then
+                           call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
+                           if (JA /= 1) then
+                              call mess(LEVEL_ERROR, &
+                                        'ImmersedBoundary=1: polygon/link crossing search returned inconsistent results.')
+                           end if
+                        else
+                           ja = 0
+                        end if
+                     else
+                        ja = 0
+                        do i = idxL(L), idxL(L + 1) - 1
+                           if (pdxL(i) == ipoly) then
+                              ja = 1
+                              xm = xdxL(i)
+                              ym = ydxL(i)
+                              exit
+                           end if
+                        end do
+                     end if
+                  else if (jamasks == 0 .or. jamasks == 1) then
                      if (kc(kn(1, L)) == 1 .or. kc(kn(2, L)) == 1) then
                         call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
                      else
@@ -454,6 +552,9 @@ contains
       if (allocated(knp)) then
          deallocate (knp)
       end if
+      if (allocated(ibm_link_cross_count)) then
+         deallocate (ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y)
+      end if
 
       if (jamasks == 1) then
          if (allocated(Lmask)) then
@@ -468,6 +569,60 @@ contains
       end if
 
       call READYY('CUTCELWU', -1.0_dp)
+
+   contains
+
+      subroutine ibm_find_crossed_links(crossing_count, crossing_x, crossing_y, ierror_out)
+         integer, dimension(:), intent(out) :: crossing_count !< Distinct polygon intersections per net link.
+         real(kind=dp), dimension(:), intent(out) :: crossing_x !< First polygon intersection x coordinate per link.
+         real(kind=dp), dimension(:), intent(out) :: crossing_y !< First polygon intersection y coordinate per link.
+         integer, intent(out) :: ierror_out !< Non-zero if the intersection search failed.
+
+         integer, allocatable :: crossed_links(:), polygon_nodes(:)
+         real(kind=dp), allocatable :: segment_weights(:), polygon_x(:), polygon_y(:)
+         integer :: intersection_count, i, link, polygon_node, capacity
+         real(kind=dp) :: intersection_x, intersection_y
+         type(kdtree_instance) :: crossing_tree
+
+         crossing_count = 0
+         crossing_x = 0.0_dp
+         crossing_y = 0.0_dp
+         ierror_out = 0
+         if (NPL < 2) then
+            return
+         end if
+
+         capacity = max(1, numL)
+         allocate (crossed_links(capacity), polygon_nodes(capacity), segment_weights(capacity))
+         allocate (polygon_x(NPL + 1), polygon_y(NPL + 1))
+         polygon_x(1:NPL) = xpl(1:NPL)
+         polygon_y(1:NPL) = ypl(1:NPL)
+         polygon_x(NPL + 1) = xpl(1)
+         polygon_y(NPL + 1) = ypl(1)
+         call find_crossed_links_kdtree2(crossing_tree, NPL + 1, polygon_x, polygon_y, ITYPE_NETLINK, capacity, &
+                                         BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, segment_weights, ierror_out)
+         if (ierror_out == 0) then
+            do i = 1, min(intersection_count, capacity)
+               link = crossed_links(i)
+               polygon_node = polygon_nodes(i)
+               if (link < 1 .or. link > size(crossing_count) .or. polygon_node < 1 .or. polygon_node > NPL) then
+                  cycle
+               end if
+               intersection_x = polygon_x(polygon_node) + segment_weights(i) * &
+                                (polygon_x(polygon_node + 1) - polygon_x(polygon_node))
+               intersection_y = polygon_y(polygon_node) + segment_weights(i) * &
+                                (polygon_y(polygon_node + 1) - polygon_y(polygon_node))
+               if (crossing_count(link) == 0) then
+                  crossing_count(link) = 1
+                  crossing_x(link) = intersection_x
+                  crossing_y(link) = intersection_y
+               else if (dbdistance(intersection_x, intersection_y, crossing_x(link), crossing_y(link), &
+                                   jsferic, jasfer3D, dmiss) > dtol) then
+                  crossing_count(link) = crossing_count(link) + 1
+               end if
+            end do
+         end if
+      end subroutine ibm_find_crossed_links
 
    end subroutine CUTCELwu
 

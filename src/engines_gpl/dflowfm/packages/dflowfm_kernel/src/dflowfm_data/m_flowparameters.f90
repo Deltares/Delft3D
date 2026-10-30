@@ -77,6 +77,13 @@ module m_flowparameters
 
    integer :: Perot_weight_update !> Perot weight update for 1D nodes (0: no (default), 1: yes)
 
+   integer :: immersed_boundary !< Enable the immersed-boundary method (0: off, 1: on)
+   real(kind=dp) :: immersed_boundary_min_area_frac !< Minimum active area fraction for IBM cut cells
+   real(kind=dp) :: immersed_boundary_cartesian_tol !< Relative tolerance for the IBM Cartesian mesh check
+   integer :: immersed_boundary_tangential_correction !< Enable the explicit IBM tangential pressure correction
+   real(kind=dp) :: immersed_boundary_small_edge_frac !< Wet edge fraction threshold for IBM small-edge treatment
+   integer :: immersed_boundary_projection !< Project reconstructed IBM cell velocities onto the free-slip plane
+
    integer :: jacomp = 1 !! same now for netnodes, 0 = default, 1 = use cs, sn in weighting, 2=regular scalar x,y interpolation based on banf
 
    integer :: autotrisam = 1 !< Generate triangles after generating samplles in polygon (0:no 1:yes)
@@ -474,7 +481,7 @@ module m_flowparameters
    integer :: jaupwindsrc !< 1st-order upwind advection (1) or higher-order (0)
 
    integer :: jadiffusiononbnd = 1 !< 0 switches off diffusion on open boundaries
-   
+
    integer :: jasedtrails !< sedtrails custom averaged output - 0: no (default) ; 1: yes
 
    integer :: jasourcesink !< 1: source+sink 2:source 3:sink for sediment
@@ -697,6 +704,13 @@ contains
       Perot_type = PEROT_AREA_BASED ! Perot weighting type of cell center velocities ucx, ucy
 
       Perot_weight_update = PEROT_STATIC ! update Perot weights for 1D nodes (0: no (default), 1: yes)
+
+      immersed_boundary = 0
+      immersed_boundary_min_area_frac = 0.1_dp
+      immersed_boundary_cartesian_tol = 1.0e-6_dp
+      immersed_boundary_tangential_correction = 0
+      immersed_boundary_small_edge_frac = 0.5_dp
+      immersed_boundary_projection = 0
 
       icorio = 5 ! Coriolis weigthing
       ! (Tx,Ty) = tangential unit vector at u-point

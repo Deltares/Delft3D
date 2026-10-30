@@ -899,6 +899,7 @@ contains
       use m_flowparameters, only: jased, Perot_type, NOT_DEFINED
       use m_flow, only: hs, s1, ucxyq_read_rst
       use m_flowgeom, only: bl
+      use m_immersed_boundary, only: ibm_state
       use m_sediment, only: stm_included
       use unstruc_model, only: md_restartfile
       use iso_varying_string, only: len_trim, index
@@ -917,6 +918,7 @@ contains
       integer :: mrst
       integer :: jw
 
+      error = DFM_NOERR
       file_exist = .false.
 
       if (len_trim(md_restartfile) > 0) then
@@ -928,15 +930,30 @@ contains
                call rearst(mrst, jw)
                file_exist = (jw == ON)
             end if
-         else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
-            call read_restart_from_map(md_restartfile, error)
-            if (jased > OFF .and. stm_included) then
+            if (file_exist .and. ibm_state%active) then
+               call update_ibm_wet_bed_after_restart(error)
+               if (error /= DFM_NOERR) then
+                  return
+               end if
                call setbobs()
+               hs(:) = s1(:) - bl(:)
             end if
+         else ! restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
+            call read_restart_from_map(md_restartfile, error)
             if (error /= DFM_NOERR) then
                return
             else
                file_exist = .true.
+            end if
+
+            if (ibm_state%active) then
+               call update_ibm_wet_bed_after_restart(error)
+               if (error /= DFM_NOERR) then
+                  return
+               end if
+               call setbobs()
+            else if (jased > OFF .and. stm_included) then
+               call setbobs()
             end if
 
             hs(:) = s1(:) - bl(:)
@@ -957,6 +974,35 @@ contains
       end if
 
    end subroutine load_restart_file
+
+   subroutine update_ibm_wet_bed_after_restart(error)
+      use precision, only: dp
+      use m_flowgeom, only: bl, ln, lnx, wu, xz, yz
+      use m_immersed_boundary, only: ibm_set_wet_bed, ibm_state
+      use m_missing, only: dmiss
+      use dfm_error
+      use messagehandling, only: mess, LEVEL_ERROR
+
+      implicit none
+
+      integer, intent(out) :: error
+
+      integer, allocatable, dimension(:, :) :: link_cells
+      integer :: error_index
+      logical :: valid
+      character(len=256) :: reason, msgbuf
+
+      error = DFM_NOERR
+      allocate (link_cells(2, lnx))
+      link_cells = ln(:, 1:lnx)
+      call ibm_set_wet_bed(link_cells, wu, xz, yz, dmiss, bl, ibm_state, valid, error_index, reason)
+      deallocate (link_cells)
+      if (.not. valid) then
+         write (msgbuf, '(a,i0,a,a)') 'ImmersedBoundary restart bed-level error at index ', error_index, ': ', trim(reason)
+         call mess(LEVEL_ERROR, trim(msgbuf))
+         error = DFM_GENERICERROR
+      end if
+   end subroutine update_ibm_wet_bed_after_restart
 
 !> if the morphological start time is not set to some positive value due
 !! to restart from mapfile, then make sure that the morphological start
@@ -2509,4 +2555,3 @@ contains
    end subroutine restore_au_q1_3D_for_1st_history_record
 
 end module m_flow_flowinit
-

@@ -236,11 +236,12 @@ contains
             call crossinbox(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), Xa, Ya, Xb, Yb, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
             if (jacros == 1) then
-               intersection_count = intersection_count + 1
-
-               if (intersection_count > ubound(crossed_links, 1)) then
+               if (intersection_count >= ubound(crossed_links, 1)) then
                   call mess(LEVEL_ERROR, 'find_crossed_links_kdtree2: array size too small')
+                  call readyy(' ', -1.0_dp)
+                  goto 1234
                end if
+               intersection_count = intersection_count + 1
 
                crossed_links(intersection_count) = L
                polygon_nodes(intersection_count) = k

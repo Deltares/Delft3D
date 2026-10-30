@@ -71,6 +71,9 @@ contains
       use m_fixedweirs_on_flowgeom, only: fixedweirs_on_flowgeom
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
+      use m_immersed_boundary, only: ibm_check_cartesian, ibm_build_geometry, ibm_reset_state, ibm_save_full_area, &
+                                     ibm_save_full_width, ibm_save_full_link_metrics, ibm_set_perot_weights, &
+                                     ibm_set_wet_link_metrics, ibm_set_wet_bed, ibm_state, t_ibm_cartesian
       use m_checknetwork, only: checknetwork
       use m_allocate_linktocenterweights, only: allocatelinktocenterweights
       use m_add_boundarynetcells, only: add_boundarynetcells
@@ -107,7 +110,7 @@ contains
       use stdlib_sorting, only: sort_index
       use m_flowtimes, only: ti_waq
       use gridoperations
-      use m_flow, only: numlimdt, numlimdt_baorg
+      use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
       use m_oned_functions
       use unstruc_channel_flow, only: network
       use m_sediment, only: stm_included
@@ -135,6 +138,16 @@ contains
       integer :: m, n, k, k1, k2, k3, k4, L, Lf, LL, LLL, ierr, nn, ja, kh, numswap, n12, La
       integer :: n1, n2, n1a, n2a, ja1D, ka, kb, k1n, k2n
       integer :: nc1, nc2, nex
+      integer :: ibm_nnodes, ibm_cell_index, ibm_ok
+      integer, allocatable :: ibm_cell_offsets(:), ibm_cell_nodes(:)
+      integer, allocatable :: ibm_wet_count(:), ibm_link_cells(:, :)
+      real(kind=dp), allocatable :: ibm_cell_corner_x(:, :), ibm_cell_corner_y(:, :)
+      real(kind=dp), allocatable :: ibm_wet_x(:, :), ibm_wet_y(:, :)
+      real(kind=dp), allocatable :: ibm_face_x(:, :), ibm_face_y(:, :)
+      logical :: ibm_geometry_valid
+      integer :: ibm_error_index
+      character(len=256) :: ibm_geometry_reason
+      type(t_ibm_cartesian) :: ibm_grid
       real(kind=dp) :: sig ! for bottom level help
       real(kind=dp) :: dxn1e ! node 1 - edge distance
       real(kind=dp) :: dxn2e ! node 2 - edge distance
@@ -174,6 +187,11 @@ contains
       integer :: numl2D
 
       numl2D = numl - numl1D
+
+      if (iphase /= 2) then
+         call ibm_reset_state()
+         ibm_state%active = immersed_boundary == 1
+      end if
 
       if (numk < 2 .or. (numl1D == 0 .and. numl2D < 3) .or. (numl2D > 0 .and. numl2D < 3)) then
          call mess(LEVEL_WARN, 'A valid network requires at least 2 computational grid points (net nodes) and at least 1 netlink for 1D or 3 netlinks for 2D.')
@@ -302,6 +320,49 @@ contains
          return
       end if
 
+      if (immersed_boundary == 1) then
+         if (numl1d > 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires a 2D mesh without 1D links.')
+         else
+            allocate (ibm_cell_offsets(nump + 1))
+            ibm_cell_offsets(1) = 1
+            do n = 1, nump
+               ibm_cell_offsets(n + 1) = ibm_cell_offsets(n) + netcell(n)%n
+            end do
+            ibm_nnodes = ibm_cell_offsets(nump + 1) - 1
+            allocate (ibm_cell_nodes(ibm_nnodes))
+            ibm_cell_index = 1
+            do n = 1, nump
+               nn = netcell(n)%n
+               ibm_cell_nodes(ibm_cell_index:ibm_cell_index + nn - 1) = netcell(n)%nod(1:nn)
+               ibm_cell_index = ibm_cell_index + nn
+            end do
+
+            call ibm_check_cartesian(xk(1:numk), yk(1:numk), kn(1:2, 1:numl), ibm_cell_offsets, ibm_cell_nodes, &
+                                     immersed_boundary_cartesian_tol, ibm_grid)
+            ibm_state%grid = ibm_grid
+            ibm_ok = 1
+            if (.not. ibm_grid%is_cartesian) then
+               ibm_ok = 0
+            end if
+            if (jampi == 1) then
+               call reduce_int_min(ibm_ok)
+            end if
+            if (ibm_ok == 0) then
+               if (ibm_grid%is_cartesian) then
+                  ibm_grid%reason = 'another MPI rank reported a non-Cartesian mesh'
+               end if
+               write (msgbuf, '(a,a,a,i0,a,i0,a,es12.4,a,es12.4)') &
+                  'ImmersedBoundary=1 requires a Cartesian 2D mesh: ', trim(ibm_grid%reason), &
+                  '; node=', ibm_grid%offending_node, ' link=', ibm_grid%offending_link, &
+                  ' max_dev=', ibm_grid%max_dev, ' tol=', immersed_boundary_cartesian_tol
+               call mess(LEVEL_ERROR, trim(msgbuf))
+            end if
+
+            deallocate (ibm_cell_offsets, ibm_cell_nodes)
+         end if
+      end if
+
 ! move partition domain ghostcells back in array
 ! call partition_arrange_ghostcells(numpi,nump1d2di)
 
@@ -344,12 +405,12 @@ contains
       if (allocated(nd)) then
          deallocate (nd)
       end if
-      allocate(nd(ndx)) 
-      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss) 
-      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
-      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
-      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
-      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1) 
+      allocate (nd(ndx))
+      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss)
+      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp)
+      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp)
+      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp)
+      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1)
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
@@ -404,6 +465,7 @@ contains
          sarea = sarea + ba(n)
          call allocateandset2Dnodexyarrays(n) ! only for plotting...
       end do
+      call ibm_save_full_area(ba)
       ! jacenterinside = 0
 
       fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for temperature_model == TEMPERATURE_MODEL_EXCESS.
@@ -994,6 +1056,7 @@ contains
          ! WU of orphan 1D2D links must come from neighbouring partition.
          call update_ghosts(ITYPE_U, 1, lnx, wu, ierror, ignore_orientation=.true.)
       end if
+      call ibm_save_full_width(wu)
 
       k = 0 ! count MAX nr of 1D endpoints, dir zijn dead ends
       do L = 1, lnx
@@ -1095,6 +1158,7 @@ contains
             call qnerror(trim(msgbuf), ' ', ' ')
          end if
       end do
+      call ibm_save_full_link_metrics(acl, dxi)
 
       do n = 1, ndx2D ! internal 2d nodes
          if (ba(n) > 0.0_dp) then
@@ -1197,6 +1261,94 @@ contains
 
       if (network%loaded .and. ndxi - ndx2d > 0 .and. (map_write_settings%time_wet_on_ground > 0 .or. map_write_settings%free_board > 0 .or. map_write_settings%depth_on_ground > 0 .or. map_write_settings%vol_on_ground > 0)) then
          call set_ground_level_for_1d_nodes(network) ! set ground level for 1d nodes
+      end if
+
+      if (ibm_state%active) then
+         allocate (ibm_cell_corner_x(4, ndx2d), ibm_cell_corner_y(4, ndx2d))
+         allocate (ibm_wet_x(8, ndx2d), ibm_wet_y(8, ndx2d), ibm_wet_count(ndx2d))
+         allocate (ibm_link_cells(2, lnx), ibm_face_x(2, lnx), ibm_face_y(2, lnx))
+         ibm_wet_x = 0.0_dp
+         ibm_wet_y = 0.0_dp
+         ibm_wet_count = 0
+         ibm_ok = 1
+         ibm_error_index = 0
+         ibm_geometry_reason = ''
+
+         do n = 1, ndx2d
+            if (.not. allocated(nd(n)%x) .or. .not. allocated(nd(n)%y)) then
+               ibm_ok = 0
+               ibm_error_index = n
+               ibm_geometry_reason = 'flow cell has no clipped polygon coordinates'
+               exit
+            end if
+            if (size(nd(n)%x) /= size(nd(n)%y) .or. size(nd(n)%x) > size(ibm_wet_x, 1)) then
+               ibm_ok = 0
+               ibm_error_index = n
+               ibm_geometry_reason = 'flow-cell polygon exceeds the supported vertex count'
+               exit
+            end if
+            if (netcell(n)%n /= 4) then
+               ibm_ok = 0
+               ibm_error_index = n
+               ibm_geometry_reason = 'flow cell no longer has four Cartesian corners'
+               exit
+            end if
+
+            ibm_wet_count(n) = size(nd(n)%x)
+            ibm_wet_x(1:ibm_wet_count(n), n) = nd(n)%x
+            ibm_wet_y(1:ibm_wet_count(n), n) = nd(n)%y
+            do m = 1, 4
+               k = netcell(n)%nod(m)
+               ibm_cell_corner_x(m, n) = xk(k)
+               ibm_cell_corner_y(m, n) = yk(k)
+            end do
+         end do
+
+         do L = 1, lnx
+            ibm_link_cells(:, L) = ln(:, L)
+            ibm_face_x(:, L) = xk(lncn(:, L))
+            ibm_face_y(:, L) = yk(lncn(:, L))
+         end do
+
+         if (ibm_ok == 1) then
+            if (.not. allocated(ibm_state%ba_full) .or. .not. allocated(ibm_state%wu_full)) then
+               ibm_ok = 0
+               ibm_geometry_reason = 'full-cell or full-link metrics were not saved'
+            else
+               call ibm_build_geometry(ibm_cell_corner_x, ibm_cell_corner_y, ibm_wet_x, ibm_wet_y, ibm_wet_count, &
+                                       ibm_state%ba_full, ba, ibm_link_cells, ibm_face_x, ibm_face_y, &
+                                       ibm_state%wu_full, wu, ibm_state%grid%dx, ibm_state%grid%dy, baorgfracmin, bamin, &
+                                       immersed_boundary_cartesian_tol, immersed_boundary_small_edge_frac, ibm_state, &
+                                       ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+               if (.not. ibm_geometry_valid) then
+                  ibm_ok = 0
+               else
+                  call ibm_set_wet_link_metrics(ibm_link_cells, xz, yz, csu, snu, wu, acl, dxi, ibm_state, &
+                                                ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+                  if (.not. ibm_geometry_valid) then
+                     ibm_ok = 0
+                  else
+                     if (ibm_state%nclipped_dn > 0) then
+                        write (msgbuf, '(a,i0,a)') 'ImmersedBoundary clipped ', ibm_state%nclipped_dn, &
+                                                   ' wet-centroid link distances to the minimum.'
+                        call mess(LEVEL_WARN, trim(msgbuf))
+                     end if
+                     call ibm_set_wet_bed(ibm_link_cells, wu, xz, yz, dmiss, bl, ibm_state, &
+                                          ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+                     if (.not. ibm_geometry_valid) then
+                        ibm_ok = 0
+                     end if
+                  end if
+               end if
+            end if
+         end if
+         if (ibm_ok == 0) then
+            write (msgbuf, '(a,i0,a,a)') 'ImmersedBoundary initialization error at index ', ibm_error_index, ': ', trim(ibm_geometry_reason)
+            call mess(LEVEL_ERROR, trim(msgbuf))
+         end if
+
+         deallocate (ibm_cell_corner_x, ibm_cell_corner_y, ibm_wet_x, ibm_wet_y, ibm_wet_count)
+         deallocate (ibm_face_x, ibm_face_y)
       end if
 
       call setbobs()
@@ -1312,6 +1464,18 @@ contains
 
       call allocatelinktocenterweights()
       call setlinktocenterweights()
+
+      if (ibm_state%active) then
+         if (ibm_ok == 1) then
+            call ibm_set_perot_weights(ibm_link_cells, wu, wcx1, wcy1, wcx2, wcy2, ibm_state, &
+                                       ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+            if (.not. ibm_geometry_valid) then
+               write (msgbuf, '(a,i0,a,a)') 'ImmersedBoundary Perot-weight error at index ', ibm_error_index, ': ', trim(ibm_geometry_reason)
+               call mess(LEVEL_ERROR, trim(msgbuf))
+            end if
+         end if
+         deallocate (ibm_link_cells)
+      end if
 
 !-------------------------------------------------- CELL CORNER RELATED -----------------------------------------------
 

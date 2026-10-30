@@ -76,6 +76,55 @@ contains
    end subroutine test_mdu_read_write_read
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_immersed_boundary_mdu_roundtrip, test_immersed_boundary_mdu_roundtrip,
+   subroutine test_immersed_boundary_mdu_roundtrip() bind(C)
+      use unstruc_model, only: readMDUFile, writeMDUFile
+      use m_flowparameters, only: immersed_boundary, immersed_boundary_min_area_frac, immersed_boundary_cartesian_tol, &
+                                  immersed_boundary_tangential_correction, immersed_boundary_small_edge_frac, immersed_boundary_projection
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
+
+      character(len=256) :: output_file
+      integer :: ierr
+
+      jampi = 0
+      output_file = 'test_immersed_boundary.mdu'
+      call resetFullFlowModel()
+
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
+      threshold_abort = LEVEL_FATAL
+      call readMDUFile('stretch_example.mdu', ierr)
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
+      call f90_assert_eq(immersed_boundary, 0, 'ImmersedBoundary default must be off.')
+      call F90_ASSERT_NEAR(immersed_boundary_min_area_frac, 0.1_dp, 1.0e-12_dp, 'Unexpected default IBM area fraction.')
+      call F90_ASSERT_NEAR(immersed_boundary_cartesian_tol, 1.0e-6_dp, 1.0e-12_dp, 'Unexpected default IBM Cartesian tolerance.')
+      call f90_assert_eq(immersed_boundary_tangential_correction, 0, 'Unexpected default IBM tangential correction.')
+      call F90_ASSERT_NEAR(immersed_boundary_small_edge_frac, 0.5_dp, 1.0e-12_dp, 'Unexpected default IBM small-edge fraction.')
+      call f90_assert_eq(immersed_boundary_projection, 0, 'Unexpected default IBM projection.')
+
+      immersed_boundary_min_area_frac = 0.2_dp
+      immersed_boundary_cartesian_tol = 2.0e-6_dp
+      immersed_boundary_tangential_correction = 1
+      immersed_boundary_small_edge_frac = 0.75_dp
+      immersed_boundary_projection = 1
+      call writeMDUFile(output_file, ierr)
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing IBM MDU settings.')
+
+      call resetFullFlowModel()
+      call readMDUFile(output_file, ierr)
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading IBM MDU settings.')
+      call f90_assert_eq(immersed_boundary, 0, 'ImmersedBoundary must remain off in the round trip.')
+      call F90_ASSERT_NEAR(immersed_boundary_min_area_frac, 0.2_dp, 1.0e-12_dp, 'IBM area fraction did not round-trip.')
+      call F90_ASSERT_NEAR(immersed_boundary_cartesian_tol, 2.0e-6_dp, 1.0e-12_dp, 'IBM Cartesian tolerance did not round-trip.')
+      call f90_assert_eq(immersed_boundary_tangential_correction, 1, 'IBM tangential correction did not round-trip.')
+      call F90_ASSERT_NEAR(immersed_boundary_small_edge_frac, 0.75_dp, 1.0e-12_dp, 'IBM small-edge fraction did not round-trip.')
+      call f90_assert_eq(immersed_boundary_projection, 1, 'IBM projection did not round-trip.')
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
+   end subroutine test_immersed_boundary_mdu_roundtrip
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_mdu_fileversion_model, test_mdu_fileversion_model,
    subroutine test_mdu_fileversion_model() bind(C)
       use unstruc_model, only: readMDUFile

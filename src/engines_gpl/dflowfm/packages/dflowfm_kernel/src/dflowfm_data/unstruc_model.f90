@@ -489,7 +489,7 @@ contains
                         CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977, wcharnock
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
-      use m_sferic, only: anglat, anglon, jasfer3D
+      use m_sferic, only: anglat, anglon, jasfer3D, jsferic
       use m_alloc
       use m_equatorial
       use m_netw, only: Makeorthocenters, strip_mesh
@@ -529,6 +529,7 @@ contains
       use messagehandling, only: msgbuf, err_flush, warn_flush
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
       use m_check_positive_value, only: check_positive_value
+      use m_immersed_boundary, only: ibm_validate_cutcelllist
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
       use m_array_or_scalar, only: realloc
@@ -538,11 +539,12 @@ contains
       integer, intent(out) :: istat !< Return status (0=success)
 
       character(len=32) :: program
-      logical :: success, ex, value_parsed
+      logical :: success, ex, value_parsed, ibm_cutcell_list_valid
       logical :: has_charnock_coefficient, has_air_viscous_momentum_coefficient
       character(len=1), dimension(1) :: dummychar
       logical :: dummylog
       character(len=1000) :: charbuf = ' '
+      character(len=256) :: ibm_cutcell_list_reason
       character(len=255) :: tmpstr, fnam, bnam
       real(kind=dp), allocatable :: tmpdouble(:)
       integer :: ibuf, ifil
@@ -1118,6 +1120,31 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg)
       call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundary', immersed_boundary)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryMinAreaFrac', immersed_boundary_min_area_frac)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryCartesianTol', immersed_boundary_cartesian_tol)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryTangentialCorrection', immersed_boundary_tangential_correction)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundarySmallEdgeFrac', immersed_boundary_small_edge_frac)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryProjection', immersed_boundary_projection)
+
+      if (immersed_boundary < 0 .or. immersed_boundary > 1) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary must be 0 (off) or 1 (on).')
+      end if
+      if (immersed_boundary_min_area_frac <= 0.0_dp .or. immersed_boundary_min_area_frac > 1.0_dp) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryMinAreaFrac must be in (0, 1].')
+      end if
+      if (immersed_boundary_cartesian_tol <= 0.0_dp .or. immersed_boundary_cartesian_tol > 1.0e-3_dp) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryCartesianTol must be in (0, 1e-3].')
+      end if
+      if (immersed_boundary_tangential_correction < 0 .or. immersed_boundary_tangential_correction > 1) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryTangentialCorrection must be 0 or 1.')
+      end if
+      if (immersed_boundary_small_edge_frac < 0.0_dp .or. immersed_boundary_small_edge_frac > 1.0_dp) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundarySmallEdgeFrac must be in [0, 1].')
+      end if
+      if (immersed_boundary_projection < 0 .or. immersed_boundary_projection > 1) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryProjection must be 0 or 1.')
+      end if
 
       call prop_get(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
       call prop_get(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
@@ -1147,6 +1174,44 @@ contains
       case default
          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
       end select
+
+      if (immersed_boundary == 1) then
+         call ibm_validate_cutcelllist(md_cutcelllist, ibm_cutcell_list_valid, ibm_cutcell_list_reason)
+         if (.not. ibm_cutcell_list_valid) then
+            call mess(LEVEL_ERROR, trim(ibm_cutcell_list_reason))
+            istat = DFM_GENERICERROR
+            return
+         end if
+         if (kmx /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires kmx=0.')
+         end if
+         if (jsferic /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Cartesian coordinates (jsferic=0).')
+         end if
+         if (flow_solver /= FLOW_SOLVER_FM .or. trim(md_flow_solver) /= 'generic1d2d3d') then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires FlowSolver=generic1d2d3d.')
+         end if
+         if (nonlin2D /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 does not support Nonlin2D.')
+         end if
+         if (iadvec /= 33) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires AdvecType=33.')
+         end if
+         if (ibedlevtyp /= BEDLEV_TYPE_WATERLEVEL) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires BedlevType=1.')
+         end if
+         if (Perot_weight_update == PEROT_UPDATE) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 does not support PerotWeightUpdate.')
+         end if
+         if (Perot_type == NOT_DEFINED) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Perot cell-centre reconstruction.')
+         end if
+         if (Baorgfracmin < 0.0_dp) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Baorgfracmin >= 0.')
+         else if (comparereal(Baorgfracmin, 0.0_dp) == 0) then
+            Baorgfracmin = immersed_boundary_min_area_frac
+         end if
+      end if
 
       call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
 
@@ -1888,7 +1953,7 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
       if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
@@ -3368,6 +3433,24 @@ contains
       call prop_set(prop_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg, 'if previous numlimdt > Numlimdt_baorg keep original cell area ba in cutcell')
       if (writeall .or. baorgfracmin > 0) then
          call prop_set(prop_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin, 'Cell area = max(orgcellarea*Baorgfracmin, cutcell area) ')
+      end if
+      if (writeall .or. immersed_boundary /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundary', immersed_boundary, 'Enable IBM on supported Cartesian 2D meshes (0: no, 1: yes)')
+      end if
+      if (writeall .or. comparereal(immersed_boundary_min_area_frac, 0.1_dp) /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryMinAreaFrac', immersed_boundary_min_area_frac, 'Minimum active area fraction for IBM cut cells')
+      end if
+      if (writeall .or. comparereal(immersed_boundary_cartesian_tol, 1.0e-6_dp) /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryCartesianTol', immersed_boundary_cartesian_tol, 'Relative tolerance for the IBM Cartesian mesh check')
+      end if
+      if (writeall .or. immersed_boundary_tangential_correction /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryTangentialCorrection', immersed_boundary_tangential_correction, 'Enable the explicit IBM tangential pressure correction (0: no, 1: yes)')
+      end if
+      if (writeall .or. comparereal(immersed_boundary_small_edge_frac, 0.5_dp) /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundarySmallEdgeFrac', immersed_boundary_small_edge_frac, 'Wet edge fraction threshold for IBM small-edge treatment')
+      end if
+      if (writeall .or. immersed_boundary_projection /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryProjection', immersed_boundary_projection, 'Project reconstructed IBM cell velocities onto the free-slip plane (0: no, 1: yes)')
       end if
       if (writeall .or. sdu_update_s1 > 0) then
          call prop_set(prop_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1, 'Update water levels (S1) due to subsidence / uplift')

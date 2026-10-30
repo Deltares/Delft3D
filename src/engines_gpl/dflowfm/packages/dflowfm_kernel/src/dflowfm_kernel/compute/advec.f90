@@ -53,6 +53,8 @@ contains
       use precision, only: dp
       use m_flowgeom, only: lnxi, iadv, iadv_subgrid_weir, ln, lnx, ndxi, csu, snu, kcu, acl, iadv_pure1d_fm, iadv_pure1d_sobek, &
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
+      use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_state
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
                         jarhoxu, qw, zws, kbot, ktop, rho, epshs, rhomean, hu, u1, vol1_f, &
@@ -108,9 +110,11 @@ contains
       real(kind=dp) :: sigk1(0:kmxx), sigk2(0:kmxx), siguL(0:kmxx)
 
       real(kind=dp) :: am
+      real(kind=dp) :: aclL
       real(kind=dp) :: qv
       real(kind=dp) :: u_ene
       real(kind=dp) :: u_mom
+      integer :: ibm_link_index
 
       japiaczek33 = 0
 
@@ -371,7 +375,7 @@ contains
       if (kmx == 0) then
 
          !$OMP PARALLEL DO                                                                   &
-         !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, u_ene, u_mom, am, qv)
+         !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, u_ene, u_mom, am, qv, aclL, ibm_link_index)
 
          do L = 1, lnx
 
@@ -382,6 +386,17 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                iadvL = iadv(L)
+               aclL = acl(L)
+               if (immersed_boundary == 1) then
+                  if (allocated(ibm_state%cut_link_index)) then
+                     if (L <= size(ibm_state%cut_link_index)) then
+                        ibm_link_index = ibm_state%cut_link_index(L)
+                        if (ibm_link_index > 0) then
+                           aclL = ibm_state%clink(ibm_link_index)%acl_wet
+                        end if
+                     end if
+                  end if
+               end if
 
                if (L > lnxi) then
                   if (iadvL == 77) then
@@ -406,20 +421,20 @@ contains
 
                   if (jarhoxu == 0) then
                      if (kcu(L) == LINK_1D) then
-                        volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
+                        volu = aclL * vol1_f(k1) + (1.0_dp - aclL) * vol1_f(k2)
                      else
-                        volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
+                        volu = aclL * vol1(k1) + (1.0_dp - aclL) * vol1(k2)
                      end if
                   else
                      if (kcu(L) == LINK_1D) then
-                        volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
+                        volu = aclL * vol1_f(k1) * rho(k1) + (1.0_dp - aclL) * vol1_f(k2) * rho(k2)
                      else
-                        volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
+                        volu = aclL * vol1(k1) * rho(k1) + (1.0_dp - aclL) * vol1(k2) * rho(k2)
                      end if
                   end if
 
                   if (volu > 0) then
-                     advel = (acl(L) * qu1 + (1.0_dp - acl(L)) * qu2) / volu
+                     advel = (aclL * qu1 + (1.0_dp - aclL) * qu2) / volu
 
                      !if ( japiaczek33 == 1) then
                      !   expl = ( acl(L)*sqa(k1) + (1d0-acl(L))*sqa(k2) ) / volu

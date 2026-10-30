@@ -57,7 +57,8 @@ contains
       use m_sferic
       use m_trachy, only: trachy_resistance
       use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
-      use m_flowparameters, only: ifixedWeirScheme1d2d
+      use m_flowparameters, only: ifixedWeirScheme1d2d, immersed_boundary
+      use m_immersed_boundary, only: ibm_state
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
@@ -68,7 +69,7 @@ contains
 
       implicit none
 
-      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, boundary_type, i
+      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, boundary_type, i, ibm_link_index
       integer :: kup, kdo, iup
 
       real(kind=dp) :: bui, cu, du, du0, gdxi, ds
@@ -94,7 +95,7 @@ contains
          call calculate_manhole_losses(network%storS, advi)
 
          !$OMP PARALLEL DO                       &
-         !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL)
+         !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL,ibm_link_index)
          do L = 1, lnx
 
             if (hu(L) > 0) then
@@ -145,6 +146,16 @@ contains
                   agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
                end if
                gdxi = agp * dxi(L)
+               if (immersed_boundary == 1) then
+                  if (allocated(ibm_state%cut_link_index)) then
+                     if (L <= size(ibm_state%cut_link_index)) then
+                        ibm_link_index = ibm_state%cut_link_index(L)
+                        if (ibm_link_index > 0) then
+                           gdxi = agp * ibm_state%clink(ibm_link_index)%dxi_wet
+                        end if
+                     end if
+                  end if
+               end if
                if (jarhoxu >= 2) then
                   gdxi = gdxi * rhomean / rhou(L)
                end if
