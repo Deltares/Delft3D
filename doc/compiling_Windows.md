@@ -38,11 +38,12 @@ Deltares developers download them directly and external developers build them lo
   Alternatively, install Python directly from [python.org](https://www.python.org/downloads/).
 - [Conan 2](https://docs.conan.io/2/installation.html). The recommended way to install Conan within Deltares is also via [uv](https://docs.astral.sh/uv/):
   ```
-  uv tool install conan
+  uv tool install conan --with "certifi>=2026.10.23"
   ```
   Alternatively, install it into your active Python environment with pip:
   ```
-  python -m pip install conan
+  python -m pip install --upgrade "pip>=26.2.2"
+  python -m pip install conan "certifi>=2026.10.23"
   ```
   Verify the installation:
   ```
