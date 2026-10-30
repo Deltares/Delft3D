@@ -27,219 +27,82 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!> Read samples from a GeoTIFF file.
-!! Samples are being stored in the global dataset of m_samples.
+!> Load a GeoTIFF through the shared raster reader and convert it to global samples.
 module m_read_samples_from_geotiff
-
-   implicit none
-
+   implicit none(type, external)
    private
 
    public :: read_samples_from_geotiff
 
-contains
+   contains
 
+   !> Legacy compatibility function, read raster data object and then convert to global samples.
+   ! CAN BE REMOVED ONCE WE PHASE OUT OLD EXT
    function read_samples_from_geotiff(filename) result(success)
-      use MessageHandling, only: mess, level_warn
-#ifdef HAVE_GDAL
-      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_float, c_null_char, c_associated, c_ptr
-      use fortranc, only: strtofchar
-      use gdal, only: gdaldataseth, gdalrasterbandh, gdalallregister, gdalopen, ga_readonly, gdalassociated, &
-                      gdalgetrasterxsize, gdalgetrasterysize, gdalgetrastercount, gdalgetrasterband, gdalgetdatatypesize, &
-                      gdalgetrasterdatatype, gdaldatasetrasterio_f, gf_read, gdalgetgeotransform, gdalgetmetadataitem, &
-                      gdalmajorobjecth_new, gdalclose
-      use m_samples, only: increasesam, ns, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok, ipsam, ipstat_ok
+      use precision, only: dp
+      use messagehandling, only: mess, level_warn
+      use m_bilinear_interpolation, only: bilinear_data
+      use timespace_parameters, only: GEOTIFF
+      use m_samples, only: increasesam, ns, xs, ys, zs, mxsam, mysam, ipstat, ipsam, ipstat_ok
       use m_drawthis, only: ndraw
       use m_readyy, only: readyy
       use m_get_samples_boundingbox, only: get_samples_boundingbox
-      use precision, only: dp
-      use messagehandling, only: msgbuf, warn_flush
       use m_samples_refine, only: iHesstat, iHesstat_DIRTY
-      use string_module, only: strcmpi
-#endif
 
-      character(len=*), intent(in) :: filename !< Path of the file to be read
-      logical :: success !< Return value to describe success of the operations
+      character(len=*), intent(in) :: filename !< Path of the file to be read.
+      logical :: success !< Whether the raster was read and converted successfully.
 
-#ifdef HAVE_GDAL
-      ! local
-      type(gdaldataseth) :: dataset ! Gdal dataset
-      type(GDALRasterBandH) :: rasterband ! Selected raster band in GDAL dataset
-      integer(kind=c_int) :: nx, ny, nz, offsetx, offsety ! Geometry of dataset
-      real(kind=c_double), allocatable :: dbuffer(:, :, :) ! Buffer containing data of dataset (for 64-bit raster bands)
-      real(kind=c_float), allocatable :: fbuffer(:, :, :) ! Buffer containing data of dataset (for 32-bit raster bands)
-      integer(kind=c_int) :: rasterband_datatypesize
+      type(bilinear_data) :: data
+      integer :: status, nx, ny, i, j, istep
 
-      real(kind=c_double) :: geotransform(6) ! Geo information of dataset
-      real(kind=dp) :: dxa, dya ! Pixel size
-      real(kind=dp) :: x0, y0 ! Origin
-      integer :: i, j, istep ! Counters used for loops
-      integer(kind=c_int) :: ierr ! Integer to store return values of C functions
-      real(kind=dp) :: eps ! Small value to be used with inequalities involving floating point numbers
-      type(c_ptr) :: c_area_or_point
-      logical :: is_area
-      real(kind=dp) :: pixeloffset
-
-      ! Register all available gdal drivers
-      call gdalallregister()
-
-      call READYY('Reading GeoTIFF file', 0.0_dp)
-      ! Opening a GeoTIFF gdal dataset for reading
-      dataset = gdalopen(trim(filename)//char(0), GA_ReadOnly)
-      if (.not. gdalassociated(dataset)) then
-         call mess(LEVEL_WARN, 'Error opening dataset on GeoTIFF file: '//trim(filename))
-         goto 888
+      success = .false.
+      call readyy('Reading GeoTIFF file', 0.0_dp)
+      data = bilinear_data(filename, GEOTIFF, status)
+      if (status /= 0) then
+         call mess(level_warn, 'Could not read GeoTIFF raster: '//trim(filename))
+         call readyy('Reading GeoTIFF file', 1.0_dp)
+         return
       end if
 
-      ! Get dimensions of dataset
-      nx = gdalgetrasterxsize(dataset)
-      ny = gdalgetrasterysize(dataset)
-      nz = gdalgetrastercount(dataset)
-
-      ! Throw warning if TIFF with multiple layers is given
-      if (nz /= 1) then
-         call mess(LEVEL_WARN, 'GeoTIFF files with multiple layers are currently not supported: '//trim(filename))
-         goto 888
-      end if
-
-      rasterband = gdalgetrasterband(dataset, 1)
-      rasterband_datatypesize = gdalgetdatatypesize(gdalgetrasterdatatype(rasterband))
-
-      ! Read tiff data into buffer and throw warning if something went wrong
-      offsetx = 0
-      offsety = 0
-      if (rasterband_datatypesize == 32) then
-         allocate (fbuffer(nx, ny, nz))
-         ierr = gdaldatasetrasterio_f(dataset, GF_Read, offsetx, offsety, fbuffer)
-      else if (rasterband_datatypesize == 64) then
-         allocate (dbuffer(nx, ny, nz))
-         ierr = gdaldatasetrasterio_f(dataset, GF_Read, offsetx, offsety, dbuffer)
-      else
-         write (msgbuf, '(a,a,i0,a)') 'Error reading '''//trim(filename)//''': GeoTIFF files with non-float raster bands are currently not supported.', &
-            ' Detected data type size: ', rasterband_datatypesize, ' bits.'
-         call warn_flush()
-         goto 888
-      end if
-
-      if (ierr /= 0) then
-         call mess(LEVEL_WARN, 'Could not read GeoTIFF data of '//trim(filename)//' into an array buffer')
-         goto 888
-      end if
-
-      ! Get geotransform
-      ierr = gdalgetgeotransform(dataset, geotransform)
-      if (ierr /= 0) then
-         call mess(LEVEL_WARN, 'Error getting the geotransform from dataset of file '//trim(filename))
-         goto 888
-      end if
-
-      ! Get origin and pixel size from geotransform
-      x0 = geotransform(1)
-      y0 = geotransform(4)
-      dxa = geotransform(2)
-      dya = geotransform(6)
-
-      ! Throw warning if rotated TIFF was given
-      eps = 1.0e-6_dp
-      if (abs(geotransform(3)) > eps .or. abs(geotransform(5)) > eps) then
-         call mess(LEVEL_WARN, 'Rotated GeoTIFF files are currently not supported: '//trim(filename))
-         goto 888
-      end if
-
-      ! Detect whether data location should be interpreted as area (pixel) or point.
-      ! In case of area: offset our internal sample coordinates xs,ys with +0.5*pixelsize,
-      ! such that they represent the centre of the pixels.
-      c_area_or_point = GDALGetMetadataItem(gdalmajorobjecth_new(dataset), 'AREA_OR_POINT'//c_null_char, c_null_char)
-      if (.not. c_associated(c_area_or_point)) then
-         ! Meta data AREA_OR_POINT not present, we assume Area (pixels).
-         is_area = .true.
-      else
-         is_area = strcmpi(strtofchar(c_area_or_point, 5), 'Area', 4)
-      end if
-
-      if (is_area) then
-         pixeloffset = 0.5_dp
-      else
-         pixeloffset = 0.0_dp
-      end if
-
-      call READYY('Reading GeoTIFF file', 0.5_dp)
-
-      ! Set global sample arrays xs, ys, zs of m_samples
+      nx = size(data%values, 1)
+      ny = size(data%values, 2)
+      call readyy('Reading GeoTIFF file', 0.5_dp)
       call increasesam(nx * ny)
-      istep = max(int(nx / 100.0_dp + 0.5_dp), 1)
+      istep = max(nint(real(nx, kind=dp) / 100.0_dp), 1)
       ns = 0
       do i = 1, nx
          if (mod(i, istep) == 0) then
-            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * real(i, kind=dp) / nx))
+            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * real(i, kind=dp) / real(nx, kind=dp)))
          end if
          do j = ny, 1, -1
             ns = ns + 1
-            xs(ns) = x0 + dxa * (i - 1 + pixeloffset) ! "-1" to convert to 0-based C, pixeloffset to get the middle of the pixel instead of its edge
-            ys(ns) = y0 + dya * (j - 1 + pixeloffset)
-            if (rasterband_datatypesize == 32) then
-               zs(ns) = fbuffer(i, j, nz)
-            else if (rasterband_datatypesize == 64) then
-               zs(ns) = dbuffer(i, j, nz)
-            end if
+            xs(ns) = data%origin(1) + data%spacing(1) * real(i - 1, kind=dp)
+            ys(ns) = data%origin(2) + data%spacing(2) * real(j - 1, kind=dp)
+            zs(ns) = data%values(i, j)
          end do
       end do
-      ! mark samples as structured, and in supply block sizes
-      mxsam = ny ! j is fastest running index
-      mysam = nx
-      ipstat = IPSTAT_NOTOK
+      deallocate (data%values)
 
-      ! new sample set: no Hessians computed yet
+      ! Rows run fastest, as in the original GeoTIFF sample layout.
+      mxsam = ny
+      mysam = nx
       iHesstat = iHesstat_DIRTY
 
-      if (allocated(fbuffer)) then
-         deallocate (fbuffer)
-      end if
-      if (allocated(dbuffer)) then
-         deallocate (dbuffer)
-      end if
-      call gdalclose(dataset)
-
       if (ns > 100000) then
-         ndraw(32) = 7 ! Squares (faster than circles)
+         ndraw(32) = 7
       end if
       if (ns > 500000) then
-         ndraw(32) = 3 ! Small dots (fastest)
+         ndraw(32) = 3
       end if
 
-      ! No TIDYSAMPLES required: GeoTiff grid was already loaded in correctly sorted order.
       do i = 1, ns
          ipsam(i) = i
       end do
       call get_samples_boundingbox()
-      ipstat = IPSTAT_OK
-
-      call READYY('Reading GeoTIFF file', 1.0_dp)
+      ipstat = ipstat_ok
+      call readyy('Reading GeoTIFF file', 1.0_dp)
       success = .true.
-      return
 
-888   continue
-      ! Some error occurred
-      success = .false.
-      if (gdalassociated(dataset)) then
-         call gdalclose(dataset)
-      end if
-
-      if (allocated(fbuffer)) then
-         deallocate (fbuffer)
-      end if
-      if (allocated(dbuffer)) then
-         deallocate (dbuffer)
-      end if
-
-      return
-#else
-      call mess(LEVEL_WARN, 'GDAL is not available: cannot read GeoTIFF file '//trim(filename))
-      success = .false.
-#endif
    end function read_samples_from_geotiff
 
 end module m_read_samples_from_geotiff
