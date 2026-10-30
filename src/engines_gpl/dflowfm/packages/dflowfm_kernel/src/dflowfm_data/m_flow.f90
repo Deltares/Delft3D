@@ -275,6 +275,10 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: au_main !< [m2] Main channel flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_floodplain1 !< [m2] First floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_floodplain2 !< [m2] Second floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius !< [m] Total 1D flow area divided by wet perimeter; missing where a wet profile has no perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_main !< [m] Main channel flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_floodplain1 !< [m] First floodplain flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_floodplain2 !< [m] Second floodplain flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_nostrucs !< [m2] Flow area at u point without structures. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, dimension(:) :: ucxu !< [m/s] Upwind link ucx.
    real(kind=dp), allocatable, dimension(:) :: ucyu !< [m/s] Upwind link ucy.

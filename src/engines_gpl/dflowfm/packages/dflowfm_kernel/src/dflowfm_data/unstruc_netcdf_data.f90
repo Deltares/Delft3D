@@ -182,6 +182,10 @@ module m_unstruc_netcdf_data
       integer :: id_au_main(MAX_ID_VAR) = -1 !< Variable ID for main channel flow area
       integer :: id_au_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain flow area
       integer :: id_au_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain flow area
+      integer :: id_hydraulic_radius(MAX_ID_VAR) = -1 !< Variable ID for total 1D hydraulic radius
+      integer :: id_hydraulic_radius_main(MAX_ID_VAR) = -1 !< Variable ID for main channel hydraulic radius
+      integer :: id_hydraulic_radius_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain hydraulic radius
+      integer :: id_hydraulic_radius_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain hydraulic radius
       integer :: id_taus(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausmax(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausx(MAX_ID_VAR) = -1 !< Variable ID for

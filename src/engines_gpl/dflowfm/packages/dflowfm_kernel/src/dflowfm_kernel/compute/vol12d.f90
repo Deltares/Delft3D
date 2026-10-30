@@ -56,6 +56,7 @@ contains
       use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_flow, only: au_main, au_floodplain1, au_floodplain2, map_write_settings
       use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
       use m_VolumeTables, only: vltb
       use m_storage, only: t_storage
       use network_data, only: LINK_1D_BOUNDARY, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
@@ -75,6 +76,12 @@ contains
       sl2 = slotw2D
 
       if (japerim == 1) then
+         if (allocated(hydraulic_radius)) then
+            hydraulic_radius = 0.0_dp
+            hydraulic_radius_main = 0.0_dp
+            hydraulic_radius_floodplain1 = 0.0_dp
+            hydraulic_radius_floodplain2 = 0.0_dp
+         end if
          ! Dry links are not visited by the conveyance calculation.
          if (allocated(czu_main)) then
             czu_main = 0.0_dp

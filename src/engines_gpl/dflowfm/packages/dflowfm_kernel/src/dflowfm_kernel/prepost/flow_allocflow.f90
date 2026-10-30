@@ -68,6 +68,7 @@ contains
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_flow, only: au_main, au_floodplain1, au_floodplain2
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
       use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -976,6 +977,16 @@ contains
          call aerr('au_floodplain1(lnkx)', ierr, lnkx)
          call realloc(au_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('au_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%hydraulic_radius == 1) then
+         call realloc(hydraulic_radius, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_main(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain2(lnkx)', ierr, lnkx)
       end if
 
       if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then
