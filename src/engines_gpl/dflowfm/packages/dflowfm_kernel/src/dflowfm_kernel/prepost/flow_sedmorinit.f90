@@ -58,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4, rst_ignore_bedcomp
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -341,7 +341,7 @@ contains
       !    set pointers
       call inipointers_erosed()
       !    update d50 and bed composition if there is no restartfile (if a restartfile exists, this is done inside unc_read_map_or_rst instead)
-      if (len_trim(md_restartfile) == 0) then
+      if (len_trim(md_restartfile) == 0 .and. .not. rst_ignore_bedcomp) then
          call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx_mor, ndx_mor, stmpar%lsedsus, stmpar%lsedtot)
       end if
       !
@@ -484,15 +484,14 @@ contains
       else
          outmorphopol = 1
       end if
-
       call realloc(kcsmor, ndx, stat=ierr, fill=outmorphopol, keepExisting=.false.)
       !
       inquire (file=trim(md_morphopol), exist=ex)
-      if (.not. ex) then
+      if (md_morphopol == ' ') then
+         kcsmor = 1 ! do all cells
+      elseif (.not. ex) then
          call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
-         md_morphopol = ''
-         ! do all cells
-         kcsmor = 1
+         kcsmor = 1 ! do all cells
       else
          if (allocated(kp)) then
             deallocate (kp)
