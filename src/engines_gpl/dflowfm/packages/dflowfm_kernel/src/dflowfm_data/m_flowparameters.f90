@@ -549,6 +549,7 @@ module m_flowparameters
       integer :: au = 0 !< Normal flow areas au to map file, 0: no, 1: yes
       integer :: au_split = 0 !< Main channel and both floodplain flow areas to map file, 0: no, 1: yes
       integer :: hydraulic_radius = 0 !< Total, main channel and both floodplain hydraulic radii to map file, 0: no, 1: yes
+      integer :: flow_width = 0 !< Total, main channel and both floodplain water-surface flow widths to map file, 0: no, 1: yes
       integer :: u1 = 1 !< velocities to map file, 0: no, 1: yes
       integer :: u0 = 1 !< previous step velocities to map file, 0: no, 1: yes
       integer :: ucvec = 1 !< velocity vectors to map file, 0: no, 1: yes

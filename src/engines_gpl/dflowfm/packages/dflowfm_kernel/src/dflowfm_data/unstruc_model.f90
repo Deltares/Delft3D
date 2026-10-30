@@ -2149,6 +2149,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', map_write_settings%au, success)
       call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au_split', map_write_settings%au_split, success)
       call prop_get(md_ptr, 'output', 'Wrimap_hydraulic_radius', map_write_settings%hydraulic_radius, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_width', map_write_settings%flow_width, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', map_write_settings%u1, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', map_write_settings%u0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', map_write_settings%ucvec, success)
