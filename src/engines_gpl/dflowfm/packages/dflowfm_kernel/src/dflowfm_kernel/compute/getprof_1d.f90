@@ -42,6 +42,7 @@ contains
       use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, frcuni1dgrounlay
       use m_flow, only: q1_floodplain1, q1_floodplain2
       use m_flow, only: au_main, au_floodplain1, au_floodplain2, map_write_settings
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
       use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
       use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
       use m_cross_helper, only: getconveyance, getcrossdischarge
@@ -117,6 +118,11 @@ contains
                factor = 1.0_dp
             end if
             call getconveyance(network, hpr, u1(L), q1(L), s1(k2), LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+            if (map_write_settings%chezy_links_split == 1) then
+               czu_main(L) = cz
+               czu_floodplain1(L) = 0.0_dp
+               czu_floodplain2(L) = 0.0_dp
+            end if
             frcu(L) = cz
             frcu_mor(L) = cz
             u_to_umain(L) = 1.0_dp
@@ -155,6 +161,7 @@ contains
                q1L = q1(LL)
                dpt = hu(L)
                cz = 0.0_dp
+               cz_sub = 0.0_dp
                if (network%rgs%timeseries_defined) then
                   factor = max(0.0_dp, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
                else
@@ -173,6 +180,7 @@ contains
                   conv = cz_sub(1) * af_sub(1) * sqrt(af_sub(1) / perim_sub(1))
                end if
 
+
                ! For sediment transport the discharge in the main channel is required:
                ! Qmain/ QT = Kmain/KT -> u_main = Kmain/KT * (AT/Amain)
                if (conv > 0.0_dp) then
@@ -184,6 +192,16 @@ contains
                   q1_main(L) = q_sub(1)
                   q1_floodplain1(L) = q_sub(2)
                   q1_floodplain2(L) = q_sub(3)
+
+                  if (map_write_settings%chezy_links_split == 1) then
+                     ! getconveyance has already converted subsection roughness to Chezy.
+                     ! These coefficients combine through conveyance, not by summation.
+                     ! For network 1D links ifrcutp is R_CHEZY, so get_chezy returns frcu unchanged.
+                     ! czu_main(L) = get_chezy(hu(LL), cz(1), u1(LL), v(LL), ifrcutp(LL))
+                     ! czu_floodplain1(L) = get_chezy(hu(LL), cz(2), u1(LL), v(LL), ifrcutp(LL))
+                     ! czu_floodplain2(L) = get_chezy(hu(LL), cz(3), u1(LL), v(LL), ifrcutp(LL))
+                  end if
+
                else
                   u_to_umain(L) = 1.0_dp
                   cfuhi(L) = 0.0_dp
@@ -321,6 +339,16 @@ contains
                end if
             end if
 
+         end if
+
+         if (map_write_settings%chezy_links_split == 1) then
+            czu_floodplain1(L) = 0.0_dp
+            czu_floodplain2(L) = 0.0_dp
+            ! Without subsections, use the same conversion as the link Chezy map output.
+            czu_main(L) = 0.0_dp
+            if (frcu(L) > 0.0_dp) then
+               czu_main(L) = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+            end if
          end if
 
       end if

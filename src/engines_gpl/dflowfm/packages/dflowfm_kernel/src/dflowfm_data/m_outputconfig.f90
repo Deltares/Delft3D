@@ -396,6 +396,9 @@ module m_output_config
    integer, public :: IDX_MAP_SA1
    integer, public :: IDX_MAP_CZS
    integer, public :: IDX_MAP_CZU
+   integer, public :: IDX_MAP_CZU_MAIN !< Output configuration index for main channel Chezy
+   integer, public :: IDX_MAP_CZU_FLOODPLAIN1 !< Output configuration index for first floodplain Chezy
+   integer, public :: IDX_MAP_CZU_FLOODPLAIN2 !< Output configuration index for second floodplain Chezy
    integer, public :: IDX_MAP_CFU
    integer, public :: IDX_MAP_CFUTYP
    integer, public :: IDX_MAP_TEM1

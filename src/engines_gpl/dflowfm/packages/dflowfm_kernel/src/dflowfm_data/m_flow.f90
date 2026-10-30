@@ -302,6 +302,11 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: cftrtfac !< [?] Array for optional multiplication factor for trachytopes's returned roughness values.
    integer :: jacftrtfac !< [-] Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
    real(kind=dp), allocatable, dimension(:) :: czu !< [?] Array for chezy friction at flow links. {"location": "edge", "shape": ["lnx"]}
+   !> Subsection Chezy coefficients used in the latest conveyance calculation.
+   !! Their conveyances add; these coefficients are not additive parts of czu.
+   real(kind=dp), allocatable, target, dimension(:) :: czu_main !< [m0.5/s] Main channel Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: czu_floodplain1 !< [m0.5/s] First floodplain Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: czu_floodplain2 !< [m0.5/s] Second floodplain Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable :: frcu0(:) !< [?] Array for Manning friction at flow links at start of the run. {"location": "edge", "shape": ["lnx"]}
    logical, allocatable :: dynveg(:) !< [-] Vegetation present or not. {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target, dimension(:) :: frculin !< [?] Friction coefficient set by initial fields.

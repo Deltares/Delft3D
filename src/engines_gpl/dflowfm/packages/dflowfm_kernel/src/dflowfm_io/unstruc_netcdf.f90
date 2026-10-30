@@ -4189,6 +4189,14 @@ contains
          if (map_write_settings%chezy_links > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, nc_precision, UNC_LOC_U, 'czu', '', 'Chezy roughness on flow links', 'm0.5s-1', jabndnd=jabndnd_)
          end if
+         if (map_write_settings%chezy_links_split == 1) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, nc_precision, UNC_LOC_U, &
+                                   'czu_main', '', 'Main channel Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, nc_precision, UNC_LOC_U, &
+                                   'czu_floodplain1', '', 'First floodplain Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain2, nc_precision, UNC_LOC_U, &
+                                   'czu_floodplain2', '', 'Second floodplain Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
+         end if
          if (map_write_settings%chezy_input > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfu, nc_precision, UNC_LOC_U, 'cfu', '', 'Input roughness on flow links', '-', jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfutyp, nf90_int, UNC_LOC_U, 'cfutyp', '', 'Input roughness type on flow links', '-', jabndnd=jabndnd_)
@@ -6397,6 +6405,11 @@ contains
       if (map_write_settings%chezy_links > 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, UNC_LOC_U, czu, jabndnd=jabndnd_)
       end if
+      if (map_write_settings%chezy_links_split == 1) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, UNC_LOC_U, czu_main, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, UNC_LOC_U, czu_floodplain1, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain2, UNC_LOC_U, czu_floodplain2, jabndnd=jabndnd_)
+      end if
       if (map_write_settings%chezy_input > 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfu, UNC_LOC_U, frcu, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfutyp, UNC_LOC_U, ifrcutp, jabndnd=jabndnd_)
@@ -6750,6 +6763,7 @@ contains
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
          id_q1main, id_q1floodplain1, id_q1floodplain2, &
          id_au_main, id_au_floodplain1, id_au_floodplain2, &
+         id_czu_main, id_czu_floodplain1, id_czu_floodplain2, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
          id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
@@ -7958,6 +7972,24 @@ contains
                ierr = nf90_put_att(imapfile, id_czu(iid), 'units', 'm0.5s-1')
             end if
 
+            if (map_write_settings%chezy_links_split == 1) then
+               ierr = nf90_def_var(imapfile, 'czu_main', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_main(iid))
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'long_name', 'Main channel Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'czu_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'long_name', 'First floodplain Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'czu_floodplain2', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'long_name', 'Second floodplain Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), '_FillValue', dmiss)
+            end if
+
             ! 1D2D boundaries
             if (nbnd1d2d > 0) then
                ierr = nf90_def_var(imapfile, '1d2d_flowlinknrs', nf90_int, [id_1d2ddim(iid)], id_1d2d_edges(iid))
@@ -8673,6 +8705,11 @@ contains
          end if
          if (map_write_settings%chezy_links > 0) then
             ierr = nf90_put_var(imapfile, id_czu(iid), czu, [1, itim], [lnx, 1])
+         end if
+         if (map_write_settings%chezy_links_split == 1) then
+            ierr = nf90_put_var(imapfile, id_czu_main(iid), czu_main, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_czu_floodplain1(iid), czu_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_czu_floodplain2(iid), czu_floodplain2, [1, itim], [lnx, 1])
          end if
 
          ! Velocities
