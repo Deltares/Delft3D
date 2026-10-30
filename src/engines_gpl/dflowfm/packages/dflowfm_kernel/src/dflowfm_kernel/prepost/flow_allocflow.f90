@@ -68,6 +68,7 @@ contains
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_flow, only: au_main, au_floodplain1, au_floodplain2
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
@@ -1005,6 +1006,14 @@ contains
       if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
+      end if
+      if (map_write_settings%chezy_links_split == 1) then
+         call realloc(czu_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_main(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain2(lnkx)', ierr, lnkx)
       end if
       if (dynroughveg > 0) then
          call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)

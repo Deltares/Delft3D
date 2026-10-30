@@ -2172,6 +2172,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', map_write_settings%sal, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', map_write_settings%chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links_split', map_write_settings%chezy_links_split, success)
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', map_write_settings%chezy_input, success)
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', map_write_settings%tem, success)
       call prop_get(md_ptr, 'output', 'Wrimap_constituents', map_write_settings%const, success)
