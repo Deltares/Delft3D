@@ -27,20 +27,27 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_init_old
+module fm_external_forcings_init_old
    use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
+   use fm_external_forcings_init, only: adduniformtimerelation_objects
+   use fm_external_forcings_utils, only: ini_alloc_laterals, allocatewindarrays
+   use fm_external_forcings_update_boundaries, only: addtimespacerelation_boundaries
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
-   implicit none
+   implicit none(type, external)
+
+   private
+
+   public :: init_old
 
 contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_old(iresult)
+   subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
-      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
+      use m_source_sink, only: source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
@@ -78,8 +85,10 @@ contains
       use m_fm_wq_processes_sub, only: get_waqinputname
       use network_data, only: LINK_1D, LINK_ALL
 
+      ! Arguments
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
+      ! Local variables
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
@@ -91,15 +100,15 @@ contains
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
-      real(kind=dp), allocatable :: viuh(:), tt(:)
+      real(kind=dp), dimension(:), allocatable :: viuh, tt
       integer, dimension(:), pointer :: pkbot, pktop
       real(kind=dp) :: factor
       real(kind=dp), external :: ran0
       character(len=256) :: rec
-      integer, allocatable :: mask(:)
-      integer, allocatable :: selected_nodes(:)
-      real(kind=dp), allocatable :: xdum(:), ydum(:)
-      integer, allocatable :: kdum(:)
+      integer, dimension(:), allocatable :: mask
+      integer, dimension(:), allocatable :: selected_nodes
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
+      integer, dimension(:), allocatable :: kdum
 
       ! Finish with all remaining old-style ExtForceFile quantities.
       if (mext == 0) then
@@ -509,8 +518,8 @@ contains
                   end if
                   allocate (viuh(Ndkx))
 
-                  !          copy existing values (if they existed) in temp array
-                  !          this assumes uniform vertical distribution
+                  ! copy existing values (if they existed) in temp array
+                  ! this assumes uniform vertical distribution
                   do kk = 1, Ndx
                      viuh(kk) = constituents(iconst, kk)
                      call getkbotktop(kk, kb, kt)
@@ -1216,7 +1225,7 @@ contains
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
                ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
+               call source_sinks%add_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
@@ -1476,7 +1485,7 @@ contains
    end subroutine init_old
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
-   module subroutine init_misc(iresult)
+   subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
       use m_source_sink, only: source_sinks
@@ -1497,25 +1506,27 @@ contains
       use unstruc_messages, only: callback_msg, loglevel_StdOut
       use timespace_parameters, only: OPERAND_OVERRIDE
 
+      ! Arguments
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
+      ! Local variables
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, ja, method, filetype0
       integer :: k1, l1, l2
       character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
-      real(kind=dp), allocatable :: hulp(:, :)
-      real(kind=dp), allocatable :: widths(:)
-      real(kind=dp), allocatable :: xdum(:), ydum(:)
-      integer, allocatable :: kdum(:)
+      real(kind=dp), dimension(:,:), allocatable :: hulp
+      real(kind=dp), dimension(:), allocatable :: widths
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
+      integer, dimension(:), allocatable :: kdum
 
+      ! Initialization
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
       xdum = 1.0_dp
       ydum = 1.0_dp
       kdum = 1
-
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
@@ -1995,4 +2006,4 @@ contains
 
    end subroutine init_misc
 
-end submodule fm_external_forcings_init_old
+end module fm_external_forcings_init_old

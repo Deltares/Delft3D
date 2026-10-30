@@ -12,7 +12,7 @@ add_library(${library_name} ${source_files})
 set(oss_dependencies    wave_data
                         deltares_common
                         wave_io
-                        swan)
+                        SWAN_MPI::SWAN_MPI)
 target_link_libraries(${library_name} ${oss_dependencies})
 
 include_directories(${mpi_module_path})

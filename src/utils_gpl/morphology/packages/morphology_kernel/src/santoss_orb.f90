@@ -46,7 +46,7 @@ subroutine santoss_orb(nt, as_effects, tw, uorb, unet, ang, tp, &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: twopi, degrad, sqrt2
+    use m_mathconstants, only: twopi, degrad, sqrt2
 !
 ! arguments
 !

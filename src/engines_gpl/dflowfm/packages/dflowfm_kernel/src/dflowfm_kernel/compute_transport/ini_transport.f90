@@ -53,7 +53,6 @@ contains
 
       use m_fm_wq_processes
       use m_alloc
-      use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
 
       character(len=8) :: str
@@ -200,6 +199,7 @@ contains
          const_names(ispir) = 'secondary_flow_intensity'
       end if
 
+      tracer_limiter_mass_error = 0.0_dp ! initialise mass error counter
       if (itra1 > 0) then
          do i = itra1, itran
             itrace = i - itra1 + 1
@@ -219,7 +219,7 @@ contains
             end if
 
             itrac2const(itrace) = i
-
+            thetavert(i) = theta_vertical_tracers
          end do
       end if
 
@@ -245,8 +245,6 @@ contains
             i = itrac2const(isys2trac(isys))
             isys2const(isys) = i
             iconst2sys(i) = isys
-
-            thetavert(i) = md_thetav_waq
          end do
       end if
 

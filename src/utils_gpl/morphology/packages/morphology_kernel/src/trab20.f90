@@ -39,7 +39,7 @@ contains
                    & ua, va, ubot, kwtur, ubot_from_com)
 !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts
+      use m_mathconstants
       use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry, calculate_urms
 !
 ! Arguments

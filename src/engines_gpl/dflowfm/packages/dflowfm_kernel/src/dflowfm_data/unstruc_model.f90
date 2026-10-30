@@ -186,12 +186,7 @@ contains
       !md_M               = 1024   !< size of x in Axpy
       !md_N               = 2048   !< size of y in Axpy
       !md_Nruns           = 10     !< number of test runs
-      !md_soltest         = 0      !< solver test (1) or not (0)
-      !md_CFL             = 0      !< wave-based Courant number (if > 0)
       !md_icgsolver       = 0      !< overwrite solver type (if > 0)
-      !md_maxmatvecs      = 0      !< maximum number of matrix-vector multiplications in Krylov (if > 0 )
-      !md_epscg           = 0      !< -10log(epscg) (if > 0), tolerance in (inner) Krylov iterations
-      !md_epsdiff         = 0      !< -10log(epsdiff) (if > 0), tolerance in (outer) Schwarz iterations
       !md_convnetcells    = 0      !< Convert _net.nc files with only netnodes/links into _net.nc files with netcell info.
       !md_findcells       = 0      !< If it is not zero, then the codes call findcells
       !md_pressakey       = 0      !< press a key (1) or not (0)
@@ -542,6 +537,7 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
       use m_array_or_scalar, only: realloc
+      use precision_basics, only: equal
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -672,7 +668,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
       call prop_get(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
       if (len_trim(md_pillarfile) > 0) then
-         japillar = 3
+         pillar_method = PILLAR_DELFT3D_FLOWLINK
       end if
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
@@ -768,14 +764,14 @@ contains
       call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
       call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
       call prop_get(md_ptr, 'geometry', 'stretchType', stretch_type, success)
-      
+
       if (layertype == LAYTP_Z) then
          if (.not. success) then
             stretch_type = STRETCH_UNI_OVER_EXP
          elseif (dztop > 0.0_dp .and. stretch_type /= STRETCH_UNI_OVER_EXP) then
             write (msgbuf, '(a,a,i0,a)'), &
-                'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
-                'Input stretchType = ', stretch_type,' is ignored.'
+               'A positive dzTop value requires stretchType = -1 (uniform over exponential). ', &
+               'Input stretchType = ', stretch_type, ' is ignored.'
             call warn_flush()
             stretch_type = STRETCH_UNI_OVER_EXP
          end if
@@ -927,8 +923,6 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
       call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
-      call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
-
       call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', vertical_advection_type, success)
       if (success) then
          call str_lower(vertical_advection_type)
@@ -936,11 +930,11 @@ contains
          case ('centralimplicit')
             javasal = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
             javatem = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
-            md_thetav_waq = 0.55_dp
+            theta_vertical_tracers = 0.55_dp
          case ('higherorderupwindexplicit')
             javasal = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
             javatem = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
-            md_thetav_waq = 0.0_dp
+            theta_vertical_tracers = 0.0_dp
          case default
             write (msgbuf, '(a,a)') 'Did not recognise VerticalAdvectionType value: ', trim(vertical_advection_type)
             call mess(LEVEL_ERROR, trim(msgbuf))
@@ -976,8 +970,27 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
+      if (icgsolver == 3) then
+         call mess(LEVEL_ERROR, 'Icgsolver 3, the serial Sobek Guus Stelling solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver == 5) then
+         call mess(LEVEL_ERROR, 'Icgsolver 5, the parallel/global Saad solver, is no longer supported.')
+      else if (icgsolver == 7) then
+         call mess(LEVEL_WARN, 'Icgsolver 7 is no longer supported; using Icgsolver 6 (PETSc).')
+         icgsolver = 6
+      else if (icgsolver == 8) then
+         call mess(LEVEL_ERROR, 'Icgsolver 8, the pARMS solver, is no longer supported.')
+      else if (icgsolver == 9 .or. icgsolver > 90) then
+         call mess(LEVEL_ERROR, 'Icgsolver 9 and values greater than 90 are no longer supported.')
+      else if (icgsolver == 10) then
+         call mess(LEVEL_ERROR, 'Icgsolver 10, the experimental Jacobi solver, is no longer supported.')
+      else if (icgsolver == 44) then
+         call mess(LEVEL_ERROR, 'Icgsolver 44, the non-thread-safe Sobek Guus Stelling + Saadilud solver, is no longer supported; use Icgsolver 4 or 6.')
+      else if (icgsolver /= 1 .and. icgsolver /= 2 .and. icgsolver /= 4 .and. icgsolver /= 6) then
+         write (msgbuf, '(a,i0,a)') 'Unknown Icgsolver value: ', icgsolver, '. Supported values are 1, 2, 4 and 6.'
+         call mess(LEVEL_ERROR, trim(msgbuf))
+      end if
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
-      if (icgsolver == 7 .or. icgsolver == 6) then
+      if (icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
       end if
       call prop_get(md_ptr, 'numerics', 'jposhchk', jposhchk)
@@ -1062,18 +1075,6 @@ contains
       end if
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
-
-      call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_get(md_ptr, 'numerics', trim(iparmsnam(i)), iparms(i))
-         end do
-
-         do i = 1, NPARMS_DBL
-            call prop_get(md_ptr, 'numerics', trim(dparmsnam(i)), dparms(i))
-         end do
-      end if
 
       call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
       call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
@@ -1231,7 +1232,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
-      if (iturbulencemodel == 4) then ! k-tau
+      if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
          call prop_get(md_ptr, 'physics', 'TAUMin', eps_min)
       else
          call prop_get(md_ptr, 'physics', 'EPSMin', eps_min)
@@ -1243,6 +1244,12 @@ contains
       call check_positive_value('PrandtlNumberTemperature', Prandtl_number_temperature)
       call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
+
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, tracer_concentration_min_enabled)
+      call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, tracer_concentration_max_enabled)
+      if (tracer_concentration_min >= tracer_concentration_max) then
+         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
+      end if
 
       call prop_get(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
       call prop_get(md_ptr, 'physics', 'Elder   ', Elder)
@@ -1302,12 +1309,12 @@ contains
       call prop_get(md_ptr, 'physics', 'salinityDependentFreezingPoint', use_salinity_freezing_point)
       if (use_salinity_freezing_point .and. temperature_min >= 0.0_dp) then
          write (msgbuf, '(a,g0,a)') 'salinityDependentFreezingPoint is set to true, but Tempmin = ', temperature_min, &
-            ' is not below 0 degrees Celsius. This may lead to incorrect results.'
-         call mess(LEVEL_WARN, msgbuf)
+            ' is not below 0 degrees Celsius. Set tempMin to a value below the freezing point of the highest expected salinity.'
+         call mess(LEVEL_ERROR, msgbuf)
       end if
       if (use_salinity_freezing_point .and. max_iterations_vertical_forester_tem > 0) then
          call mess(LEVEL_ERROR, &
-            'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
+                   'salinityDependentFreezingPoint = 1 (to allow negative temperatures) and maxItVerticalForesterTem > 0 (filters negative concentrations) are incompatible. Disable one of them.')
       end if
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
@@ -1341,7 +1348,7 @@ contains
       ierror = DFM_NOERR
 
       call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
-      if (japillar == 2) then
+      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
          javeg = 1
       end if
       if (kmx == 0 .and. javeg > 0) then
@@ -1478,20 +1485,65 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
-      call prop_get(md_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function)
-      call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
-      call prop_get(md_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, success)
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, success)
       if (success) then
-         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
-            call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar)
-         elseif (.not. any(salinity_dependent_evaporation_method == [SALINITY_DEPENDENT_EVAPORATION_NONE, SALINITY_DEPENDENT_EVAPORATION_LINEAR])) then
-            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod can only be set to 0, 1 or 2')
-         end if
-         if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
-            call mess(LEVEL_ERROR, 'SalinityDependentEvaporationMethod set to 2 but Salinity is turned off in mdu.')
+         call convert_air_sea_interaction_model_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for airSeaInteractionModel. Should be ''none'' or ''most''.')
+         else
+            air_sea_interaction_model = ibuf
          end if
       end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'stabilityFunction', tmpstr, success)
+      if (success) then
+         call convert_atmospheric_stability_function_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunction. Should be ''none'' or ''ecmwf''.')
+         else
+            atmospheric_stability_function = ibuf
+         end if
+      end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'freeConvection', tmpstr, success)
+      if (success) then
+         call convert_free_convection_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for freeConvection. Should be ''off'' or ''on''.')
+         else
+            free_convection = ibuf
+         end if
+      end if
+
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, success)
+      if (success) then
+         call convert_salinity_dependent_evaporation_method_string_to_integer(tmpstr, ibuf)
+
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for salinityDependentEvaporationMethod. Should be ''none'', ''constant'' or ''linear''.')
+         else
+            salinity_dependent_evaporation_method = ibuf
+
+            if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
+               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod is set to ''linear'' but Salinity is turned off in mdu.')
+            end if
+         end if
+      end if
+
+      call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, success)
+      if (success .and. salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
+         if (salinity_reduction_factor_saturation_humidity%scalar < 0 .or. salinity_reduction_factor_saturation_humidity%scalar > 1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for QsatFactor. Should be inclusive between 0 and 1.')
+         end if
+      end if
+
       call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
@@ -1617,7 +1669,7 @@ contains
       end if
       if (strlyrfac <= 0.0_dp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Only streamLyrFac > 0.0 is allowed.')
-         istat=-1
+         istat = -1
          return
       end if
 
@@ -1629,43 +1681,101 @@ contains
          jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
       end if
 
-      call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
-      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. jawaveStokes > NO_STOKES_DRIFT) then
-         write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
-         call warn_flush()
-      end if
+      block
+         logical :: has_3d_stokes_profile, has_3d_wave_breaker_turbulence, has_3d_wave_streaming
+         logical :: has_3d_wave_boundary_layer, has_3d_wave_forces
+         character(len=*), parameter :: flow_ww_error_suffix = '" is enabled, but FlowWithoutWaves is true. Set it to 0 or disable FlowWithoutWaves.'
 
-      call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
-      if (kmx <= 1) then
-         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! turn off 3D-only setting
-      end if
-      call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
-      call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
-      call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
-      call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
-      !
-      ! safety
-      if (fwavpendep <= 0.0_dp) then
-         fwavpendep = 0.0_dp
-         jawavebreakerturbulence=WAVE_BREAKER_TURB_OFF
-         write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
-         call warn_flush()
-      end if
-      !
-      ! safety
-      if (jawave > NO_WAVES .and. flow_without_waves) then
-         jawaveStokes = NO_STOKES_DRIFT
-         jawaveforces = WAVE_FORCES_OFF
-         jawavestreaming = WAVE_STREAMING_OFF
-         jawavedelta = WAVE_BOUNDARYLAYER_OFF
-         modind = 0
-      end if
+         call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes, has_3d_stokes_profile) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
+         if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. jawaveStokes > NO_STOKES_DRIFT) then
+            write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
+            call warn_flush()
+         end if
+
+         call prop_get(md_ptr, 'waves', '3Dwavebreakerturbulence', jawavebreakerturbulence, has_3d_wave_breaker_turbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+         call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming, has_3d_wave_streaming) ! Influence of wave streaming. 0: no, 1: added to adve
+         call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, has_3d_wave_boundary_layer) ! Boundary layer formulation. 1: Sana
+         call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces, has_3d_wave_forces) ! Diagnostic mode: apply wave forces (1) or not (0)
+         call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+
+         if (.not. kmx > 0) then
+            if (has_3d_wave_breaker_turbulence .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "3Dwavebreakerturbulence" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+               istat = -1
+               return
+            else if (.not. has_3d_wave_breaker_turbulence) then
+               jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+            end if
+            if (has_3d_wave_streaming .and. jawavestreaming > WAVE_STREAMING_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "3Dwavestreaming" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+               istat = -1
+               return
+            else if (.not. has_3d_wave_streaming) then
+               jawavestreaming = WAVE_STREAMING_OFF
+            end if
+            if (has_3d_wave_boundary_layer .and. jawavedelta > WAVE_BOUNDARYLAYER_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "3Dwaveboundarylayer" is enabled, but Kmx = 0. Set it to 0 or use a 3D model.')
+               istat = -1
+               return
+            else if (.not. has_3d_wave_boundary_layer) then
+               jawavedelta = WAVE_BOUNDARYLAYER_OFF
+            end if
+         end if
+         !
+         ! safety
+         if (fwavpendep <= 0.0_dp) then
+            fwavpendep = 0.0_dp
+            jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+            write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
+            call warn_flush()
+         end if
+         !
+         ! safety
+         if (jawave > NO_WAVES .and. flow_without_waves) then
+            if (has_3d_stokes_profile .and. jawaveStokes > NO_STOKES_DRIFT) then
+               call mess(LEVEL_ERROR, 'MDU setting "'//'3Dstokesprofile'//flow_ww_error_suffix)
+               istat = -1
+               return
+            else if (.not. has_3d_stokes_profile) then
+               jawaveStokes = NO_STOKES_DRIFT
+            end if
+            if (has_3d_wave_streaming .and. jawavestreaming > WAVE_STREAMING_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwavestreaming'//flow_ww_error_suffix)
+               istat = -1
+               return
+            else if (.not. has_3d_wave_streaming) then
+               jawavestreaming = WAVE_STREAMING_OFF
+            end if
+            if (has_3d_wave_boundary_layer .and. jawavedelta > WAVE_BOUNDARYLAYER_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwaveboundarylayer'//flow_ww_error_suffix)
+               istat = -1
+               return
+            else if (.not. has_3d_wave_boundary_layer) then
+               jawavedelta = WAVE_BOUNDARYLAYER_OFF
+            end if
+            if (has_3d_wave_forces .and. jawaveforces > WAVE_FORCES_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwaveforces'//flow_ww_error_suffix)
+               istat = -1
+               return
+            else if (.not. has_3d_wave_forces) then
+               jawaveforces = WAVE_FORCES_OFF
+            end if
+            if (has_3d_wave_breaker_turbulence .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+               call mess(LEVEL_ERROR, 'MDU setting "'//'3Dwavebreakerturbulence'//flow_ww_error_suffix)
+               istat = -1
+               return
+            else if (.not. has_3d_wave_breaker_turbulence) then
+               jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+            end if
+            modind = 0
+         end if
+      end block
 
       if (jawave == WAVE_NC_OFFLINE) then
          offline_wave_input_requirements = get_offline_wave_input_requirements(waveforcing, jawaveforces, jawaveStokes, &
-                                                                                jawavestreaming, jawavedelta, &
-                                                                                modind > 0 .and. ftauw > 0.0_dp, &
-                                                                                flow_without_waves, jawavebreakerturbulence)
+                                                                               jawavestreaming, jawavedelta, &
+                                                                               modind > 0 .and. ftauw > 0.0_dp, &
+                                                                               flow_without_waves, jawavebreakerturbulence)
       else
          offline_wave_input_requirements = 0
       end if
@@ -1800,7 +1910,7 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
       if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
@@ -2011,7 +2121,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_windstress', his_write_settings%windstress, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bulk_exchange_coefficients', his_write_settings%bulk_exchange_coeff, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wriHis_BulkExchangeCoefficients', his_write_settings%bulk_exchange_coeff, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
@@ -2524,7 +2634,7 @@ contains
             ierror, &
             prefix='While reading '''//trim(filename)//'''', &
             excluded_chapters=['model'] &
-         )
+            )
          if (ierror /= DFM_NOERR) then
             istat = ierror
          end if
@@ -2760,7 +2870,7 @@ contains
       character(len=20) :: rundat
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
-      integer :: i, ibuf, fww
+      integer :: ibuf, fww
       real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
@@ -3102,7 +3212,7 @@ contains
       end if
       call prop_set(prop_ptr, 'numerics', 'Limtypmom', limtypmom, 'Limiter type for cell center advection velocity (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       call prop_set(prop_ptr, 'numerics', 'Limtypsa', limtypsa, 'Limiter type for salinity transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
-      if (writeall .or. (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. (.not. flow_without_waves) .and. swave == 1)) then
+      if (writeall .or. (jawave == WAVE_SURFBEAT .and. (.not. flow_without_waves) .and. swave == 1)) then
          call prop_set(prop_ptr, 'numerics', 'Limtypw', limtypw, 'Limiter type for wave action transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       end if
 
@@ -3163,7 +3273,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Structurelayersactive', JaStructurelayersactive, '0=structure flow through all layers, 1=structure flow only through open layers ')
       end if
 
-      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)')
+      call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: Sobek Guus Stelling OMP, 2: Sobek Guus Stelling OMP (thread-safe), 4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
@@ -3194,7 +3304,7 @@ contains
          end if
       end if
       if (writeall .or. (izbndpos > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: D3Dflow, 1: on net boundary, 2: on specified polyline)')
+         call prop_set(prop_ptr, 'numerics', 'Izbndpos', Izbndpos, 'Position of z boundary (0: mirroring of closest cell (as in Delft3D-FLOW), 1: on net boundary)')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Tlfsmo', Tlfsmo, 'Fourier smoothing time (s) on water level boundaries')
@@ -3299,15 +3409,6 @@ contains
       end if
       if (writeall .or. rhointerfaces /= BAROC_ORIGINAL) then
          call prop_set(prop_ptr, 'numerics', 'rhoInterfaces', rhointerfaces, 'Estimate rho at 3D layer interfaces for baroclinic pressure gradient method; -1 = original linear interpolation, 0 = improved linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
-      end if
-
-      if (icgsolver == 8) then ! for parms solver
-         do i = 1, NPARMS_INT
-            call prop_set(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
-         end do
-         do i = 1, NPARMS_DBL
-            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0: parms-default')
-         end do
       end if
 
       if (writeall .or. (s01_max_err > 0.0_dp)) then
@@ -3459,7 +3560,7 @@ contains
             call prop_set(prop_ptr, 'physics', 'TKEMin', tke_min, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if
          if (writeall .or. (comparereal(eps_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
-            if (iturbulencemodel /= 4) then
+            if (iturbulencemodel /= TURBULENCE_MODEL_KTAU) then
                call prop_set(prop_ptr, 'physics', 'EPSMin', eps_min, 'Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model')
             else
                call prop_set(prop_ptr, 'physics', 'TAUMin', eps_min, 'Minimum turbulent time scale (TAU) value in k-tau turbulence model')
@@ -3470,6 +3571,9 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep. Default: no limit)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep. Default: no limit)')
+
       call prop_set(prop_ptr, 'physics', 'Smagorinsky', Smagorinsky, 'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'Elder', Elder, 'Elder factor in horizontal turbulence')
       call prop_set(prop_ptr, 'physics', 'irov', irov, '0=free slip, 1 = partial slip using wall_ks')
@@ -3571,20 +3675,28 @@ contains
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
-      call prop_set(prop_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model, 'Air water interaction model (0: none, 1: Monin-Obukhov Similarity Theory).')
-      call prop_set(prop_ptr, 'meteo', 'StabilityFunctions', atmospheric_stability_function, 'Atmospheric stability function (0: none, 1: ECMWF).')
-      call prop_set(prop_ptr, 'meteo', 'FreeConvection', free_convection, 'Free convection switch (0: off, 1: on).')
-      call prop_set(prop_ptr, 'meteo', 'SalinityDependentEvaporationMethod', salinity_dependent_evaporation_method, 'Salinity dependent evaporation method (0: off, 1: constant reduction factor, 2: salinity-dependent reduction factor).')
+      call convert_air_sea_interaction_model_integer_to_string(air_sea_interaction_model, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
+
+      call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', tmpstr, 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+
+      call convert_free_convection_integer_to_string(free_convection, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'freeConvection', tmpstr, 'Free convection switch (options: ''off'', ''on'').')
+
+      call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
-      call prop_set(prop_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
-      call prop_set(prop_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
-      call prop_set(prop_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
-      call prop_set(prop_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
+      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
+      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
+      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
 
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
@@ -4116,9 +4228,6 @@ contains
       call prop_set(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
       call prop_set(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
-      if (len_trim(vertical_advection_type) == 0) then
-         call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
-      end if
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
@@ -4492,7 +4601,7 @@ contains
    !!
    !! When user has not provided a particular keyword, always inform about the changed
    !! default. When user has provided a particular keyword, only inform if that value
-   !! is not the same as the current default. 
+   !! is not the same as the current default.
    subroutine notify_default_change_impl(chapter, keyword, release_version, new_default, user_value, &
                                          keyword_is_specified, values_differ, quote_values)
 

@@ -37,7 +37,7 @@ subroutine rollu(nmmax     ,kfs       ,sourr     ,df        , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

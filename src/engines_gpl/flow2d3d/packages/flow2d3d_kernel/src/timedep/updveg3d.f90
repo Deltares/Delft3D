@@ -35,7 +35,7 @@ subroutine updveg3d(mmax      ,nmax      ,kmax      ,sig       ,thick     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use dfparall
 

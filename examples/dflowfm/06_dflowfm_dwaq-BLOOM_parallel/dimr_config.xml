@@ -37,8 +37,6 @@
     <process>0 1 2</process>
     <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
     <workingDir>dflowfm</workingDir>
-    <setting key="processlibrary" value="${PROC_DEF_DIR}/proc_def.dat"/>
-    <setting key="bloomspecies" value="${PROC_DEF_DIR}/bloom.spe"/>
     <inputFile>f34_BLOOM.mdu</inputFile>
   </component>
 </dimrConfig>

@@ -47,7 +47,7 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
       use m_flowtimes, only: refdate_mjd
-      use string_module, only: str_upper, str_tolower
+      use string_module, only: str_upper, str_tolower, strcmpi
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
@@ -207,7 +207,8 @@ contains
             if (.not. quiet_) then
                message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             end if
-            message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
+            message = 'Could not add time-space relation for forcing '''//trim(name)//''' at location '''//trim(location)// &
+                      ''' from file '''//trim(forcingfile)//'''. Check that the file is readable and contains the requested quantity.'
             call mess(LEVEL_ERROR, message)
 
             goto 1234
@@ -341,7 +342,7 @@ contains
          end if
 
          ! add 3D settings if needed
-         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. target_name == 'tracerbnd' .or. target_name == 'sedfracbnd')) then ! TODO JRE sediment
+         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. strcmpi(target_name, 'tracerbnd') .or. strcmpi(target_name, 'sedfracbnd'))) then ! TODO JRE sediment
             if (success) then
                success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
             end if

@@ -3720,7 +3720,7 @@ contains
       netfile_out = char_array_to_string(c_netfile_out, strlen(c_netfile_out))
 
       if (ndomains > 1) then
-         call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
+         call partition_write_domains(netfile_out, 1, 0, md_partugrid)
       end if
 
    end subroutine write_partition_metis
@@ -3774,7 +3774,7 @@ contains
       netfile_out = char_array_to_string(c_netfile_out, strlen(c_netfile_out))
 
       if (ndomains > 1) then
-         call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
+         call partition_write_domains(netfile_out, 1, 0, md_partugrid)
       end if
 
    end subroutine write_partition_pol

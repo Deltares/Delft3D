@@ -1385,7 +1385,7 @@ contains
       use precision, only: dp
       use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
-                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
+                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, &
                         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
                         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
                         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
@@ -1795,7 +1795,7 @@ contains
             ierr = nf90_put_att(irstfile, id_fvcoro, 'units', 'm s-2')
          end if
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! Definition and attributes of vertical eddy viscosity vicwwu
             ierr = nf90_def_var(irstfile, 'vicwwu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_vicwwu)
             ierr = nf90_put_att(irstfile, id_vicwwu, 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -1815,11 +1815,11 @@ contains
             ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
             ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_tureps1, '_FillValue', dmiss)
-            if (iturbulencemodel == 3) then
+            if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                ierr = nf90_put_att(irstfile, id_tureps1, 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent energy dissipation')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 'm2 s-3')
-            else if (iturbulencemodel == 4) then
+            else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                !ierr = nf90_put_att(irstfile, id_tureps1,  'standard_name', '')
                ierr = nf90_put_att(irstfile, id_tureps1, 'long_name', 'turbulent time scale')
                ierr = nf90_put_att(irstfile, id_tureps1, 'units', 's-1')
@@ -2171,7 +2171,7 @@ contains
 
          end select
 
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = nf90_def_var(irstfile, 'sedshort', nf90_double, [id_sedtotdim, id_flowelemdim, id_timedim], id_sedshort)
             ierr = nf90_put_att(irstfile, id_sedshort, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
             ierr = nf90_put_att(irstfile, id_sedshort, 'long_name', 'Sediment shortage of transport layer in flow cell center')
@@ -2901,7 +2901,7 @@ contains
          ! write averaged u1
          ierr = nf90_put_var(irstfile, id_unorma, u1(1:lnx), start=[1, itim], count=[lnx, 1])
 
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! write vertical eddy viscosity vicwwu
             work0 = dmiss
             do LL = 1, lnx
@@ -3240,7 +3240,7 @@ contains
             end if
          end select
          ! sedshort
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), [1, 1, itim], [stmpar%lsedtot, ndxi, 1])
          end if
          ! mfluff
@@ -3804,7 +3804,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
       use m_unstruc_netcdf_data, only: flowgeom_map
@@ -4402,15 +4402,15 @@ contains
 
          ! Turbulence.
          if (map_write_settings%tur > 0 .and. kmx > 0) then
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy', 'm2 s-2', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu, nc_precision, UNC_LOC_WU, 'vicwwu', 'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws, nc_precision, UNC_LOC_W, 'vicwws', 'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws_total, nc_precision, UNC_LOC_W, 'vicwws_total', 'eddy_viscosity', 'total vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_difwws_total, nc_precision, UNC_LOC_W, 'difwws_total', 'eddy_diffusivity', 'total vertical eddy diffusivity of salinity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
-               if (iturbulencemodel == 3) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water', 'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
-               else if (iturbulencemodel == 4) then
+               else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', '', 'turbulent time scale', 's-1', jabndnd=jabndnd_)
                end if
             end if
@@ -4658,7 +4658,7 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, nc_precision, UNC_LOC_U, 'aldiff', '', 'Diffusion coefficient applied to active layer mass', 'm s-2', dimids=[-2, -1], jabndnd=jabndnd_)
                end if
             end select
-            if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=[mapids%id_tsp%id_sedtotdim, -2, -1], jabndnd=jabndnd_)
             end if
             !
@@ -4703,14 +4703,14 @@ contains
             if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mfluff, nc_precision, UNC_LOC_S, 'mfluff', '', 'Sediment mass in fluff layer', 'kg m-2', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
                if (stmpar%morpar%moroutput%depflxf) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_depflxf , nc_precision, UNC_LOC_S, 'depflxf'  , '', 'Deposition flux to fluff layer', 'kg m-2 s-1', dimids = ([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
-               endif
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_depflxf, nc_precision, UNC_LOC_S, 'depflxf', '', 'Deposition flux to fluff layer', 'kg m-2 s-1', dimids=([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
+               end if
                if (stmpar%morpar%moroutput%eroflxf) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_eroflxf , nc_precision, UNC_LOC_S, 'eroflxf'  , '', 'Erosion flux from fluff layer', 'kg m-2 s-1', dimids = ([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
-               endif
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_eroflxf, nc_precision, UNC_LOC_S, 'eroflxf', '', 'Erosion flux from fluff layer', 'kg m-2 s-1', dimids=([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
+               end if
                if (stmpar%morpar%moroutput%burflxf) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_burflxf , nc_precision, UNC_LOC_S, 'burflxf'  , '', 'Burial flux from fluff layer', 'kg m-2 s-1', dimids = ([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
-               endif
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_burflxf, nc_precision, UNC_LOC_S, 'burflxf', '', 'Burial flux from fluff layer', 'kg m-2 s-1', dimids=([-2, mapids%id_tsp%id_sedsusdim, -1]), jabndnd=jabndnd_)
+               end if
             end if
             !
             ! 1D cross sections
@@ -5398,7 +5398,7 @@ contains
 
       ! Turbulence.
       if (map_write_settings%tur > 0 .and. kmx > 0) then
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             vicwwu_total = 0.0_dp
             vicwws_total = 0.0_dp
             do LL = 1, lnx
@@ -5894,7 +5894,7 @@ contains
          case default
             ! do nothing
          end select
-         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+         if (stmpar%morlyr%settings%morlyrnum%mass_shortage_track) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
          end if
          if (stmpar%morpar%moroutput%taub) then
@@ -5945,24 +5945,24 @@ contains
             !
             if (stmpar%morpar%moroutput%depflxf) then
                do l = 1, stmpar%lsedsus
-                  toutput = stmpar%morpar%flufflyr%depflxf(l,1:ndx)
-                  ierr = nf90_put_var(mapids%ncid, mapids%id_depflxf(2)   , toutput(1:ndxndxi) , start = ([1, l, itim]), count = ([ndxndxi, 1, 1]))
-               enddo
-            endif
+                  toutput = stmpar%morpar%flufflyr%depflxf(l, 1:ndx)
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_depflxf(2), toutput(1:ndxndxi), start=([1, l, itim]), count=([ndxndxi, 1, 1]))
+               end do
+            end if
             !
             if (stmpar%morpar%moroutput%eroflxf) then
                do l = 1, stmpar%lsedsus
-                  toutput = stmpar%morpar%flufflyr%eroflxf(l,1:ndx)
-                  ierr = nf90_put_var(mapids%ncid, mapids%id_eroflxf(2)   , toutput(1:ndxndxi) , start = ([1, l, itim]), count = ([ndxndxi, 1, 1]))
-               enddo
-            endif
+                  toutput = stmpar%morpar%flufflyr%eroflxf(l, 1:ndx)
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_eroflxf(2), toutput(1:ndxndxi), start=([1, l, itim]), count=([ndxndxi, 1, 1]))
+               end do
+            end if
             !
             if (stmpar%morpar%moroutput%burflxf) then
                do l = 1, stmpar%lsedsus
-                  toutput = stmpar%morpar%flufflyr%burflxf(l,1:ndx)
-                  ierr = nf90_put_var(mapids%ncid, mapids%id_burflxf(2)   , toutput(1:ndxndxi) , start = ([1, l, itim]), count = ([ndxndxi, 1, 1]))
-               enddo
-            endif
+                  toutput = stmpar%morpar%flufflyr%burflxf(l, 1:ndx)
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_burflxf(2), toutput(1:ndxndxi), start=([1, l, itim]), count=([ndxndxi, 1, 1]))
+               end do
+            end if
          end if
          !
          if (ndx1d > 0 .and. stm_included) then
@@ -6580,16 +6580,16 @@ contains
          do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
-            n = source_sinks%indices(isrc, 1)
+            n = source_sinks%indices(isrc, FLOWCELL_SINK)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SINK_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 1)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SINK_SIDE)) then
                      nktop = nk
                   end if
                end do
@@ -6599,16 +6599,16 @@ contains
             end if
             !
             ! Sources
-            n = source_sinks%indices(isrc, 4)
+            n = source_sinks%indices(isrc, FLOWCELL_SOURCE)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, SOURCE_SIDE)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sinks%z_top(isrc, 2)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, SOURCE_SIDE)) then
                      nktop = nk
                   end if
                end do
@@ -7302,7 +7302,7 @@ contains
             end if
 
             if (map_write_settings%tur > 0 .and. kmx > 0) then
-               if (iturbulencemodel >= 3) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                   ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turkin1(iid))
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
@@ -7338,11 +7338,11 @@ contains
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), '_FillValue', dmiss)
 
-                  if (iturbulencemodel == 3) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent energy dissipation')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 'm2 s-3')
-                  else if (iturbulencemodel == 4) then
+                  else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'long_name', 'turbulent time scale')
                      ierr = nf90_put_att(imapfile, id_tureps1(iid), 'units', 's-1')
                   end if
@@ -8219,7 +8219,7 @@ contains
             if (apply_thermobaricity) then
                ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
             end if
-            if (iturbulencemodel >= 3) then
+            if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
                ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
                ierr = nf90_inq_varid(imapfile, 'vicwwu', id_vicwwu(iid))
@@ -8748,7 +8748,7 @@ contains
                end if
             end if
 
-            if (map_write_settings%tur > 0 .and. iturbulencemodel >= 3) then
+            if (map_write_settings%tur > 0 .and. any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
                do LL = 1, lnx
                   work0(:, LL) = dmiss ! For proper fill values in z-model runs.
                   call getLbotLtopmax(LL, Lb, Ltx)
@@ -11336,7 +11336,7 @@ contains
    subroutine unc_read_net(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
       use precision, only: dp
       use dfm_error, only: dfm_noerr
-      use network_data, only: xk,yk
+      use network_data, only: xk, yk
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net.
@@ -11362,7 +11362,7 @@ contains
          ! An error occurred while reading the net-file; no reason to continue.
          return
       end if
-      
+
       ! File reading went fine, now check the coordinate system.
       if (crs%proj_string == ' ') then
          ierr = detect_proj_string(crs)
@@ -12460,7 +12460,7 @@ contains
          call readyy('Reading map data', 0.75_dp)
 
          ! turbulence variables
-         if (iturbulencemodel >= 3) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
             ! vicwwu
             ierr = get_var_and_shift(imapfile, 'vicwwu', vicwwu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, &
                                      um%jamergedmap, um%ilink_own, um%ilink_merge)
@@ -14151,7 +14151,7 @@ contains
       use precision, only: dp
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
-      use m_flowgeom, only: nd
+      use m_flowgeom, only: nd, ndx2d
       use netcdf
       use m_alloc, only: realloc, reallocP
       use dfm_error
@@ -14208,7 +14208,11 @@ contains
       if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
 
       ! --- Resolve optional arguments ---
-      jabndnd_ = merge(jabndnd, 1, present(jabndnd))
+      if (present(jabndnd)) then
+         jabndnd_ = jabndnd
+      else
+         jabndnd_ = 1
+      end if
 
       if (present(layer_count) .and. present(layer_type) .and. present(layer_zs) .and. present(interface_zs)) then
          layer_count_ = layer_count
@@ -14227,10 +14231,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      if (allocated(flowgeom_map%node_map_1d)) then
-         nodes_1d = flowgeom_map%node_map_1d
+      if (allocated(flowgeom1d%node_map_1d)) then
+         nodes_1d = flowgeom1d%node_map_1d
       else
-         nodes_1d = [(flowgeom_map%mesh2d%numFace + i, i=1, flowgeom_map%mesh1D%numNode)]
+         nodes_1d = [(ndx2d + i, i=1, flowgeom1d%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &

@@ -31,7 +31,7 @@
 module fm_external_forcings_utils
    use precision_basics, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -41,8 +41,31 @@ module fm_external_forcings_utils
    public :: get_constituent_name
    public :: read_tracer_properties
    public :: read_bubblescreen_forcing_attributes
+   public :: print_error_message
+   public :: select_wave_variables_subgroup
+   public :: quantity_pli_combination_is_registered
+   public :: register_quantity_pli_combination
+   public :: init_registered_items
+   public :: check_keyword_zerozbndinflowadvection
+   public :: ini_alloc_laterals
+   public :: allocatewindarrays
 
    integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: MAX_REGISTERED_ITEM_ID = 512
+   character(len=MAX_REGISTERED_ITEM_ID), allocatable :: registered_items(:)
+   integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
+   integer :: num_registered_items = 0
+
+   abstract interface
+      subroutine fill_open_boundary_cells_with_inner_values_any(number_of_links, link2cell)
+         integer, intent(in) :: number_of_links !< number of links
+         integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+      end subroutine
+   end interface
+
+   procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
+
+   public :: fill_open_boundary_cells_with_inner_values
 
 contains
 
@@ -84,23 +107,25 @@ contains
    !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
    subroutine get_tracername(qid, trname, qidname)
       use m_transportdata, only: DEFTRACER
-      implicit none
+      use string_module, only: istarts_with
 
+      ! Arguments
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.
       character(len=*), intent(out) :: trname !< The trimmed tracer name, e.g., 'fluor'.
       character(len=*), intent(out) :: qidname !< The base quantity name for further use in external forcing, e.g., 'tracerbnd'.
 
+      ! Initialization
       trname = ''
       qidname = qid
 
-      if (qid(1:9) == 'tracerbnd') then
+      if (istarts_with(qid, 'tracerbnd')) then
          qidname = qid(1:9)
          if (len_trim(qid) > 9) then
             trname = trim(qid(10:))
          else
             trname = trim(DEFTRACER)
          end if
-      else if (qid(1:13) == 'initialtracer') then
+      else if (istarts_with(qid, 'initialtracer')) then
          qidname = qid(1:13)
          if (len_trim(qid) > 13) then
             trname = trim(qid(14:))
@@ -109,42 +134,43 @@ contains
          end if
       end if
 
-      return
    end subroutine get_tracername
 
    !> Convert quantity id (from .ext file) to sediment fraction name (split in generic qidname and specific fraction name).
    !! If the input qid is no sediment fraction, then the same qid is returned (and no fraction name)
    subroutine get_sedfracname(qid, sfname, qidname)
-      implicit none
+      use string_module, only: istarts_with
 
+      ! Arguments
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
       character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
       character(len=*), intent(inout) :: qidname !< The base quantity name for further use in external forcing, e.g., 'sedfracbnd'.
 
+      ! Initialization
       sfname = ''
-
-      if (index(qid, 'sedfracbnd') == 1) then
+      
+      if (istarts_with(qid, 'sedfracbnd')) then
          qidname = qid(1:10)
          if (len_trim(qid) > 10) then
             sfname = trim(qid(11:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialsedfrac') == 1) then
+      else if (istarts_with(qid, 'initialsedfrac')) then
          qidname = qid(1:14)
          if (len_trim(qid) > 14) then
             sfname = trim(qid(15:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialverticalsedfracprofile') == 1) then
+      else if (istarts_with(qid, 'initialverticalsedfracprofile')) then
          qidname = qid(1:29)
          if (len_trim(qid) > 29) then
             sfname = trim(qid(30:))
          else
             sfname = trim('unknown_sediment_fraction')
          end if
-      else if (index(qid, 'initialverticalsigmasedfracprofile') == 1) then
+      else if (istarts_with(qid, 'initialverticalsigmasedfracprofile')) then
          qidname = qid(1:34)
          if (len_trim(qid) > 34) then
             sfname = trim(qid(35:))
@@ -152,6 +178,7 @@ contains
             sfname = trim('unknown_sediment_fraction')
          end if
       end if
+
    end subroutine get_sedfracname
 
    !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
@@ -164,15 +191,17 @@ contains
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
    subroutine get_constituent_name(original_quantity, constituent_name, base_quantity)
       use string_module, only: strcmpi
-      implicit none
 
+      ! Arguments
       character(len=*), intent(in) :: original_quantity !< Original quantity id, e.g., 'sourcesink_salinityDelta'.
       character(len=*), intent(out) :: constituent_name !< The trimmed constituent name, e.g., 'salinity', or 'sand', or 'fluor'. Empty '' if not a constituent.
       character(len=*), intent(out) :: base_quantity !< The base quantity name for further use in external forcing, e.g., 'sourcesink_constituentDelta'. Unchanged original_quantity if not a constituent.
 
+      ! Local variables
       integer :: quantity_length
       integer :: index_prefix_end, index_suffix_start
 
+      ! Initialization
       constituent_name = ''
 
       quantity_length = len_trim(original_quantity)
@@ -199,6 +228,7 @@ contains
             constituent_name = constituent_name(8:)
          end if
       end if
+
    end subroutine get_constituent_name
 
    !> Read tracer properties from an ini file node.
@@ -206,9 +236,11 @@ contains
       use properties
       use tree_data_types, only: tree_data
 
+      ! Arguments
       type(tree_data), pointer :: node_ptr !< The tree structure containing a single ini-file chapter/block.
-      real(kind=dp), intent(inout) :: transformcoef(:) !< Transformation coefficients
+      real(kind=dp), dimension(:), intent(inout) :: transformcoef !< Transformation coefficients
 
+      ! Local variables
       real(kind=dp) :: tracer_fall_velocity ! Tracer fall velocity
       real(kind=dp) :: tracer_decay_time ! Tracer decay time
 
@@ -219,71 +251,331 @@ contains
       tracer_decay_time = 0.0_dp
       call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
       transformcoef(25) = tracer_decay_time
-   end subroutine
-!> Read bubblescreen forcing attributes from block pointer
-function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, &
-                                              id, x_coordinates, y_coordinates, z_coordinates, num_columns, &
-                                              z_level, discharge_input) result(success)
-   use MessageHandling, only: err_flush, msgbuf
-   use properties, only: prop_get
-   use tree_data_types, only: tree_data
-   use m_read_location_info, only: read_polyline_coordinates
 
-   ! Parameters
-   type(tree_data), pointer, intent(in) :: block_ptr
-   character(len=*), intent(in) :: base_dir
-   character(len=*), intent(in) :: file_name
-   character(len=*), intent(in) :: group_name
-   character(len=255), intent(out) :: id
-   real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
-   real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
-   real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
-   integer, intent(out) :: num_columns
-   real(kind=dp), intent(out) :: z_level
-   character(len=:), allocatable, intent(out) :: discharge_input
-   logical :: success
+   end subroutine read_tracer_properties
 
-   ! Local variables
-   character(len=INI_VALUE_LEN) :: readout_id
-   character(len=INI_VALUE_LEN) :: readout_discharge_input
-   logical :: is_read
+   !> Read bubblescreen forcing attributes from block pointer
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, x_coordinates, y_coordinates, &
+         z_coordinates, num_columns, z_level, discharge_input) result(success)
+      use MessageHandling, only: err_flush, msgbuf
+      use properties, only: prop_get
+      use tree_data_types, only: tree_data
+      use m_read_location_info, only: read_polyline_coordinates
 
-   success = .false.
-   num_columns = 0
+      ! Arguments
+      type(tree_data), pointer, intent(in) :: block_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      character(len=255), intent(out) :: id
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
+      integer, intent(out) :: num_columns
+      real(kind=dp), intent(out) :: z_level
+      character(len=:), allocatable, intent(out) :: discharge_input
+      logical :: success
 
-   ! (required) id
-   call prop_get(block_ptr, '', 'id', readout_id, is_read)
-   if (.not. is_read .or. len_trim(readout_id) == 0) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
-      call err_flush()
-      return
-   end if
-   id = trim(readout_id)
+      ! Local variables
+      character(len=INI_VALUE_LEN) :: readout_id
+      character(len=INI_VALUE_LEN) :: readout_discharge_input
+      logical :: is_read
 
-   ! (required) polyline coordinates (from locationFile or inline keys)
-   call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
-                                  x_coordinates, y_coordinates, z_coordinates, num_columns, success)
-   if (.not. success) return
-
-   ! (required) zLevel
-   call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
-   if (.not. is_read) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
-      call err_flush()
+      ! Initialization
       success = .false.
-      return
-   end if
+      num_columns = 0
 
-   ! (required) discharge
-   call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
-   if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
-      call err_flush()
-      success = .false.
-      return
-   end if
-   discharge_input = trim(readout_discharge_input)
+      ! (required) id
+      call prop_get(block_ptr, '', 'id', readout_id, is_read)
+      if (.not. is_read .or. len_trim(readout_id) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      id = trim(readout_id)
 
-   success = .true.
-end function read_bubblescreen_forcing_attributes
+      ! (required) polyline coordinates (from locationFile or inline keys)
+      call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
+                                    x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+      if (.not. success) return
+
+      ! (required) zLevel
+      call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+      if (.not. is_read) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+
+      ! (required) discharge
+      call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
+      if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+      discharge_input = trim(readout_discharge_input)
+
+      success = .true.
+
+   end function read_bubblescreen_forcing_attributes
+
+   !> print_error_message
+   subroutine print_error_message(time_in_seconds)
+      use m_ec_message, only: dump_ec_message_stack
+      use unstruc_messages, only: callback_msg
+      use messagehandling, only: LEVEL_WARN, mess
+
+      ! Arguments
+      real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
+
+      ! Local variables
+      character(len=255) :: tmpstr
+
+      write (tmpstr, '(f22.11)') time_in_seconds
+      call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+   end subroutine print_error_message
+
+   !> select_wave_variables_subgroup
+   !! select routine depending on whether all or a subgroup of wave variables are allocated
+   subroutine select_wave_variables_subgroup(all_wave_variables)
+      ! Arguments
+      logical, intent(in) :: all_wave_variables
+
+      if (all_wave_variables) then
+         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_all
+      else
+         fill_open_boundary_cells_with_inner_values => fill_open_boundary_cells_with_inner_values_fewer
+      end if
+
+   end subroutine select_wave_variables_subgroup
+
+   !> fill_open_boundary_cells_with_inner_values_all
+   subroutine fill_open_boundary_cells_with_inner_values_all(number_of_links, link2cell)
+      use m_waves
+
+      ! Arguments
+      integer, intent(in) :: number_of_links !< number of links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+
+      ! Local variables
+      integer :: link !< link counter
+      integer :: kb !< cell index of boundary cell
+      integer :: ki !< cell index of internal cell
+
+      do link = 1, number_of_links
+         kb = link2cell(1, link)
+         ki = link2cell(2, link)
+         hwav(kb) = hwav(ki)
+         twav(kb) = twav(ki)
+         phiwav(kb) = phiwav(ki)
+         uorbwav(kb) = uorbwav(ki)
+         sxwav(kb) = sxwav(ki)
+         sywav(kb) = sywav(ki)
+         mxwav(kb) = mxwav(ki)
+         mywav(kb) = mywav(ki)
+         sbxwav(kb) = sbxwav(ki)
+         sbywav(kb) = sbywav(ki)
+         dsurf(kb) = dsurf(ki)
+         dwcap(kb) = dwcap(ki)
+      end do
+
+   end subroutine fill_open_boundary_cells_with_inner_values_all
+
+   !> fill_open_boundary_cells_with_inner_values_fewer
+   subroutine fill_open_boundary_cells_with_inner_values_fewer(number_of_links, link2cell)
+      use m_waves
+      use m_waveconst, only: wave_input_is_required, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
+         WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, WAVE_INPUT_DISSIPATION_SURFACE, &
+         WAVE_INPUT_DISSIPATION_WHITE_CAPPING
+
+      ! Arguments
+      integer, intent(in) :: number_of_links !< number of links
+      integer, dimension(:,:), intent(in) :: link2cell !< indices of cells connected by links
+
+      ! Local variables
+      integer :: link !< link counter
+      integer :: kb !< cell index of boundary cell
+      integer :: ki !< cell index of internal cell
+      logical :: significant_height_required
+      logical :: period_required
+      logical :: direction_required
+      logical :: force_x_required
+      logical :: force_y_required
+      logical :: dissipation_total_required
+      logical :: dissipation_surface_required
+      logical :: dissipation_white_capping_required
+      logical :: wave_kinematics_required
+
+      significant_height_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+      period_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_PERIOD)
+      direction_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DIRECTION)
+      force_x_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_X)
+      force_y_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_FORCE_Y)
+      dissipation_total_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_TOTAL)
+      dissipation_surface_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+      dissipation_white_capping_required = wave_input_is_required(offline_wave_input_requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
+      wave_kinematics_required = significant_height_required .and. period_required .and. direction_required
+
+      do link = 1, number_of_links
+         kb = link2cell(1, link)
+         ki = link2cell(2, link)
+         if (significant_height_required) then
+            hwav(kb) = hwav(ki)
+         end if
+         if (period_required) then
+            twav(kb) = twav(ki)
+         end if
+         if (direction_required) then
+            phiwav(kb) = phiwav(ki)
+         end if
+         if (force_x_required) then
+            sxwav(kb) = sxwav(ki)
+         end if
+         if (force_y_required) then
+            sywav(kb) = sywav(ki)
+         end if
+         if (dissipation_total_required) then
+            distot(kb) = distot(ki)
+         end if
+         if (dissipation_surface_required) then
+            dsurf(kb) = dsurf(ki)
+            sbxwav(kb) = sbxwav(ki)
+            sbywav(kb) = sbywav(ki)
+         end if
+         if (dissipation_white_capping_required) then
+            dwcap(kb) = dwcap(ki)
+         end if
+         if (wave_kinematics_required) then
+            uorbwav(kb) = uorbwav(ki)
+            mxwav(kb) = mxwav(ki)
+            mywav(kb) = mywav(ki)
+         end if
+      end do
+
+   end subroutine fill_open_boundary_cells_with_inner_values_fewer
+
+   function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+      logical :: is_registered
+
+      ! Local variables
+      integer :: i
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      is_registered = .false.
+
+      do i = 1, num_registered_items
+         if (item_id == registered_items(i)) then
+            is_registered = .true.
+            return
+         end if
+      end do
+
+   end function quantity_pli_combination_is_registered
+
+   subroutine register_quantity_pli_combination(quantity, location_file)
+      use m_alloc
+
+      ! Arguments
+      character(len=*), intent(in) :: quantity
+      character(len=*), intent(in) :: location_file
+
+      ! Local variables
+      character(len=MAX_REGISTERED_ITEM_ID) :: item_id
+
+      item_id = trim(quantity)//'-'//trim(location_file)
+
+      if (num_registered_items >= max_ext_bnd_items) then
+         max_ext_bnd_items = ceiling(1.2 * num_registered_items)
+         call realloc(registered_items, max_ext_bnd_items, keepExisting=.true., fill='')
+      end if
+
+      num_registered_items = num_registered_items + 1
+      registered_items(num_registered_items) = item_id
+
+   end subroutine register_quantity_pli_combination
+
+   subroutine init_registered_items()
+      num_registered_items = 0
+
+      max_ext_bnd_items = 64 ! Default start size.
+      if (allocated(registered_items)) then
+         deallocate (registered_items)
+      end if
+      allocate (registered_items(max_ext_bnd_items))
+
+      registered_items(1:max_ext_bnd_items) = ''
+
+   end subroutine init_registered_items
+
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
+
+      ! Arguments
+      logical :: success
+
+      ! Initialization
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
+
+   !> Initializes memory for laterals on flow nodes.
+   subroutine ini_alloc_laterals()
+      use m_laterals, only: kclat, nnlat
+      use m_flowgeom, only: ndx2d, ndxi, ndx
+      use m_alloc
+
+      ! Local variables
+      integer :: ierr
+      integer :: nlatndguess
+
+      if (.not. allocated(nnlat)) then ! just once
+         nlatndguess = ndx2d + 2 * (ndxi - ndx2d) ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
+         allocate (nnLat(nlatndguess), stat=ierr)
+         call aerr('nnLat(nlatndguess)', ierr, nlatndguess)
+         nnLat = 0
+      end if
+      if (.not. allocated(kcLat)) then
+         allocate (kcLat(ndx), stat=ierr) ! only if needed
+         call aerr('kcLat(ndx)', ierr, ndx)
+      end if
+   end subroutine ini_alloc_laterals
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc, aerr
+
+      ! Arguments
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
+      end if
+
+   end subroutine allocatewindarrays
+
 end module fm_external_forcings_utils

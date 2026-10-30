@@ -162,7 +162,7 @@ contains
                   end if
                end if
 
-               cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
+               cf = dts * abs(u1(L)) * dxi(LL)
                cf = half * max(0.0_dp, 1.0_dp - cf)
                if (jasfer3D == 0) then
                   ds2x = ucx(kd) - ucx(k)
@@ -304,7 +304,7 @@ contains
                      end if
                   end if
 
-                  cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
+                  cf = dts * abs(u1(L)) * dxi(LL)
                   cf = half * max(0.0_dp, 1.0_dp - cf)
                   if (jasfer3D == 0) then
                      ds2x = ucx(kd) - ucx(k)
