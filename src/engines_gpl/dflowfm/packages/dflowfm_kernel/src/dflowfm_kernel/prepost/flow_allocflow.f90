@@ -59,7 +59,7 @@ contains
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
+                        u_to_umain, q1_main, q1_floodplain1, q1_floodplain2, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
@@ -67,6 +67,10 @@ contains
                         use_density, map_ndkx_to_ndx, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
+      use m_flow, only: au_main, au_floodplain1, au_floodplain2
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
+      use m_flow, only: flow_width, flow_width_main, flow_width_floodplain1, flow_width_floodplain2
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
@@ -967,11 +971,44 @@ contains
          call aerr('frculin(lnx)', ierr, lnx)
       end if
 
+      if (map_write_settings%au_split == 1) then
+         call realloc(au_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_main(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%hydraulic_radius == 1) then
+         call realloc(hydraulic_radius, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_main(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%flow_width == 1) then
+         call realloc(flow_width, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width(lnkx)', ierr, lnkx)
+         call realloc(flow_width_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_main(lnkx)', ierr, lnkx)
+         call realloc(flow_width_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(flow_width_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_floodplain2(lnkx)', ierr, lnkx)
+      end if
+
       if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then
          call realloc(u_to_umain, lnkx, stat=ierr, fill=1.0_dp, keepexisting=.false.)
          call aerr('u_to_umain(lnkx)', ierr, lnkx)
          call realloc(q1_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('q1_main(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain2(lnkx)', ierr, lnkx)
       end if
 
       if (jacali == 1) then
@@ -991,6 +1028,14 @@ contains
       if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
+      end if
+      if (map_write_settings%chezy_links_split == 1) then
+         call realloc(czu_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_main(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain2(lnkx)', ierr, lnkx)
       end if
       if (dynroughveg > 0) then
          call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)

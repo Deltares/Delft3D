@@ -4043,6 +4043,41 @@ contains
          if (map_write_settings%au > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au, nc_precision, iLocU, 'au', '', 'normal flow area between two neighbouring grid cells', 'm2', jabndnd=jabndnd_)
          end if
+         if (map_write_settings%au_split == 1) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_main, nc_precision, UNC_LOC_U, &
+                                   'au_main', '', 'Main channel flow area at flow link', 'm2', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_floodplain1, nc_precision, UNC_LOC_U, &
+                                   'au_floodplain1', '', 'First floodplain flow area at flow link', 'm2', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_floodplain2, nc_precision, UNC_LOC_U, &
+                                   'au_floodplain2', '', 'Second floodplain flow area at flow link', 'm2', which_meshdim=1, jabndnd=jabndnd_)
+         end if
+         if (map_write_settings%hydraulic_radius == 1) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius, nc_precision, UNC_LOC_U, &
+                                   'hydraulic_radius', '', 'Total hydraulic radius at 1D flow link', 'm', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_main, nc_precision, UNC_LOC_U, &
+                                   'hydraulic_radius_main', '', 'Main channel hydraulic radius at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_floodplain1, nc_precision, UNC_LOC_U, &
+                                   'hydraulic_radius_floodplain1', '', 'First floodplain hydraulic radius at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_floodplain2, nc_precision, UNC_LOC_U, &
+                                   'hydraulic_radius_floodplain2', '', 'Second floodplain hydraulic radius at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+         end if
+         if (map_write_settings%flow_width == 1) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width, nc_precision, UNC_LOC_U, &
+                                   'flow_width', '', 'Total water-surface flow width at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_main, nc_precision, UNC_LOC_U, &
+                                   'flow_width_main', '', 'Main channel water-surface flow width at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_floodplain1, nc_precision, UNC_LOC_U, &
+                                   'flow_width_floodplain1', '', 'First floodplain water-surface flow width at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_floodplain2, nc_precision, UNC_LOC_U, &
+                                   'flow_width_floodplain2', '', 'Second floodplain water-surface flow width at 1D flow link', 'm', &
+                                   which_meshdim=1, jabndnd=jabndnd_)
+         end if
 
          if (map_write_settings%u1 > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, nc_precision, iLocU, 'u1', '', 'Velocity at velocity point, n-component', 'm s-1', jabndnd=jabndnd_)
@@ -4126,6 +4161,10 @@ contains
          if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, nc_precision, iLocU, 'q1_main', '', 'Main channel discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
             ierr = unc_put_att(mapids%ncid, mapids%id_q1main, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, nc_precision, iLocU, 'q1_floodplain1', '', 'First floodplain discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
+            ierr = unc_put_att(mapids%ncid, mapids%id_q1floodplain1, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain2, nc_precision, iLocU, 'q1_floodplain2', '', 'Second floodplain discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
+            ierr = unc_put_att(mapids%ncid, mapids%id_q1floodplain2, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
 
          if (map_write_settings%fw > 0) then
@@ -4176,6 +4215,14 @@ contains
          end if
          if (map_write_settings%chezy_links > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, nc_precision, UNC_LOC_U, 'czu', '', 'Chezy roughness on flow links', 'm0.5s-1', jabndnd=jabndnd_)
+         end if
+         if (map_write_settings%chezy_links_split == 1) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, nc_precision, UNC_LOC_U, &
+                                   'czu_main', '', 'Main channel Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, nc_precision, UNC_LOC_U, &
+                                   'czu_floodplain1', '', 'First floodplain Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain2, nc_precision, UNC_LOC_U, &
+                                   'czu_floodplain2', '', 'Second floodplain Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
          end if
          if (map_write_settings%chezy_input > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfu, nc_precision, UNC_LOC_U, 'cfu', '', 'Input roughness on flow links', '-', jabndnd=jabndnd_)
@@ -5187,6 +5234,29 @@ contains
       if (map_write_settings%au == 1) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au, iLocU, au, jabndnd=jabndnd_)
       end if
+      if (map_write_settings%au_split == 1) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_main, UNC_LOC_U, au_main, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_floodplain1, UNC_LOC_U, au_floodplain1, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_au_floodplain2, UNC_LOC_U, au_floodplain2, jabndnd=jabndnd_)
+      end if
+      if (map_write_settings%hydraulic_radius == 1) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius, UNC_LOC_U, hydraulic_radius, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_main, UNC_LOC_U, &
+                               hydraulic_radius_main, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_floodplain1, UNC_LOC_U, &
+                               hydraulic_radius_floodplain1, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hydraulic_radius_floodplain2, UNC_LOC_U, &
+                               hydraulic_radius_floodplain2, jabndnd=jabndnd_)
+      end if
+      if (map_write_settings%flow_width == 1) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width, UNC_LOC_U, flow_width, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_main, UNC_LOC_U, &
+                               flow_width_main, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_floodplain1, UNC_LOC_U, &
+                               flow_width_floodplain1, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flow_width_floodplain2, UNC_LOC_U, &
+                               flow_width_floodplain2, jabndnd=jabndnd_)
+      end if
 
       if (map_write_settings%flow_analysis == 1) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_negdpt, iLocS, negativeDepths, jabndnd=jabndnd_)
@@ -5282,6 +5352,8 @@ contains
 
       if (map_write_settings%q1main == 1 .and. allocated(q1_main)) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, iLocU, q1_main, 0.0_dp, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, iLocU, q1_floodplain1, 0.0_dp, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain2, iLocU, q1_floodplain2, 0.0_dp, jabndnd=jabndnd_)
       end if
 
       if (map_write_settings%fw == 1) then
@@ -6378,6 +6450,11 @@ contains
       if (map_write_settings%chezy_links > 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, UNC_LOC_U, czu, jabndnd=jabndnd_)
       end if
+      if (map_write_settings%chezy_links_split == 1) then
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, UNC_LOC_U, czu_main, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, UNC_LOC_U, czu_floodplain1, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain2, UNC_LOC_U, czu_floodplain2, jabndnd=jabndnd_)
+      end if
       if (map_write_settings%chezy_input > 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfu, UNC_LOC_U, frcu, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cfutyp, UNC_LOC_U, ifrcutp, jabndnd=jabndnd_)
@@ -6729,7 +6806,11 @@ contains
          id_sxtot, id_sytot, id_rsedeq, id_umod, id_zumod, id_ustar, id_dzdn, id_dzdt, id_morbl, id_aks, id_rca, &
          id_bodsed, id_dpsed, id_msed, id_lyrfrac, id_thlyr, id_poros, id_nlyrdim, &
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
-         id_q1main, &
+         id_q1main, id_q1floodplain1, id_q1floodplain2, &
+         id_au_main, id_au_floodplain1, id_au_floodplain2, &
+         id_hydraulic_radius, id_hydraulic_radius_main, id_hydraulic_radius_floodplain1, id_hydraulic_radius_floodplain2, &
+         id_flow_width, id_flow_width_main, id_flow_width_floodplain1, id_flow_width_floodplain2, &
+         id_czu_main, id_czu_floodplain1, id_czu_floodplain2, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
          id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, id_tbed, &
          id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
@@ -7063,7 +7144,91 @@ contains
                ierr = nf90_put_att(imapfile, id_q1(iid), 'units', 'm3 s-1')
                ierr = nf90_put_att(imapfile, id_q1(iid), '_FillValue', dmiss)
             end if
+            if (map_write_settings%au_split == 1) then
+               ierr = nf90_def_var(imapfile, 'au_main', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_au_main(iid))
+               ierr = nf90_put_att(imapfile, id_au_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_au_main(iid), 'long_name', 'Main channel flow area at flow link')
+               ierr = nf90_put_att(imapfile, id_au_main(iid), 'units', 'm2')
+               ierr = nf90_put_att(imapfile, id_au_main(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'au_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_au_floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_au_floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_au_floodplain1(iid), 'long_name', 'First floodplain flow area at flow link')
+               ierr = nf90_put_att(imapfile, id_au_floodplain1(iid), 'units', 'm2')
+               ierr = nf90_put_att(imapfile, id_au_floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'au_floodplain2', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_au_floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_au_floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_au_floodplain2(iid), 'long_name', 'Second floodplain flow area at flow link')
+               ierr = nf90_put_att(imapfile, id_au_floodplain2(iid), 'units', 'm2')
+               ierr = nf90_put_att(imapfile, id_au_floodplain2(iid), '_FillValue', dmiss)
+            end if
+            if (map_write_settings%hydraulic_radius == 1) then
+               ierr = nf90_def_var(imapfile, 'hydraulic_radius', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_hydraulic_radius(iid))
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius(iid), 'long_name', 'Total hydraulic radius at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'hydraulic_radius_main', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_hydraulic_radius_main(iid))
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_main(iid), 'long_name', 'Main channel hydraulic radius at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_main(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_main(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'hydraulic_radius_floodplain1', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_hydraulic_radius_floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain1(iid), 'long_name', &
+                                   'First floodplain hydraulic radius at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain1(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'hydraulic_radius_floodplain2', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_hydraulic_radius_floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain2(iid), 'long_name', &
+                                   'Second floodplain hydraulic radius at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain2(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_hydraulic_radius_floodplain2(iid), '_FillValue', dmiss)
+            end if
+            if (map_write_settings%flow_width == 1) then
+               ierr = nf90_def_var(imapfile, 'flow_width', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_flow_width(iid))
+               ierr = nf90_put_att(imapfile, id_flow_width(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_flow_width(iid), 'long_name', 'Total water-surface flow width at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_flow_width(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_flow_width(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'flow_width_main', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_flow_width_main(iid))
+               ierr = nf90_put_att(imapfile, id_flow_width_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_flow_width_main(iid), 'long_name', &
+                                   'Main channel water-surface flow width at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_flow_width_main(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_flow_width_main(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'flow_width_floodplain1', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_flow_width_floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain1(iid), 'long_name', &
+                                   'First floodplain water-surface flow width at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain1(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'flow_width_floodplain2', nf90_double, &
+                                   [id_flowlinkdim(iid), id_timedim(iid)], id_flow_width_floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), 'long_name', &
+                                   'Second floodplain water-surface flow width at 1D flow link')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), 'units', 'm')
+               ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), '_FillValue', dmiss)
+            end if
             if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+               ierr = nf90_def_var(imapfile, 'q1_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'long_name', 'First floodplain discharge through flow link at current time')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'units', 'm3 s-1')
+               ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'q1_floodplain2', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'long_name', 'Second floodplain discharge through flow link at current time')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), 'units', 'm3 s-1')
+               ierr = nf90_put_att(imapfile, id_q1floodplain2(iid), '_FillValue', dmiss)
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                !ierr = nf90_put_att(imapfile, id_q1main(iid)   ,'standard_name', 'discharge') ! not CF
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'long_name', 'flow flux in main channel')
@@ -7911,6 +8076,24 @@ contains
                ierr = nf90_put_att(imapfile, id_czu(iid), 'units', 'm0.5s-1')
             end if
 
+            if (map_write_settings%chezy_links_split == 1) then
+               ierr = nf90_def_var(imapfile, 'czu_main', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_main(iid))
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'long_name', 'Main channel Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_main(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'czu_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_floodplain1(iid))
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'long_name', 'First floodplain Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain1(iid), '_FillValue', dmiss)
+               ierr = nf90_def_var(imapfile, 'czu_floodplain2', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_floodplain2(iid))
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'long_name', 'Second floodplain Chezy roughness on flow links')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), 'units', 'm0.5s-1')
+               ierr = nf90_put_att(imapfile, id_czu_floodplain2(iid), '_FillValue', dmiss)
+            end if
+
             ! 1D2D boundaries
             if (nbnd1d2d > 0) then
                ierr = nf90_def_var(imapfile, '1d2d_flowlinknrs', nf90_int, [id_1d2ddim(iid)], id_1d2d_edges(iid))
@@ -8627,6 +8810,11 @@ contains
          if (map_write_settings%chezy_links > 0) then
             ierr = nf90_put_var(imapfile, id_czu(iid), czu, [1, itim], [lnx, 1])
          end if
+         if (map_write_settings%chezy_links_split == 1) then
+            ierr = nf90_put_var(imapfile, id_czu_main(iid), czu_main, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_czu_floodplain1(iid), czu_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_czu_floodplain2(iid), czu_floodplain2, [1, itim], [lnx, 1])
+         end if
 
          ! Velocities
          if (kmx > 0) then
@@ -8812,6 +9000,28 @@ contains
             if (kmx == 0) then
                ierr = nf90_put_var(imapfile, id_spircrv(iid), spircrv, [1, itim], [ndxndxi, 1])
             end if
+         end if
+
+         if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+            ierr = nf90_put_var(imapfile, id_q1floodplain1(iid), q1_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_q1floodplain2(iid), q1_floodplain2, [1, itim], [lnx, 1])
+         end if
+         if (map_write_settings%au_split == 1) then
+            ierr = nf90_put_var(imapfile, id_au_main(iid), au_main, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_au_floodplain1(iid), au_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_au_floodplain2(iid), au_floodplain2, [1, itim], [lnx, 1])
+         end if
+         if (map_write_settings%hydraulic_radius == 1) then
+            ierr = nf90_put_var(imapfile, id_hydraulic_radius(iid), hydraulic_radius, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_hydraulic_radius_main(iid), hydraulic_radius_main, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_hydraulic_radius_floodplain1(iid), hydraulic_radius_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_hydraulic_radius_floodplain2(iid), hydraulic_radius_floodplain2, [1, itim], [lnx, 1])
+         end if
+         if (map_write_settings%flow_width == 1) then
+            ierr = nf90_put_var(imapfile, id_flow_width(iid), flow_width, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_flow_width_main(iid), flow_width_main, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_flow_width_floodplain1(iid), flow_width_floodplain1, [1, itim], [lnx, 1])
+            ierr = nf90_put_var(imapfile, id_flow_width_floodplain2(iid), flow_width_floodplain2, [1, itim], [lnx, 1])
          end if
 
          if (kmx == 0) then

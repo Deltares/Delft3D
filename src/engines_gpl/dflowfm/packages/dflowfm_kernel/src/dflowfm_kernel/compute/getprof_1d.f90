@@ -36,10 +36,15 @@ module m_get_prof_1D
    use m_pipe
 
    implicit none
+   private :: store_hydraulic_radii
 contains
    subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
       use precision, only: dp
       use m_flow, only: bndwidth1d, lnxbnd, dmiss, u1, q1, s1, frcu, frcu_mor, u_to_umain, q1_main, cfuhi, ag, hu, ifrcutp, v, frcuni1dgrounlay
+      use m_flow, only: q1_floodplain1, q1_floodplain2
+      use m_flow, only: au_main, au_floodplain1, au_floodplain2, map_write_settings
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
+      use m_flow, only: flow_width, flow_width_main, flow_width_floodplain1, flow_width_floodplain2
       use m_flowgeom, only: lnxi, lbnd1d, kcu, ln, wu, acl, prof1d, profiles1d, jagrounlay, grounlay, argr, pergr, wigr
       use unstruc_channel_flow, only: network, getcsparstotal, cscalculationoption, getcsparsflow
       use m_cross_helper, only: getconveyance, getcrossdischarge
@@ -63,6 +68,7 @@ contains
 
       real(kind=dp) :: frcn, cz, cf, conv, af_sub(3), perim_sub(3), cz_sub(3)
       real(kind=dp) :: q_sub(3) ! discharge per segment
+      real(kind=dp), dimension(3) :: width_sub
       integer :: LL, ka, kb, itp, itpa, friction_type, ibndsect
       integer :: k1, k2
       integer :: jacustombnd1d
@@ -90,13 +96,28 @@ contains
          area = hpr * width
          perim = width + 2 * hpr
 
+         if (japerim == 1 .and. calcConv == 1 .and. map_write_settings%au_split == 1) then
+            au_main(L) = area
+            au_floodplain1(L) = 0.0_dp
+            au_floodplain2(L) = 0.0_dp
+         end if
+
          ! Use the water level at the inner point of the boundary link
          k2 = ln(2, L)
 
          if ((japerim == 1) .and. (calcConv == 1)) then
+            if (map_write_settings%flow_width == 1) then
+               flow_width(L) = width
+               flow_width_main(L) = width
+               flow_width_floodplain1(L) = 0.0_dp
+               flow_width_floodplain2(L) = 0.0_dp
+            end if
             hydrad = area / perim
             perim_sub = [perim, 0.0_dp, 0.0_dp]
             af_sub = [area, 0.0_dp, 0.0_dp]
+            if (map_write_settings%hydraulic_radius == 1) then
+               call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
+            end if
             !
             ! Calculate the conveyance and Chezy value, using the friction parameters on the internal link, using the
             ! local water depth on this boundary link.
@@ -109,10 +130,17 @@ contains
                factor = 1.0_dp
             end if
             call getconveyance(network, hpr, u1(L), q1(L), s1(k2), LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+            if (map_write_settings%chezy_links_split == 1) then
+               czu_main(L) = cz
+               czu_floodplain1(L) = 0.0_dp
+               czu_floodplain2(L) = 0.0_dp
+            end if
             frcu(L) = cz
             frcu_mor(L) = cz
             u_to_umain(L) = 1.0_dp
             q1_main(L) = q1(L)
+            q1_floodplain1(L) = 0.0_dp
+            q1_floodplain2(L) = 0.0_dp
             wu(L) = width
 
             if (hydrad > 0.0_dp .and. cz > 0.0_dp) then
@@ -131,13 +159,31 @@ contains
             call GetCSParsTotal(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, width, CSCalculationOption, network%adm%hysteresis_for_summerdike(:, LL))
          else ! japerim = 1: calculate flow area, conveyance and perimeter.
             cz = 0.0_dp
-            call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub)
+            call GetCSParsFlow(network%adm%line2cross(LL, 2), network%crs%cross, hpr, area, perim, width, &
+                               maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub, width_sub=width_sub)
 
             if (calcConv == 1) then
+               if (map_write_settings%flow_width == 1) then
+                  flow_width(L) = width
+                  flow_width_main(L) = width_sub(1)
+                  flow_width_floodplain1(L) = width_sub(2)
+                  flow_width_floodplain2(L) = width_sub(3)
+               end if
+               if (map_write_settings%hydraulic_radius == 1) then
+                  call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
+               end if
+               if (map_write_settings%au_split == 1) then
+                  au_main(L) = af_sub(1)
+                  au_floodplain1(L) = af_sub(2)
+                  au_floodplain2(L) = af_sub(3)
+               end if
+               q1_floodplain1(L) = 0.0_dp
+               q1_floodplain2(L) = 0.0_dp
                u1L = u1(LL)
                q1L = q1(LL)
                dpt = hu(L)
                cz = 0.0_dp
+               cz_sub = 0.0_dp
                if (network%rgs%timeseries_defined) then
                   factor = max(0.0_dp, (time1 - times_update_roughness(1)) / (times_update_roughness(2) - times_update_roughness(1)))
                else
@@ -156,6 +202,7 @@ contains
                   conv = cz_sub(1) * af_sub(1) * sqrt(af_sub(1) / perim_sub(1))
                end if
 
+
                ! For sediment transport the discharge in the main channel is required:
                ! Qmain/ QT = Kmain/KT -> u_main = Kmain/KT * (AT/Amain)
                if (conv > 0.0_dp) then
@@ -165,6 +212,18 @@ contains
                   frcu_mor(L) = cz_sub(1)
                   call getCrossDischarge(perim_sub, af_sub, cz_sub, q1(L), q_sub)
                   q1_main(L) = q_sub(1)
+                  q1_floodplain1(L) = q_sub(2)
+                  q1_floodplain2(L) = q_sub(3)
+
+                  if (map_write_settings%chezy_links_split == 1) then
+                     ! getconveyance has already converted subsection roughness to Chezy.
+                     ! These coefficients combine through conveyance, not by summation.
+                     ! For network 1D links ifrcutp is R_CHEZY, so get_chezy returns frcu unchanged.
+                     ! czu_main(L) = get_chezy(hu(LL), cz(1), u1(LL), v(LL), ifrcutp(LL))
+                     ! czu_floodplain1(L) = get_chezy(hu(LL), cz(2), u1(LL), v(LL), ifrcutp(LL))
+                     ! czu_floodplain2(L) = get_chezy(hu(LL), cz(3), u1(LL), v(LL), ifrcutp(LL))
+                  end if
+
                else
                   u_to_umain(L) = 1.0_dp
                   cfuhi(L) = 0.0_dp
@@ -274,6 +333,28 @@ contains
 
       if (japerim == 1 .and. calcconv == 1) then
 
+         if (map_write_settings%flow_width == 1) then
+            flow_width(L) = width
+            flow_width_main(L) = width
+            flow_width_floodplain1(L) = 0.0_dp
+            flow_width_floodplain2(L) = 0.0_dp
+         end if
+
+         if (map_write_settings%hydraulic_radius == 1) then
+            if (abs(itp) == 101) then
+               ! Legacy conveyance profiles do not return a wetted perimeter.
+               call store_hydraulic_radii(L, [area, area, 0.0_dp, 0.0_dp], [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp])
+            else
+               call store_hydraulic_radii(L, [area, area, 0.0_dp, 0.0_dp], [perim, perim, 0.0_dp, 0.0_dp])
+            end if
+         end if
+
+         if (map_write_settings%au_split == 1) then
+            au_main(L) = area
+            au_floodplain1(L) = 0.0_dp
+            au_floodplain2(L) = 0.0_dp
+         end if
+
          if (abs(itp) == 101) then ! 1D conveyance
 
             cfuhi(L) = cf
@@ -298,9 +379,44 @@ contains
 
          end if
 
+         if (map_write_settings%chezy_links_split == 1) then
+            czu_floodplain1(L) = 0.0_dp
+            czu_floodplain2(L) = 0.0_dp
+            ! Without subsections, use the same conversion as the link Chezy map output.
+            czu_main(L) = 0.0_dp
+            if (frcu(L) > 0.0_dp) then
+               czu_main(L) = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+            end if
+         end if
+
       end if
 
    end subroutine getprof_1D
+
+   !> Store total and subsection hydraulic radii; dry sections are zero and missing wet perimeters give dmiss.
+   subroutine store_hydraulic_radii(L, areas, perimeters)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
+
+      integer, intent(in) :: L !< Flow link index.
+      real(kind=dp), dimension(4), intent(in) :: areas !< Total, main channel and two floodplain flow areas.
+      real(kind=dp), dimension(4), intent(in) :: perimeters !< Corresponding wet perimeters.
+      real(kind=dp), dimension(4) :: radii
+
+      radii = 0.0_dp
+      where (areas > 0.0_dp .and. perimeters <= 0.0_dp)
+         radii = dmiss
+      end where
+      where (areas > 0.0_dp .and. perimeters > 0.0_dp)
+         radii = areas / perimeters
+      end where
+
+      hydraulic_radius(L) = radii(1)
+      hydraulic_radius_main(L) = radii(2)
+      hydraulic_radius_floodplain1(L) = radii(3)
+      hydraulic_radius_floodplain2(L) = radii(4)
+   end subroutine store_hydraulic_radii
 
    !> Returns true if the given link has a flow1d cross section, so that the 1D flow solver may be used even if no network is loaded.
    ! For now, the only links that can have this property are long culvert links.

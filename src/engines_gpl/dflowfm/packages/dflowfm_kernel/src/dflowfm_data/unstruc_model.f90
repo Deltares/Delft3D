@@ -2147,6 +2147,9 @@ contains
       end if
       call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', map_write_settings%flow_analysis, success)
       call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', map_write_settings%au, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au_split', map_write_settings%au_split, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_hydraulic_radius', map_write_settings%hydraulic_radius, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_width', map_write_settings%flow_width, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', map_write_settings%u1, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', map_write_settings%u0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', map_write_settings%ucvec, success)
@@ -2171,6 +2174,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', map_write_settings%sal, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', map_write_settings%chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links_split', map_write_settings%chezy_links_split, success)
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', map_write_settings%chezy_input, success)
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', map_write_settings%tem, success)
       call prop_get(md_ptr, 'output', 'Wrimap_constituents', map_write_settings%const, success)

@@ -75,6 +75,7 @@ contains
 ! =================================================================================================
    subroutine getConveyance(network, dpt, u1L, q1L, s1L, L, perim_sub, flowarea_sub, conv, cz_sub, cz, flowArea, wetPerimeter, factor_time_interpolation)
       use m_CrossSections     , only: t_CSType, CS_TABULATED, CS_YZ_PROF
+      use precision, only: dp
       
       implicit none
       type(t_network),                intent(in   )    :: network                      !< Network data structure
@@ -103,11 +104,13 @@ contains
       double precision               :: chainage
       type(t_CSType), pointer        :: cross
       
+      cz_sub = 0.0_dp
       n = network%adm%line2cross(L, 2)%c1
       if ( n <= 0) then
          ! no cross section defined on L
          conv = 45d0* flowarea_sub(1) * sqrt(flowarea_sub(1) / perim_sub(1))
          cz = 45d0
+         cz_sub(1) = cz
          return
       else
          ! for YZ profiles CalcCSParsFlow computes the conveyance
@@ -172,6 +175,8 @@ contains
       double precision, parameter                :: eps_acrtot = 1d-10            ! accuracy weighted area parameter == 0d0
       double precision, parameter                :: eps_area = 1d-6               ! accuracy area == 0d0
       
+      q_sub = 0.d0
+      r_sub = 0.d0
       acrtot = 0.d0
       do isec = 1,3
           if (perim_sub(isec) > eps_perim) then

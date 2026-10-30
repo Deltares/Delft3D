@@ -1926,6 +1926,41 @@ contains
       call add_output_config(config_set_map, IDX_MAP_AU, &
                              'Wrimap_flowarea_au', 'au', 'normal flow area between two neighbouring grid cells', &
                              '', 'm2', UNC_LOC_U, description='Write flow areas au to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_MAIN, &
+                             'Wrimap_flowarea_au_split', 'au_main', 'Main channel flow area at flow link', &
+                             '', 'm2', UNC_LOC_U, description='Write geometric 1D flow areas in main channel and both floodplains to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN1, &
+                             'Wrimap_flowarea_au_split', 'au_floodplain1', 'First floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN2, &
+                             'Wrimap_flowarea_au_split', 'au_floodplain2', 'Second floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius', 'Total hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U, &
+                             description='Write total and subsection 1D flow area / wet perimeter; dry=0, unavailable=missing')
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_MAIN, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_floodplain1', &
+                             'First floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2, &
+                             'Wrimap_hydraulic_radius', 'hydraulic_radius_floodplain2', &
+                             'Second floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH, &
+                             'Wrimap_flow_width', 'flow_width', 'Total water-surface flow width at 1D flow link', &
+                             '', 'm', UNC_LOC_U, &
+                             description='Write total, main channel and both floodplain water-surface flow widths; dry links=0')
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_MAIN, &
+                             'Wrimap_flow_width', 'flow_width_main', 'Main channel water-surface flow width at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN1, &
+                             'Wrimap_flow_width', 'flow_width_floodplain1', &
+                             'First floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN2, &
+                             'Wrimap_flow_width', 'flow_width_floodplain2', &
+                             'Second floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_U1, &
@@ -1982,7 +2017,13 @@ contains
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_Q1_MAIN, &
                              'Wrimap_flow_flux_q1_main', 'q1_main', 'Main channel discharge through flow link at current time', &
-                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel to map file')
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel and both floodplains to map file')
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN1, &
+                             'Wrimap_flow_flux_q1_main', 'q1_floodplain1', 'First floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN2, &
+                             'Wrimap_flow_flux_q1_main', 'q1_floodplain2', 'Second floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
 
       call add_output_config(config_set_map, IDX_MAP_FIXED_WEIR_ENERGY_LOSS, &
                              'Wrimap_fixed_weir_energy_loss', 'fixed weir energy loss', 'Fixed weir energy loss', &
@@ -2023,6 +2064,16 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CZU, &
                              'Wrimap_chezy_on_flow_links', 'czu', 'Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U, description='Write the input roughness on flow links to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_MAIN, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_main', 'Main channel Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U, &
+                             description='Write 1D subsection Chezy coefficients, not additive parts of link Chezy, to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN1, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_floodplain1', 'First floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN2, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_floodplain2', 'Second floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_CFU, &
                              'Wrimap_input_roughness', 'cfu', 'Input roughness on flow links', &
                              '', '-', UNC_LOC_U)
