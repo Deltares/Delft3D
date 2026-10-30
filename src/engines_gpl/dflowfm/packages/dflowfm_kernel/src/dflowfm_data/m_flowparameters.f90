@@ -559,6 +559,7 @@ module m_flowparameters
       integer :: z0 = 0 !< roughness heights to map file, 0: no, 1: yes
       integer :: chezy_elements = 0 !< chezy roughness in flow elements to map file, 0: no, 1: yes
       integer :: chezy_links = 0 !< chezy roughness on flow links to map file, 0: no, 1: yes
+      integer :: chezy_links_split = 0 !< Main channel and both floodplain Chezy values on flow links to map file, 0: no, 1: yes
       integer :: chezy_input = 0 !< chezy input roughness on flow links to map file, 0: no, 1: yes
       integer :: tem = 1 !< temperature to map file, 0: no, 1: yes
       integer :: heatflux = 0 !< heatflux to map file, 0: no, 1: yes

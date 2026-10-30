@@ -228,6 +228,9 @@ module m_unstruc_netcdf_data
       integer :: id_cftrt(MAX_ID_VAR) = -1 !< Variable ID for netlink data of friction from trachytopes
       integer :: id_czs(MAX_ID_VAR) = -1 !< Variable ID for flow node data of chezy roughness
       integer :: id_czu(MAX_ID_VAR) = -1 !< Variable ID for flow link data of chezy roughness
+      integer :: id_czu_main(MAX_ID_VAR) = -1 !< Variable ID for main channel Chezy on flow links
+      integer :: id_czu_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain Chezy on flow links
+      integer :: id_czu_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain Chezy on flow links
       integer :: id_cfu(MAX_ID_VAR) = -1 !< Variable ID for flow link data of input roughness
       integer :: id_cfutyp(MAX_ID_VAR) = -1 !< Variable ID for flow link data of input roughness type
       integer :: id_qsun(MAX_ID_VAR) = -1 !< Variable ID for

@@ -2038,6 +2038,16 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CZU, &
                              'Wrimap_chezy_on_flow_links', 'czu', 'Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U, description='Write the input roughness on flow links to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_MAIN, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_main', 'Main channel Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U, &
+                             description='Write 1D subsection Chezy coefficients, not additive parts of link Chezy, to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN1, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_floodplain1', 'First floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN2, &
+                             'Wrimap_chezy_on_flow_links_split', 'czu_floodplain2', 'Second floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_CFU, &
                              'Wrimap_input_roughness', 'cfu', 'Input roughness on flow links', &
                              '', '-', UNC_LOC_U)
