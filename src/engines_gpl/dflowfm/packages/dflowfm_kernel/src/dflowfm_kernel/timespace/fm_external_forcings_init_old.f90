@@ -27,16 +27,23 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_init_old
+module fm_external_forcings_init_old
    use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
+   use fm_external_forcings_init, only: adduniformtimerelation_objects
+   use fm_external_forcings_utils, only: ini_alloc_laterals, allocatewindarrays
+   use fm_external_forcings_update_boundaries, only: addtimespacerelation_boundaries
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
    implicit none(type, external)
 
+   private
+
+   public :: init_old
+
 contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_old(iresult)
+   subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
@@ -1478,7 +1485,7 @@ contains
    end subroutine init_old
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
-   module subroutine init_misc(iresult)
+   subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
       use m_source_sink, only: source_sinks
@@ -1999,4 +2006,4 @@ contains
 
    end subroutine init_misc
 
-end submodule fm_external_forcings_init_old
+end module fm_external_forcings_init_old

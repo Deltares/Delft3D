@@ -357,33 +357,6 @@ contains
             end if
 
             return
-         case ('solvertest')
-            md_soltest = 1
-!           key-value pairs
-            do ikey = 1, Nkeys
-               if (trim(Skeys(ikey)) == 'CFL') then
-                  md_CFL = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'icgsolver') then
-                  md_icgsolver = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'maxmatvecs') then
-                  md_maxmatvecs = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'epscg') then
-                  md_epscg = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'epsdiff') then
-                  md_epsdiff = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'beta') then
-                  read (Svals(ikey), *) sbeta
-               else if (trim(Skeys(ikey)) == 'stoptol') then
-                  read (Svals(ikey), *) stoptol
-               else if (trim(Skeys(ikey)) == 'prectol') then
-                  read (Svals(ikey), *) prectol
-               else if (trim(Skeys(ikey)) == 'jabicgstab') then
-                  jabicgstab = ivals(ikey)
-               else if (trim(Skeys(ikey)) == 'Nsubiters') then
-                  Nsubiters = ivals(ikey)
-               end if
-            end do
-
          case ('convertnetcells')
             md_convnetcells = 1
 

@@ -15,8 +15,7 @@ RUN $installer = 'C:\vs_Community.exe'; \
             '--installPath \"' + $installPath + '\" ' + \
             '--add Microsoft.VisualStudio.Workload.NativeDesktop ' + \
             '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 ' + \
-            '--add Microsoft.VisualStudio.Component.Windows11SDK.26100 ' + \
-            '--add Microsoft.VisualStudio.Component.VC.ATLMFC'; \
+            '--add Microsoft.VisualStudio.Component.Windows11SDK.26100'; \
         $process = Start-Process -FilePath $installer -ArgumentList $installerArguments -Wait -PassThru; \
         if ($process.ExitCode -notin 0, 3010) { \
             throw ('Visual Studio installer exited with code {0}' -f $process.ExitCode) \

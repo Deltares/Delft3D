@@ -96,7 +96,7 @@ module m_transport
    ! work arrays
    real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(numconst,Ndkx)
    real(kind=dp), dimension(:, :), allocatable :: a, b, c, d ! aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
-   real(kind=dp), dimension(:), allocatable :: sol, e ! solution and dummy array in tridag, respectively
+   real(kind=dp), dimension(:), allocatable :: sol, e ! Solution and tridag workspace, solve_vertical uses OpenMP-private storage.
 
    ! for local timestepping
    real(kind=dp), dimension(:, :), allocatable :: sumhorflux !< sum of horizontal fluxes, dim(numconst,Ndkx)

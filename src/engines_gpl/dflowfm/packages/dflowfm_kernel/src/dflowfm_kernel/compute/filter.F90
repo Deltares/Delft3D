@@ -516,7 +516,7 @@ contains
       use m_flow, only: kmx, u0, plotlin, adve
       use m_flowtimes, only: Dts
       use messagehandling, only: LEVEL_ERROR, mess
-      use m_saad, only: jasafe, amuxXXX, solveSystem
+      use m_saad, only: amuxXXX, solveSystem
       use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max
       use m_timer
       use m_get_Lbot_Ltop
@@ -535,8 +535,6 @@ contains
 
       integer :: japrecond
 
-      integer :: jasafe_store
-
       integer :: ierror ! error (1) or not (0)
 
       integer :: lunfil
@@ -550,12 +548,6 @@ contains
       call starttimer(IFILT)
 
       ierror = 1
-
-!  store jasafe
-      jasafe_store = jasafe
-
-!  force thread safe
-      jasafe = 1
 
       dsign = 1.0_dp ! sign of Lvec2 in matrix
       if (itype == 1) then
@@ -744,9 +736,6 @@ contains
       ierror = 0
 
 1234  continue
-
-!  restore jasafe
-      jasafe = jasafe_store
 
       if (ierror /= 0) then
          call mess(LEVEL_ERROR, 'filter_furu: error')

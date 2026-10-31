@@ -5,6 +5,7 @@
 #include <format>
 #include <print>
 #include <stdexcept>
+#include <ranges>
 
 namespace pre_c_sumo
 {
@@ -103,16 +104,10 @@ namespace pre_c_sumo
         write_or_zero("sources_sinks_discharge", discharge_vector);
         write_or_zero("sources_momentum_magnitude_weighted", momentum_magnitude_weighted_vector);
         write_or_zero("sources_momentum_direction", momentum_direction_vector);
-        write_or_zero("C01", constituents_vectors[0]);
-        write_or_zero("C02", constituents_vectors[1]);
-        write_or_zero("C03", constituents_vectors[2]);
-        write_or_zero("C04", constituents_vectors[3]);
-        write_or_zero("C05", constituents_vectors[4]);
-        write_or_zero("C06", constituents_vectors[5]);
-        write_or_zero("C07", constituents_vectors[6]);
-        write_or_zero("C08", constituents_vectors[7]);
-        write_or_zero("C09", constituents_vectors[8]);
-        write_or_zero("C10", constituents_vectors[9]);
+        for (const auto& [index, id] : constituent_ids | std::views::enumerate)
+        {
+            write_or_zero(id, constituents_vectors[index]);
+        }
 
         // After the write, we can clear the list.
         clear();

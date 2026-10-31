@@ -72,7 +72,7 @@ contains
 
       implicit none
 
-      integer :: key, jposhchk_sav, itype
+      integer :: key, jposhchk_sav
       integer :: k, ierror, noddifmaxlevm
       logical :: firstnniteration, last_iteration
       real(kind=dp) :: dif, difmaxlevm
@@ -124,7 +124,14 @@ contains
 
                call s1ini()
                call pack_matrix()
-
+               if (jampi == 1) then
+                  ! 1. Update 2D cell part (indices 1:Ndx)
+                  call update_ghosts(ITYPE_Sall, 1, Ndx, qin(1:Ndx), ierror)
+                  ! 2. Update 3D vertical layers (indices kbot:ktop within Ndkx)
+                  if (kmx > 0) then
+                     call update_ghosts(ITYPE_Sall3D, 1, Ndkx, qin, ierror)
+                  end if
+               end if
                !-----------------------------------------------------------------------------------------------
 
                nonlincont: do ! entry point for non-linear continuity interation
@@ -151,8 +158,7 @@ contains
                      if (jatimer == 1) then
                         call starttimer(IUPDSALL)
                      end if
-                     itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
-                     call update_ghosts(itype, 1, Ndx, s1, ierror)
+                     call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
                      if (jatimer == 1) then
                         call stoptimer(IUPDSALL)
                      end if

@@ -8,7 +8,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with
 # std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
-if (WIN32)
+if(WIN32)
     add_compile_definitions(NOMINMAX)
 
     if(NOT DEFINED ENV{ONEAPI_ROOT} OR "$ENV{ONEAPI_ROOT}" STREQUAL "")
@@ -25,7 +25,7 @@ if (WIN32)
 endif()
 
 message(STATUS "Configuring")
-if (UNIX)
+if(UNIX)
     include(linux_scripts.cmake)
     add_definitions(-DCOMMIT_VERSION=${COMMIT_VERSION})
 endif(UNIX)
@@ -43,7 +43,7 @@ set(conan_lock_source "${checkout_root}/conan.lock")
 set(conan_file_source "${checkout_root}/conanfile.py")
 set(conan_stamp "${CMAKE_BINARY_DIR}/conan/generators/conan.stamp")
 if("${conan_lock_source}" IS_NEWER_THAN "${conan_stamp}" OR
-   "${conan_file_source}" IS_NEWER_THAN "${conan_stamp}")
+    "${conan_file_source}" IS_NEWER_THAN "${conan_stamp}")
     message(FATAL_ERROR
         "The conan configuration has been updated since the last conan install. "
         "Please do a clean build using build.py to ensure dependencies are up to date."
@@ -67,6 +67,8 @@ find_package(triangle CONFIG REQUIRED)
 find_package(Boost CONFIG REQUIRED)
 find_package(precice CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(SWAN_MPI CONFIG REQUIRED)
+find_package(SWAN_OMP CONFIG REQUIRED)
 find_package(inja CONFIG REQUIRED)
 
 # main repository directory
@@ -93,21 +95,26 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Set compiler flags
 enable_language(Fortran C CXX)
 
+# Ensure we are using the supported compilers
+if(NOT "${CMAKE_Fortran_COMPILER_ID}" STREQUAL "IntelLLVM")
+    message(FATAL_ERROR "Intel IFX is the only supported Fortran compiler")
+endif()
+if(NOT "${CMAKE_C_COMPILER_ID}" MATCHES "^(MSVC|IntelLLVM)$")
+    message(FATAL_ERROR "Only MSVC or IntelLLVM are supported C compilers")
+endif()
+if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "^(MSVC|GNU)$")
+    message(FATAL_ERROR "Only MSVC or g++ are supported C++ compilers")
+endif()
+
 # DFlowFM stack size in bytes, used for OpenMP thread stack and Windows linker /STACK flag
 set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes")
 
-if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
-    include(compiler_options/gnu.cmake)
-elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-    include(compiler_options/intel.cmake)
-else()
-    message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
-endif()
+include(compiler_options/compiler_options.cmake)
 include(compiler_options/compiler_warning_targets.cmake)
 include(compiler_options/fortran_styler.cmake)
 
 # Set available build configurations
-set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -115,7 +122,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 
-if (WIN32)
+if(WIN32)
     message(CHECK_START "Setting paths for windows")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
@@ -124,7 +131,7 @@ if (WIN32)
     message(STATUS "pthreads set to ${pthreads_path}")
 
     # Set mpi_include_path
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
+    if("${OSS_MPI}" STREQUAL "IntelMPI")
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
@@ -150,7 +157,7 @@ if (WIN32)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif()
 
-if (UNIX)
+if(UNIX)
     #Packages
     find_package(Threads REQUIRED)
     find_package(PkgConfig REQUIRED)
@@ -161,11 +168,11 @@ if (UNIX)
     set(mpi_module_path ${mpi_include_path})
 endif(UNIX)
 
-if (UNIX)
+if(UNIX)
     set(platform_extension sh)
     set(library_suffix so)
     set(library_prefix lib)
-elseif (WIN32)
+elseif(WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
@@ -178,7 +185,7 @@ endif()
 #     Windows: use prebuild library in ".../getopt/x64"
 #     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
 set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
-if (WIN32)
+if(WIN32)
     set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
@@ -188,11 +195,11 @@ string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(installdir "install_${configuration_type_lower}")
-  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+    set(installdir "install_${configuration_type_lower}")
+    SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-if (CMAKE_GENERATOR MATCHES "Visual Studio")
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
     # Set root name of the projects in the root UI of Visual Studio
     set(visual_studio_source_group_name "Source Files")
     # auto-install debug
@@ -209,7 +216,6 @@ set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
-set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
@@ -242,31 +248,30 @@ endif()
 
 # Determine the configuration to make
 if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
-     OR ${configuration_type} STREQUAL ${dimr_configuration}
-     OR ${configuration_type} STREQUAL ${dwaq_configuration}
-     OR ${configuration_type} STREQUAL ${dwaves_configuration}
-     OR ${configuration_type} STREQUAL ${swan_configuration}
-     OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
-     OR ${configuration_type} STREQUAL ${tools_configuration}
-     OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
-     OR ${configuration_type} STREQUAL ${drr_configuration}
-     OR ${configuration_type} STREQUAL ${rtc_configuration}
-     OR ${configuration_type} STREQUAL ${fbc_configuration}
-     OR ${configuration_type} STREQUAL ${dsle_configuration}
-     OR ${configuration_type} STREQUAL ${fm-suite_configuration}
-     OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
-     OR ${configuration_type} STREQUAL ${all_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-none_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-part_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
-   message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
+         OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
+         OR ${configuration_type} STREQUAL ${dimr_configuration}
+         OR ${configuration_type} STREQUAL ${dwaq_configuration}
+         OR ${configuration_type} STREQUAL ${dwaves_configuration}
+         OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
+         OR ${configuration_type} STREQUAL ${tools_configuration}
+         OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
+         OR ${configuration_type} STREQUAL ${drr_configuration}
+         OR ${configuration_type} STREQUAL ${rtc_configuration}
+         OR ${configuration_type} STREQUAL ${fbc_configuration}
+         OR ${configuration_type} STREQUAL ${dsle_configuration}
+         OR ${configuration_type} STREQUAL ${fm-suite_configuration}
+         OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
+         OR ${configuration_type} STREQUAL ${all_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-all_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-none_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-part_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
+         OR ${configuration_type} STREQUAL ${testbench-tc_configuration}))
+    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
 ### Component configurations
@@ -303,12 +308,6 @@ endif()
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
     include(configurations/components/dwaves_configuration.cmake)
-endif()
-
-# SWAN configuration
-if(${configuration_type} STREQUAL ${swan_configuration})
-    message(STATUS "Generating solution for SWAN ...")
-    include(configurations/components/swan_configuration.cmake)
 endif()
 
 # Flow2D3D (Delft3D4) configuration
@@ -421,14 +420,14 @@ if(UNIX)
 endif()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
-              DESTINATION share)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+    DESTINATION share)
 
 # Install proj.db only if PROJ library is found and being used
 if(TARGET PROJ::proj)
-    install(FILES "$<IF:$<CONFIG:Debug>,${proj_PACKAGE_FOLDER_DEBUG},$<IF:$<CONFIG:RelWithDebInfo>,${proj_PACKAGE_FOLDER_RELWITHDEBINFO},${proj_PACKAGE_FOLDER_RELEASE}>>/res/proj.db" 
-            DESTINATION share/proj)
+    install(FILES "$<IF:$<CONFIG:Debug>,${proj_PACKAGE_FOLDER_DEBUG},$<IF:$<CONFIG:RelWithDebInfo>,${proj_PACKAGE_FOLDER_RELWITHDEBINFO},${proj_PACKAGE_FOLDER_RELEASE}>>/res/proj.db"
+        DESTINATION share/proj)
 endif()
