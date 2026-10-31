@@ -115,6 +115,52 @@ That would add couplings outside the 2‑point link stencil that `s1ini` assembl
 If it does, this is the evidence to move to Strategy 3, or to extend the matrix. That decision is
 taken at Checkpoint E (§10).
 
+### 1.1 Implementation status and review findings (review of 2026‑10‑31)
+
+Branch `all/poc/UNST-10481_IBM_bank_erosion`, compared against its merge base `4877ed02e5`
+(8 commits; 14 source files, about 3,100 added lines). The review traced every source change
+against this plan, ran c05 and c02 (Debug build, focused targets `dflowfm-cli`, `dflowfm_dll`,
+`dimr`), and made a short scratch run of the annulus cut‑cell case c08 with `Conveyance2D = -1`.
+
+**Status per work package.**
+
+| WP | Status | Notes |
+|---|---|---|
+| W0 | Not delivered as a note | Pre‑implementation trials exist (§7.2 items 6–7); A1–A11 and the M1 error measurement are still open. |
+| W1 | Implemented | All six keywords read, validated and written only when non‑default; U23 round trip passes. Open: F4, F5, F6. |
+| W2 | Implemented | `ibm_check_cartesian` + MPI `reduce_int_min` of the verdict; U1–U8 pass. Open: `dx`/`dy` are not reduced across ranks (F10). |
+| W3 | Implemented, **design deviation** | `ibm_build_geometry` measures the clipped polygons `nd(n)%x/y` produced by `cutcelwu` instead of recomputing the polygon/net intersections independently (§5.1 Lifecycle 4). The cross‑check therefore only checks self‑consistency of `ba`/`wu` with `nd` and cannot detect wrong cut polygons (F1, F3). `cutcelwu` got an IBM‑specific crossing path (k‑d tree crossing count per net link, interior‑vertex test). |
+| W4 | Implemented (weights) | `ibm_set_perot_weights` overrides `wcx1/wcy1/wcx2/wcy2` on cut‑cell sides with `±(x_f − c)·l_f/A_w`; sign convention matches `setlinktocenterweights`. `PerotWeightUpdate` rejected. Projection safeguard **not** implemented (F5). Model‑level U27 not done. |
+| W4b | Implemented | `dxi_wet` used in `furu` `gdxi`; `acl_wet` in the `advec` `kmx = 0` `volu`/`advel` weighting; wet bed by LSQ fit from uncut wet neighbours within two link hops, applied before `setbobs` in `flow_geominit` and again after restart (F9). Hooks use per‑link `allocated`/`size` checks instead of a precomputed override array (F11). |
+| W5 | Not started | No `.dia` report (`ncut`, `nfloored`, `min_area_frac`, `area_deficit`, `ndegenerate` are computed but never written; only `nclipped_dn` is warned), no `Wrimap_immersed_boundary`, no timer, no `irov` warning. |
+| W6 | Inputs generated, **not runnable** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); DVC pointers staged locally, not pushed or committed. No IBM case runs (F1–F4). No `verify_metrics.py`, references or TestBench XML. |
+| W7–W9 | Not started | As planned. |
+
+Unit tests present: `test_ibm_cartesian` (U1–U8), `test_ibm_geometry` (U9–U13, U15, U16, U28,
+U29, Cutcelllist validation), `test_ibm_momentum` (U25, U27) and the IBM MDU round trip (U23).
+They exercise the pure routines of `m_immersed_boundary` on hand‑made polygons. **None of them
+exercises the integrated `cutcelwu` → `ibm_build_geometry` path**, which is where F1–F3 occur.
+Still missing: U14 as a `cutcelwu` case, U17–U22, U24, U26, U30, and the new U31–U36 (§7.1).
+
+**Findings** (severity: B = blocks running the cases; H = high; M = medium; L = low).
+
+| ID | Sev. | Finding | Evidence | Integrated in |
+|---|---|---|---|---|
+| F1 | B | **Polygon through a net node drops faces from cut polygons.** In the IBM branch of `cutcelwu` (`K/dflowfm_kernel/prepost/cutcelwu.f90`, IBM crossing block in the `n12 ≥ 4` loop) a k‑d tree crossing at a link *end point* sets `ja = 1`. When both link nodes are outside the polygon (`kc ≠ 1`), the `n12 = 5` branch adds no vertices, so the cut polygon of the cell loses that face while `wu` stays full. `ibm_build_geometry` then fails with "wet link face could not be recovered from the cut‑cell polygon". The legacy path only calls `crosslinkpoly` when a node has `kc = 1` and does not have this problem. | c05 fails at link 4960. All oblique channel layouts hit it: the banks `y = 60 + 0.5375 x` and `y = 560 + 0.5375 x` pass exactly through nodes (400, 275), (2400, 1350), (400, 775), (2400, 1850) at dx = 25 m; 2–6 node contacts in c05, c06, c18, c21. | §5.1 degenerate cases; W3b; U31; §7.2 item 5 |
+| F2 | B | **Open‑boundary links next to cut cells are rejected.** `ibm_state%cell_class` is sized `ndx` and defaults to 2 (solid). For a boundary link `ln(1, L)` is the virtual boundary node, so `ibm_set_wet_link_metrics` raises "active IBM cut link is adjacent to a solid cell" for every wet boundary link of a cut cell. | Code trace (`m_immersed_boundary.f90`, `ibm_set_wet_link_metrics`; `ba(ln(1,L)) = ba(ln(2,L))` in `flow_geominit.f90` confirms the convention). c05 hits this as soon as F1 is fixed (banks cross both open boundaries). | §5.1; W3b; U32 |
+| F3 | B | **Several polygons per solid give wrong geometry.** `cutcell_list` processes the polygons one at a time and `cutcelwu(5)` rebuilds each cut polygon from the full cell, so a cell cut by two polygons keeps only the last cut. Cells straddling an edge *shared* by two adjacent polygons are not fully inside either polygon and survive as active cut cells inside the solid. Overlapping polygons are safe away from the interface. | Scratch run of c08: **97 active cells lie entirely inside the solid** with area fraction 0.13–1.0 (along the shared inner‑disk / gap arc), and 112 cells have an area fraction more than 0.1 off the true wet fraction. Affects the annulus cases (c07–c09, c22–c27) and, by code reading, 6–8 corner cells of each basin case (c10–c15, c28–c33). | §5.1; W3b; U33; §7.2 items 5–6 |
+| F4 | B | **`BedlevType = 1` requires `Conveyance2D ≤ 0`.** The FM default `Conveyance2D = 1` makes `flow_geominit` call `qnerror('bed-level type and conveyance type do not match')`. The generated MDUs do not set it. | c02 stops at initialisation with that message. | §5.5; W1; §7.2 item 4 |
+| F5 | H | `ImmersedBoundaryTangentialCorrection = 1` and `ImmersedBoundaryProjection = 1` are accepted but not implemented; `ImmersedBoundarySmallEdgeFrac` only sets a flag. | c15 would run identically to c14 without any message. | §5.5; W1 |
+| F6 | H | The `jsferic` check in `readMDUFile` runs before `loadNetwork`, so it always passes. A regular lat/lon mesh passes the lattice test. | `readMDUFile` is called before `loadNetwork` in `loadModel`. | §5.5; W2; U24 |
+| F7 | M | Cell classification uses `area_tolerance = max(1e‑12, ImmersedBoundaryCartesianTol)`. Cells with `area_frac ≤ tol` become class 2 although `cutcelwu` keeps them active with a floored `ba`; their wet links then fail with "adjacent to a solid cell". Cells with `area_frac ≥ 1 − tol` keep the legacy cut‑cell weights. | Code trace (`ibm_build_geometry`). With `CartesianTol` up to 1e‑3 this is reachable. | §5.1; W3b; U34 |
+| F8 | M | Cells that only touch the polygon at a node are flagged `kfs = 1` by `cutcelwu(4)` and get the legacy normalised `wcxy` weights, but are class 0, so the IBM Perot override never reaches them. | Code trace (`setlinktocenterweights.f90`, `kfs` branch). | §5.1; W3b |
+| F9 | M | Map restart re‑applies the wet‑bed fit, which would overwrite morphologically evolved `bl` of cut cells (§5.3 M2 forbids this). Idempotent for pure hydrodynamics. | `load_restart_file` → `update_ibm_wet_bed_after_restart`. | §9 Restart row; W4b |
+| F10 | M | MPI not exercised: cut cells at the outer edge of the ghost layer may have fewer than three uncut neighbours, so the wet‑bed fit raises a hard error; `dx`/`dy` and `x0`/`y0` are not reduced across ranks. c06 has never run. | Code trace (`ibm_set_wet_bed`, `flow_geominit` Cartesian block). | §5.6; W3b; U36 |
+| F11 | L | Hot‑loop hooks in `furu`/`advec` do `allocated`/`size`/index checks per link inside OpenMP loops. Results with IBM off are unchanged, but the overhead is unmeasured. | Diff of `furu.f90`, `advec.f90`. | W4b; Stage 0 |
+| F12 | L | The IBM error message in `cutcelwu` says "a cut cell has no active grid node" but counts nodes with `kc = 1`, i.e. *inside* the polygon (solid). The `cycle` after `mess(LEVEL_ERROR)` is unreachable because `threshold_abort = LEVEL_ERROR` aborts. | Code trace. | W3b |
+| F13 | L | `ibm_find_crossed_links` closes the polygon with `xpl(1)` and assumes one polygon per `.pol` file; `dmiss`‑separated multi‑polygon files are not handled. | Code trace. | §5.5; W3b |
+| F14 | L | The full `fm-suite` build fails in the unrelated `preC-SUMO` test target (`undefined symbol …basic_stringstream…str`); D‑Flow FM targets build. | Build log, 2026‑10‑30. | §11 |
+
 ---
 
 ## 2. Verified current architecture
@@ -416,14 +462,15 @@ end type
 
 | Case | Handling |
 |---|---|
-| Polygon vertex / segment through a net node | Snap: if the distance from the node to the polygon is < `tol_snap = 1e‑8·dx`, treat the node as **solid**. This makes the edge fraction exactly 0 or 1. Same rule in IBM and in the cross‑check. |
+| Polygon vertex / segment through a net node | Snap: if the distance from the node to the polygon is < `tol_snap = 1e‑8·dx`, treat the node as **solid**. This makes the edge fraction exactly 0 or 1. Same rule in IBM and in the cross‑check. **The rule must be applied in `cutcelwu` itself (F1):** a crossing at a link end point is not a crossing, and `kc` of snapped nodes is set before the cut polygons are built. A cell that only touches the polygon at a node is not a cut cell: no `kfs = 1` flag, no legacy normalised weights (F8). |
 | Segment collinear with a cell face | Face fully open or fully closed after snapping; the cell is not cut (aligned control case tests this). |
-| Very small active area (`area_frac < ImmersedBoundaryMinAreaFrac`, default 0.1) | Floored by the existing `Baorgfracmin` mechanism (IBM sets `Baorgfracmin = ImmersedBoundaryMinAreaFrac` if the user did not). Counted in `nfloored`; `area_deficit` reported. |
+| Very small active area (`area_frac < ImmersedBoundaryMinAreaFrac`, default 0.1) | Floored by the existing `Baorgfracmin` mechanism (IBM sets `Baorgfracmin = ImmersedBoundaryMinAreaFrac` if the user did not). Counted in `nfloored`; `area_deficit` reported. Classification uses its own geometric tolerance (`1e‑12` relative), **not** `ImmersedBoundaryCartesianTol` (F7): every cell that `cutcelwu` keeps active with `0 < area_frac < 1` is class 1. |
 | Corner (polygon vertex inside a cell) / multiple crossings in one cell | Allowed if the active region is still one polygon. The normal is the area‑weighted mean of the sub‑segments. `nseg > 1` is flagged. If the active region splits into ≥2 parts (narrow solid spit): error in the POC. |
+| Cell cut by more than one polygon, or polygons sharing an edge | **Not supported by `cutcelwu`** (F3): polygons are cut one at a time and the last cut wins; cells straddling a shared edge stay active inside the solid. Either clip all polygons of the `Cutcelllist` together (classify a node as solid if it is inside *any* polygon; build each cut polygon once from the union), or detect it and stop with an error naming the cell. Until then, inputs must use one polygon per connected solid, or overlapping polygons whose overlaps lie entirely inside the solid. |
 | Narrow channel (< 2 fluid cells between banks) | IP stencil falls on the opposite bank. Use BI‑constrained interpolation. If still singular, fall back to the nearest fluid cell value and count it in `ndegenerate`. Warn when >0. |
 | Insufficient stencil (IP outside local domain) | MPI ghost layers (4) cover IP distances ≤ ~1.5 dx. If the stencil is not local: error naming the cell (do not silently degrade). |
-| Boundary near partition edge | Geometry is computed for owned and ghost cells. Ghost‑value fill uses only local data. `ucx/ucy` are already exchanged with `update_ghosts(ITYPE_SALL)`. |
-| Polygon crossing an open boundary | Allowed: cut boundary links keep their cut `wu`. Cells adjacent to open boundaries are excluded from ghost stencils (nearest‑fluid fallback). |
+| Boundary near partition edge | Geometry is computed for owned and ghost cells. Ghost‑value fill uses only local data. `ucx/ucy` are already exchanged with `update_ghosts(ITYPE_SALL)`. The wet‑bed fit of a cut cell at the outer edge of the ghost layer may lack neighbours (F10): fit owned cells only and take ghost `bl` from `update_geom(2)`. |
+| Polygon crossing an open boundary | Allowed: cut boundary links keep their cut `wu`. Cells adjacent to open boundaries are excluded from ghost stencils (nearest‑fluid fallback). Virtual boundary nodes (`ln(1, L)`, `L > lnxi`) are **not** solid cells (F2): give them the class and wet centroid of the interior cell `ln(2, L)` (mirrored across the boundary face), or skip M1/M2 on boundary links and keep `dxi`/`acl`. |
 
 **Wall condition**: free slip only in the POC. The design keeps `nx, ny, seg_len` and the
 wall‑distance per cut cell, which is exactly what the existing `walls(:,nw)` treatment needs
@@ -687,7 +734,23 @@ MDU files of existing models do not change):
 
 Reusing `Cutcelllist` avoids a second polygon reader and a second cut‑cell pipeline in the POC.
 A dedicated `ImmersedBoundaryFile` can be added later without breaking input. **Decision D1
-(before coding)** confirms this choice.
+(before coding)** confirms this choice. Each `.pol` file may hold several `dmiss`‑separated
+polygons; the IBM crossing search must close and search each one separately (F13).
+
+**Additional configuration rules (review 2026‑10‑31).**
+
+- `BedlevType = 1` needs `[geometry] Conveyance2D ≤ 0` (FM default is 1, which `flow_geominit`
+  rejects for `BedlevType < 3`). With IBM on, check this in `readMDUFile` and stop with
+  `ImmersedBoundary=1 requires Conveyance2D = -1 or 0 with BedlevType=1` (F4). The POC cases use
+  `Conveyance2D = -1` (R = `hu`), the closest to the analytical Chézy solutions.
+- Keywords whose feature is not implemented yet are **rejected**, not silently ignored (F5):
+  `ImmersedBoundaryTangentialCorrection = 1` until W7, `ImmersedBoundaryProjection = 1` until
+  `ibm_apply_velocity_bc` exists (W4), and any non‑default `ImmersedBoundarySmallEdgeFrac` until
+  W8 (or warn that it only flags links).
+- `jsferic` is known only after the net file is read. Check `jsferic == 0` in `flow_geominit`
+  next to the Cartesian check, not in `readMDUFile` (F6). `readMDUFile` keeps the checks on keys
+  it owns (`kmx`, `FlowSolver`, `Nonlin2D`, `AdvecType`, `BedlevType`, `Conveyance2D`,
+  `PerotWeightUpdate`, `PerotType`).
 
 **Cartesian criteria [R]** — all must hold (computed on all 2D net cells local to the rank, then
 `reduce` so every rank agrees):
@@ -751,7 +814,8 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
   owned and ghost copies agree (A3; verified by a test that compares `ba`/`edge_frac` after
   `update_ghosts`).
 - The Cartesian check and diagnostics are reduced with the existing `reduce_*` helpers in
-  `partition.F90`.
+  `partition.F90`. Reduce the verdict **and** `dx`, `dy` (min/max) and `x0`, `y0` (min), so all
+  ranks use the same lattice (F10; today only the verdict is reduced).
 - The velocity BC is computed on owned cells. Ghost‑cell values come from the existing
   `ITYPE_SALL` exchange of `ucx/ucy`.
 - Stencil radius: ≤ 2 cells; 4 cell‑based ghost layers (`partition.F90:447`) are sufficient.
@@ -795,6 +859,8 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 - Algorithm: `prop_get` plus checks against `kmx`, `flow_solver`, `nonlin2D`, `md_cutcelllist`.
 - Compatibility: keywords written only when non‑default.
 - Done when: the MDU round‑trip unit test passes and the error tests pass.
+- Status (2026‑10‑31): implemented, U23 passes. Still to do: `Conveyance2D` check (F4), reject
+  unimplemented keywords (F5), move the `jsferic` check to W2 (F6), U24.
 
 **W2 — Cartesian detection**
 
@@ -804,6 +870,8 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 - Depends on: W1.
 - Algorithm: §5.5 criteria; MPI reduction via `partition.F90` helpers.
 - Done when: unit tests U1–U8 pass, and an existing non‑IBM model shows unchanged results.
+- Status (2026‑10‑31): implemented, U1–U8 pass. Still to do: `jsferic == 0` check here (F6);
+  reduce `dx`, `dy`, `x0`, `y0` across ranks (F10).
 
 **W3 — IBM geometry build**
 
@@ -818,6 +886,10 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
   `dAREAN` (`cutcelwu.f90:383`).
 - Compatibility: none when off.
 - Done when: U9–U16 pass, and the cross‑check matches `cutcelwu` on the oblique‑channel mesh.
+- Status (2026‑10‑31): implemented with a design deviation — the geometry is measured from the
+  `cutcelwu` polygons `nd(n)%x/y` instead of an independent recomputation, so the cross‑check
+  cannot detect wrong cut polygons. The oblique‑channel cross‑check fails (F1). Completion moves
+  to W3b.
 
 **W4 — Wet‑polygon Perot reconstruction, M3 (slice 1)**
 
@@ -838,6 +910,10 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
   bit‑identical.
 - Done when: U17 and U27 pass, and the oblique IBM case reconstructs uniform flow in cut cells to
   ≤ 1e‑10 relative in a frozen‑velocity test (U27 at model level).
+- Status (2026‑10‑31): weights implemented, U27 passes, `PerotWeightUpdate` rejected.
+  `ibm_apply_velocity_bc` (projection) and U17 not implemented; the keyword must be rejected
+  meanwhile (F5). Model‑level U27 blocked by W3b. Cells flagged cut by `cutcelwu` but classed
+  fluid keep legacy weights (F8, fixed in W3b).
 
 **W4b — Consistent pressure gradient and cut‑link geometry, M1 step 1 + M2 (slice 1)**
 
@@ -855,6 +931,51 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 - Compatibility: matrix structure unchanged (2‑point, symmetric); IBM off ⇒ override array
   unused.
 - Done when: U25, U26, U28 and U29 pass, and I9 (wind set‑up) meets its stage‑1 criterion.
+- Status (2026‑10‑31): implemented; U25, U28 and U29 pass, U26 belongs to W7. The wet bed is
+  applied in `flow_geominit` just before `setbobs` (after `setbedlevelfromextfile`), and again
+  after a restart (F9: skip it when `bl` comes from a map/rst file, or apply only to cells whose
+  `bl` was never fitted). The hooks use per‑link `allocated`/`size` checks inside the OpenMP loops
+  instead of the planned precomputed override arrays (`gdxi_ibm(L)`, `acl_ibm(L)`); replace them
+  and measure the IBM‑off overhead (F11). Open‑boundary links are blocked by F2.
+
+**W3b — Geometry robustness of the integrated cut‑cell path (slice 1, added after review)**
+
+- Objective: make `cutcelwu` + `ibm_build_geometry` correct for the geometries of §7.2, and test
+  the integrated path, not only the pure routines.
+- Files: `K/dflowfm_kernel/prepost/cutcelwu.f90`, `cutcell_list.f90`, `m_immersed_boundary.f90`,
+  `flow_geominit.f90`; new integrated unit tests in `test/src/test_ibm_geometry.f90` (or a new
+  `test_ibm_cutcell.f90`, added to `F90FILES` and `F2HFILES`).
+- Depends on: W3, W4, W4b. Blocks W5 and W6.
+- Tasks:
+  1. **Node snapping in `cutcelwu` (F1, F8).** Before building cut polygons, set `kc = 1`
+     (solid) for every node within `tol_snap = 1e‑8·dx` of the polygon. Count a link as crossed
+     only if its two nodes have different `kc`; ignore crossings at a link end point. A cell
+     without a crossed link and without a polygon vertex strictly inside is not cut (`kfs`
+     unchanged). Fix the misleading "no active grid node" message and the unreachable `cycle`
+     (F12).
+  2. **Open‑boundary links (F2).** Treat virtual boundary nodes as the mirror of their interior
+     cell (class and wet centroid reflected across the boundary face), or exclude boundary links
+     from the M1/M2 overrides and keep `dxi`/`acl`. Choose the option that keeps the open
+     boundary flux consistent; document it in §5.1.
+  3. **Multiple polygons (F3, F13).** Preferred: clip against all polygons of the
+     `Cutcelllist` together (`kc = 1` if inside any polygon; one cut polygon per cell from the
+     union, e.g. using the existing `jaalltogether`/`jamasks` storage of intersections in
+     `cutcell_list`). Minimum: detect a cell cut by more than one polygon, or an active cell whose
+     wet polygon lies inside another polygon, and stop with an error naming the cell. Close and
+     search each `dmiss`‑separated polygon separately.
+  4. **Classification tolerance (F7).** Use a geometric tolerance (`1e‑12` relative) for
+     class 0/1/2; every active cell with `0 < area_frac < 1` is class 1.
+  5. **MPI (F10).** Fit the wet bed on owned cells only; take ghost `bl` from `update_geom(2)`;
+     do not raise an error for a ghost cell with too few neighbours.
+  6. **Independent cross‑check (W3 intent).** At least for the cut cells, recompute the wet area
+     from the polygon (half‑plane clipping of the square) and compare it with `ba` before the
+     floor. This would have caught F1 and F3.
+  7. **`>100` vertex limit.** Fix the `split_pol` path of `cutcelwu` (§7.2 item 6), so that a
+     curved bank can be one polygon. This removes the need for sector polygons (F3).
+- Done when: U31–U36 pass; c05, c09, c14 and the c06 partitioned run initialise without IBM
+  errors; for c05, c09 and c14 no active cell lies entirely inside the solid and every cut cell's
+  area fraction matches the analytic wet fraction to ≤ 1e‑10 (checked by
+  `verify_metrics.py --geometry`).
 
 **W5 — Diagnostics and output**
 
@@ -862,9 +983,12 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 - Files: `m_immersed_boundary.f90` (`ibm_report`); map definitions/writes in
   `K/dflowfm_io/unstruc_netcdf.f90` (pattern near 3993‑4140, `t_unc_mapids` in
   `unstruc_netcdf_data.f90`); `[output] Wrimap_immersed_boundary` in `unstruc_model.f90` near 2130.
-- Depends on: W3, W4, W4b.
+- Depends on: W3, W3b, W4, W4b.
 - Done when: the variables appear in the map with UGRID attributes, and the TestBench comparer
   reads them.
+- Status (2026‑10‑31): not started. `ncut`, `nfloored`, `min_area_frac`, `area_deficit` and
+  `ndegenerate` are computed in `ibm_build_geometry` but not reported; only `nclipped_dn` is
+  warned. Also add the `irov /= 0` warning of §5.5.
 
 **W6 — Verification cases (slice 1)**
 
@@ -876,8 +1000,12 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
     tracked with DVC (`HOW_TO_DVC.md`);
   - `<testCase>` entries in a new include or in `configs/include/dimr_dflowfm_*.xml`, wired into
     `configs/dimr/dimr_dflowfm_lnx64.xml` and the win64 counterpart.
-- Depends on: W4, W4b, W5.
+- Depends on: W4, W4b, W3b, W5.
 - Done when: the acceptance criteria in §8, stage 1, are met.
+- Status (2026‑10‑31): generator and inputs for c01–c33 exist (§7.2 item 10); DVC pointers are
+  staged locally, not pushed or committed. The generator must be updated (§7.2 items 4–5:
+  `Conveyance2D = -1`, no bank through net nodes, single or overlapping polygons) and the cases
+  regenerated before `dvc push`. No case has run to completion with IBM on.
 
 **W7 — Tangential pressure correction, M1 step 2: stability study (slice 2)**
 
@@ -983,6 +1111,25 @@ Unit tests for the momentum operators (§5.3) live in a new file `test/src/test_
 
 These run in CI with the existing kernel gtest target, in well under 1 s total.
 
+**Integrated cut‑cell tests (W3b, added after review).** U1–U30 call the pure routines of
+`m_immersed_boundary` on hand‑made polygons. The failures F1–F3 occur in the integrated path
+`cutcell_list` → `cutcelwu(4/5)` → `ibm_build_geometry`, which no test exercised. These tests set
+up a small in‑memory net (`network_data`) and polygon(s), run that path, and compare `ba`, `wu`,
+`nd` and the IBM state with analytic values:
+
+| ID | Test | Expected |
+|---|---|---|
+| U31 | Oblique bank passing exactly through a net node (slope 43/80 through a lattice node, as in c05) | No missing faces; every wet face recovered; edge fractions ∈ [0, 1]; touched‑only cells not flagged cut (F1, F8) |
+| U32 | Bank crossing an open boundary (cut cell next to a boundary link) | IBM build succeeds; the boundary link has a valid `dxi_wet`/`acl_wet` or keeps `dxi`/`acl` as decided in W3b (F2) |
+| U33 | Two polygons sharing an edge across the fluid region, and two half‑planes meeting at a corner inside a cell | Union clipping: exact wet area, no active cell inside the solid; or, minimum fix, an error naming the cell (F3) |
+| U34 | Sliver cut with `area_frac` < `ImmersedBoundaryCartesianTol` and a near‑full cut with `area_frac` > 1 − tol | Both class 1, IBM weights applied (F7) |
+| U35 | `.pol` file with two `dmiss`‑separated polygons | Both polygons cut; crossings counted per polygon (F13) |
+| U36 | Partitioned run (2 ranks) of a small oblique case: `ba`, `wu`, `edge_frac`, `bl` on ghost cells after `update_ghosts` | Identical to owner values; no wet‑bed error on outer ghost cells (F10) |
+
+U36 is an MPI test and may live in TestBench (I5) instead of gtest. Configuration error tests
+(U24) are extended with `Conveyance2D = 1`, `ImmersedBoundaryTangentialCorrection = 1`,
+`ImmersedBoundaryProjection = 1` (F4, F5) and a spherical net in `flow_geominit` (F6).
+
 ### 7.2 End‑to‑end cases (TestBench, `ref="dimr"`, DVC data)
 
 Paper §4.1 inputs [P]:
@@ -1053,7 +1200,7 @@ I9 parameters [R]:
 - 12 h run; spin‑up seiches damped by friction.
 - Metrics: `max|u|` and `mean|u|` at the end, and the plane‑fit residual of ζ.
 
-**Test‑case creation (to do in W6, not yet created).**
+**Test‑case creation (W6; first generation done 2026‑10‑31, needs regeneration — see item 10).**
 
 1. **Location (D5).** Put the cases under
    `test/deltares_testbench/data/cases/e02_dflowfm/f600_ibm/`. Follow `HOW_TO_DVC.md`:
@@ -1078,7 +1225,7 @@ I9 parameters [R]:
    | c10_lake_at_rest_ibm | I8 | `Cutcelllist` | on |
    | c11_wind_setup_aligned | I9 floor | `DryPointsFile`, basin edges on grid lines | off |
    | c12 / c13 / c14_wind_setup_{staircase, cutcell, ibm} | I9 | as above | off / off / on |
-   | c15_wind_setup_ibm_tangential | I9 | `Cutcelllist`, `ImmersedBoundaryTangentialCorrection = 1` | on |
+   | c15_wind_setup_ibm_tangential | I9 | `Cutcelllist`, `ImmersedBoundaryTangentialCorrection = 1` (runnable only after W7; rejected until then, F5) | on |
    | I6 refinement variants | I6 | same generator, other `dx` | nightly |
 
 3. **Generator.** Write a deterministic Python generator `f600_ibm/doc/generate_cases.py`
@@ -1101,6 +1248,8 @@ I9 parameters [R]:
      (`unstruc_inifields.f90:1025‑1028`).
    - `BedlevType = 1`; bed samples at **all** cell centres of the box, including the solid
      (smooth bed for I1–I7, I9; +10 m bank top inside the solid for I8).
+   - `[geometry] Conveyance2D = -1` in **every** case. The FM default (1) is rejected with
+     `BedlevType = 1` (F4: c02 stopped with "bed-level type and conveyance type do not match").
    - Uniform wind: `[Meteo] quantity = windx/windy`, `forcingFileType = uniform` (pattern
      `f011_wind/c030_comp_uniform_standard`); `[wind] ICdtyp = 1`, `Cdbreakpoints = 0.0012`,
      `Rhoair = 1.2`.
@@ -1112,17 +1261,34 @@ I9 parameters [R]:
      part. This replaces the §5.1 rule "polygon crossing an open boundary ⇒ error": cut boundary
      links are allowed, because continuity uses the cut `wu`. Cells next to open boundaries are
      excluded from ghost stencils.
-   - *Oblique channel:* offset the centreline so that the bank/boundary intersections do not
-     coincide with net nodes (y₀ = 310 m at dx = 25 m). Leave the exact‑node degeneracy to I1b
-     and U11/U12.
+   - *Oblique channel:* offset the centreline so that neither the bank/boundary intersections
+     **nor any interior point of a bank** coincides with a net node. The first generation used
+     y₀ = 310 m: the boundary intersections were clear, but the banks y = 60 + (43/80)·x and
+     y = 560 + (43/80)·x pass exactly through 2, 4 and 6 nodes at dx = 50, 25 and 12.5 m, which
+     triggers F1. **Use y₀ = 311 m** (banks at 61 and 561 m): verified node‑free at all three
+     resolutions. The generator must assert that no lattice node lies within 1e‑6·dx of any
+     non‑axis‑aligned solid edge. The exact‑node degeneracy stays covered by I1b, U11/U12 and
+     U31.
    - *Annulus:* open the ring north of the centre by removing net cells, giving a discharge inflow
      on the east face and the analytical ζ(r) outflow on the west face, so no periodic boundary is
      needed (A6). The removed strip must be **wider than 2 cells**. A pre‑implementation trial with
      a 2‑cell strip (4 m at dx = 2 m) gave `Boundary link … already claimed` and **0** open
      outflow cells: the inflow polyline claimed the outflow links. Use ≥ 4 cells and verify
      `nr of open bndcells` for both boundaries in the `.dia` file.
+     **The first generation deviated:** it closed the gap with two solid "gap" polygons and built
+     the banks from 8 inner and 8 outer sector polygons (18 polygons) to stay below the 100‑vertex
+     limit. The polygons share edges, which `cutcelwu` does not support (F3): the c08 scratch run
+     had 97 active cells entirely inside the solid. Their straight radial edges also lie on the
+     45°/135° diagonals through the lattice origin, so they pass through net nodes (F1). Until
+     W3b tasks 3 or 7 are done, the annulus cases are **not valid**. After W3b: one polygon per
+     bank (inner disk, outer region via union of overlapping pieces or one polygon once the vertex
+     limit is fixed), and the gap made by removing net cells as specified above.
    - *Basin:* solid = four half‑plane quadrilaterals outside the rotated rectangle (no polygons
-     with holes).
+     with holes). The half‑planes overlap, which is safe away from the fluid, but each corner cell
+     of the rectangle is cut by two polygons and keeps only the last cut (F3; 6–8 cells per case).
+     Valid once W3b task 3 (union clipping, or detection with an error) is done. Moving the
+     corners onto lattice nodes is not practical at tan β = 43/80: all four corners land on
+     nodes only if both side lengths are multiples of 25·√(80² + 43²) ≈ 2270 m at dx = 25 m.
 6. **Known limitation of the existing cut‑cell code (must be handled in W0/W3).** In a
    pre‑implementation trial with the current Release build, `Cutcelllist` crashed
    (SIGSEGV, `forrtl 174`) for a polygon with **more than 100 vertices**. That is the branch that
@@ -1133,6 +1299,9 @@ I9 parameters [R]:
      ≥ 2 pieces).
 
    Decide in W0. The IBM geometry module itself must not have a vertex limit.
+   **Review 2026‑10‑31:** splitting curved banks into several polygons is **not** a safe
+   work‑around, because `cutcelwu` cuts one polygon at a time (F3). Fixing the `split_pol` path is
+   now W3b task 7 and the preferred option.
 7. **Pre‑implementation smoke‑run results** (non‑IBM variants only; Release build; for planning,
    not as references):
 
@@ -1147,10 +1316,23 @@ I9 parameters [R]:
    small‑cell CFL risk (§9): report the IBM Δt against c03/c04, and calibrate D3 (φ) in W6. All
    cases are fast enough for CI.
 8. **Metrics script.** Write `f600_ibm/doc/verify_metrics.py` for the §7.2 metrics. It needs only
-   netCDF4 and numpy.
+   netCDF4 and numpy. Add a `--geometry` mode that reads the map file (`mesh2d_flowelem_ba`, face
+   bounds) and the case metadata and reports active cells lying entirely in the solid and cut
+   cells whose area fraction differs from the analytic wet fraction (the check used for F3).
 9. **TestBench wiring.** Once references exist, add the `<testCase>` entries in a new include,
    wired into `configs/dimr/dimr_dflowfm_lnx64.xml` (and win64), plus c06 in the parallel
    config.
+10. **First generation and smoke runs (2026‑10‑31, Debug build).**
+    - `f600_ibm/doc/generate_cases.py` writes c01–c15 (I1–I9) and c16–c33 (I6 at dx/2 and 2·dx
+      for the oblique channel, the annulus and the basin), with input and doc folders and the
+      family doc. Structural checks pass (UGRID connectivity and orientation, sample counts,
+      ≤ 100 vertices per polygon, MPI `dimr.xml`). DVC pointers are staged locally, not pushed.
+    - c05 (I4) stops in IBM initialisation: "wet link face could not be recovered" (F1). After F1,
+      F2 is expected on the open‑boundary links.
+    - c02 (I1b) passes the IBM geometry build but stops on `Conveyance2D` (F4).
+    - c08 (I7 cut cells, IBM off; scratch copy with `Conveyance2D = -1`, 3 min) runs, but has 97
+      active cells entirely inside the solid (F3).
+    - Before `dvc push`: regenerate with items 4–5 applied, rerun c01–c15, then follow item 1.
 
 The `<path version="DVC">` convention is used as in `dimr_dflowfm_parallel.xml:489`.
 
@@ -1217,6 +1399,7 @@ relative to I1's solver tolerance.
 
 | Metric | Target |
 |---|---|
+| Cut geometry (W3b) | For every IBM and cut‑cell case: no active cell entirely inside the solid; every cut cell's geometric area fraction equals the analytic wet fraction to ≤ 1e‑10; all wet faces recovered (`verify_metrics.py --geometry`). |
 | Runs to steady state | I4 completes without Δt collapse. Steady‑state drift < 1e‑7 m/s. Mean Δt(I4) ≥ 0.25 × mean Δt(I1) with φ = 0.1 (report if lower). |
 | Mass | Relative water‑balance error of I4 ≤ max(1e‑9, 10 × I1). |
 | Reconstruction (M3) | Frozen uniform tangential flow reconstructed in cut cells to ≤ 1e‑10 relative (model‑level U27). max \|u_c·n_b\| / 1.25 in I4 ≤ 0.1 × the I3 value (projection off). |
@@ -1273,6 +1456,8 @@ the I7 L2 and Lmax norms as in paper Table I. This stage claims it only if measu
 | D6 | Scope of M1/M2 overrides: IBM‑local (`gdxi`/`acl_wet` only in momentum hooks) vs overwriting global `dxi`/`acl` | IBM‑local for the POC (no side effects on transport, walls or the weights of uncut cells). Revisit for W14. |
 | D7 | Which `iadvec` and `BedlevType` values to support with IBM | **Decided:** `BedlevType = 1` (cell‑centre bed, required for morphodynamics) and `iadvec = 33`; reject others. |
 | D8 | Acceptance of a partially implicit pressure correction that changes the `s1` matrix structure (if W7 fails) | Not part of the POC. Escalate at Checkpoint E with the W7 evidence. |
+| D9 | M1/M2 on open‑boundary links next to cut cells (F2) | Mirror the interior cut cell across the boundary face (keeps the wet‑centroid distance consistent); fallback: keep `dxi`/`acl` on boundary links. Decide in W3b. |
+| D10 | Several `Cutcelllist` polygons cutting one cell (F3) | Union clipping in `cutcelwu` for IBM (all polygons together). Minimum for the POC: detect and stop with an error. Decide in W3b, before regenerating the annulus and basin cases. |
 
 **Can be deferred**: dedicated IBM polygon file; rotated grids (global rotation θ fitted from link
 directions — the lattice test generalises with a rotation); non‑uniform rectilinear grids (bilinear
@@ -1294,7 +1479,11 @@ stencil generalises); immersed partial/no slip via pseudo‑walls; 3D; cell merg
 | Existing `Cutcelllist` crashes for polygons with > 100 vertices (pre‑implementation trial; `split_pol` path in `cutcelwu.f90:98‑100`) | Curved or real banks with many vertices abort at initialisation | W0: reproduce in Debug, then fix (separate PR + unit test) or split polygons to ≤ 100 vertices. IBM geometry itself has no vertex limit. |
 | A1/A2 wrong (solid cells are present / stencils read them) | Ghost storage design changes | W0 spike before W7; the module API hides the storage. |
 | MPI geometry mismatch (A3) | Inconsistent `ba` across ranks | Test I5 plus an assertion in `ibm_crosscheck` comparing `ba` after `update_ghosts`. |
-| Restart | IBM changes `ndx` (solid cells removed) — the same as current `Cutcelllist` | A restart is valid only with the same mesh and polygon. Detect `ndx`/`lnx` mismatch (existing restart reader behaviour) and document it. No new restart fields. |
+| Restart | IBM changes `ndx` (solid cells removed) — the same as current `Cutcelllist` | A restart is valid only with the same mesh and polygon. Detect `ndx`/`lnx` mismatch (existing restart reader behaviour) and document it. No new restart fields. The current implementation re‑applies the wet‑bed fit after reading the restart (F9); harmless for hydrodynamics, but it would overwrite morphological bed changes. Skip it when `bl` comes from the restart file. |
+| IBM geometry trusts the `cutcelwu` polygons (W3 deviation) | Wrong cut polygons pass the cross‑check silently (F1, F3) | W3b task 6: independent recomputation of cut‑cell wet areas; integrated tests U31–U35; `verify_metrics.py --geometry` gate in stage 1. |
+| Solid polygons that touch or share edges, or pass through net nodes (generated and real banks) | Missing faces, cells inside the solid left active, or initialisation errors | W3b tasks 1 and 3; the generator asserts node‑free banks and one polygon per solid until D10 is implemented. |
+| Unimplemented keywords accepted | A case looks like it tests a feature that does nothing (c15) | Reject them until implemented (F5). |
+| Unit tests cover only pure routines | Integrated failures reach the model runs first | Integrated tests U31–U36; smoke‑run c05, c09, c14 and c06 in every W3b/W4 review. |
 | Analytical metrics outside TestBench | Risk of drift | Nightly job plus stored metric tables; promote to a TestBench check if a custom comparer is acceptable. |
 
 **Moving‑bank follow‑up (design only)**:
@@ -1325,6 +1514,16 @@ storing geometry in restart files.
    - review of the momentum hooks;
    - W0's M1 error measurement compared before and after, on the I3/I9 set‑ups;
    - confirmation that IBM off is bit‑identical and the hook overhead is < 1 %.
+
+   *Status 2026‑10‑31:* code in place; Checkpoint C2 not passed — the review found F1–F14
+   (§1.1), and no IBM case runs yet.
+4b. **W3b** (integrated cut‑cell robustness: node snapping, open‑boundary links, multiple
+   polygons, classification tolerance, MPI wet bed, independent area check, vertex limit) with
+   U31–U36, plus the W1/W2 fixes F4–F6 and the generator fixes of §7.2 items 4–5 →
+   **Checkpoint C3**:
+   - c05, c09, c14 and c06 initialise with IBM on and pass `verify_metrics.py --geometry`;
+   - D9 and D10 decided;
+   - cases regenerated; only then `dvc push` and commit the DVC pointers.
 5. **W5 + W6** (diagnostics, cases I1–I5, I7, I8, I9) → **Checkpoint D = first merge
    (smallest useful vertical slice)**:
    - opt‑in IBM on Cartesian meshes;
@@ -1355,6 +1554,13 @@ tools/fprettify/run_fprettify.sh src/engines_gpl/dflowfm/packages/dflowfm_kernel
 
 # Build FM (Debug for development; Release/RelWithDebInfo for TestBench timing)
 python build.py --config dflowfm --build-type Debug --build --keep-build
+# If the fm-suite build is used and stops in the unrelated preC-SUMO test target (F14),
+# build only the D-Flow FM executables:
+cmake --build build_fm-suite_debug --target dflowfm-cli dflowfm_dll dimr --parallel
+
+# Direct smoke run of one case without TestBench (copy the input; never run in input/)
+cp -a <case>/input <case>/input_work && cd <case>/input_work
+OMP_NUM_THREADS=1 <build>/dflowfm_cli_exe/dflowfm --autostartstop <case>.mdu
 
 # Unit tests (f90tw/gtest names are <suite>.<test>)
 ctest --test-dir build_dflowfm_debug --tests-regex 'test_ibm|test_mdu_file_read_write|test_unstruc_model' --output-on-failure
@@ -1374,6 +1580,8 @@ python data/cases/e02_dflowfm/f600_ibm/doc/verify_metrics.py <case> <work_dir>/d
 
 **Evidence to attach to the first‑merge PR**:
 
+- Resolution of every finding F1–F14 of §1.1 (fix, test ID, or accepted limitation).
+- `verify_metrics.py --geometry` output for all IBM and cut‑cell cases (stage 1 geometry row).
 - W0 assumptions note (A1–A11), including the measured M1 error before the fix.
 - Unit test log (all `test_ibm_*` passing).
 - `.dia` excerpts for I4: Cartesian check result, `ncut`, `nghost`, `nfloored`, `min_area_frac`,
