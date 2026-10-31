@@ -17,6 +17,7 @@ module m_immersed_boundary
    public :: ibm_save_full_link_metrics
    public :: ibm_validate_cutcelllist
    public :: ibm_measure_wet_polygon
+   public :: ibm_wet_area_from_polygon
    public :: ibm_build_geometry
    public :: ibm_set_perot_weights
    public :: ibm_set_wet_link_metrics
@@ -72,6 +73,7 @@ module m_immersed_boundary
       logical :: active = .false. !< Whether IBM is enabled for this geometry.
       type(t_ibm_cartesian) :: grid !< Validated Cartesian lattice.
       integer, dimension(:), allocatable :: cell_class !< 0 fluid, 1 cut, 2 solid or absent.
+      integer :: geometry_cell_count = 0 !< Number of physical mesh cells with IBM polygon geometry.
       real(kind=dp), dimension(:), allocatable :: edge_frac !< Wet fraction for each flow link.
       real(kind=dp), dimension(:), allocatable :: wu_full !< Link widths before cut-cell clipping.
       real(kind=dp), dimension(:), allocatable :: ba_full !< Cell areas before cut-cell clipping.
@@ -360,6 +362,134 @@ contains
       cell%valid = .true.
    end subroutine ibm_measure_wet_polygon
 
+   !> Compute the area of a polygon clipped to an axis-aligned cell rectangle.
+   pure subroutine ibm_wet_area_from_polygon(cell_x, cell_y, polygon_x, polygon_y, snap_tol, area, valid)
+      real(kind=dp), dimension(:), intent(in) :: cell_x !< Four full-cell corner x coordinates.
+      real(kind=dp), dimension(:), intent(in) :: cell_y !< Four full-cell corner y coordinates.
+      real(kind=dp), dimension(:), intent(in) :: polygon_x !< Solid-polygon x coordinates.
+      real(kind=dp), dimension(:), intent(in) :: polygon_y !< Solid-polygon y coordinates.
+      real(kind=dp), intent(in) :: snap_tol !< Tolerance for a repeated closing vertex.
+      real(kind=dp), intent(out) :: area !< Polygon area inside the cell.
+      logical, intent(out) :: valid !< Whether the coordinates describe a usable polygon and cell.
+
+      real(kind=dp), allocatable :: clipped_x(:), clipped_y(:), next_x(:), next_y(:)
+      real(kind=dp) :: xmin, xmax, ymin, ymax, boundary, start_value, end_value, fraction
+      real(kind=dp) :: signed_area, denominator
+      integer :: npolygon, capacity, ncurrent, nnext, side, i, previous, j
+      logical :: start_inside, end_inside
+
+      area = 0.0_dp
+      valid = .false.
+      if (size(cell_x) /= 4 .or. size(cell_y) /= 4 .or. size(polygon_x) /= size(polygon_y) .or. &
+          size(polygon_x) < 3 .or. snap_tol <= 0.0_dp) then
+         return
+      end if
+      if (any(.not. ieee_is_finite(cell_x)) .or. any(.not. ieee_is_finite(cell_y)) .or. &
+          any(.not. ieee_is_finite(polygon_x)) .or. any(.not. ieee_is_finite(polygon_y))) then
+         return
+      end if
+
+      npolygon = size(polygon_x)
+      if (npolygon > 3) then
+         if (sqrt((polygon_x(npolygon) - polygon_x(1))**2 + &
+                  (polygon_y(npolygon) - polygon_y(1))**2) <= snap_tol) then
+            npolygon = npolygon - 1
+         end if
+      end if
+      if (npolygon < 3) then
+         return
+      end if
+
+      xmin = minval(cell_x)
+      xmax = maxval(cell_x)
+      ymin = minval(cell_y)
+      ymax = maxval(cell_y)
+      if (xmax <= xmin .or. ymax <= ymin) then
+         return
+      end if
+
+      capacity = 4 * npolygon + 16
+      allocate (clipped_x(capacity), clipped_y(capacity), next_x(capacity), next_y(capacity))
+      clipped_x(1:npolygon) = polygon_x(1:npolygon)
+      clipped_y(1:npolygon) = polygon_y(1:npolygon)
+      ncurrent = npolygon
+
+      do side = 1, 4
+         select case (side)
+         case (1)
+            boundary = xmin
+         case (2)
+            boundary = xmax
+         case (3)
+            boundary = ymin
+         case (4)
+            boundary = ymax
+         end select
+         nnext = 0
+         do i = 1, ncurrent
+            previous = i - 1
+            if (previous == 0) then
+               previous = ncurrent
+            end if
+            select case (side)
+            case (1)
+               start_value = clipped_x(previous)
+               end_value = clipped_x(i)
+               start_inside = start_value >= boundary
+               end_inside = end_value >= boundary
+            case (2)
+               start_value = clipped_x(previous)
+               end_value = clipped_x(i)
+               start_inside = start_value <= boundary
+               end_inside = end_value <= boundary
+            case (3)
+               start_value = clipped_y(previous)
+               end_value = clipped_y(i)
+               start_inside = start_value >= boundary
+               end_inside = end_value >= boundary
+            case (4)
+               start_value = clipped_y(previous)
+               end_value = clipped_y(i)
+               start_inside = start_value <= boundary
+               end_inside = end_value <= boundary
+            end select
+
+            if (start_inside .neqv. end_inside) then
+               denominator = end_value - start_value
+               if (abs(denominator) > tiny(1.0_dp)) then
+                  fraction = (boundary - start_value) / denominator
+                  nnext = nnext + 1
+                  next_x(nnext) = clipped_x(previous) + fraction * (clipped_x(i) - clipped_x(previous))
+                  next_y(nnext) = clipped_y(previous) + fraction * (clipped_y(i) - clipped_y(previous))
+               end if
+            end if
+            if (end_inside) then
+               nnext = nnext + 1
+               next_x(nnext) = clipped_x(i)
+               next_y(nnext) = clipped_y(i)
+            end if
+         end do
+         clipped_x(1:nnext) = next_x(1:nnext)
+         clipped_y(1:nnext) = next_y(1:nnext)
+         ncurrent = nnext
+         if (ncurrent < 3) then
+            valid = .true.
+            return
+         end if
+      end do
+
+      signed_area = 0.0_dp
+      do i = 1, ncurrent
+         j = i + 1
+         if (j > ncurrent) then
+            j = 1
+         end if
+         signed_area = signed_area + clipped_x(i) * clipped_y(j) - clipped_x(j) * clipped_y(i)
+      end do
+      area = 0.5_dp * abs(signed_area)
+      valid = ieee_is_finite(area)
+   end subroutine ibm_wet_area_from_polygon
+
    !> Build per-cell and per-link IBM metadata from the wet polygons produced by cutcelwu.
    pure subroutine ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, area_full, area_used, &
                                       link_cells, face_x, face_y, width_full, width_used, dx, dy, baorgfracmin, bamin, &
@@ -416,7 +546,7 @@ contains
       end if
 
       snap_tol = 1.0e-8_dp * min(dx, dy)
-      area_tolerance = max(1.0e-12_dp, cartesian_tol)
+      area_tolerance = 1.0e-12_dp
       allocate (cell_data(ncell))
       if (allocated(state%cell_class)) then
          deallocate (state%cell_class)
@@ -432,6 +562,7 @@ contains
       end if
       allocate (state%cell_class(size(area_full)))
       state%cell_class = 2
+      state%geometry_cell_count = ncell
       state%ncut = 0
       state%nghost = 0
       state%nfloored = 0
@@ -440,7 +571,7 @@ contains
       state%area_deficit = 0.0_dp
 
       do k = 1, ncell
-         if (area_full(k) <= 0.0_dp) then
+         if (area_full(k) <= 0.0_dp .or. area_used(k) <= tiny(1.0_dp)) then
             cycle
          end if
          if (wet_count(k) < 3 .or. wet_count(k) > size(wet_x, 1)) then
@@ -773,6 +904,13 @@ contains
 
          k1 = link_cells(1, L)
          k2 = link_cells(2, L)
+         if (state%geometry_cell_count > 0) then
+            if (k1 > state%geometry_cell_count .or. k2 > state%geometry_cell_count) then
+               state%clink(i)%dxi_wet = dxi_full(L)
+               state%clink(i)%acl_wet = acl_full(L)
+               cycle
+            end if
+         end if
          if (k1 < 1 .or. k1 > ncell .or. k2 < 1 .or. k2 > ncell) then
             if (width_used(L) > tiny(1.0_dp)) then
                error_index = L
@@ -851,7 +989,8 @@ contains
    end subroutine ibm_set_wet_link_metrics
 
    !> Re-evaluate cut-cell bed levels by least-squares extrapolation to wet centroids.
-   subroutine ibm_set_wet_bed(link_cells, width_used, cell_x, cell_y, missing_value, bed_level, state, valid, error_index, reason)
+   subroutine ibm_set_wet_bed(link_cells, width_used, cell_x, cell_y, missing_value, bed_level, state, valid, error_index, reason, &
+                              owned_cell)
       integer, dimension(:, :), intent(in) :: link_cells !< Flow-cell endpoints for each link.
       real(kind=dp), dimension(:), intent(in) :: width_used !< Active link widths after clipping.
       real(kind=dp), dimension(:), intent(in) :: cell_x !< Full-cell center x coordinates.
@@ -862,12 +1001,16 @@ contains
       logical, intent(out) :: valid !< Whether all cut-cell bed levels were updated.
       integer, intent(out) :: error_index !< Cell associated with the first failure.
       character(len=*), intent(out) :: reason !< Failure explanation, empty on success.
+      logical, dimension(:), intent(in), optional :: owned_cell !< True for cells owned by this MPI rank.
 
+      integer, parameter :: primary_fit_depth = 2
+      integer, parameter :: fallback_fit_depth = 3
       integer, allocatable :: degree(:), offsets(:), neighbors(:), cursor(:), queue(:), queue_depth(:), visited(:)
       integer :: ncell, nlink, i, L, k1, k2, nentries, cell, next_cell, head, tail, depth, sample_count
+      integer :: fallback_sample_count
       integer :: row, column
-      real(kind=dp), dimension(3, 3) :: normal_matrix
-      real(kind=dp), dimension(3) :: rhs, basis, solution
+      real(kind=dp), dimension(3, 3) :: normal_matrix, fallback_matrix
+      real(kind=dp), dimension(3) :: rhs, basis, solution, fallback_rhs
       real(kind=dp) :: xc, yc, bed_value
       logical :: solve_valid
 
@@ -884,6 +1027,12 @@ contains
           size(cell_y) < ncell .or. size(bed_level) < ncell) then
          reason = 'inconsistent IBM wet-bed array dimensions'
          return
+      end if
+      if (present(owned_cell)) then
+         if (size(owned_cell) < state%geometry_cell_count) then
+            reason = 'IBM wet-bed ownership mask is shorter than the physical mesh'
+            return
+         end if
       end if
       if (.not. ieee_is_finite(state%grid%dx) .or. .not. ieee_is_finite(state%grid%dy) .or. &
           state%grid%dx <= tiny(1.0_dp) .or. state%grid%dy <= tiny(1.0_dp)) then
@@ -954,6 +1103,11 @@ contains
             reason = 'cut-cell index is outside the IBM wet-bed grid'
             return
          end if
+         if (present(owned_cell)) then
+            if (.not. owned_cell(k1)) then
+               cycle
+            end if
+         end if
          xc = state%cut(i)%xc
          yc = state%cut(i)%yc
          if (.not. ieee_is_finite(xc) .or. .not. ieee_is_finite(yc)) then
@@ -966,6 +1120,9 @@ contains
          normal_matrix = 0.0_dp
          rhs = 0.0_dp
          sample_count = 0
+         fallback_matrix = 0.0_dp
+         fallback_rhs = 0.0_dp
+         fallback_sample_count = 0
          head = 1
          tail = 1
          queue(1) = k1
@@ -974,7 +1131,7 @@ contains
          do while (head <= tail)
             cell = queue(head)
             depth = queue_depth(head)
-            if (depth < 2) then
+            if (depth < fallback_fit_depth) then
                do L = offsets(cell), offsets(cell + 1) - 1
                   next_cell = neighbors(L)
                   if (visited(next_cell) == i) then
@@ -988,12 +1145,21 @@ contains
                         basis(2) = (cell_x(next_cell) - xc) / state%grid%dx
                         basis(3) = (cell_y(next_cell) - yc) / state%grid%dy
                         do row = 1, 3
-                           rhs(row) = rhs(row) + basis(row) * bed_value
+                           fallback_rhs(row) = fallback_rhs(row) + basis(row) * bed_value
                            do column = 1, 3
-                              normal_matrix(row, column) = normal_matrix(row, column) + basis(row) * basis(column)
+                              fallback_matrix(row, column) = fallback_matrix(row, column) + basis(row) * basis(column)
                            end do
                         end do
-                        sample_count = sample_count + 1
+                        fallback_sample_count = fallback_sample_count + 1
+                        if (depth < primary_fit_depth) then
+                           do row = 1, 3
+                              rhs(row) = rhs(row) + basis(row) * bed_value
+                              do column = 1, 3
+                                 normal_matrix(row, column) = normal_matrix(row, column) + basis(row) * basis(column)
+                              end do
+                           end do
+                           sample_count = sample_count + 1
+                        end if
                      end if
                   end if
                   tail = tail + 1
@@ -1004,17 +1170,24 @@ contains
             head = head + 1
          end do
 
-         if (sample_count < 3) then
-            valid = .false.
-            error_index = k1
-            reason = 'fewer than three uncut wet neighbours are available for the bed-level fit'
-            return
+         solve_valid = .false.
+         if (sample_count >= 3) then
+            call ibm_solve_3x3(normal_matrix, rhs, solution, solve_valid)
+            solve_valid = solve_valid .and. ieee_is_finite(solution(1))
          end if
-         call ibm_solve_3x3(normal_matrix, rhs, solution, solve_valid)
+         if (.not. solve_valid) then
+            if (fallback_sample_count < 3) then
+               valid = .false.
+               error_index = k1
+               reason = 'fewer than three uncut wet neighbours are available within three link hops'
+               return
+            end if
+            call ibm_solve_3x3(fallback_matrix, fallback_rhs, solution, solve_valid)
+         end if
          if (.not. solve_valid .or. .not. ieee_is_finite(solution(1))) then
             valid = .false.
             error_index = k1
-            reason = 'uncut wet neighbours do not span a plane for the bed-level fit'
+            reason = 'uncut wet neighbours within three link hops do not span a plane for the bed-level fit'
             return
          end if
          bed_level(k1) = solution(1)

@@ -54,6 +54,7 @@ contains
       use m_sferic
       use m_tpoly
       use m_cutcells
+      use m_flowparameters, only: immersed_boundary
       use gridoperations
       use unstruc_model
       use m_wall_clock_time
@@ -74,6 +75,7 @@ contains
       character(len=128) :: mesg
 
       integer, dimension(:), allocatable :: kc_bak ! backup of kc
+      integer, dimension(:), allocatable :: ibm_processed_cells
 
       integer :: Lf
 
@@ -131,6 +133,10 @@ contains
       end if
 
       ipol_stored = 0
+      if (n12 == 5 .and. immersed_boundary == 1) then
+         allocate (ibm_processed_cells(nump))
+         ibm_processed_cells = 0
+      end if
 
       if (jaalltogether == 1 .and. (jamasks == 0 .or. jamasks == 1)) then
          call dealloc_tpoly(pli) ! safety
@@ -196,7 +202,11 @@ contains
 !              ENDIF
 !           ENDDO
             else if (N12 >= 3) then ! 3, 4 and 5
-               call CUTCELWU(n12, jamasks, ipol_stored) ! calls SAVEPOL via split_pol
+               if (allocated(ibm_processed_cells)) then
+                  call CUTCELWU(n12, jamasks, ipol_stored, ibm_processed_cells) ! calls SAVEPOL via split_pol
+               else
+                  call CUTCELWU(n12, jamasks, ipol_stored) ! calls SAVEPOL via split_pol
+               end if
             end if
 
             call wall_clock_time(t1)
@@ -258,6 +268,10 @@ contains
 
 !    clean
          call dealloc_tpoly(pli)
+      end if
+
+      if (allocated(ibm_processed_cells)) then
+         deallocate (ibm_processed_cells)
       end if
 
       if (n12 == 5) then

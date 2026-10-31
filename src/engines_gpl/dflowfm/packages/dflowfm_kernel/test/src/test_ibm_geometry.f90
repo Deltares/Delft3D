@@ -3,7 +3,7 @@ module test_ibm_geometry
    use precision, only: dp
    use m_immersed_boundary, only: ibm_build_geometry, ibm_measure_wet_polygon, ibm_validate_cutcelllist, &
                                   ibm_set_perot_weights, ibm_set_wet_link_metrics, ibm_set_wet_bed, &
-                                  t_ibm_cut_cell, t_ibm_state
+                                  ibm_wet_area_from_polygon, t_ibm_cut_cell, t_ibm_state
    implicit none(type, external)
 
 contains
@@ -53,6 +53,59 @@ contains
    end subroutine test_area_floor_crosscheck
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_independent_polygon_cell_area, test_independent_polygon_cell_area,
+   subroutine test_independent_polygon_cell_area() bind(C)
+      real(kind=dp), dimension(4) :: cell_x, cell_y, polygon_x, polygon_y
+      real(kind=dp) :: area
+      logical :: valid
+
+      cell_x = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      cell_y = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      polygon_x = [0.0_dp, 5.0_dp, 5.0_dp, 0.0_dp]
+      polygon_y = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      call ibm_wet_area_from_polygon(cell_x, cell_y, polygon_x, polygon_y, 1.0e-8_dp, area, valid)
+
+      call F90_ASSERT_TRUE(valid, 'Independent polygon clipping rejected a valid rectangle.')
+      call F90_ASSERT_NEAR(area, 50.0_dp, 1.0e-13_dp, 'Independent polygon clipping returned the wrong area.')
+   end subroutine test_independent_polygon_cell_area
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_area_classification_uses_geometric_tolerance, test_area_classification_uses_geometric_tolerance,
+   subroutine test_area_classification_uses_geometric_tolerance() bind(C)
+      real(kind=dp), dimension(4, 2) :: cell_corner_x, cell_corner_y, wet_x, wet_y
+      integer, dimension(2) :: wet_count
+      real(kind=dp), dimension(2) :: area_full, area_used
+      integer, dimension(2, 0) :: link_cells
+      real(kind=dp), dimension(2, 0) :: face_x, face_y
+      real(kind=dp), dimension(0) :: width_full, width_used
+      type(t_ibm_state) :: state
+      logical :: valid
+      integer :: error_index
+      character(len=256) :: reason
+
+      cell_corner_x(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      cell_corner_y(:, 1) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      cell_corner_x(:, 2) = [10.0_dp, 20.0_dp, 20.0_dp, 10.0_dp]
+      cell_corner_y(:, 2) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      wet_x(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      wet_y(:, 1) = [0.0_dp, 0.0_dp, 0.005_dp, 0.005_dp]
+      wet_x(:, 2) = [10.0_dp, 20.0_dp, 20.0_dp, 10.0_dp]
+      wet_y(:, 2) = [0.0_dp, 0.0_dp, 9.995_dp, 9.995_dp]
+      wet_count = [4, 4]
+      area_full = [100.0_dp, 100.0_dp]
+      area_used = [0.05_dp, 99.95_dp]
+
+      call ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, area_full, area_used, link_cells, &
+                              face_x, face_y, width_full, width_used, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp, 1.0e-3_dp, &
+                              0.5_dp, state, valid, error_index, reason)
+
+      call F90_ASSERT_TRUE(valid, 'Sliver and near-full wet cells were rejected: '//trim(reason))
+      call F90_ASSERT_EQ(state%ncut, 2, 'Area classification used the Cartesian tolerance.')
+      call F90_ASSERT_EQ(state%cell_class(1), 1, 'Sliver wet cell was classified as solid.')
+      call F90_ASSERT_EQ(state%cell_class(2), 1, 'Near-full wet cell was classified as uncut.')
+   end subroutine test_area_classification_uses_geometric_tolerance
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_geometry_state_and_wet_edge, test_geometry_state_and_wet_edge,
    subroutine test_geometry_state_and_wet_edge() bind(C)
       real(kind=dp), dimension(4, 2) :: cell_corner_x, cell_corner_y
@@ -97,6 +150,61 @@ contains
       call F90_ASSERT_NEAR(state%clink(1)%xm, 10.0_dp, 1.0e-14_dp, 'Unexpected wet-edge midpoint x coordinate.')
       call F90_ASSERT_NEAR(state%clink(1)%ym, 2.5_dp, 1.0e-14_dp, 'Unexpected wet-edge midpoint y coordinate.')
    end subroutine test_geometry_state_and_wet_edge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_open_boundary_link_keeps_legacy_metrics, test_open_boundary_link_keeps_legacy_metrics,
+   subroutine test_open_boundary_link_keeps_legacy_metrics() bind(C)
+      real(kind=dp), dimension(4, 1) :: cell_corner_x, cell_corner_y, wet_x, wet_y
+      integer, dimension(1) :: wet_count
+      real(kind=dp), dimension(2) :: area_full, area_used
+      integer, dimension(2, 1) :: link_cells
+      real(kind=dp), dimension(2, 1) :: face_x, face_y
+      real(kind=dp), dimension(1) :: width_full, width_used, cell_x, cell_y, normal_x, normal_y, acl_full, dxi_full
+      real(kind=dp), dimension(2) :: bed_level
+      type(t_ibm_state) :: state
+      logical :: valid
+      integer :: error_index
+      character(len=256) :: reason
+
+      cell_corner_x(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      cell_corner_y(:, 1) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      wet_x(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      wet_y(:, 1) = [0.0_dp, 0.0_dp, 5.0_dp, 5.0_dp]
+      wet_count = [4]
+      area_full = [100.0_dp, 0.0_dp]
+      area_used = [50.0_dp, 0.0_dp]
+      link_cells(:, 1) = [1, 2]
+      face_x(:, 1) = [10.0_dp, 10.0_dp]
+      face_y(:, 1) = [0.0_dp, 10.0_dp]
+      width_full = [10.0_dp]
+      width_used = [5.0_dp]
+
+      call ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, area_full, area_used, link_cells, &
+                              face_x, face_y, width_full, width_used, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp, 1.0e-6_dp, &
+                              0.5_dp, state, valid, error_index, reason)
+      call F90_ASSERT_TRUE(valid, 'Open-boundary cut geometry was rejected: '//trim(reason))
+
+      state%grid%dx = 10.0_dp
+      state%grid%dy = 10.0_dp
+      cell_x = [5.0_dp]
+      cell_y = [5.0_dp]
+      normal_x = [1.0_dp]
+      normal_y = [0.0_dp]
+      acl_full = [0.5_dp]
+      dxi_full = [0.1_dp]
+      call ibm_set_wet_link_metrics(link_cells, [5.0_dp, 15.0_dp], [5.0_dp, 5.0_dp], normal_x, normal_y, &
+                                    width_used, acl_full, dxi_full, state, valid, error_index, reason)
+
+      call F90_ASSERT_TRUE(valid, 'Open-boundary IBM metrics were rejected: '//trim(reason))
+      call F90_ASSERT_NEAR(state%clink(1)%acl_wet, acl_full(1), 1.0e-14_dp, 'Open-boundary ACL was overridden.')
+      call F90_ASSERT_NEAR(state%clink(1)%dxi_wet, dxi_full(1), 1.0e-14_dp, 'Open-boundary DXI was overridden.')
+
+      bed_level = [7.0_dp, -999.0_dp]
+      call ibm_set_wet_bed(link_cells, width_used, [5.0_dp, 15.0_dp], [5.0_dp, 5.0_dp], -999.0_dp, bed_level, &
+                           state, valid, error_index, reason, owned_cell=[.false.])
+      call F90_ASSERT_TRUE(valid, 'Unowned IBM ghost cut cell was fitted: '//trim(reason))
+      call F90_ASSERT_NEAR(bed_level(1), 7.0_dp, 1.0e-14_dp, 'Unowned ghost-cell bed level was modified.')
+   end subroutine test_open_boundary_link_keeps_legacy_metrics
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_cutcelllist_validation, test_cutcelllist_validation,
@@ -153,7 +261,7 @@ contains
       wet_x = [0.0_dp, 80.0_dp, 80.0_dp]
       wet_y = [0.0_dp, 0.0_dp, 43.0_dp]
       call ibm_measure_wet_polygon(cell_x, cell_y, wet_x, wet_y, 3440.0_dp, 1720.0_dp, 0.0_dp, 0.0_dp, &
-                                  1.0e-7_dp, cell)
+                                   1.0e-7_dp, cell)
       call F90_ASSERT_TRUE(cell%valid, 'The 43/80 triangle cut was rejected.')
       call F90_ASSERT_NEAR(cell%area_frac, 0.5_dp, 1.0e-14_dp, 'Unexpected 43/80 triangle area fraction.')
       normal_length = sqrt(43.0_dp**2 + 80.0_dp**2)
@@ -167,7 +275,7 @@ contains
       wet_x_matrix(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
       wet_y_matrix(:, 1) = [0.0_dp, 0.0_dp, 7.375_dp, 2.0_dp]
       call ibm_measure_wet_polygon(cell_x, cell_y, wet_x_matrix(:, 1), wet_y_matrix(:, 1), 100.0_dp, 46.875_dp, &
-                                  0.0_dp, 0.0_dp, 1.0e-7_dp, cell)
+                                   0.0_dp, 0.0_dp, 1.0e-7_dp, cell)
       call F90_ASSERT_TRUE(cell%valid, 'The 43/80 trapezoid cut was rejected.')
       call F90_ASSERT_NEAR(cell%area_frac, 0.46875_dp, 1.0e-14_dp, 'Unexpected 43/80 trapezoid area fraction.')
       call F90_ASSERT_EQ(cell%nseg, 1, 'Expected one immersed trapezoid segment.')
@@ -347,7 +455,7 @@ contains
       total_area = 0.0_dp
       do k = 1, 2
          call ibm_measure_wet_polygon(cell_x(:, k), cell_y(:, k), wet_x(:, k), wet_y(:, k), 100.0_dp, 50.0_dp, &
-                                     0.0_dp, 0.0_dp, 1.0e-7_dp, cell)
+                                      0.0_dp, 0.0_dp, 1.0e-7_dp, cell)
          call F90_ASSERT_TRUE(cell%valid, 'A triangle in the closed two-cell polygon was rejected.')
          total_area = total_area + cell%area_frac * 100.0_dp
       end do
@@ -542,6 +650,50 @@ contains
          call F90_ASSERT_NEAR(bed_level(1), 0.75_dp, 1.0e-13_dp, 'Wet-bed fit did not recover the planar value at the centroid.')
       end if
    end subroutine test_wet_bed_planar_fit
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_wet_bed_boundary_fallback, test_wet_bed_boundary_fallback,
+   subroutine test_wet_bed_boundary_fallback() bind(C)
+      integer, dimension(2, 5) :: link_cells
+      real(kind=dp), dimension(6) :: cell_x, cell_y, bed_level
+      real(kind=dp), dimension(5) :: width_used
+      type(t_ibm_state) :: state
+      logical :: valid
+      integer :: error_index
+      character(len=256) :: reason
+
+      state%grid%dx = 1.0_dp
+      state%grid%dy = 1.0_dp
+      allocate (state%cell_class(6), state%cut(3))
+      state%cell_class = [1, 1, 1, 0, 0, 0]
+      state%ncut = 3
+      state%cut(1)%k = 1
+      state%cut(1)%xc = 0.25_dp
+      state%cut(1)%yc = 0.5_dp
+      state%cut(2)%k = 2
+      state%cut(2)%xc = 1.5_dp
+      state%cut(2)%yc = 0.5_dp
+      state%cut(3)%k = 3
+      state%cut(3)%xc = 2.5_dp
+      state%cut(3)%yc = 0.5_dp
+
+      link_cells(:, 1) = [1, 2]
+      link_cells(:, 2) = [2, 3]
+      link_cells(:, 3) = [3, 4]
+      link_cells(:, 4) = [3, 5]
+      link_cells(:, 5) = [3, 6]
+      width_used = 1.0_dp
+      cell_x = [0.5_dp, 1.5_dp, 2.5_dp, 3.5_dp, 2.5_dp, 3.5_dp]
+      cell_y = [0.5_dp, 0.5_dp, 0.5_dp, 0.5_dp, 1.5_dp, 1.5_dp]
+      bed_level = [100.0_dp, 101.0_dp, 102.0_dp, 10.5_dp, 3.5_dp, 6.5_dp]
+      call ibm_set_wet_bed(link_cells, width_used, cell_x, cell_y, -9999.0_dp, bed_level, state, &
+                           valid, error_index, reason)
+
+      call F90_ASSERT_TRUE(valid, 'Wet-bed boundary fallback was rejected: '//trim(reason))
+      if (valid) then
+         call F90_ASSERT_NEAR(bed_level(1), 0.75_dp, 1.0e-13_dp, 'Fallback fit did not recover the planar value.')
+      end if
+   end subroutine test_wet_bed_boundary_fallback
    !$f90tw)
 
 end module test_ibm_geometry

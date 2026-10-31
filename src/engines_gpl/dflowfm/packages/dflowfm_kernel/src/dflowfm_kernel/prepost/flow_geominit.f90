@@ -119,6 +119,7 @@ contains
       use m_structures
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use m_turbulence, only: ln0
+      use m_update_geom, only: update_geom
       use m_drawthis
       use m_readyy
       use m_qnerror
@@ -138,9 +139,10 @@ contains
       integer :: m, n, k, k1, k2, k3, k4, L, Lf, LL, LLL, ierr, nn, ja, kh, numswap, n12, La
       integer :: n1, n2, n1a, n2a, ja1D, ka, kb, k1n, k2n
       integer :: nc1, nc2, nex
-      integer :: ibm_nnodes, ibm_cell_index, ibm_ok
+      integer :: ibm_nnodes, ibm_cell_index, ibm_ok, ibm_ok_local
       integer, allocatable :: ibm_cell_offsets(:), ibm_cell_nodes(:)
       integer, allocatable :: ibm_wet_count(:), ibm_link_cells(:, :)
+      logical, allocatable :: ibm_owned_cells(:)
       real(kind=dp), allocatable :: ibm_cell_corner_x(:, :), ibm_cell_corner_y(:, :)
       real(kind=dp), allocatable :: ibm_wet_x(:, :), ibm_wet_y(:, :)
       real(kind=dp), allocatable :: ibm_face_x(:, :), ibm_face_y(:, :)
@@ -148,6 +150,8 @@ contains
       integer :: ibm_error_index
       character(len=256) :: ibm_geometry_reason
       type(t_ibm_cartesian) :: ibm_grid
+      real(kind=dp) :: ibm_dx_max, ibm_dy_max, ibm_x0_local, ibm_y0_local
+      real(kind=dp) :: ibm_offset_x, ibm_offset_y, ibm_grid_tolerance
       real(kind=dp) :: sig ! for bottom level help
       real(kind=dp) :: dxn1e ! node 1 - edge distance
       real(kind=dp) :: dxn2e ! node 2 - edge distance
@@ -212,6 +216,11 @@ contains
       end do
 
       call readyy('geominit', 0.0_dp)
+
+      if (immersed_boundary == 1 .and. jsferic /= 0) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Cartesian coordinates (jsferic=0).')
+         return
+      end if
 
       if (jsferic == 0) then
          jasfer3D = 0
@@ -340,14 +349,43 @@ contains
 
             call ibm_check_cartesian(xk(1:numk), yk(1:numk), kn(1:2, 1:numl), ibm_cell_offsets, ibm_cell_nodes, &
                                      immersed_boundary_cartesian_tol, ibm_grid)
-            ibm_state%grid = ibm_grid
             ibm_ok = 1
             if (.not. ibm_grid%is_cartesian) then
                ibm_ok = 0
             end if
             if (jampi == 1) then
+               ibm_x0_local = ibm_grid%x0
+               ibm_y0_local = ibm_grid%y0
+               ibm_dx_max = ibm_grid%dx
+               ibm_dy_max = ibm_grid%dy
+               call reduce_double_min(ibm_grid%dx)
+               call reduce_double_max(ibm_dx_max)
+               call reduce_double_min(ibm_grid%dy)
+               call reduce_double_max(ibm_dy_max)
+               call reduce_double_min(ibm_grid%x0)
+               call reduce_double_min(ibm_grid%y0)
+               call reduce_double_max(ibm_grid%max_dev)
+               ibm_grid_tolerance = 1.0e-10_dp * max(1.0_dp, ibm_dx_max, ibm_dy_max)
+               if (ibm_dx_max - ibm_grid%dx > ibm_grid_tolerance .or. &
+                   ibm_dy_max - ibm_grid%dy > ibm_grid_tolerance) then
+                  ibm_grid%is_cartesian = .false.
+                  ibm_grid%reason = 'MPI ranks disagree on Cartesian grid spacing'
+               end if
+               if (ibm_grid%dx > 0.0_dp .and. ibm_grid%dy > 0.0_dp) then
+                  ibm_offset_x = (ibm_x0_local - ibm_grid%x0) / ibm_grid%dx
+                  ibm_offset_y = (ibm_y0_local - ibm_grid%y0) / ibm_grid%dy
+                  if (abs(ibm_offset_x - anint(ibm_offset_x)) > 1.0e-8_dp .or. &
+                      abs(ibm_offset_y - anint(ibm_offset_y)) > 1.0e-8_dp) then
+                     ibm_grid%is_cartesian = .false.
+                     ibm_grid%reason = 'MPI ranks disagree on the Cartesian lattice origin'
+                  end if
+               end if
+               if (.not. ibm_grid%is_cartesian) then
+                  ibm_ok = 0
+               end if
                call reduce_int_min(ibm_ok)
             end if
+            ibm_state%grid = ibm_grid
             if (ibm_ok == 0) then
                if (ibm_grid%is_cartesian) then
                   ibm_grid%reason = 'another MPI rank reported a non-Cartesian mesh'
@@ -1322,24 +1360,79 @@ contains
                                        ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
                if (.not. ibm_geometry_valid) then
                   ibm_ok = 0
-               else
-                  call ibm_set_wet_link_metrics(ibm_link_cells, xz, yz, csu, snu, wu, acl, dxi, ibm_state, &
-                                                ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
-                  if (.not. ibm_geometry_valid) then
-                     ibm_ok = 0
-                  else
-                     if (ibm_state%nclipped_dn > 0) then
-                        write (msgbuf, '(a,i0,a)') 'ImmersedBoundary clipped ', ibm_state%nclipped_dn, &
-                                                   ' wet-centroid link distances to the minimum.'
-                        call mess(LEVEL_WARN, trim(msgbuf))
-                     end if
-                     call ibm_set_wet_bed(ibm_link_cells, wu, xz, yz, dmiss, bl, ibm_state, &
-                                          ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
-                     if (.not. ibm_geometry_valid) then
-                        ibm_ok = 0
-                     end if
-                  end if
                end if
+            end if
+         end if
+         if (jampi == 1) then
+            ibm_ok_local = ibm_ok
+            call reduce_int_min(ibm_ok)
+            if (ibm_ok == 0) then
+               if (ibm_ok_local == 1) then
+                  ibm_geometry_reason = 'another MPI rank failed IBM geometry construction'
+               end if
+               ibm_geometry_valid = .false.
+            end if
+         end if
+
+         if (ibm_ok == 1) then
+            call ibm_set_wet_link_metrics(ibm_link_cells, xz, yz, csu, snu, wu, acl, dxi, ibm_state, &
+                                          ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+            if (.not. ibm_geometry_valid) then
+               ibm_ok = 0
+            end if
+         end if
+         if (jampi == 1) then
+            ibm_ok_local = ibm_ok
+            call reduce_int_min(ibm_ok)
+            if (ibm_ok == 0) then
+               if (ibm_ok_local == 1) then
+                  ibm_geometry_reason = 'another MPI rank failed IBM wet-link metrics'
+               end if
+               ibm_geometry_valid = .false.
+            end if
+         end if
+
+         if (ibm_ok == 1) then
+            if (ibm_state%nclipped_dn > 0) then
+               write (msgbuf, '(a,i0,a)') 'ImmersedBoundary clipped ', ibm_state%nclipped_dn, &
+                  ' wet-centroid link distances to the minimum.'
+               call mess(LEVEL_WARN, trim(msgbuf))
+            end if
+            if (jampi == 1) then
+               if (.not. allocated(idomain)) then
+                  ibm_geometry_valid = .false.
+                  ibm_error_index = 0
+                  ibm_geometry_reason = 'MPI wet-bed update requires cell ownership data'
+               else if (size(idomain) < ndx2d) then
+                  ibm_geometry_valid = .false.
+                  ibm_error_index = 0
+                  ibm_geometry_reason = 'MPI wet-bed ownership data is shorter than the physical mesh'
+               else
+                  allocate (ibm_owned_cells(ndx2d))
+                  ibm_owned_cells = idomain(1:ndx2d) == my_rank
+                  call ibm_set_wet_bed(ibm_link_cells, wu, xz, yz, dmiss, bl, ibm_state, &
+                                       ibm_geometry_valid, ibm_error_index, ibm_geometry_reason, &
+                                       owned_cell=ibm_owned_cells)
+                  deallocate (ibm_owned_cells)
+               end if
+            else
+               call ibm_set_wet_bed(ibm_link_cells, wu, xz, yz, dmiss, bl, ibm_state, &
+                                    ibm_geometry_valid, ibm_error_index, ibm_geometry_reason)
+            end if
+            if (.not. ibm_geometry_valid) then
+               ibm_ok = 0
+            end if
+         end if
+         if (jampi == 1) then
+            ibm_ok_local = ibm_ok
+            call reduce_int_min(ibm_ok)
+            if (ibm_ok == 0) then
+               if (ibm_ok_local == 1) then
+                  ibm_geometry_reason = 'another MPI rank failed the IBM wet-bed update'
+               end if
+               ibm_geometry_valid = .false.
+            else
+               call update_geom(2)
             end if
          end if
          if (ibm_ok == 0) then

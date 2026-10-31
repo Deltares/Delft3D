@@ -321,7 +321,7 @@ def _geometry(case: CaseSpec) -> tuple[tuple[float, float, float, float], list[l
         aligned = case.case_id.startswith("c01_") or case.case_id.startswith("c02_")
         beta = 0.0 if aligned else PLAN_BETA
         half_width_y = 225.0 if aligned else 250.0
-        center_y = 1000.0 if aligned else 310.0
+        center_y = 1000.0 if aligned else 311.0
         length = 3000.0
         xmax = length
         ymax = 2000.0 if aligned else _ceil_to_grid(
@@ -1019,6 +1019,7 @@ def _mdu_text(case: CaseSpec, metadata: dict[str, Any]) -> str:
         "[geometry]",
         "NetFile = mesh2d_net.nc",
         "BedlevType = 1",
+        "Conveyance2D = -1",
         "Jsferic = 0",
         "Kmx = 0",
         "Bamin = 1e-6",

@@ -115,14 +115,14 @@ contains
             domaincheck = (idomain(n) == my_rank)
          end if
 
-         ! Check for zero (0d0) value on diagonal, to print a warning before a resulting Saad crash.
-         if (comparereal(bbr(n), 0.0_dp) == 0 .and. domainCheck) then
+         ! Only kfs==1 nodes enter the implicit solve; inactive IBM solid cells may have zero area and diagonal.
+         if (kfs(n) == 1 .and. comparereal(bbr(n), 0.0_dp) == 0 .and. domainCheck) then
             if (n <= ndx2d) then
                dim_text = '2D'
             else
                dim_text = '1D'
             end if
-            write (msgbufpar, '(a, i0, a)') 'The surface area of '//dim_text//'-node with node number ''', n, ''' is equal to 0'
+            write (msgbufpar, '(a, i0, a)') 'The diagonal of '//dim_text//'-node with node number ''', n, ''' is equal to 0'
             call setMessage(LEVEL_WARN, msgbufpar)
             call SetMessage(-1, 'This might lead to a SAAD error in the solve process')
             write (msgbufpar, '(a)') 'Current time is: '

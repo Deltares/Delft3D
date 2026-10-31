@@ -43,7 +43,7 @@ module m_cutcelwu
 
 contains
 
-   subroutine CUTCELWU(n12, jamasks, ipoly)
+   subroutine CUTCELWU(n12, jamasks, ipoly, ibm_processed_cells)
       use precision, only: dp
       use m_crosslinkpoly, only: crosslinkpoly
       use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK, BOUNDARY_ALL
@@ -59,12 +59,14 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
       use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_state, ibm_wet_area_from_polygon
       use precision_basics, only: comparereal
       use m_readyy
 
       integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells
       integer, intent(in) :: jamasks ! do not use masks (0), store masks (1), use stored masks (2)
       integer, intent(in) :: ipoly ! polygon number for masks
+      integer, dimension(:), intent(inout), optional :: ibm_processed_cells !< Polygon already processed for each flow cell.
 
       integer :: ja, KMOD
       integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN, KL, ninside
@@ -72,13 +74,16 @@ contains
       integer, allocatable :: ibm_link_cross_count(:)
 
       real(kind=dp) :: XM, YM, XXC(8), YYC(8), DAREA, DLENGTH, DLENMX
+      real(kind=dp) :: cell_corner_x(4), cell_corner_y(4)
       real(kind=dp), allocatable :: ibm_link_cross_x(:), ibm_link_cross_y(:)
+      real(kind=dp) :: snap_tol, solid_area, expected_wet_area, full_area, area_tolerance
+      logical :: ibm_area_valid
 
       real(kind=dp), dimension(:), allocatable :: xmL, ymL ! intersection coordinates
       integer, dimension(:), allocatable :: Lmask ! link mask
 
       real(kind=dp) :: cx, cy, R2search, Area, cof0
-      integer :: i, ip1, num, k_start, k_end, numsam, ierror
+      integer :: i, ip1, num, k_start, k_end, numsam, ierror, polygon_start, polygon_end
       integer :: jadelete
       integer :: jakdtree
       integer :: jasplitpol, numpolies, ip
@@ -101,7 +106,7 @@ contains
 
          jasplitpol = 0
          numpolies = 1
-         if (NPL > 100) then
+         if (NPL > 100 .and. immersed_boundary /= 1) then
             call mess(LEVEL_INFO, 'splitting polygons...')
             call split_pol(2, 2, 100, 100)
             call mess(LEVEL_INFO, 'done')
@@ -212,8 +217,13 @@ contains
 
       if (n12 >= 4) then ! 4, 5, or 6
          if (immersed_boundary == 1) then
+            snap_tol = 1.0e-8_dp
+            if (ibm_state%grid%dx > 0.0_dp .and. ibm_state%grid%dy > 0.0_dp) then
+               snap_tol = 1.0e-8_dp * min(ibm_state%grid%dx, ibm_state%grid%dy)
+            end if
+            call ibm_snap_nodes_to_polygon(snap_tol)
             allocate (ibm_link_cross_count(numL), ibm_link_cross_x(numL), ibm_link_cross_y(numL))
-            call ibm_find_crossed_links(ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y, ierror)
+            call ibm_find_crossed_links(ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y, snap_tol, ierror)
             if (ierror /= 0) then
                call mess(LEVEL_ERROR, 'ImmersedBoundary=1 could not find polygon/link intersections.')
                deallocate (ibm_link_cross_count, ibm_link_cross_x, ibm_link_cross_y)
@@ -225,23 +235,8 @@ contains
          allocate (KNP(NUMP))
          KNP = 0
 
-         do N = 1, NUMP
-            NN = netcell(N)%N
-            !     IF ( NN == 4 ) THEN
-            do K = 1, NN
-               K1 = NETCELL(N)%NOD(K)
-               if (KC(K1) == 1) then
-                  KNP(N) = 1
-               end if
-            end do
-            !     ENDIF
-         end do
-
          if (immersed_boundary == 1) then
             do N = 1, NUMP
-               if (KNP(N) == 1) then
-                  cycle
-               end if
                NN = netcell(N)%N
                do LL = 1, NN
                   L = netcell(N)%LIN(LL)
@@ -276,6 +271,45 @@ contains
                      exit
                   end if
                end do
+               if (KNP(N) == 0 .and. n12 == 5) then
+                  ninside = 0
+                  do LL = 1, NN
+                     K1 = netcell(N)%nod(LL)
+                     if (KC(K1) == 1) then
+                        ninside = ninside + 1
+                     end if
+                  end do
+                  if (ninside == NN) then
+                     KNP(N) = 1
+                  end if
+               end if
+            end do
+         else
+            do N = 1, NUMP
+               NN = netcell(N)%N
+               do K = 1, NN
+                  K1 = NETCELL(N)%NOD(K)
+                  if (KC(K1) == 1) then
+                     KNP(N) = 1
+                  end if
+               end do
+            end do
+         end if
+
+         if (immersed_boundary == 1 .and. present(ibm_processed_cells) .and. n12 == 5) then
+            if (size(ibm_processed_cells) < NUMP) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundary=1: polygon tracking array is shorter than the flow-cell grid.')
+               return
+            end if
+            do N = 1, NUMP
+               if (KNP(N) == 0) then
+                  cycle
+               end if
+               if (ibm_processed_cells(N) > 0) then
+                  call mess(LEVEL_ERROR, 'ImmersedBoundary=1: multiple Cutcelllist polygons affect flow cell ', N)
+                  return
+               end if
+               ibm_processed_cells(N) = ipoly
             end do
          end if
 
@@ -317,8 +351,9 @@ contains
                   end do
                   if (ninside == 0) then
                      call mess(LEVEL_ERROR, &
-                               'ImmersedBoundary=1: a cut cell has no active grid node; refine the grid or simplify the polygon.')
-                     cycle
+                               'ImmersedBoundary=1: polygon is enclosed by flow cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
                   end if
                end if
 
@@ -351,26 +386,13 @@ contains
                      if (ibm_link_cross_count(L) > 1) then
                         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: multiple polygon crossings on net link ', L)
                         ja = 0
-                     else if (jamasks == 0 .or. jamasks == 1) then
-                        if (ibm_link_cross_count(L) == 1) then
-                           call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
-                           if (JA /= 1) then
-                              call mess(LEVEL_ERROR, &
-                                        'ImmersedBoundary=1: polygon/link crossing search returned inconsistent results.')
-                           end if
-                        else
-                           ja = 0
-                        end if
                      else
                         ja = 0
-                        do i = idxL(L), idxL(L + 1) - 1
-                           if (pdxL(i) == ipoly) then
-                              ja = 1
-                              xm = xdxL(i)
-                              ym = ydxL(i)
-                              exit
-                           end if
-                        end do
+                        if (ibm_link_cross_count(L) == 1) then
+                           ja = 1
+                           xm = ibm_link_cross_x(L)
+                           ym = ibm_link_cross_y(L)
+                        end if
                      end if
                   else if (jamasks == 0 .or. jamasks == 1) then
                      if (kc(kn(1, L)) == 1 .or. kc(kn(2, L)) == 1) then
@@ -476,7 +498,73 @@ contains
 
                end do
 
-               if (N12 == 5 .and. IC > 0) then
+               if (N12 == 5 .and. immersed_boundary == 1) then
+                  if (NN /= 4 .or. .not. allocated(ibm_state%ba_full) .or. N > size(ibm_state%ba_full)) then
+                     call mess(LEVEL_ERROR, 'ImmersedBoundary=1: full Cartesian cell geometry is unavailable for cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
+                  end if
+                  do LL = 1, 4
+                     K1 = netcell(N)%nod(LL)
+                     cell_corner_x(LL) = xk(K1)
+                     cell_corner_y(LL) = yk(K1)
+                  end do
+                  call ibm_wet_area_from_polygon(cell_corner_x, cell_corner_y, xpl(1:NPL), ypl(1:NPL), &
+                                                 snap_tol, solid_area, ibm_area_valid)
+                  if (.not. ibm_area_valid) then
+                     call mess(LEVEL_ERROR, 'ImmersedBoundary=1: cannot independently clip polygon in flow cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
+                  end if
+                  full_area = ibm_state%ba_full(N)
+                  area_tolerance = 1.0e-10_dp * full_area
+                  if (solid_area > full_area + area_tolerance) then
+                     call mess(LEVEL_ERROR, 'ImmersedBoundary=1: polygon area exceeds full area of flow cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
+                  end if
+                  expected_wet_area = max(0.0_dp, min(full_area, full_area - solid_area))
+                  if (expected_wet_area <= area_tolerance) then
+                     BA(N) = 0.0_dp
+                     BAI(N) = 0.0_dp
+                     do KL = 1, NN
+                        L = abs(netcell(N)%lin(KL))
+                        Lf = lne2ln(L)
+                        if (Lf > 0) then
+                           WU(Lf) = 0.0_dp
+                        end if
+                     end do
+                     if (allocated(ND(N)%X)) then
+                        deallocate (ND(N)%X)
+                     end if
+                     if (allocated(ND(N)%Y)) then
+                        deallocate (ND(N)%Y)
+                     end if
+                     allocate (ND(N)%X(0), ND(N)%Y(0))
+                     cycle
+                  end if
+                  if (expected_wet_area >= full_area - area_tolerance) then
+                     cycle
+                  end if
+                  if (IC < 3) then
+                     call mess(LEVEL_ERROR, 'ImmersedBoundary=1: unsupported disconnected cut geometry in flow cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
+                  end if
+
+                  call dAREAN(XXC, YYC, IC, DAREA, DLENGTH, DLENMX)
+                  if (abs(DAREA - expected_wet_area) > area_tolerance) then
+                     call mess(LEVEL_ERROR, 'ImmersedBoundary=1: cutcelwu area disagrees with polygon clipping in flow cell ', N)
+                     call READYY('CUTCELWU', -1.0_dp)
+                     return
+                  end if
+                  BA(N) = max(DAREA, Baorgfracmin * full_area)
+                  BA(N) = max(BA(N), BAMIN)
+                  deallocate (ND(N)%X, ND(N)%Y)
+                  allocate (ND(N)%X(IC), ND(N)%Y(IC))
+                  ND(N)%X(1:IC) = XXC(1:IC)
+                  ND(N)%Y(1:IC) = YYC(1:IC)
+               else if (N12 == 5 .and. IC > 0) then
 
                   call dAREAN(XXC, YYC, IC, DAREA, DLENGTH, DLENMX) ! AREA AND LENGTH OF POLYGON
                   if (numlimdt(n) <= numlimdt_baorg) then
@@ -572,16 +660,82 @@ contains
 
    contains
 
-      subroutine ibm_find_crossed_links(crossing_count, crossing_x, crossing_y, ierror_out)
+      subroutine ibm_snap_nodes_to_polygon(tolerance)
+         real(kind=dp), intent(in) :: tolerance
+
+         integer :: node, first, last, segment
+         real(kind=dp) :: x1, y1, x2, y2, fraction, denominator, distance
+
+         do node = 1, numk
+            if (kc(node) == 1) then
+               cycle
+            end if
+            first = 1
+            do while (first <= NPL)
+               do while (first <= NPL)
+                  if (comparereal(xpl(first), dmiss) /= 0 .and. comparereal(ypl(first), dmiss) /= 0) then
+                     exit
+                  end if
+                  first = first + 1
+               end do
+               if (first > NPL) then
+                  exit
+               end if
+
+               last = first
+               do while (last < NPL)
+                  if (comparereal(xpl(last + 1), dmiss) == 0 .or. comparereal(ypl(last + 1), dmiss) == 0) then
+                     exit
+                  end if
+                  last = last + 1
+               end do
+
+               if (last - first + 1 >= 2) then
+                  do segment = first, last
+                     x1 = xpl(segment)
+                     y1 = ypl(segment)
+                     if (segment == last) then
+                        x2 = xpl(first)
+                        y2 = ypl(first)
+                     else
+                        x2 = xpl(segment + 1)
+                        y2 = ypl(segment + 1)
+                     end if
+                     denominator = (x2 - x1)**2 + (y2 - y1)**2
+                     if (denominator <= tiny(1.0_dp)) then
+                        fraction = 0.0_dp
+                     else
+                        fraction = max(0.0_dp, min(1.0_dp, &
+                                                   ((xk(node) - x1) * (x2 - x1) + &
+                                                    (yk(node) - y1) * (y2 - y1)) / denominator))
+                     end if
+                     distance = sqrt((xk(node) - (x1 + fraction * (x2 - x1)))**2 + &
+                                     (yk(node) - (y1 + fraction * (y2 - y1)))**2)
+                     if (distance <= tolerance) then
+                        kc(node) = 1
+                        exit
+                     end if
+                  end do
+               end if
+               if (kc(node) == 1) then
+                  exit
+               end if
+               first = last + 1
+            end do
+         end do
+      end subroutine ibm_snap_nodes_to_polygon
+
+      subroutine ibm_find_crossed_links(crossing_count, crossing_x, crossing_y, tolerance, ierror_out)
          integer, dimension(:), intent(out) :: crossing_count !< Distinct polygon intersections per net link.
          real(kind=dp), dimension(:), intent(out) :: crossing_x !< First polygon intersection x coordinate per link.
          real(kind=dp), dimension(:), intent(out) :: crossing_y !< First polygon intersection y coordinate per link.
+         real(kind=dp), intent(in) :: tolerance !< Coordinate tolerance for endpoint contacts and duplicate crossings.
          integer, intent(out) :: ierror_out !< Non-zero if the intersection search failed.
 
          integer, allocatable :: crossed_links(:), polygon_nodes(:)
          real(kind=dp), allocatable :: segment_weights(:), polygon_x(:), polygon_y(:)
-         integer :: intersection_count, i, link, polygon_node, capacity
-         real(kind=dp) :: intersection_x, intersection_y
+         integer :: intersection_count, i, link, polygon_node, capacity, first, last, npolygon, endpoint_node
+         real(kind=dp) :: intersection_x, intersection_y, endpoint_distance
          type(kdtree_instance) :: crossing_tree
 
          crossing_count = 0
@@ -595,33 +749,90 @@ contains
          capacity = max(1, numL)
          allocate (crossed_links(capacity), polygon_nodes(capacity), segment_weights(capacity))
          allocate (polygon_x(NPL + 1), polygon_y(NPL + 1))
-         polygon_x(1:NPL) = xpl(1:NPL)
-         polygon_y(1:NPL) = ypl(1:NPL)
-         polygon_x(NPL + 1) = xpl(1)
-         polygon_y(NPL + 1) = ypl(1)
-         call find_crossed_links_kdtree2(crossing_tree, NPL + 1, polygon_x, polygon_y, ITYPE_NETLINK, capacity, &
-                                         BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, segment_weights, ierror_out)
-         if (ierror_out == 0) then
-            do i = 1, min(intersection_count, capacity)
-               link = crossed_links(i)
-               polygon_node = polygon_nodes(i)
-               if (link < 1 .or. link > size(crossing_count) .or. polygon_node < 1 .or. polygon_node > NPL) then
-                  cycle
+         ierror_out = 0
+         first = 1
+         do while (first <= NPL)
+            do while (first <= NPL)
+               if (comparereal(xpl(first), dmiss) /= 0 .and. comparereal(ypl(first), dmiss) /= 0) then
+                  exit
                end if
-               intersection_x = polygon_x(polygon_node) + segment_weights(i) * &
-                                (polygon_x(polygon_node + 1) - polygon_x(polygon_node))
-               intersection_y = polygon_y(polygon_node) + segment_weights(i) * &
-                                (polygon_y(polygon_node + 1) - polygon_y(polygon_node))
-               if (crossing_count(link) == 0) then
-                  crossing_count(link) = 1
-                  crossing_x(link) = intersection_x
-                  crossing_y(link) = intersection_y
-               else if (dbdistance(intersection_x, intersection_y, crossing_x(link), crossing_y(link), &
-                                   jsferic, jasfer3D, dmiss) > dtol) then
-                  crossing_count(link) = crossing_count(link) + 1
-               end if
+               first = first + 1
             end do
-         end if
+            if (first > NPL) then
+               exit
+            end if
+            last = first
+            do while (last < NPL)
+               if (comparereal(xpl(last + 1), dmiss) == 0 .or. comparereal(ypl(last + 1), dmiss) == 0) then
+                  exit
+               end if
+               last = last + 1
+            end do
+
+            npolygon = last - first + 1
+            if (npolygon > 3) then
+               if (dbdistance(xpl(first), ypl(first), xpl(last), ypl(last), jsferic, jasfer3D, dmiss) <= tolerance) then
+                  npolygon = npolygon - 1
+               end if
+            end if
+            if (npolygon >= 3) then
+               polygon_x(1:npolygon) = xpl(first:first + npolygon - 1)
+               polygon_y(1:npolygon) = ypl(first:first + npolygon - 1)
+               polygon_x(npolygon + 1) = polygon_x(1)
+               polygon_y(npolygon + 1) = polygon_y(1)
+               call find_crossed_links_kdtree2(crossing_tree, npolygon + 1, polygon_x(1:npolygon + 1), &
+                                               polygon_y(1:npolygon + 1), ITYPE_NETLINK, capacity, BOUNDARY_ALL, &
+                                               intersection_count, crossed_links, polygon_nodes, segment_weights, ierror_out)
+               if (ierror_out /= 0) then
+                  return
+               end if
+               do i = 1, min(intersection_count, capacity)
+                  link = crossed_links(i)
+                  polygon_node = polygon_nodes(i)
+                  if (link < 1 .or. link > size(crossing_count) .or. &
+                      polygon_node < 1 .or. polygon_node > npolygon) then
+                     cycle
+                  end if
+                  intersection_x = polygon_x(polygon_node) + segment_weights(i) * &
+                                   (polygon_x(polygon_node + 1) - polygon_x(polygon_node))
+                  intersection_y = polygon_y(polygon_node) + segment_weights(i) * &
+                                   (polygon_y(polygon_node + 1) - polygon_y(polygon_node))
+                  endpoint_distance = huge(1.0_dp)
+                  do endpoint_node = 1, 2
+                     if (kn(endpoint_node, link) < 1 .or. kn(endpoint_node, link) > numk) then
+                        cycle
+                     end if
+                     endpoint_distance = min(endpoint_distance, &
+                                             dbdistance(intersection_x, intersection_y, &
+                                                        xk(kn(endpoint_node, link)), yk(kn(endpoint_node, link)), &
+                                                        jsferic, jasfer3D, dmiss))
+                  end do
+                  if (endpoint_distance <= tolerance) then
+                     cycle
+                  end if
+                  if (crossing_count(link) == 0) then
+                     crossing_count(link) = 1
+                     crossing_x(link) = intersection_x
+                     crossing_y(link) = intersection_y
+                  else if (dbdistance(intersection_x, intersection_y, crossing_x(link), crossing_y(link), &
+                                      jsferic, jasfer3D, dmiss) > tolerance) then
+                     crossing_count(link) = crossing_count(link) + 1
+                  end if
+               end do
+            end if
+            first = last + 1
+         end do
+
+         do link = 1, size(crossing_count)
+            if (crossing_count(link) /= 1) then
+               cycle
+            end if
+            if (kn(1, link) < 1 .or. kn(1, link) > numk .or. kn(2, link) < 1 .or. kn(2, link) > numk) then
+               crossing_count(link) = 0
+            else if (kc(kn(1, link)) == kc(kn(2, link))) then
+               crossing_count(link) = 0
+            end if
+         end do
       end subroutine ibm_find_crossed_links
 
    end subroutine CUTCELwu

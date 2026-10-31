@@ -1185,9 +1185,6 @@ contains
          if (kmx /= 0) then
             call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires kmx=0.')
          end if
-         if (jsferic /= 0) then
-            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Cartesian coordinates (jsferic=0).')
-         end if
          if (flow_solver /= FLOW_SOLVER_FM .or. trim(md_flow_solver) /= 'generic1d2d3d') then
             call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires FlowSolver=generic1d2d3d.')
          end if
@@ -1199,6 +1196,15 @@ contains
          end if
          if (ibedlevtyp /= BEDLEV_TYPE_WATERLEVEL) then
             call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires BedlevType=1.')
+         end if
+         if (Jaconveyance2D > 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1 requires Conveyance2D=-1 or 0 when BedlevType=1.')
+         end if
+         if (immersed_boundary_tangential_correction /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundaryTangentialCorrection is not implemented; set it to 0.')
+         end if
+         if (immersed_boundary_projection /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundaryProjection is not implemented; set it to 0.')
          end if
          if (Perot_weight_update == PEROT_UPDATE) then
             call mess(LEVEL_ERROR, 'ImmersedBoundary=1 does not support PerotWeightUpdate.')
