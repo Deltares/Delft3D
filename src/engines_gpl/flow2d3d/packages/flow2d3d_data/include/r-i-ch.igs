@@ -272,6 +272,7 @@ type gd_r_i_ch
        integer(pntrsize) :: v1         !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vicuv      !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vicww      !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: vicmud     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vmdis      !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vmean      !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: vmnflc     !  Description and declaration in esm_alloc_real.f90
@@ -373,6 +374,10 @@ type gd_r_i_ch
        integer(pntrsize) :: zairp      !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: zprecp     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: zevap      !  Description and declaration in esm_alloc_real.f90
+! real slurry:
+       integer(pntrsize) :: clyint    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sltint    !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: sndint    !  Description and declaration in esm_alloc_real.f90
 ! real z-layer:
        integer(pntrsize) :: drhodx     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: drhody     !  Description and declaration in esm_alloc_real.f90
@@ -470,6 +475,9 @@ type gd_r_i_ch
        integer(pntrsize) :: kcscut     !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcu45      !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcv45      !  Description and declaration in esm_alloc_int.f90
+! integer slurry branch, to turn off the baraclinic term:
+       integer(pntrsize) :: kfushr  !  Description and declaration in esm_alloc_int.f90
+       integer(pntrsize) :: kfvshr  !  Description and declaration in esm_alloc_int.f90
 !
 ! character:
        integer(pntrsize) :: disint     !  Description and declaration in esm_alloc_char.f90

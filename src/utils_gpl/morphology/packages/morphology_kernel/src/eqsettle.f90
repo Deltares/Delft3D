@@ -100,10 +100,8 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
     real(fp)                    :: fhulp
     real(fp)                    :: efloc
     real(fp)                    :: ffloc0
-    real(fp)                    :: a
-    real(fp)                    :: b
     real(fp)                    :: cflocc
-    real(fp)                    :: enhfac ! settling enhancement factor in salinity function
+    real(fp)                    :: sfac ! salinity effect
     real(fp)                    :: ws0
     real(fp)                    :: wsm
     real(fp)                    :: salmax
@@ -132,10 +130,8 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        ! salinity effect
        !
        if (salint<salmax .and. salmax>0.0_fp) then
-          enhfac = wsm/ws0
-          a = 1.0_fp + enhfac
-          b = enhfac - 1.0_fp
-          wsloc = 0.5_fp * ws0 * (a-b*cos(pi*salint/salmax))
+          sfac = 0.5_fp * (1.0_fp + cos(pi*salint/salmax))
+          wsloc = sfac * ws0 + (1.0_fp - sfac) * wsm
        else
           wsloc = wsm
        endif

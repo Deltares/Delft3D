@@ -7,7 +7,7 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
               & hv        ,dps       ,qxk       ,qyk       ,qzk       , &
               & guu       ,gvv       ,guv       ,gvu       ,gsqs      , &
               & rbnd      ,sigdif    ,sigmol    ,r0        ,r1        , &
-              & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
+              & sour      ,sink      ,ws        ,thick     , &
               & sig       ,dicuv     ,vicww     ,dsdksi    ,dsdeta    , &
               & dtdksi    ,dtdeta    ,aak       ,bbk       ,cck       , &
               & bdddx     ,bddx      ,bdx       ,bux       ,buux      , &
@@ -109,6 +109,7 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: xlo
     integer                , pointer :: max_mud_sedtyp
+    integer, dimension(:), pointer :: sedtyp
 !
 ! Global variables
 !
@@ -144,7 +145,6 @@ integer, dimension(gdp%d%nmlb:gdp%d%nmub)                             :: kfu    
 integer, dimension(gdp%d%nmlb:gdp%d%nmub)                             :: kfv       !  Description and declaration in esm_alloc_int.f90
 integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: kadu      !  Description and declaration in esm_alloc_int.f90
 integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: kadv      !  Description and declaration in esm_alloc_int.f90
-integer, dimension(lsed)                                , intent(in)  :: sedtyp    !! sediment type: 0=total/1=noncoh/2=coh
 logical                                                 , intent(in)  :: eqmbcsand !  Description and declaration in morpar.igs
 logical                                                 , intent(in)  :: eqmbcmud  !  Description and declaration in morpar.igs
 real(fp)                                                , intent(in)  :: timest    !!  Half Integration time step [sec.]
@@ -311,6 +311,8 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     ad_epsrel   => gdp%gdnumeco%ad_epsrel
     dryflc      => gdp%gdnumeco%dryflc
     max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
+    sedtyp              => gdp%gdsedpar%sedtyp
+    
     !
     ! INITIALISATION
     !
