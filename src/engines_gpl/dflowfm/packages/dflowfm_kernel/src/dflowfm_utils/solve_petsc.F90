@@ -481,8 +481,8 @@ contains
             else ! zero row
                numzerorows = numzerorows + 1
                izerorow(numzerorows) = iglobal(-i) - 1 ! global row number, zero based
-!               adia(n) = 1d0
-               adia(n) = bbr(-i)
+               ! Keep inactive rows nonsingular for PETSc; their RHS stays zero.
+               adia(n) = 1.0_dp
             end if ! if ( kfs(-i) > 0 )
          else ! off-diagonal entry in diagonal block
             adia(n) = ccr(i)

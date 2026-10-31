@@ -127,14 +127,22 @@ against this plan, ran c05 and c02 (Debug build, focused targets `dflowfm-cli`, 
 | WP | Status | Notes |
 |---|---|---|
 | W0 | Not delivered as a note | Pre‑implementation trials exist (§7.2 items 6–7); A1–A11 and the M1 error measurement are still open. |
-| W1 | Implemented | All six keywords read, validated and written only when non‑default; U23 round trip passes. Open: F4, F5, F6. |
-| W2 | Implemented | `ibm_check_cartesian` + MPI `reduce_int_min` of the verdict; U1–U8 pass. Open: `dx`/`dy` are not reduced across ranks (F10). |
+| W1 | Implemented | All six keywords read, validated and written only when non-default; U23 round trip passes. F4–F6 validation fixes are in place. |
+| W2 | Implemented | `ibm_check_cartesian` + MPI verdict reduction; U1–U8 pass. Grid spacing/origin reductions are also in place; formal U36 owner/ghost assertions remain. |
 | W3 | Implemented, **design deviation** | `ibm_build_geometry` measures the clipped polygons `nd(n)%x/y` produced by `cutcelwu` instead of recomputing the polygon/net intersections independently (§5.1 Lifecycle 4). The cross‑check therefore only checks self‑consistency of `ba`/`wu` with `nd` and cannot detect wrong cut polygons (F1, F3). `cutcelwu` got an IBM‑specific crossing path (k‑d tree crossing count per net link, interior‑vertex test). |
-| W4 | Implemented (weights) | `ibm_set_perot_weights` overrides `wcx1/wcy1/wcx2/wcy2` on cut‑cell sides with `±(x_f − c)·l_f/A_w`; sign convention matches `setlinktocenterweights`. `PerotWeightUpdate` rejected. Projection safeguard **not** implemented (F5). Model‑level U27 not done. |
-| W4b | Implemented | `dxi_wet` used in `furu` `gdxi`; `acl_wet` in the `advec` `kmx = 0` `volu`/`advel` weighting; wet bed by LSQ fit from uncut wet neighbours within two link hops, applied before `setbobs` in `flow_geominit` and again after restart (F9). Hooks use per‑link `allocated`/`size` checks instead of a precomputed override array (F11). |
+| W3b | Partially implemented | Integrated cut-cell safeguards and configuration fixes are in place; focused geometry/Cartesian tests pass (26/26). c06 now passes a two-rank 0.05-hour smoke run. c09/c14 still hit the intentional multiple-polygon guard; union clipping and formal U31–U36/geometry-verifier coverage remain. |
+| W4 | Implemented (weights) | `ibm_set_perot_weights` overrides `wcx1/wcy1/wcx2/wcy2` on cut-cell sides with `±(x_f − c)·l_f/A_w`; sign convention matches `setlinktocenterweights`. `PerotWeightUpdate` rejected. Unsupported tangential-correction/projection settings are now rejected (F5); the algorithms are not implemented. Model-level U27 not done. |
+| W4b | Implemented | `dxi_wet` used in `furu` `gdxi`; `acl_wet` in the `advec` `kmx = 0` `volu`/`advel` weighting; wet bed by LSQ fit from uncut wet neighbours within two link hops, applied before `setbobs` in `flow_geominit` and again after restart (F9). Hooks use per-link `allocated`/`size` checks instead of a precomputed override array (F11). |
 | W5 | Not started | No `.dia` report (`ncut`, `nfloored`, `min_area_frac`, `area_deficit`, `ndegenerate` are computed but never written; only `nclipped_dn` is warned), no `Wrimap_immersed_boundary`, no timer, no `irov` warning. |
-| W6 | Inputs generated, **not runnable** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); DVC pointers staged locally, not pushed or committed. No IBM case runs (F1–F4). No `verify_metrics.py`, references or TestBench XML. |
+| W6 | Inputs generated, **not fully validated** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); DVC pointers staged locally, not pushed or committed. c06 has a direct MPI smoke run; `verify_metrics.py`, references and TestBench XML are still missing. |
 | W7–W9 | Not started | As planned. |
+
+**Progress update (2026-10-31):** The c06 two-rank 0.05-hour PETSc run completes after inactive
+(`kfs = 0`) cells are assigned a unit diagonal while retaining their zero right-hand side. The
+previous PETSc failure was caused by these all-zero rows, not by nonfinite active-cell diagonals.
+The rebuilt run exited successfully with no divergence/error/nonfinite log markers; `mesh2d_s1`,
+`mesh2d_ucx`, and `mesh2d_ucy` are finite in both rank-local and combined map outputs. This is a
+direct smoke run, not the planned geometry verifier or formal U36 assertion.
 
 Unit tests present: `test_ibm_cartesian` (U1–U8), `test_ibm_geometry` (U9–U13, U15, U16, U28,
 U29, Cutcelllist validation), `test_ibm_momentum` (U25, U27) and the IBM MDU round trip (U23).
@@ -155,7 +163,7 @@ Still missing: U14 as a `cutcelwu` case, U17–U22, U24, U26, U30, and the new U
 | F7 | M | Cell classification uses `area_tolerance = max(1e‑12, ImmersedBoundaryCartesianTol)`. Cells with `area_frac ≤ tol` become class 2 although `cutcelwu` keeps them active with a floored `ba`; their wet links then fail with "adjacent to a solid cell". Cells with `area_frac ≥ 1 − tol` keep the legacy cut‑cell weights. | Code trace (`ibm_build_geometry`). With `CartesianTol` up to 1e‑3 this is reachable. | §5.1; W3b; U34 |
 | F8 | M | Cells that only touch the polygon at a node are flagged `kfs = 1` by `cutcelwu(4)` and get the legacy normalised `wcxy` weights, but are class 0, so the IBM Perot override never reaches them. | Code trace (`setlinktocenterweights.f90`, `kfs` branch). | §5.1; W3b |
 | F9 | M | Map restart re‑applies the wet‑bed fit, which would overwrite morphologically evolved `bl` of cut cells (§5.3 M2 forbids this). Idempotent for pure hydrodynamics. | `load_restart_file` → `update_ibm_wet_bed_after_restart`. | §9 Restart row; W4b |
-| F10 | M | MPI not exercised: cut cells at the outer edge of the ghost layer may have fewer than three uncut neighbours, so the wet‑bed fit raises a hard error; `dx`/`dy` and `x0`/`y0` are not reduced across ranks. c06 has never run. | Code trace (`ibm_set_wet_bed`, `flow_geominit` Cartesian block). | §5.6; W3b; U36 |
+| F10 | M | The original MPI/ghost-layer risk is addressed in code: grid spacing/origin are reduced across ranks, wet-bed fitting is owner-only, and ghost geometry is synchronized. The two-rank c06 0.05-hour smoke run now passes with finite flow fields; formal U36 owner/ghost equivalence assertions remain. | `flow_geominit` MPI reductions and wet-bed synchronization; c06 direct run after the PETSc inactive-row fix. | §5.6; W3b; U36 |
 | F11 | L | Hot‑loop hooks in `furu`/`advec` do `allocated`/`size`/index checks per link inside OpenMP loops. Results with IBM off are unchanged, but the overhead is unmeasured. | Diff of `furu.f90`, `advec.f90`. | W4b; Stage 0 |
 | F12 | L | The IBM error message in `cutcelwu` says "a cut cell has no active grid node" but counts nodes with `kc = 1`, i.e. *inside* the polygon (solid). The `cycle` after `mess(LEVEL_ERROR)` is unreachable because `threshold_abort = LEVEL_ERROR` aborts. | Code trace. | W3b |
 | F13 | L | `ibm_find_crossed_links` closes the polygon with `xpl(1)` and assumes one polygon per `.pol` file; `dmiss`‑separated multi‑polygon files are not handled. | Code trace. | §5.5; W3b |
@@ -1456,8 +1464,8 @@ the I7 L2 and Lmax norms as in paper Table I. This stage claims it only if measu
 | D6 | Scope of M1/M2 overrides: IBM‑local (`gdxi`/`acl_wet` only in momentum hooks) vs overwriting global `dxi`/`acl` | IBM‑local for the POC (no side effects on transport, walls or the weights of uncut cells). Revisit for W14. |
 | D7 | Which `iadvec` and `BedlevType` values to support with IBM | **Decided:** `BedlevType = 1` (cell‑centre bed, required for morphodynamics) and `iadvec = 33`; reject others. |
 | D8 | Acceptance of a partially implicit pressure correction that changes the `s1` matrix structure (if W7 fails) | Not part of the POC. Escalate at Checkpoint E with the W7 evidence. |
-| D9 | M1/M2 on open‑boundary links next to cut cells (F2) | Mirror the interior cut cell across the boundary face (keeps the wet‑centroid distance consistent); fallback: keep `dxi`/`acl` on boundary links. Decide in W3b. |
-| D10 | Several `Cutcelllist` polygons cutting one cell (F3) | Union clipping in `cutcelwu` for IBM (all polygons together). Minimum for the POC: detect and stop with an error. Decide in W3b, before regenerating the annulus and basin cases. |
+| D9 | M1/M2 on open-boundary links next to cut cells (F2) | **Chosen for the POC:** keep existing `dxi`/`acl` on boundary links; do not mirror virtual-cell centroids. Implemented; add/retain focused regression coverage. |
+| D10 | Several `Cutcelllist` polygons cutting one cell (F3) | **Chosen for the current POC:** detect and stop with an explicit error. Union clipping is deferred. c14 reaches this guard; c09/annulus geometry remains unsupported, so this decision does not satisfy the original C3 case-pass criterion. |
 
 **Can be deferred**: dedicated IBM polygon file; rotated grids (global rotation θ fitted from link
 directions — the lattice test generalises with a rotation); non‑uniform rectilinear grids (bilinear
@@ -1522,6 +1530,8 @@ storing geometry in restart files.
    U31–U36, plus the W1/W2 fixes F4–F6 and the generator fixes of §7.2 items 4–5 →
    **Checkpoint C3**:
    - c05, c09, c14 and c06 initialise with IBM on and pass `verify_metrics.py --geometry`;
+     c06 now passes the two-rank 0.05-hour smoke run, but the verifier is not yet present and
+     c09/c14 currently stop at the selected D10 guard;
    - D9 and D10 decided;
    - cases regenerated; only then `dvc push` and commit the DVC pointers.
 5. **W5 + W6** (diagnostics, cases I1–I5, I7, I8, I9) → **Checkpoint D = first merge
