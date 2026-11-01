@@ -37,9 +37,9 @@ contains
       use m_cutcelwu, only: cutcelwu, cutcelwu_ibm_union
       use m_flow, only: baorgfracmin
       use m_flow_geominit, only: flow_geominit
-      use m_flowgeom, only: ba, kfs, lne2ln, lnx, wu
+      use m_flowgeom, only: acl, ba, csu, dxi, kfs, lne2ln, ln, lncn, lnx, nd, snu, wu, xz, yz
       use m_flowparameters, only: immersed_boundary
-      use m_immersed_boundary, only: ibm_reset_state, ibm_state
+      use m_immersed_boundary, only: ibm_build_geometry, ibm_reset_state, ibm_set_wet_link_metrics, ibm_state
       use m_missing, only: dmiss
       use m_network_helpers, only: t_grid_helper
       use m_partitioninfo, only: jampi
@@ -52,9 +52,16 @@ contains
 
       type(t_grid_helper) :: grid_helper
       type(tpoly), dimension(:), allocatable :: polygons
-      integer :: ierror, cell, ll, link, node1, node2, flow_link, internal_flow_faces
-      integer :: sw_cell, se_cell, nw_cell, ne_cell
+      integer :: ierror, cell, ll, link, node1, node2, flow_link, internal_flow_faces, geometry_link_count
+      integer :: sw_cell, se_cell, nw_cell, ne_cell, max_wet_vertices, geometry_error, boundary_cut_link
+      integer, allocatable :: wet_count(:), link_cells(:, :)
       real(kind=dp) :: slope, center_x, center_y, phi1, phi2, wet_fraction, expected_width, full_width
+      real(kind=dp), allocatable :: cell_corner_x(:, :), cell_corner_y(:, :), wet_x(:, :), wet_y(:, :)
+      real(kind=dp), allocatable :: face_x(:, :), face_y(:, :)
+      real(kind=dp), allocatable :: width_full_test(:), width_used_test(:), acl_full_test(:), dxi_full_test(:)
+      real(kind=dp), allocatable :: normal_x_test(:), normal_y_test(:)
+      logical :: geometry_valid
+      character(len=256) :: geometry_reason
       character(len=256) :: link_message
 
       call ibm_reset_state()
@@ -85,6 +92,8 @@ contains
       ibm_state%grid%dy = 10.0_dp
       ibm_state%ba_full = ba(1:nump)
       ibm_state%wu_full = wu(1:lnx)
+      ibm_state%acl_full = acl(1:lnx)
+      ibm_state%dxi_full = dxi(1:lnx)
       immersed_boundary = 1
 
       call build_kdtree(treeglob, numk, xk, yk, ierror, jsferic, dmiss)
@@ -169,6 +178,106 @@ contains
                               'An oblique-bank face aperture is outside [0, 1].')
       end do
       call F90_ASSERT_EQ(internal_flow_faces, 4, 'Unexpected number of internal faces in the node-crossing fixture.')
+
+      max_wet_vertices = 4
+      do cell = 1, nump
+         if (allocated(nd(cell)%x)) then
+            max_wet_vertices = max(max_wet_vertices, size(nd(cell)%x))
+         end if
+      end do
+      allocate (cell_corner_x(4, nump), cell_corner_y(4, nump))
+      allocate (wet_x(max_wet_vertices, nump), wet_y(max_wet_vertices, nump), wet_count(nump))
+      geometry_link_count = lnx + 1
+      allocate (link_cells(2, geometry_link_count), face_x(2, geometry_link_count), face_y(2, geometry_link_count))
+      allocate (width_full_test(geometry_link_count), width_used_test(geometry_link_count))
+      allocate (acl_full_test(geometry_link_count), dxi_full_test(geometry_link_count))
+      allocate (normal_x_test(geometry_link_count), normal_y_test(geometry_link_count))
+      wet_x = 0.0_dp
+      wet_y = 0.0_dp
+      do cell = 1, nump
+         wet_count(cell) = 0
+         if (allocated(nd(cell)%x) .and. allocated(nd(cell)%y)) then
+            wet_count(cell) = size(nd(cell)%x)
+            if (wet_count(cell) > 0) then
+               wet_x(1:wet_count(cell), cell) = nd(cell)%x
+               wet_y(1:wet_count(cell), cell) = nd(cell)%y
+            end if
+         end if
+         do ll = 1, 4
+            node1 = netcell(cell)%nod(ll)
+            cell_corner_x(ll, cell) = xk(node1)
+            cell_corner_y(ll, cell) = yk(node1)
+         end do
+      end do
+      do link = 1, lnx
+         link_cells(:, link) = ln(:, link)
+         face_x(:, link) = xk(lncn(:, link))
+         face_y(:, link) = yk(lncn(:, link))
+      end do
+      width_full_test(1:lnx) = ibm_state%wu_full
+      width_used_test(1:lnx) = wu
+      acl_full_test(1:lnx) = ibm_state%acl_full
+      dxi_full_test(1:lnx) = ibm_state%dxi_full
+      normal_x_test(1:lnx) = csu
+      normal_y_test(1:lnx) = snu
+
+      ! The square-grid fixture has no virtual boundary flow links, so add one
+      ! on the cut cell's left face to exercise preservation of its legacy metrics.
+      link_cells(:, geometry_link_count) = [nump + 1, sw_cell]
+      face_x(:, geometry_link_count) = [-10.0_dp, -10.0_dp]
+      face_y(:, geometry_link_count) = [-10.0_dp, 0.0_dp]
+      width_full_test(geometry_link_count) = 10.0_dp
+      width_used_test(geometry_link_count) = 10.0_dp * slope
+      acl_full_test(geometry_link_count) = 0.375_dp
+      dxi_full_test(geometry_link_count) = 0.125_dp
+      normal_x_test(geometry_link_count) = 1.0_dp
+      normal_y_test(geometry_link_count) = 0.0_dp
+      call ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, ibm_state%ba_full, ba, &
+                              link_cells, face_x, face_y, width_full_test, width_used_test, ibm_state%grid%dx, &
+                              ibm_state%grid%dy, baorgfracmin, 0.0_dp, 1.0e-6_dp, 0.5_dp, ibm_state, &
+                              geometry_valid, geometry_error, geometry_reason)
+      call F90_ASSERT_TRUE(geometry_valid, 'IBM geometry build rejected the boundary-crossing bank: '//trim(geometry_reason))
+      if (geometry_valid) then
+         call ibm_set_wet_link_metrics(link_cells, xz, yz, normal_x_test, normal_y_test, width_used_test, acl_full_test, &
+                                       dxi_full_test, ibm_state, geometry_valid, geometry_error, geometry_reason)
+         call F90_ASSERT_TRUE(geometry_valid, 'IBM wet-link metrics rejected the boundary-crossing bank: '//trim(geometry_reason))
+      end if
+
+      boundary_cut_link = 0
+      if (geometry_valid) then
+         do ll = 1, size(ibm_state%clink)
+            flow_link = ibm_state%clink(ll)%L
+            node1 = link_cells(1, flow_link)
+            node2 = link_cells(2, flow_link)
+            if (ibm_state%clink(ll)%edge_frac <= 1.0e-12_dp .or. ibm_state%clink(ll)%edge_frac >= 1.0_dp - 1.0e-12_dp) then
+               cycle
+            end if
+            if (node1 > ibm_state%geometry_cell_count .and. node2 >= 1 .and. &
+                node2 <= ibm_state%geometry_cell_count) then
+               if (ibm_state%cell_class(node2) == 1) then
+                  boundary_cut_link = ll
+                  exit
+               end if
+            else if (node2 > ibm_state%geometry_cell_count .and. node1 >= 1 .and. &
+                     node1 <= ibm_state%geometry_cell_count) then
+               if (ibm_state%cell_class(node1) == 1) then
+                  boundary_cut_link = ll
+                  exit
+               end if
+            end if
+         end do
+         call F90_ASSERT_TRUE(boundary_cut_link > 0, 'No partially wet cut link to a virtual boundary cell was found.')
+         if (boundary_cut_link > 0) then
+            flow_link = ibm_state%clink(boundary_cut_link)%L
+            call F90_ASSERT_EQ(flow_link, geometry_link_count, 'The virtual-boundary cut link was not the synthetic test link.')
+            call F90_ASSERT_NEAR(ibm_state%clink(boundary_cut_link)%edge_frac, slope, 1.0e-12_dp, &
+                                 'The virtual-boundary link has the wrong wet-face fraction.')
+            call F90_ASSERT_NEAR(ibm_state%clink(boundary_cut_link)%acl_wet, acl_full_test(flow_link), &
+                                 1.0e-14_dp, 'Boundary-link ACL did not retain its legacy value.')
+            call F90_ASSERT_NEAR(ibm_state%clink(boundary_cut_link)%dxi_wet, dxi_full_test(flow_link), &
+                                 1.0e-14_dp, 'Boundary-link DXI did not retain its legacy value.')
+         end if
+      end if
 
       call delete_kdtree2(treeglob)
       call ibm_reset_state()
