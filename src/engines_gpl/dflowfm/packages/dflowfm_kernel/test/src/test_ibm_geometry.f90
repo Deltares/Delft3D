@@ -31,6 +31,79 @@ contains
    end subroutine test_half_plane_cut_metrics
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_union_clip_multiple_polygons, test_union_clip_multiple_polygons,
+   subroutine test_union_clip_multiple_polygons() bind(C)
+      use m_cutcelwu, only: cutcelwu_ibm_union
+      use m_flow, only: baorgfracmin
+      use m_flow_geominit, only: flow_geominit
+      use m_flowgeom, only: ba, kfs, lne2ln, lnx, wu
+      use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_reset_state, ibm_state
+      use m_network_helpers, only: t_grid_helper
+      use m_partitioninfo, only: jampi
+      use m_tpoly, only: tpoly
+      use network_data, only: netcell, nump
+      use Timers, only: timini
+
+      type(t_grid_helper) :: grid_helper
+      type(tpoly), dimension(:), allocatable :: polygons
+      integer :: net_link, flow_link
+
+      call ibm_reset_state()
+      jampi = 0
+      immersed_boundary = 0
+      baorgfracmin = 0.1_dp
+      call timini()
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid(0.0_dp, 0.0_dp, 10.0_dp, 1, 2)
+      call flow_geominit(0)
+
+      allocate (polygons(2))
+      allocate (polygons(1)%x(4), polygons(1)%y(4), polygons(1)%z(4))
+      polygons(1)%len = 4
+      polygons(1)%x = [-1.0_dp, 4.0_dp, 4.0_dp, -1.0_dp]
+      polygons(1)%y = [-1.0_dp, -1.0_dp, 11.0_dp, 11.0_dp]
+      polygons(1)%z = 0.0_dp
+      polygons(1)%xmin = minval(polygons(1)%x)
+      polygons(1)%xmax = maxval(polygons(1)%x)
+      polygons(1)%ymin = minval(polygons(1)%y)
+      polygons(1)%ymax = maxval(polygons(1)%y)
+      allocate (polygons(2)%x(4), polygons(2)%y(4), polygons(2)%z(4))
+      polygons(2)%len = 4
+      polygons(2)%x = [4.0_dp, 10.0_dp, 10.0_dp, 4.0_dp]
+      polygons(2)%y = [-1.0_dp, -1.0_dp, 4.0_dp, 4.0_dp]
+      polygons(2)%z = 0.0_dp
+      polygons(2)%xmin = minval(polygons(2)%x)
+      polygons(2)%xmax = maxval(polygons(2)%x)
+      polygons(2)%ymin = minval(polygons(2)%y)
+      polygons(2)%ymax = maxval(polygons(2)%y)
+
+      ibm_state%grid%dx = 10.0_dp
+      ibm_state%grid%dy = 10.0_dp
+      call F90_ASSERT_TRUE(allocated(wu), 'Flow-link widths were not initialized.')
+      if (.not. allocated(wu) .or. lnx < 1 .or. nump < 2) then
+         call ibm_reset_state()
+         return
+      end if
+      ibm_state%ba_full = ba(1:nump)
+      ibm_state%wu_full = wu(1:lnx)
+      call cutcelwu_ibm_union(polygons)
+
+      call F90_ASSERT_NEAR(ba(1), 36.0_dp, 1.0e-12_dp, 'Union clipping returned the wrong wet area.')
+      call F90_ASSERT_NEAR(ba(2), 100.0_dp, 1.0e-12_dp, 'Polygon subtraction changed the adjacent fluid cell.')
+      call F90_ASSERT_EQ(kfs(1), 1, 'Union-clipped cell was not marked as cut.')
+      call F90_ASSERT_EQ(kfs(2), 0, 'Adjacent fluid cell was incorrectly marked as cut.')
+      net_link = abs(netcell(1)%lin(2))
+      flow_link = lne2ln(net_link)
+      call F90_ASSERT_TRUE(flow_link > 0, 'Shared cell face does not map to a flow link.')
+      if (flow_link > 0 .and. flow_link <= size(wu)) then
+         call F90_ASSERT_NEAR(wu(flow_link), 6.0_dp, 1.0e-12_dp, 'Union clipping returned the wrong shared-face aperture.')
+      end if
+
+      call ibm_reset_state()
+   end subroutine test_union_clip_multiple_polygons
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_area_floor_crosscheck, test_area_floor_crosscheck,
    subroutine test_area_floor_crosscheck() bind(C)
       real(kind=dp), dimension(4) :: cell_x, cell_y
