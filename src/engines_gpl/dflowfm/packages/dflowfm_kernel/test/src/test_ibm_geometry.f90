@@ -403,9 +403,9 @@ contains
       real(kind=dp), dimension(4, 2) :: cell_corner_x, cell_corner_y, wet_x, wet_y
       integer, dimension(2) :: wet_count
       real(kind=dp), dimension(2) :: area_full, area_used
-      integer, dimension(2, 0) :: link_cells
-      real(kind=dp), dimension(2, 0) :: face_x, face_y
-      real(kind=dp), dimension(0) :: width_full, width_used
+      integer, dimension(2, 2) :: link_cells
+      real(kind=dp), dimension(2, 2) :: face_x, face_y
+      real(kind=dp), dimension(2) :: width_full, width_used, wcx1, wcy1, wcx2, wcy2
       type(t_ibm_state) :: state
       logical :: valid
       integer :: error_index
@@ -422,6 +422,14 @@ contains
       wet_count = [4, 4]
       area_full = [100.0_dp, 100.0_dp]
       area_used = [0.05_dp, 99.95_dp]
+      link_cells(:, 1) = [1, 3]
+      link_cells(:, 2) = [2, 3]
+      face_x(:, 1) = [0.0_dp, 10.0_dp]
+      face_x(:, 2) = [10.0_dp, 20.0_dp]
+      face_y = 0.0_dp
+      width_full = 10.0_dp
+      width_used = 10.0_dp
+      state%ba_full = area_full
 
       call ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, area_full, area_used, link_cells, &
                               face_x, face_y, width_full, width_used, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp, 1.0e-3_dp, &
@@ -431,6 +439,20 @@ contains
       call F90_ASSERT_EQ(state%ncut, 2, 'Area classification used the Cartesian tolerance.')
       call F90_ASSERT_EQ(state%cell_class(1), 1, 'Sliver wet cell was classified as solid.')
       call F90_ASSERT_EQ(state%cell_class(2), 1, 'Near-full wet cell was classified as uncut.')
+      if (valid) then
+         wcx1 = -999.0_dp
+         wcy1 = -999.0_dp
+         wcx2 = -999.0_dp
+         wcy2 = -999.0_dp
+         call ibm_set_perot_weights(link_cells, width_used, wcx1, wcy1, wcx2, wcy2, state, valid, error_index, reason)
+         call F90_ASSERT_TRUE(valid, 'Perot weights rejected sliver or near-full cut cells: '//trim(reason))
+         if (valid) then
+            call F90_ASSERT_NEAR(wcx1(1), 0.0_dp, 1.0e-12_dp, 'Sliver-cell Perot x weight was not applied.')
+            call F90_ASSERT_NEAR(wcy1(1), -0.5_dp, 1.0e-12_dp, 'Sliver-cell Perot y weight was not applied.')
+            call F90_ASSERT_NEAR(wcx1(2), 0.0_dp, 1.0e-12_dp, 'Near-full-cell Perot x weight was not applied.')
+            call F90_ASSERT_NEAR(wcy1(2), -0.5_dp, 1.0e-12_dp, 'Near-full-cell Perot y weight was not applied.')
+         end if
+      end if
    end subroutine test_area_classification_uses_geometric_tolerance
    !$f90tw)
 
