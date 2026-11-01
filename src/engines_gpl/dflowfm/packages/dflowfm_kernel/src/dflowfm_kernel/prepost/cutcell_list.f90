@@ -34,7 +34,7 @@ module m_cutcell_list
    use m_remove_masked_netcells, only: remove_masked_netcells
    use m_fix_global_polygons, only: fix_global_polygons
    use m_delnet, only: delnet
-   use m_cutcelwu, only: cutcelwu
+   use m_cutcelwu, only: cutcelwu, cutcelwu_ibm_union
 
    implicit none
 
@@ -75,7 +75,6 @@ contains
       character(len=128) :: mesg
 
       integer, dimension(:), allocatable :: kc_bak ! backup of kc
-      integer, dimension(:), allocatable :: ibm_processed_cells
 
       integer :: Lf
 
@@ -133,11 +132,6 @@ contains
       end if
 
       ipol_stored = 0
-      if (n12 == 5 .and. immersed_boundary == 1) then
-         allocate (ibm_processed_cells(nump))
-         ibm_processed_cells = 0
-      end if
-
       if (jaalltogether == 1 .and. (jamasks == 0 .or. jamasks == 1)) then
          call dealloc_tpoly(pli) ! safety
 
@@ -164,35 +158,38 @@ contains
          NMAX = NUMFIL
       end if
 
-      do N = 1, NMAX
-         if (jaalltogether /= 1) then
+      if (n12 == 5 .and. immersed_boundary == 1) then
+         call cutcelwu_ibm_union(pli)
+      else
+         do N = 1, NMAX
+            if (jaalltogether /= 1) then
 !       read polygons from file
-            call OLDFIL(MPOL, trim(FILIST(N)))
-            call REAPOL(MPOL, 0)
+               call OLDFIL(MPOL, trim(FILIST(N)))
+               call REAPOL(MPOL, 0)
 
-            if (jsferic == 1) then
-               call fix_global_polygons(1, 0)
+               if (jsferic == 1) then
+                  call fix_global_polygons(1, 0)
+               end if
+
+               call pol_to_tpoly(numpols, pli, keepExisting=.false.)
             end if
 
-            call pol_to_tpoly(numpols, pli, keepExisting=.false.)
-         end if
+            do ipoly = 1, numpols
+               call wall_clock_time(t0)
 
-         do ipoly = 1, numpols
-            call wall_clock_time(t0)
+               ipol_stored = ipol_stored + 1
+               call delpol()
+               call tpoly_to_pol(pli, iselect=ipoly)
 
-            ipol_stored = ipol_stored + 1
-            call delpol()
-            call tpoly_to_pol(pli, iselect=ipoly)
+               if (jaalltogether == 1) then
+                  write (mesg, "('cutcells: processing polygon ', I0, ' of ', I0, '...')") ipoly, numpols
+                  call mess(LEVEL_INFO, trim(mesg))
+               end if
 
-            if (jaalltogether == 1) then
-               write (mesg, "('cutcells: processing polygon ', I0, ' of ', I0, '...')") ipoly, numpols
-               call mess(LEVEL_INFO, trim(mesg))
-            end if
-
-            if (n12 == 1) then
-               call CUTCELLS(n12)
-            else if (N12 == 2) then ! DELETE NEtNODES IF INSIDE POLYGON
-               call delnet(key, 0, 0)
+               if (n12 == 1) then
+                  call CUTCELLS(n12)
+               else if (N12 == 2) then ! DELETE NEtNODES IF INSIDE POLYGON
+                  call delnet(key, 0, 0)
 !        else if (N12 == 3) then                ! DELETE NETCELLS IF NETCELLS ENTIRELY INSIDE POLYGONS
 !           IN = -1
 !           DO K = 1,NUMK
@@ -201,21 +198,18 @@ contains
 !                 KC(K) = 0                     ! ZIT IE IN POL DAN DOET IE NIET MEE
 !              ENDIF
 !           ENDDO
-            else if (N12 >= 3) then ! 3, 4 and 5
-               if (allocated(ibm_processed_cells)) then
-                  call CUTCELWU(n12, jamasks, ipol_stored, ibm_processed_cells) ! calls SAVEPOL via split_pol
-               else
+               else if (N12 >= 3) then ! 3, 4 and 5
                   call CUTCELWU(n12, jamasks, ipol_stored) ! calls SAVEPOL via split_pol
                end if
-            end if
 
-            call wall_clock_time(t1)
+               call wall_clock_time(t1)
 
-            write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
-            call mess(LEVEL_INFO, trim(mesg))
+               write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
+               call mess(LEVEL_INFO, trim(mesg))
 
+            end do
          end do
-      end do
+      end if
       if (N12 >= 3) then ! cleanup after cutcellwu
          if (jamasks == 0 .or. jamasks == 1) then
             call delete_kdtree2(treeglob)
@@ -270,11 +264,8 @@ contains
          call dealloc_tpoly(pli)
       end if
 
-      if (allocated(ibm_processed_cells)) then
-         deallocate (ibm_processed_cells)
-      end if
-
-      if (n12 == 5) then
+      ! IBM union clipping derives link apertures from the clipped wet polygons, not per-polygon netlink masks.
+      if (n12 == 5 .and. immersed_boundary /= 1) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
          do Lf = 1, Lnx
             if (kcu(Lf) /= LINK_2D) then

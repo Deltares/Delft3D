@@ -49,7 +49,7 @@ module m_immersed_boundary
       real(kind=dp) :: nx = 0.0_dp !< Unit normal pointing into the active fluid.
       real(kind=dp) :: ny = 0.0_dp !< Unit normal pointing into the active fluid.
       real(kind=dp) :: seg_len = 0.0_dp !< Total immersed-segment length in the cell.
-      integer :: nseg = 0 !< Number of immersed segments in the cell.
+      integer :: nseg = 0 !< Number of immersed boundary segments after coalescing nearly collinear edges.
       logical :: valid = .false. !< Whether the geometry and area cross-check passed.
       character(len=256) :: reason = '' !< Failure reason when valid is false.
    end type t_ibm_cut_cell
@@ -224,7 +224,10 @@ contains
       real(kind=dp) :: nx_edge, ny_edge, nx_sum, ny_sum, normal_length
       real(kind=dp) :: segment_length, longest_segment, segment_mid_x, segment_mid_y
       real(kind=dp) :: expected_area, comparison_scale, area_frac_tolerance
-      logical :: on_cell_face
+      real(kind=dp) :: direction_x, direction_y, previous_direction_x, previous_direction_y
+      real(kind=dp) :: first_direction_x, first_direction_y, last_direction_x, last_direction_y
+      real(kind=dp), parameter :: segment_direction_cosine = 0.99_dp
+      logical :: on_cell_face, in_immersed_run, first_edge_immersed, last_edge_immersed, have_valid_edge
 
       cell = t_ibm_cut_cell()
       if (size(cell_x) /= 4 .or. size(cell_y) /= 4 .or. size(wet_x) /= size(wet_y) .or. size(wet_x) < 3) then
@@ -300,6 +303,16 @@ contains
       nx_sum = 0.0_dp
       ny_sum = 0.0_dp
       longest_segment = 0.0_dp
+      in_immersed_run = .false.
+      first_edge_immersed = .false.
+      last_edge_immersed = .false.
+      have_valid_edge = .false.
+      previous_direction_x = 0.0_dp
+      previous_direction_y = 0.0_dp
+      first_direction_x = 0.0_dp
+      first_direction_y = 0.0_dp
+      last_direction_x = 0.0_dp
+      last_direction_y = 0.0_dp
       do i = 1, nwet
          j = i + 1
          if (j > nwet) then
@@ -319,11 +332,36 @@ contains
                         (abs(x1 - xmax) <= snap_tol .and. abs(x2 - xmax) <= snap_tol) .or. &
                         (abs(y1 - ymin) <= snap_tol .and. abs(y2 - ymin) <= snap_tol) .or. &
                         (abs(y1 - ymax) <= snap_tol .and. abs(y2 - ymax) <= snap_tol)
+         if (.not. have_valid_edge) then
+            first_edge_immersed = .not. on_cell_face
+            if (first_edge_immersed) then
+               first_direction_x = edge_dx / edge_length
+               first_direction_y = edge_dy / edge_length
+            end if
+            have_valid_edge = .true.
+         end if
+         last_edge_immersed = .not. on_cell_face
+         if (last_edge_immersed) then
+            last_direction_x = edge_dx / edge_length
+            last_direction_y = edge_dy / edge_length
+         end if
          if (on_cell_face) then
+            in_immersed_run = .false.
             cycle
          end if
 
-         cell%nseg = cell%nseg + 1
+         direction_x = edge_dx / edge_length
+         direction_y = edge_dy / edge_length
+         ! Polygonized curved walls have several short edges; preserve sharp corners as separate segments.
+         if (.not. in_immersed_run) then
+            cell%nseg = cell%nseg + 1
+         else if (direction_x * previous_direction_x + direction_y * previous_direction_y < &
+                  segment_direction_cosine) then
+            cell%nseg = cell%nseg + 1
+         end if
+         in_immersed_run = .true.
+         previous_direction_x = direction_x
+         previous_direction_y = direction_y
          cell%seg_len = cell%seg_len + edge_length
          if (signed_area > 0.0_dp) then
             nx_edge = -edge_dy / edge_length
@@ -340,6 +378,12 @@ contains
             cell%ybi = [y1, y2]
          end if
       end do
+      if (have_valid_edge .and. first_edge_immersed .and. last_edge_immersed .and. cell%nseg > 1) then
+         if (first_direction_x * last_direction_x + first_direction_y * last_direction_y >= &
+             segment_direction_cosine) then
+            cell%nseg = cell%nseg - 1
+         end if
+      end if
 
       if (cell%area_frac < 1.0_dp - area_frac_tolerance .and. cell%nseg == 0) then
          cell%reason = 'cut cell has no immersed segment'
@@ -520,7 +564,7 @@ contains
       integer :: ncell, nlink, k, L, i, count_cut, count_clink, cell1, cell2, wet_cell
       real(kind=dp) :: snap_tol, area_tolerance, edge_fraction, face_fraction, xm, ym
       type(t_ibm_cut_cell), allocatable :: cell_data(:)
-      logical :: face_valid, adjacent_cut
+      logical :: face_valid, adjacent_cut, adjacent_solid
       character(len=256) :: cell_reason
 
       valid = .false.
@@ -666,22 +710,43 @@ contains
             cycle
          end if
 
-         call ibm_measure_wet_face(face_x(:, L), face_y(:, L), wet_x(1:wet_count(wet_cell), wet_cell), &
-                                   wet_y(1:wet_count(wet_cell), wet_cell), snap_tol, face_fraction, xm, ym, face_valid)
-         if (state%edge_frac(L) > area_tolerance .and. .not. face_valid) then
-            error_index = L
-            reason = 'wet link face could not be recovered from the cut-cell polygon'
-            return
+         adjacent_solid = .false.
+         if (cell1 >= 1 .and. cell1 <= ncell) then
+            adjacent_solid = state%cell_class(cell1) == 2
          end if
-         if (face_valid) then
-            if (abs(face_fraction - state%edge_frac(L)) > 1.0e-10_dp) then
+         if (cell2 >= 1 .and. cell2 <= ncell) then
+            adjacent_solid = adjacent_solid .or. state%cell_class(cell2) == 2
+         end if
+         if (adjacent_solid) then
+            if (state%edge_frac(L) > area_tolerance) then
                error_index = L
-               reason = 'wet link face does not match cutcelwu width'
+               reason = 'link adjacent to a solid cell has nonzero wet width'
                return
             end if
-         else
             xm = 0.5_dp * (face_x(1, L) + face_x(2, L))
             ym = 0.5_dp * (face_y(1, L) + face_y(2, L))
+         else
+            call ibm_measure_wet_face(face_x(:, L), face_y(:, L), wet_x(1:wet_count(wet_cell), wet_cell), &
+                                      wet_y(1:wet_count(wet_cell), wet_cell), snap_tol, face_fraction, xm, ym, &
+                                      face_valid)
+            if (state%edge_frac(L) > area_tolerance .and. .not. face_valid) then
+               error_index = L
+               reason = 'wet link face could not be recovered from the cut-cell polygon'
+               return
+            end if
+            if (face_valid) then
+               if (abs(face_fraction - state%edge_frac(L)) > 1.0e-10_dp) then
+                  error_index = L
+                  write (reason, '(A,I0,A,I0,A,I0,A,ES24.16,A,ES24.16,A,ES24.16)') &
+                     'wet-face width mismatch on link ', L, ' between cells ', cell1, ' and ', cell2, &
+                     ': polygon ', face_fraction, ', cutcelwu ', state%edge_frac(L), &
+                     ', diff ', abs(face_fraction - state%edge_frac(L))
+                  return
+               end if
+            else
+               xm = 0.5_dp * (face_x(1, L) + face_x(2, L))
+               ym = 0.5_dp * (face_y(1, L) + face_y(2, L))
+            end if
          end if
          count_clink = count_clink + 1
          state%clink(count_clink)%L = L
@@ -933,7 +998,9 @@ contains
             c1y = state%cut(cut1)%yc
          else if (state%cell_class(k1) == 2 .and. width_used(L) > tiny(1.0_dp)) then
             error_index = L
-            reason = 'active IBM cut link is adjacent to a solid cell'
+            write (reason, '(A,I0,A,I0,A,I0,A,I0,A,I0,A,ES24.16)') &
+               'active IBM cut link ', L, ' joins cell ', k1, ' (class ', state%cell_class(k1), &
+               ') to cell ', k2, ' (class ', state%cell_class(k2), '), width ', width_used(L)
             return
          end if
          if (cut2 > 0) then
@@ -941,7 +1008,9 @@ contains
             c2y = state%cut(cut2)%yc
          else if (state%cell_class(k2) == 2 .and. width_used(L) > tiny(1.0_dp)) then
             error_index = L
-            reason = 'active IBM cut link is adjacent to a solid cell'
+            write (reason, '(A,I0,A,I0,A,I0,A,I0,A,I0,A,ES24.16)') &
+               'active IBM cut link ', L, ' joins cell ', k1, ' (class ', state%cell_class(k1), &
+               ') to cell ', k2, ' (class ', state%cell_class(k2), '), width ', width_used(L)
             return
          end if
 
@@ -1179,7 +1248,9 @@ contains
             if (fallback_sample_count < 3) then
                valid = .false.
                error_index = k1
-               reason = 'fewer than three uncut wet neighbours are available within three link hops'
+               write (reason, '(A,I0,A,I0,A,ES24.16,A,ES24.16,A)') &
+                  'wet-bed fit for cell ', k1, ' found ', fallback_sample_count, &
+                  ' uncut wet neighbours within three hops at x=', cell_x(k1), ', y=', cell_y(k1), ''
                return
             end if
             call ibm_solve_3x3(fallback_matrix, fallback_rhs, solution, solve_valid)

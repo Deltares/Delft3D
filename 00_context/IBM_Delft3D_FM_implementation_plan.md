@@ -130,11 +130,11 @@ against this plan, ran c05 and c02 (Debug build, focused targets `dflowfm-cli`, 
 | W1 | Implemented | All six keywords read, validated and written only when non-default; U23 round trip passes. F4–F6 validation fixes are in place. |
 | W2 | Implemented | `ibm_check_cartesian` + MPI verdict reduction; U1–U8 pass. Grid spacing/origin reductions are also in place; formal U36 owner/ghost assertions remain. |
 | W3 | Implemented, **design deviation** | `ibm_build_geometry` measures the clipped polygons `nd(n)%x/y` produced by `cutcelwu` instead of recomputing the polygon/net intersections independently (§5.1 Lifecycle 4). The cross‑check therefore only checks self‑consistency of `ba`/`wu` with `nd` and cannot detect wrong cut polygons (F1, F3). `cutcelwu` got an IBM‑specific crossing path (k‑d tree crossing count per net link, interior‑vertex test). |
-| W3b | Partially implemented | Integrated cut-cell safeguards and configuration fixes are in place; focused geometry/Cartesian tests pass (26/26). c06 now passes a two-rank 0.05-hour smoke run. c09/c14 still hit the intentional multiple-polygon guard; union clipping and formal U31–U36/geometry-verifier coverage remain. |
+| W3b | Partially implemented | Integrated cut-cell safeguards and IBM union clipping are in place; focused geometry/Cartesian tests pass (28/28). c05, c06, c09, c14, c24 and c27 reach successful model initialization, including a two-rank c06 smoke run. Formal U31–U36 and independent geometry-verifier coverage remain. |
 | W4 | Implemented (weights) | `ibm_set_perot_weights` overrides `wcx1/wcy1/wcx2/wcy2` on cut-cell sides with `±(x_f − c)·l_f/A_w`; sign convention matches `setlinktocenterweights`. `PerotWeightUpdate` rejected. Unsupported tangential-correction/projection settings are now rejected (F5); the algorithms are not implemented. Model-level U27 not done. |
 | W4b | Implemented | `dxi_wet` used in `furu` `gdxi`; `acl_wet` in the `advec` `kmx = 0` `volu`/`advel` weighting; wet bed by LSQ fit from uncut wet neighbours within two link hops, applied before `setbobs` in `flow_geominit` and again after restart (F9). Hooks use per-link `allocated`/`size` checks instead of a precomputed override array (F11). |
 | W5 | Not started | No `.dia` report (`ncut`, `nfloored`, `min_area_frac`, `area_deficit`, `ndegenerate` are computed but never written; only `nclipped_dn` is warned), no `Wrimap_immersed_boundary`, no timer, no `irov` warning. |
-| W6 | Inputs generated, **not fully validated** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); DVC pointers staged locally, not pushed or committed. c06 has a direct MPI smoke run; `verify_metrics.py`, references and TestBench XML are still missing. |
+| W6 | Inputs generated, **not fully validated** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); annulus input pointers are updated and staged locally, not pushed. c06 has a direct MPI smoke run; `verify_metrics.py`, references and TestBench XML are still missing. |
 | W7–W9 | Not started | As planned. |
 
 **Progress update (2026-10-31):** The c06 two-rank 0.05-hour PETSc run completes after inactive
@@ -143,6 +143,21 @@ previous PETSc failure was caused by these all-zero rows, not by nonfinite activ
 The rebuilt run exited successfully with no divergence/error/nonfinite log markers; `mesh2d_s1`,
 `mesh2d_ucx`, and `mesh2d_ucy` are finite in both rank-local and combined map outputs. This is a
 direct smoke run, not the planned geometry verifier or formal U36 assertion.
+
+**Progress update (IBM union clipping):** IBM cut-cell geometry now subtracts multiple solid
+polygons sequentially to form the wet union. Mapped link apertures start from their full widths and
+are intersected across adjacent cells, so a solid neighbor cannot reopen a face; the legacy
+`lnn == 0` cleanup is bypassed for the IBM union path. A regression test covers a closed link next
+to a solid cell. The annulus generator now slightly overlaps adjacent outer wedges on the solid
+side, pads the removed opening by half a cell diagonal, and places probes inside the retained wet
+arc to avoid artificial seams and edge probes.
+
+Focused geometry/Cartesian tests pass 28/28. Short runs reached successful initialization for
+c05, c06 (two MPI ranks), c09, c14, c24 and c27. The c27 dx=1 m run was stopped after successful
+initialization because its time loop continued for several minutes; it is not a completed 0.05-hour
+simulation. The annulus input DVC pointers for c07–c09 and c22–c27 are staged locally; no DVC data
+was pushed. `verify_metrics.py` and formal U31–U36 coverage remain outstanding, so Checkpoint C3
+is not complete.
 
 Unit tests present: `test_ibm_cartesian` (U1–U8), `test_ibm_geometry` (U9–U13, U15, U16, U28,
 U29, Cutcelllist validation), `test_ibm_momentum` (U25, U27) and the IBM MDU round trip (U23).
@@ -156,7 +171,7 @@ Still missing: U14 as a `cutcelwu` case, U17–U22, U24, U26, U30, and the new U
 |---|---|---|---|---|
 | F1 | B | **Polygon through a net node drops faces from cut polygons.** In the IBM branch of `cutcelwu` (`K/dflowfm_kernel/prepost/cutcelwu.f90`, IBM crossing block in the `n12 ≥ 4` loop) a k‑d tree crossing at a link *end point* sets `ja = 1`. When both link nodes are outside the polygon (`kc ≠ 1`), the `n12 = 5` branch adds no vertices, so the cut polygon of the cell loses that face while `wu` stays full. `ibm_build_geometry` then fails with "wet link face could not be recovered from the cut‑cell polygon". The legacy path only calls `crosslinkpoly` when a node has `kc = 1` and does not have this problem. | c05 fails at link 4960. All oblique channel layouts hit it: the banks `y = 60 + 0.5375 x` and `y = 560 + 0.5375 x` pass exactly through nodes (400, 275), (2400, 1350), (400, 775), (2400, 1850) at dx = 25 m; 2–6 node contacts in c05, c06, c18, c21. | §5.1 degenerate cases; W3b; U31; §7.2 item 5 |
 | F2 | B | **Open‑boundary links next to cut cells are rejected.** `ibm_state%cell_class` is sized `ndx` and defaults to 2 (solid). For a boundary link `ln(1, L)` is the virtual boundary node, so `ibm_set_wet_link_metrics` raises "active IBM cut link is adjacent to a solid cell" for every wet boundary link of a cut cell. | Code trace (`m_immersed_boundary.f90`, `ibm_set_wet_link_metrics`; `ba(ln(1,L)) = ba(ln(2,L))` in `flow_geominit.f90` confirms the convention). c05 hits this as soon as F1 is fixed (banks cross both open boundaries). | §5.1; W3b; U32 |
-| F3 | B | **Several polygons per solid give wrong geometry.** `cutcell_list` processes the polygons one at a time and `cutcelwu(5)` rebuilds each cut polygon from the full cell, so a cell cut by two polygons keeps only the last cut. Cells straddling an edge *shared* by two adjacent polygons are not fully inside either polygon and survive as active cut cells inside the solid. Overlapping polygons are safe away from the interface. | Scratch run of c08: **97 active cells lie entirely inside the solid** with area fraction 0.13–1.0 (along the shared inner‑disk / gap arc), and 112 cells have an area fraction more than 0.1 off the true wet fraction. Affects the annulus cases (c07–c09, c22–c27) and, by code reading, 6–8 corner cells of each basin case (c10–c15, c28–c33). | §5.1; W3b; U33; §7.2 items 5–6 |
+| F3 | B | **Legacy per-polygon clipping can lose earlier cuts.** The non-IBM `cutcell_list` path processes polygons one at a time and `cutcelwu(5)` rebuilds each cut polygon from the full cell, so a cell cut by two polygons can keep only the last cut; cells straddling shared polygon edges can also survive inside the solid. The IBM union path now subtracts polygons sequentially and reconciles apertures across adjacent cells. | A scratch run of the earlier c08 annulus geometry found **97 active cells entirely inside the solid** and 112 cells with area fractions more than 0.1 off the true wet fraction. The generator and IBM path have since changed; formal integrated geometry verification is still needed, and the legacy non-IBM path remains a separate concern. | §5.1; W3b; U33; §7.2 items 5–6 |
 | F4 | B | **`BedlevType = 1` requires `Conveyance2D ≤ 0`.** The FM default `Conveyance2D = 1` makes `flow_geominit` call `qnerror('bed-level type and conveyance type do not match')`. The generated MDUs do not set it. | c02 stops at initialisation with that message. | §5.5; W1; §7.2 item 4 |
 | F5 | H | `ImmersedBoundaryTangentialCorrection = 1` and `ImmersedBoundaryProjection = 1` are accepted but not implemented; `ImmersedBoundarySmallEdgeFrac` only sets a flag. | c15 would run identically to c14 without any message. | §5.5; W1 |
 | F6 | H | The `jsferic` check in `readMDUFile` runs before `loadNetwork`, so it always passes. A regular lat/lon mesh passes the lattice test. | `readMDUFile` is called before `loadNetwork` in `loadModel`. | §5.5; W2; U24 |
@@ -1465,7 +1480,7 @@ the I7 L2 and Lmax norms as in paper Table I. This stage claims it only if measu
 | D7 | Which `iadvec` and `BedlevType` values to support with IBM | **Decided:** `BedlevType = 1` (cell‑centre bed, required for morphodynamics) and `iadvec = 33`; reject others. |
 | D8 | Acceptance of a partially implicit pressure correction that changes the `s1` matrix structure (if W7 fails) | Not part of the POC. Escalate at Checkpoint E with the W7 evidence. |
 | D9 | M1/M2 on open-boundary links next to cut cells (F2) | **Chosen for the POC:** keep existing `dxi`/`acl` on boundary links; do not mirror virtual-cell centroids. Implemented; add/retain focused regression coverage. |
-| D10 | Several `Cutcelllist` polygons cutting one cell (F3) | **Chosen for the current POC:** detect and stop with an explicit error. Union clipping is deferred. c14 reaches this guard; c09/annulus geometry remains unsupported, so this decision does not satisfy the original C3 case-pass criterion. |
+| D10 | Several `Cutcelllist` polygons cutting one cell (F3) | **Chosen for the POC:** IBM union clipping; implemented in `cutcelwu` with order-independent link-aperture reconciliation and an IBM-specific bypass of stale per-polygon link cleanup. c09, c24 and c27 now initialize. The legacy non-IBM path is unchanged; formal U33/geometry-verifier coverage remains. |
 
 **Can be deferred**: dedicated IBM polygon file; rotated grids (global rotation θ fitted from link
 directions — the lattice test generalises with a rotation); non‑uniform rectilinear grids (bilinear
@@ -1489,9 +1504,9 @@ stencil generalises); immersed partial/no slip via pseudo‑walls; 3D; cell merg
 | MPI geometry mismatch (A3) | Inconsistent `ba` across ranks | Test I5 plus an assertion in `ibm_crosscheck` comparing `ba` after `update_ghosts`. |
 | Restart | IBM changes `ndx` (solid cells removed) — the same as current `Cutcelllist` | A restart is valid only with the same mesh and polygon. Detect `ndx`/`lnx` mismatch (existing restart reader behaviour) and document it. No new restart fields. The current implementation re‑applies the wet‑bed fit after reading the restart (F9); harmless for hydrodynamics, but it would overwrite morphological bed changes. Skip it when `bl` comes from the restart file. |
 | IBM geometry trusts the `cutcelwu` polygons (W3 deviation) | Wrong cut polygons pass the cross‑check silently (F1, F3) | W3b task 6: independent recomputation of cut‑cell wet areas; integrated tests U31–U35; `verify_metrics.py --geometry` gate in stage 1. |
-| Solid polygons that touch or share edges, or pass through net nodes (generated and real banks) | Missing faces, cells inside the solid left active, or initialisation errors | W3b tasks 1 and 3; the generator asserts node‑free banks and one polygon per solid until D10 is implemented. |
+| Solid polygons that touch or share edges, or pass through net nodes (generated and real banks) | Missing faces, cells inside the solid left active, or initialisation errors | IBM union clipping handles multiple polygons; the annulus generator keeps adjacent outer wedges slightly overlapped on the solid side and pads its opening mask. Validate general bank layouts with U31–U36 and the independent geometry verifier. |
 | Unimplemented keywords accepted | A case looks like it tests a feature that does nothing (c15) | Reject them until implemented (F5). |
-| Unit tests cover only pure routines | Integrated failures reach the model runs first | Integrated tests U31–U36; smoke‑run c05, c09, c14 and c06 in every W3b/W4 review. |
+| Unit tests cover only pure routines | Integrated failures reach the model runs first | Integrated tests U31–U36 and the independent geometry verifier remain outstanding; smoke‑run c05, c09, c14 and c06 in every W3b/W4 review. |
 | Analytical metrics outside TestBench | Risk of drift | Nightly job plus stored metric tables; promote to a TestBench check if a custom comparer is acceptable. |
 
 **Moving‑bank follow‑up (design only)**:
@@ -1529,11 +1544,13 @@ storing geometry in restart files.
    polygons, classification tolerance, MPI wet bed, independent area check, vertex limit) with
    U31–U36, plus the W1/W2 fixes F4–F6 and the generator fixes of §7.2 items 4–5 →
    **Checkpoint C3**:
-   - c05, c09, c14 and c06 initialise with IBM on and pass `verify_metrics.py --geometry`;
-     c06 now passes the two-rank 0.05-hour smoke run, but the verifier is not yet present and
-     c09/c14 currently stop at the selected D10 guard;
-   - D9 and D10 decided;
-   - cases regenerated; only then `dvc push` and commit the DVC pointers.
+   - c05, c06, c09 and c14 initialise with IBM on; c06 passes the two-rank 0.05-hour smoke run.
+     Annulus IBM c24 and c27 also initialize, but `verify_metrics.py --geometry` is not yet
+     present and formal U31–U36 coverage remains, so C3 is still open;
+   - D9 and D10 decided; IBM union clipping is implemented, while the legacy non-IBM
+     multi-polygon path remains unchanged;
+   - annulus input pointers have been updated locally; do not `dvc push` until the remaining
+     validation and reference/TestBench work is complete.
 5. **W5 + W6** (diagnostics, cases I1–I5, I7, I8, I9) → **Checkpoint D = first merge
    (smallest useful vertical slice)**:
    - opt‑in IBM on Cartesian meshes;

@@ -39,11 +39,13 @@ module m_cutcelwu
 
    private
 
-   public :: cutcelwu
+   integer, parameter :: ibm_union_disconnected = -1
+
+   public :: cutcelwu, cutcelwu_ibm_union
 
 contains
 
-   subroutine CUTCELWU(n12, jamasks, ipoly, ibm_processed_cells)
+   subroutine CUTCELWU(n12, jamasks, ipoly)
       use precision, only: dp
       use m_crosslinkpoly, only: crosslinkpoly
       use m_find_crossed_links_kdtree2, only: find_crossed_links_kdtree2, ITYPE_NETLINK, BOUNDARY_ALL
@@ -66,7 +68,6 @@ contains
       integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells
       integer, intent(in) :: jamasks ! do not use masks (0), store masks (1), use stored masks (2)
       integer, intent(in) :: ipoly ! polygon number for masks
-      integer, dimension(:), intent(inout), optional :: ibm_processed_cells !< Polygon already processed for each flow cell.
 
       integer :: ja, KMOD
       integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN, KL, ninside
@@ -83,7 +84,7 @@ contains
       integer, dimension(:), allocatable :: Lmask ! link mask
 
       real(kind=dp) :: cx, cy, R2search, Area, cof0
-      integer :: i, ip1, num, k_start, k_end, numsam, ierror, polygon_start, polygon_end
+      integer :: i, ip1, num, k_start, k_end, numsam, ierror
       integer :: jadelete
       integer :: jakdtree
       integer :: jasplitpol, numpolies, ip
@@ -293,23 +294,6 @@ contains
                      KNP(N) = 1
                   end if
                end do
-            end do
-         end if
-
-         if (immersed_boundary == 1 .and. present(ibm_processed_cells) .and. n12 == 5) then
-            if (size(ibm_processed_cells) < NUMP) then
-               call mess(LEVEL_ERROR, 'ImmersedBoundary=1: polygon tracking array is shorter than the flow-cell grid.')
-               return
-            end if
-            do N = 1, NUMP
-               if (KNP(N) == 0) then
-                  cycle
-               end if
-               if (ibm_processed_cells(N) > 0) then
-                  call mess(LEVEL_ERROR, 'ImmersedBoundary=1: multiple Cutcelllist polygons affect flow cell ', N)
-                  return
-               end if
-               ibm_processed_cells(N) = ipoly
             end do
          end if
 
@@ -836,5 +820,364 @@ contains
       end subroutine ibm_find_crossed_links
 
    end subroutine CUTCELwu
+
+   !> Clip every Cartesian flow cell against the union of its Cutcelllist solids.
+   subroutine cutcelwu_ibm_union(polygons)
+      use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+      use precision, only: dp
+      use m_flow, only: baorgfracmin
+      use m_flowgeom
+      use m_netw
+      use m_cutcells
+      use m_tpoly, only: tpoly, isize_tpoly
+      use m_immersed_boundary, only: ibm_state
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      type(tpoly), dimension(:), allocatable, intent(in) :: polygons !< All solid components from Cutcelllist.
+
+      real(kind=dp), allocatable :: wet_x(:), wet_y(:), next_x(:), next_y(:)
+      real(kind=dp) :: cell_x(4), cell_y(4), full_area, wet_area, area_tol, snap_tol
+      real(kind=dp) :: side_dx, side_dy, side_length
+      real(kind=dp) :: edge_dx, edge_dy, edge_length, projection_1, projection_2
+      real(kind=dp) :: cross_1, cross_2, face_width, x1, y1, x2, y2
+      integer :: n, p, n_polygons, n_wet, n_next, n_area_vertices, ll, ll_next, i, j, l, lf, ierror
+      logical :: polygon_bounds_overlap
+      character(len=256) :: error_text
+
+      if (.not. allocated(polygons)) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires Cutcelllist polygons.')
+         return
+      end if
+      if (.not. allocated(ibm_state%ba_full)) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires full-cell areas.')
+         return
+      end if
+      if (.not. allocated(ibm_state%wu_full)) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires full-link widths.')
+         return
+      end if
+      if (.not. ieee_is_finite(ibm_state%grid%dx) .or. .not. ieee_is_finite(ibm_state%grid%dy) .or. &
+          ibm_state%grid%dx <= 0.0_dp .or. ibm_state%grid%dy <= 0.0_dp) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires positive Cartesian grid spacing.')
+         return
+      end if
+
+      n_polygons = isize_tpoly(polygons)
+      if (n_polygons < 1 .or. size(ibm_state%ba_full) < nump .or. size(ibm_state%wu_full) < lnx .or. &
+          size(wu) < lnx) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping has no polygons or incomplete full-cell metrics.')
+         return
+      end if
+
+      snap_tol = 1.0e-8_dp * min(ibm_state%grid%dx, ibm_state%grid%dy)
+      do n = 1, nump
+         if (netcell(n)%n /= 4) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires four cell corners for flow cell ', n)
+            return
+         end if
+         do ll = 1, 4
+            l = abs(netcell(n)%lin(ll))
+            lf = lne2ln(l)
+            if (lf > 0) then
+               if (lf > size(ibm_state%wu_full)) then
+                  call mess(LEVEL_ERROR, 'ImmersedBoundary=1: invalid full-link width for flow link ', lf)
+                  return
+               end if
+               wu(lf) = ibm_state%wu_full(lf)
+            end if
+         end do
+      end do
+
+      do n = 1, nump
+         if (netcell(n)%n /= 4) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union clipping requires four cell corners for flow cell ', n)
+            return
+         end if
+         do ll = 1, 4
+            l = netcell(n)%nod(ll)
+            cell_x(ll) = xk(l)
+            cell_y(ll) = yk(l)
+         end do
+         full_area = ibm_state%ba_full(n)
+         if (full_area <= 0.0_dp .or. .not. ieee_is_finite(full_area)) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1: invalid full-cell area for flow cell ', n)
+            return
+         end if
+
+         allocate (wet_x(4), wet_y(4))
+         wet_x = cell_x
+         wet_y = cell_y
+         n_wet = 4
+         do p = 1, n_polygons
+            if (.not. allocated(polygons(p)%x) .or. .not. allocated(polygons(p)%y)) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundary=1: invalid solid polygon in Cutcelllist.')
+               return
+            end if
+            if (polygons(p)%len < 3 .or. polygons(p)%len > size(polygons(p)%x) .or. &
+                polygons(p)%len > size(polygons(p)%y)) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundary=1: invalid solid polygon in Cutcelllist.')
+               return
+            end if
+            if (n_wet == 0) then
+               exit
+            end if
+
+            polygon_bounds_overlap = polygons(p)%xmax >= minval(cell_x) - snap_tol .and. &
+                                     polygons(p)%xmin <= maxval(cell_x) + snap_tol .and. &
+                                     polygons(p)%ymax >= minval(cell_y) - snap_tol .and. &
+                                     polygons(p)%ymin <= maxval(cell_y) + snap_tol
+            if (.not. polygon_bounds_overlap) then
+               cycle
+            end if
+
+            call ibm_subtract_solid_polygon(polygons(p), wet_x, wet_y, n_wet, snap_tol, next_x, next_y, &
+                                            n_next, ierror)
+            if (ierror /= 0) then
+               if (ierror == ibm_union_disconnected) then
+                  write (error_text, '(a,i0)') &
+                     'ImmersedBoundary=1: union clipping creates disconnected wet geometry in flow cell ', n
+               else
+                  write (error_text, '(a,i0,a,i0,a,i0,a)') &
+                     'ImmersedBoundary=1: polygon subtraction failed in flow cell ', n, &
+                     ' for Cutcelllist polygon ', p, ' (Polypack error ', ierror, ')'
+               end if
+               call mess(LEVEL_ERROR, trim(error_text))
+               return
+            end if
+            call move_alloc(next_x, wet_x)
+            call move_alloc(next_y, wet_y)
+            n_wet = n_next
+         end do
+
+         if (n_wet == 0) then
+            ba(n) = 0.0_dp
+            bai(n) = 0.0_dp
+            kfs(n) = 0
+            do ll = 1, 4
+               l = abs(netcell(n)%lin(ll))
+               lf = lne2ln(l)
+               if (lf > 0) then
+                  wu(lf) = 0.0_dp
+               end if
+            end do
+            if (allocated(nd(n)%x)) then
+               deallocate (nd(n)%x)
+            end if
+            if (allocated(nd(n)%y)) then
+               deallocate (nd(n)%y)
+            end if
+            allocate (nd(n)%x(0), nd(n)%y(0))
+            deallocate (wet_x, wet_y)
+            cycle
+         end if
+
+         n_area_vertices = n_wet
+         if (n_area_vertices > 3) then
+            if (sqrt((wet_x(n_area_vertices) - wet_x(1))**2 + (wet_y(n_area_vertices) - wet_y(1))**2) <= snap_tol) then
+               n_area_vertices = n_area_vertices - 1
+            end if
+         end if
+         wet_area = 0.0_dp
+         if (n_area_vertices >= 3) then
+            do i = 1, n_area_vertices
+               j = i + 1
+               if (j > n_area_vertices) then
+                  j = 1
+               end if
+               wet_area = wet_area + wet_x(i) * wet_y(j) - wet_x(j) * wet_y(i)
+            end do
+            ! A signed-area sum rejects degenerate remnants that Polypack can return when a cell is fully covered.
+            wet_area = 0.5_dp * abs(wet_area)
+         end if
+         area_tol = 1.0e-10_dp * full_area
+         if (.not. ieee_is_finite(wet_area) .or. wet_area < -area_tol .or. wet_area > full_area + area_tol) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundary=1: union-clipped area is invalid in flow cell ', n)
+            return
+         end if
+         wet_area = max(0.0_dp, min(full_area, wet_area))
+         if (wet_area <= area_tol) then
+            ba(n) = 0.0_dp
+            bai(n) = 0.0_dp
+            kfs(n) = 0
+            do ll = 1, 4
+               l = abs(netcell(n)%lin(ll))
+               lf = lne2ln(l)
+               if (lf > 0) then
+                  wu(lf) = 0.0_dp
+               end if
+            end do
+            if (allocated(nd(n)%x)) then
+               deallocate (nd(n)%x)
+            end if
+            if (allocated(nd(n)%y)) then
+               deallocate (nd(n)%y)
+            end if
+            allocate (nd(n)%x(0), nd(n)%y(0))
+            deallocate (wet_x, wet_y)
+            cycle
+         end if
+         if (wet_area >= full_area - area_tol) then
+            kfs(n) = 0
+            deallocate (wet_x, wet_y)
+            cycle
+         end if
+
+         kfs(n) = 1
+         ba(n) = max(wet_area, baorgfracmin * full_area)
+         ba(n) = max(ba(n), bamin)
+         if (allocated(nd(n)%x)) then
+            deallocate (nd(n)%x)
+         end if
+         if (allocated(nd(n)%y)) then
+            deallocate (nd(n)%y)
+         end if
+         allocate (nd(n)%x(n_wet), nd(n)%y(n_wet))
+         nd(n)%x = wet_x
+         nd(n)%y = wet_y
+
+         do ll = 1, 4
+            ll_next = ll + 1
+            if (ll_next > 4) then
+               ll_next = 1
+            end if
+            side_dx = cell_x(ll_next) - cell_x(ll)
+            side_dy = cell_y(ll_next) - cell_y(ll)
+            side_length = sqrt(side_dx * side_dx + side_dy * side_dy)
+            if (side_length <= tiny(1.0_dp)) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundary=1: zero-length cell face in flow cell ', n)
+               return
+            end if
+            face_width = 0.0_dp
+            do i = 1, n_wet
+               j = i + 1
+               if (j > n_wet) then
+                  j = 1
+               end if
+               x1 = wet_x(i)
+               y1 = wet_y(i)
+               x2 = wet_x(j)
+               y2 = wet_y(j)
+               edge_dx = x2 - x1
+               edge_dy = y2 - y1
+               edge_length = sqrt(edge_dx * edge_dx + edge_dy * edge_dy)
+               cross_1 = abs((x1 - cell_x(ll)) * side_dy - (y1 - cell_y(ll)) * side_dx)
+               cross_2 = abs((x2 - cell_x(ll)) * side_dy - (y2 - cell_y(ll)) * side_dx)
+               projection_1 = ((x1 - cell_x(ll)) * side_dx + (y1 - cell_y(ll)) * side_dy) / side_length
+               projection_2 = ((x2 - cell_x(ll)) * side_dx + (y2 - cell_y(ll)) * side_dy) / side_length
+               if (cross_1 <= snap_tol * side_length .and. cross_2 <= snap_tol * side_length .and. &
+                   min(projection_1, projection_2) >= -snap_tol .and. &
+                   max(projection_1, projection_2) <= side_length + snap_tol) then
+                  face_width = face_width + edge_length
+               end if
+            end do
+            l = abs(netcell(n)%lin(ll))
+            lf = lne2ln(l)
+            if (lf > 0) then
+               if (lf <= size(ibm_state%wu_full)) then
+                  face_width = min(face_width, ibm_state%wu_full(lf))
+               end if
+               ! Intersect apertures from both adjacent cells so a later wet cell cannot reopen a solid face.
+               wu(lf) = min(wu(lf), max(0.0_dp, face_width))
+            end if
+         end do
+
+         deallocate (wet_x, wet_y)
+      end do
+   end subroutine cutcelwu_ibm_union
+
+   !> Subtract one solid from a wet polygon using Polypack's difference operation.
+   subroutine ibm_subtract_solid_polygon(solid, subject_x, subject_y, subject_count, perturbation_tol, wet_x, wet_y, &
+                                         wet_count, error_code)
+      use precision, only: dp
+      use m_polygon, only: npl, savepol, restorepol
+      use m_tpoly, only: tpoly, pol_to_tpoly, dealloc_tpoly
+      use m_addtopol, only: addtopol
+
+      type(tpoly), intent(in) :: solid !< Solid polygon to remove from the wet subject.
+      real(kind=dp), dimension(:), intent(in) :: subject_x !< Current wet-polygon x coordinates.
+      real(kind=dp), dimension(:), intent(in) :: subject_y !< Current wet-polygon y coordinates.
+      integer, intent(in) :: subject_count !< Number of current wet-polygon vertices.
+      real(kind=dp), intent(in) :: perturbation_tol !< Scale for retrying coincident-edge clipping.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: wet_x !< Resulting wet-polygon x coordinates.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: wet_y !< Resulting wet-polygon y coordinates.
+      integer, intent(out) :: wet_count !< Result vertex count, or -1 for disconnected geometry.
+      integer, intent(out) :: error_code !< Non-zero if Polypack fails or the result is disconnected.
+
+      integer, parameter :: max_workspace = 1000000
+      integer :: workspace_size, ierr, component_count, polygon_length, perturb_attempt
+      integer, allocatable :: iwrk(:)
+      real(kind=dp), allocatable :: rwrk(:), shifted_x(:), shifted_y(:)
+      real(kind=dp) :: subject_offset_x, subject_offset_y
+      real(kind=dp), parameter :: offset_x_factor(9) = &
+                                  [0.0_dp, 1.0_dp, 0.0_dp, -1.0_dp, 0.0_dp, 1.0_dp, 1.0_dp, -1.0_dp, -1.0_dp]
+      real(kind=dp), parameter :: offset_y_factor(9) = &
+                                  [0.0_dp, 0.0_dp, 1.0_dp, 0.0_dp, -1.0_dp, 1.0_dp, -1.0_dp, 1.0_dp, -1.0_dp]
+      type(tpoly), dimension(:), allocatable :: components
+
+      wet_count = -1
+      error_code = 1
+      if (.not. allocated(solid%x) .or. .not. allocated(solid%y)) then
+         return
+      end if
+      if (solid%len < 3 .or. solid%len > size(solid%x) .or. solid%len > size(solid%y) .or. &
+          subject_count < 3 .or. size(subject_x) < subject_count .or. size(subject_y) < subject_count) then
+         return
+      end if
+
+      workspace_size = min(max_workspace, max(128, 16 * (solid%len + subject_count)))
+      allocate (rwrk(workspace_size), iwrk(workspace_size))
+      allocate (shifted_x(subject_count), shifted_y(subject_count))
+      call savepol()
+      ! Polypack can fail on exactly shared edges; translate only the subject for clipping and undo that translation in the result.
+      do perturb_attempt = 1, size(offset_x_factor)
+         subject_offset_x = offset_x_factor(perturb_attempt) * perturbation_tol
+         subject_offset_y = offset_y_factor(perturb_attempt) * perturbation_tol
+         shifted_x = subject_x(1:subject_count) + subject_offset_x
+         shifted_y = subject_y(1:subject_count) + subject_offset_y
+         do
+            npl = 0
+            call PPDIPO(solid%x, solid%y, solid%len, shifted_x, shifted_y, subject_count, rwrk, iwrk, &
+                        workspace_size, addtopol, ierr)
+            if (ierr == 0 .or. ierr > 3 .or. workspace_size >= max_workspace) then
+               exit
+            end if
+            deallocate (rwrk, iwrk)
+            workspace_size = min(max_workspace, 2 * workspace_size)
+            allocate (rwrk(workspace_size), iwrk(workspace_size))
+         end do
+         if (ierr == 0 .or. ierr <= 3) then
+            exit
+         end if
+      end do
+
+      if (ierr == 0) then
+         if (npl > 0) then
+            allocate (components(1))
+            call pol_to_tpoly(component_count, components, keepExisting=.false.)
+         else
+            component_count = 0
+         end if
+         if (component_count == 0) then
+            allocate (wet_x(0), wet_y(0))
+            wet_count = 0
+            error_code = 0
+         else if (component_count == 1) then
+            polygon_length = components(1)%len
+            allocate (wet_x(polygon_length), wet_y(polygon_length))
+            wet_x = components(1)%x(1:polygon_length) - subject_offset_x
+            wet_y = components(1)%y(1:polygon_length) - subject_offset_y
+            wet_count = polygon_length
+            error_code = 0
+         else
+            error_code = ibm_union_disconnected
+         end if
+      end if
+
+      call restorepol()
+      if (allocated(components)) then
+         call dealloc_tpoly(components)
+      end if
+      deallocate (rwrk, iwrk, shifted_x, shifted_y)
+   end subroutine ibm_subtract_solid_polygon
 
 end module m_cutcelwu

@@ -152,6 +152,47 @@ contains
    end subroutine test_geometry_state_and_wet_edge
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_closed_link_next_to_solid_cell, test_closed_link_next_to_solid_cell,
+   subroutine test_closed_link_next_to_solid_cell() bind(C)
+      real(kind=dp), dimension(4, 2) :: cell_corner_x, cell_corner_y, wet_x, wet_y
+      integer, dimension(2) :: wet_count
+      real(kind=dp), dimension(2) :: area_full, area_used
+      integer, dimension(2, 1) :: link_cells
+      real(kind=dp), dimension(2, 1) :: face_x, face_y
+      real(kind=dp), dimension(1) :: width_full, width_used
+      type(t_ibm_state) :: state
+      logical :: valid
+      integer :: error_index
+      character(len=256) :: reason
+
+      cell_corner_x(:, 1) = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      cell_corner_y(:, 1) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      cell_corner_x(:, 2) = [10.0_dp, 20.0_dp, 20.0_dp, 10.0_dp]
+      cell_corner_y(:, 2) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      wet_x(:, 1) = [5.0_dp, 10.0_dp, 10.0_dp, 5.0_dp]
+      wet_y(:, 1) = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      wet_x(:, 2) = 0.0_dp
+      wet_y(:, 2) = 0.0_dp
+      wet_count = [4, 0]
+      area_full = [100.0_dp, 100.0_dp]
+      area_used = [50.0_dp, 0.0_dp]
+      link_cells(:, 1) = [1, 2]
+      face_x(:, 1) = [10.0_dp, 10.0_dp]
+      face_y(:, 1) = [0.0_dp, 10.0_dp]
+      width_full = [10.0_dp]
+      width_used = [0.0_dp]
+
+      call ibm_build_geometry(cell_corner_x, cell_corner_y, wet_x, wet_y, wet_count, area_full, area_used, link_cells, &
+                              face_x, face_y, width_full, width_used, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp, 1.0e-6_dp, &
+                              0.5_dp, state, valid, error_index, reason)
+
+      call F90_ASSERT_TRUE(valid, 'Closed link next to a solid cell was rejected: '//trim(reason))
+      call F90_ASSERT_EQ(state%cell_class(1), 1, 'Expected one cut cell.')
+      call F90_ASSERT_EQ(state%cell_class(2), 2, 'Expected one solid cell.')
+      call F90_ASSERT_NEAR(state%edge_frac(1), 0.0_dp, 1.0e-14_dp, 'Solid-adjacent link should be closed.')
+   end subroutine test_closed_link_next_to_solid_cell
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_open_boundary_link_keeps_legacy_metrics, test_open_boundary_link_keeps_legacy_metrics,
    subroutine test_open_boundary_link_keeps_legacy_metrics() bind(C)
       real(kind=dp), dimension(4, 1) :: cell_corner_x, cell_corner_y, wet_x, wet_y
@@ -416,6 +457,24 @@ contains
       call F90_ASSERT_NEAR(cell%nx, 0.0_dp, 1.0e-14_dp, 'Unexpected corner-cut normal x component.')
       call F90_ASSERT_NEAR(cell%ny, -1.0_dp, 1.0e-14_dp, 'Unexpected corner-cut normal y component.')
    end subroutine test_two_segment_corner
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_smooth_multivertex_segment, test_smooth_multivertex_segment,
+   subroutine test_smooth_multivertex_segment() bind(C)
+      real(kind=dp), dimension(4) :: cell_x, cell_y
+      real(kind=dp), dimension(8) :: wet_x, wet_y
+      type(t_ibm_cut_cell) :: cell
+
+      cell_x = [0.0_dp, 2.0_dp, 2.0_dp, 0.0_dp]
+      cell_y = [0.0_dp, 0.0_dp, 2.0_dp, 2.0_dp]
+      wet_x = [0.0_dp, 2.0_dp, 2.0_dp, 0.0_dp, 0.1_dp, 1.0_dp, 1.5_dp, 1.7_dp]
+      wet_y = [0.0_dp, 0.0_dp, 2.0_dp, 2.0_dp, 1.9_dp, 0.9_dp, 0.3_dp, 0.0_dp]
+      call ibm_measure_wet_polygon(cell_x, cell_y, wet_x, wet_y, 4.0_dp, 2.215_dp, 0.1_dp, 1.0e-6_dp, &
+                                   1.0e-8_dp, cell)
+
+      call F90_ASSERT_TRUE(cell%valid, 'A polygonized smooth wall was rejected.')
+      call F90_ASSERT_EQ(cell%nseg, 1, 'Nearly collinear wall edges were not coalesced.')
+   end subroutine test_smooth_multivertex_segment
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_split_cell_rejected, test_split_cell_rejected,

@@ -139,7 +139,7 @@ contains
       integer :: m, n, k, k1, k2, k3, k4, L, Lf, LL, LLL, ierr, nn, ja, kh, numswap, n12, La
       integer :: n1, n2, n1a, n2a, ja1D, ka, kb, k1n, k2n
       integer :: nc1, nc2, nex
-      integer :: ibm_nnodes, ibm_cell_index, ibm_ok, ibm_ok_local
+      integer :: ibm_nnodes, ibm_cell_index, ibm_ok, ibm_ok_local, ibm_max_wet_vertices
       integer, allocatable :: ibm_cell_offsets(:), ibm_cell_nodes(:)
       integer, allocatable :: ibm_wet_count(:), ibm_link_cells(:, :)
       logical, allocatable :: ibm_owned_cells(:)
@@ -1303,7 +1303,14 @@ contains
 
       if (ibm_state%active) then
          allocate (ibm_cell_corner_x(4, ndx2d), ibm_cell_corner_y(4, ndx2d))
-         allocate (ibm_wet_x(8, ndx2d), ibm_wet_y(8, ndx2d), ibm_wet_count(ndx2d))
+         ibm_max_wet_vertices = 8
+         do n = 1, ndx2d
+            if (allocated(nd(n)%x)) then
+               ibm_max_wet_vertices = max(ibm_max_wet_vertices, size(nd(n)%x))
+            end if
+         end do
+         allocate (ibm_wet_x(ibm_max_wet_vertices, ndx2d), ibm_wet_y(ibm_max_wet_vertices, ndx2d), &
+                   ibm_wet_count(ndx2d))
          allocate (ibm_link_cells(2, lnx), ibm_face_x(2, lnx), ibm_face_y(2, lnx))
          ibm_wet_x = 0.0_dp
          ibm_wet_y = 0.0_dp

@@ -247,9 +247,11 @@ def _annulus_outer_polygons(
         (center[0] - half_box, center[1] - half_box, 5.0 * math.pi / 4.0),
         (center[0] + half_box, center[1] - half_box, 7.0 * math.pi / 4.0),
     ]
+    angular_overlap = 1.0e-5 * dx / radius
     for sector in range(8):
-        theta1 = sector * math.pi / 4.0
-        theta2 = (sector + 1) * math.pi / 4.0
+        # Neighboring wedges overlap on the solid side of the bank instead of leaving shared seams.
+        theta1 = sector * math.pi / 4.0 - angular_overlap
+        theta2 = (sector + 1) * math.pi / 4.0 + angular_overlap
         segments = max(2, math.ceil(radius * (theta2 - theta1) / dx))
         inner_arc = [circle_point(theta) for theta in np.linspace(theta2, theta1, segments + 1)]
         outer_path = [square_point(theta1)]
@@ -268,40 +270,117 @@ def _annulus_outer_polygons(
 def _annulus_inner_polygons(
     center: tuple[float, float], radius: float, dx: float
 ) -> list[list[tuple[float, float]]]:
-    polygons = []
-    for sector in range(8):
-        theta1 = sector * math.pi / 4.0
-        theta2 = (sector + 1) * math.pi / 4.0
-        segments = max(2, math.ceil(radius * (theta2 - theta1) / dx))
-        arc = [
-            (center[0] + radius * math.cos(theta), center[1] + radius * math.sin(theta))
-            for theta in np.linspace(theta1, theta2, segments + 1)
-        ]
-        polygon = [center, *arc]
-        _validate_polygon(polygon, f"annulus inner sector {sector + 1}")
-        polygons.append(polygon)
-    return polygons
+    segments = min(99, max(8, math.ceil(2.0 * math.pi * radius / dx)))
+    polygon = [
+        (center[0] + radius * math.cos(theta), center[1] + radius * math.sin(theta))
+        for theta in np.linspace(0.0, 2.0 * math.pi, segments, endpoint=False)
+    ]
+    _validate_polygon(polygon, "annulus inner bank")
+    return [polygon]
 
 
-def _annulus_gap_polygons(
-    center: tuple[float, float], inner_radius: float, outer_radius: float, dx: float
-) -> list[list[tuple[float, float]]]:
-    polygons = []
-    for sector, (theta1, theta2) in enumerate(((math.pi / 4.0, math.pi / 2.0), (math.pi / 2.0, 3.0 * math.pi / 4.0)), 1):
-        outer_segments = max(2, math.ceil(outer_radius * (theta2 - theta1) / dx))
-        inner_segments = max(2, math.ceil(inner_radius * (theta2 - theta1) / dx))
-        outer_arc = [
-            (center[0] + outer_radius * math.cos(theta), center[1] + outer_radius * math.sin(theta))
-            for theta in np.linspace(theta1, theta2, outer_segments + 1)
-        ]
-        inner_arc = [
-            (center[0] + inner_radius * math.cos(theta), center[1] + inner_radius * math.sin(theta))
-            for theta in np.linspace(theta2, theta1, inner_segments + 1)
-        ]
-        polygon = _remove_duplicate_vertices(outer_arc + inner_arc)
-        _validate_polygon(polygon, f"annulus north-gap sector {sector}")
-        polygons.append(polygon)
-    return polygons
+def _annulus_opening_mask(bounds: tuple[float, float, float, float], dx: float) -> np.ndarray:
+    xmin, xmax, ymin, ymax = bounds
+    nx = round((xmax - xmin) / dx)
+    ny = round((ymax - ymin) / dx)
+    x_centres = xmin + (np.arange(nx, dtype=float) + 0.5) * dx
+    y_centres = ymin + (np.arange(ny, dtype=float) + 0.5) * dx
+    xx, yy = np.meshgrid(x_centres, y_centres)
+    radius = np.hypot(xx, yy)
+    angle = np.arctan2(yy, xx)
+    # Remove cells intersecting the opening, not only cells whose centres lie in the annulus.
+    radial_padding = dx / math.sqrt(2.0)
+    opening = (
+        (radius >= ANNULUS_INNER_RADIUS - radial_padding)
+        & (radius <= ANNULUS_INNER_RADIUS + ANNULUS_WIDTH + radial_padding)
+        & (angle >= math.pi / 4.0)
+        & (angle <= 3.0 * math.pi / 4.0)
+    )
+    if not np.any(opening):
+        raise ValueError("Annulus north opening does not remove any mesh cells")
+    return opening
+
+
+def _annulus_open_boundary_points(
+    grid: dict[str, Any], inner_radius: float, outer_radius: float, side: str
+) -> list[tuple[float, float]]:
+    boundary_edges = []
+    for edge in grid["edge_nodes"]:
+        edge_key = tuple(int(node) for node in edge)
+        adjacent_faces = grid["edge_faces"][edge_key]
+        if len(adjacent_faces) != 1:
+            continue
+        face_index = adjacent_faces[0] - 1
+        face_radius = math.hypot(grid["face_x"][face_index], grid["face_y"][face_index])
+        if not inner_radius <= face_radius <= outer_radius:
+            continue
+        first_node, second_node = edge_key
+        midpoint_x = 0.5 * (grid["node_x"][first_node - 1] + grid["node_x"][second_node - 1])
+        if (side == "east" and midpoint_x > 0.0) or (side == "west" and midpoint_x < 0.0):
+            boundary_edges.append(edge_key)
+
+    adjacency: dict[int, list[int]] = {}
+    for first_node, second_node in boundary_edges:
+        adjacency.setdefault(first_node, []).append(second_node)
+        adjacency.setdefault(second_node, []).append(first_node)
+    endpoints = [node for node, neighbours in adjacency.items() if len(neighbours) == 1]
+    if len(endpoints) != 2 or any(len(neighbours) > 2 for neighbours in adjacency.values()):
+        raise ValueError(f"Annulus {side} opening boundary is not one connected chain")
+
+    start = min(
+        endpoints,
+        key=lambda node: math.hypot(grid["node_x"][node - 1], grid["node_y"][node - 1]),
+    )
+    ordered_nodes = [start]
+    previous_node = None
+    current_node = start
+    while True:
+        next_nodes = [node for node in adjacency[current_node] if node != previous_node]
+        if not next_nodes:
+            break
+        if len(next_nodes) != 1:
+            raise ValueError(f"Annulus {side} opening boundary branches")
+        previous_node, current_node = current_node, next_nodes[0]
+        ordered_nodes.append(current_node)
+    if len(ordered_nodes) != len(adjacency):
+        raise ValueError(f"Annulus {side} opening boundary is disconnected")
+    return [
+        (float(grid["node_x"][node - 1]), float(grid["node_y"][node - 1]))
+        for node in ordered_nodes
+    ]
+
+
+def _annulus_open_boundaries(grid: dict[str, Any], metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    inner_radius = metadata["inner_radius_m"]
+    outer_radius = metadata["outer_radius_m"]
+    inflow_points = _annulus_open_boundary_points(grid, inner_radius, outer_radius, "east")
+    outflow_points = _annulus_open_boundary_points(grid, inner_radius, outer_radius, "west")
+    bed = metadata["bed"]
+    depth_scale = bed["depth_scale_m"]
+    outflow_levels = []
+    for x, y in outflow_points:
+        radius = math.hypot(x - bed["center_m"][0], y - bed["center_m"][1])
+        theta = math.atan2(y - bed["center_m"][1], x - bed["center_m"][0])
+        theta_clockwise = (bed["inflow_angle_rad"] - theta) % (2.0 * math.pi)
+        bed_level = 1.0 - depth_scale + bed["dz0_dtheta_m"] * theta_clockwise
+        exponent = ANNULUS_CHEZY**2 * bed["dz0_dtheta_m"] / (GRAVITY * radius)
+        outflow_levels.append(bed_level + depth_scale * math.exp(exponent))
+    return [
+        {
+            "name": "inflow",
+            "quantity": "dischargebnd",
+            "point_type": "Q",
+            "points": inflow_points,
+            "values": [ANNULUS_DISCHARGE],
+        },
+        {
+            "name": "outflow",
+            "quantity": "waterlevelbnd",
+            "point_type": "Z",
+            "points": outflow_points,
+            "values": outflow_levels,
+        },
+    ]
 
 
 def _point_in_polygon(
@@ -361,6 +440,7 @@ def _geometry(case: CaseSpec) -> tuple[tuple[float, float, float, float], list[l
             "points": [(xmax, 0.0), (xmax, ymax)],
             "values": outflow_levels,
         }
+        # Keep endpoint probes inside the retained annulus rather than on the removed opening edges.
         observations = [
             (float(x), centerline(float(x)), f"center_{int(x):04d}")
             for x in np.arange(250.0, length, 250.0)
@@ -408,42 +488,8 @@ def _geometry(case: CaseSpec) -> tuple[tuple[float, float, float, float], list[l
         polygons = (
             _annulus_outer_polygons(center, outer, half_box, case.dx)
             + _annulus_inner_polygons(center, inner, case.dx)
-            + _annulus_gap_polygons(center, inner, outer, case.dx)
         )
         inflow_theta = math.pi / 4.0
-        outflow_theta = 3.0 * math.pi / 4.0
-
-        def radial_points(theta: float) -> list[tuple[float, float]]:
-            return [
-                (radius * math.cos(theta), radius * math.sin(theta))
-                for radius in (inner, outer)
-            ]
-
-        def bed_at(theta: float) -> float:
-            theta_clockwise = (inflow_theta - theta) % (2.0 * math.pi)
-            return 1.0 - depth_scale + ANNULUS_DZ_DTHETA * theta_clockwise
-
-        exponent = ANNULUS_CHEZY**2 * ANNULUS_DZ_DTHETA / (GRAVITY * np.asarray([inner, outer]))
-        outflow_levels = [
-            bed_at(outflow_theta) + depth_scale * math.exp(float(exponent[index]))
-            for index in range(2)
-        ]
-        boundaries = [
-            {
-                "name": "inflow",
-                "quantity": "dischargebnd",
-                "point_type": "Q",
-                "points": radial_points(inflow_theta),
-                "values": [ANNULUS_DISCHARGE],
-            },
-            {
-                "name": "outflow",
-                "quantity": "waterlevelbnd",
-                "point_type": "Z",
-                "points": radial_points(outflow_theta),
-                "values": outflow_levels,
-            },
-        ]
         mid_radius = 0.5 * (inner + outer)
         cross_theta = 3.0 * math.pi / 2.0
         cross_section = [
@@ -456,7 +502,13 @@ def _geometry(case: CaseSpec) -> tuple[tuple[float, float, float, float], list[l
                 mid_radius * math.sin(theta),
                 f"annulus_{index:02d}",
             )
-            for index, theta in enumerate(np.linspace(3.0 * math.pi / 4.0, 9.0 * math.pi / 4.0, 13))
+            for index, theta in enumerate(
+                np.linspace(
+                    3.0 * math.pi / 4.0 + case.dx / (math.sqrt(2.0) * mid_radius),
+                    9.0 * math.pi / 4.0 - case.dx / (math.sqrt(2.0) * mid_radius),
+                    13,
+                )
+            )
         ]
         metadata = {
             "kind": "annulus",
@@ -480,7 +532,7 @@ def _geometry(case: CaseSpec) -> tuple[tuple[float, float, float, float], list[l
                 "inflow_angle_rad": inflow_theta,
             },
             "initial_water_level_m": 1.0,
-            "boundaries": boundaries,
+            "boundaries": [],
             "observations": observations,
             "cross_sections": [{"name": "annulus_south", "points": cross_section}],
             "fluid_polygon": None,
@@ -581,7 +633,11 @@ def _bed_values(metadata: dict[str, Any], x: np.ndarray, y: np.ndarray) -> np.nd
     return np.full(x.shape, bed["elevation_m"], dtype=float)
 
 
-def _grid(bounds: tuple[float, float, float, float], dx: float) -> dict[str, Any]:
+def _grid(
+    bounds: tuple[float, float, float, float],
+    dx: float,
+    removed_cells: np.ndarray | None = None,
+) -> dict[str, Any]:
     xmin, xmax, ymin, ymax = bounds
     nx_float = (xmax - xmin) / dx
     ny_float = (ymax - ymin) / dx
@@ -592,40 +648,61 @@ def _grid(bounds: tuple[float, float, float, float], dx: float) -> dict[str, Any
     x_nodes_1d = xmin + np.arange(nx + 1, dtype=float) * dx
     y_nodes_1d = ymin + np.arange(ny + 1, dtype=float) * dx
     node_x, node_y = np.meshgrid(x_nodes_1d, y_nodes_1d)
-    face_x, face_y = np.meshgrid(x_nodes_1d[:-1] + dx / 2.0, y_nodes_1d[:-1] + dx / 2.0)
+    if removed_cells is not None and removed_cells.shape != (ny, nx):
+        raise ValueError(f"Removed-cell mask has shape {removed_cells.shape}; expected {(ny, nx)}")
     face_nodes = []
+    face_x = []
+    face_y = []
+    removed_cell_count = 0
     for row in range(ny):
         row_start = row * (nx + 1)
         for column in range(nx):
+            if removed_cells is not None and removed_cells[row, column]:
+                removed_cell_count += 1
+                continue
             lower_left = row_start + column + 1
             lower_right = lower_left + 1
             upper_left = lower_left + nx + 1
             upper_right = upper_left + 1
             face_nodes.append([lower_left, lower_right, upper_right, upper_left])
+            face_x.append(x_nodes_1d[column] + dx / 2.0)
+            face_y.append(y_nodes_1d[row] + dx / 2.0)
+
+    face_nodes_array = np.asarray(face_nodes, dtype=np.int32)
+    node_x_flat = node_x.ravel()
+    node_y_flat = node_y.ravel()
+    if removed_cells is not None:
+        used_node_ids = np.unique(face_nodes_array)
+        node_id_map = np.zeros(node_x_flat.size + 1, dtype=np.int32)
+        node_id_map[used_node_ids] = np.arange(1, used_node_ids.size + 1, dtype=np.int32)
+        face_nodes_array = node_id_map[face_nodes_array]
+        node_x_flat = node_x_flat[used_node_ids - 1]
+        node_y_flat = node_y_flat[used_node_ids - 1]
 
     edge_faces: dict[tuple[int, int], list[int]] = {}
-    for face_index, face in enumerate(face_nodes, 1):
+    for face_index, face in enumerate(face_nodes_array, 1):
         for index in range(4):
             edge = tuple(sorted((face[index], face[(index + 1) % 4])))
             edge_faces.setdefault(edge, []).append(face_index)
     edge_nodes = list(edge_faces)
-    face_to_node_x = node_x.ravel()[np.asarray(face_nodes, dtype=int) - 1]
-    face_to_node_y = node_y.ravel()[np.asarray(face_nodes, dtype=int) - 1]
-    face_x_flat = face_x.ravel()
-    face_y_flat = face_y.ravel()
+    face_to_node_x = node_x_flat[face_nodes_array - 1]
+    face_to_node_y = node_y_flat[face_nodes_array - 1]
+    face_x_flat = np.asarray(face_x, dtype=float)
+    face_y_flat = np.asarray(face_y, dtype=float)
 
     return {
         "nx": nx,
         "ny": ny,
-        "node_x": node_x.ravel(),
-        "node_y": node_y.ravel(),
+        "node_x": node_x_flat,
+        "node_y": node_y_flat,
         "face_x": face_x_flat,
         "face_y": face_y_flat,
-        "face_nodes": np.asarray(face_nodes, dtype=np.int32),
+        "face_nodes": face_nodes_array,
         "face_x_bounds": face_to_node_x,
         "face_y_bounds": face_to_node_y,
         "edge_nodes": np.asarray(edge_nodes, dtype=np.int32),
         "edge_faces": edge_faces,
+        "removed_cell_count": removed_cell_count,
     }
 
 
@@ -1246,7 +1323,11 @@ def _write_case(case: CaseSpec, force: bool) -> None:
     bounds, polygons, metadata = _geometry(case)
     for index, polygon in enumerate(polygons, 1):
         _validate_polygon(polygon, f"{case.case_id} solid polygon {index}")
-    grid = _grid(bounds, case.dx)
+    removed_cells = _annulus_opening_mask(bounds, case.dx) if case.kind == "annulus" else None
+    grid = _grid(bounds, case.dx, removed_cells)
+    if case.kind == "annulus":
+        # Missing cells create actual open boundaries instead of artificial solid gap polygons.
+        metadata["boundaries"] = _annulus_open_boundaries(grid, metadata)
     _write_mesh(input_dir / "mesh2d_net.nc", grid, force)
 
     if case.variant == "drypoints":
@@ -1291,6 +1372,8 @@ def _write_case(case: CaseSpec, force: bool) -> None:
             "tangential_correction": case.tangential_correction,
             "mesh_bounds_m": list(bounds),
             "mesh_cells": [grid["nx"], grid["ny"]],
+            "mesh_face_count": len(grid["face_nodes"]),
+            "removed_mesh_cells": grid["removed_cell_count"],
             "map_file": f"{case.case_id}_map.nc",
             "history_file": f"{case.case_id}_his.nc",
         }
