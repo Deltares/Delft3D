@@ -134,7 +134,7 @@ against this plan, ran c05 and c02 (Debug build, focused targets `dflowfm-cli`, 
 | W4 | Implemented (weights) | `ibm_set_perot_weights` overrides `wcx1/wcy1/wcx2/wcy2` on cut-cell sides with `±(x_f − c)·l_f/A_w`; sign convention matches `setlinktocenterweights`. `PerotWeightUpdate` rejected. Unsupported tangential-correction/projection settings are now rejected (F5); the algorithms are not implemented. Model-level U27 not done. |
 | W4b | Implemented | `dxi_wet` used in `furu` `gdxi`; `acl_wet` in the `advec` `kmx = 0` `volu`/`advel` weighting; wet bed by LSQ fit from uncut wet neighbours within two link hops, applied before `setbobs` in `flow_geominit` and again after restart (F9). Hooks use per-link `allocated`/`size` checks instead of a precomputed override array (F11). |
 | W5 | Not started | No `.dia` report (`ncut`, `nfloored`, `min_area_frac`, `area_deficit`, `ndegenerate` are computed but never written; only `nclipped_dn` is warned), no `Wrimap_immersed_boundary`, no timer, no `irov` warning. |
-| W6 | Inputs generated, **not fully validated** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); annulus input pointers are updated and staged locally, not pushed. c06 has a direct MPI smoke run; `verify_metrics.py`, references and TestBench XML are still missing. |
+| W6 | Inputs generated, **not fully validated** | `f600_ibm/doc/generate_cases.py` produces c01–c33 (input + doc); annulus input pointers are updated locally, not pushed. c06 has a direct MPI smoke run; `verify_metrics.py`, references and TestBench XML are still missing. |
 | W7–W9 | Not started | As planned. |
 
 **Progress update (2026-10-31):** The c06 two-rank 0.05-hour PETSc run completes after inactive
@@ -155,9 +155,10 @@ arc to avoid artificial seams and edge probes.
 Focused geometry/Cartesian tests pass 28/28. Short runs reached successful initialization for
 c05, c06 (two MPI ranks), c09, c14, c24 and c27. The c27 dx=1 m run was stopped after successful
 initialization because its time loop continued for several minutes; it is not a completed 0.05-hour
-simulation. The annulus input DVC pointers for c07–c09 and c22–c27 are staged locally; no DVC data
-was pushed. `verify_metrics.py` and formal U31–U36 coverage remain outstanding, so Checkpoint C3
-is not complete.
+simulation. The generator's `--force` path now removes stale numbered `solid_*.pol` files without
+deleting unrelated files; all annulus polygon lists were checked against their physical inputs.
+Six cut-cell/IBM annulus pointers were restaged after the cleanup; no DVC data was pushed.
+`verify_metrics.py` and formal U31–U36 coverage remain outstanding, so Checkpoint C3 is not complete.
 
 Unit tests present: `test_ibm_cartesian` (U1–U8), `test_ibm_geometry` (U9–U13, U15, U16, U28,
 U29, Cutcelllist validation), `test_ibm_momentum` (U25, U27) and the IBM MDU round trip (U23).

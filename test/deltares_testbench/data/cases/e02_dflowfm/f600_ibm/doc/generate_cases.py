@@ -948,6 +948,20 @@ def _write_text(path: Path, text: str, force: bool) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def _remove_stale_solid_polygons(input_dir: Path, expected_names: set[str], force: bool) -> None:
+    stale_paths = [
+        path
+        for path in input_dir.glob("solid_*.pol")
+        if path.stem[6:].isdigit() and path.name not in expected_names
+    ]
+    if not stale_paths:
+        return
+    if not force:
+        raise FileExistsError(f"{stale_paths[0]} is stale; rerun with --force to remove generated polygon files")
+    for path in stale_paths:
+        path.unlink()
+
+
 def _write_samples(path: Path, x: np.ndarray, y: np.ndarray, values: np.ndarray, force: bool) -> None:
     if path.exists() and not force:
         raise FileExistsError(f"{path} exists; rerun with --force to regenerate")
@@ -1283,6 +1297,8 @@ def _write_family_documentation(cases: list[CaseSpec], force: bool) -> None:
         "```bash\n"
         "python generate_cases.py --force\n"
         "```\n\n"
+        "With `--force`, the generator also removes obsolete numbered `solid_*.pol` files left by "
+        "earlier polygon layouts;\nunrelated files are preserved.\n\n"
         "The generated inputs use `bedlevel` and `initialWaterLevel` sample blocks in the "
         "new-format `.ext` file. Cut-cell polygons are split into files with no more than "
         "100 vertices each. DVC pointers cover each case's `input/` and `doc/` folders.\n\n"
@@ -1331,13 +1347,13 @@ def _write_case(case: CaseSpec, force: bool) -> None:
     _write_mesh(input_dir / "mesh2d_net.nc", grid, force)
 
     if case.variant == "drypoints":
+        _remove_stale_solid_polygons(input_dir, set(), force)
         _write_text(input_dir / "solids.pol", _serialize_polygons(polygons), force)
     else:
-        polygon_names = []
+        polygon_names = [f"solid_{index:03d}.pol" for index in range(1, len(polygons) + 1)]
+        _remove_stale_solid_polygons(input_dir, set(polygon_names), force)
         for index, polygon in enumerate(polygons, 1):
-            polygon_name = f"solid_{index:03d}.pol"
-            polygon_names.append(polygon_name)
-            _write_text(input_dir / polygon_name, _serialize_polygons([polygon]), force)
+            _write_text(input_dir / polygon_names[index - 1], _serialize_polygons([polygon]), force)
         _write_text(input_dir / "solid.lst", "\n".join(polygon_names) + "\n", force)
 
     bed = _bed_values(metadata, grid["face_x"], grid["face_y"])
@@ -1393,7 +1409,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="overwrite generated files without deleting unrelated files",
+        help="overwrite generated files and remove stale numbered solid polygons, leaving unrelated files untouched",
     )
     return parser.parse_args()
 

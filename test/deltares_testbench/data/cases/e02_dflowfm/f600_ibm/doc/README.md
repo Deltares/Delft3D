@@ -8,6 +8,9 @@ Regenerate with the TestBench virtual environment from this directory:
 python generate_cases.py --force
 ```
 
+With `--force`, the generator also removes obsolete numbered `solid_*.pol` files left by earlier polygon layouts;
+unrelated files are preserved.
+
 The generated inputs use `bedlevel` and `initialWaterLevel` sample blocks in the new-format `.ext` file. Cut-cell polygons are split into files with no more than 100 vertices each. DVC pointers cover each case's `input/` and `doc/` folders.
 
 Reference outputs and TestBench config entries are intentionally not generated: they are added only after solver runs pass the acceptance criteria. `Wrimap_immersed_boundary` is likewise deferred until the W5 map diagnostics exist.
