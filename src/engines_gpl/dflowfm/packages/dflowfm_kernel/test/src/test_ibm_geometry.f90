@@ -31,6 +31,152 @@ contains
    end subroutine test_half_plane_cut_metrics
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_oblique_bank_through_net_node, test_oblique_bank_through_net_node,
+   subroutine test_oblique_bank_through_net_node() bind(C)
+      use kdtree2Factory, only: build_kdtree, delete_kdtree2, treeglob
+      use m_cutcelwu, only: cutcelwu, cutcelwu_ibm_union
+      use m_flow, only: baorgfracmin
+      use m_flow_geominit, only: flow_geominit
+      use m_flowgeom, only: ba, kfs, lne2ln, lnx, wu
+      use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_reset_state, ibm_state
+      use m_missing, only: dmiss
+      use m_network_helpers, only: t_grid_helper
+      use m_partitioninfo, only: jampi
+      use m_polygon, only: npl
+      use m_sferic, only: jsferic
+      use m_tpoly, only: tpoly, tpoly_to_pol
+      use network_data, only: kn, netcell, numk, nump, numl, xk, yk
+      use Timers, only: timini
+      use unstruc_model, only: md_cutcelllist
+
+      type(t_grid_helper) :: grid_helper
+      type(tpoly), dimension(:), allocatable :: polygons
+      integer :: ierror, cell, ll, link, node1, node2, flow_link, internal_flow_faces
+      integer :: sw_cell, se_cell, nw_cell, ne_cell
+      real(kind=dp) :: slope, center_x, center_y, phi1, phi2, wet_fraction, expected_width, full_width
+      character(len=256) :: link_message
+
+      call ibm_reset_state()
+      jampi = 0
+      immersed_boundary = 0
+      md_cutcelllist = ''
+      baorgfracmin = 0.1_dp
+      call timini()
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid(-10.0_dp, -10.0_dp, 10.0_dp, 2, 2)
+      call flow_geominit(0)
+
+      slope = 43.0_dp / 80.0_dp
+      allocate (polygons(1))
+      allocate (polygons(1)%x(4), polygons(1)%y(4), polygons(1)%z(4))
+      polygons(1)%len = 4
+      polygons(1)%x = [-20.0_dp, 20.0_dp, 20.0_dp, -20.0_dp]
+      polygons(1)%y = [-20.0_dp, -20.0_dp, 20.0_dp * slope, -20.0_dp * slope]
+      polygons(1)%z = 0.0_dp
+      polygons(1)%xmin = minval(polygons(1)%x)
+      polygons(1)%xmax = maxval(polygons(1)%x)
+      polygons(1)%ymin = minval(polygons(1)%y)
+      polygons(1)%ymax = maxval(polygons(1)%y)
+      call tpoly_to_pol(polygons, iselect=1)
+
+      ibm_state%active = .true.
+      ibm_state%grid%dx = 10.0_dp
+      ibm_state%grid%dy = 10.0_dp
+      ibm_state%ba_full = ba(1:nump)
+      ibm_state%wu_full = wu(1:lnx)
+      immersed_boundary = 1
+
+      call build_kdtree(treeglob, numk, xk, yk, ierror, jsferic, dmiss)
+      call F90_ASSERT_EQ(ierror, 0, 'Could not build the net-node tree for the IBM crossing test.')
+      if (ierror /= 0) then
+         call ibm_reset_state()
+         immersed_boundary = 0
+         return
+      end if
+      call cutcelwu(4, 0, 0)
+      call cutcelwu_ibm_union(polygons)
+
+      sw_cell = 0
+      se_cell = 0
+      nw_cell = 0
+      ne_cell = 0
+      do cell = 1, nump
+         center_x = 0.0_dp
+         center_y = 0.0_dp
+         do ll = 1, netcell(cell)%n
+            center_x = center_x + xk(netcell(cell)%nod(ll))
+            center_y = center_y + yk(netcell(cell)%nod(ll))
+         end do
+         center_x = center_x / real(netcell(cell)%n, kind=dp)
+         center_y = center_y / real(netcell(cell)%n, kind=dp)
+         if (abs(center_x + 5.0_dp) < 1.0e-12_dp .and. abs(center_y + 5.0_dp) < 1.0e-12_dp) then
+            sw_cell = cell
+         else if (abs(center_x - 5.0_dp) < 1.0e-12_dp .and. abs(center_y + 5.0_dp) < 1.0e-12_dp) then
+            se_cell = cell
+         else if (abs(center_x + 5.0_dp) < 1.0e-12_dp .and. abs(center_y - 5.0_dp) < 1.0e-12_dp) then
+            nw_cell = cell
+         else if (abs(center_x - 5.0_dp) < 1.0e-12_dp .and. abs(center_y - 5.0_dp) < 1.0e-12_dp) then
+            ne_cell = cell
+         end if
+      end do
+
+      call F90_ASSERT_TRUE(sw_cell > 0 .and. se_cell > 0 .and. nw_cell > 0 .and. ne_cell > 0, &
+                           'Could not locate all cells around the oblique-bank node.')
+      if (sw_cell > 0 .and. se_cell > 0 .and. nw_cell > 0 .and. ne_cell > 0) then
+         call F90_ASSERT_NEAR(ba(sw_cell), 26.875_dp, 1.0e-10_dp, 'Wrong wet area southwest of the net-node crossing.')
+         call F90_ASSERT_NEAR(ba(se_cell), 0.0_dp, 1.0e-12_dp, 'Solid cell southeast of the crossing stayed active.')
+         call F90_ASSERT_NEAR(ba(nw_cell), 100.0_dp, 1.0e-10_dp, 'Node-touch-only cell was incorrectly cut.')
+         call F90_ASSERT_NEAR(ba(ne_cell), 73.125_dp, 1.0e-10_dp, 'Wrong wet area northeast of the net-node crossing.')
+         if (allocated(kfs)) then
+            call F90_ASSERT_EQ(kfs(sw_cell), 1, 'Southwest cut cell was not flagged.')
+            call F90_ASSERT_EQ(kfs(se_cell), 0, 'Southeast solid cell was flagged as cut.')
+            call F90_ASSERT_EQ(kfs(nw_cell), 0, 'Node-touch-only cell was flagged as cut.')
+            call F90_ASSERT_EQ(kfs(ne_cell), 1, 'Northeast cut cell was not flagged.')
+         else
+            call F90_ASSERT_TRUE(.false., 'Cut-cell flags were not allocated.')
+         end if
+      end if
+
+      internal_flow_faces = 0
+      do link = 1, numl
+         flow_link = lne2ln(link)
+         if (flow_link <= 0) then
+            cycle
+         end if
+         internal_flow_faces = internal_flow_faces + 1
+         call F90_ASSERT_TRUE(flow_link <= lnx, 'A net face maps beyond the flow-link array.')
+         if (flow_link > lnx) then
+            cycle
+         end if
+         node1 = kn(1, link)
+         node2 = kn(2, link)
+         phi1 = yk(node1) - slope * xk(node1)
+         phi2 = yk(node2) - slope * xk(node2)
+         if (phi1 >= 0.0_dp .and. phi2 >= 0.0_dp) then
+            wet_fraction = 1.0_dp
+         else if (phi1 <= 0.0_dp .and. phi2 <= 0.0_dp) then
+            wet_fraction = 0.0_dp
+         else
+            wet_fraction = max(phi1, phi2) / (abs(phi1) + abs(phi2))
+         end if
+         expected_width = sqrt((xk(node2) - xk(node1))**2 + (yk(node2) - yk(node1))**2) * wet_fraction
+         full_width = ibm_state%wu_full(flow_link)
+         write (link_message, '(a,i0,a,i0,a,4f8.3,a,f8.3,a,f8.3)') 'Internal net link ', link, ', flow link ', flow_link, &
+            ', endpoints ', xk(node1), yk(node1), xk(node2), yk(node2), ', actual ', wu(flow_link), ', expected ', expected_width
+         call F90_ASSERT_NEAR(wu(flow_link), expected_width, 1.0e-8_dp, trim(link_message))
+         call F90_ASSERT_TRUE(wu(flow_link) >= -1.0e-12_dp .and. wu(flow_link) <= full_width + 1.0e-12_dp, &
+                              'An oblique-bank face aperture is outside [0, 1].')
+      end do
+      call F90_ASSERT_EQ(internal_flow_faces, 4, 'Unexpected number of internal faces in the node-crossing fixture.')
+
+      call delete_kdtree2(treeglob)
+      call ibm_reset_state()
+      immersed_boundary = 0
+      npl = 0
+   end subroutine test_oblique_bank_through_net_node
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_union_clip_multiple_polygons, test_union_clip_multiple_polygons,
    subroutine test_union_clip_multiple_polygons() bind(C)
       use m_cutcelwu, only: cutcelwu_ibm_union
