@@ -456,6 +456,82 @@ contains
    end subroutine test_area_classification_uses_geometric_tolerance
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_dmiss_separated_polygons_are_cut, test_dmiss_separated_polygons_are_cut,
+   subroutine test_dmiss_separated_polygons_are_cut() bind(C)
+      use kdtree2Factory, only: build_kdtree, delete_kdtree2, treeglob
+      use m_cutcelwu, only: cutcelwu
+      use m_flow, only: baorgfracmin
+      use m_flow_geominit, only: flow_geominit
+      use m_flowgeom, only: kfs
+      use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_reset_state
+      use m_missing, only: dmiss
+      use m_network_helpers, only: t_grid_helper
+      use m_partitioninfo, only: jampi
+      use m_polygon, only: npl, xpl
+      use m_reapol, only: reapol
+      use m_sferic, only: jsferic
+      use network_data, only: numk, xk, yk
+      use precision_basics, only: comparereal
+      use unstruc_model, only: md_cutcelllist
+      use Timers, only: timini
+
+      character(len=*), parameter :: polygon_file = 'ibm_geometry_two_polygons.pol'
+      type(t_grid_helper) :: grid_helper
+      integer :: ierror, unit
+
+      call ibm_reset_state()
+      jampi = 0
+      immersed_boundary = 0
+      md_cutcelllist = ''
+      baorgfracmin = 0.1_dp
+      call timini()
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid(0.0_dp, 0.0_dp, 10.0_dp, 2, 1)
+      call flow_geominit(0)
+
+      open (newunit=unit, file=polygon_file, status='replace', action='write')
+      write (unit, '(a)') 'left solid polygon'
+      write (unit, '(a)') '4 2'
+      write (unit, *) -1.0_dp, -1.0_dp
+      write (unit, *) 4.0_dp, -1.0_dp
+      write (unit, *) 4.0_dp, 11.0_dp
+      write (unit, *) -1.0_dp, 11.0_dp
+      write (unit, '(a)') 'right solid polygon'
+      write (unit, '(a)') '4 2'
+      write (unit, *) 16.0_dp, -1.0_dp
+      write (unit, *) 21.0_dp, -1.0_dp
+      write (unit, *) 21.0_dp, 11.0_dp
+      write (unit, *) 16.0_dp, 11.0_dp
+      close (unit)
+
+      open (newunit=unit, file=polygon_file, status='old', action='read')
+      call reapol(unit, 0)
+      close (unit)
+      call F90_ASSERT_EQ(npl, 9, 'The .pol reader did not separate the two polygon blocks.')
+      if (npl >= 5) then
+         call F90_ASSERT_EQ(comparereal(xpl(5), dmiss), 0, 'The .pol reader did not insert a dmiss separator.')
+      end if
+
+      immersed_boundary = 1
+      call build_kdtree(treeglob, numk, xk, yk, ierror, jsferic, dmiss)
+      call F90_ASSERT_EQ(ierror, 0, 'Could not build the net-node tree for the multipart polygon test.')
+      if (ierror == 0) then
+         call cutcelwu(4, 0, 0)
+         call F90_ASSERT_EQ(kfs(1), 1, 'The first dmiss-separated polygon did not flag its cut cell.')
+         call F90_ASSERT_EQ(kfs(2), 1, 'The second dmiss-separated polygon did not flag its cut cell.')
+         call delete_kdtree2(treeglob)
+      end if
+
+      open (newunit=unit, file=polygon_file, status='old')
+      close (unit, status='delete')
+      call ibm_reset_state()
+      immersed_boundary = 0
+      md_cutcelllist = ''
+      npl = 0
+   end subroutine test_dmiss_separated_polygons_are_cut
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_geometry_state_and_wet_edge, test_geometry_state_and_wet_edge,
    subroutine test_geometry_state_and_wet_edge() bind(C)
       real(kind=dp), dimension(4, 2) :: cell_corner_x, cell_corner_y
