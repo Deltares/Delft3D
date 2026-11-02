@@ -41,7 +41,7 @@ module m_read_samples_from_geotiff
    function read_samples_from_geotiff(filename) result(success)
       use precision, only: dp
       use messagehandling, only: mess, level_warn
-      use m_bilinear_interpolation, only: bilinear_data
+      use m_bilinear_interpolation, only: raster_data
       use timespace_parameters, only: GEOTIFF
       use m_samples, only: increasesam, ns, xs, ys, zs, mxsam, mysam, ipstat, ipsam, ipstat_ok
       use m_drawthis, only: ndraw
@@ -52,12 +52,12 @@ module m_read_samples_from_geotiff
       character(len=*), intent(in) :: filename !< Path of the file to be read.
       logical :: success !< Whether the raster was read and converted successfully.
 
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: status, nx, ny, i, j, istep
 
       success = .false.
       call readyy('Reading GeoTIFF file', 0.0_dp)
-      data = bilinear_data(filename, GEOTIFF, status)
+      data = raster_data(filename, GEOTIFF, status)
       if (status /= 0) then
          call mess(level_warn, 'Could not read GeoTIFF raster: '//trim(filename))
          call readyy('Reading GeoTIFF file', 1.0_dp)

@@ -46,7 +46,7 @@ module m_refinecellsandfaces2
 contains
 
    subroutine refinecellsandfaces2()
-      use m_bilinear_interpolation, only: bilinear_data, arcinfo_data
+      use m_bilinear_interpolation, only: raster_data, arcinfo_data
       use m_rearrange_worldmesh, only: rearrange_worldmesh
       use m_prepare_samplehessian, only: prepare_samplehessian
       use m_get_meshbounds, only: get_meshbounds
@@ -154,7 +154,7 @@ contains
             call mess(LEVEL_ERROR, 'Bilinear refinement requires loaded interpolation data.')
             goto 1234
          end if
-         arcinfo_data = bilinear_data(values=d(1:mca, 1:nca), origin=[x0, y0], spacing=[dxa, dya], missing_value=dmiss)
+         arcinfo_data = raster_data(values=d(1:mca, 1:nca), origin=[x0, y0], spacing=[dxa, dya], missing_value=dmiss)
       end if
 
       ! if ( netstat.ne.netstat_OK .or. NPL.gt.0 ) then ! in case of selecting polygon: always call findcells

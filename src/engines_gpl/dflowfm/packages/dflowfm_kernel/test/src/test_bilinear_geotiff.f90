@@ -8,7 +8,7 @@ module test_bilinear_geotiff
                    gdalsetgeotransform, gdaldatasetrasterio_f, gf_write, gdalgetrasterband, &
                    gdalsetrasternodatavalue, gdalclose, gdt_float32, gdt_float64, gdt_int16, &
                    gdalsetmetadataitem, gdalmajorobjecth_new
-   use m_bilinear_interpolation, only: bilinear_data
+   use m_bilinear_interpolation, only: raster_data
    use timespace_parameters, only: GEOTIFF
    use m_missing, only: dmiss
    use m_samples, only: ns, mxsam, mysam
@@ -29,7 +29,7 @@ contains
       integer, dimension(3), parameter :: data_types = [gdt_float32, gdt_float64, gdt_int16]
       real(kind=c_double), dimension(2, 2, 1) :: values
       real(kind=c_double), dimension(6) :: transform
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: status, type_index, saved_ns, saved_mxsam, saved_mysam
 
       saved_ns = ns
@@ -41,7 +41,7 @@ contains
          if (.not. create_test_geotiff(filename, values, transform, data_types(type_index))) then
             return
          end if
-         data = bilinear_data(filename, GEOTIFF, status)
+         data = raster_data(filename, GEOTIFF, status)
          call delete_test_geotiff(filename)
          call f90_expect_eq(status, 0)
          call f90_expect_true(allocated(data%values))
@@ -71,7 +71,7 @@ contains
       real(kind=c_double), dimension(2, 2, 1) :: values
       real(kind=c_double), dimension(6) :: transform
       real(kind=c_double) :: file_missing
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: status, missing_case, data_type
 
       transform = [20.0_dp, 2.0_dp, 0.0_dp, 30.0_dp, 0.0_dp, -4.0_dp]
@@ -95,7 +95,7 @@ contains
          if (.not. create_test_geotiff(filename, values, transform, data_type, file_missing)) then
             return
          end if
-         data = bilinear_data(filename, GEOTIFF, status)
+         data = raster_data(filename, GEOTIFF, status)
          call delete_test_geotiff(filename)
          call f90_expect_eq(status, 0)
          if (.not. allocated(data%values)) then
@@ -115,7 +115,7 @@ contains
       character(len=*), parameter :: filename = 'test_bilinear_coordinates.tif'
       real(kind=c_double), dimension(2, 2, 1) :: values
       real(kind=c_double), dimension(6) :: transform
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: status, point_case, x_direction, y_direction
 
       values = reshape([2.0_dp, 6.0_dp, 10.0_dp, 22.0_dp], shape(values))
@@ -126,7 +126,7 @@ contains
                if (.not. create_test_geotiff(filename, values, transform, gdt_float64, is_point=point_case == 1)) then
                   return
                end if
-               data = bilinear_data(filename, GEOTIFF, status)
+               data = raster_data(filename, GEOTIFF, status)
                call delete_test_geotiff(filename)
                call f90_expect_eq(status, 0)
                if (.not. allocated(data%values)) then
@@ -150,7 +150,7 @@ contains
       real(kind=dp), dimension(3), parameter :: rotations = [0.5e-6_dp, 1.0e-6_dp, 1.0001e-6_dp]
       real(kind=c_double), dimension(2, 2, 1) :: values
       real(kind=c_double), dimension(6) :: transform
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: term_index, rotation_index, direction, status
 
       values = reshape([2.0_dp, 6.0_dp, 10.0_dp, 22.0_dp], shape(values))
@@ -162,7 +162,7 @@ contains
                if (.not. create_test_geotiff(filename, values, transform, gdt_float64)) then
                   return
                end if
-               data = bilinear_data(filename, GEOTIFF, status)
+               data = raster_data(filename, GEOTIFF, status)
                call delete_test_geotiff(filename)
                if (rotation_index <= 2) then
                   call f90_expect_eq(status, 0)
@@ -188,7 +188,7 @@ contains
       character(len=*), parameter :: filename = 'test_bilinear_invalid.tif'
       real(kind=c_double), dimension(2, 2, 2) :: values
       real(kind=c_double), dimension(6) :: transform
-      type(bilinear_data) :: data
+      type(raster_data) :: data
       integer :: status, invalid_case, num_bands
 
       values = 2.0_dp
@@ -208,7 +208,7 @@ contains
          if (.not. create_test_geotiff(filename, values(:, :, 1:num_bands), transform, gdt_float64)) then
             return
          end if
-         data = bilinear_data(filename, GEOTIFF, status)
+         data = raster_data(filename, GEOTIFF, status)
          call delete_test_geotiff(filename)
          call f90_expect_true(status /= 0)
          call f90_expect_false(allocated(data%values))

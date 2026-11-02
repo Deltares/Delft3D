@@ -5,27 +5,27 @@ module m_bilinear_interpolation
    implicit none(type, external)
    private
 
-   public :: bilinear_data, arcinfo_data
+   public :: raster_data, arcinfo_data
 
    !> Raster values and geometry, with coordinates defined at sample locations.
-   type :: bilinear_data
+   type :: raster_data
       real(kind=dp), dimension(:, :), allocatable :: values !< Raster values; array dimensions define the raster size.
       real(kind=dp), dimension(2) :: origin = 0.0_dp !< Coordinates of values(1,1).
       real(kind=dp), dimension(2) :: spacing = 0.0_dp !< Nonzero signed coordinate increments along the array dimensions when populated.
       real(kind=dp) :: missing_value = -999.0_dp !< Missing-value marker used in values.
    contains
       procedure :: interpolate => interpolate_bilinear
-   end type bilinear_data
+   end type raster_data
 
-   type(bilinear_data) :: arcinfo_data !< Shared interpolation data refreshed from the legacy ArcInfo globals for refinement.
+   type(raster_data) :: arcinfo_data !< Shared interpolation data refreshed from the legacy ArcInfo globals for refinement.
 
-   interface bilinear_data
+   interface raster_data
       module procedure read_bilinear_data
-   end interface bilinear_data
+   end interface raster_data
 
 contains
 
-   !> Construct bilinear interpolation data from either an Arcinfo or a Geotiff file.
+   !> Construct bilinear interpolation raster data from either an Arcinfo or a Geotiff file.
    function read_bilinear_data(filename, filetype, status) result(data)
       use timespace_parameters, only: ARCINFO, GEOTIFF
       use m_read_arcinfo, only: readarcinfoheader, readarcinfoblock
@@ -34,7 +34,7 @@ contains
       character(len=*), intent(in) :: filename !< Input raster filename.
       integer, intent(in) :: filetype !< Input format: ARCINFO or GEOTIFF.
       integer, intent(out) :: status !< Zero on success, nonzero on unsupported format or read failure.
-      type(bilinear_data) :: data !< Loaded interpolation data; values remain unallocated on failure.
+      type(raster_data) :: data !< Loaded interpolation data; values remain unallocated on failure.
 
       integer :: file_unit, num_columns, num_rows, close_status
       real(kind=dp) :: file_missing
@@ -138,7 +138,7 @@ contains
          ! Offsets start at zero at the outer corner of the first cell, whose X/Y are entries 1 and 4.
          ! Entries 2 and 6 give the change in X per column and Y per row, respectively.
          ! Entries 3 and 5 let rows change X and columns change Y: the table is then rotated or sheared.
-         ! Bilinear_data needs rows/columns aligned with the map axes, so only tiny such changes are ignored.
+         ! raster_data needs rows/columns aligned with the map axes, so only tiny such changes are ignored.
          if (abs(geotransform(3)) > rotation_tolerance .or. abs(geotransform(5)) > rotation_tolerance .or. &
              geotransform(2) == 0.0_dp .or. geotransform(6) == 0.0_dp) then
             exit
@@ -196,7 +196,7 @@ contains
    !> Bilinear interpolation of coordinates from a uniform rectangular raster.
    elemental function interpolate_bilinear(raster, x, y) result(res)
       real(kind=dp), intent(in) :: x, y !< Target coordinates.
-      class(bilinear_data), intent(in) :: raster !< bilinear_data raster object
+      class(raster_data), intent(in) :: raster !< raster_data raster object
       real(kind=dp) :: res !< Interpolated value or the raster's missing-value marker.
 
       real(kind=dp) :: grid_x, grid_y, x_fraction, y_fraction

@@ -3259,7 +3259,7 @@ contains
       use m_reasam
       use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
-      use m_bilinear_interpolation, only: bilinear_data
+      use m_bilinear_interpolation, only: raster_data
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
@@ -3302,7 +3302,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: zh
       real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
-      type(bilinear_data) :: raster_data
+      type(raster_data) :: raster
       character(len=5) :: sd
       type(TerrorInfo) :: errorInfo
 
@@ -3394,7 +3394,7 @@ contains
          case (ARCINFO, GEOTIFF)
 
             if (local_method == METHOD_BILINEAR) then
-               raster_data = bilinear_data(filename, filetype, ierr)
+               raster = raster_data(filename, filetype, ierr)
                if (ierr /= 0) then
                   msgbuf = 'timespace::timespaceinitialfield: could not read bilinear interpolation data from '''//trim(filename)//'''.'
                   call err_flush()
@@ -3425,10 +3425,10 @@ contains
 
          case (METHOD_BILINEAR)
 
-            where (zh == raster_data%missing_value)
-               zh = raster_data%interpolate(xu, yu)
+            where (zh == raster%missing_value)
+               zh = raster%interpolate(xu, yu)
             end where
-            deallocate (raster_data%values)
+            deallocate (raster%values)
 
          case (METHOD_AVERAGING)
 
