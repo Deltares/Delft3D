@@ -216,12 +216,9 @@ contains
                   q1_floodplain2(L) = q_sub(3)
 
                   if (map_write_settings%chezy_links_split == 1) then
-                     ! getconveyance has already converted subsection roughness to Chezy.
-                     ! These coefficients combine through conveyance, not by summation.
-                     ! For network 1D links ifrcutp is R_CHEZY, so get_chezy returns frcu unchanged.
-                     ! czu_main(L) = get_chezy(hu(LL), cz(1), u1(LL), v(LL), ifrcutp(LL))
-                     ! czu_floodplain1(L) = get_chezy(hu(LL), cz(2), u1(LL), v(LL), ifrcutp(LL))
-                     ! czu_floodplain2(L) = get_chezy(hu(LL), cz(3), u1(LL), v(LL), ifrcutp(LL))
+                     czu_main(L) = get_chezy(hu(LL), cz_sub(1), u1(LL), v(LL), ifrcutp(LL))
+                     czu_floodplain1(L) = get_chezy(hu(LL), cz_sub(2), u1(LL), v(LL), ifrcutp(LL))
+                     czu_floodplain2(L) = get_chezy(hu(LL), cz_sub(3), u1(LL), v(LL), ifrcutp(LL))
                   end if
 
                else
