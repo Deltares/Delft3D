@@ -61,6 +61,9 @@ module m_ec_converter
    public :: ecConverterSetInterpolation
    public :: ecConverterSetMask
    public :: ecConverterGetBbox
+   public :: prepare_projections
+   public :: ecConverterHarmonicCoefficients
+   public :: apply_harmonics
 contains
 
    ! =======================================================================
@@ -3191,54 +3194,25 @@ contains
       success = .true.
    end function ecConverterHarmonicCoefficients
 
-   !> Project fixed harmonic coefficients once, then evaluate them directly at target locations.
-   !! Source data, spatial mapping, operand and interpolation method remain fixed during a model run.
-   !! Extrapolation copies final target values after applying operands, just as in the uncached path.
-   !!
-   !! Steps:
-   !!   1. Find the cached projection of this source/target pair in the harmonics frame; append an empty one if absent.
-   !!   2. First call only: compute the cached cos/sin coefficients, mask and extrapolation donors
-   !!      (see ecConverterHarmonicCoefficients).
-   !!   3. Every call: target(j) = target(j) <operand> cos(j) * cos(omega t) + sin(j) * sin(omega t), where mask(j) = 1.
-   !!   4. With extrapolation: copy the donor's final value to each unmasked target inside the source grid.
-   function ecConverterHarmonic(connection, item_index, timesteps) result(success)
-      use m_mathconstants, only: PI
-      type(tEcConnection), intent(inout) :: connection !< Connection supplying the source, target and spatial mapping.
-      integer, intent(in) :: item_index !< Source/target pair to evaluate.
-      real(dp), intent(in) :: timesteps !< Requested time in modified Julian days.
-      logical :: success !< Whether projection and operand application succeeded.
+   !> Find the projection for a source/target/converter key, appending an empty entry if absent.
+   !! Growing the collection invalidates pointers to previously returned entries.
+   subroutine prepare_projections(frame, source_id, target_id, converter_id, proj)
+      type(tEcHarmonicsFrame), target, intent(inout) :: frame !< Frame owning the projections.
+      integer, intent(in) :: source_id !< Source item id.
+      integer, intent(in) :: target_id !< Target item id.
+      integer, intent(in) :: converter_id !< Converter id.
+      type(tEcHarmonicProjection), pointer, intent(out) :: proj !< Selected projection, possibly not yet computed.
 
-      type(tEcItem), pointer :: source_item, target_item
-      type(tEcConverter), pointer :: converter
-      type(tEcHarmonicsFrame), pointer :: frame
-      type(tEcIndexWeight), pointer :: weights
-      type(tEcHarmonicProjection), pointer :: proj
-      real(dp), dimension(:), pointer :: targetfield
-      integer :: j, k, projection_index, n_projections
-      real(dp) :: angle, cos_time, sin_time
-      real(dp), dimension(:), allocatable :: values !< Harmonic values at the target points; allocatable to keep it off the stack.
+      integer :: k, projection_index, n_projections
 
-      success = .false.
-      source_item => connection%sourceItemsPtr(item_index)%ptr
-      target_item => connection%targetItemsPtr(item_index)%ptr
-      converter => connection%converterPtr
-      frame => source_item%hframe
-      targetfield => target_item%targetFieldPtr%arr1dPtr
-      weights => converter%indexWeight
-      if (frame%ec_period <= 0) then
-         call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
-         return
-      end if
-
-      ! Step 1: find or append the cached projection of this source/target pair.
       n_projections = 0
       if (allocated(frame%projections)) then
          n_projections = size(frame%projections)
       end if
       do projection_index = 1, n_projections
          proj => frame%projections(projection_index)
-         if (proj%sourceItemId == source_item%id .and. proj%targetItemId == target_item%id .and. &
-             proj%converterId == converter%id) then
+         if (proj%sourceItemId == source_id .and. proj%targetItemId == target_id .and. &
+             proj%converterId == converter_id) then
             exit
          end if
       end do
@@ -3260,9 +3234,72 @@ contains
          end block
       end if
       proj => frame%projections(projection_index)
-      proj%sourceItemId = source_item%id
-      proj%targetItemId = target_item%id
-      proj%converterId = converter%id
+      proj%sourceItemId = source_id
+      proj%targetItemId = target_id
+      proj%converterId = converter_id
+   end subroutine prepare_projections
+
+   !> Evaluate prepared harmonic coefficients and apply the operand at masked target points.
+   function apply_harmonics(cos_coefficients, sin_coefficients, mask, angle, operand, target_values) result(success)
+      real(dp), dimension(:), intent(in) :: cos_coefficients !< Projected amplitude times cosine of phase.
+      real(dp), dimension(:), intent(in) :: sin_coefficients !< Projected amplitude times sine of phase.
+      integer, dimension(:), intent(in) :: mask !< Nonzero at target points receiving harmonic values.
+      real(dp), intent(in) :: angle !< Harmonic angle in radians at the requested time.
+      integer, intent(in) :: operand !< Operation to apply to the target values.
+      real(dp), dimension(:), intent(inout) :: target_values !< Target values matching the coefficients and mask.
+      logical :: success !< Whether target validation and operand application succeeded.
+
+      real(dp) :: cos_time, sin_time
+      real(dp), dimension(:), allocatable :: values !< Allocatable to keep the work array off the stack.
+
+      call check_undefined_values_for_operand(operand, target_values, success, mask)
+      if (.not. success) then
+         return
+      end if
+      cos_time = cos(angle)
+      sin_time = sin(angle)
+      values = cos_coefficients * cos_time + sin_coefficients * sin_time
+      call apply_operand_masked(operand, target_values, values, mask)
+   end function apply_harmonics
+
+   !> Prepare and evaluate the harmonic forcing for one source/target pair.
+   !! Source data, spatial mapping, operand and interpolation method remain fixed during a model run.
+   !!
+   !! Steps:
+   !!   1. Find or append the projection using prepare_projections.
+   !!   2. First call only: build coefficients, mask and donors using ecConverterHarmonicCoefficients.
+   !!   3. Every call: evaluate the prepared coefficients and apply the operand using apply_harmonics.
+   !!   4. With extrapolation: copy donor values after applying operands, then update the target time.
+   function ecConverterHarmonic(connection, item_index, timesteps) result(success)
+      use m_mathconstants, only: PI
+      type(tEcConnection), intent(inout) :: connection !< Connection supplying the source, target and spatial mapping.
+      integer, intent(in) :: item_index !< Source/target pair to evaluate.
+      real(dp), intent(in) :: timesteps !< Requested time in modified Julian days.
+      logical :: success !< Whether projection and operand application succeeded.
+
+      type(tEcItem), pointer :: source_item, target_item
+      type(tEcConverter), pointer :: converter
+      type(tEcHarmonicsFrame), pointer :: frame
+      type(tEcIndexWeight), pointer :: weights
+      type(tEcHarmonicProjection), pointer :: proj
+      real(dp), dimension(:), pointer :: targetfield
+      integer :: j
+      real(dp) :: angle
+
+      success = .false.
+      source_item => connection%sourceItemsPtr(item_index)%ptr
+      target_item => connection%targetItemsPtr(item_index)%ptr
+      converter => connection%converterPtr
+      frame => source_item%hframe
+      targetfield => target_item%targetFieldPtr%arr1dPtr
+      weights => converter%indexWeight
+      if (frame%ec_period <= 0) then
+         call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
+         return
+      end if
+
+      ! Step 1: select the projection of this source/target pair.
+      call prepare_projections(frame, source_item%id, target_item%id, converter%id, proj)
 
       ! Step 2: first call only, compute the cached coefficients.
       if (.not. allocated(proj%cos)) then
@@ -3273,15 +3310,11 @@ contains
       end if
 
       ! Step 3: evaluate the harmonic at time t and apply the operand.
-      call check_undefined_values_for_operand(converter%operandType, targetfield(1:size(proj%mask)), success, proj%mask)
+      angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
+      success = apply_harmonics(proj%cos, proj%sin, proj%mask, angle, converter%operandType, targetfield(1:size(proj%mask)))
       if (.not. success) then
          return
       end if
-      angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
-      cos_time = cos(angle)
-      sin_time = sin(angle)
-      values = proj%cos * cos_time + proj%sin * sin_time
-      call apply_operand_masked(converter%operandType, targetfield(1:size(proj%mask)), values, proj%mask)
       ! Step 4: copy donor values to unmasked targets.
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
