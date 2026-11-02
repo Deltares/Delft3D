@@ -359,6 +359,112 @@ contains
    end subroutine test_union_clip_multiple_polygons
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_union_clip_closes_solid_face, test_union_clip_closes_solid_face,
+   subroutine test_union_clip_closes_solid_face() bind(C)
+      use m_cutcelwu, only: cutcelwu_ibm_union
+      use m_flow, only: baorgfracmin
+      use m_flow_geominit, only: flow_geominit
+      use m_flowgeom, only: ba, kfs, lne2ln, lnx, wu
+      use m_flowparameters, only: immersed_boundary
+      use m_immersed_boundary, only: ibm_reset_state, ibm_state
+      use m_network_helpers, only: t_grid_helper
+      use m_partitioninfo, only: jampi
+      use m_tpoly, only: tpoly
+      use network_data, only: netcell, nump, xk, yk
+      use Timers, only: timini
+      use unstruc_model, only: md_cutcelllist
+
+      type(t_grid_helper) :: grid_helper
+      type(tpoly), dimension(:), allocatable :: polygons
+      integer :: n, ll, node1, node2, net_link, flow_link, solid_cell, sliver_cell
+      real(kind=dp) :: cell_x, cell_y
+
+      call ibm_reset_state()
+      jampi = 0
+      immersed_boundary = 0
+      md_cutcelllist = ''
+      baorgfracmin = 0.1_dp
+      call timini()
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid(25.0_dp, 600.0_dp, 25.0_dp, 1, 2)
+      call flow_geominit(0)
+
+      allocate (polygons(1))
+      allocate (polygons(1)%x(4), polygons(1)%y(4), polygons(1)%z(4))
+      polygons(1)%len = 4
+      polygons(1)%x = [0.0_dp, 100.0_dp, 100.0_dp, 0.0_dp]
+      polygons(1)%y = [561.0_dp, 614.75_dp, 700.0_dp, 700.0_dp]
+      polygons(1)%z = 0.0_dp
+      polygons(1)%xmin = minval(polygons(1)%x)
+      polygons(1)%xmax = maxval(polygons(1)%x)
+      polygons(1)%ymin = minval(polygons(1)%y)
+      polygons(1)%ymax = maxval(polygons(1)%y)
+
+      call F90_ASSERT_TRUE(allocated(wu), 'Flow-link widths were not initialized.')
+      if (.not. allocated(wu) .or. lnx < 1 .or. nump < 2) then
+         call ibm_reset_state()
+         return
+      end if
+      ibm_state%grid%dx = 25.0_dp
+      ibm_state%grid%dy = 25.0_dp
+      ibm_state%ba_full = ba(1:nump)
+      ibm_state%wu_full = wu(1:lnx)
+
+      solid_cell = 0
+      sliver_cell = 0
+      do n = 1, nump
+         cell_x = sum(xk(netcell(n)%nod(1:4))) / 4.0_dp
+         cell_y = sum(yk(netcell(n)%nod(1:4))) / 4.0_dp
+         if (abs(cell_x - 37.5_dp) < 1.0e-12_dp .and. abs(cell_y - 612.5_dp) < 1.0e-12_dp) then
+            solid_cell = n
+         else if (abs(cell_x - 62.5_dp) < 1.0e-12_dp .and. abs(cell_y - 612.5_dp) < 1.0e-12_dp) then
+            sliver_cell = n
+         end if
+      end do
+      call F90_ASSERT_TRUE(solid_cell > 0, 'The fully solid west cell was not found.')
+      call F90_ASSERT_TRUE(sliver_cell > 0, 'The small cut cell was not found.')
+      if (solid_cell == 0 .or. sliver_cell == 0) then
+         call ibm_reset_state()
+         return
+      end if
+
+      net_link = 0
+      do ll = 1, netcell(sliver_cell)%n
+         node1 = netcell(sliver_cell)%nod(ll)
+         if (ll < netcell(sliver_cell)%n) then
+            node2 = netcell(sliver_cell)%nod(ll + 1)
+         else
+            node2 = netcell(sliver_cell)%nod(1)
+         end if
+         if (abs(xk(node1) - 50.0_dp) <= 1.0e-12_dp .and. abs(xk(node2) - 50.0_dp) <= 1.0e-12_dp) then
+            net_link = abs(netcell(sliver_cell)%lin(ll))
+            exit
+         end if
+      end do
+      call F90_ASSERT_TRUE(net_link > 0, 'The solid/sliver shared net link was not found.')
+      if (net_link == 0) then
+         call ibm_reset_state()
+         return
+      end if
+      flow_link = lne2ln(net_link)
+      call F90_ASSERT_TRUE(flow_link > 0, 'The solid/sliver shared face does not map to a flow link.')
+      if (flow_link <= 0 .or. flow_link > size(wu)) then
+         call ibm_reset_state()
+         return
+      end if
+
+      call cutcelwu_ibm_union(polygons)
+
+      call F90_ASSERT_NEAR(ba(solid_cell), 0.0_dp, 1.0e-12_dp, 'The west cell should be fully solid.')
+      call F90_ASSERT_NEAR(ba(sliver_cell), 62.5_dp, 1.0e-12_dp, 'The small cut cell did not receive its area floor.')
+      call F90_ASSERT_EQ(kfs(solid_cell), 0, 'The fully solid west cell should be inactive.')
+      call F90_ASSERT_EQ(kfs(sliver_cell), 1, 'The small cut cell should remain active.')
+      call F90_ASSERT_NEAR(wu(flow_link), 0.0_dp, 1.0e-12_dp, 'A solid-adjacent sliver face should be closed.')
+
+      call ibm_reset_state()
+   end subroutine test_union_clip_closes_solid_face
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_ibm_geometry, test_area_floor_crosscheck, test_area_floor_crosscheck,
    subroutine test_area_floor_crosscheck() bind(C)
       real(kind=dp), dimension(4) :: cell_x, cell_y
