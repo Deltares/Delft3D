@@ -32,22 +32,32 @@
 module m_inflowcell
    implicit none
 contains
-   subroutine inflowcell(xp, yp, k, jaoutside, iLocTp) ! is this point in a flowcell
+   subroutine inflowcell(xp, yp, k, jaoutside, iLocTp, prefer_own_domain) ! is this point in a flowcell
       !FB TODO: this should be a function not a subroutine, return value (k) is not the last argument in list. booleans should be logical not integer.
       use precision, only: dp
       use m_flowgeom, only: ndxi, ndx2d, nd, xz, yz, dx
       use m_flow, only: jins, dmiss, nbndz, kbndz
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use geometry_module, only: pinpok
+      use m_partitioninfo, only: idomain, my_rank, jampi
 
       real(kind=dp), intent(in) :: xp, yp
       integer, intent(inout) :: k !return value, if flowcell is found k = cell index
       integer, intent(in) :: jaoutside
       integer, intent(in) :: iLocTp !< Node type, one of INDTP_1D/2D/ALL.
+      logical, intent(in), optional :: prefer_own_domain !< prefer own domain if multiple candidate nodes are found
 
+      logical :: local_prefer_own_domain
       ! locals
       integer :: n, nn, in, kb, L, nstart, nend
       real(kind=dp) :: dxx, dyy, r
+
+      
+      if (present(prefer_own_domain)) then
+         local_prefer_own_domain = prefer_own_domain
+      else
+         local_prefer_own_domain = .false.
+      end if
 
       ! define the searching range, this is especially for the purpose of snapping obs to 1D, 2D or 1D+2D flownodes.
       ! For other purpose it should stay as before
@@ -70,10 +80,19 @@ contains
             call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
             if (in == 1) then
                k = n
-               return
+               if ((local_prefer_own_domain) .and. (jampi == 1)) then
+                  if (idomain(k) == my_rank) then
+                     return
+                  end if
+               else 
+                  return
+               end if
             end if
          end if
       end do
+      if (k /= 0) then
+         return
+      end if
 
       if (jaoutside == -1) then ! do not look at open boundaries
          return

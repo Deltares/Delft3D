@@ -1,6 +1,7 @@
 module test_init_spatial_field
    use assertions_gtest
-   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
+   use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input, is_static_spatial_input
+   use fm_location_types, only: TARGET_LAYER_ALL_3D, TARGET_LAYER_UNIFORM
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
                                   WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE
@@ -17,6 +18,136 @@ module test_init_spatial_field
    character(len=*), parameter :: BASE_DIR = "."
 
 contains
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_netcdf_normalizes_quantity, test_initial_netcdf_normalizes_quantity,
+   subroutine test_initial_netcdf_normalizes_quantity() bind(C)
+      type(t_spatial_field_input) :: input
+
+      call make_test_input(input, quantity='initialSecchiDepth')
+      call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR))
+      call f90_expect_true(input%is_static_field)
+      call f90_expect_streq(cstr(input%quantity), cstr('secchidepth'))
+      call f90_expect_eq(input%method, WEIGHTFACTORS)
+   end subroutine test_initial_netcdf_normalizes_quantity
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_initial_modifier_preserves_suffix, test_initial_modifier_preserves_suffix,
+   subroutine test_initial_modifier_preserves_suffix() bind(C)
+      use fm_external_forcings_utils, only: split_qid
+
+      character(len=64) :: quantity, qid_base, qid_specific
+
+      quantity = 'initialtracerNO3'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialtracerNO3'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialtracer'))
+      call f90_expect_streq(cstr(qid_specific), cstr('NO3'))
+      quantity = 'initialwaqbotTestBot'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaqbotTestBot'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialwaqbot'))
+      call f90_expect_streq(cstr(qid_specific), cstr('TestBot'))
+      quantity = 'initialsalinity'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsalinity'))
+      quantity = 'initialtemperature'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialtemperature'))
+      quantity = 'initialwaterlevel'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaterlevel'))
+      quantity = 'initialwaterdepth'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialwaterdepth'))
+      quantity = 'initialsedfracSAND1'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsedfracSAND1'))
+      call split_qid(quantity, qid_base, qid_specific)
+      call f90_expect_streq(cstr(qid_base), cstr('initialsedfrac'))
+      call f90_expect_streq(cstr(qid_specific), cstr('SAND1'))
+      quantity = 'initialsediment'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialsediment'))
+      quantity = 'secchidepth'
+      call f90_expect_false(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('secchidepth'))
+      quantity = 'initialverticalsalinityprofile'
+      call f90_expect_true(is_static_spatial_input('netcdf', WEIGHTFACTORS, quantity))
+      call f90_expect_streq(cstr(quantity), cstr('initialverticalsalinityprofile'))
+   end subroutine test_initial_modifier_preserves_suffix
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolvers_select_3d_targets, test_resolvers_select_3d_targets,
+   subroutine test_resolvers_select_3d_targets() bind(C)
+      use unstruc_inifields, only: resolve_constituent_target
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D
+      use m_flow, only: sa1, tem1, kmx, ndkx
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
+
+      real(dp), dimension(:), pointer :: target_row
+      real(dp), dimension(:, :), pointer :: constituent_target
+      integer :: location, first_index, saved_kmx, saved_ndkx
+      integer :: saved_jasal, saved_temperature_model, saved_initem2D
+      logical :: success
+
+      saved_kmx = kmx
+      saved_ndkx = ndkx
+      saved_jasal = jasal
+      saved_temperature_model = temperature_model
+      saved_initem2D = initem2D
+      kmx = 2
+      ndkx = 3
+      jasal = 1
+      temperature_model = TEMPERATURE_MODEL_TRANSPORT
+      initem2D = 0
+      threshold_abort = LEVEL_FATAL
+      call realloc(sa1, ndkx, fill=42.0_dp, keepExisting=.false.)
+      call realloc(tem1, ndkx, fill=42.0_dp, keepExisting=.false.)
+
+      success = resolve_constituent_target('initialSalinity', location, constituent_target, first_index)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S, 'default salinity input must remain horizontal')
+      success = resolve_constituent_target('salinity', location, constituent_target, first_index)
+      call f90_expect_false(success, 'salinity without the initial prefix must not be accepted as an alias')
+      success = resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S3D)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, sa1), 'resolver must retain full salinity storage')
+
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_UNIFORM)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'new spatial-field resolver must leave the legacy expansion flag clear')
+      success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                         target_layer=TARGET_LAYER_ALL_3D)
+      call f90_expect_true(success)
+      call f90_expect_eq(location, UNC_LOC_S3D)
+      call f90_expect_eq(first_index, 1)
+      target_row => constituent_target(first_index, :)
+      call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
+      call f90_expect_eq(initem2D, 0, 'explicit 3D input must leave the legacy expansion flag clear')
+
+      kmx = 0
+      call f90_expect_false(resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
+                               target_layer=TARGET_LAYER_ALL_3D))
+      call f90_expect_false(resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D))
+
+      kmx = saved_kmx
+      ndkx = saved_ndkx
+      jasal = saved_jasal
+      temperature_model = saved_temperature_model
+      initem2D = saved_initem2D
+      deallocate (sa1, tem1)
+   end subroutine test_resolvers_select_3d_targets
+   !$f90tw)
 
    subroutine make_test_input( &
          input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
@@ -440,12 +571,18 @@ contains
       target_array => null()
       target_location_type = 0
 
-      success = resolve_initial_target('initialwaterlevel', 'test.ext', target_location_type, target_array)
+      success = resolve_initial_target('initialwaterlevel', target_location_type, target_array)
 
       call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
       call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")
       call f90_expect_eq(target_location_type, UNC_LOC_S, "initialwaterlevel must map to UNC_LOC_S")
       call f90_expect_true(associated(target_array, s1), "target_array must point directly to s1, not a copy")
+
+      target_array => null()
+      target_location_type = 0
+      success = resolve_initial_target('waterlevel', target_location_type, target_array)
+      call f90_expect_true(success, "waterlevel spelling should remain accepted")
+      call f90_expect_true(associated(target_array, s1), "waterlevel must still point directly to s1")
 
       ndx = 0
       if (allocated(s1)) deallocate (s1)

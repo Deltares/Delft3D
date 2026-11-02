@@ -8,7 +8,7 @@
     <control>
         <parallel>
             <startGroup>
-                <time>7200 7200 7200</time>
+                <time>7200 7200 21600</time>
                 <coupler name="flow2csumo"/>
                 <start name="CSUMO"/>
                 <coupler name="csumo2flow"/>

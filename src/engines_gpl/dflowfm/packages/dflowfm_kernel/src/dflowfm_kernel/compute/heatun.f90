@@ -47,7 +47,7 @@ contains
       use m_heatfluxes, only: EMMISIVITY_FACTOR, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav, &
                               PRANDTL_NUMBER_SQUARED, KINEMATIC_VISCOSITY_AIR, GAS_CONSTANT_DRY_AIR, GAS_CONSTANT_WATER_VAPOR, MIN_ICE_SNOW_THICKNESS
-      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flowparameters, only: his_write_settings, map_write_settings, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                                   ja_solar_radiation_factor
       use m_missing, only: dmiss
@@ -150,7 +150,7 @@ contains
          call compute_shortwave_radiation()
          call compute_longwave_radiation()
 
-         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST .or. sensible_heat_flux_available .or. latent_heat_flux_available) then
+         if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST .or. sensible_heat_flux_available .or. latent_heat_flux_available) then
             forced_latent_heat_flux = latent_heat_flux(n)
             forced_sensible_heat_flux = sensible_heat_flux(n)
          else

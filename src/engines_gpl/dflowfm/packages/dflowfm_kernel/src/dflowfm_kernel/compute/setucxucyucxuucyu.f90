@@ -63,7 +63,7 @@ contains
 
       logical :: make2dh
       integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
-      integer :: itpbn, newucxq = 0
+      integer :: boundary_type, newucxq = 0
       real(kind=dp) :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin, duxdn, duydn
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny, u1L
@@ -217,12 +217,12 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
-         itpbn = kbndz(4, n)
+         boundary_type = kbndz(4, n)
          cs = csu(LL)
          sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2), ucy(k2)) * cs + nod2liny(LL, 2, ucx(k2), ucy(k2)) * sn
                      ucx(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -270,7 +270,7 @@ contains
             do L = Lb, Lt
                kbk = ln(1, L)
                k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
+               if (jacstbnd == 0 .and. boundary_type /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
                      ucx(kbk) = uin * lin2nodx(LL, 1, cs, sn)

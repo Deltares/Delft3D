@@ -295,9 +295,6 @@
   case("ucy_mor")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(ucy_mor))
      ucy_mor(:) = x_1d_double_ptr
-  case("sa0")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(sa0))
-     sa0(:) = x_1d_double_ptr
   case("sa1")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(sa1))
      sa1(:) = x_1d_double_ptr
@@ -307,9 +304,6 @@
   case("sabot")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(sabot))
      sabot(:) = x_1d_double_ptr
-  case("tem0")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(tem0))
-     tem0(:) = x_1d_double_ptr
   case("tem1")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(tem1))
      tem1(:) = x_1d_double_ptr

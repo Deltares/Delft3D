@@ -17,6 +17,7 @@ f90twtest(${test_target}
     F90FILES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
+        src/test_tridag.f90
         src/test_3d_layer_administration.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
@@ -41,6 +42,7 @@ f90twtest(${test_target}
         # test_dflowfm_kernel_example.f90 must remain the first entry.
         # It sets the name of the header file test_dflowfm_kernel_example.f90.h, which is included in test_dflowfm_kernel.cpp.
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_tridag.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90

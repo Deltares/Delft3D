@@ -3314,6 +3314,13 @@ contains
             targetMissing = targetField%MISSINGVALUE
             targetElementSet => targetItem%elementSetPtr
 
+            if (associated(targetElementSet%z)) then
+               if (sourceElementSet%n_layers < 2 .or. .not. associated(sourceElementSet%z)) then
+                  call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires at least two NetCDF source vertical coordinates.')
+                  return
+               end if
+            end if
+
             if (sourceElementSet%ofType == elmSetType_samples) then
                ! call interpolation based on nearest neighbours or triangulation
                n_points = targetElementSet%nCoordinates

@@ -22,6 +22,8 @@ class Delft3DRecipe(ConanFile):
         self.requires("libxml2/2.15.3")
         self.requires("precice/3.4.1")
         self.requires("gtest/1.18.0")
+        self.requires("swan_mpi/41.51.10")
+        self.requires("swan_omp/41.51.10")
         self.requires("inja/3.5.0")
 
     def generate(self):

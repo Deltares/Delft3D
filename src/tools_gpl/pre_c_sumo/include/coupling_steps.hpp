@@ -11,6 +11,7 @@
 #include "connected_sinks_sources.hpp"
 #include "parsing_types.hpp"
 #include "NF2FF_reader.hpp"
+#include "FF2NF_writer.hpp"
 #include "pre_c_sumo_lib.hpp"
 
 namespace pre_c_sumo
@@ -29,16 +30,6 @@ namespace pre_c_sumo
     constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
     constexpr std::string_view densities_id = "sea_water_potential_density";
     constexpr std::string_view flow_velocities_id = "flow_velocity_3d";
-    constexpr std::string_view c01_id = "C01";
-    constexpr std::string_view c02_id = "C02";
-    constexpr std::string_view c03_id = "C03";
-    constexpr std::string_view c04_id = "C04";
-    constexpr std::string_view c05_id = "C05";
-    constexpr std::string_view c06_id = "C06";
-    constexpr std::string_view c07_id = "C07";
-    constexpr std::string_view c08_id = "C08";
-    constexpr std::string_view c09_id = "C09";
-    constexpr std::string_view c10_id = "C10";
 
     /**
      * @brief Mapping information for a diffuser's ambient and intake points.
@@ -105,15 +96,19 @@ namespace pre_c_sumo
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
      *
      * Writes a FF2NF file for each configured diffuser.
-     * If `csumo_settings` holds an error, no files are written.
+     * Stops at the first validation, directory creation or file writing error.
      *
      * @param csumo_settings Parsed C-SUMO settings used to determine which diffuser files to write.
      * @param csumo_2d_mesh 2D mesh containing the ambient and coupling data for the far-field exchange.
      * @param csumo_3d_mesh 3D mesh containing the vertical data used when writing the FF2NF content.
      * @param current_time_seconds Current simulation time in seconds used to resolve time-dependent file names.
+     * @param file_operations Directory creation and file writing operations shared by all diffusers.
+     * @return Empty result on success, or the WriteError from the first failed file.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
-                         double current_time_seconds);
+    [[nodiscard]] std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettingsReader& csumo_settings,
+                                                                  Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                                                                  double current_time_seconds,
+                                                                  const FF2NFFileOperations& file_operations = {});
 
     /**
      * @anchor pre_c_sumo_wait_nf2ff
@@ -198,7 +193,7 @@ namespace pre_c_sumo
      */
     [[nodiscard]] std::expected<pre_c_sumo::ConnectedSinkSources, pre_c_sumo::ConnectedSinkSourcesError>
     convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& csumo_settings,
-                                    const std::vector<NF2FFReader>& nf2ff_readers);
+                                    const std::vector<NF2FFReader>& nf2ff_readers, pre_c_sumo::Mesh& csumo_3d_mesh);
     /**
      * @anchor pre_c_sumo_is_diffuser_modelled
      * @brief Query whether the diffuser is modelled explicitly.
@@ -206,6 +201,17 @@ namespace pre_c_sumo
      * @return true if the diffuser is modelled, false otherwise.
      */
     bool isDiffuserModelled(const NF2FFReader& diffuser);
+
+    /**
+     * @anchor get_intake_constituents
+     * @brief Get the depth averaged intake constituents of the diffuser's intake from a 3D mesh.
+     *
+     * @param mesh_3d A valid 3d mesh.
+     * @param diffuser_index Index of a diffuser with an intake.
+     *
+     * @returns a std::vector of double with averaged intake constituents values as received in supplied mesh.
+     */
+    std::vector<double> getIntakeConstituents(pre_c_sumo::Mesh& mesh_3d, std::size_t diffuser_index);
 
     /**
      * @anchor pre_c_sumo_create_diffuser_model
