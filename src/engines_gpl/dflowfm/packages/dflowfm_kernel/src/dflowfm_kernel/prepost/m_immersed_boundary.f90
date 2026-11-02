@@ -1245,20 +1245,38 @@ contains
             solve_valid = solve_valid .and. ieee_is_finite(solution(1))
          end if
          if (.not. solve_valid) then
+            if (fallback_sample_count >= 3) then
+               call ibm_solve_3x3(fallback_matrix, fallback_rhs, solution, solve_valid)
+               solve_valid = solve_valid .and. ieee_is_finite(solution(1))
+            end if
+         end if
+         if (.not. solve_valid) then
+            if (fallback_sample_count > 0) then
+               if (ieee_is_finite(bed_level(k1))) then
+                  if (comparereal(bed_level(k1), missing_value) /= 0) then
+                     ! Preserve the supplied cut-cell value when neighbours cannot define a plane.
+                     solution(1) = bed_level(k1)
+                     solve_valid = .true.
+                  end if
+               end if
+            end if
+         end if
+         if (.not. solve_valid) then
+            valid = .false.
+            error_index = k1
             if (fallback_sample_count < 3) then
-               valid = .false.
-               error_index = k1
                write (reason, '(A,I0,A,I0,A,ES24.16,A,ES24.16,A)') &
                   'wet-bed fit for cell ', k1, ' found ', fallback_sample_count, &
                   ' uncut wet neighbours within three hops at x=', cell_x(k1), ', y=', cell_y(k1), ''
-               return
+            else
+               reason = 'uncut wet neighbours within three link hops do not span a plane for the bed-level fit'
             end if
-            call ibm_solve_3x3(fallback_matrix, fallback_rhs, solution, solve_valid)
+            return
          end if
-         if (.not. solve_valid .or. .not. ieee_is_finite(solution(1))) then
+         if (.not. ieee_is_finite(solution(1))) then
             valid = .false.
             error_index = k1
-            reason = 'uncut wet neighbours within three link hops do not span a plane for the bed-level fit'
+            reason = 'wet-bed fit produced a non-finite bed level'
             return
          end if
          bed_level(k1) = solution(1)

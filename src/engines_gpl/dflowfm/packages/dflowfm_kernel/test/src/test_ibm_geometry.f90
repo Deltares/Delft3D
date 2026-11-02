@@ -1287,4 +1287,45 @@ contains
    end subroutine test_wet_bed_boundary_fallback
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_wet_bed_sparse_neighbour_fallback, test_wet_bed_sparse_neighbour_fallback,
+   subroutine test_wet_bed_sparse_neighbour_fallback() bind(C)
+      integer, dimension(2, 2) :: link_cells
+      real(kind=dp), dimension(3) :: cell_x, cell_y, bed_level
+      real(kind=dp), dimension(2) :: width_used
+      type(t_ibm_state) :: state
+      logical :: valid
+      integer :: error_index
+      character(len=256) :: reason
+
+      state%grid%dx = 1.0_dp
+      state%grid%dy = 1.0_dp
+      allocate (state%cell_class(3), state%cut(1))
+      state%cell_class = [1, 0, 0]
+      state%ncut = 1
+      state%cut(1)%k = 1
+      state%cut(1)%xc = 0.25_dp
+      state%cut(1)%yc = 0.5_dp
+
+      link_cells(:, 1) = [1, 2]
+      link_cells(:, 2) = [1, 3]
+      cell_x = [0.5_dp, 1.5_dp, -0.5_dp]
+      cell_y = [0.5_dp, 0.5_dp, 0.5_dp]
+      width_used = 1.0_dp
+      bed_level = [7.0_dp, 10.0_dp, 12.0_dp]
+      call ibm_set_wet_bed(link_cells, width_used, cell_x, cell_y, -9999.0_dp, bed_level, state, &
+                           valid, error_index, reason)
+
+      call F90_ASSERT_TRUE(valid, 'Sparse wet-bed neighbourhood was rejected: '//trim(reason))
+      if (valid) then
+         call F90_ASSERT_NEAR(bed_level(1), 7.0_dp, 1.0e-14_dp, 'Sparse wet-bed fallback did not preserve the input value.')
+      end if
+
+      bed_level(1) = -9999.0_dp
+      call ibm_set_wet_bed(link_cells, width_used, cell_x, cell_y, -9999.0_dp, bed_level, state, &
+                           valid, error_index, reason)
+      call F90_ASSERT_TRUE(.not. valid, 'Sparse wet-bed fit accepted a missing input bed level.')
+      call F90_ASSERT_EQ(error_index, 1, 'Sparse wet-bed fit reported the wrong failing cell.')
+   end subroutine test_wet_bed_sparse_neighbour_fallback
+   !$f90tw)
+
 end module test_ibm_geometry
