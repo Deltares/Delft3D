@@ -810,24 +810,19 @@ contains
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
-         !
+         
          ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
-         !
          ! To be in line with rest of FM, this should be
-         !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
-         !
-         !if (scour) then
-         !
+         ! ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
+         
          tauadd = 0.0_dp
-         !
+         
          ! Compute effective depth averaged velocity
-         !
+         
          utot = ustarc * chezy / sag
          ulocal = utot * uuu(nm) / (umod(nm) + eps)
          vlocal = utot * vvv(nm) / (umod(nm) + eps)
-         !
-         ! sa0 and tem0 have no real meaning, sa1 and tem1 before transport are at the old time-level,
-         ! while after transport they are at the new time-level
+         
          if (jasal > 0) then
             salinity = constituents(isalt, kbed) ! r0(nm, kbed, lsal)
          else
