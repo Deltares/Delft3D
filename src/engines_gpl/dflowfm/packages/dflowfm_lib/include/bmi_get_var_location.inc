@@ -236,15 +236,11 @@ select case(var_name)
     location_name = "face"
   case("ucy_mor")
     location_name = "face"
-  case("sa0")
-    location_name = "face"
   case("sa1")
     location_name = "face"
   case("satop")
     location_name = "face"
   case("sabot")
-    location_name = "face"
-  case("tem0")
     location_name = "face"
   case("tem1")
     location_name = "face"

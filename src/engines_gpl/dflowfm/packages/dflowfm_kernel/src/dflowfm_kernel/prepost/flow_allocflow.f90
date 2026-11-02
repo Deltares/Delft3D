@@ -45,7 +45,7 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
-                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, stretch_type, &
+                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, sdkx, dkx, zlaybot, stretch_type, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, STRETCH_USER, laycof, STRETCH_EXPONENT, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
                         sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
@@ -54,17 +54,17 @@ contains
                         temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jasal, jacreep, &
                         baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, &
                         keepzlayeringatbed, kmxd, workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, &
-                        spirucm, ht_xx, spirfx, spirsrc, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, &
-                        dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
+                        spirucm, ht_xx, spirfx, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, &
+                        dsall, dteml, jatidep, jaselfal, tidep, limtypmom, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
-                        sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
+                        sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, map_ndkx_to_ndx, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, dynveg, frcu0
+                        use_density, map_ndkx_to_ndx, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, dynveg, frcu0
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -219,9 +219,7 @@ contains
          kbotc(:) = 1
          kmxc(:) = 1
 
-         mxlays = kmx
-         numvertdis = 3
-         mxlaydefs = numvertdis
+         mxlaydefs = 3
          mx = 0
          laydefnr = 1
 
@@ -795,8 +793,6 @@ contains
             call aerr('spircrv(ndx)', ierr, ndx)
             call realloc(spirint, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('spirint(ndx)', ierr, ndx)
-            call realloc(spirsrc, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('spirsrc(ndx)', ierr, ndx)
             call realloc(spirfx, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('spirfx(ndx)', ierr, ndx)
             call realloc(spirfy, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -833,13 +829,6 @@ contains
          call aerr('ducydx(ndkx)', ierr, ndkx)
          call realloc(ducydy, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('ducydy(ndkx)', ierr, ndkx)
-      end if
-
-      if (limtypsa == 6) then
-         call realloc(dsadx, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('dsadx(ndkx)', ierr, ndkx)
-         call realloc(dsady, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('dsady(ndkx)', ierr, ndkx)
       end if
 
       ! Anti-creep
@@ -1035,12 +1024,6 @@ contains
       if (jasal > 0 .or. kmx > 0) then
          call realloc(sa1, ndkx, stat=ierr, fill=salini, keepexisting=.false.)
          call aerr('sa1(ndkx)', ierr, ndkx)
-         call realloc(sam0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('sam0(ndkx)', ierr, ndkx)
-         call realloc(sam1, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('sam1(ndkx)', ierr, ndkx)
-         call realloc(same, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('same(ndkx)', ierr, ndkx)
       end if
 
       if (ja_computed_airdensity == 1) then
@@ -1057,7 +1040,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1065,7 +1048,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1091,13 +1074,13 @@ contains
          end if
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then
-            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
             end if
          end if
 
-         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then ! save cd coeff if heat modelling also involved
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then ! save cd coeff if heat modelling also involved
             call realloc(cdwcof, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('cdwcof(lnx)', ierr, lnx)
 

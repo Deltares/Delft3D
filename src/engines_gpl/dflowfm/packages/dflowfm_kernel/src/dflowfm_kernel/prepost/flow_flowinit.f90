@@ -124,8 +124,9 @@ contains
                                   free_convection, FREE_CONVECTION_ON, &
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
-                                  air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, &
-                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE
+                                  air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, &
+                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
+                                  pillar_method, PILLAR_NONE
 
       implicit none
 
@@ -209,7 +210,7 @@ contains
          sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
          air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff)
 
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST .and. &
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST .and. &
           .not. any(temperature_model == [TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE])) then
          call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST is only supported with temperature model = 0 or 5.')
          error = DFM_WRONGINPUT
@@ -415,7 +416,7 @@ contains
          call setstruclink()
       end if
 
-      if (japillar > OFF) then
+      if (pillar_method > PILLAR_NONE) then
          call setpillars()
       end if
 

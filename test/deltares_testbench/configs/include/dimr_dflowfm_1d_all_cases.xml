@@ -1570,6 +1570,17 @@
           <parameter name="levels" toleranceAbsolute="0.001"/>
           <parameter name="volume" toleranceAbsolute="0.001"/>
           <parameter name="surface" toleranceAbsolute="0.001"/>
+          <parameter name="storage" toleranceAbsolute="0.001"/>
+          <parameter name="dead_storage" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+      <file name="PerGridpoint_volumetable.nc" type="netCDF">
+        <parameters>
+          <parameter name="increment" toleranceAbsolute="0.001"/>
+          <parameter name="volume" toleranceAbsolute="0.001"/>
+          <parameter name="surface" toleranceAbsolute="0.001"/>
+          <parameter name="storage" toleranceAbsolute="0.001"/>
+          <parameter name="dead_storage" toleranceAbsolute="0.001"/>
         </parameters>
       </file>
     </checks>
