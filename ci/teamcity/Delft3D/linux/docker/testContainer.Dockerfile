@@ -8,7 +8,7 @@ ENV LD_LIBRARY_PATH=
 # Used for (integration) testbench only
 ADD wanda/bin/* /opt/dimrset/bin/
 ADD wanda/lib/* /opt/dimrset/lib/
-ADD test/deltares_testbench/pip/lnx-requirements.txt /tmp/lnx-requirements.txt
+ADD test/deltares_testbench/pyproject.toml test/deltares_testbench/uv.lock /tmp/testbench/
 
 # Install system dependencies and clean up packages afterwards
 RUN set -eo pipefail && \
@@ -24,8 +24,13 @@ RUN set -eo pipefail && \
 RUN set -eo pipefail && \
     curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
     python3 -m pip install --upgrade pip --break-system-packages && \
-    python3 -m pip install --requirement "/tmp/lnx-requirements.txt" --break-system-packages --ignore-installed && \
-    rm --verbose "/tmp/lnx-requirements.txt"
+    # Export the locked testbench dependencies (uv.lock) to a requirements file, install them with pip,
+    # then remove uv again.
+    python3 -m pip install uv==0.13.6 --break-system-packages && \
+    uv export --project /tmp/testbench --frozen --no-hashes --no-emit-project --no-header --no-annotate --format requirements-txt --output-file /tmp/requirements.txt && \
+    python3 -m pip install --requirement "/tmp/requirements.txt" --break-system-packages --ignore-installed && \
+    python3 -m pip uninstall --yes uv --break-system-packages && \
+    rm --recursive --force --verbose /tmp/testbench /tmp/requirements.txt
 
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
 
