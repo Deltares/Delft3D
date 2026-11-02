@@ -28,56 +28,63 @@ contains
    !> Construct bilinear interpolation raster data from either an Arcinfo or a Geotiff file.
    function read_bilinear_data(filename, filetype, status) result(data)
       use timespace_parameters, only: ARCINFO, GEOTIFF
-      use m_read_arcinfo, only: readarcinfoheader, readarcinfoblock
-      use m_missing, only: dmiss
 
       character(len=*), intent(in) :: filename !< Input raster filename.
       integer, intent(in) :: filetype !< Input format: ARCINFO or GEOTIFF.
       integer, intent(out) :: status !< Zero on success, nonzero on unsupported format or read failure.
       type(raster_data) :: data !< Loaded interpolation data; values remain unallocated on failure.
 
-      integer :: file_unit, num_columns, num_rows, close_status
-      real(kind=dp) :: file_missing
-
-      data%missing_value = dmiss
       status = 1
       if (filetype == GEOTIFF) then
          call read_bilinear_geotiff(filename, data%values, data%origin, data%spacing, data%missing_value, status)
       else if (filetype == ARCINFO) then
-         open (newunit=file_unit, file=filename, status='old', action='read', iostat=status)
-         if (status /= 0) then
-            return
-         end if
-
-         call readarcinfoheader(file_unit, num_columns, num_rows, data%origin(1), data%origin(2), &
-                                data%spacing(1), data%spacing(2), file_missing, status)
-         if (status == 0) then
-            if (num_columns <= 0 .or. num_rows <= 0 .or. any(data%spacing == 0.0_dp)) then
-               status = 1
-            else
-               allocate (data%values(num_columns, num_rows), stat=status)
-               if (status == 0) then
-                  call readarcinfoblock(file_unit, data%values, num_columns, num_rows, file_missing, status)
-               end if
-            end if
-         end if
-
-         close (file_unit, iostat=close_status)
-         if (status == 0) then
-            status = close_status
-         end if
-         if (status /= 0 .and. allocated(data%values)) then
-            deallocate (data%values)
-         end if
+         status = read_bilinear_arcinfo(filename, data)
       end if
+
    end function read_bilinear_data
 
-   !> Read bilinear raster values and pixel-centre geometry.
-   !! A raster is a rectangular table of values located on a map. Each table cell is called a pixel.
-   !! A band is one layer of values over that table: a height map can have one band, while a colour
-   !! image can have separate red, green, and blue bands. This reader accepts exactly one numeric layer.
-   !! The file also describes where the table lies and how far apart its cells are in map coordinates.
-   !! We treat each value as a sample at its cell's centre, ready for interpolation between samples.
+   !> Read raster data from an ArcInfo ASCII grid file.
+   function read_bilinear_arcinfo(filename, data) result(read_status)
+      use m_read_arcinfo, only: readarcinfoheader, readarcinfoblock
+      use m_missing, only: dmiss
+
+      integer :: read_status !< Result status: zero on success, nonzero on failure.
+      character(len=*), intent(in) :: filename !< Input raster filename.
+      type(raster_data), intent(out) :: data !< Loaded interpolation data; values remain unallocated on failure.
+
+      integer :: file_unit, close_status
+      integer :: num_columns, num_rows
+      real(kind=dp) :: file_missing
+
+      data%missing_value = dmiss
+      open (newunit=file_unit, file=filename, status='old', action='read', iostat=read_status)
+      if (read_status /= 0) then
+         return
+      end if
+
+      call readarcinfoheader(file_unit, num_columns, num_rows, data%origin(1), data%origin(2), &
+                             data%spacing(1), data%spacing(2), file_missing, read_status)
+      if (read_status == 0) then
+         if (num_columns <= 0 .or. num_rows <= 0 .or. any(data%spacing == 0.0_dp)) then
+            read_status = 1
+         else
+            allocate (data%values(num_columns, num_rows), stat=read_status)
+            if (read_status == 0) then
+               call readarcinfoblock(file_unit, data%values, num_columns, num_rows, file_missing, read_status)
+            end if
+         end if
+      end if
+
+      close (file_unit, iostat=close_status)
+      if (read_status == 0) then
+         read_status = close_status
+      end if
+      if (read_status /= 0 .and. allocated(data%values)) then
+         deallocate (data%values)
+      end if
+   end function read_bilinear_arcinfo
+
+   !> Read bilinear raster values from a GeoTIFF file.
    subroutine read_bilinear_geotiff(filename, values, origin, spacing, missing_value, status)
 #ifdef HAVE_GDAL
       use iso_c_binding, only: c_int, c_float, c_double, c_null_char
@@ -101,6 +108,12 @@ contains
       real(kind=c_double) :: file_missing
       integer(kind=c_int) :: num_columns, num_rows, has_missing, band_type
 #endif
+
+   !! A raster is a rectangular table of values located on a map. Each table cell is called a pixel.
+   !! A band is one layer of values over that table: a height map can have one band, while a colour
+   !! image can have separate red, green, and blue bands. This reader accepts exactly one numeric layer.
+   !! The file also describes where the table lies and how far apart its cells are in map coordinates.
+   !! We treat each value as a sample at its cell's centre, ready for interpolation between samples.
 
       status = 1
       origin = 0.0_dp
