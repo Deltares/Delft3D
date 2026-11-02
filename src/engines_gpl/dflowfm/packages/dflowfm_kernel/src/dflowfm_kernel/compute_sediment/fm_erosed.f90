@@ -1214,7 +1214,7 @@ contains
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
                                  &  siglc(kmaxsd), thicklc(kmaxsd), constituents(ll, kmxsed(nm, l)), &
                                  &  vismol, tsigmol, seddif(l, kmxsed(nm, l) - 1),        &
-                                 &  rhosol(l), caks_ss3d, ws(kmxsed(nm, l), l),         &
+                                 &  rhosol(l), caks_ss3d, ws(max(kmxsed(nm, l) - 1, kb), l), &
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !

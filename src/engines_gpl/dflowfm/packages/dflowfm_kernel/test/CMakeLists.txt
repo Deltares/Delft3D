@@ -19,6 +19,8 @@ f90twtest(${test_target}
         src/test_dflowfm_kernel_example.f90
         src/test_tridag.f90
         src/test_3d_layer_administration.f90
+        src/test_sed_transport.f90
+        src/test_sed_exchange.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
@@ -44,6 +46,8 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_tridag.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sed_transport.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sed_exchange.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90

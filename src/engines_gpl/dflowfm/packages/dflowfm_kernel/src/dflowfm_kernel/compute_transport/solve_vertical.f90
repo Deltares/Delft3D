@@ -55,7 +55,7 @@ contains
       use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
       use m_turbulence, only: difwws, difwws_total
       use m_flowparameters, only: epshu, testdryflood
-      use m_sediment, only: mtd, jased
+      use m_sediment, only: mtd, sedtra, jased
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
@@ -94,6 +94,7 @@ contains
       integer :: j, n
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
+      real(kind=dp) :: settling_velocity
       real(kind=dp), parameter :: dtol = 1.0e-8_dp
       integer(4) :: ithndl = 0
 
@@ -112,7 +113,7 @@ contains
       ! The following PRIVATE arrays have local values per OMP thread, they are kept global to prevent stack overflows.
       !$OMP PARALLEL DO                                                 &
       !$OMP PRIVATE(kk,kb,ktx,kt,lower,diagonal,upper,sol,j,column_rhs,k,n,dvol1i,dvol2i,fluxfac,normalized_upper,dtbazi,dtba, &
-      !$OMP ozmid,bruns,qw_loc,nel) &
+      !$OMP ozmid,bruns,qw_loc,settling_velocity,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -174,6 +175,15 @@ contains
             end if
 
             do j = 1, NUMCONST
+               settling_velocity = wsf(j)
+               if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
+                  ! Exchange at the reference cell already accounts for settling
+                  ! through its lower face. Match the explicit transport cutoff.
+                  settling_velocity = 0.0_dp
+                  if (k >= sedtra%kmxsed(kk, j - ISED1 + 1)) then
+                     settling_velocity = mtd%ws(k, j - ISED1 + 1)
+                  end if
+               end if
                ! diffusion
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
                   fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
@@ -194,11 +204,7 @@ contains
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
-                     if (jased < 4) then
-                        qw_loc = qw(k) - wsf(j) * a1(kk)
-                     else if (j >= ISED1 .and. j <= ISEDN) then
-                        qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
-                     end if
+                     qw_loc = qw(k) - settling_velocity * a1(kk)
                   else
                      qw_loc = qw(k)
                   end if
@@ -212,17 +218,7 @@ contains
                end if
 
                if (jaimplicitfallvelocity == 1) then ! implicit fallvelocity
-                  fluxfac = 0.0_dp
-                  if (jased == 4) then
-                     if (j >= ISED1 .and. j <= ISEDN) then
-                        fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
-                     else
-                        ! tracers
-                        fluxfac = wsf(j) * a1(kk) * dt_loc
-                     end if
-                  else
-                     fluxfac = wsf(j) * a1(kk) * dt_loc
-                  end if
+                  fluxfac = settling_velocity * a1(kk) * dt_loc
                   if (fluxfac > 0.0_dp) then
                      upper(n, j) = upper(n, j) - fluxfac * dvol1i
                      diagonal(n + 1, j) = diagonal(n + 1, j) + fluxfac * dvol2i
