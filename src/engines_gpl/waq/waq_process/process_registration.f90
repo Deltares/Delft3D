@@ -207,8 +207,11 @@ module process_registration
     use m_emepni
     use m_emlgen
     use m_espgss
+    use m_heatf2
     use m_setfat
     use m_sedlnk
+    use m_sedwfl
+    use m_sedvel
     use m_soinit
     use m_soipho
     use m_soiprt
@@ -453,8 +456,11 @@ contains
                             process_routine_info('EMEPNI', EMEPNI), &
                             process_routine_info('EMLGEN', EMLGEN), &
                             process_routine_info('ESPGSS', ESPGSS), &
+                            process_routine_info('HEATF2', HEATF2), &
                             process_routine_info('SETFAT', SETFAT), &
                             process_routine_info('SEDLNK', SEDLNK), &
+                            process_routine_info('SEDWFL', SEDWFL), &
+                            process_routine_info('SEDVEL', SEDVEL), &
                             process_routine_info('SOINIT', SOINIT), &
                             process_routine_info('SOIPHO', SOIPHO), &
                             process_routine_info('SOIPRT', SOIPRT), &

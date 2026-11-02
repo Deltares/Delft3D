@@ -180,3 +180,12 @@ stocfl,stocsu,stocsc
 "dEdTR1    ","dTR1      ",   1.00000
 "dEcTR2    ","cTR2      ",   1.00000
 "dEdTR2    ","dTR2      ",   1.00000
+"dTempHtfl ","NatTemp   ",   1.00000
+"dSedIM1w  ","IM1S1     ",   1.00000
+"dSedIM2w  ","IM2S1     ",   1.00000
+"dSedIM3w  ","IM3S1     ",   1.00000
+"dSedAAPw  ","AAPS1     ",   1.00000
+"dSedPOC1w ","DetCS1    ",   1.00000
+"dSedPON1w ","DetNS1    ",   1.00000
+"dSedPOP1w ","DetPS1    ",   1.00000
+"dSedOpalw ","DetSiS1   ",   1.00000

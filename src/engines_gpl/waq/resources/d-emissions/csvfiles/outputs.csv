@@ -43,3 +43,33 @@ outppr,outpit,outpnm,outpdo,outpsx
 "WFLOW_Hydr","Tau       ",   4,"x",1
 "WFLOW_Hydr","Outflow   ",   5,"x",1
 "SedimLink ","TotErod   ",   1,"x",1
+"HeatBalW  ","RadSN     ",   1,"x",1
+"HeatBalW  ","Psvap     ",   2,"x",1
+"HeatBalW  ","EmissAtm  ",   3,"x",1
+"HeatBalW  ","RadAN     ",   4,"x",1
+"HeatBalW  ","RadBR     ",   5,"x",1
+"HeatBalW  ","RadLat    ",   6,"x",1
+"HeatBalW  ","HtCond    ",   7,"x",1
+"HeatBalW  ","HtTot     ",   8,"x",1
+"HeatBalW  ","PvapWa    ",   9,"x",1
+"HeatBalW  ","VWinda    ",  10,"x",1
+"HeatBalW  ","Vevap     ",  11,"x",1
+"HeatBalW  ","RhoWater  ",  12,"x",1
+"HeatBalW  ","ModTemp   ",  13,"x",1
+"WSed_IM1  ","fSedIM1   ",   1,"x",1
+"WSed_IM1  ","VxSdWIM1  ",   2,"x",0
+"WSed_IM2  ","fSedIM2   ",   1,"x",1
+"WSed_IM2  ","VxSdWIM2  ",   2,"x",0
+"WSed_IM3  ","fSedIM3   ",   1,"x",1
+"WSed_IM3  ","VxSdWIM3  ",   2,"x",0
+"VSed_AAP  ","VSedAAP   ",   1,"x",1
+"WSed_AAP  ","fSedAAP   ",   1,"x",1
+"WSed_AAP  ","VxSdWAAP  ",   2,"x",0
+"WSed_POC1 ","fSedPOC1  ",   1,"x",1
+"WSed_POC1 ","VxSdWPOC1 ",   2,"x",0
+"WSed_PON1 ","fSedPON1  ",   1,"x",1
+"WSed_PON1 ","VxSdWPON1 ",   2,"x",0
+"WSed_POP1 ","fSedPOP1  ",   1,"x",1
+"WSed_POP1 ","VxSdWPOP1 ",   2,"x",0
+"WSed_Opal ","fSedOpal  ",   1,"x",1
+"WSed_Opal ","VxSdWOpal ",   2,"x",0
