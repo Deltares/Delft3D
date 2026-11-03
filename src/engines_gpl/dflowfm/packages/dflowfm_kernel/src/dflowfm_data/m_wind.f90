@@ -172,6 +172,7 @@ contains
    !! Upon loading of new model/MDU, call default_wind() instead.
    subroutine reset_wind()
       air_pressure_available = .false. !< use air_pressure yes or no
+      sea_surface_temperature_available = .false.
       jaspacevarcharn = 0 !< use space varying Charnock coefficients
       jawindstressgiven = 0 !< wind stress given in meteo file
       ja_airdensity = 0
