@@ -66,7 +66,6 @@ namespace
         double nozzle_elevation{};
         double vertical_angle{};
         double horizontal_angle{};
-        std::optional<std::string> nf2ff_file;
     };
 
     struct CommSection
@@ -162,7 +161,6 @@ namespace
             .nozzle_elevation = nozzle_elevation,
             .vertical_angle = vertical_angle,
             .horizontal_angle = horizontal_angle,
-            .nf2ff_file = parsing_utils::optionalChildText(data_node, "NF2FFFile"),
         };
     }
 
@@ -201,7 +199,6 @@ namespace
             .nozzle_elevation = data.nozzle_elevation,
             .vertical_angle = data.vertical_angle,
             .horizontal_angle = data.horizontal_angle,
-            .nf2ff_file = std::move(data.nf2ff_file),
             .ff2nf_dir = std::move(comm.ff2nf_dir),
             .ff_run_dir = std::move(comm.ff_run_dir),
             .settings_xml_node = settings_node,

@@ -161,7 +161,5 @@ Wrirst_bnd                  = 1                   # Write waterlevel, bedlevel a
 [processes]
 SubstanceFile               =                                                                                                                                                                                                                                                                #
 AdditionalHistoryOutputFile =                                                                                                                                                                                                                                                                #
-ThetaVertical               = 0.                  # theta vertical for waq
 DtProcesses                 = 0.                  # waq processes time step
 DtMassBalance               = 0.                  # waq mass balance output time step
-ProcessFluxIntegration      = 1                   # Process fluxes integration option (1: WAQ, 2: D-Flow FM)
