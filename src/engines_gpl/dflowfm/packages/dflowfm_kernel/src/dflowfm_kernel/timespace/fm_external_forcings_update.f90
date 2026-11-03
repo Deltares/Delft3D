@@ -91,6 +91,7 @@ module fm_external_forcings_update
 
    public :: set_external_forcings
    public :: compute_air_water_interaction_most_fluxes
+   public :: update_sea_surface_temperature
    public :: prepare_air_pressure_temperature_dew_point_temperature
    public :: prepare_wind
    public :: calculate_wind_stresses
@@ -179,10 +180,7 @@ contains
          call initialize_salinity_and_temperature_with_nudge_variables()
       end if
 
-      if (item_sea_surface_temperature /= ec_undef_int) then
-         call get_timespace_value_by_item_and_consider_success_value( &
-            item_sea_surface_temperature, time_in_seconds)
-      end if
+      call update_sea_surface_temperature(time_in_seconds)
 
       if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call compute_air_water_interaction_most_fluxes(initialization)
@@ -526,6 +524,20 @@ contains
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
    end subroutine get_timespace_value_by_item_and_consider_success_value
+
+   !> Update the sea-surface-temperature forcing at the requested time.
+   subroutine update_sea_surface_temperature(time_in_seconds)
+      use precision, only: dp
+
+      ! Arguments
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+
+      if (item_sea_surface_temperature /= ec_undef_int) then
+         call get_timespace_value_by_item_and_consider_success_value( &
+            item_sea_surface_temperature, time_in_seconds)
+      end if
+
+   end subroutine update_sea_surface_temperature
 
    !> get_timespace_value_by_item_array_consider_success_value
    subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)
