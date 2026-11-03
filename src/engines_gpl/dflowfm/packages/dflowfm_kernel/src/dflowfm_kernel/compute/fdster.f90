@@ -41,11 +41,10 @@ contains
       implicit none
       real(kind=dp) :: dster, taucr, thetcr, pclay, g, d50, rhos, rhow, FCR
       real(kind=dp) :: dsand, dsilt, cmaxs, fch1, cmax, fpack, fclay
-      if (DSTER <= 1.) then
-         THETCR = .24 ! this line added by hk and svdp: critical shields parameter
-      end if
-      if (DSTER <= 4.) then
-         THETCR = 0.115 / (DSTER)**0.5
+      if (DSTER <= 1.0_dp) then
+         THETCR = 0.24_dp ! this line added by hk and svdp: critical shields parameter
+      else if (DSTER <= 4.0_dp) then
+         THETCR = 0.115_dp / (DSTER)**0.5_dp
       end if
       if (4. < DSTER .and. DSTER <= 10.) then
          THETCR = .14 * DSTER**(-.64)

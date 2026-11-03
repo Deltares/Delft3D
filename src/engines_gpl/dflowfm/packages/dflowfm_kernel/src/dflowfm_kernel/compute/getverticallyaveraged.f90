@@ -44,16 +44,18 @@ contains
       implicit none
       integer :: n, k, kb, kt, mx
       real(kind=dp) :: sal(mx)
+      real(kind=dp) :: average
 
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
-         sal(n) = 0.0_dp
+         average = 0.0_dp
          if (vol1(n) > 0) then
             do k = kb, kt
-               sal(n) = sal(n) + sal(k) * vol1(k)
+               average = average + sal(k) * vol1(k)
             end do
-            sal(n) = sal(n) / vol1(n)
+            average = average / vol1(n)
          end if
+         sal(n) = average
       end do
    end subroutine getverticallyaveraged
 
