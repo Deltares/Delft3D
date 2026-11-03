@@ -65,7 +65,6 @@ namespace pre_c_sumo
         double nozzle_elevation{};                    ///< Height above the bed [m] (&lt;H0&gt;).
         double vertical_angle{};                      ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;).
         double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;).
-        std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional).
 
         // --- comm section ---
         std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;).

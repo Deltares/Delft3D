@@ -418,7 +418,8 @@ contains
       jakdtree = 0
       dummy_flowcell_index(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), &
+                     dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
          source_flowcell_index = dummy_flowcell_index(1)
       end if
 
@@ -437,7 +438,8 @@ contains
          temporary_name = name//' sink'
          dummy_flowcell_index(1) = 0
          if (self%x(self%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL)
+            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), &
+                        dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
             sink_flowcell_index = dummy_flowcell_index(1)
          end if
 

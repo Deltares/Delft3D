@@ -404,7 +404,7 @@ contains
          OPTION(36) = 'cflmx*vol1(k)/squ(k)               (   )'
 
          if (soiltempthick == 0.0_dp) then
-            OPTION(37) = 'salmase                            (   )'
+            OPTION(37) = '                                        '
          else
             OPTION(37) = 'soiltemp                           ( C )'
          end if

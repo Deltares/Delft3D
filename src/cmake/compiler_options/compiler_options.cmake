@@ -1,11 +1,9 @@
-# Set Intel compiler specific flags:
-enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
 if (WIN32)
-    # Set global Fortran compiler flags that apply for each Fortran project
+    # Set global compiler flags that apply for each project
     # Disable diagnostic indicating that ifort is deprecated (10448)
-    message(STATUS "Setting global Intel Fortran compiler flags in Windows")
+    message(STATUS "Setting global compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion")
     # Set global linker flags for Fortran
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:${DFLOWFM_STACK_SIZE_BYTES}")
@@ -68,7 +66,7 @@ endif(WIN32)
 
 if (UNIX)
     # Set optional flags:
-    message(STATUS "Setting Fortran compiler flags in Unix")
+    message(STATUS "Setting global compiler flags in Unix")
     # On Linux preprocessing is on by default, but the flag is inserted for
     # at least one C file as well (netCDF). Use a neutral flag to avoid problems
     # Disable diagnostic indicating that ifort is deprecated (10448)

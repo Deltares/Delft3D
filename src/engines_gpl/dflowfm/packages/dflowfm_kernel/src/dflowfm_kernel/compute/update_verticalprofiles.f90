@@ -290,12 +290,8 @@ contains
                turbulent_kinetic_energy_at_bottom = ustb(LL)**2 / sqrt(CMUKEP) ! this has stokes incorporated when jawave>0
                turbulent_kinetic_energy_at_top = ustw(LL)**2 / sqrt(CMUKEP) ! only wind+ship contribution
 
-               if (ieps == 3) then ! as Delft3D
-                  vicwwu(Lb0) = VON_KARMAN * ustb(LL) * z00
-               end if
-
-               turbulent_kinetic_energy_wu_old(Lb0:Lt) = turbulent_kinetic_energy_wu(Lb0:Lt)
-               turbulent_dissipation_wu_old(Lb0:Lt) = turbulent_dissipation_wu(Lb0:Lt)
+               turkin0(Lb0:Lt) = turkin1(Lb0:Lt)
+               tureps0(Lb0:Lt) = tureps1(Lb0:Lt)
 
                ak(0:kxL) = 0.0_dp ! Matrix initialisation TKE
                bk(0:kxL) = dt_inverse

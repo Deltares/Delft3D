@@ -393,7 +393,7 @@ contains
                end do
             end if
 
-            ! Frome here: everything as snapped!!!
+            ! From here, everything as snapped observation points (as before). This is because the quantities are not needed for offline nesting and therefore not interpolated.
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
                valobs(i, IPNT_wy) = 0.0_dp
@@ -417,7 +417,7 @@ contains
                   end if
                end do
 
-               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_wstar) = dmiss
                   valobs(i, IPNT_obukhov_length) = dmiss
                   valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
@@ -732,7 +732,7 @@ contains
 
 !        Heatflux
             if (his_write_settings%heatflux > 0) then
-               if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
