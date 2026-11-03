@@ -1532,7 +1532,7 @@ contains
       if (success) then
          call convert_rain_temperature_string_to_integer(tmpstr, ibuf)
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''air'' or ''wet_bulb''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''airTemperature'' or ''wetBulbTemperature''.')
          else
             rain_temperature_method = ibuf
          end if
