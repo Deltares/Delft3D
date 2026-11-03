@@ -3444,7 +3444,8 @@ contains
       use m_wind, only: wx, wy, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
                         air_pressure, pseudo_air_pressure, water_level_correction, rain, qext, air_temperature, &
                         dew_point_temperature, relative_humidity, cloudiness, air_density, solar_radiation, &
-                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+                        net_solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux, &
+                        sea_surface_temperature, sea_surface_temperature_available
 
       if (allocated(wx)) deallocate (wx)
       if (allocated(wy)) deallocate (wy)
@@ -3474,6 +3475,8 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       call teardown_minimal_grid()
+      if (allocated(sea_surface_temperature)) deallocate (sea_surface_temperature)
+      sea_surface_temperature_available = .false.
       lnx = 0
       ndxi = 0
    end subroutine release_scalar_meteo_arrays

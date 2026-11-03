@@ -51,12 +51,12 @@ module m_get_surface_temperature
       real(kind=dp), dimension(:), pointer :: temperature_ptr
       integer :: n, kb, kt
       
+      if (sea_surface_temperature_available) then
+         surface_temperature = sea_surface_temperature
+         return
+      end if
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         if (sea_surface_temperature_available) then
-            surface_temperature = sea_surface_temperature
-         else
-            call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu')
-         end if
+         call mess(LEVEL_ERROR, 'get_surface_temperature: Temperature is turned off in mdu and no SST is provided in ext.')
          return
       end if
 

@@ -52,7 +52,7 @@ module fm_external_forcings_update
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       item_dambreak_crestlevel, item_dambreak_breachwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
-                      AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
+                      AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock, item_sea_surface_temperature
    use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
@@ -177,6 +177,11 @@ contains
       end if
       if (initialization) then
          call initialize_salinity_and_temperature_with_nudge_variables()
+      end if
+
+      if (item_sea_surface_temperature /= ec_undef_int) then
+         call get_timespace_value_by_item_and_consider_success_value( &
+            item_sea_surface_temperature, time_in_seconds)
       end if
 
       if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
