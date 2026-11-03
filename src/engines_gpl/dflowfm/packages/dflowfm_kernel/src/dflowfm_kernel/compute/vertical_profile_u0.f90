@@ -104,9 +104,9 @@ contains
 
          vstress = (vicwwu(L) + vicoww%get(LL)) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
-         ! vstress  = (vicwwu(L) + vicoww + viskin ) / dzLw                    ! 08-12-14 : add kinematic viscosity
+         ! vstress  = (vicwwu(L) + vicoww + VISKIN ) / dzLw                    ! 08-12-14 : add kinematic viscosity
 
-         ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
+         ! vstress  = ( max(vicwwu(L), vicoww) + VISKIN ) / dzLw                 ! 23-12-14 : D3D like
          
          adv = 0.0_dp
          adv1 = 0.0_dp

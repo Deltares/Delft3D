@@ -259,7 +259,7 @@ contains
       use MessageHandling
       use m_flow, only: hu
       use m_flowgeom, only: nd
-      use m_physcoef, only: vonkar
+      use m_physcoef, only: VON_KARMAN
       use physicalconsts, only: celsius_to_kelvin, kelvin_to_celsius
       use m_heatfluxes, only: SPECIFIC_HEAT_WATER
       use m_wind, only: air_temperature
@@ -395,7 +395,7 @@ contains
          !
          ! Calculate heat transfer coefficient c_tz
          !
-         c_tz = ustar / (b_t + p_rt * log(hdz / z00) / vonkar)
+         c_tz = ustar / (b_t + p_rt * log(hdz / z00) / VON_KARMAN)
          !
          ! Calculate heat flux out of the ocean
          !

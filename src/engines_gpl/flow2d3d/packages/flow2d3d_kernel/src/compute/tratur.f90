@@ -250,7 +250,7 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     real(fp):: tauifl
     real(fp):: tflow
     real(fp):: timest
-    real(fp):: tkebot
+    real(fp):: turbulent_kinetic_energy_at_bottom
     real(fp):: tkepl
     real(fp):: tkewav
     real(fp):: tkewin
@@ -1048,11 +1048,11 @@ subroutine tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                      & + kfv(nm )*cfvrou(nm ,1) ) / ken
                 z00  = ( kfu(nmd)*z0urou(nmd) + kfu(nm)*z0urou(nm) + kfv(ndm)*z0vrou(ndm)     &
                      & + kfv(nm )*z0vrou(nm ) ) / ken
-                tkebot = utot * utot / (s*s*sqrt(cmukep))
+                turbulent_kinetic_energy_at_bottom = utot * utot / (s*s*sqrt(cmukep))
                 aak(nm, kmax) = 0.0
                 bbk(nm, kmax) = 1.0
                 cck(nm, kmax) = 0.0
-                ddk(nm, kmax) = cewall * (tkebot**1.5) / z00
+                ddk(nm, kmax) = cewall * (turbulent_kinetic_energy_at_bottom**1.5) / z00
              endif
           enddo
        endif

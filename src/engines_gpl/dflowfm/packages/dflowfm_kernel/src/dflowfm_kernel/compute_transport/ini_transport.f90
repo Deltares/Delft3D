@@ -143,7 +143,7 @@ contains
          if (javasal == 6) then
             thetavert(isalt) = 0.0_dp ! Ho explicit
          else
-            thetavert(isalt) = tetav ! Central implicit
+            thetavert(isalt) = THETA_TRANSPORT ! Central implicit
          end if
          const_names(isalt) = 'salt'
       end if
@@ -152,7 +152,7 @@ contains
          if (javatem == 6) then
             thetavert(itemp) = 0.0_dp ! Ho explicit
          else
-            thetavert(itemp) = tetav ! Central implicit  0.55d0
+            thetavert(itemp) = THETA_TRANSPORT ! Central implicit  0.55d0
          end if
          const_names(itemp) = 'temperature'
       end if
@@ -161,7 +161,7 @@ contains
          if (javased == 6) then
             thetavert(ised1:isedn) = 0.0_dp
          else
-            thetavert(ised1:isedn) = tetav
+            thetavert(ised1:isedn) = THETA_TRANSPORT
          end if
          if (.not. stm_included) then ! Andere naamgeving in flow_sedmorinit, fracties van sed file
             do i = ised1, isedn
