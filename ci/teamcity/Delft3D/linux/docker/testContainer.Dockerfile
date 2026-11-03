@@ -13,9 +13,8 @@ ADD test/deltares_testbench/pyproject.toml test/deltares_testbench/uv.lock /tmp/
 # Install system dependencies and clean up packages afterwards
 RUN set -eo pipefail && \
     dnf update --assumeyes && \
-    # Install Python (try 3.12 first, then 3.11, then fallback to default python3)
+    # Install Python (try 3.12 first, then fallback to default python3)
     (dnf install --assumeyes python3.12 expect && ln -sf /usr/bin/python3.12 /usr/bin/python3) || \
-    (dnf install --assumeyes python3.11 expect && ln -sf /usr/bin/python3.11 /usr/bin/python3) || \
     dnf install --assumeyes python3 expect && \
     dnf clean all && \
     rm --recursive --force /var/cache/dnf

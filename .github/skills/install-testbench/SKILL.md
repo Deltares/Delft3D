@@ -41,7 +41,7 @@ If `uv` is available, run the following with `/test/deltares_testbench` as the w
 uv sync --locked --no-install-project --extra dev
 ```
 `--locked` makes the command fail instead of silently changing `uv.lock` when it is out of date with `pyproject.toml`.
-Leave out `--extra dev` if the development tools (pytest, ruff, mypy) are not needed. Python 3.11 and 3.12 on Windows
+Leave out `--extra dev` if the development tools (pytest, ruff, mypy) are not needed. Python 3.12 and newer on Windows
 and Linux (x86-64) are supported.
 
 If `uv` is not available, activate the virtual environment and use `pip`. Note that this does *not* use the pinned
