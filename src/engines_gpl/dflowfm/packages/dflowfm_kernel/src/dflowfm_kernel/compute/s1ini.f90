@@ -396,15 +396,10 @@ contains
       real(kind=dp), intent(in) :: relative_humidity !< [%] Relative humidity.
       real(kind=dp) :: wet_bulb_temperature !< [degC] Wet-bulb temperature.
 
-      ! Local variables
-      real(kind=dp) :: relative_humidity_fraction !< [-] Relative humidity as a fraction (0-1).
-
-      relative_humidity_fraction = relative_humidity / 100.0_dp
-
-      wet_bulb_temperature = air_temperature * atan(0.151977_dp * sqrt(relative_humidity_fraction *+ 8.313659)) &
-                             + atan(air_temperature + relative_humidity_fraction) &
-                             - atan(relative_humidity_fraction - 1.676331_dp) &
-                             + 0.00391838_dp * relative_humidity_fraction**1.5 * atan(0.023101_dp * relative_humidity_fraction) &
+      wet_bulb_temperature = air_temperature * atan(0.151977_dp * sqrt(relative_humidity *+ 8.313659)) &
+                             + atan(air_temperature + relative_humidity) &
+                             - atan(relative_humidity - 1.676331_dp) &
+                             + 0.00391838_dp * relative_humidity**1.5 * atan(0.023101_dp * relative_humidity) &
                              - 4.686035_dp
 
    end function compute_wet_bulb_temperature
