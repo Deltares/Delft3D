@@ -138,10 +138,15 @@ object WindowsTest : BuildType({
                 rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
                 rem to avoid os error 32 file-lock failures on the mount during install.
                 rem Wheels come from the mounted uv cache volume.
-                set UV_PROJECT_ENVIRONMENT=C:\venv
-                uv sync --locked --no-install-project
+                uv venv C:\venv
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
                 call C:\venv\Scripts\activate.bat
+                rem TeamCity sets UV_INDEX_URL (Nexus). That differs from the index recorded in uv.lock, so
+                rem uv sync --locked always fails. Install the exact versions pinned in uv.lock instead.
+                uv export --frozen --no-emit-project --no-hashes --no-header --no-annotate --output-file C:\venv\requirements.txt
+                if %%ERRORLEVEL%% NEQ 0 exit /b 1
+                uv pip sync C:\venv\requirements.txt
+                if %%ERRORLEVEL%% NEQ 0 exit /b 1
 
                 rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
                 rem been dealing with during the module import phase of "Python TestBench.py"

@@ -69,8 +69,13 @@ object TestBenchValidation : BuildType({
             workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
-                uv sync --locked --no-install-project --extra dev
+                set -exo pipefail
+                uv venv
                 source .venv/bin/activate
+                # TeamCity sets UV_INDEX_URL (Nexus). That differs from the index recorded in uv.lock, so
+                # `uv sync --locked` always fails. Install the exact versions pinned in uv.lock instead.
+                uv export --frozen --no-emit-project --no-hashes --no-header --no-annotate --extra dev --output-file .venv/requirements.txt
+                uv pip sync .venv/requirements.txt
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
