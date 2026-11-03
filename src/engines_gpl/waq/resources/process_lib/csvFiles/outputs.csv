@@ -789,8 +789,6 @@ outppr,outpit,outpnm,outpdo,outpsx
 "SedOXYDem ","dOxSOD    ",   8," ",1
 "SedOXYDem ","dOxMinSed ",   9," ",1
 "SedOXYDem ","dSOD      ",  10," ",1
-"DL_DiatS1 ","LimDLdiaS1",   1,"x",1
-"Rad_DiatS1","LimRadDiS1",   1,"x",1
 "GroMrt_Gre","TFGroGreen",   1,"x",1
 "GroMrt_Gre","TFMrtGreen",   2,"x",1
 "GroMrt_Gre","LimDLGreen",   3,"x",1
@@ -817,12 +815,6 @@ outppr,outpit,outpnm,outpdo,outpsx
 "GroMrt_Dia","RcRespDiat",  11,"x",1
 "GroMrt_Dia","fPPDiat   ",  12,"x",1
 "GroMrt_Dia","fMrtDiat  ",  13,"x",1
-"GroMrt_DS1","RcGroDiaS1",   1,"x",1
-"GroMrt_DS1","RcMrtDiaS1",   2,"x",1
-"GroMrt_DS1","RcRespDiS1",   3,"x",1
-"GroMrt_DS1","fMrtDiatS1",   4,"x",1
-"GroMrt_DS1","EffNutDiS1",   5,"x",1
-"GroMrt_DS1","EffLigDiS1",   6,"x",1
 "NutRel_Alg","fcPPGreen ",   1,"x",1
 "NutRel_Alg","fcPPDiat  ",   2,"x",1
 "NutRel_Alg","FracUptNH4",   3,"x",1

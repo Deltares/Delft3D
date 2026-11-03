@@ -96,7 +96,6 @@ module process_registration
     use m_npps12
     use m_staqtl
     use m_somsed
-    use m_nralgs
     use m_mac3du
     use m_ptewor
     use m_veg3dx
@@ -153,8 +152,8 @@ module process_registration
     use m_vbupt
     use m_ironox
     use m_sulfid
-	use m_dynamo
-	use m_dynpro
+        use m_dynamo
+        use m_dynpro
     use m_trase2
     use m_macrop
     use m_trcoef
@@ -308,10 +307,9 @@ contains
                             process_routine_info('SEDOX', SEDOX), &
                             process_routine_info('NLALG', NLALG), &
                             process_routine_info('RDBALG', RDBALG), &
-							process_routine_info('DYNAMO', DYNAMO), &
+                                                        process_routine_info('DYNAMO', DYNAMO), &
                             process_routine_info('SDPPRO', SDPPRO), &
-							process_routine_info('DYNPRO', DYNPRO), &
-                            process_routine_info('NRALGS', NRALGS), &
+                                                        process_routine_info('DYNPRO', DYNPRO), &
                             process_routine_info('OXYMIN', OXYMIN), &
                             process_routine_info('CSELAC', CSELAC), &
                             process_routine_info('EBUCH4', EBUCH4), &
