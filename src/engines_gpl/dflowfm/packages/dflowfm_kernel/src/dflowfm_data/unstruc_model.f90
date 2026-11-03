@@ -3578,7 +3578,7 @@ contains
       end if
 
       call convert_rain_temperature_integer_to_string(rain_temperature_method, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''air'', ''wet_bulb'').')
+      call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''airTemperature'', ''wetBulbTemperature'').')
 
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
       call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')

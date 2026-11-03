@@ -1189,9 +1189,9 @@ contains
       integer, intent(out) :: method_integer !< Integer representation of the rain temperature method.
 
       select case (trim(str_tolower(method_string)))
-      case ('air')
+      case ('airtemperature')
          method_integer = RAIN_TEMPERATURE_AIR
-      case ('wet_bulb')
+      case ('wetbulbtemperature')
          method_integer = RAIN_TEMPERATURE_WET_BULB
       case default
          method_integer = -1
@@ -1207,9 +1207,9 @@ contains
 
       select case (method_integer)
       case (RAIN_TEMPERATURE_AIR)
-         method_string = 'air'
+         method_string = 'airtemperature'
       case (RAIN_TEMPERATURE_WET_BULB)
-         method_string = 'wet_bulb'
+         method_string = 'wetbulbtemperature'
       case default
          method_string = ''
       end select
