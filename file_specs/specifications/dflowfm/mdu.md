@@ -915,6 +915,7 @@ This section contains settings for the atmospheric stability module.
 | `freeConvection` | Free convection setting in the atmospheric stability module. | `off` | <ul><li>**`off`**: Free convection is off.</li><li>**`on`**: Free convection is on.</li></ul> |  |  |
 | `salinityDependentEvaporationMethod` | Salinity dependent evaporation method setting in the atmospheric stability module. | `none` | <ul><li>**`none`**: No salinity dependent evaporation method.</li><li>**`constant`**: Constant salinity dependent evaporation method.</li><li>**`linear`**: Salinity dependent evaporation is a linear function of local salinity.</li></ul> |  |  |
 | `QsatFactor` | Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'constant'. | `1.0` | `[0.0, 1.0]` |  |  |
+| `rainTemperature` | Temperature to use in rain temperature calculations. | `airTemperature` | <ul><li>**`airTemperature`**: Use air temperature as rain temperature.</li><li>**`wetBulbTemperature`**: Use wet-bulb temperature as rain temperature.</li></ul> |  |  |
 | `windForcingHeight` | Sensor height of prescribed wind velocity. | `10.0` |  | [m] |  |
 | `airTemperatureForcingHeight` | Sensor height of prescribed air temperature. | `2.0` |  | [m] |  |
 | `humidityForcingHeight` | Sensor height of prescribed humidity. | `2.0` |  | [m] |  |

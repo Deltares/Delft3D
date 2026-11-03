@@ -6465,6 +6465,16 @@
                     }
                 },
                 {
+                    "key": "rainTemperature",
+                    "default_value": "airTemperature",
+                    "value_type": "enum",
+                    "description": "Temperature to use in rain temperature calculations.",
+                    "enum_values": {
+                        "airTemperature": "Use air temperature as rain temperature.",
+                        "wetBulbTemperature": "Use wet-bulb temperature as rain temperature."
+                    }
+                },
+                {
                     "key": "windForcingHeight",
                     "default_value": 10.0,
                     "value_type": "float",
