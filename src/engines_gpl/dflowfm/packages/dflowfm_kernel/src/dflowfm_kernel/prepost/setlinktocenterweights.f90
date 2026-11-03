@@ -47,12 +47,16 @@ contains
       use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use network_data, only: LINK_1D2D_INTERNAL
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
       real(kind=dp) :: aa1, wcw, alf
+      logical :: use_pipe_advection
+
+      use_pipe_advection = kmx == 0 .and. iadvec == 33 .and. iadvec1D == 33 &
+                           .and. jaPure1D == 0 .and. Perot_type /= NOT_DEFINED
 
       wcx1 = 0
       wcy1 = 0
@@ -73,10 +77,19 @@ contains
          wud = wu(L) * dx(L) !flow surface area at link
 
          wuL1 = acl(L) * wud ! 2d center factor
+         wuL2 = (1.0_dp - acl(L)) * wud
+         if (use_pipe_advection .and. kcu(L) == LINK_1D2D_STREETINLET) then
+            ! Exclude pipe velocity from 2D cell velocity reconstruction; retain its weight at 1D nodes.
+            if (k1 <= ndx2d) then
+               wuL1 = 0.0_dp
+            end if
+            if (k2 <= ndx2d) then
+               wuL2 = 0.0_dp
+            end if
+         end if
          wcL(1, L) = wuL1
          wc(k1) = wc(k1) + wuL1
 
-         wuL2 = (1.0_dp - acl(L)) * wud
          wcL(2, L) = wuL2
          wc(k2) = wc(k2) + wuL2
 
@@ -106,6 +119,10 @@ contains
          call realloc(wwL, lnxmax, keepExisting=.false.)
          do kk = 1, size(nd(k1)%ln)
             LL = abs(nd(k1)%ln(kk))
+            wwL(kk) = 0.0_dp
+            if (use_pipe_advection .and. k1 <= ndx2d .and. kcu(LL) == LINK_1D2D_STREETINLET) then
+               cycle
+            end if
             n12 = 1
             alf = acL(LL)
             if (k1 /= ln(1, LL)) then
@@ -123,6 +140,9 @@ contains
             wc(k1) = wc(k1) + aa1
             do kk = 1, size(nd(k1)%ln)
                LL = abs(nd(k1)%ln(kk))
+               if (use_pipe_advection .and. k1 <= ndx2d .and. kcu(LL) == LINK_1D2D_STREETINLET) then
+                  cycle
+               end if
                n12 = 1
                alf = acL(LL)
                if (k1 /= ln(1, LL)) then

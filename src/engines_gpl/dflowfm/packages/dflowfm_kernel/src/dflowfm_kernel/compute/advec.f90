@@ -75,7 +75,9 @@ contains
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
-      use network_data, only: LINK_1D, LINK_1D2D_INTERNAL
+      use network_data, only: LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET
+      use m_flowtimes, only: dts
+      use m_flowparameters, only: itstep, cflmx, iadvec, iadvec1D, Perot_type, NOT_DEFINED
 
       ! locals
       integer :: L, k1, k2 ! link, nd1, nd2
@@ -111,8 +113,13 @@ contains
       real(kind=dp) :: qv
       real(kind=dp) :: u_ene
       real(kind=dp) :: u_mom
+      real(kind=dp) :: dta, u1L, uadv
+      real(kind=dp), dimension(2) :: ucxL, ucyL
+      logical :: use_pipe_advection
 
       japiaczek33 = 0
+      use_pipe_advection = kmx == 0 .and. iadvec == 33 .and. iadvec1D == 33 &
+                           .and. jaPure1D == 0 .and. Perot_type /= NOT_DEFINED
 
       if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
          do L = 1, lnxi
@@ -205,6 +212,62 @@ contains
             end do
 
          end if
+
+         dta = dts
+         if (itstep == 3) then
+            dta = 0.7_dp * dts / cflmx ! Same advection timestep as advecdriver.
+         end if
+         do L = 1, lnx1d
+            if (.not. use_pipe_advection .or. kcu(L) /= LINK_1D2D_STREETINLET) then
+               cycle
+            end if
+            if (iadv(L) /= IADV_ORIGINAL_LATERAL_OVERFLOW .or. hu(L) <= 0.0_dp .or. au(L) <= 0.0_dp) then
+               cycle
+            end if
+            volu = au(L) * dx(L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            qL = qa(L)
+            n12 = 1
+            if (qL < 0.0_dp) then
+               n12 = 2
+            end if
+            ku = ln(n12, L)
+            ! At inflow, transport the upwind cell velocity vector. Its projection onto
+            ! the pipe direction, ucin, supplies the pipe's axial momentum.
+            ucxL(n12) = nod2linx(L, n12, ucx(ku), ucy(ku))
+            ucyL(n12) = nod2liny(L, n12, ucx(ku), ucy(ku))
+            ucin = ucxL(n12) * csu(L) + ucyL(n12) * snu(L)
+            u1L = u1(L)
+            if (itstep == 3) then
+               u1L = (1.0_dp - dta / dts) * u1(L) + (dta / dts) * u0(L)
+            end if
+            ! With discharge and inflow velocity fixed, backward Euler gives
+            ! volu*(uadv-u1L)/dta = abs(qL)*(ucin-uadv).
+            ! Thus uadv is the pipe velocity after advection only; pressure/friction follow.
+            ! adve is subtracted in the momentum update: its increment is (u1L-uadv)/dta.
+            ai = abs(qL) / (volu + dta * abs(qL))
+            uadv = (volu * u1L + dta * abs(qL) * ucin) / (volu + dta * abs(qL))
+            adve(L) = adve(L) + ai * (u1L - ucin)
+            ! At outflow, transport this same pipe velocity along the pipe direction.
+            ! The inlet vector remains the upwind cell velocity; reversal swaps the ends.
+            ucxL(3 - n12) = uadv * csu(L)
+            ucyL(3 - n12) = uadv * snu(L)
+            rhoinsrc = 1.0_dp
+            if (jarhoxu > 0) then
+               rhoinsrc = rho(ku)
+            end if
+            ! The common upwind vector was already accumulated at both nodes above.
+            ! Subtract it here so only the change to the inlet/outlet vectors is added.
+            ucxL = rhoinsrc * ucxL - ucxu(L)
+            ucyL = rhoinsrc * ucyL - ucyu(L)
+            ! Rotate each correction back to its node frame and accumulate outgoing-minus-
+            ! incoming momentum flux. Signed qL handles reversal; mass flux sqa is unchanged.
+            uqcx(k1) = uqcx(k1) + qL * lin2nodx(L, 1, ucxL(1), ucyL(1))
+            uqcy(k1) = uqcy(k1) + qL * lin2nody(L, 1, ucxL(1), ucyL(1))
+            uqcx(k2) = uqcx(k2) - qL * lin2nodx(L, 2, ucxL(2), ucyL(2))
+            uqcy(k2) = uqcy(k2) - qL * lin2nody(L, 2, ucxL(2), ucyL(2))
+         end do
 
       else
 
@@ -379,6 +442,9 @@ contains
 
             if (hu(L) > 0) then
 
+               if (use_pipe_advection .and. kcu(L) == LINK_1D2D_STREETINLET .and. iadv(L) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
+                  cycle ! The paired pipe/node exchange has already been assembled.
+               end if
                k1 = ln(1, L)
                k2 = ln(2, L)
                iadvL = iadv(L)
