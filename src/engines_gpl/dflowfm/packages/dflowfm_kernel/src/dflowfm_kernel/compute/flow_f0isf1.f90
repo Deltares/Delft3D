@@ -27,15 +27,14 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 module m_flow_f0isf1
-
    use m_a1vol1tot, only: a1vol1tot
-
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
+
 contains
+
    subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
       use m_flowgeom, only: ndxi
       use m_flow, only : hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, &
@@ -53,7 +52,6 @@ contains
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
-      use m_sediment, only: jamorf, stm_included
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
@@ -75,25 +73,13 @@ contains
       voutbnd = qoutbnd * dts
       vincel = qincel * dts ! do *dts here to avoid inconsistencies
       voutcel = qoutcel * dts
-      !volerr      = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel
 
       vinbndcum = vinbndcum + vinbnd
       voutbndcum = voutbndcum + voutbnd
       vincelcum = vincelcum + vincel
       voutcelcum = voutcelcum + voutcel
 
-      if (jamorf == 1 .and. .not. stm_included) then
-         !volerrcum = volerrcum + dvolbot
-      end if
-
-      !if (stm_included) then
-      !   dvolbot = 0d0
-      !   do ll=1,stmpar%lsedtot
-      !      dvolbot = dvolbot + sum(sedtra%dbodsd(ll,:)/stmpar%sedpar%cdryb(ll)*ba)
-      !   enddo
-      !   !volerrcum = volerrcum + dvolbot
-      !end if
-      volerr = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel !+ dvolbot
+      volerr = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel
       volerrcum = volerrcum + volerr
 
       if (his_write_settings%bal > 0) then
@@ -153,6 +139,7 @@ contains
          volcur(IDX_EXCHIN) = 0.0_dp
          volcur(IDX_EXCHOUT) = 0.0_dp
          volcur(IDX_EXCHTOT) = 0.0_dp
+
          do i = 1, nbnd1d2d
             Lf = kbnd1d2d(3, i)
             volcur(IDX_EXCHTOT) = volcur(IDX_EXCHTOT) + q1(Lf) * dts
@@ -162,6 +149,7 @@ contains
                volcur(IDX_EXCHOUT) = volcur(IDX_EXCHOUT) - q1(Lf) * dts
             end if
          end do
+
          volcur(IDX_PRECIP_TOTAL) = vinrain
          volcur(IDX_PRECIP_GROUND) = vinrainground
          volcur(IDX_EVAP) = vouteva
@@ -188,6 +176,7 @@ contains
             volcur(IDX_SALInput) = 0.0_dp
             volcur(IDX_SALInput2) = 0.0_dp
          end if
+
          volcur(IDX_GRWIN) = vingrw
          volcur(IDX_GRWOUT) = voutgrw
          volcur(IDX_GRWTOT) = (vingrw - voutgrw)
@@ -214,9 +203,11 @@ contains
 
          ! cumulate
          cumvolcur = cumvolcur + volcur
+
       end if
 
       if (NDRAW(28) == 34) then ! Display values at flow nodes: volerror
+
          if (kmx == 0) then
             do kk = 1, ndxi
                if (jampi == 1) then
@@ -226,7 +217,9 @@ contains
                end if
                volerror(kk) = vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk)) ! array transfer
             end do
+
          else
+
             do kk = 1, ndxi
                if (jampi == 1) then
                   if (idomain(kk) /= my_rank) then
@@ -239,11 +232,11 @@ contains
                   volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
                end do
             end do
+
          end if
       end if
 
       vol0 = vol1 ! array
-
       vol0tot = vol1tot ! scalar
       a0tot = a1tot
 

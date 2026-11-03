@@ -253,16 +253,12 @@
        shape(1) = ndkx
     case("ucy_mor")
        shape(1) = ndkx
-    case("sa0")
-       shape(1) = ndkx
     case("sa1")
        shape(1) = ndkx
     case("satop")
        shape(1) = ndx
     case("sabot")
        shape(1) = ndx
-    case("tem0")
-       shape(1) = ndkx
     case("tem1")
        shape(1) = ndkx
     case("u1")
