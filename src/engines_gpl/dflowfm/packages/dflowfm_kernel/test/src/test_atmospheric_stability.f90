@@ -21,9 +21,14 @@ contains
       type(t_atmospheric_stability) :: atmospheric_stability
       
       call atmospheric_stability%initialize_atmospheric_stability( &
-         include_stability=.true., include_free_convection=.false., &
-         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
-         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
+               include_stability=.true., &
+               include_free_convection=.false., &
+               sensor_height_wind_velocity=10.0_dp, &
+               sensor_height_air_temperature=2.0_dp, &
+               sensor_height_humidity=2.0_dp, &
+               alpha_m=0.11_dp, &
+               alpha_h=0.40_dp, &
+               alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -120,9 +125,14 @@ contains
       type(t_atmospheric_stability) :: atmospheric_stability
       
       call atmospheric_stability%initialize_atmospheric_stability( &
-         include_stability=.false., include_free_convection=.false., &
-         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
-         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
+               include_stability=.false., &
+               include_free_convection=.false., &
+               sensor_height_wind_velocity=10.0_dp, &
+               sensor_height_air_temperature=2.0_dp, &
+               sensor_height_humidity=2.0_dp, &
+               alpha_m=0.11_dp, &
+               alpha_h=0.40_dp, &
+               alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -217,9 +227,14 @@ contains
       type(t_atmospheric_stability) :: atmospheric_stability
       
       call atmospheric_stability%initialize_atmospheric_stability( &
-         include_stability=.true., include_free_convection=.true., &
-         sensor_height_wind_velocity=10.0_dp, sensor_height_air_temperature=2.0_dp, &
-         sensor_height_humidity=2.0_dp, alpha_m=0.11_dp, alpha_h=0.40_dp, alpha_q=0.62_dp)
+               include_stability=.true., &
+               include_free_convection=.true., &
+               sensor_height_wind_velocity=10.0_dp, &
+               sensor_height_air_temperature=2.0_dp, &
+               sensor_height_humidity=2.0_dp, &
+               alpha_m=0.11_dp, &
+               alpha_h=0.40_dp, &
+               alpha_q=0.62_dp)
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]

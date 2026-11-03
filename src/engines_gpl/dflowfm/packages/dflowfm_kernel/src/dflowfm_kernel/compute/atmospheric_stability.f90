@@ -116,10 +116,10 @@ contains
 
    !> Resets the module to its compile-time default state.
    subroutine default_atmospheric_stability(self)
-    class(t_atmospheric_stability), intent(inout) :: self
-    self%options = t_options()
-    if (allocated(self%scaling_parameters)) deallocate (self%scaling_parameters)
-    if (allocated(self%fluxes)) deallocate (self%fluxes)
+      class(t_atmospheric_stability), intent(inout) :: self
+      self%options = t_options()
+      if (allocated(self%scaling_parameters)) deallocate (self%scaling_parameters)
+      if (allocated(self%fluxes)) deallocate (self%fluxes)
    end subroutine default_atmospheric_stability
 
    !> Sets the time-independent MOST parameters once, to be called at the start of a simulation.
@@ -144,7 +144,7 @@ contains
       self%options%alpha_m = alpha_m
       self%options%alpha_h = alpha_h
       self%options%alpha_q = alpha_q
-                                                end subroutine initialize_atmospheric_stability
+   end subroutine initialize_atmospheric_stability
 
    !> Compute turbulence scaling parameters for a point value.
    pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
@@ -350,8 +350,12 @@ contains
          call err('compute_scales_and_fluxes: all input arrays must have the same size.')
       end if
 
-      if (.not. allocated(self%scaling_parameters)) allocate (self%scaling_parameters(number_of_elements))
-      if (.not. allocated(self%fluxes)) allocate (self%fluxes(number_of_elements))
+      if (.not. allocated(self%scaling_parameters)) then
+         allocate (self%scaling_parameters(number_of_elements))
+      end if
+      if (.not. allocated(self%fluxes)) then
+         allocate (self%fluxes(number_of_elements))
+      end if
 
       do index = 1, number_of_elements
          scaling_parameter = compute_scaling_parameters(wind_velocity_x(index), wind_velocity_y(index), air_temperature(index), &
