@@ -24,13 +24,12 @@ RUN set -eo pipefail && \
 RUN set -eo pipefail && \
     curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
     python3 -m pip install --upgrade pip --break-system-packages && \
-    # Export the locked testbench dependencies (uv.lock) to a requirements file, install them with pip,
-    # then remove uv again.
+    # Install the locked testbench dependencies (uv.lock) into the system python, then remove uv again.
     python3 -m pip install uv==0.13.6 --break-system-packages && \
-    uv export --project /tmp/testbench --frozen --no-hashes --no-emit-project --no-header --no-annotate --format requirements-txt --output-file /tmp/requirements.txt && \
-    python3 -m pip install --requirement "/tmp/requirements.txt" --break-system-packages --ignore-installed && \
+    UV_PROJECT_ENVIRONMENT="$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("prefix"))')" \
+    uv sync --project /tmp/testbench --locked --inexact --no-install-project --python python3 && \
     python3 -m pip uninstall --yes uv --break-system-packages && \
-    rm --recursive --force --verbose /tmp/testbench /tmp/requirements.txt
+    rm --recursive --force --verbose /tmp/testbench
 
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
 
