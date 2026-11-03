@@ -1207,9 +1207,9 @@ contains
 
       select case (method_integer)
       case (RAIN_TEMPERATURE_AIR)
-         method_string = 'airtemperature'
+         method_string = 'airTemperature'
       case (RAIN_TEMPERATURE_WET_BULB)
-         method_string = 'wetbulbtemperature'
+         method_string = 'wetBulbTemperature'
       case default
          method_string = ''
       end select
