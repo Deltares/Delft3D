@@ -19,13 +19,19 @@ contains
 end module test_example
 ```
 
-Only subroutines marked with `!$gtest test` are registered. They must have no
-arguments, use `bind(C)`, and have unique C binding names. Keep markers on their
-own lines; conditional preprocessing of marked declarations is not supported.
+Only subroutines marked with `!$gtest test` are registered. Each marker must be
+followed by a plain, single-line declaration of a no-argument subroutine using
+`bind(C)` or `bind(C, name="unique_c_binding")`. Blank lines and comments may
+intervene, but prefixes such as `recursive`, continuation lines, and intervening
+access or attribute declarations are not supported. C binding names must be
+unique. Keep markers on their own lines; conditional preprocessing of marked
+declarations is not supported.
 
 The default test name is `module_name.procedure_name`. To override it, use
 `!$gtest test suite=OtherSuite name=PublicName`. A module-level
 `!$gtest suite=PublicSuite` sets the suite for that module's tests.
+Module declarations used for suite naming must also be on one line. These
+restrictions do not apply to unmarked helper procedures.
 
 ### Register the source in CMake
 

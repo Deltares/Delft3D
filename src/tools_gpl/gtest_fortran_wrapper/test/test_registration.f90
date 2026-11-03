@@ -14,9 +14,7 @@ contains
    end subroutine default_name
 
    !$gtest test
-   subroutine explicit_binding( &
-      ) bind(C, &
-             name="SetUp")
+   subroutine explicit_binding() bind(C, name="SetUp")
       wrapper_registration_count = wrapper_registration_count + 1_c_int
       call f90_expect_true(.true.)
    end subroutine explicit_binding

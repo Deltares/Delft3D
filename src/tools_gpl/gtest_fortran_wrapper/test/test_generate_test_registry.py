@@ -21,15 +21,15 @@ class RegistryTests(unittest.TestCase):
         path.write_bytes(text.encode("utf-8"))
         return path
 
-    def test_defaults_continuations_comments_and_binding_case(self):
+    def test_defaults_comments_and_binding_case(self):
         source = self.source(
-            "MODULE Sample\r\ncontains\r\n!$GTEST TEST\r\n! documentation\r\n"
-            "RECURSIVE SUBROUTINE Mixed&\r\n! continuation comment\r\n"
-            "&Case( &\r\n &) &\r\n BIND(C, NAME='binding!with_quote')\r\n"
+            "\ufeffMODULE Sample\r\ncontains\r\n!$GTEST TEST ! marker comment\r\n\r\n! documentation\r\n"
+            "SUBROUTINE MixedCase() BIND(C, NAME='binding!with_quote') ! declaration comment\r\n"
         )
         with self.assertRaisesRegex(registry.RegistryError, "binding name"):
             registry.collect([source])
-        source.write_text(source.read_text().replace("binding!with_quote", "ExactBinding"), encoding="utf-8")
+        source.write_text(source.read_text(encoding="utf-8-sig").replace("binding!with_quote", "ExactBinding"),
+                          encoding="utf-8-sig")
         test = registry.collect([source])[0]
         self.assertEqual((test.module, test.suite, test.name, test.binding),
                          ("Sample", "Sample", "MixedCase", "ExactBinding"))
@@ -53,18 +53,20 @@ class RegistryTests(unittest.TestCase):
         source = self.source("module m\ncontains\nsubroutine test_unmarked() bind(c)\nend subroutine\nend module")
         self.assertEqual(registry.collect([source]), [])
 
-    def test_continuation_whitespace_preserves_token_boundaries(self):
+    def test_helper_continuations_do_not_affect_registration(self):
         source = self.source(
-            "module&\n& example\ncontains\n!$gtest test\nsubroutine&\n"
-            " test_one()bind&\n& (c, name=&\n 'explicit_binding')\nend subroutine\nend module"
+            "module example\ncontains\nsubroutine helper(&\n"
+            " value)\ninteger :: value\nvalue = &\n 1\nend subroutine\n"
+            "!$gtest test\nsubroutine test_one() bind(c, name='explicit_binding')\n"
+            "end subroutine\nend module"
         )
         test = registry.collect([source])[0]
         self.assertEqual((test.module, test.procedure, test.binding),
                          ("example", "test_one", "explicit_binding"))
 
-    def test_standalone_test_and_attribute(self):
+    def test_standalone_test(self):
         source = self.source(
-            "!$gtest test suite=standalone\npublic :: test_one\n"
+            "!$gtest test suite=standalone\n"
             "subroutine test_one() bind(c)\nend subroutine"
         )
         self.assertEqual(registry.collect([source])[0].suite, "standalone")
@@ -80,7 +82,7 @@ class RegistryTests(unittest.TestCase):
             ("!$gtest test\n!$gtest test", "orphaned"),
             ("!$gtest test\nsubroutine a()", "bind"),
             ("!$gtest test\nsubroutine a(x) bind(c)", "no-argument"),
-            ("!$gtest test\nsubroutine a() &", "unterminated"),
+            ("!$gtest test\nsubroutine a() &", "single-line"),
             ("module outer\nmodule inner", "nested"),
             ("!$gtest suite=outside", "specification"),
             ("module m\ncontains\n!$gtest suite=late", "specification"),
@@ -92,6 +94,33 @@ class RegistryTests(unittest.TestCase):
             with self.subTest(text=text):
                 with self.assertRaisesRegex(registry.RegistryError, rf"tests.f90:\d+:.*{error}"):
                     registry.collect([self.source(text)])
+
+    def test_reject_prefixed_test_declarations(self):
+        for prefix in ("recursive", "non_recursive", "pure", "impure", "elemental", "module"):
+            with self.subTest(prefix=prefix):
+                source = self.source(f"!$gtest test suite=s\n{prefix} subroutine a() bind(c)")
+                with self.assertRaisesRegex(registry.RegistryError, r"tests.f90:2:.*plain"):
+                    registry.collect([source])
+
+    def test_reject_continued_test_declarations(self):
+        declarations = [
+            "subroutine&\n a() bind(c)",
+            "subroutine a(&\n ) bind(c)",
+            "subroutine a() bind(c, &\n name='a')",
+            "subroutine a() bind(c) &\n",
+        ]
+        for declaration in declarations:
+            with self.subTest(declaration=declaration):
+                source = self.source(f"!$gtest test suite=s\n{declaration}")
+                with self.assertRaisesRegex(registry.RegistryError, r"tests.f90:2:.*single-line"):
+                    registry.collect([source])
+
+    def test_reject_intervening_declarations(self):
+        for declaration in ("public :: a", "private :: a", "attributes(dllexport) :: a"):
+            with self.subTest(declaration=declaration):
+                source = self.source(f"!$gtest test suite=s\n{declaration}\nsubroutine a() bind(c)")
+                with self.assertRaisesRegex(registry.RegistryError, r"tests.f90:2:.*plain"):
+                    registry.collect([source])
 
     def test_duplicate_names_and_c_symbols_across_files(self):
         first = self.source("!$gtest test suite=s name=t\nsubroutine a() bind(c)", "first.f90")

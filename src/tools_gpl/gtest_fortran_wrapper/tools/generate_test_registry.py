@@ -26,7 +26,6 @@ CXX_RESERVED = frozenset(
 MARKER = re.compile(r"^\s*!\$gtest\b(.*)$", re.IGNORECASE)
 MODULE = re.compile(rf"module\s+({IDENTIFIER})\s*$", re.IGNORECASE)
 SUBROUTINE = re.compile(
-    rf"(?:(?:recursive|non_recursive|pure|impure|elemental|module)\s+)*"
     rf"subroutine\s+({IDENTIFIER})\s*\(\s*\)\s*"
     r"bind\s*\(\s*c\s*(?:,\s*name\s*=\s*(['\"])(.*?)\2\s*)?\)\s*$",
     re.IGNORECASE,
@@ -72,32 +71,16 @@ def uncomment(line: str) -> str:
     return line
 
 
-def statements(source: Path):
-    """Yield markers and free-form statements, joining ampersand continuations."""
-    pending = ""
-    start = 0
+def source_lines(source: Path):
+    """Yield markers and nonempty code lines without joining continuations."""
     for number, line in enumerate(source.read_text(encoding="utf-8-sig").splitlines(), 1):
         marker = MARKER.fullmatch(line)
         if marker:
-            if pending:
-                fail(source, number, "directive inside a continued declaration")
             yield number, True, uncomment(marker[1]).strip()
             continue
         code = uncomment(line).strip()
-        if not code:
-            continue
-        if not pending:
-            start = number
-        else:
-            code = code[1:] if code.startswith("&") else " " + code
-        continued = code.endswith("&")
-        # Do not insert whitespace: continuation can split a Fortran identifier.
-        pending += code[:-1] if continued else code
-        if not continued:
-            yield start, False, pending.strip()
-            pending = ""
-    if pending:
-        fail(source, start, "unterminated continued declaration")
+        if code:
+            yield number, False, code
 
 
 def fields(source: Path, line: int, text: str) -> tuple[str, dict[str, str]]:
@@ -123,7 +106,7 @@ def parse(source: Path) -> list[Test]:
     suite = None
     in_specification = False
     pending = None
-    for line, marker, text in statements(source):
+    for line, marker, text in source_lines(source):
         if marker:
             if pending:
                 fail(source, pending[0], "orphaned test marker")
@@ -140,12 +123,9 @@ def parse(source: Path) -> list[Test]:
             continue
 
         if pending:
-            # Intel attributes and access declarations may precede the subroutine.
-            if re.match(r"(?:attributes\s*\(|(?:public|private)\s*::)", text, re.IGNORECASE):
-                continue
             declaration = SUBROUTINE.fullmatch(text)
             if not declaration:
-                fail(source, line, "test marker requires a no-argument subroutine with bind(C)")
+                fail(source, line, "test marker requires a plain, single-line, no-argument subroutine with bind(C)")
             procedure, _, binding = declaration.groups()
             marker_line, options = pending
             test_suite = options.get("suite", suite or module)
