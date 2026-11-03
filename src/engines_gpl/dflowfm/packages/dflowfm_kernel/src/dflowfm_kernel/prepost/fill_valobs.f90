@@ -54,7 +54,7 @@ contains
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
                         u1, v, ltop, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba, snu, csu
@@ -417,7 +417,7 @@ contains
                   end if
                end do
 
-               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_wstar) = dmiss
                   valobs(i, IPNT_obukhov_length) = dmiss
                   valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
@@ -732,7 +732,7 @@ contains
 
 !        Heatflux
             if (his_write_settings%heatflux > 0) then
-               if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
