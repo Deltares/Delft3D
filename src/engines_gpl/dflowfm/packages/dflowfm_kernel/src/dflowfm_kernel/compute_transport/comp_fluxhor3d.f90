@@ -52,7 +52,7 @@ contains
       use m_dlimiter_nonequi, only: dlimiter_nonequi ! static mesh information
       use m_flowtimes, only: dts
       use m_flowparameters, only: cflmx
-      use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
+      use m_flow, only: jadiusp, diusp, uniform_horizontal_eddy_diffusivity, jacreep, dsalL, dtemL, &
                         number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
       use m_transport, only: ISALT, ITEMP
       use m_partitioninfo, only:  is_3d_layer_in_current_partition
@@ -74,9 +74,9 @@ contains
       integer, dimension(Lnx), intent(in) :: kmxL !< flow-link based layer administration
 
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
-      real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicouv)
+      real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (uniform_horizontal_eddy_diffusivity)
       real(kind=dp), dimension(NUMCONST, lnx), optional, intent(in) :: difsedsp !< spatially-varying diffusion coefficient (optional). If present, it overwrites the scalar in `difsed`
-      real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multipling background diffusion `dicouv` (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
+      real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multipling background diffusion `uniform_horizontal_eddy_diffusivity` (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
       real(kind=dp), dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
@@ -312,7 +312,7 @@ contains
 !$OMP END PARALLEL DO
 
 !  diffusion
-      if (dicouv >= 0.0_dp .and. jalimitdiff /= 3) then
+      if (uniform_horizontal_eddy_diffusivity >= 0.0_dp .and. jalimitdiff /= 3) then
          number_limited_links = 0
          !$OMP PARALLEL DO                             &
          !$OMP PRIVATE(LL,dfac1,dfac2,Lb,Lt,L,k1,k2,fluxfacMaxL,fluxfacMaxR,j,difcoeff,fluxfac,diuspL,flux_max_limit,difsed_const) &
@@ -340,7 +340,7 @@ contains
             if (jadiusp == 1) then
                diuspL = diusp(LL)
             else
-               diuspL = dicouv
+               diuspL = uniform_horizontal_eddy_diffusivity
             end if
 
             Lb = Lbot(LL)

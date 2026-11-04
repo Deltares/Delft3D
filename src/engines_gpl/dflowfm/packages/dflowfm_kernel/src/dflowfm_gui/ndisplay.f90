@@ -55,7 +55,7 @@ contains
       use unstruc_display
       use unstruc_model, only: md_ident
       use unstruc_startup, only: initgui
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use m_sediment
       use m_plotdots
       use m_transport
@@ -323,11 +323,11 @@ contains
          MAXOPT = 18
          if (jatrt == 1) then
             MAXOPT = 18
-            if (ifrctypuni == 0) then
+            if (uniform_friction_type == 0) then
                OPTION(18) = 'Roughness from trachytopes     (Chezy) '
-            elseif (ifrctypuni == 1) then
+            elseif (uniform_friction_type == 1) then
                OPTION(18) = 'Roughness from trachytopes   (Manning) '
-            elseif ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+            elseif ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                OPTION(18) = 'Roughness from trachytopes   (WhitCol) '
             else
                OPTION(18) = 'Roughness from trachytopes      (    ) '

@@ -18,7 +18,7 @@ contains
       use MessageHandling, only: SetMessage, LEVEL_ERROR
 
       use m_flowgeom, only: wu1Duni5, hh1Duni5
-      use m_physcoef, only: frcunistreetinlet
+      use m_physcoef, only: UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
       use m_Roughness, only: R_MANNING
 
       type(t_network), target, intent(inout) :: network !< The 1D channel administration.
@@ -27,7 +27,7 @@ contains
 
       call add_1d2d_cross_section_definition( &
          network%CSDefinitions, width=wu1Duni5, height=hh1Duni5, &
-         friction_type=R_MANNING, friction_value=frcunistreetinlet, idef=idef &
+         friction_type=R_MANNING, friction_value=UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, idef=idef &
       )
       call add_cross_section(network, idef, icrs)
 

@@ -122,8 +122,8 @@ contains
          return
       end if
 
-      call getczz0(hsk, frcuni, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
-      sqcf = sag / cz ! sqrt(g)/C  ( )
+      call getczz0(hsk, uniform_friction_coefficient_2D, uniform_friction_type, cz, z0k) ! get roughness as specified in hydrodynamics
+      sqcf = square_root_ag / cz ! sqrt(g)/C  ( )
 
       ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90
 
@@ -164,7 +164,7 @@ contains
                   if (hu(LL) > 0.0_dp) then
                      ar = au(LL) * dx(LL)
                      wa = wa + ar ! area  weigthed
-                     !z00 = z00 + ar*hu(LL)*exp(-1d0 - vonkar*cz/sag)   ! z0ucur, to avoid double counting
+                     !z00 = z00 + ar*hu(LL)*exp(-1d0 - VON_KARMAN*cz/square_root_ag)   ! z0ucur, to avoid double counting
                      z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
                   end if
                end do
@@ -205,7 +205,7 @@ contains
             else ! soulsby van rijn 2007 ASCE,
 
                !Ucr=Accr(j)*log(12.d0*hsk/dks)   ! 3d0*D90(j))              ! (2007a (12) )
-               !Ucr=Accr(j)*log(hsk/(ee*z0k)) / vonkar
+               !Ucr=Accr(j)*log(hsk/(ee*z0k)) / VON_KARMAN
 
                Ucr = Accr(j) / sqcf
 
@@ -237,7 +237,7 @@ contains
                ! vrijns book pag 8.50 r 3 ????
                Tmob = (Ueff * Ueff - Ucr * Ucr) / (Ucr * Ucr) ! Mobility parameter T ( )
                if (Tmob > 0 .and. ustar > 0.0_dp) then
-                  rouse = ws(j) / (vonkar * ustar)
+                  rouse = ws(j) / (VON_KARMAN * ustar)
                   crefa = 0.015_dp * (D50(j) / aref) * (Tmob**1.5_dp) * Dstar03(j) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
                   !crefa = min(crefa, 0.65d0)                                   ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
                   !crefa = min(crefa, 0.15d0)
@@ -248,7 +248,7 @@ contains
 
                      !qssevr84   = 0.012d0*Ueff*D50(j)*Pmob**2.4d0*Dstar(j)**-0.6d0       ! boek vanrijn (7.3.46), or 2007b
 
-                     qsseq = eincheck2 * crefa * ustar / vonkar ! (conclusion : inaccuracy of einstein_garcia is about 10-20  )
+                     qsseq = eincheck2 * crefa * ustar / VON_KARMAN ! (conclusion : inaccuracy of einstein_garcia is about 10-20  )
 
                      !qsseq = qssevr84
 

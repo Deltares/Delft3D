@@ -919,7 +919,7 @@ contains
       real(kind=dp) :: Q
       real(kind=dp) :: wcx, wcy, w, alpha
       real(kind=dp) :: volu
-      real(kind=dp) :: vicouv !< typical viscosity
+      real(kind=dp) :: uniform_horizontal_eddy_viscosity !< typical viscosity
 
       integer :: klay
       integer :: LL
@@ -1046,13 +1046,13 @@ contains
          do L = Lbot(LL), Ltop(LL)
             klay = L - Lbot(LL) + 1
 
-            vicouv = vicLu(L)
+            uniform_horizontal_eddy_viscosity = vicLu(L)
 
 !       compute third-order filter coefficient from first-order filter coefficient
             eps3 = 0.25 * Deltax(LL)**2 * eps1(klay)
 
 !       compute second-order filter coefficient
-            eps2 = max(eps3, 0.25 * Deltax(LL)**2 * vicouv)
+            eps2 = max(eps3, 0.25 * Deltax(LL)**2 * uniform_horizontal_eddy_viscosity)
 
             if (order == 1) then
                eps(klay, LL) = eps1(klay)

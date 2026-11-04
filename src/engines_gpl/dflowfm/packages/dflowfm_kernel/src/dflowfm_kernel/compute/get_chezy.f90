@@ -40,7 +40,7 @@ contains
    !! This routine is not safe for friction_coef == 0
    elemental function get_chezy(radius, friction_coef, perpendicular_velocity, tangential_velocity, friction_type) result(chezy)
       use m_roughness, only: R_CHEZY, R_MANNING, R_WALL_LAW_NIKURADSE, R_WHITE_COLEBROOK
-      use m_physcoef, only: sag, vonkar
+      use m_physcoef, only: square_root_ag, VON_KARMAN
       use m_mathconstants, only: ee
       use m_hydraulicallysmooth, only: hydraulicallysmooth
       use precision, only: dp
@@ -65,8 +65,8 @@ contains
          chezy = (floored_radius**sixth) / friction_coef
       case (R_WALL_LAW_NIKURADSE) ! This function does not match the description in the manual exactly
          z0 = min(friction_coef / 30.0_dp, floored_radius * 0.3_dp)
-         sqcf = vonkar / log(floored_radius / (ee * z0))
-         chezy = sag / sqcf
+         sqcf = VON_KARMAN / log(floored_radius / (ee * z0))
+         chezy = square_root_ag / sqcf
       case (R_WHITE_COLEBROOK)
          hurou = max(0.5_dp, floored_radius / friction_coef)
          chezy = 18.0_dp * log10(12.0_dp * hurou)
@@ -74,7 +74,7 @@ contains
          umod = norm2([perpendicular_velocity, tangential_velocity])
          sqcf = hydraulicallysmooth(umod, floored_radius)
          if (sqcf > 0.0_dp) then
-            chezy = sag / sqcf
+            chezy = square_root_ag / sqcf
          else
             chezy = 0.0_dp
          end if
