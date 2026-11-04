@@ -51,6 +51,7 @@ contains
 
         use m_uitzicht_spectrum, DayLightPlanck => planck
         use m_dhnolay
+        use m_logger_helper, only: write_log_message
 
         implicit none
 
@@ -120,10 +121,13 @@ contains
         integer(kind = int_wp) :: ipnt(num_process_space_real)
         integer(kind = int_wp), save :: nr_mes = 0
 
+        logical                :: initial = .true.
+        integer, save          :: i_700, i_620, i_550, i_510, i_460, i_400
+
         ! See the remark below
         ! real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
 
-        real(kind = dp), dimension(num_spectrum) :: SpectrumTop, SpectrumBot
+        real(kind = dp), dimension(:), allocatable :: SpectrumTop, SpectrumBot
 
         ipnt = ipoint
         iflux = 0
@@ -186,9 +190,8 @@ contains
                     process_space_real(ipnt(num_offset+6)) = extsal
                     process_space_real(ipnt(num_offset+7)) = exth2o
                     process_space_real(ipnt(num_offset+8)) = extchl
-                    process_space_real(ipnt(num_offset+9)) = d_1
 
-                    do i = num_offset+10,num_process_space_real
+                    do i = num_offset+9,num_process_space_real
                         process_space_real(ipnt(i)) = -999.0
                     enddo
                 endif
@@ -214,17 +217,35 @@ contains
             !    DaylightPlanck(i) = process_space_real(ipoint(num_basic+i))
             ! end do
 
+            if ( initial ) then
+                initial = .false.
+
+                i_700 = nearest_spectrum_band( 700.0_dp )
+                i_620 = nearest_spectrum_band( 620.0_dp )
+                i_550 = nearest_spectrum_band( 550.0_dp )
+                i_510 = nearest_spectrum_band( 510.0_dp )
+                i_460 = nearest_spectrum_band( 460.0_dp )
+                i_400 = nearest_spectrum_band( 400.0_dp )
+            endif
+
             call dhnolay(nolay)
             nosegl = num_cells / nolay
+
+            if ( mod(num_cells, nolay) /= 0 ) then
+                call write_log_message( &
+                    "EXTINC (UITZICHT): Number of cells is not divisible by number of layers - this is not currently supported")
+                error stop
+            endif
 
             do ihseg = 1,nosegl
                 SpectrumTop = DaylightPlanck
                 SpectrumBot = DaylightPlanck
 
-                localdepth = process_space_real(ipoint(35)+(ihseg+(nolay-1)*nosegl-1)*increm(35))
+                localdepth = process_space_real(ipoint(37)+(ihseg+(nolay-1)*nosegl-1)*increm(37))
                 secvermax  = localdepth
+                secver     = 0.0_dp
 
-                ! Loop over the column starting with this segment (MJ: improement: use columns module from JvB)
+                ! Loop over the column starting with this segment (MJ: improvement: use columns module from JvB)
                 do ilay = 1, nolay
                     iseg = ihseg + (ilay-1) * nosegl
 
@@ -247,10 +268,10 @@ contains
                         !  So determine diep1 and diep2 on interval of 0.1cm centrally around middle of the cell
                         !
                         !  we (mis)use SW_UIT3 to choose the switchg for the calculation of the KD
-                        !     0   = do not use uizicht
+                        !     0   = do not use uitzicht
                         !     <>0 = use uitzicht
                         !     1: Buiteveld z1%
-                        !     2: Bbuiteveld z10%
+                        !     2: Buiteveld z10%
                         !     3: Lee with zenith angle 30 eq 4  using 4x m
                         !     4: Lee with zenith angle 30 eq 5  using 4x n
                         !     5: Lee simplified eq 6 with 2 coeffs
@@ -378,9 +399,9 @@ contains
                            !secvermax = min(secvermax, sechor1)
                            if (sechor1 >= depth) then
                                if (sechor1 >= localdepth) then
-                                  secver =secver + depth
+                                  secver = secver + depth
                                elseif ( sechor1 >= (localdepth - depth) ) then
-                                  secver = secver + sechor1 -localdepth + depth
+                                  secver = secver + sechor1 - localdepth + depth
                                endif
                            endif
                            !secver=min(secvermax,secver)
@@ -390,28 +411,29 @@ contains
                         extpoc =  extdet
                         extalg =  extchl
                         extsal =  0.0
+                        exth2o =  -999.0    ! AM: should be removed?
                         ext    =  ext + ext0 + extalg + extmac
+
+                        process_space_real(ipnt(num_offset+1)) = ext
+                        process_space_real(ipnt(num_offset+2)) = extim
+                        process_space_real(ipnt(num_offset+3)) = extpoc
+                        process_space_real(ipnt(num_offset+4)) = extdoc
+                        process_space_real(ipnt(num_offset+5)) = extalg
+                        process_space_real(ipnt(num_offset+6)) = extsal
+                        process_space_real(ipnt(num_offset+7)) = exth2o
+                        process_space_real(ipnt(num_offset+8)) = extchl
+                        process_space_real(ipnt(num_offset+9)) = d_1
+
+                        process_space_real(ipnt(num_offset+10)) = spectrumbot(i_700) !700
+                        process_space_real(ipnt(num_offset+11)) = spectrumbot(i_620) !620
+                        process_space_real(ipnt(num_offset+12)) = spectrumbot(i_550) !550
+                        process_space_real(ipnt(num_offset+13)) = spectrumbot(i_510) !510
+                        process_space_real(ipnt(num_offset+14)) = spectrumbot(i_460) !460
+                        process_space_real(ipnt(num_offset+15)) = spectrumbot(i_400) !400
+                        process_space_real(ipnt(num_offset+16)) = sechor1
+                        process_space_real(ipnt(num_offset+17)) = sechor2
+                        process_space_real(ipnt(num_offset+18)) = secver
                     endif
-
-                    process_space_real(ipnt(num_offset+1)) = ext
-                    process_space_real(ipnt(num_offset+2)) = extim
-                    process_space_real(ipnt(num_offset+3)) = extpoc
-                    process_space_real(ipnt(num_offset+4)) = extdoc
-                    process_space_real(ipnt(num_offset+5)) = extalg
-                    process_space_real(ipnt(num_offset+6)) = extsal
-                    process_space_real(ipnt(num_offset+7)) = exth2o
-                    process_space_real(ipnt(num_offset+8)) = extchl
-                    process_space_real(ipnt(num_offset+9)) = d_1
-
-                    process_space_real(ipnt(num_offset+10)) = spectrumbot(61) !700
-                    process_space_real(ipnt(num_offset+11)) = spectrumbot(45) !620
-                    process_space_real(ipnt(num_offset+12)) = spectrumbot(31) !550
-                    process_space_real(ipnt(num_offset+13)) = spectrumbot(23) !510
-                    process_space_real(ipnt(num_offset+14)) = spectrumbot(13) !460
-                    process_space_real(ipnt(num_offset+15)) = spectrumbot(1 ) !400
-                    process_space_real(ipnt(num_offset+16)) = sechor1
-                    process_space_real(ipnt(num_offset+17)) = sechor2
-                    process_space_real(ipnt(num_offset+18)) = secver
                 enddo
             enddo
         endif

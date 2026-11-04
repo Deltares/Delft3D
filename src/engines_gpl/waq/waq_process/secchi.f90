@@ -27,7 +27,6 @@ module m_secchi
 
 contains
 
-
     subroutine secchi (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
@@ -97,12 +96,12 @@ contains
         ! Note: see extinc.f90
         ! real(kind = dp), dimension(num_spectrum) :: DaylightPlanck
 
-        real(kind = dp), dimension(num_spectrum) :: Spectrum
+        real(kind = dp), dimension(:), allocatable :: Spectrum
 
         ip = ipoint
         iflux = 0
 
-        dosecc = 0 ! Detail concerning the "representative" depth
+        dosecc = 2 ! Detail concerning the "representative" depth, use a fixed depth
         swspec = 0
 
         ! Note: see extinc.f90
@@ -112,7 +111,7 @@ contains
 
         do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
-                !
+
                 sw_uitz = nint( process_space_real(ip(11)) )
                 if (sw_uitz == 0) then
                     !

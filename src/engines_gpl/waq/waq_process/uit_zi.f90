@@ -23,6 +23,7 @@
 
 module m_uitzicht_spectrum
     use m_waq_precision
+    use m_logger_helper, only: write_log_message
 
     implicit none
 
@@ -31,10 +32,14 @@ module m_uitzicht_spectrum
     !***********************************************************************
     !
     private
-    public :: num_spectrum, uit_zi, planck
+    public :: num_spectrum, uit_zi, planck, nearest_spectrum_band
 
     integer            :: num_spectrum
     integer, parameter :: num_spectrum_std = 61
+
+    logical, save      :: init_uitzicht = .true.
+
+    real(kind = dp), parameter :: target_lambda = 550.0, target_lambda_2 = 560.0
 
     !
     !     tabulated data that will be used
@@ -239,8 +244,6 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
 
     real(kind = dp), parameter :: pi = 3.141592653589793_dp
 
-    logical, save :: init_uitzicht = .true.
-
     if ( init_uitzicht ) then
         init_uitzicht = .false.
         call read_table
@@ -248,11 +251,11 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
 
     c_mu = cos (angle * 0.0174533)
 
-    if (dosecc) &
+    if ( dosecc /= 0 ) &
             call bep_d  (c_gl1, c_gl2, c_det, helhum, corchl, &
                     c_mu, chloro, detrit, gloeir, ah_380, &
                     d_1, d_2)
-    i_550 = ((550 - 400) / 5) + 1
+    i_550 = nearest_spectrum_band( target_lambda   )
     !
     !        chlorofyl bundelverzwakking
     !
@@ -352,7 +355,11 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
                ext_ki = m0 * a + m4 * b + m5 * b*b/a
 
             case default
-                ! no uitzicht
+                ! Invalid option for Kd relation
+                call write_log_message( &
+                    "EXTINC (UITZICHT): Invalid option for SW_UIT3D" )
+                error stop
+
         end select
 
         sextdiep1 = spectrum(teller) * exp ( -ext_ki * diep1)
@@ -382,8 +389,8 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         ! skip if uitzicht in mode to calculate contribution of an individual oas (sw=0)
         ! in that case provide spectrum based on actual composition (all oas) at top of segment
         !
-        if (swspec .eq. 1) then
-            spectrum (teller) =sextdiep2
+        if ( swspec == 1 ) then
+            spectrum (teller) = sextdiep2
         endif
 
      enddo
@@ -399,13 +406,12 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
         extpar = -1
      endif
 
-
      if ( dosecc >= 1 .and. extpar > -0.5 ) then
          !
          ! bepaal  de secchidiepte midden in segment (diep1,diep2) met lokale extpar
          ! dit is een horizontaal zicht (secchih)
          !
-         if ( dosecc >= 1 ) then ! secchi op basis van vaste diepte
+         if ( dosecc >= 2 ) then ! secchi op basis van vaste diepte
              extp_d = 1.0 / ( d_1   - d_2  ) * log ( s_d2   / s_d1  )
              som_c  = 1.0 / ( d_1   - d_2  ) * log ( som_c  / som_h )
              secchi = tau / ( extp_d + som_c)
@@ -415,6 +421,7 @@ subroutine uit_zi (diep1, diep2, angle, c_gl1, c_gl2, &
              secchi = tau / ( extp_d + som_c)
          endif
      else
+         ! The output of Secchi depth is not requested
          secchi = -1.0
      endif
 
@@ -481,16 +488,8 @@ subroutine bep_d (c_gl1, c_gl2, c_det, helhum, corchl, &
     integer(kind = int_wp) :: i, i_550, i_560
     real(kind = dp), parameter :: target_lambda = 550.0, target_lambda_2 = 560.0
 
-    i_550 = num_spectrum ! Fall-back, should not occur
-    i_560 = num_spectrum ! Fall-back, should not occur
-    do i = 2,num_spectrum
-        if ( lambda(i-1) <= target_lambda   .and. lambda(i) < target_lambda   ) then
-            i_550 = i
-        endif
-        if ( lambda(i-1) <= target_lambda_2 .and. lambda(i) < target_lambda_2 ) then
-            i_560 = i
-        endif
-    enddo
+    i_550 = nearest_spectrum_band( target_lambda   )
+    i_560 = nearest_spectrum_band( target_lambda_2 )
 
     !
     !     beveiliging tegen negatieve waarde chloro (rs27jan97 voor maarten o.)
@@ -551,7 +550,7 @@ subroutine read_table
     character(len=200) :: line
     real(kind=dp)      :: lambda_in, chlspe_in, planck_in, bwater_in, awater_in
 
-    inquire( file = 'spectrum_data.table', exist = exists )
+    inquire( file = 'spectrum_default.table', exist = exists )
 
     call get_log_unit_number(lumon)
 
@@ -596,5 +595,25 @@ subroutine read_table
      endif
 
 end subroutine read_table
+
+integer function nearest_spectrum_band( target ) result(idx)
+    real(dp), intent(in) :: target
+
+    integer              :: i
+
+    if ( init_uitzicht ) then
+        init_uitzicht = .false.
+        call read_table
+    endif
+
+    idx = num_spectrum ! Fallback
+
+    do i = 2,num_spectrum
+        if ( lambda(i-1) < target .and. target <=   lambda(i) ) then
+            idx = i
+        endif
+    enddo
+
+end function nearest_spectrum_band
 
 end module m_uitzicht_spectrum
