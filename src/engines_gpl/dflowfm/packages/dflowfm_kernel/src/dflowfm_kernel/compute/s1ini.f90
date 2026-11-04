@@ -257,11 +257,6 @@ contains
                         if (rain_temperature_method == RAIN_TEMPERATURE_AIR) then
                            heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k)
                         else if (rain_temperature_method == RAIN_TEMPERATURE_WET_BULB) then
-
-                           if (.not. allocated(air_temperature) .or. .not. allocated(relative_humidity)) then
-                              call mess(LEVEL_ERROR, 'Air temperature and relative humidity must be provided when using wet bulb temperature for rain temperature.')
-                           end if
-
                            heatsrc(kt) = heatsrc(kt) + qin(kt) *  compute_wet_bulb_temperature(air_temperature(k), relative_humidity(k))
                         end if                       
                         
