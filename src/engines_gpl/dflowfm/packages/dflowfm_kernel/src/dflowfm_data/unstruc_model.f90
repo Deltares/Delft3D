@@ -1040,6 +1040,8 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
+      !TK_Temp: Check impact on testbench if jbasqbnddownwindhs = 1
+      jbasqbnddownwindhs = 1
 
       call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal)
       call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem)
