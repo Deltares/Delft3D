@@ -3561,7 +3561,7 @@ contains
       if (jawriteDFMinterpretedvalues > 0) then
          n1 = index(trim(filename), FILESEP, .true.)
 
-         !  fix for Linux-prepared input on Windows
+         ! fix for Linux-prepared input on Windows
          if (n1 == 0) then
             n1 = index(trim(filename), char(47), .true.)
          end if
@@ -3641,8 +3641,7 @@ contains
       end if
 
    end subroutine bilinarcinfo
-   !
-   !
+   
    ! ==========================================================================
    !>
    function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
@@ -3652,7 +3651,6 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use timespace_parameters, only: OPERAND_ADD
-      implicit none
 
       logical :: success
 
@@ -3724,7 +3722,7 @@ module m_meteo
 
    type(tEcInstance), pointer, save :: ecInstancePtr !< FM's instance of the EC-module.
    character(MAXIMUM_EC_MESSAGE_LENGTH) :: message !< EC's message, to be passed to FM's log.
-   !
+   
    integer, dimension(:), allocatable, target :: item_tracerbnd !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd !< dim(numfracs)
    integer, dimension(:), allocatable, target :: item_waqfun !< dim(num_time_functions)
@@ -3847,7 +3845,7 @@ module m_meteo
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
 
    integer, allocatable, dimension(:) :: countbndpoints(:)
-   !
+   
    integer :: n_qhbnd !< Number of already connected qh-boundaries.
 
    interface ec_gettimespacevalue
@@ -4017,16 +4015,16 @@ contains
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
       item_subsiduplift = ec_undef_int
-      !
+      
       n_qhbnd = 0
-      !
+      
       ! tracers
       if (allocated(item_tracerbnd)) then
          deallocate (item_tracerbnd)
       end if
       allocate (item_tracerbnd(numtracers))
       item_tracerbnd = ec_undef_int
-      !
+      
       if (allocated(item_sedfracbnd)) then
          deallocate (item_sedfracbnd)
       end if

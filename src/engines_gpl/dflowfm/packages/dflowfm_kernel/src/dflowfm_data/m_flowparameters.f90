@@ -142,9 +142,10 @@ module m_flowparameters
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
 
-   integer :: rain_temperature_method !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters
+   integer :: rain_temperature_method !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters.
    integer, parameter :: RAIN_TEMPERATURE_AIR = 1 !< Use the air temperature in rain temperature calculations.
    integer, parameter :: RAIN_TEMPERATURE_WET_BULB = 2 !< Use the wet bulb temperature in rain temperature calculations.
+   logical :: rain_temperature_from_dew_point !< True if rain temperature is determined from dew point temperature
 
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
@@ -769,6 +770,7 @@ contains
       free_convection = FREE_CONVECTION_OFF ! Free convection model
       salinity_dependent_evaporation_method = SALINITY_DEPENDENT_EVAPORATION_NONE ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
       rain_temperature_method = RAIN_TEMPERATURE_AIR ! Method for determining rain temperature
+      rain_temperature_from_dew_point = .false.
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
       sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
       sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature

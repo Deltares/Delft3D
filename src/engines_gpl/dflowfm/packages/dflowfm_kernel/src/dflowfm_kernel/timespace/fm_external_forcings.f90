@@ -2011,7 +2011,7 @@ contains
    subroutine finalize(iresult)
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
-      use m_flowparameters, only: rain_temperature_method, RAIN_TEMPERATURE_WET_BULB
+      use m_flowparameters, only: rain_temperature_method, RAIN_TEMPERATURE_WET_BULB, rain_temperature_from_dew_point
       use m_storage, only: t_storage, get_surface
       use m_structures, only: network
       use m_meteo
@@ -2217,7 +2217,11 @@ contains
             dew_point_temperature_provided = .false.
          end if
 
-         if (.not. relative_humidity_provided .and. .not. dew_point_temperature_provided) then
+         if (.not. relative_humidity_provided .and. dew_point_temperature_provided) then
+            ! Rain temperature will be determined from dew point temperature since relative humidity is not provided.
+            rain_temperature_from_dew_point = .true.
+         else if (.not. relative_humidity_provided .and. .not. dew_point_temperature_provided) then
+            ! Raise an error since neither relative humidity nor dew point temperature is provided.
             call mess(LEVEL_ERROR, 'When "rainTemperature == wetBulbTemperature", either humidity or dew point temperature must be provided in the .ext file.')
          end if
       end if
