@@ -5532,14 +5532,14 @@ contains
                   call realloc(geomYCrs, nNodesCrs, keepExisting=.true.)
                   call realloc(maskBndAll, nNodesCrs, keepExisting=.true.)
                end if
+            end if
 
-               is = ie + 1
-               ie = is + nNodes - 1
-               geomXCrs(is:ie) = geomX(1:nNodes)
-               geomYCrs(is:ie) = geomY(1:nNodes)
-               if (jampi > 0) then
-                  maskBndAll(is:ie) = maskBnd(1:nNodes)
-               end if
+            is = ie + 1
+            ie = is + nNodes - 1
+            geomXCrs(is:ie) = geomX(1:nNodes)
+            geomYCrs(is:ie) = geomY(1:nNodes)
+            if (jampi > 0) then
+               maskBndAll(is:ie) = maskBnd(1:nNodes)
             end if
          end if
       end do
