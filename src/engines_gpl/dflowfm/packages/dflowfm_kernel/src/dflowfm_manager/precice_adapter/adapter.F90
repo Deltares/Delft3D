@@ -196,7 +196,7 @@ contains
       if (sources_sinks_mesh_dims /= 2) then
          call mess(LEVEL_ERROR, 'preCICE mesh "'//trim(self%sources_sinks_mesh_name)//'" does not have 2 dimensions.')
       endif
-      self%sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0] ! All coupled_sources_sinks have coordinates 0.0,0.0
+      self%sources_sinks_bounding_box = [-1.0, 100001.0, -1.0, 1.0] ! All coupled_sources_sinks have coordinates 0.0,0.0
       call precicef_set_mesh_access_region(self%sources_sinks_mesh_name, self%sources_sinks_bounding_box, len(self%sources_sinks_mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
