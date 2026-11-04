@@ -52,7 +52,7 @@ module fm_external_forcings_update
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       item_dambreak_crestlevel, item_dambreak_breachwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_sea_interaction_model, &
-                      AIR_SEA_INTERACTION_MODEL_MOST, wx, wy, wcharnock, item_sea_surface_temperature
+                      AIR_SEA_INTERACTION_MODEL_MOST, wx, wy, wcharnock, item_sea_surface_temperature, TEMPERATURE_MODEL_NONE
    use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
@@ -180,9 +180,15 @@ contains
          call initialize_salinity_and_temperature_with_nudge_variables()
       end if
 
-      call update_sea_surface_temperature(time_in_seconds)
+      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. &
+          (temperature_model == TEMPERATURE_MODEL_NONE .and. &
+          air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST)) then
+         call update_temperature_forcings(time_in_seconds)
+      end if
 
       if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
+         call update_sea_surface_temperature(time_in_seconds)
          call compute_air_water_interaction_most_fluxes(initialization)
       end if
 
@@ -191,11 +197,6 @@ contains
          if (iresult /= DFM_NOERR) then
             return
          end if
-      end if
-
-      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
-      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         call update_temperature_forcings(time_in_seconds)
       end if
 
       if (ja_friction_coefficient_time_dependent > 0) then
