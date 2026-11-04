@@ -51,6 +51,9 @@ contains
       use m_step_reduce_hydro, only: step_reduce_hydro
       use m_setlinktocenterweights, only: setlinktocenterweights
       use m_getcellsurface1d, only: getcellsurface1d
+       use m_sethu, only: calculate_hu_au_and_advection_for_dams_weirs
+       use m_setau, only: setau
+       use m_u1q1, only: update_frozen_1d2d_velocity
 
       use m_flow
       use timers
@@ -65,7 +68,7 @@ contains
 
       iresult = DFM_GENERICERROR
 
-      if (itstep >= 2) then
+       if (itstep >= 2 .or. flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
          call timstrt('step_reduce', handle_extra(51)) ! step_reduce
          select case (flow_solver)
          case (FLOW_SOLVER_FM)
@@ -75,8 +78,21 @@ contains
             call flow_initialize_fm1dimp_timestep(iresult, time1) !in kernel, can access everything
             call SOFLOW_wrap(time1) !in module, only accesses SRE variables
             call flow_finalize_fm1dimp_timestep() !in kernel, can access everything
+          case (FLOW_SOLVER_FROZEN_1D2D)
+             time1 = time0 + dts
+             dti = 1.0_dp / dts
          end select
          call step_reduce_transport_morpho()
+
+          if (flow_solver == FLOW_SOLVER_FROZEN_1D2D) then
+             call calculate_hu_au_and_advection_for_dams_weirs(0, .true.)
+             call setau()
+             call update_frozen_1d2d_velocity(iresult)
+             if (iresult /= DFM_NOERR) then
+                call timstop(handle_extra(51))
+                return
+             end if
+          end if
 
          call timstop(handle_extra(51)) ! step_reduce
 

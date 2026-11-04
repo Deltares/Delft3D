@@ -34,6 +34,7 @@ contains
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
       use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile
+      use m_flowparameters, only: rst_ignore_bedcomp
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -62,12 +63,15 @@ contains
 
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
 
+      call F90_EXPECT_FALSE(rst_ignore_bedcomp)
+      rst_ignore_bedcomp = .true.
       call writeMDUFile(output_file, ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
 
       call resetFullFlowModel()
       call readMDUFile('test_output.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
+      call F90_EXPECT_TRUE(rst_ignore_bedcomp)
 
       call F90_EXPECT_STREQ(trim(md_obsfile)//c_null_char, trim(tm_md_obsfile)//c_null_char, 'Difference in md_obsfile after read-write-read cycle.')
       call F90_EXPECT_STREQ(trim(md_crsfile)//c_null_char, trim(tm_md_crsfile)//c_null_char, 'Difference in md_crsfile after read-write-read cycle.')
@@ -154,6 +158,44 @@ contains
       call F90_ASSERT_NEAR(sumlaycof, 100.0_dp, 1e-12_dp, "Difference in sum of laycof for all layers")
 
    end subroutine test_read_stretch_coef
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_frozen_2d_velocity, test_frozen_2d_velocity,
+   subroutine test_frozen_2d_velocity() bind(C)
+      use m_u1q1, only: update_frozen_1d2d_velocity
+      use m_flow, only: au, q1, qa, u1
+      use m_flowgeom, only: lnx
+      use m_resetfullflowmodel, only: resetFullFlowModel
+      use dfm_error, only: DFM_NOERR, DFM_GENERICERROR
+
+      integer :: ierr
+
+      call resetFullFlowModel()
+      lnx = 2
+      allocate (au(lnx), q1(lnx), qa(lnx), u1(lnx))
+      q1 = [6.0_dp, 0.0_dp]
+      au = [3.0_dp, 0.0_dp]
+
+      call update_frozen_1d2d_velocity(ierr)
+      call f90_expect_eq(ierr, DFM_NOERR)
+      call f90_expect_eq(u1(1), 2.0_dp)
+      call f90_expect_eq(u1(2), 0.0_dp)
+
+      au(1) = 2.0_dp
+      call update_frozen_1d2d_velocity(ierr)
+      call f90_expect_eq(ierr, DFM_NOERR)
+      call f90_expect_eq(q1(1), 6.0_dp)
+      call f90_expect_eq(qa(1), 6.0_dp)
+      call f90_expect_eq(u1(1), 3.0_dp)
+
+      threshold_abort = LEVEL_FATAL
+      au(1) = 0.0_dp
+      call update_frozen_1d2d_velocity(ierr)
+      call f90_expect_eq(ierr, DFM_GENERICERROR)
+      call f90_expect_eq(q1(1), 6.0_dp)
+
+      call resetFullFlowModel()
+   end subroutine test_frozen_2d_velocity
    !$f90tw)
 
 end module test_mdu_file_read_write

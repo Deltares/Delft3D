@@ -505,6 +505,54 @@ contains
    end subroutine test_getprof_1d__prof1d_without_profile__friction
    !$f90tw )
 
+   !$f90tw TESTCODE(TEST, test_getprof_1d, test_frozen_1d_profile_velocity, test_frozen_1d_profile_velocity,
+   subroutine test_frozen_1d_profile_velocity() bind(C)
+      use m_flow, only: au, q1, qa, u1
+      use m_flowgeom, only: lnx
+      use m_flow_geominit, only: flow_geominit
+      use m_u1q1, only: update_frozen_1d2d_velocity
+      use unstruc_channel_flow, only: network
+      use dfm_error, only: DFM_NOERR
+
+      type(t_grid_helper) :: grid_helper
+      integer :: new_link, error_code, ierr
+      real(kind=dp) :: width, perim
+      real(kind=dp), parameter :: water_level = 1.0_dp
+
+      call disable_timers_logging_and_mpi()
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid( &
+         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
+         rows=1, columns=2, array_size_margin=2 &
+         )
+      call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
+      call f90_assert_eq(error_code, 0)
+      call flow_geominit(0)
+      call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
+      network%loaded = .false.
+
+      call realloc(au, lnx, fill=0.0_dp)
+      call realloc(q1, lnx, fill=0.0_dp)
+      call realloc(qa, lnx, fill=0.0_dp)
+      call realloc(u1, lnx, fill=0.0_dp)
+      q1(1) = 4.0_dp
+
+      call getprof_1D(1, water_level - 0.0_dp, au(1), width, 1, 0, perim)
+      call update_frozen_1d2d_velocity(ierr)
+      call f90_assert_eq(ierr, DFM_NOERR)
+      call f90_assert_near(au(1), 2.0_dp, 1e-12_dp)
+      call f90_assert_near(u1(1), 2.0_dp, 1e-12_dp)
+
+      call getprof_1D(1, water_level - 0.5_dp, au(1), width, 1, 0, perim)
+      call update_frozen_1d2d_velocity(ierr)
+      call f90_assert_eq(ierr, DFM_NOERR)
+      call f90_assert_near(au(1), 1.0_dp, 1e-12_dp)
+      call f90_assert_near(q1(1), 4.0_dp, 1e-12_dp)
+      call f90_assert_near(qa(1), 4.0_dp, 1e-12_dp)
+      call f90_assert_near(u1(1), 4.0_dp, 1e-12_dp)
+   end subroutine test_frozen_1d_profile_velocity
+   !$f90tw )
+
    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile__full, test_getprof_1d__prof1d_without_profile__full,
    subroutine test_getprof_1d__prof1d_without_profile__full() bind(C)
       use m_flow_geominit, only: flow_geominit

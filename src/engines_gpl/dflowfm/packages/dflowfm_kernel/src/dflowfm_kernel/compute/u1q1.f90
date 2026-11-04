@@ -37,10 +37,40 @@ module m_u1q1
    private
 
    public :: u1q1
+   public :: update_frozen_1d2d_velocity
 
 contains
 
-   subroutine u1q1()
+   !> Derive velocity from the fixed restart discharge and the current flow area.
+   subroutine update_frozen_1d2d_velocity(iresult)
+      use precision, only: dp
+      use m_flow, only: au, q1, qa, u1
+      use m_flowgeom, only: lnx
+      use dfm_error, only: DFM_NOERR, DFM_GENERICERROR
+      use MessageHandling, only: mess, LEVEL_ERROR
+
+      integer, intent(out) :: iresult
+      integer :: L
+      character(len=128) :: message
+
+      iresult = DFM_NOERR
+      do L = 1, lnx
+         if (au(L) > 0.0_dp) then
+            u1(L) = q1(L) / au(L)
+         else
+            if (q1(L) /= 0.0_dp) then
+               write (message, '(a,i0,a)') 'Frozen 1D/2D flow: nonzero discharge at dry link ', L, '.'
+               call mess(LEVEL_ERROR, trim(message))
+               iresult = DFM_GENERICERROR
+               return
+            end if
+            u1(L) = 0.0_dp
+         end if
+         qa(L) = q1(L)
+      end do
+   end subroutine update_frozen_1d2d_velocity
+
+   subroutine u1q1(frozen_1d2d)
       use precision, only: dp
       use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, &
                         qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, &
@@ -55,6 +85,8 @@ contains
 
       implicit none
 
+      logical, optional, intent(in) :: frozen_1d2d
+      logical :: keep_discharge
       integer :: L0, L, k1, k2, k01, k02, LL, k, n, nn, km, n1, n2, kb, kt, Lb, Lt, kmxLL, ng, istru
       real(kind=dp) :: zws0k
       real(kind=dp) :: wb, dsL, sqiuh, qwb, qsigma
@@ -68,9 +100,18 @@ contains
       qoutbnd = 0.0_dp
       ! u1  = 0d0 ; q1  = 0d0 ;  qa = 0d0
 
+      keep_discharge = .false.
+      if (present(frozen_1d2d)) then
+         keep_discharge = frozen_1d2d
+      end if
+
       if (kmx < 1) then ! original 2D coding              ! 1D2D
 
-         if (jampi == 0) then
+         if (keep_discharge) then
+            qa(1:lnx) = q1(1:lnx)
+         end if
+
+         if (.not. keep_discharge .and. jampi == 0) then
             !$OMP PARALLEL DO           &
             !$OMP PRIVATE(L,k1,k2)
             do L = 1, lnx
@@ -87,7 +128,7 @@ contains
                end if
             end do
             !$OMP END PARALLEL DO
-         else
+         else if (.not. keep_discharge) then
 !      parallel: compute u1, update u1, compute remaining variables
 
 !      compute u1
@@ -451,9 +492,13 @@ contains
                pstru%u1(L0) = 0.0_dp
             else
                if (hu(L) > 0) then
-                  k1 = ln(1, L)
-                  k2 = ln(2, L)
-                  call set_u1q1_structure(pstru, L0, s1(k1), s1(k2), teta(L))
+                  if (keep_discharge) then
+                     pstru%u1(L0) = u1(L)
+                  else
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
+                     call set_u1q1_structure(pstru, L0, s1(k1), s1(k2), teta(L))
+                  end if
                else
                   pstru%u1(L0) = 0.0_dp
                end if
