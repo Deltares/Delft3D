@@ -70,11 +70,8 @@ object TestBenchValidation : BuildType({
             scriptContent = """
                 #!/usr/bin/env bash
                 set -exo pipefail
-                # Fail if uv.lock is out of date with pyproject.toml. UV_INDEX_URL (Nexus) is cleared because it
-                # differs from the index recorded in uv.lock.
-                UV_INDEX_URL= uv lock --check
-                # --locked cannot be used for the same reason. A plain sync installs the versions pinned in uv.lock.
-                uv sync --no-install-project --extra dev
+                # --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked --no-install-project --extra dev
                 source .venv/bin/activate
             """.trimIndent()
             dockerImage = "%docker_image%"

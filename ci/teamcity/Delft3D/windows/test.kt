@@ -139,15 +139,8 @@ object WindowsTest : BuildType({
                 rem to avoid os error 32 file-lock failures on the mount during install.
                 rem Wheels come from the mounted uv cache volume.
                 set UV_PROJECT_ENVIRONMENT=C:\venv
-                rem Fail if uv.lock is out of date with pyproject.toml. UV_INDEX_URL (Nexus) is cleared for this
-                rem command because it differs from the index recorded in uv.lock.
-                setlocal
-                set UV_INDEX_URL=
-                uv lock --check
-                if %%ERRORLEVEL%% NEQ 0 exit /b 1
-                endlocal
-                rem --locked cannot be used for the same reason. A plain sync installs the versions pinned in uv.lock.
-                uv sync --no-install-project
+                rem --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked --no-install-project
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
                 call C:\venv\Scripts\activate.bat
 
