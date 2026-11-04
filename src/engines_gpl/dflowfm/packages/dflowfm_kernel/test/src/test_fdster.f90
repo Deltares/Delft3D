@@ -14,11 +14,11 @@ contains
    !$f90tw TESTCODE(TEST, tests_fdster, test_dstar_one_critical_shields, test_dstar_one_critical_shields,
    !> Dstar = 1 must use the special-case Shields value of 0.24.
    subroutine test_dstar_one_critical_shields() bind(C)
-      real(kind=dp), parameter :: expected_theta = 0.24_dp
       real(kind=dp), parameter :: tolerance = 1.0e-7_dp
       real(kind=dp) :: dstar, d50, pclay, fcr, gravity, rhos, rhow
-      real(kind=dp) :: theta, tau, expected_tau
+      real(kind=dp) :: theta, tau, expected_theta, expected_tau
 
+      ! Arrange
       dstar = 1.0_dp
       ! D50 > 62 micrometres, no clay and FCR = 1 make all correction factors one.
       d50 = 1.0e-4_dp
@@ -27,10 +27,13 @@ contains
       gravity = 9.81_dp
       rhos = 2650.0_dp
       rhow = 1000.0_dp
-      expected_tau = (rhos - rhow) * gravity * d50 * expected_theta
 
+      ! Act
       call fdster(dstar, tau, theta, pclay, gravity, d50, rhos, rhow, fcr)
 
+      ! Assert
+      expected_theta = 0.24_dp
+      expected_tau = (rhos - rhow) * gravity * d50 * expected_theta
       call f90_expect_near(theta, expected_theta, tolerance, &
                            cstr("Dstar = 1 should retain the special-case Shields value of 0.24"))
       call f90_expect_near(tau, expected_tau, tolerance, &

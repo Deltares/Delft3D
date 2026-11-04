@@ -48,6 +48,7 @@ contains
 
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
+         ! Do not store in sal(n) directly, because 2D (kmx=0) stores salinity there
          average = 0.0_dp
          if (vol1(n) > 0) then
             do k = kb, kt
