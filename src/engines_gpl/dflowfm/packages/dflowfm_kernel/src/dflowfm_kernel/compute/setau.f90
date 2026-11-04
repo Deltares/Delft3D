@@ -43,12 +43,10 @@ contains
    subroutine setau() ! get wet cross-sections at u points, after limiters, setau = vol12D with japerim == 1
       use precision, only: dp
       use m_vol12d, only: vol12d
-      use m_get_upstream_downstream_cell_numbers, only: get_upstream_downstream_cell_numbers
-      use m_get_lkbot_set_ltop_upwind, only: get_lkbot_set_ltop_upwind
       use m_getflowdir, only: getflowdir
       use m_addlink2d, only: addlink2D
-      use m_flowgeom, only: ndx2d, ndxi, bl, ba, bob, wu, dxi, ln
-      use m_flow, only: kmx, kmxl, s0, s1, u1, a1, vol1_f, nonlin, ChangeVelocityAtStructures, au, au_nostrucs, hu, &
+      use m_flowgeom, only: ndx2d, ndxi, bl, ba, bob, wu, dxi
+      use m_flow, only: kmx, kmxl, s1, u1, a1, vol1_f, nonlin, ChangeVelocityAtStructures, au, au_nostrucs, hu, &
                         advi, lbot, ltop
       use m_flowparameters, only: epshu, jbasqbnddownwindhs
       use m_partitioninfo, only: jampi, idomain, my_rank, reduce_at_all, reduce_wwssav_all
@@ -62,16 +60,6 @@ contains
       integer :: n, nq, L, k2
       integer :: ng, Lnu, LL, iup
       real(kind=dp) :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
-      integer :: upstream_cell
-      integer :: upstream_cell_index
-      integer :: kb
-      integer :: kt
-      integer :: Lb
-      integer :: left_cell
-      integer :: right_cell
-      integer :: downstream_cell
-      integer :: direction_sign
-      real(kind=dp) :: velocity
 
       real(kind=dp), parameter :: FAC23 = 0.6666666666667_dp
 
@@ -281,20 +269,6 @@ contains
             k2 = kbndu(2, n)
 
             if (jbasqbnddownwindhs == 1) then
-               hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
-               if (hu(L) > 0.0) then
-                  left_cell = ln(1, L)
-                  right_cell = ln(2, L)
-                  velocity = u1(L)
-                  if (velocity == 0) then
-                     call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell), left_cell, right_cell, &
-                                                               upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
-                  else
-                     call get_upstream_downstream_cell_numbers(velocity > 0, left_cell, right_cell, &
-                                                               upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
-                  end if
-                  call get_lkbot_set_ltop_upwind(L, upstream_cell, upstream_cell_index, Lb, kb, kt)
-               end if
                call addlink2D(L, 1)
                huqbnd(n) = hu(L)
             end if

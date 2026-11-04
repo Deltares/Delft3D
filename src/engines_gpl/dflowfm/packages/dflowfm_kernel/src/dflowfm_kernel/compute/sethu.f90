@@ -65,7 +65,7 @@ module m_sethu
 
 contains
 !
-!> Set upwind waterdepth hu and au
+!> Set upwind waterdepth hu and au, with consistent layer areas for downstream-depth discharge boundaries.
    subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0, set_hu)
       use precision, only: dp
       use m_flowgeom
@@ -148,18 +148,7 @@ contains
             cycle
          end if
 
-         left_cell = ln(1, link)
-         right_cell = ln(2, link)
-
-         velocity = velocity_pointer(link)
-
-         if (velocity == 0) then
-            call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell), left_cell, right_cell, &
-                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
-         else
-            call get_upstream_downstream_cell_numbers(velocity > 0, left_cell, right_cell, &
-                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
-         end if
+         call set_link_orientation()
 
          upstream_water_level = get_upstream_water_level()
 
@@ -239,10 +228,41 @@ contains
          call setveg()
       end if
 
+      if (jbasqbnddownwindhs == 1) then
+         do nq = 1, nqbnd
+            do n = L1qbnd(nq), L2qbnd(nq)
+               link = kbndu(3, n)
+               hu(link) = max(0.0_dp, s1(kbndu(2, n)) - bl(kbndu(2, n)))
+               if (kmx > 0) then
+                  ! Rebuild layer areas before setau normalizes the prescribed discharge.
+                  call set_link_orientation()
+                  call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
+                  call calculate_hu_au_3D()
+               end if
+            end do
+         end do
+      end if
+
       ! Create an index array containing the wet flow links. Why is it here?
       call fill_onlyWetLinks()
 
    contains
+
+      subroutine set_link_orientation()
+
+         left_cell = ln(1, link)
+         right_cell = ln(2, link)
+         velocity = velocity_pointer(link)
+
+         if (velocity == 0.0_dp) then
+            call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell), left_cell, right_cell, &
+                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
+         else
+            call get_upstream_downstream_cell_numbers(velocity > 0.0_dp, left_cell, right_cell, &
+                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
+         end if
+
+      end subroutine set_link_orientation
 
 !> calculate_advection_subgrid
       subroutine calculate_advection_subgrid()
