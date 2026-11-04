@@ -47,7 +47,7 @@ contains
       use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use network_data, only: LINK_1D2D_INTERNAL
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
@@ -73,10 +73,19 @@ contains
          wud = wu(L) * dx(L) !flow surface area at link
 
          wuL1 = acl(L) * wud ! 2d center factor
+         wuL2 = (1.0_dp - acl(L)) * wud
+         if (kcu(L) == LINK_1D2D_STREETINLET) then
+            ! Type-5 links are not 2D cell faces; retain their weights only at 1D nodes.
+            if (k1 <= ndx2d) then
+               wuL1 = 0.0_dp
+            end if
+            if (k2 <= ndx2d) then
+               wuL2 = 0.0_dp
+            end if
+         end if
          wcL(1, L) = wuL1
          wc(k1) = wc(k1) + wuL1
 
-         wuL2 = (1.0_dp - acl(L)) * wud
          wcL(2, L) = wuL2
          wc(k2) = wc(k2) + wuL2
 
@@ -106,6 +115,10 @@ contains
          call realloc(wwL, lnxmax, keepExisting=.false.)
          do kk = 1, size(nd(k1)%ln)
             LL = abs(nd(k1)%ln(kk))
+            wwL(kk) = 0.0_dp
+            if (k1 <= ndx2d .and. kcu(LL) == LINK_1D2D_STREETINLET) then
+               cycle
+            end if
             n12 = 1
             alf = acL(LL)
             if (k1 /= ln(1, LL)) then
