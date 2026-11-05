@@ -84,15 +84,14 @@ file covers Windows and Linux (x86-64) and python 3.11 and 3.12. Run the followi
 creates the virtual environment `.venv` if it does not exist yet, and installs the pinned versions in it:
 
 ```bash
-uv sync --locked --no-install-project --extra dev  # Dependencies and development tools (pytest, ruff, mypy)
-uv sync --locked --no-install-project              # Only the dependencies needed to run the testbench
+uv sync --locked --extra dev  # Dependencies and development tools (pytest, ruff, mypy)
+uv sync --locked              # Only the dependencies needed to run the testbench
 ```
 
 - `--locked` makes the command fail, instead of changing `uv.lock`, when `uv.lock` is out of date with
   `pyproject.toml`.
-- `--no-install-project` installs only the dependencies, so you keep running `python TestBench.py`. If you leave it
-  out, the testbench itself is also installed (editable) and a `testbench` command becomes available. This is still
-  experimental.
+- The testbench itself is also installed (editable), so the `testbench` command is available next to
+  `python TestBench.py`.
 - `--extra dev` also installs the development dependencies. You can read more about them
   [in this section](#why-separate-the-dependencies-from-development-dependencies).
 

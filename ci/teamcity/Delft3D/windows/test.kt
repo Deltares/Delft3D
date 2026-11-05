@@ -140,7 +140,7 @@ object WindowsTest : BuildType({
                 rem Wheels come from the mounted uv cache volume.
                 set UV_PROJECT_ENVIRONMENT=C:\venv
                 rem --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
-                uv sync --locked --no-install-project
+                uv sync --locked
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
                 call C:\venv\Scripts\activate.bat
 

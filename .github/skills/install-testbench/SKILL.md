@@ -38,10 +38,10 @@ as the working directory: `uv venv --python 3.12`. If `uv` is not installed, use
 If `uv` is available, run the following with `/test/deltares_testbench` as the working directory. It creates the
 `.venv` itself if it does not exist yet, so activating the virtual environment is not needed for this step:
 ```bash
-uv sync --locked --no-install-project --extra dev
+uv sync --locked --extra dev
 ```
 `--locked` makes the command fail instead of silently changing `uv.lock` when it is out of date with `pyproject.toml`.
-Leave out `--extra dev` if the development tools (pytest, ruff, mypy) are not needed. Python 3.12 and newer on Windows
+Leave out `--extra dev` if the development tools (pytest, ruff, mypy) are not needed. Python 3.11 and 3.12 on Windows
 and Linux (x86-64) are supported.
 
 If `uv` is not available, activate the virtual environment and use `pip`. Note that this does *not* use the pinned

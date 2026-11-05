@@ -71,7 +71,7 @@ object TestBenchValidation : BuildType({
                 #!/usr/bin/env bash
                 set -exo pipefail
                 # --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
-                uv sync --locked --no-install-project --extra dev
+                uv sync --locked --extra dev
                 source .venv/bin/activate
             """.trimIndent()
             dockerImage = "%docker_image%"

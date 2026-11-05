@@ -324,7 +324,7 @@ the following commands:
 ```bash
 # From test/deltares_testbench
 rm -rf .venv
-uv sync --python=3.12 --locked --no-install-project --extra dev
+uv sync --python=3.12 --locked --extra dev
 ```
 
 #### Setting the path to the Delft3D binaries
