@@ -143,6 +143,8 @@ contains
       allocate (self%name(size))
       allocate (self%x(size, self%max_polyline_points))
       allocate (self%y(size, self%max_polyline_points))
+      self%x = dmiss
+      self%y = dmiss
       allocate (self%z_bottom(size, 2))
       allocate (self%z_top(size, 2))
       allocate (self%indices(size, 6))

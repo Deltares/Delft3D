@@ -347,8 +347,8 @@ contains
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
          if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', source_sinks%max_polyline_points, id_srcptsdim))
-            call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
-            call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
+            call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate', fillVal=dmiss)
+            call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate', fillVal=dmiss)
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
          end if
 
@@ -705,12 +705,12 @@ contains
                block
                   real(kind=dp), dimension(:,:), allocatable :: tm_source_sink_x, tm_source_sink_y
                   integer :: num_points
-                  num_points = source_sinks%max_xy_points(source_sinks%num_normal)
-                  call realloc(tm_source_sink_x, [source_sinks%num_normal, source_sinks%max_polyline_points])
-                  call realloc(tm_source_sink_y, [source_sinks%num_normal, source_sinks%max_polyline_points])
+                  call realloc(tm_source_sink_x, [source_sinks%num_normal, source_sinks%max_polyline_points], keepExisting=.false., fill=dmiss)
+                  call realloc(tm_source_sink_y, [source_sinks%num_normal, source_sinks%max_polyline_points], keepExisting=.false., fill=dmiss)
                   j = 1
                   do i = 1, source_sinks%num_total
                      if (source_sinks%is_normal(i)) then
+                        num_points = source_sinks%max_xy_points(i)
                         tm_source_sink_x(j, 1:num_points) = source_sinks%x(i, 1:num_points)
                         tm_source_sink_y(j, 1:num_points) = source_sinks%y(i, 1:num_points)
                         j = j + 1
