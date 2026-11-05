@@ -43,6 +43,7 @@ contains
       real(kind=dp) :: dsand, dsilt, cmaxs, fch1, cmax, fpack, fclay
       if (DSTER <= 1.0_dp) then
          THETCR = 0.24_dp ! this line added by hk and svdp: critical shields parameter
+      end if
       if (1.0_dp < DSTER .and. DSTER <= 4.0_dp) then
          THETCR = 0.115_dp / (DSTER)**0.5_dp
       end if
