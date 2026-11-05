@@ -43,6 +43,21 @@ preCICE offers tools like config-visualizer which can be used to view the in use
 \section runtime_workflow Runtime Workflow
 The system overview above shows the participating components. The runtime workflow below gives a high-level view of the preC-SUMO processing sequence and interaction points.
 
+FM reads and installs source/sink data at relative time zero immediately after preCICE initialization,
+before computing its first interval. This supports partners providing initial forcing without
+partner-specific logic. With preC-SUMO return exchanges not initialized, default zero discharge
+means no initial coupled water or constituent transfer.
+
+At subsequent coupling boundaries, FM redefines its 3D mesh when permitted, writes its fields,
+and advances preCICE before reading and installing the response for the next FM interval.
+The response read refreshes the received source/sink mesh size and vertex IDs to account for remeshing.
+Reading and installing before the exchange would apply the previous response for an extra interval.
+
+With parallel-explicit coupling, preC-SUMO still computes its response using previously exchanged
+FM fields. The ordering above avoids an additional application delay; it does not provide
+same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is tracked in
+<a href="https://github.com/precice/precice/issues/2177">precice/precice#2177</a>.
+
 \dotfile preC_SUMO_Core_Workflow.dot "preC-SUMO core workflow overview"
 
 For the detailed per-step swimlane view, see \ref pre_c_sumo::run in the API reference.
@@ -68,4 +83,3 @@ See the Doxygen setup in \ref pre_c_sumo_readme and the editor setup notes in \r
 Diagrams are maintained in docs/include as .dot and .drawio source files.
 Use the dotfile command for .dot diagrams in Doxygen and the image command for embedded SVG assets.
 */
-
