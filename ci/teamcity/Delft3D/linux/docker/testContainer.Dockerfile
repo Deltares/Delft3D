@@ -19,7 +19,13 @@ RUN uv sync \
 
 FROM runtime-container
 
-# Used for (integration) testbench only
+# `tcl` is required for the mormerge testbench
+RUN dnf update --assumeyes --refresh && \
+    dnf install --assumeyes tcl && \
+    dnf clean all && \
+    rm --recursive --force /var/cache/dnf
+
+# The wanda binaries are required for the wanda testbench
 ADD wanda/bin/* /opt/dimrset/bin/
 ADD wanda/lib/* /opt/dimrset/lib/
 
