@@ -29,9 +29,6 @@ object WindowsTest : BuildType({
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
-        test\deltares_testbench\data\cases\**\*.dia      => logging
-        test\deltares_testbench\data\cases\**\*.log      => logging
-        test\deltares_testbench\logs                     => logging
         test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
@@ -168,6 +165,17 @@ object WindowsTest : BuildType({
             conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
+        }
+        powerShell {
+            name = "Publish logs for failed builds"
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
+            scriptMode = script {
+                content = """
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.dia => logging']"
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.log => logging']"
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\logs => logging']"
+                """.trimIndent()
+            }
         }
     }
 
