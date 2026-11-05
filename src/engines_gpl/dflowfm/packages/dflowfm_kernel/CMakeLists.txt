@@ -147,7 +147,7 @@ target_link_libraries(${library_name} PRIVATE
                       libsigwatch
                       md5digest
                       md5
-                      metis
+                      metis::metis
                       metisoptions
                       morphology_data
                       morphology_io
