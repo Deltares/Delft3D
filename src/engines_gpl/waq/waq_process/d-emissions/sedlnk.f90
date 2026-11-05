@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,26 +33,26 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(kind=real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp) :: increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+      real(kind=real_wp) :: pmsa(*) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(*) ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) :: increm(*) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+      integer(kind=int_wp) :: noseg ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: noq1 ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp) :: noq2 ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+      integer(kind=int_wp) :: noq3 ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) :: noq4 ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
 !
 !     support variables
       integer(kind=int_wp), parameter :: npmsa = 9
       integer(kind=int_wp) :: ipnt(npmsa) !    Local work array for the pointering
-      integer(kind=int_wp) :: iseg        !    Local loop counter for computational element loop
-      integer(kind=int_wp) :: iflux       !    Local loop counter for computational element loop
-      integer(kind=int_wp) :: ifrac       !    Local loop counter for sediment fractions
+      integer(kind=int_wp) :: iseg !    Local loop counter for computational element loop
+      integer(kind=int_wp) :: iflux !    Local loop counter for computational element loop
+      integer(kind=int_wp) :: ifrac !    Local loop counter for sediment fractions
 
       !     input items
       real(kind=real_wp) :: volume

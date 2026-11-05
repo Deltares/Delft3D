@@ -42,6 +42,9 @@ examples/**/*.dia
 src/engines_gpl/waq/resources/process_lib/*.log
 src/engines_gpl/waq/resources/process_lib/*.asc
 src/engines_gpl/waq/resources/process_lib/coefedit.dat
+src/engines_gpl/waq/resources/d-emissions/*.log
+src/engines_gpl/waq/resources/d-emissions/*.asc
+src/engines_gpl/waq/resources/d-emissions/coefedit.dat
 
 # ignore FortranCInterface header files created on linux
 src/**/config.h

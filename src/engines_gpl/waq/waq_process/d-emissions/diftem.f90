@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -61,22 +61,22 @@ contains
       integer ioq1, ioq2, iseg, iflux
       real tflux
 
-      !     input items
-      integer(kind=int_wp), parameter :: ip_noexf1toW = 1
-      integer(kind=int_wp), parameter :: ip_noexf2toW = 2
-      integer(kind=int_wp), parameter :: ip_tempair = 3
-      integer(kind=int_wp), parameter :: ip_volume = 4
-      integer(kind=int_wp), parameter :: ip_cloudf = 5
-      integer(kind=int_wp), parameter :: ip_period1 = 6
-      integer(kind=int_wp), parameter :: ip_wsin1 = 7
-      integer(kind=int_wp), parameter :: ip_period2 = 8
-      integer(kind=int_wp), parameter :: ip_wsin2 = 9
-      integer(kind=int_wp), parameter :: ip_delt = 10
-      integer(kind=int_wp), parameter :: ip_tempmin = 11
-      integer(kind=int_wp), parameter :: ip_flow = 12
-      integer(kind=int_wp), parameter :: ip_cloudp = 13
-      integer(kind=int_wp), parameter :: ip_wsout1 = 14
-      integer(kind=int_wp), parameter :: ip_wsout2 = 15
+      ! index of pointers to concrete items
+      integer(kind=int_wp), parameter :: i_noexf1toW = 1
+      integer(kind=int_wp), parameter :: i_noexf2toW = 2
+      integer(kind=int_wp), parameter :: i_tempair = 3
+      integer(kind=int_wp), parameter :: i_volume = 4
+      integer(kind=int_wp), parameter :: i_cloudf = 5
+      integer(kind=int_wp), parameter :: i_period1 = 6
+      integer(kind=int_wp), parameter :: i_wsin1 = 7
+      integer(kind=int_wp), parameter :: i_period2 = 8
+      integer(kind=int_wp), parameter :: i_wsin2 = 9
+      integer(kind=int_wp), parameter :: i_delt = 10
+      integer(kind=int_wp), parameter :: i_tempmin = 11
+      integer(kind=int_wp), parameter :: i_flow = 12
+      integer(kind=int_wp), parameter :: i_cloudp = 13
+      integer(kind=int_wp), parameter :: i_flow1 = 16
+      integer(kind=int_wp), parameter :: i_flow2 = 17
 
       integer(kind=int_wp) noexf1toW
       integer(kind=int_wp) noexf2toW
@@ -94,16 +94,17 @@ contains
 
       logical first
       data first/.true./
-      save
+      save noexf1toW, noexf2toW, delt, tempmin
+
 !
 !*******************************************************************************
 !
       if (first) then
          ! input by definition independent of space and time, these parameters are picked up for the first time and the first cell only and saved
-         noexf1toW = nint(pmsa(ipoint(ip_noexf1toW)))
-         noexf2toW = nint(pmsa(ipoint(ip_noexf2toW)))
-         delt = pmsa(ipoint(ip_delt))
-         tempmin = pmsa(ipoint(ip_tempmin))
+         noexf1toW = nint(pmsa(ipoint(i_noexf1toW)))
+         noexf2toW = nint(pmsa(ipoint(i_noexf2toW)))
+         delt = pmsa(ipoint(i_delt))
+         tempmin = pmsa(ipoint(i_tempmin))
       end if
 
       ! LOOP OVER SEGMENTS
@@ -112,31 +113,33 @@ contains
       do iseg = 1, noseg
          ioq1 = (noexf1toW - 1) * noseg + iseg
          ioq2 = (noexf2toW - 1) * noseg + iseg
-         flow1 = max(pmsa(ipoint(ip_flow) + (ioq1 - 1) * increm(ip_flow)), 0.0) ! m3/s
-         flow2 = max(pmsa(ipoint(ip_flow) + (ioq2 - 1) * increm(ip_flow)), 0.0) ! m3/s
-         tempair = pmsa(ipnt(ip_tempair))
-         volume = pmsa(ipnt(ip_volume))
+         flow1 = max(pmsa(ipoint(i_flow) + (ioq1 - 1) * increm(i_flow)), 0.0) ! m3/s
+         flow2 = max(pmsa(ipoint(i_flow) + (ioq2 - 1) * increm(i_flow)), 0.0) ! m3/s
+         tempair = pmsa(ipnt(i_tempair))
+         volume = pmsa(ipnt(i_volume))
 
          ! buffer flux1 over period
-         period1 = pmsa(ipnt(ip_period1)) / delt ! expressed as timesteps
-         ws1 = pmsa(ipnt(ip_wsin1))
+         period1 = pmsa(ipnt(i_period1)) / delt ! expressed as timesteps
+         ws1 = pmsa(ipnt(i_wsin1))
          ws1 = ((period1 - 1.0) * ws1 + tempair) / period1
-         pmsa(ipnt(ip_wsin1)) = ws1
+         pmsa(ipnt(i_wsin1)) = ws1
 
          ! buffer flux2 over period
-         period2 = pmsa(ipnt(ip_period2)) / delt ! expressed as timesteps
-         ws2 = pmsa(ipnt(ip_wsin2))
+         period2 = pmsa(ipnt(i_period2)) / delt ! expressed as timesteps
+         ws2 = pmsa(ipnt(i_wsin2))
          ws2 = ((period2 - 1.0) * ws2 + tempair) / period2
-         pmsa(ipnt(ip_wsin2)) = ws2
+         pmsa(ipnt(i_wsin2)) = ws2
 
          tflux = (flow1 * 86400.*max(ws1, tempmin) + flow2 * 86400.*max(ws2, tempmin)) / volume
 !        if (isnan(tflux)) write (*,*) 'DIFTEM: ',iseg
          fl(iflux + 1) = tflux
 
-         cloudf = pmsa(ipnt(ip_cloudf))
+         cloudf = pmsa(ipnt(i_cloudf))
          call check_fraction(cloudf, "CloudFrac", iseg)
          cloudp = cloudf * 100.
-         pmsa(ipnt(ip_cloudp)) = cloudp
+         pmsa(ipnt(i_cloudp)) = cloudp
+         pmsa(ipnt(i_flow1)) = flow1
+         pmsa(ipnt(i_flow2)) = flow2
 
          ipnt = ipnt + increm(1:npmsa)
          iflux = iflux + noflux

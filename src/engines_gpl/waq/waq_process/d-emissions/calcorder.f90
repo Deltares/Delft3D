@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,9 +43,9 @@ contains
       integer(kind=int_wp) :: simcount, iseg
       logical, allocatable :: hasbeendone(:), canbedone(:)
 
-      simcount = 0                   ! count of cells already ranked
-      allocate (hasbeendone(noseg))   ! cell was already ranked
-      allocate (canbedone(noseg))     ! cell is ready to be ranked, all upstreams have been ranked
+      simcount = 0 ! count of cells already ranked
+      allocate (hasbeendone(noseg)) ! cell was already ranked
+      allocate (canbedone(noseg)) ! cell is ready to be ranked, all upstreams have been ranked
 
       ! quick exit in case there is no network defined (all downstream = -99)
       ! set simorder unchanged
