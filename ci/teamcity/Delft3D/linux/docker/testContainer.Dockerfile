@@ -1,35 +1,32 @@
-FROM runtime-container
+ARG PYTHON_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-python
+ARG PYTHON_IMAGE_TAG=alma8-python3.12
 
-ENV PIP_ROOT_USER_ACTION=ignore
-ENV PIP_NO_CACHE_DIR=1
-# Unset variable value because of libcurl version conflict.
-ENV LD_LIBRARY_PATH=
+FROM ${PYTHON_IMAGE_URL}:${PYTHON_IMAGE_TAG} AS python
+
+COPY test/deltares_testbench/pyproject.toml \
+     test/deltares_testbench/uv.lock \
+     /opt/testbench/
+
+ENV UV_PROJECT_ENVIRONMENT=/opt/testbench-venv
+ENV UV_LINK_MODE=copy
+
+RUN uv sync \
+    --locked \
+    --project /opt/testbench/ \
+    --no-dev \
+    --no-install-project \
+    --no-python-downloads
+
+FROM runtime-container
 
 # Used for (integration) testbench only
 ADD wanda/bin/* /opt/dimrset/bin/
 ADD wanda/lib/* /opt/dimrset/lib/
-ADD test/deltares_testbench/pyproject.toml test/deltares_testbench/uv.lock /tmp/testbench/
 
-# Install system dependencies and clean up packages afterwards
-RUN set -eo pipefail && \
-    dnf update --assumeyes && \
-    # Install Python (try 3.12 first, then fallback to default python3)
-    (dnf install --assumeyes python3.12 expect && ln -sf /usr/bin/python3.12 /usr/bin/python3) || \
-    dnf install --assumeyes python3 expect && \
-    dnf clean all && \
-    rm --recursive --force /var/cache/dnf
+COPY --from=python /opt/uv/ /opt/uv/
+COPY --from=python /opt/testbench-venv/ /opt/testbench-venv/
 
-# Install pip
-RUN set -eo pipefail && \
-    curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
-    python3 -m pip install --upgrade pip --break-system-packages && \
-    # Install the locked testbench dependencies (uv.lock) into the system python, then remove uv again.
-    python3 -m pip install uv==0.13.6 --break-system-packages && \
-    UV_PROJECT_ENVIRONMENT="$(python3 -c 'import sysconfig; print(sysconfig.get_config_var("prefix"))')" \
-    uv sync --project /tmp/testbench --locked --inexact --no-install-project --python python3 && \
-    python3 -m pip uninstall --yes uv --break-system-packages && \
-    rm --recursive --force --verbose /tmp/testbench
-
+ENV PATH=/opt/testbench-venv/bin:/opt/uv/bin:$PATH
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
 
-CMD [ "python3" ]
+CMD [ "python" ]
