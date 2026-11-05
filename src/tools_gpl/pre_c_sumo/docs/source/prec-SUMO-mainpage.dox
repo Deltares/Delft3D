@@ -27,6 +27,11 @@ For a developer-oriented overview without opening the implementation, read the d
 The coupling between D-Flow FM and C-SUMO is handled using preCICE. The D-FlowFM has an adapter implementation which does the conversion between FM mesh/data to and from preCICE. 
 The preC-SUMO executable is a wrapper that interacts with preCICE, writes FF2NF files that are consumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
 
+Initialize the FM-to-preC-SUMO exchanges, not the exchanges sent by preC-SUMO.
+preC-SUMO rejects configurations requiring it to write initial coupling data because NF2FF responses
+may depend on incoming FM values, especially for conversion of excess constituents to absolute values.
+These FM values are available only after preCICE initialization.
+
 \dotfile coupled_solvers_fm_csumo.dot "FM and preC-SUMO coupling overview"
 
 \section architecture Architecture Overview
@@ -63,5 +68,4 @@ See the Doxygen setup in \ref pre_c_sumo_readme and the editor setup notes in \r
 Diagrams are maintained in docs/include as .dot and .drawio source files.
 Use the dotfile command for .dot diagrams in Doxygen and the image command for embedded SVG assets.
 */
-
 
