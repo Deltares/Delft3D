@@ -119,7 +119,7 @@ contains
       use m_solve_guus, only: reducept
       use m_upotukinueaa, only: upotukinueaa
       use m_density_formulas, only: DENSITY_OPTION_UNIFORM
-      use m_atmospheric_stability, only: initialize_atmospheric_stability
+      use m_atmospheric_stability, only: atmospheric_stability
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, &
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
@@ -204,7 +204,7 @@ contains
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
 
-      call initialize_atmospheric_stability( &
+      call atmospheric_stability%initialize_atmospheric_stability( &
          atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
          free_convection == FREE_CONVECTION_ON, &
          sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
