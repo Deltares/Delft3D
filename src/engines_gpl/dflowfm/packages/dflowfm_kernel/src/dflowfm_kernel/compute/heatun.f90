@@ -44,7 +44,7 @@ contains
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
                             jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             POOLE_ATKINS_PARAMETER
-      use m_heatfluxes, only: EMMISIVITY_FACTOR, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+      use m_heatfluxes, only: emmisivity_factor, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav, &
                               PRANDTL_NUMBER_SQUARED, KINEMATIC_VISCOSITY_AIR, GAS_CONSTANT_DRY_AIR, GAS_CONSTANT_WATER_VAPOR, MIN_ICE_SNOW_THICKNESS
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
@@ -351,9 +351,9 @@ contains
       subroutine compute_longwave_radiation()
          water_surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
          if (long_wave_radiation_available) then
-            longwave_radiation_flux = EMMISIVITY_FACTOR * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4))
+            longwave_radiation_flux = emmisivity_factor * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4))
          else
-            longwave_radiation_flux = -EMMISIVITY_FACTOR * stf * (water_surface_temperature_kelvin**4) * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity))
+            longwave_radiation_flux = -emmisivity_factor * stf * (water_surface_temperature_kelvin**4) * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity))
             longwave_radiation_flux = longwave_radiation_flux * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
          end if
       end subroutine compute_longwave_radiation
@@ -374,7 +374,7 @@ contains
             qh_air2ice(n) = 0.0_fp
             qh_ice2wat(n) = 0.0_fp
             if (ice_thickness(n) > 0.0_fp .or. (water_temperature_in_cell < t_freeze + FREEZING_MARGIN .and. air_temperature(n) < 0.0_dp)) then
-               qlong_ice = EMMISIVITY_FACTOR * stf * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity)) * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
+               qlong_ice = emmisivity_factor * stf * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity)) * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
                qh_air2ice(n) = net_solar_radiation_in_cell + total_heat_flux
                call preprocess_icecover(n, qlong_ice, water_temperature_in_cell, salinity, wind_speed_in_cell)
             end if

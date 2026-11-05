@@ -27,28 +27,25 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_heatfluxes
    use precision, only: dp, fp
 
-   implicit none
+   implicit none(type, external)
 
-   real(kind=dp) :: albedo !< reflection coefficient of water () at average incidence angle of 60 deg,
+   real(kind=dp) :: albedo !< [-] Reflection coefficient of water at average incidence angle of 60 deg,
    ! (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-   real(kind=dp), parameter :: EMMISIVITY_FACTOR = 0.985_dp !< Emissivity factor (-)
-   real(kind=dp), parameter :: SPECIFIC_HEAT_AIR = 1004.0_dp !< Specific heat air   [J/kg/K]
-   real(kind=dp), parameter :: SPECIFIC_HEAT_WATER = 3986.0_dp !< Specific heat capacity of water [J/kg/K]
-   real(kind=dp) :: rcpi !< 1/(rho*cpi) m3K/J
+   real(kind=dp) :: emmisivity_factor !< [-] Emissivity factor
+   real(kind=dp), parameter :: SPECIFIC_HEAT_AIR = 1004.0_dp !< [J/(kg*K)] Specific heat air
+   real(kind=dp), parameter :: SPECIFIC_HEAT_WATER = 3986.0_dp !< [J/(kg*K)] Specific heat capacity of water
+   real(kind=dp) :: rcpi !< [(m^3*K)/J] 1/(rho*cpi)
 
-   real(kind=dp) :: qsunav !< Solar influx              (W/m2)
-   real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
-   real(kind=dp) :: qconav !< Convective heat loss      (W/m2)
-   real(kind=dp) :: qlongav !< Long wave back radiation  (W/m2)
-   real(kind=dp) :: qfreeav !< Free conv + evap heat loss (W/m2)
-   real(kind=dp) :: qfrconav !< Free convection heat loss (W/m2)
-   real(kind=dp) :: qfrevaav !< Free evaporation heat loss (W/m2)
+   real(kind=dp) :: qsunav !< [W/m2] Solar influx
+   real(kind=dp) :: qevaav !< [W/m2] Evaporative heat loss
+   real(kind=dp) :: qconav !< [W/m2] Convective heat loss
+   real(kind=dp) :: qlongav !< [W/m2] Long wave back radiation
+   real(kind=dp) :: qfreeav !< [W/m2] Free conv + evap heat loss
+   real(kind=dp) :: qfrconav !< [W/m2] Free convection heat loss
+   real(kind=dp) :: qfrevaav !< [W/m2] Free evaporation heat loss
 
    real(kind=dp) :: sarea !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, lake area
    real(kind=dp) :: fwind !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, wind factor
@@ -70,23 +67,24 @@ module m_heatfluxes
    logical :: secchi_depth_is_time_varying !< Flag to indicate if time-varying Secchi depth is available
    real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
-   real(kind=dp), parameter :: PRANDTL_NUMBER_SQUARED = 0.49_dp !< Prandtl number (0.7) squared for air [dimensionless]
-   real(kind=dp), parameter :: KINEMATIC_VISCOSITY_AIR = 16.0e-06_dp !< Kinematic viscosity of air [m^2/s]   at reference temperature
-   real(kind=dp), parameter :: GAS_CONSTANT_DRY_AIR = 287.05e-02_dp !< Specific gas constant for dry air [J/kg/K]
-   real(kind=dp), parameter :: GAS_CONSTANT_WATER_VAPOR = 461.495e-02_dp !< Specific gas constant for water vapor [J/kg/K]
-   real(kind=dp), parameter :: MIN_ICE_SNOW_THICKNESS = 0.001_fp !< Threshold thickness for ice/snow to overrule the underlying layer [m]
+   real(kind=dp), parameter :: PRANDTL_NUMBER_SQUARED = 0.49_dp !< [1] Prandtl number (0.7) squared for air
+   real(kind=dp), parameter :: KINEMATIC_VISCOSITY_AIR = 16.0e-06_dp !< [m^2/s] Kinematic viscosity of air at reference temperature
+   real(kind=dp), parameter :: GAS_CONSTANT_DRY_AIR = 287.05e-02_dp !< [J/(kg*K)] Specific gas constant for dry air
+   real(kind=dp), parameter :: GAS_CONSTANT_WATER_VAPOR = 461.495e-02_dp !< [J/(kg*K)] Specific gas constant for water vapor
+   real(kind=dp), parameter :: MIN_ICE_SNOW_THICKNESS = 0.001_fp !< [m] Threshold thickness for ice/snow to overrule the underlying layer
 
 contains
 
-   !< sets heat flux model constants to default values
+   !> Sets heat flux model constants to default values.
    subroutine default_heatfluxes()
       albedo = 0.06_dp
+      emmisivity_factor = 0.985_dp
       jarichardsononoutput = 0
       rho_water_in_wind_stress = RHO_MEAN
 
    end subroutine default_heatfluxes
 
-   !> calculate derived coefficients for heatfluxes
+   !> Calculate derived coefficients for heatfluxes.
    subroutine calculate_derived_coefficients_heatfluxes()
       use m_physcoef, only: rhomean
 
