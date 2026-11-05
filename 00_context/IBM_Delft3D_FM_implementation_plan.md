@@ -22,7 +22,7 @@ link, and continuity as a finite‑volume balance `a1·(s1−s0)/Δt + Σ ±au·
 variable arrangement as Delft3D 4, but without its ADI splitting.
 
 The most important finding is that **FM already implements the cut‑cell half of the paper** [V].
-Setting `[geometry] Cutcelllist` makes `cutcelwu(5)` do the following:
+Setting `[geometry] Cutcelllist` makes `cutcelwu(5)` Hido the following:
 
 - shorten each cut edge's `wu` to its active (fluid) length;
 - replace `ba` by the area of the active polygon;
