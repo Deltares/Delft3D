@@ -34,7 +34,7 @@ module m_heatfluxes
 
    real(kind=dp) :: albedo !< [-] Reflection coefficient of water at average incidence angle of 60 deg,
    ! (albedo is .025 at angle 0 deg, 0.13 at angle 70 deg)
-   real(kind=dp) :: emmisivity_factor !< [-] Emissivity factor
+   real(kind=dp) :: emmisivity_factor !< [-] Longwave emissivity factor of water surface.
    real(kind=dp), parameter :: SPECIFIC_HEAT_AIR = 1004.0_dp !< [J/(kg*K)] Specific heat air
    real(kind=dp), parameter :: SPECIFIC_HEAT_WATER = 3986.0_dp !< [J/(kg*K)] Specific heat capacity of water
    real(kind=dp) :: rcpi !< [(m^3*K)/J] 1/(rho*cpi)
