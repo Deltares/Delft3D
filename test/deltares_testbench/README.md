@@ -3,7 +3,7 @@
 ## Installation
 Before you can use the testbench you need to install the dependencies. You will need to have
 python installed. At the time of this writing we require python with version greater than or
-equal to '3.12'. Please consult the `requires-python` setting in `pyproject.toml` for the
+equal to '3.11'. Please consult the `requires-python` setting in `pyproject.toml` for the
 latest version requirement of python. You can check which versions of python are in your path
 and their versions using the following
 
@@ -80,7 +80,7 @@ than `pip`.
 
 The dependencies are declared in `pyproject.toml`. The exact versions of all the dependencies (and
 sub-dependencies) that we test with are pinned in `uv.lock`, which is committed to source control. One `uv.lock`
-file covers Windows and Linux (x86-64) and python 3.12 and newer. Run the following command in this directory. It
+file covers Windows and Linux (x86-64) and python 3.11 and 3.12. Run the following command in this directory. It
 creates the virtual environment `.venv` if it does not exist yet, and installs the pinned versions in it:
 
 ```bash

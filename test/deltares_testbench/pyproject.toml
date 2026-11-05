@@ -20,16 +20,16 @@ authors = [
     # Among others.
 ]
 
-requires-python = ">= 3.12"
+requires-python = ">= 3.11, < 3.13"
 dependencies = [
     "bmi-python ~= 0.3.0",
     "setuptools < 82.0.0", # Version 82.0.0 removed `pkg_resources` module that `bmi-python` unfortunately depends on
     "pywin32 ; platform_system == 'Windows'",  # Required for Windows to access the registry.
-    "netCDF4 ~= 1.7.5",
+    "netCDF4 ~= 1.7.2",
     "lxml ~= 5.4.0",
     "pandas ~= 2.3.3",
     "matplotlib ~= 3.11.1",
-    "numpy ~= 2.5",
+    "numpy ~= 1.26.4",
     "minio ~= 7.2.20",
     "s3-path-wrangler ~= 0.5",
     "urllib3 >= 2.6.3",
@@ -75,7 +75,7 @@ namespaces = true  # `src/` has no `__init__.py` files.
 [tool.ruff]
 line-length = 120
 indent-width = 4
-target-version = "py312"
+target-version = "py311"
 exclude = [
     ".mypy_cache",
     ".pytest_cache",
