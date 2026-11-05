@@ -1,78 +1,4 @@
 outppr,outpit,outpnm,outpdo,outpsx
-"Mod_Tempa ","Tempair   ",   1,"x",1
-"Mod_Tempa ","ChTempair ",   2,"x",1
-"Mod_Tempd ","temp_dew  ",   1,"x",1
-"Mod_Tempd ","ChTemp_dew",   2,"x",1
-"Mod_VWind ","Vwind     ",   1,"x",1
-"Mod_VWind ","ChVWind   ",   2,"x",1
-"Mod_GlRad ","Rad       ",   1,"x",1
-"Mod_GlRad ","ChRad     ",   2,"x",1
-"Mod_ClCov ","CloudFrac ",   1,"x",1
-"Mod_ClCov ","ChCloudFr ",   2,"x",1
-"StwCollect","FrRainSew ",   1,"x",1
-"Rain_mm   ","Rain_mmd  ",   1,"x",1
-"EMEP_Nit  ","EF_DDp    ",   1,"x",1
-"EMEP_Nit  ","EF_WDp    ",   2,"x",1
-"EMEP_Nit  ","NDepTot   ",   3,"x",1
-"Soil_Pho  ","QTopSoil  ",   1,"x",1
-"Soil_Pho  ","CBack     ",   2,"x",1
-"Soil_Nit  ","QTopSoil  ",   1,"x",1
-"InitSoi   ","QSoiTot   ",   1,"x",1
-"SetFate   ","DecPav    ",   1,"x",1
-"SetFate   ","DecUnp    ",   2,"x",1
-"SetFate   ","DecSoi    ",   3,"x",1
-"SetFate   ","KdUnpa    ",   4,"x",1
-"SetFate   ","KdSoi     ",   5,"x",1
-"SetFate   ","VwcFactor ",   6,"x",1
-"SetSoiKd  ","KdSoi     ",   1," ",1
-"EM_GSS    ","Emis_Sfw  ",   1,"x",1
-"EM_GSS    ","RO2ComSew ",   2,"x",1
-"EM_GSS    ","WW2ComSew ",   3,"x",1
-"EM_GSS    ","ConcROp   ",   4,"x",1
-"EM_GSS    ","ConcROu   ",   5,"x",1
-"EM_GSS    ","ConcWW    ",   6,"x",1
-"EM_GSS    ","ConcDR    ",   7,"x",1
-"TempDifInf","Cloud     ",   1,"x",1
-"TempDifInf","TempWrk1  ",   2,"x",1
-"TempDifInf","TempWrk2  ",   3,"x",1
-"TempDifInf","InflowRO  ",   4,"x",1
-"TempDifInf","InflowSS  ",   5,"x",1
-"WFLOW_Hydr","Velocity  ",   1,"x",1
-"WFLOW_Hydr","Depth     ",   2,"x",1
-"WFLOW_Hydr","TotalDepth",   3,"x",1
-"WFLOW_Hydr","Tau       ",   4,"x",1
-"WFLOW_Hydr","Outflow   ",   5,"x",1
-"SedimLink ","TotErod   ",   1,"x",1
-"HeatBalW  ","RadSN     ",   1,"x",1
-"HeatBalW  ","Psvap     ",   2,"x",1
-"HeatBalW  ","EmissAtm  ",   3,"x",1
-"HeatBalW  ","RadAN     ",   4,"x",1
-"HeatBalW  ","RadBR     ",   5,"x",1
-"HeatBalW  ","RadLat    ",   6,"x",1
-"HeatBalW  ","HtCond    ",   7,"x",1
-"HeatBalW  ","HtTot     ",   8,"x",1
-"HeatBalW  ","PvapWa    ",   9,"x",1
-"HeatBalW  ","VWinda    ",  10,"x",1
-"HeatBalW  ","Vevap     ",  11,"x",1
-"HeatBalW  ","RhoWater  ",  12,"x",1
-"HeatBalW  ","ModTemp   ",  13,"x",1
-"WSed_IM1  ","fSedIM1   ",   1,"x",1
-"WSed_IM1  ","VxSdWIM1  ",   2,"x",0
-"WSed_IM2  ","fSedIM2   ",   1,"x",1
-"WSed_IM2  ","VxSdWIM2  ",   2,"x",0
-"WSed_IM3  ","fSedIM3   ",   1,"x",1
-"WSed_IM3  ","VxSdWIM3  ",   2,"x",0
-"VSed_AAP  ","VSedAAP   ",   1,"x",1
-"WSed_AAP  ","fSedAAP   ",   1,"x",1
-"WSed_AAP  ","VxSdWAAP  ",   2,"x",0
-"WSed_POC1 ","fSedPOC1  ",   1,"x",1
-"WSed_POC1 ","VxSdWPOC1 ",   2,"x",0
-"WSed_PON1 ","fSedPON1  ",   1,"x",1
-"WSed_PON1 ","VxSdWPON1 ",   2,"x",0
-"WSed_POP1 ","fSedPOP1  ",   1,"x",1
-"WSed_POP1 ","VxSdWPOP1 ",   2,"x",0
-"WSed_Opal ","fSedOpal  ",   1,"x",1
-"WSed_Opal ","VxSdWOpal ",   2,"x",0
 "pH_carb   ","pH        ",   1,"x",1
 "pH_carb   ","DisCO2    ",   2,"x",1
 "pH_carb   ","pCO2water ",   3,"x",1
@@ -88,10 +14,10 @@ outppr,outpit,outpnm,outpdo,outpsx
 "TotDepth  ","LocSedDept",   3,"x",1
 "Emersion  ","SwEmersion",   1,"x",1
 "Meteo     ","RadSW     ",   1,"x",1
-"Meteo     ","Vwind     ",   2,"x",1
+"Meteo     ","VWind     ",   2,"x",1
 "Meteo     ","WinDir    ",   3,"x",1
 "Meteo     ","RelHumAir ",   4,"x",1
-"Meteo     ","Tempair   ",   5,"x",1
+"Meteo     ","TempAir   ",   5,"x",1
 "Meteo     ","PAtm      ",   6,"x",1
 "Meteo     ","Cloud     ",   7,"x",1
 "HeatBal   ","RadSN     ",   1,"x",1
@@ -177,7 +103,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Age5      ","AgeTR5    ",   1,"x",1
 "WFetch    ","FETCH     ",   1,"x",1
 "WDepth    ","InitDepth ",   1,"x",1
-"Chezy     ","Chezy     ",   1,"x",1
+"Chezy     ","CHEZY     ",   1,"x",1
 "Wave      ","WaveHeight",   1,"x",1
 "Wave      ","WaveLength",   2,"x",1
 "Wave      ","WavePeriod",   3,"x",1
@@ -5505,3 +5431,77 @@ outppr,outpit,outpnm,outpdo,outpsx
 "DEBGRP_G5 ","G5_Nbal   ",  21,"x",1
 "DEBGRP_G5 ","G5_Pbal   ",  22,"x",1
 "DEBGRP_G5 ","G5_DoSpawn",  23,"x",1
+"Mod_Tempa ","TempAir   ",   1,"x",1
+"Mod_Tempa ","ChTempair ",   2,"x",1
+"Mod_Tempd ","temp_dew  ",   1,"x",1
+"Mod_Tempd ","ChTemp_dew",   2,"x",1
+"Mod_VWind ","VWind     ",   1,"x",1
+"Mod_VWind ","ChVWind   ",   2,"x",1
+"Mod_GlRad ","Rad       ",   1,"x",1
+"Mod_GlRad ","ChRad     ",   2,"x",1
+"Mod_ClCov ","CloudFrac ",   1,"x",1
+"Mod_ClCov ","ChCloudFr ",   2,"x",1
+"StwCollect","FrRainSew ",   1,"x",1
+"Rain_mm   ","Rain_mmd  ",   1,"x",1
+"EMEP_Nit  ","EF_DDp    ",   1,"x",1
+"EMEP_Nit  ","EF_WDp    ",   2,"x",1
+"EMEP_Nit  ","NDepTot   ",   3,"x",1
+"Soil_Pho  ","QTopSoil  ",   1,"x",1
+"Soil_Pho  ","CBack     ",   2,"x",1
+"Soil_Nit  ","QTopSoil  ",   1,"x",1
+"InitSoi   ","QSoiTot   ",   1,"x",1
+"SetFate   ","DecPav    ",   1,"x",1
+"SetFate   ","DecUnp    ",   2,"x",1
+"SetFate   ","DecSoi    ",   3,"x",1
+"SetFate   ","KdUnpa    ",   4,"x",1
+"SetFate   ","KdSoi     ",   5,"x",1
+"SetFate   ","VwcFactor ",   6,"x",1
+"SetSoiKd  ","KdSoi     ",   1," ",1
+"EM_GSS    ","Emis_Sfw  ",   1,"x",1
+"EM_GSS    ","RO2ComSew ",   2,"x",1
+"EM_GSS    ","WW2ComSew ",   3,"x",1
+"EM_GSS    ","ConcROp   ",   4,"x",1
+"EM_GSS    ","ConcROu   ",   5,"x",1
+"EM_GSS    ","ConcWW    ",   6,"x",1
+"EM_GSS    ","ConcDR    ",   7,"x",1
+"TempDifInf","Cloud     ",   1,"x",1
+"TempDifInf","TempWrk1  ",   2,"x",1
+"TempDifInf","TempWrk2  ",   3,"x",1
+"TempDifInf","InflowRO  ",   4,"x",1
+"TempDifInf","InflowSS  ",   5,"x",1
+"WFLOW_Hydr","Velocity  ",   1,"x",1
+"WFLOW_Hydr","Depth     ",   2,"x",1
+"WFLOW_Hydr","TotalDepth",   3,"x",1
+"WFLOW_Hydr","Tau       ",   4,"x",1
+"WFLOW_Hydr","Outflow   ",   5,"x",1
+"SedimLink ","TotErod   ",   1,"x",1
+"HeatBalW  ","RadSN     ",   1,"x",1
+"HeatBalW  ","Psvap     ",   2,"x",1
+"HeatBalW  ","EmissAtm  ",   3,"x",1
+"HeatBalW  ","RadAN     ",   4,"x",1
+"HeatBalW  ","RadBR     ",   5,"x",1
+"HeatBalW  ","RadLat    ",   6,"x",1
+"HeatBalW  ","HtCond    ",   7,"x",1
+"HeatBalW  ","HtTot     ",   8,"x",1
+"HeatBalW  ","PvapWa    ",   9,"x",1
+"HeatBalW  ","VWinda    ",  10,"x",1
+"HeatBalW  ","Vevap     ",  11,"x",1
+"HeatBalW  ","RhoWater  ",  12,"x",1
+"HeatBalW  ","ModTemp   ",  13,"x",1
+"WSed_IM1  ","fSedIM1   ",   1,"x",1
+"WSed_IM1  ","VxSdWIM1  ",   2,"x",0
+"WSed_IM2  ","fSedIM2   ",   1,"x",1
+"WSed_IM2  ","VxSdWIM2  ",   2,"x",0
+"WSed_IM3  ","fSedIM3   ",   1,"x",1
+"WSed_IM3  ","VxSdWIM3  ",   2,"x",0
+"VSed_AAP  ","VSedAAP   ",   1,"x",1
+"WSed_AAP  ","fSedAAP   ",   1,"x",1
+"WSed_AAP  ","VxSdWAAP  ",   2,"x",0
+"WSed_POC1 ","fSedPOC1  ",   1,"x",1
+"WSed_POC1 ","VxSdWPOC1 ",   2,"x",0
+"WSed_PON1 ","fSedPON1  ",   1,"x",1
+"WSed_PON1 ","VxSdWPON1 ",   2,"x",0
+"WSed_POP1 ","fSedPOP1  ",   1,"x",1
+"WSed_POP1 ","VxSdWPOP1 ",   2,"x",0
+"WSed_Opal ","fSedOpal  ",   1,"x",1
+"WSed_Opal ","VxSdWOpal ",   2,"x",0

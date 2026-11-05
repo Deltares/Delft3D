@@ -1,12 +1,4 @@
 veloit,velosu,velosc
-"VxSdWIm1  ","IM1       ",   1.00000
-"VxSdWIM2  ","IM2       ",   1.00000
-"VxSdWIM3  ","IM3       ",   1.00000
-"VxSdWAAP  ","AAP       ",   1.00000
-"VxSdWPOC1 ","POC1      ",   1.00000
-"VxSdWPON1 ","PON1      ",   1.00000
-"VxSdWPOP1 ","POP1      ",   1.00000
-"VxSdWOpal ","Opal      ",   1.00000
 "VxSedIm1  ","IM1       ",   1.00000
 "VxSedIM2  ","IM2       ",   1.00000
 "VxSedIM3  ","IM3       ",   1.00000
@@ -316,3 +308,11 @@ veloit,velosu,velosc
 "VxSedDia_2","diatN_2   ",   1.00000
 "VxSedDia_2","diatP_2   ",   1.00000
 "VxSedDia_2","diatSi_2  ",   1.00000
+"VxSdWIm1  ","IM1       ",   1.00000
+"VxSdWIM2  ","IM2       ",   1.00000
+"VxSdWIM3  ","IM3       ",   1.00000
+"VxSdWAAP  ","AAP       ",   1.00000
+"VxSdWPOC1 ","POC1      ",   1.00000
+"VxSdWPON1 ","PON1      ",   1.00000
+"VxSdWPOP1 ","POP1      ",   1.00000
+"VxSdWOpal ","Opal      ",   1.00000
