@@ -112,7 +112,7 @@ module m_fm_wq_processes
    integer :: waq_sediment_transport_coupling = 0 !< MDU setting of WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
    logical :: perform_waq_sediment_transport_coupling = .false.  !< Apply WAQ sedimentation coupled with FM transport calculation
    real(hp), dimension(:, :), allocatable :: fall_velocity_waq ! fall velocities from water quality processes (m/s)
-   integer :: nfallvelocity_waq ! number of substances with fall velocities
+   integer :: nfallvelocity_waq = 0 ! number of substances with fall velocities
    integer, allocatable, dimension(:) :: iconstituent_to_fall_velocity_waq ! constituent to waq fall velocity number
    integer, allocatable, dimension(:) :: ifall_velocity_waq_to_vpnw !< substance-with-fall-velocity to WAQ numbering in fall-velocity array
 

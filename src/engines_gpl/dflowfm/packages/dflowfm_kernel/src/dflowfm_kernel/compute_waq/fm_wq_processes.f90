@@ -973,7 +973,6 @@ contains
 
       !    Prepare fall velocity array
       !    count number of substances with fall velocities
-      nfallvelocity_waq = 0
       if (perform_waq_sediment_transport_coupling) then
          nfallvelocity_waq = count(ivpnw(1:num_substances_transported) > 0)
       end if
