@@ -2013,6 +2013,7 @@ contains
    subroutine finalize(iresult)
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
+      use m_flowparameters, only: rain_temperature_method, RAIN_TEMPERATURE_WET_BULB, rain_temperature_from_dew_point
       use m_storage, only: t_storage, get_surface
       use m_structures, only: network
       use m_meteo
@@ -2042,6 +2043,8 @@ contains
       real(kind=dp) :: area, width, hdx
       type(t_storage), dimension(:), pointer :: stors
       type(t_netcell_set) :: netcell_cache
+      logical :: relative_humidity_provided !< Indicates if relative humidity is provided in the .ext file
+      logical :: dew_point_temperature_provided !< Indicates if dew point temperature is provided in the .ext file
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -2193,6 +2196,36 @@ contains
                spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
+      end if
+
+      ! When rain temperature is specified as wet bulb temperature, air temperature AND either relative humidity or dew point temperature must be provided.
+      if (rain_temperature_method == RAIN_TEMPERATURE_WET_BULB) then
+         relative_humidity_provided = .true.
+         dew_point_temperature_provided = .true.
+
+         if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &
+             (item_dac_air_temperature == ec_undef_int) .and. (item_dacs_air_temperature == ec_undef_int) .and. &
+             (item_air_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "rainTemperature == wetBulbTemperature", quantity airTemperature must be provided in the .ext file.')
+         end if
+
+         if ((item_hac_humidity == ec_undef_int) .and. (item_hacs_relative_humidity == ec_undef_int) .and. &
+             (item_relative_humidity == ec_undef_int)) then
+            relative_humidity_provided = .false.
+         end if
+
+         if ((item_dac_dew_point_temperature == ec_undef_int) .and. (item_dacs_dew_point_temperature == ec_undef_int) .and. &
+             (item_dew_point_temperature == ec_undef_int)) then
+            dew_point_temperature_provided = .false.
+         end if
+
+         if (.not. relative_humidity_provided .and. dew_point_temperature_provided) then
+            ! Rain temperature will be determined from dew point temperature since relative humidity is not provided.
+            rain_temperature_from_dew_point = .true.
+         else if (.not. relative_humidity_provided .and. .not. dew_point_temperature_provided) then
+            ! Raise an error since neither relative humidity nor dew point temperature is provided.
+            call mess(LEVEL_ERROR, 'When "rainTemperature == wetBulbTemperature", either humidity or dew point temperature must be provided in the .ext file.')
+         end if
       end if
 
       if (inivel == 1) then

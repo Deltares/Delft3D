@@ -31,6 +31,8 @@ module m_atmospheric_stability
    public :: atmospheric_stability
    public :: t_atmospheric_stability
 
+   public :: compute_saturation_pressure
+
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
    real(kind=dp), parameter :: CONST_Md = 28.9644e-3_dp ! dry air molar mass [kg/mol]
@@ -727,7 +729,7 @@ contains
    !> Compute saturation-vapor-pressure from temperature (ECMWF_T2esat).
    !! It uses Tetens formula from IFS documentation, Part IV, Section 7.5.2 Relative Humidity.
    !! If input is dew-point temperature, it gives actual vapor-pressure.
-   pure function compute_saturation_pressure(temperature) result(vapor_pressure)
+   elemental function compute_saturation_pressure(temperature) result(vapor_pressure)
       real(kind=dp), intent(in) :: temperature !< Temperature [K].
       real(kind=dp) :: vapor_pressure !< Saturation pressure [Pa].
       real(kind=dp), parameter :: COEFF_A = 17.502_dp
