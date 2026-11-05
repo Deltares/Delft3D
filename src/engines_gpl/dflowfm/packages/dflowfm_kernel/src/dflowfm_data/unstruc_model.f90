@@ -1893,7 +1893,7 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
       if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
@@ -2510,8 +2510,10 @@ contains
       call prop_get(md_ptr, 'processes', 'sedimentationTransportCoupling', waq_sediment_transport_coupling)
       perform_waq_sediment_transport_coupling = waq_sediment_transport_coupling == 1
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
-      ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .false.
+         ti_waqproc = md_dt_waqproc
          if (dt_user > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
             if (md_dt_waqproc < dt_user .or. modulo(md_dt_waqproc, dt_user) /= 0.0_dp) then
                ti_waqproc = max(1, floor(md_dt_waqproc / dt_user)) * dt_user
@@ -2521,6 +2523,9 @@ contains
             end if
          end if
       else if (md_dt_waqproc < 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .true.
+         ti_waqproc = 1.0_dp
          ! DtProcesses is negative
          call mess(LEVEL_INFO, 'DtProcesses is negative. Water quality processes are calculated with every hydrodynamic time step.')
       end if

@@ -64,7 +64,7 @@ contains
       integer :: k1, k2
       integer :: j
       integer :: ierror
-      logical :: use_mtdws, use_fall_velocity_waq
+      logical :: use_fall_velocity_stm, use_fall_velocity_waq
 
       real(kind=dp) :: sqtot, bak, max_fall_velocity
 
@@ -78,7 +78,7 @@ contains
 
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
-      use_mtdws = stm_included .and. ISED1 > 0
+      use_fall_velocity_stm = stm_included .and. ised1 > 0
       use_fall_velocity_waq = nfallvelocity_waq > 0
 
       if (jalimitdtdiff == 1) then
@@ -151,16 +151,15 @@ contains
             if (s1(kk) - bl(kk) > epshu) then
                call getkbotktop(kk, kb, kt)
                if (jalimitdtdiff == 0) then
-                  if ((use_mtdws .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
+                  if ((use_fall_velocity_stm .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (use_mtdws) then
+                        max_fall_velocity = 0.0_dp
+                        if (use_fall_velocity_stm) then
                            max_fall_velocity = maxval(mtd%ws(k, :))
-                        else
-                           max_fall_velocity = 0.0_dp
                         end if
                         if (use_fall_velocity_waq) then
-                           max_fall_velocity = max(max_fall_velocity, maxval (fall_velocity_waq(k, :)))
+                           max_fall_velocity = max(max_fall_velocity, maxval(fall_velocity_waq(k, :)))
                         end if
                         sqtot = sqi(k) + max_fall_velocity * bak
                         if (squ(k) > EPS10 .or. sqtot > EPS10) then
@@ -175,13 +174,12 @@ contains
                      end do
                   end if
                else
-                  if ((use_mtdws .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
+                  if ((use_fall_velocity_stm .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (use_mtdws) then
+                        max_fall_velocity = 0.0_dp
+                        if (use_fall_velocity_stm) then
                            max_fall_velocity = maxval(mtd%ws(k, :))
-                        else
-                           max_fall_velocity = 0.0_dp
                         end if
                         if (use_fall_velocity_waq) then
                            max_fall_velocity = max(max_fall_velocity, maxval(fall_velocity_waq(k, :)))

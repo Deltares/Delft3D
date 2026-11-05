@@ -43,6 +43,9 @@ module m_fm_wq_processes
    implicit none
    private :: dp
 
+   logical :: wq_processes_active = .false. !< Switch to indicate if water quality processes are active
+   logical :: dt_processes_dynamic = .false. !< Switch to indicate if dt for water quality processes is dynamic
+
    character(20), allocatable :: syunit_sub(:) !< substance unit from substance file
    character(20), allocatable :: coname_sub(:) !< constant names from substance file
    real, allocatable :: covalue_sub(:) !< values for contants from substance file
@@ -72,7 +75,6 @@ module m_fm_wq_processes
    integer, allocatable :: waq_segment_number_indices(:) !< Indices of waqsegmentnumber inputs in paname and painp.
    real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
-   real(hp), pointer, dimension(:) :: vol_wq_processes !< volumes to be used by water quality processes
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
@@ -110,7 +112,7 @@ module m_fm_wq_processes
    integer, allocatable, dimension(:) :: isys2wqbot !< WAQ inactive system to D-FlowFM water quality bottom variable
 
    integer :: waq_sediment_transport_coupling = 0 !< MDU setting of WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
-   logical :: perform_waq_sediment_transport_coupling = .false.  !< Apply WAQ sedimentation coupled with FM transport calculation
+   logical :: perform_waq_sediment_transport_coupling = .false. !< Apply WAQ sedimentation coupled with FM transport calculation
    real(hp), dimension(:, :), allocatable :: fall_velocity_waq ! fall velocities from water quality processes (m/s)
    integer :: nfallvelocity_waq = 0 ! number of substances with fall velocities
    integer, allocatable, dimension(:) :: iconstituent_to_fall_velocity_waq ! constituent to waq fall velocity number

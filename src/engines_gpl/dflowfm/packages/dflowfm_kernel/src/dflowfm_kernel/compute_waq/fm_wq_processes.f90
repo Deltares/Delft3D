@@ -933,7 +933,7 @@ contains
       isfact = 1
       itfact = 86400
       itstrt_process = nint(tstart_user)
-      if (ti_waqproc > 0) then
+      if (wq_processes_active .and. .not. dt_processes_dynamic) then
          itstop_process = floor(tstop_user / ti_waqproc + 0.001_dp) * ti_waqproc
       else
          itstop_process = tstop_user
@@ -1462,19 +1462,18 @@ contains
       end if
    end subroutine add_wqbot
 
-   module subroutine fm_wq_processes_step(dt, time, process_selection, volume_selection)
+   module subroutine fm_wq_processes_step(dt, time, vol_wq_processes, process_selection)
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_area_data
-      use m_flow, only: vol0, vol1
       use timers
 
       implicit none
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      real(kind=dp), intent(in), dimension(:) :: vol_wq_processes !< [m3] total volume to be used by waq processes (vol0 or vol1)
       integer, intent(in) :: process_selection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
-      integer, intent(in) :: volume_selection !< indicator for which volume to use (VOL0, VOL1)
 
       integer :: ipoiconc
 
@@ -1501,18 +1500,12 @@ contains
       case default !run all processes
          run_process = .true.
       end select
-      
-      if (volume_selection == WQ_USE_VOL0) then
-         vol_wq_processes => vol0
-      else ! default WQ_USE_VOL1
-         vol_wq_processes => vol1
-      end if
 
       !     copy data from D-FlowFM to WAQ
       if (timon) then
          call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
       end if
-      call copy_data_from_fm_to_wq_processes(time)
+      call copy_data_from_fm_to_wq_processes(time, vol_wq_processes)
       if (timon) then
          call timstop(ithand1)
       end if
@@ -1543,7 +1536,7 @@ contains
       if (timon) then
          call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
       end if
-      call copy_data_from_wq_processes_to_fm(dt, time, process_space_real(ipoivelx))
+      call copy_data_from_wq_processes_to_fm(dt, time, vol_wq_processes, process_space_real(ipoivelx))
       if (timon) then
          call timstop(ithand2)
       end if
@@ -1554,7 +1547,7 @@ contains
       return
    end subroutine fm_wq_processes_step
 
-   subroutine copy_data_from_fm_to_wq_processes(time)
+   subroutine copy_data_from_fm_to_wq_processes(time, vol_wq_processes)
       !  copy data from D-FlowFM to WAQ
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
@@ -1575,6 +1568,7 @@ contains
       implicit none
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      real(kind=dp), intent(in), dimension(:) :: vol_wq_processes !< [m3] total volume to be used by waq processes (vol0 or vol1)
 
       real(kind=dp) :: u10, dir, wdir, FetchL, FetchD
       integer :: isys, iconst, iwqbot
@@ -1899,7 +1893,7 @@ contains
       return
    end subroutine copy_data_from_fm_to_wq_processes
 
-   subroutine copy_data_from_wq_processes_to_fm(dt, tim, velowaq)
+   subroutine copy_data_from_wq_processes_to_fm(dt, tim, vol_wq_processes, velowaq)
       !  copy data from WAQ to D-FlowFM
       use m_getkbotktopmax
       use m_missing, only: dmiss
@@ -1915,6 +1909,7 @@ contains
 
       real(kind=dp), intent(in) :: dt
       real(kind=dp), intent(in) :: tim
+      real(kind=dp), intent(in) :: vol_wq_processes(num_cells) !< [m3] total volume to be used by waq processes (vol0 or vol1)
       real(kind=real_wp), intent(in) :: velowaq(num_velocity_arrays_extra, num_exchanges_z_dir) !< array with additional velocities
 
       integer :: isys, iconst, iwqbot
@@ -2053,6 +2048,9 @@ contains
       use m_fm_wq_processes
       use unstruc_model
       implicit none
+
+      wq_processes_active = .false.
+      dt_processes_dynamic = .false.
 
       jawaqproc = 0
       call reset_waq_segment_number_indices()

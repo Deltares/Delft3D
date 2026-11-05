@@ -34,7 +34,7 @@ module m_fm_wq_processes_sub
 
    public :: default_fm_wq_processes, finalize_waq_spatial_fields, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, &
              fm_wq_processes_step, get_waqinputname
-   public :: WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER, WQ_USE_VOL0, WQ_USE_VOL1
+   public :: WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER
 
    interface
 
@@ -54,13 +54,13 @@ module m_fm_wq_processes_sub
          implicit none
       end subroutine fm_wq_processes_ini_proc
 
-      module subroutine fm_wq_processes_step(dt, time, process_selection, volume_selection)
+      module subroutine fm_wq_processes_step(dt, time, vol_wq_processes, process_selection)
          use precision, only: dp
          implicit none
          real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
          real(kind=dp), intent(in) :: time !< time     for waq in seconds
+         real(kind=dp), intent(in), dimension(:) :: vol_wq_processes !< [m3] total volume to be used by waq processes (vol0 or vol1)
          integer, intent(in) :: process_selection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
-         integer, intent(in) :: volume_selection !< indicator for which volume to use (VOL0, VOL1)
       end subroutine fm_wq_processes_step
 
       module subroutine get_waqinputname(qid, inputname, qidname)
@@ -76,10 +76,6 @@ module m_fm_wq_processes_sub
    end interface
 
    integer, parameter :: WQ_RUNALL = 0 ! Run all processes
-   integer, parameter :: WQ_RUNADSSEDTRA = 1 ! Run only advection, sedimentation and sediment layer transport
-   !                                           (resuspension, burial and digging) processes
+   integer, parameter :: WQ_RUNADSSEDTRA = 1 ! Run only advection, sedimentation and sediment layer transport (resuspension, burial and digging) processes
    integer, parameter :: WQ_RUNOTHER = 2 ! Run other processes
-
-   integer, parameter :: WQ_USE_VOL0 = 0 ! Run processes with the volumes from the start of the timestep
-   integer, parameter :: WQ_USE_VOL1 = 1 ! Run processes with the volumes from the end of the timestep
 end module m_fm_wq_processes_sub

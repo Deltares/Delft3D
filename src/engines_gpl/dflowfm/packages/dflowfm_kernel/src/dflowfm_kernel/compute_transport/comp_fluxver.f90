@@ -75,6 +75,7 @@ contains
       real(kind=dp) :: sedL, sedR, ds1L, ds2L, ds1R, ds2R, sl3L, sl3R, cf
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
+      real(kind=dp) :: fall_velocity_local
 
       integer :: kk, k, kb, kt, kL, kR, kLL, kRR
       integer :: j, ll
@@ -98,7 +99,7 @@ contains
       dt_loc = dts
 
       !$xOMP PARALLEL DO                                                                       &
-      !$xOMP PRIVATE(kk,kb,kt,dz,k,cf,kL,kR,j,sedL,sedR,kLL,kRR,sl3L,sl3R,ds1L,ds1R,ds2L,ds2R,qw_loc) &
+      !$xOMP PRIVATE(kk,kb,kt,dz,k,cf,kL,kR,j,sedL,sedR,kLL,kRR,sl3L,sl3R,ds1L,ds1R,ds2L,ds2R,qw_loc, fall_velocity_local) &
       !$xOMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndx
          if (kfs(kk) <= 0) then
@@ -133,19 +134,21 @@ contains
 
             do j = 1, NUMCONST
                qw_loc = qw(k)
+
                if (jaimplicitfallvelocity == 0) then ! explicit
-                  if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
+                  if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
-                        qw_loc = qw(k) ! settling flux zero below kmxsed layer
+                        fall_velocity_local = 0.0_dp
                      else
-                        qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
+                        fall_velocity_local = mtd%ws(k, ll)
                      end if
                   else if (iconstituent_to_fall_velocity_waq(j) > 0) then
-                     qw_loc = qw(k) - fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j)) * ba(kk)
+                     fall_velocity_local = fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j))
                   else
-                     qw_loc = qw(k) - wsf(j) * ba(kk)
+                     fall_velocity_local = wsf(j)
                   end if
+                  qw_loc = qw_loc - fall_velocity_local * ba(kk)
                end if
 
                if (cffacver > 0.0_dp) then

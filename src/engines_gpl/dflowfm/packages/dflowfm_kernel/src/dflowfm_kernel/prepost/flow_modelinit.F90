@@ -88,7 +88,7 @@ contains
       use MessageHandling
       use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
-      use m_fm_wq_processes, only: jawaqproc
+      use m_fm_wq_processes, only: jawaqproc, wq_processes_active, dt_processes_dynamic
       use m_vegetation
       use m_hydrology, only: jadhyd, init_hydrology
       use m_integralstats, is_is_numndvals => is_numndvals
@@ -127,7 +127,7 @@ contains
       use m_set_frcu_mor
       use m_flow_obsinit
       use m_set_model_boundingbox, only: set_model_boundingbox
-      use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, WQ_RUNALL, WQ_USE_VOL1
+      use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, WQ_RUNALL
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
@@ -432,15 +432,11 @@ contains
 
       ! initialize waq and add to tracer administration
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
-      if (ti_waqproc /= 0.0_dp) then
+      if (wq_processes_active) then
          if (jawaqproc == 1) then
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
-            if (ti_waqproc > 0.0_dp) then
-               call fm_wq_processes_step(ti_waqproc, tstart_user, WQ_RUNALL, WQ_USE_VOL1)
-            else
-               call fm_wq_processes_step(dt_init, tstart_user, WQ_RUNALL, WQ_USE_VOL1)
-            end if
+            call fm_wq_processes_step(ti_waqproc, tstart_user, vol1, WQ_RUNALL)
          end if
       end if
       call timstop(handle_extra(18)) ! end waq processes init
@@ -601,7 +597,7 @@ contains
       call timstop(handle_extra(34)) ! end writeMDUFilepointer
       flowgeom_full = build_flowgeom(map_write_settings%bnd)
       if (len_trim(md_map_output_polyfile) > 0) then
-         allocate(flowgeom_map)
+         allocate (flowgeom_map)
          flowgeom_map = build_flowgeom(map_write_settings%bnd, md_map_output_polyfile)
       else
          flowgeom_map => flowgeom_full
@@ -643,8 +639,8 @@ contains
          call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
          call fm_precice_adapter_builder%set_sources_sinks_mesh_name("sources_sinks_nodes")
          if (jampi == 1) then
-             call fm_precice_adapter_builder%set_mpi_rank(my_rank, numranks)
-             call fm_precice_adapter_builder%set_mpi_communicator(DFM_COMM_DFMWORLD)
+            call fm_precice_adapter_builder%set_mpi_rank(my_rank, numranks)
+            call fm_precice_adapter_builder%set_mpi_communicator(DFM_COMM_DFMWORLD)
          end if
       end if
 
