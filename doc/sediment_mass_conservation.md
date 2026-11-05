@@ -112,8 +112,8 @@ Both files are registered in the kernel's Fortran and f90tw source lists.
 With a configured build, run:
 
 ```text
-cmake --build build_fm-suite --config Release --target test_dflowfm_kernel_gtest test_morphology
-ctest --test-dir build_fm-suite -C Release --output-on-failure -R "sediment_transport|sediment_exchange|test_morphology"
+cmake --build build_fm-suite --config Release --target test_dflowfm_kernel_gtest test_bedload_balance test_morphology
+ctest --test-dir build_fm-suite -C Release --output-on-failure -R "sediment_transport|sediment_exchange|mass_balance|test_morphology"
 ```
 
 Extraction validation on 2026-11-02 passed all 228 registered kernel tests,
@@ -137,3 +137,62 @@ updates. The fixed-bed spinup introduced about `1502.54 kg`, so the
 comparison started at 120 s. Conservation from initialization and the
 remaining small post-spinup loss were not resolved. Dense suspension and
 the morphodynamic water-volume budget also require separate assessment.
+
+## Mass balance output with fixed composition and moving beds
+
+Sediment balances include an explicit `Fixed bed exchange` term while bed
+composition is held fixed, either before `CmpUpdStt` (which defaults to
+`MorStt`) or with `CmpUpd = 0`. It records erosion minus actual accumulated
+deposition from the transport solve, using the same morphology factor as
+the suspended storage and boundary terms. Frozen fluff-layer exchange is
+included before composition updates start. Potential bedload is excluded
+from inventory transfers while composition is fixed.
+
+Composition and bed-level updates are independent. Composition can change
+bed inventory with `BedUpd = 0`; moving geometry can change water volume
+while composition is fixed. The water balance includes a `Moving bed`
+term measured from actual cell volumes before and after the geometry
+update, including all vertical layers. This accounts for displaced water
+without changing water levels, concentrations or sediment inventories.
+Both diagnostics exclude non-owned cells, reduce contributions in MPI,
+reset interval accumulators and retain whole-period totals.
+
+Bedload balance fluxes are accumulated after `fm_bott3d`, which applies
+availability and slope corrections, combines transport components and
+applies morphology boundary conditions before updating bed composition.
+Accumulating earlier reads the previous timestep's `e_sbn`, causing
+interval errors and an incorrect spin-up transition. This ordering follows
+composition updates independently of whether bed-level updating is enabled.
+
+The separate `mass_balance_integration.bedload_call_order` regression runs
+the full production timestep sequence on a generated three-cell channel
+with two bedload fractions and a layered bed. It checks every output
+interval and the whole-period budget across spin-up and composition
+activation, and requires nonzero boundary transport and inventory change.
+
+Bedload boundary names use `MbaLumpBoundaries`, matching the values. They
+are independent of `MbaLumpFromToMba`. Unlumped external terms append a
+new output entry, preserving the preceding term and its label.
+
+`test_mass_balance.f90` exercises spin-up and activation, independent
+composition and bed-level changes, frozen fluff exchange, 3D volumes,
+ownership filtering, accumulator resets and boundary-label combinations.
+
+Serial trench validation with `MorStt = 5`, `MorFac = 180` and a 1.2 s
+balance interval reduced the whole-period sediment residual from
+566.2093425 kg to 0.0185128 kg and the water residual from
+-0.17944205 m^3 to -4.4e-14 m^3. Bed inventory, bed level, water level
+and velocity outputs were identical; the largest suspended-concentration
+difference was below 5.3e-39 kg/m^3. The nine added regressions and all
+242 registered kernel tests passed with directly compiled Intel Fortran
+units linked against the configured dependency libraries. This validation
+was serial; MPI ownership filtering was exercised in the unit tests.
+
+The bedload call-order regression failed against the old production library
+and passed after moving the diagnostic call. All 242 existing kernel tests
+also passed. A serial rerun of `c10_fixed_layer` reduced the whole-period
+sediment residuals from -1.03374e-4 kg and -2.01535e-6 kg to -1.30e-13 kg
+and 1.86e-21 kg, respectively. All time-dependent map values were identical.
+The changed production routine and new regression were compiled directly
+with Intel Fortran 2024.2.1 against the configured Release libraries because
+the Visual Studio build driver reported invalid license data.

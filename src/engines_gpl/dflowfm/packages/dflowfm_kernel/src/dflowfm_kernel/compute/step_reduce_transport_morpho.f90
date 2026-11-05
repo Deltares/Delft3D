@@ -74,7 +74,8 @@ contains
       use m_fm_erosed, only: ti_sedtrans
       use m_curvature, only: get_curvature
       use m_xbeach_netcdf, only: xbeach_mombalance
-      use mass_balance_areas_routines, only: comp_bedload_fluxmba
+      use mass_balance_areas_routines, only: comp_bedload_fluxmba, comp_fixedbed_fluxmba, comp_bedflowmba
+      use m_mass_balance_area_data, only: jamba
       use m_set_kbot_ktop
       use m_volsur
       use m_set_bobs
@@ -128,7 +129,6 @@ contains
             call fm_erosed() ! source/sink, bedload/total load
             call timstop(handle_extra(88))
 
-            call comp_bedload_fluxmba()
             if (jatimer == 1) then
                call stoptimer(IEROSED)
             end if
@@ -154,7 +154,13 @@ contains
       end if
 
       if (jased > 0 .and. stm_included) then
+         if (jamba > 0) then
+            call comp_fixedbed_fluxmba()
+            call comp_bedflowmba(before_update=.true.)
+         end if
          call fm_bott3d() ! bottom update
+         ! Account for the corrected bedload used by this step's composition update.
+         call comp_bedload_fluxmba()
       end if
 
       if (jasubsupl > 0) then
@@ -169,6 +175,9 @@ contains
          call volsur() ! update volumes 2d
          if (kmx > 0) then
             call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
+         end if
+         if (jamba > 0 .and. jased > 0 .and. stm_included) then
+            call comp_bedflowmba(before_update=.false.)
          end if
       end if
 

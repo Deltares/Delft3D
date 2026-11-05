@@ -21,6 +21,7 @@ f90twtest(${test_target}
         src/test_3d_layer_administration.f90
         src/test_sed_transport.f90
         src/test_sed_exchange.f90
+        src/test_mass_balance.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
@@ -48,6 +49,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sed_transport.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sed_exchange.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mass_balance.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
@@ -73,24 +75,36 @@ f90twtest(${test_target}
 )
 add_subdirectory(helpers)
 
+# Run the complete timestep sequence in its own process, with model-owned global state.
+f90twtest(test_bedload_balance
+    CFILES test_bedload_balance.cpp
+    F90FILES src/test_bedload_balance.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bedload_balance.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+
 copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
 
-# Copy MSVC runtime DLLs to test output directory
-foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
-    add_custom_command(TARGET ${test_target} PRE_BUILD
+foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance)
+    # Copy MSVC runtime DLLs to test output directory
+    foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        add_custom_command(TARGET ${runtime_target} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${runtime_lib}"
+                "$<TARGET_FILE_DIR:${runtime_target}>"
+        )
+    endforeach()
+
+    # Copy pthreads runtime dependency
+    add_custom_command(TARGET ${runtime_target} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${runtime_lib}"
-            "$<TARGET_FILE_DIR:${test_target}>"
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
+            "$<TARGET_FILE_DIR:${runtime_target}>"
+    )
+
+    set_target_properties(${runtime_target} PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${runtime_target}>"
     )
 endforeach()
-
-# Copy pthreads runtime dependency
-add_custom_command(TARGET ${test_target} PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
-        "$<TARGET_FILE_DIR:${test_target}>"
-)
-
-set_target_properties(${test_target} PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${test_target}>"
-)

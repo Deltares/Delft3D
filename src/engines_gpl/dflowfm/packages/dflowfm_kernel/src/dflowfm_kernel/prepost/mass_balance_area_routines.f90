@@ -41,6 +41,8 @@ module mass_balance_areas_routines
    public comp_horflowmba
    public comp_horfluxmba
    public comp_bedload_fluxmba
+   public comp_fixedbed_fluxmba
+   public comp_bedflowmba
 
    character(len=1), parameter :: space = ' '
 
@@ -55,6 +57,8 @@ module mass_balance_areas_routines
    character(len=3), parameter :: labelbed = 'Bed'
    character(len=12), parameter :: labelbsh = 'Bed shortage'
    character(len=11), parameter :: labelflf = 'Fluff layer'
+   character(len=18), parameter :: labelfixbed = 'Fixed bed exchange'
+   character(len=10), parameter :: labelbedvol = 'Moving bed'
 
    character(len=14), parameter :: postfix_sus = ' in suspension'
    character(len=11), parameter :: postfix_bed = ' as bedload'
@@ -164,6 +168,11 @@ contains
       call realloc(mbamassend, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (stm_included) then
+         call realloc(mbabedvolume, nomba, keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowbed, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowbedtot, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxfixbed, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxfixbedtot, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassend, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
@@ -182,6 +191,8 @@ contains
          call realloc(mbasedfluxtot, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
          if (jampi == 1) then
             call realloc(mbasedfluxreduce, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbaflowbedreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbafluxfixbedreduce, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          end if
       end if
 
@@ -470,6 +481,10 @@ contains
          if (jampi == 1) then
             call reduce_double_sum(2 * lsedtot * nombabnd * nombabnd, mbasedflux, mbasedfluxreduce)
             mbasedflux(:, :, :, :) = mbasedfluxreduce(:, :, :, :)
+            call reduce_double_sum(2 * nomba, mbaflowbed, mbaflowbedreduce)
+            mbaflowbed(:, :) = mbaflowbedreduce(:, :)
+            call reduce_double_sum(2 * lsedtot * nomba, mbafluxfixbed, mbafluxfixbedreduce)
+            mbafluxfixbed(:, :, :) = mbafluxfixbedreduce(:, :, :)
          end if
       end if
 
@@ -486,6 +501,8 @@ contains
       end if
       if (stm_included) then
          mbasedfluxtot(:, :, :, :) = mbasedfluxtot(:, :, :, :) + mbasedflux(:, :, :, :)
+         mbaflowbedtot = mbaflowbedtot + mbaflowbed
+         mbafluxfixbedtot = mbafluxfixbedtot + mbafluxfixbed
       end if
 
       ! Write balances to file
@@ -531,6 +548,8 @@ contains
 
       if (stm_included) then
          mbasedflux(:, :, :, :) = 0.0_dp
+         mbaflowbed = 0.0_dp
+         mbafluxfixbed = 0.0_dp
       end if
 
    end subroutine mba_update
@@ -838,9 +857,9 @@ contains
    end subroutine comp_horfluxmba
 
    subroutine comp_bedload_fluxmba()
-      use m_flowtimes, only: dts
-      use m_mass_balance_area_data, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
-      use m_fm_erosed, only: lsedtot, e_sbn, morfac
+      use m_flowtimes, only: dts, time1, tstart_user, tfac
+      use m_mass_balance_area_data, only: jamba, nombaln, mbalnlist, mbalnfromto, mbasedflux
+      use m_fm_erosed, only: lsedtot, e_sbn, morfac, stmpar
       use m_flowgeom, only: wu_mor
 
       integer :: i !< balance link index
@@ -851,6 +870,13 @@ contains
       real(kind=dp) :: flx !< bedload flux along line
       real(kind=dp) :: dtmor !< morphological time step
 
+      if (jamba == 0) then
+         return
+      end if
+      ! Potential bedload does not transfer inventory while composition is fixed.
+      if (.not. stmpar%morpar%cmpupd .or. time1 < tstart_user + stmpar%morpar%tcmp * tfac) then
+         return
+      end if
       dtmor = dts * morfac
       do ised = 1, lsedtot
          do i = 1, nombaln
@@ -869,6 +895,84 @@ contains
       end do
 
    end subroutine comp_bedload_fluxmba
+
+   !> Account for actual transport source/sink exchange when bed inventory is held fixed.
+   subroutine comp_fixedbed_fluxmba()
+      use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxfixbed, DIR_FROM, DIR_TO
+      use m_flowtimes, only: dts, time1, tstart_user, tfac
+      use m_flowgeom, only: ndxi
+      use m_flow, only: vol1
+      use m_transport, only: ised1, sinksetot, sinkftot
+      use m_sediment, only: stmpar, sedtra
+
+      integer :: nm, ised, iconst, k, imba
+      real(kind=dp) :: exchange
+      logical :: composition_started
+
+      if (jamba == 0) then
+         return
+      end if
+      composition_started = time1 >= tstart_user + stmpar%morpar%tcmp * tfac
+      if (composition_started .and. stmpar%morpar%cmpupd) then
+         return
+      end if
+      do nm = 1, ndxi
+         imba = mbadefdomain(nm)
+         if (imba <= 0) then
+            cycle
+         end if
+         do ised = 1, stmpar%lsedsus
+            k = sedtra%kmxsed(nm, ised)
+            if (k <= 0) then
+               cycle
+            end if
+            iconst = ised1 + ised - 1
+            ! sinksetot/sinkftot include the actual local transport intervals.
+            exchange = sedtra%sourse(nm, ised) * vol1(k) - sinksetot(iconst, nm)
+            if (.not. composition_started .and. stmpar%morpar%flufflyr%iflufflyr > 0) then
+               exchange = exchange + stmpar%morpar%flufflyr%sourf(ised, nm) * vol1(k) - sinkftot(iconst, nm)
+            end if
+            exchange = exchange * dts * stmpar%morpar%morfac
+            mbafluxfixbed(DIR_FROM, ised, imba) = mbafluxfixbed(DIR_FROM, ised, imba) + max(exchange, 0.0_dp)
+            mbafluxfixbed(DIR_TO, ised, imba) = mbafluxfixbed(DIR_TO, ised, imba) + max(-exchange, 0.0_dp)
+         end do
+      end do
+   end subroutine comp_fixedbed_fluxmba
+
+   !> Capture the actual water volume change around a bed geometry update.
+   subroutine comp_bedflowmba(before_update)
+      use m_mass_balance_area_data, only: jamba, nomba, mbadefdomain, mbabedvolume, mbaflowbed, DIR_FROM, DIR_TO
+      use m_flowgeom, only: ndxi
+      use m_flow, only: vol1
+      use m_get_kbot_ktop, only: getkbotktop
+
+      logical, intent(in) :: before_update !< Store pre-update volume, or accumulate the resulting change.
+
+      real(kind=dp) :: volume(nomba), change
+      integer :: nm, imba, kb, kt
+
+      if (jamba == 0) then
+         return
+      end if
+      volume = 0.0_dp
+      do nm = 1, ndxi
+         imba = mbadefdomain(nm)
+         if (imba <= 0) then
+            cycle
+         end if
+         call getkbotktop(nm, kb, kt)
+         volume(imba) = volume(imba) + sum(vol1(kb:kt))
+      end do
+      if (before_update) then
+         mbabedvolume = volume
+      else
+         do imba = 1, nomba
+            change = volume(imba) - mbabedvolume(imba)
+            mbaflowbed(DIR_FROM, imba) = mbaflowbed(DIR_FROM, imba) + max(change, 0.0_dp)
+            mbaflowbed(DIR_TO, imba) = mbaflowbed(DIR_TO, imba) + max(-change, 0.0_dp)
+         end do
+      end if
+   end subroutine comp_bedflowmba
 
    subroutine mba_write_bal_header(lunbal, numconst, const_names, iconst2sys, num_substances_transported, num_substances_total, isys2wqbot, syname_sub, nomba, mbaname, &
                                    totfluxsys, stochi, fluxname, fluxprocname, nfluxsys, ipfluxsys, fluxsys)
@@ -1107,7 +1211,7 @@ contains
          has_entry_ = jalump_ .and. has_entry
       else
          jalump_ = .false.
-         has_entry_ = .true.
+         has_entry_ = .false.
       end if
 
       if (.not. has_entry_) then
@@ -1201,6 +1305,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1274,11 +1379,15 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
+      if (stm_included) then
+         call add_name(balance, labelext, labelbedvol)
+      end if
    end subroutine mba_prepare_names_flows
 
    subroutine mba_prepare_values_flows(imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1296,6 +1405,7 @@ contains
       real(kind=dp), pointer :: p_mbaflowsorsin(:, :)
       real(kind=dp), pointer :: p_mbaflowraineva(:, :)
       real(kind=dp), pointer :: p_mbafloweva(:)
+      real(kind=dp), pointer :: p_mbaflowbed(:, :)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -1303,12 +1413,18 @@ contains
          p_mbaflowsorsin => mbaflowsorsintot
          p_mbaflowraineva => mbaflowrainevatot
          p_mbafloweva => mbaflowevatot
+         if (stm_included) then
+            p_mbaflowbed => mbaflowbedtot
+         end if
       else
          p_mbavolumebegin => mbavolumebegin
          p_mbaflowhor => mbaflowhor
          p_mbaflowsorsin => mbaflowsorsin
          p_mbaflowraineva => mbaflowraineva
          p_mbafloweva => mbafloweva
+         if (stm_included) then
+            p_mbaflowbed => mbaflowbed
+         end if
       end if
 
       flows => water_flow%bal_area(imba)%values
@@ -1354,6 +1470,9 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, p_mbafloweva(imba)])
       end if
+      if (stm_included) then
+         call add_values(flows, imbf, p_mbaflowbed(:, imba))
+      end if
 
       water_flow%bal_error(imba) = sum(flows(DIR_TO, :)) - sum(flows(DIR_FROM, :))
       water_flow%bal_cumerror(imba) = water_flow%bal_cumerror(imba) + water_flow%bal_error(imba)
@@ -1362,6 +1481,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer :: jmba !< index of other mass balance area or open boundary
@@ -1412,11 +1532,15 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
+      if (stm_included) then
+         call add_name(balance, labelext, labelbedvol)
+      end if
    end subroutine mba_prepare_names_flows_whole_model
 
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -1433,6 +1557,7 @@ contains
       real(kind=dp), pointer :: p_mbaflowsorsin(:, :)
       real(kind=dp), pointer :: p_mbaflowraineva(:, :)
       real(kind=dp), pointer :: p_mbafloweva(:)
+      real(kind=dp), pointer :: p_mbaflowbed(:, :)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -1440,12 +1565,18 @@ contains
          p_mbaflowsorsin => mbaflowsorsintot
          p_mbaflowraineva => mbaflowrainevatot
          p_mbafloweva => mbaflowevatot
+         if (stm_included) then
+            p_mbaflowbed => mbaflowbedtot
+         end if
       else
          p_mbavolumebegin => mbavolumebegin
          p_mbaflowhor => mbaflowhor
          p_mbaflowsorsin => mbaflowsorsin
          p_mbaflowraineva => mbaflowraineva
          p_mbafloweva => mbafloweva
+         if (stm_included) then
+            p_mbaflowbed => mbaflowbed
+         end if
       end if
 
       flows => water_flow%bal_area(nomba + 1)%values
@@ -1482,6 +1613,9 @@ contains
       ! computed evaporation
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, sum(p_mbafloweva(:))])
+      end if
+      if (stm_included) then
+         call add_values(flows, imbf, sum(p_mbaflowbed, 2))
       end if
 
       water_flow%bal_error(nomba + 1) = sum(flows(DIR_TO, :)) - sum(flows(DIR_FROM, :))
@@ -1615,7 +1749,7 @@ contains
          end if
 
          ! bedload exchanges with open boundaries
-         if (jambalumpmba == 0) then
+         if (jambalumpbnd == 0) then
             do jmba = nomba + 1, nombabnd
                if (mbalnused(imba, jmba) > 0) then
                   call add_name(balance, labelbnd//postfix_bed, mbabndname(jmba))
@@ -1636,6 +1770,9 @@ contains
          if (ised <= lsed .and. iflufflyr > 0) then
             ! fluff layer
             call add_name(balance, labelstt, labelflf)
+         end if
+         if (ised <= lsed) then
+            call add_name(balance, labelext, labelfixbed)
          end if
       end if
    end subroutine mba_prepare_names_fluxes
@@ -1672,6 +1809,7 @@ contains
       real(kind=dp), pointer :: p_mbafluxheat(:, :)
       real(kind=dp), pointer :: p_flxdmp(:, :, :)
       real(kind=dp), pointer :: p_mbasedflux(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxfixbed(:, :, :)
       real(kind=dp), pointer :: p_mbamorfacbegin
       real(kind=dp), pointer :: p_mbabedmassbegin(:, :)
       real(kind=dp), pointer :: p_mbabedshortmassbegin(:, :)
@@ -1685,6 +1823,7 @@ contains
          p_flxdmp => flxdmptot
          if (stm_included) then
             p_mbasedflux => mbasedfluxtot
+            p_mbafluxfixbed => mbafluxfixbedtot
             p_mbamorfacbegin => mbamorfacbegin
             p_mbabedmassbegin => mbabedmassbegintot
             p_mbabedshortmassbegin => mbabedshortmassbegintot
@@ -1700,6 +1839,7 @@ contains
          p_flxdmp => flxdmp
          if (stm_included) then
             p_mbasedflux => mbasedflux
+            p_mbafluxfixbed => mbafluxfixbed
             p_mbamorfacbegin => mbamorfacbegin
             p_mbabedmassbegin => mbabedmassbegin
             p_mbabedshortmassbegin => mbabedshortmassbegin
@@ -1808,6 +1948,9 @@ contains
             ! fluff layer
             call add_value_change(fluxes, imbf, p_mbafluffmassbegin(ised, imba), mbafluffmassend(ised, imba))
          end if
+         if (ised <= lsed) then
+            call add_values(fluxes, imbf, p_mbafluxfixbed(:, ised, imba))
+         end if
       end if
 
       const_flux(imbs)%bal_error(imba) = sum(fluxes(DIR_TO, :)) - sum(fluxes(DIR_FROM, :))
@@ -1815,7 +1958,7 @@ contains
    end subroutine mba_prepare_values_fluxes
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
-      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
       use m_transport, only: numconst, itemp
       use m_mass_balance_area_data
@@ -1906,7 +2049,7 @@ contains
       ! sediment fractions
       if (ised > 0) then
          ! bedload exchanges with open boundaries
-         if (jambalumpmba == 0) then
+         if (jambalumpbnd == 0) then
             do jmba = nomba + 1, nombabnd
                if (any(mbalnused(:, jmba) > 0)) then
                   call add_name(balance, labelbnd//postfix_bed, mbabndname(jmba))
@@ -1927,6 +2070,9 @@ contains
          if (ised <= lsed .and. iflufflyr > 0) then
             ! fluff layer
             call add_name(balance, labelstt, labelflf)
+         end if
+         if (ised <= lsed) then
+            call add_name(balance, labelext, labelfixbed)
          end if
       end if
    end subroutine mba_prepare_names_fluxes_whole_model
@@ -1962,6 +2108,7 @@ contains
       real(kind=dp), pointer :: p_mbafluxheat(:, :)
       real(kind=dp), pointer :: p_flxdmp(:, :, :)
       real(kind=dp), pointer :: p_mbasedflux(:, :, :, :)
+      real(kind=dp), pointer :: p_mbafluxfixbed(:, :, :)
       real(kind=dp), pointer :: p_mbamorfacbegin
       real(kind=dp), pointer :: p_mbabedmassbegin(:, :)
       real(kind=dp), pointer :: p_mbabedshortmassbegin(:, :)
@@ -1975,6 +2122,7 @@ contains
          p_flxdmp => flxdmptot
          if (stm_included) then
             p_mbasedflux => mbasedfluxtot
+            p_mbafluxfixbed => mbafluxfixbedtot
             p_mbamorfacbegin => mbamorfacbegintot
             p_mbabedmassbegin => mbabedmassbegintot
             p_mbabedshortmassbegin => mbabedshortmassbegintot
@@ -1990,6 +2138,7 @@ contains
          p_flxdmp => flxdmp
          if (stm_included) then
             p_mbasedflux => mbasedflux
+            p_mbafluxfixbed => mbafluxfixbed
             p_mbamorfacbegin => mbamorfacbegin
             p_mbabedmassbegin => mbabedmassbegin
             p_mbabedshortmassbegin => mbabedshortmassbegin
@@ -2081,6 +2230,9 @@ contains
          if (ised <= lsed .and. iflufflyr > 0) then
             ! fluff layer
             call add_value_change(fluxes, imbf, sum(p_mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)))
+         end if
+         if (ised <= lsed) then
+            call add_values(fluxes, imbf, sum(p_mbafluxfixbed(:, ised, :), 2))
          end if
       end if
 
