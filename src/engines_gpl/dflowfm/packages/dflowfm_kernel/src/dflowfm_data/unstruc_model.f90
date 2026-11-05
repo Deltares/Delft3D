@@ -1535,10 +1535,10 @@ contains
       call prop_get(md_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff)
       call prop_get(md_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff)
 
-      call prop_get(md_ptr, 'meteo', 'longwaveEmmisivity', longwave_emmisivity_factor, success)
+      call prop_get(md_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity_factor, success)
       if (success) then
-         if (longwave_emmisivity_factor < 0 .or. longwave_emmisivity_factor > 1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmmisivity. Should be inclusive between 0 and 1.')
+         if (longwave_emissivity_factor < 0 .or. longwave_emissivity_factor > 1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmissivity. Should be inclusive between 0 and 1.')
          end if
       end if
 
@@ -3584,7 +3584,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, '[-] Air viscous momentum coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, '[-] Air viscous heat coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, '[-] Air viscous moisture coefficient')
-      call prop_set(prop_ptr, 'meteo', 'longwaveEmmisivity', longwave_emmisivity_factor, '[-] Longwave emissivity of water surface')
+      call prop_set(prop_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity_factor, '[-] Longwave emissivity of water surface')
 
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
