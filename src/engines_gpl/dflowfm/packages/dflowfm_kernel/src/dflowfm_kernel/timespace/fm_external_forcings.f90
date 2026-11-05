@@ -38,7 +38,8 @@ module fm_external_forcings
    use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, adduniformtimerelation_objects
    use fm_external_forcings_init_old, only: init_old
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
-      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
+      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses, &
+      update_sea_surface_temperature
    use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries, addtimespacerelation_boundaries
    use m_waveconst
 
@@ -62,6 +63,7 @@ module fm_external_forcings
    ! Expose fm_external_forcings_update functions
    public :: set_external_forcings
    public :: compute_air_water_interaction_most_fluxes
+   public :: update_sea_surface_temperature
    public :: prepare_air_pressure_temperature_dew_point_temperature
    public :: prepare_wind
    public :: calculate_wind_stresses
