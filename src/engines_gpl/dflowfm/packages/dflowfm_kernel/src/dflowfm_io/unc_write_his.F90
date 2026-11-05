@@ -259,11 +259,11 @@ contains
 
          call check_netcdf_error(nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
 
-         ! laydim and laydimw are always on for 3D models as are part of a lot of output variables packahes 
+         ! laydim and laydimw are always on for 3D models as are part of a lot of output variables packahes
          ! (see fm_statistical_output::default_fm_statistical_output )
          if ((kmx > 0) .or. (his_write_settings%zcor > 0)) then
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx,1)    , id_laydim))
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw',max(kmx,1) + 1, id_laydimw))
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx, 1), id_laydim))
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw', max(kmx, 1) + 1, id_laydimw))
          end if
 
          if (stm_included .and. his_write_settings%sed > 0) then
@@ -279,7 +279,7 @@ contains
             if (stmpar%morpar%moroutput%morfac) then
                call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morfac, nf90_double, [id_timedim], 'morfac', '', 'Average morphological factor over elapsed morphological time', '-'))
             end if
-         
+
             call check_netcdf_error(unc_def_var_nonspatial(ihisfile, id_morft, nf90_double, [id_timedim], 'morft', '', 'Current morphological time', 's'))
          end if
 
@@ -354,8 +354,8 @@ contains
 
          if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
             ierr = unc_def_his_structure_static_vars(ihisfile, ST_BUBBLE_SCREEN, 1, size(bubblescreen_air_discharge), 'point', nNodesBubbleScreen, id_strlendim, &
-                                                id_bubblescreendim, id_bubblescreen_name, id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, &
-                                                id_poly_xmid=id_bubblescreen_xmid, id_poly_ymid=id_bubblescreen_ymid)               
+                                                     id_bubblescreendim, id_bubblescreen_name, id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, &
+                                                     id_poly_xmid=id_bubblescreen_xmid, id_poly_ymid=id_bubblescreen_ymid)
          end if
 
          if (timon) then
@@ -686,7 +686,7 @@ contains
 #ifdef HAVE_PROJ
                if (add_latlon) then
                   call transform_and_put_latlon_coordinates(ihisfile, id_crsgeom_node_lon, id_crsgeom_node_lat, &
-                                                   nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs])
+                                                            nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs])
                end if
 #endif
                if (allocated(geomXCrs)) then
@@ -703,7 +703,7 @@ contains
             ! Source-sinks
             if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
                block
-                  real(kind=dp), dimension(:,:), allocatable :: tm_source_sink_x, tm_source_sink_y
+                  real(kind=dp), dimension(:, :), allocatable :: tm_source_sink_x, tm_source_sink_y
                   integer :: num_points
                   call realloc(tm_source_sink_x, [source_sinks%num_normal, source_sinks%max_polyline_points], keepExisting=.false., fill=dmiss)
                   call realloc(tm_source_sink_y, [source_sinks%num_normal, source_sinks%max_polyline_points], keepExisting=.false., fill=dmiss)
@@ -777,7 +777,7 @@ contains
       if (timon) then
          call timstop(handle_extra(64))
       end if
-      
+
       !morfac and morft
       if (his_write_settings%sed > 0 .and. stm_included) then
          dmorft = stmpar%morpar%morft - stmpar%morpar%morft0 ! days since morstart
@@ -787,11 +787,11 @@ contains
          else
             moravg = 0.0_dp
          end if
-      
+
          if (stmpar%morpar%moroutput%morfac) then
             call check_netcdf_error(nf90_put_var(ihisfile, id_morfac, moravg, [it_his]))
          end if
-      
+
          call check_netcdf_error(nf90_put_var(ihisfile, id_morft, mortime, [it_his]))
       end if
 
@@ -1269,13 +1269,13 @@ contains
          ierr = DFM_NOERR
 
          if (jawrizc == 1) then
-            do layer = 1, max(kmx,1)
+            do layer = 1, max(kmx, 1)
                call check_netcdf_error(nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
             end do
          end if
 
          if (jawrizw == 1) then
-            do layer = 1, max(kmx,1) + 1
+            do layer = 1, max(kmx, 1) + 1
                call check_netcdf_error(nf90_put_var(ihisfile, id_zws, valobs(:, IPNT_ZWS + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_zwu, valobs(:, IPNT_ZWU + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
             end do
@@ -1526,7 +1526,7 @@ contains
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, &
-         ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, gate2cgen, ngategen, bubblescreens
+                                           ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, gate2cgen, ngategen, bubblescreens
       use m_source_sink, only: source_sinks
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
@@ -1639,7 +1639,7 @@ contains
    subroutine get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_GlobalParameters, only: ST_UNSET, ST_WEIR, ST_ORIFICE, ST_PUMP, ST_GATE, ST_GENERAL_ST, ST_UNI_WEIR, ST_DAMBREAK, ST_CULVERT, ST_BRIDGE, &
-      ST_COMPOUND, ST_LONGCULVERT, ST_DAM, ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, ST_GATEGEN, ST_LATERAL, ST_BUBBLE_SCREEN
+                                    ST_COMPOUND, ST_LONGCULVERT, ST_DAM, ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, ST_GATEGEN, ST_LATERAL, ST_BUBBLE_SCREEN
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       character(len=*), intent(out) :: prefix !< Base name of this structure type, e.g., 'uniweir'
       character(len=*), intent(out) :: name !< Human readable name of this structure type, e.g., 'universal weir'
