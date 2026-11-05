@@ -646,30 +646,6 @@ stocfl,stocsu,stocsc
 "dPPDiat   ","H2O       ",  -1.50000
 "dPPDiat   ","Diat      ",   1.00000
 "dMrtDiat  ","Diat      ",  -1.00000
-"dPPDiatS1 ","OXY       ",   2.67000
-"dPPDiatS1 ","TIC       ",  -1.00000
-"dPPDiatS1 ","H2O       ",  -1.50000
-"dPPDiatS1 ","DiatS1    ",   1.00000
-"dMrtDiatS1","DiatS1    ",  -1.00000
-"dNH4UptS1 ","NH4       ",  -1.00000
-"dNH4UptS1 ","H+        ",   0.07100
-"dNH4UptS1 ","ALKA      ",  -4.35700
-"dNO3UptS1 ","NO3       ",  -1.00000
-"dNO3UptS1 ","OXY       ",   4.57100
-"dNO3UptS1 ","H+        ",  -0.07100
-"dNO3UptS1 ","ALKA      ",   4.35700
-"dNO3UptS1 ","H2O       ",  -1.28600
-"dPO4UptS1 ","PO4       ",  -1.00000
-"dPO4UptS1 ","H+        ",  -0.03200
-"dPO4UptS1 ","ALKA      ",   1.96800
-"dSiUptS1  ","Si        ",  -1.00000
-"dNH4US1D  ","NH4       ",  -1.00000
-"dNH4US1D  ","H+        ",   0.07100
-"dNH4US1D  ","ALKA      ",  -4.35700
-"dPO4US1D  ","PO4       ",  -1.00000
-"dPO4US1D  ","H+        ",  -0.03200
-"dPO4US1D  ","ALKA      ",   1.96800
-"dSiUS1D   ","Si        ",  -1.00000
 "dcPPGreen ","OXY       ",   2.67000
 "dcPPGreen ","TIC       ",  -1.00000
 "dcPPGreen ","H2O       ",  -1.50000
@@ -692,21 +668,6 @@ stocfl,stocsu,stocsc
 "dMortOOP  ","POP2      ",   1.00000
 "dMortDetSi","Opal      ",   1.00000
 "dMortOOSi ","Opal      ",   1.00000
-"dMrtDetCS1","DetCS1    ",   1.00000
-"dMrtOOCS1 ","OOCS1     ",   1.00000
-"dNH4AUTS1 ","NH4       ",   1.00000
-"dNH4AUTS1 ","H+        ",  -0.07100
-"dNH4AUTS1 ","ALKA      ",   4.35700
-"dMrtDetNS1","DetNS1    ",   1.00000
-"dMrtOONS1 ","OONS1     ",   1.00000
-"dPO4AUTS1 ","PO4       ",   1.00000
-"dPO4AUTS1 ","H+        ",   0.03200
-"dPO4AUTS1 ","ALKA      ",  -1.96800
-"dMrtDetPS1","DetPS1    ",   1.00000
-"dMrtOOPS1 ","OOPS1     ",   1.00000
-"dSiAUTS1  ","Si        ",   1.00000
-"dMrtDetSS1","DetSiS1   ",   1.00000
-"dMrtOOSS1 ","OOSiS1    ",   1.00000
 "dDumOXYMin","OXY       ",   0.00000
 "dDumOXYMin","GREEN     ",   0.00000
 "dDumOXYMin","DIAT      ",   0.00000
