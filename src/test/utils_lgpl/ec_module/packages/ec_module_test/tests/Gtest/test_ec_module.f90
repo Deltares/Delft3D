@@ -7,7 +7,7 @@ module test_ec_module
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_velocity_netcdf_candidates() bind(C)
       use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
       use iso_c_utils, only: cstr
@@ -62,7 +62,7 @@ contains
       call f90_expect_streq(cstr(fallback_names(1)), cstr('northward_sea_water_velocity'))
    end subroutine test_initial_velocity_netcdf_candidates
 
-   !$gtest test
+   !$gtest
    subroutine test_interpolate_linear_from_triangle() bind(C)
 
       integer, parameter :: NDIM = 1 !< sample vector dimension
@@ -221,7 +221,7 @@ contains
       YP = Y(IDX) + shift * Yshift / norm
    end subroutine get_point_just_outside_triangle
 
-   !$gtest test
+   !$gtest
    !> Regression test for EC-module triangulation boundary case
     !! PointCloud corners: (0,0)=10, (0,30)=20, (40,30)=30, (40,0)=40
     !! Grid: 2 cells x 3 cells -> 3x4 vertices at x=0,20,40 and y=0,10,20,30
@@ -296,7 +296,7 @@ contains
 
    end subroutine test_triinterp2_pointcloud_boundary_regression
 
-   !$gtest test
+   !$gtest
    subroutine test_netcdf_candidate_helper_returns_predefined_mapping() bind(C)
       use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
       use iso_c_utils, only: cstr
@@ -322,7 +322,7 @@ contains
       call f90_expect_false(allocated(fallback_names))
    end subroutine test_netcdf_candidate_helper_returns_predefined_mapping
 
-   !$gtest test
+   !$gtest
    subroutine test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped() bind(C)
       use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
       use m_ec_message, only: clear_ec_message

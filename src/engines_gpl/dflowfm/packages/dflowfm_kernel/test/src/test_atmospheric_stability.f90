@@ -9,7 +9,7 @@ module test_atmospheric_stability
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_compute_scales_and_fluxes_moninobukhov_true() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
@@ -106,7 +106,7 @@ contains
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_true
 
-   !$gtest test
+   !$gtest
    subroutine test_compute_scales_and_fluxes_moninobukhov_false() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature
@@ -202,7 +202,7 @@ contains
 
    end subroutine test_compute_scales_and_fluxes_moninobukhov_false
 
-   !$gtest test
+   !$gtest
    subroutine test_compute_scales_and_fluxes_moninobukhov_free_convection() bind(C)
       real(kind=dp), allocatable, dimension(:) :: wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                                     air_pressure, charnock, surface_temperature

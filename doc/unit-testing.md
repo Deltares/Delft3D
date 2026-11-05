@@ -13,7 +13,7 @@ module test_example
    use assertions_gtest, only: f90_expect_eq
    implicit none(type, external)
 contains
-   !$gtest test
+   !$gtest
    subroutine test_addition() bind(C)
       call f90_expect_eq(1 + 1, 2, "addition")
    end subroutine test_addition
@@ -28,8 +28,8 @@ add_fortran_gtest(test_example
 )
 ```
 
-The marker supplies the enclosing module's suite and the following procedure's
-test name. Only exceptions need `suite=` or `name=` overrides. CMake generates
+The test name is always `module_name.procedure_name`; the marker takes no
+arguments. Tests must be inside modules. CMake generates
 the C++ registrations directly using Python; no C++ bootstrap or duplicate source
 list is needed. Tests run from their executable's build directory and are
 individually discoverable by CTest and Visual Studio Test Explorer.

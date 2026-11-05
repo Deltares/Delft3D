@@ -32,7 +32,7 @@ contains
                        "    40 0"])
    end subroutine setup_block_from
 
-   !$gtest test
+   !$gtest
    subroutine test_ec_block_from() bind(C)
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
@@ -58,7 +58,7 @@ contains
 
    end subroutine test_ec_block_from
 
-   !$gtest test
+   !$gtest
    subroutine test_ec_block_from_skip() bind(C)
       integer :: status
       logical :: success
@@ -85,7 +85,7 @@ contains
 
    end subroutine test_ec_block_from_skip
 
-   !$gtest test
+   !$gtest
    subroutine test_ec_block_to() bind(C)
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]

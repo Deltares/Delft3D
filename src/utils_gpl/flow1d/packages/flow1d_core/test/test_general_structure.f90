@@ -5,7 +5,7 @@ module test_general_structure
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_genstru_1d2d_door_not_in_water() bind(C)
    
       use precision, only: dp
@@ -42,7 +42,7 @@ contains
       
    end subroutine test_genstru_1d2d_door_not_in_water
 
-   !$gtest test
+   !$gtest
    subroutine test_genstru_1d2d_crestwidth_reduced() bind(C)
    
       use precision, only: dp

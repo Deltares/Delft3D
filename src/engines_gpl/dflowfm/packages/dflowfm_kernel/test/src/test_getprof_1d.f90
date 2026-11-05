@@ -1,5 +1,4 @@
 module m_test_getprof_1d
-   !$gtest suite=test_getprof_1d
    use assertions_gtest
    use precision, only: dp
    use precision_basics, only: comparereal
@@ -239,7 +238,7 @@ contains
       call connectdbn(p_centernode, q_centernode, new_link)
    end subroutine place_2d2d_link
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__network1d() bind(C)
       use network_data, only: numl
       use m_flow_geominit, only: flow_geominit
@@ -287,7 +286,7 @@ contains
       call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__network1d
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__network1d__friction() bind(C)
       use network_data, only: numl
       use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
@@ -360,7 +359,7 @@ contains
       call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__network1d__friction
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__network1d__full() bind(C)
       use network_data, only: numl
       use m_flow_geominit, only: flow_geominit
@@ -411,7 +410,7 @@ contains
       call f90_expect_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__network1d__full
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -454,7 +453,7 @@ contains
       call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_without_profile
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile__friction() bind(C)
       use m_flow, only: u1, v, cfuhi, frcu, ifrcutp
       use m_flowgeom, only: lnx
@@ -517,7 +516,7 @@ contains
       call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__prof1d_without_profile__friction
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile__full() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -564,7 +563,7 @@ contains
       call f90_expect_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_without_profile__full
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -602,7 +601,7 @@ contains
       call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_with_profile
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile__friction() bind(C)
       use m_flow, only: u1, v, cfuhi
       use m_flowgeom, only: lnx
@@ -658,7 +657,7 @@ contains
       call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__prof1d_with_profile__friction
 
-   !$gtest test
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile__full() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network

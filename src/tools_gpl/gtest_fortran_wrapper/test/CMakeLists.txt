@@ -23,4 +23,3 @@ add_fortran_gtest(test_gtest_fortran_registration
     CXX_SOURCES test_cleanup.cpp
     TEST_TEARDOWN wrapper_test_cleanup
     VISUAL_STUDIO_PATH tools_gpl/gtest_fortran_wrapper/test)
-add_test(NAME gtest_fortran_registration_aggregate COMMAND test_gtest_fortran_registration)

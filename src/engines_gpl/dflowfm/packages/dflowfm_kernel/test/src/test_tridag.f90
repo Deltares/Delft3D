@@ -1,6 +1,5 @@
 !> Tests for tridiagonal solves, input preservation and small-pivot handling.
 module test_tridag
-   !$gtest suite=tests_tridag
    use assertions_gtest, only: f90_expect_near
    use precision, only: dp
    use m_tridag, only: tridag
@@ -13,7 +12,7 @@ module test_tridag
 
 contains
 
-   !$gtest test name=single_rhs
+   !$gtest
    !> Check a known solution and preservation of the input matrix and right-hand side.
    subroutine test_single_rhs() bind(C)
       real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution
@@ -32,7 +31,7 @@ contains
       call f90_expect_near(rhs, [6.0_dp, -21.0_dp, 20.0_dp], 0.0_dp, "RHS unchanged")
    end subroutine test_single_rhs
 
-   !$gtest test name=varying_sizes
+   !$gtest
    !> Check known solutions and residuals for vector and constant right-hand sides with 1--64 rows.
    subroutine test_varying_sizes() bind(C)
       integer, parameter :: max_rows = 64
@@ -73,7 +72,7 @@ contains
       call f90_expect_near(constant_vector, spread(constant_rhs, 1, max_rows), 0.0_dp, "Constant RHS unchanged")
    end subroutine test_varying_sizes
 
-   !$gtest test name=zero_rhs
+   !$gtest
    !> A zero right-hand side must produce a zero solution.
    subroutine test_zero_rhs() bind(C)
       real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution
@@ -88,7 +87,7 @@ contains
       call f90_expect_near(solution, [0.0_dp, 0.0_dp, 0.0_dp], 0.0_dp, "Zero RHS")
    end subroutine test_zero_rhs
 
-   !$gtest test name=first_pivot
+   !$gtest
    !> Preserve the original use of signed small first pivots without regularization.
    subroutine test_first_pivot() bind(C)
       real(kind=dp), dimension(6), parameter :: pivots = [0.5e-15_dp, -0.5e-15_dp, 1.0e-15_dp, -1.0e-15_dp, 2.0e-15_dp, -2.0e-15_dp]
@@ -108,7 +107,7 @@ contains
       end do
    end subroutine test_first_pivot
 
-   !$gtest test name=eliminated_pivot
+   !$gtest
    !> Check that zero and small pivots created by elimination are replaced with a sign-preserving minimum magnitude.
    subroutine test_eliminated_pivot() bind(C)
       real(kind=dp), dimension(3), parameter :: second_diagonals = [0.5_dp, 0.5_dp + 0.5e-15_dp, 0.5_dp - 0.5e-15_dp]

@@ -7,7 +7,7 @@ module test_unstruc_model
     integer, parameter :: MESSAGE_BUFFER_SIZE = 256
 contains
 
-    !$gtest test
+    !$gtest
     subroutine test_set_time_interval__default_simulation_start_stop() bind(C)
         character(len=*), parameter :: INTERVAL_NAME = "FooInterval"
         real(kind=dp), parameter :: SIMULATION_START = 7.0_dp, SIMULATION_STOP = 42.0_dp
@@ -24,7 +24,7 @@ contains
         call f90_expect_double_eq(end_, SIMULATION_STOP)
     end subroutine test_set_time_interval__default_simulation_start_stop
 
-    !$gtest test
+    !$gtest
     subroutine test_set_time_interval__dont_read_interval_input() bind(C)
         real(kind=dp), parameter :: SIMULATION_START = 7.0_dp, SIMULATION_STOP = 42.0_dp
 
@@ -39,7 +39,7 @@ contains
         call f90_expect_double_eq(end_, SIMULATION_STOP)
     end subroutine test_set_time_interval__dont_read_interval_input
 
-    !$gtest test
+    !$gtest
     subroutine test_set_time_interval__start_stop_out_of_bounds() bind(C)
         use MessageHandling, only: SetMessageHandling, GetMessageCount, GetMessage_MH, LEVEL_WARN
         character(len=*), parameter :: INTERVAL_NAME = "FooInterval"

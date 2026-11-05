@@ -12,26 +12,24 @@ module test_example
    use assertions_gtest, only: f90_expect_eq
    implicit none(type, external)
 contains
-   !$gtest test
+   !$gtest
    subroutine addition() bind(C)
       call f90_expect_eq(1 + 1, 2, "ordinary Fortran message")
    end subroutine addition
 end module test_example
 ```
 
-Only subroutines marked with `!$gtest test` are registered. Each marker must be
-followed by a plain, single-line declaration of a no-argument subroutine using
-`bind(C)` or `bind(C, name="unique_c_binding")`. Blank lines and comments may
-intervene, but prefixes such as `recursive`, continuation lines, and intervening
-access or attribute declarations are not supported. C binding names must be
-unique. Keep markers on their own lines; conditional preprocessing of marked
+Only subroutines marked with `!$gtest` inside a module are registered. Each marker
+must be followed by a plain, single-line declaration of a no-argument subroutine using
+`bind(C)`. Explicit binding names (`bind(C, name=...)`) are not supported.
+The C symbol is the lowercase procedure name and must be globally unique.
+Blank lines and comments may intervene, but prefixes such as `recursive`,
+continuation lines, and intervening access or attribute declarations are not
+supported. Keep markers on their own lines; conditional preprocessing of marked
 declarations is not supported.
 
-The default test name is `module_name.procedure_name`. To override it, use
-`!$gtest test suite=OtherSuite name=PublicName`. A module-level
-`!$gtest suite=PublicSuite` sets the suite for that module's tests.
-Module declarations used for suite naming must also be on one line. These
-restrictions do not apply to unmarked helper procedures.
+The test name is always `module_name.procedure_name`. Module declarations
+must also be on one line.
 
 ### Register the source in CMake
 

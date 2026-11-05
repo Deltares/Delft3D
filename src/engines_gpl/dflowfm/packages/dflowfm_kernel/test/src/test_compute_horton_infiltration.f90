@@ -19,7 +19,7 @@ module test_compute_horton_infiltration
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Test whether HORTON_CAPSTATE_NOCHANGE infiltration capacity state is returned when min_inf_cap > max_inf_cap
    subroutine test_horton_infiltration_nochange() bind(C)
       ! Declare variables
@@ -47,7 +47,7 @@ contains
 
    end subroutine test_horton_infiltration_nochange
 
-   !$gtest test
+   !$gtest
    !> Test decreasing infiltration capacity in wet conditions (rainfall > min_inf_cap, no waterdepth)
    subroutine test_horton_infiltration_decreasing_rain() bind(C)
       ! Declare variables
@@ -85,7 +85,7 @@ contains
 
    end subroutine test_horton_infiltration_decreasing_rain
 
-   !$gtest test
+   !$gtest
    !> Test decreasing infiltration capacity in wet conditions (no rainfall, but waterdepth present)
    subroutine test_horton_infiltration_decreasing_waterdepth() bind(C)
       ! Declare variables
@@ -122,7 +122,7 @@ contains
 
    end subroutine test_horton_infiltration_decreasing_waterdepth
 
-   !$gtest test
+   !$gtest
    !> Test recovering infiltration capacity in dry conditions (rainfall < min_inf_cap and no waterdepth)
    subroutine test_horton_infiltration_recovering_rain() bind(C)
       ! Declare variables
@@ -163,7 +163,7 @@ contains
 
    end subroutine test_horton_infiltration_recovering_rain
 
-   !$gtest test
+   !$gtest
    !> Test recovering infiltration capacity in dry conditions (no rainfall and no waterdepth)
    subroutine test_horton_infiltration_recovering_dry() bind(C)
       ! Declare variables

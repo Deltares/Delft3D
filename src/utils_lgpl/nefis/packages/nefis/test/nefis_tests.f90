@@ -28,7 +28,6 @@
 !
 
 module m_nefis_tests
-   !$gtest suite=nefis_tests
    use assertions_gtest
    use tests_nefis_helper
    implicit none
@@ -37,7 +36,7 @@ module m_nefis_tests
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_04() bind(C)
       integer * 4 fds
       integer ::&
@@ -243,7 +242,7 @@ contains
 
    end subroutine test_04
 
-   !$gtest test
+   !$gtest
    subroutine test_05() bind(C)
       integer start, stop, incr
       parameter(start=1, stop=2, incr=3)
@@ -403,7 +402,7 @@ contains
 
    end subroutine test_05
 
-   !$gtest test
+   !$gtest
    subroutine test_07() bind(C)
       integer * 4 fds
       integer clsdat,&
@@ -606,7 +605,7 @@ contains
 
    end subroutine test_07
 
-   !$gtest test
+   !$gtest
    subroutine test_08() bind(C)
       integer START, stop, INCR
 
@@ -944,7 +943,7 @@ contains
 
    end subroutine test_08
 
-   !$gtest test
+   !$gtest
    subroutine test_09() bind(C)
       integer * 4 fds, datfds
       integer START, stop, INCR
@@ -1094,7 +1093,7 @@ contains
 
    end subroutine test_09
 
-   !$gtest test
+   !$gtest
    subroutine test_12() bind(C)
       integer * 4 fds_a,&
       &fds_b,&
@@ -1185,7 +1184,7 @@ contains
 
    end subroutine test_12
 
-   !$gtest test
+   !$gtest
    subroutine test_15() bind(C)
       integer ntimes, num_columns, num_rows, num_layers_grid, nsrc
       parameter(ntimes=3,&

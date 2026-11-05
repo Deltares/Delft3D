@@ -9,7 +9,7 @@ module test_bubblescreen
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Test bubble and normal source-sinks
    subroutine test_with_normal_source_sinks() bind(C)
       use fm_external_forcings, only: init_new
@@ -109,7 +109,7 @@ contains
 
    end subroutine test_with_normal_source_sinks
 
-   !$gtest test
+   !$gtest
    !> Test conversion of air discharge to water discharge with default parameters
    subroutine test_convert_discharge_air_to_water_default() bind(C)
       ! Local variables
@@ -129,7 +129,7 @@ contains
 
    end subroutine test_convert_discharge_air_to_water_default
 
-   !$gtest test
+   !$gtest
    !> Test conversion of air discharge to water discharge with custom parameters
    subroutine test_convert_discharge_air_to_water_custom() bind(C)
       ! Local variables

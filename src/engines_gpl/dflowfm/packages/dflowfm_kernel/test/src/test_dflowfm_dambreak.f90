@@ -1,11 +1,10 @@
 module test_dflowfm_dambreak
-   !$gtest suite=test_skip_1d_flowlinks
    use assertions_gtest
    implicit none
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Test whether remove_1d_links_from_dambreak_polygon_list removes 1D flow links from the list of polygon vertices in a dambreak test case. This is necessary to prevent the 1D flow links
    subroutine test_skip_1d_flowlinks() bind(C)
       use precision, only: dp

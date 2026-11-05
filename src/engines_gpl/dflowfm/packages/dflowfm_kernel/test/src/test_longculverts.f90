@@ -1,5 +1,4 @@
 module test_longculverts
-   !$gtest suite=test_longculvert
    use assertions_gtest
    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
    use m_network_helpers, only: t_grid_helper
@@ -98,7 +97,7 @@ contains
       call create_file(filename, lines)
    end subroutine create_longculvert_structure_file
 
-   !$gtest test
+   !$gtest
    subroutine test_convert1d2dlongculverts__single_four_point() bind(C)
       use precision, only: dp
       use network_data, only: numk, numl, kn
@@ -150,7 +149,7 @@ contains
       call f90_expect_eq(kn(3, longculverts(1)%netlinks(3)), 5, cstr("Expected last new link to be a 1D2D link."))
    end subroutine test_convert1d2dlongculverts__single_four_point
 
-   !$gtest test
+   !$gtest
    subroutine test_convert1d2dlongculverts__single_two_point() bind(C)
       use precision, only: dp
       use network_data, only: numk, numl, kn
@@ -205,7 +204,7 @@ contains
       call f90_expect_eq(kn(3, longculverts(1)%netlinks(1)), 5, cstr("Expected first new link to be a 1D2D link."))
    end subroutine test_convert1d2dlongculverts__single_two_point
 
-   !$gtest test
+   !$gtest
    subroutine test_convert1d2dlongculverts__multiple_culverts() bind(C)
       use precision, only: dp
       use network_data, only: numk, numl, kn
@@ -411,7 +410,7 @@ contains
                                   "    dtInit                = 1.0"])
    end subroutine create_mdu_file
 
-   !$gtest test
+   !$gtest
    !> Verifies that flow_modelinit succeeds for a minimal 2D model containing
    !! a long culvert, and that flow is driven through it by a water level gradient.
    !! The two middle cells have a raised bed level (barrier), forcing all flow
@@ -545,7 +544,7 @@ contains
       iresult = flow_modelinit()
    end subroutine setup_longculvert_model
 
-   !$gtest test
+   !$gtest
    !> Verifies that flow_modelinit succeeds for a minimal 2D model with a long culvert.
    subroutine test_modelinit_succeeds() bind(C)
       use m_flowgeom, only: ndx, lnx
@@ -571,7 +570,7 @@ contains
       call default_longculverts()
    end subroutine test_modelinit_succeeds
 
-   !$gtest test
+   !$gtest
    !> With a bed level barrier in the middle cells and a water level gradient,
    !! flow should pass through the culvert from the high-head side to the low-head side.
    subroutine test_flow_head_difference_drives_discharge() bind(C)
@@ -619,7 +618,7 @@ contains
       call default_longculverts()
    end subroutine test_flow_head_difference_drives_discharge
 
-   !$gtest test
+   !$gtest
    !> With a uniform water level across all cells there should be no discharge
    !! through the culvert.
    subroutine test_flow_no_head_difference_no_discharge() bind(C)
@@ -655,7 +654,7 @@ contains
       call default_longculverts()
    end subroutine test_flow_no_head_difference_no_discharge
 
-   !$gtest test
+   !$gtest
    !> With the valve fully closed (valve_relative_opening = 0), no flow should
    !! pass through the culvert even with a head difference.
    subroutine test_valve_closed_blocks_flow() bind(C)
@@ -704,7 +703,7 @@ contains
       call default_longculverts()
    end subroutine test_valve_closed_blocks_flow
 
-   !$gtest test
+   !$gtest
    !> With the head gradient reversed (right higher than left), the discharge
    !! through the culvert should be negative.
    subroutine test_flow_reverse_head_gives_negative_discharge() bind(C)
@@ -751,7 +750,7 @@ contains
       call default_longculverts()
    end subroutine test_flow_reverse_head_gives_negative_discharge
 
-   !$gtest test
+   !$gtest
    !> Verifies that direction reconstruction and allowedFlowDir follow the
    !! input-coordinate order when the local flow-link orientation changes.
    subroutine test_allowed_flowdir_follows_coordinate_order() bind(C)
@@ -813,7 +812,7 @@ contains
       call default_longculverts()
    end subroutine test_allowed_flowdir_follows_coordinate_order
 
-   !$gtest test
+   !$gtest
    !> Verifies converted-culvert orientation using actual discharge, then checks
    !! the complete allowedFlowDir truth table on the initialized flow links.
    subroutine test_converted_allowed_flowdir_controls_discharge() bind(C)
@@ -1080,7 +1079,7 @@ contains
       end do
    end subroutine init_two_culvert_scenario
 
-   !$gtest test
+   !$gtest
    subroutine test_valve_half_open_reduces_discharge() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -1120,7 +1119,7 @@ contains
       call default_longculverts()
    end subroutine test_valve_half_open_reduces_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_friction_higher_value_reduces_discharge() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1160,7 +1159,7 @@ contains
       call default_longculverts()
    end subroutine test_friction_higher_value_reduces_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_2pt_friction_converted() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1205,7 +1204,7 @@ contains
       call default_longculverts()
    end subroutine test_2pt_friction_converted
 
-   !$gtest test
+   !$gtest
    subroutine test_2pt_default_friction_converted() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1279,7 +1278,7 @@ contains
       call default_longculverts()
    end subroutine test_2pt_default_friction_converted
 
-   !$gtest test
+   !$gtest
    subroutine test_friction_type_affects_discharge() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1321,7 +1320,7 @@ contains
       call default_longculverts()
    end subroutine test_friction_type_affects_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_larger_cross_section_increases_discharge() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1380,7 +1379,7 @@ contains
 
    end subroutine setup_two_row_longculvert_model
 
-   !$gtest test
+   !$gtest
    subroutine test_3pt_modelinit_succeeds() bind(C)
       use m_flowgeom, only: ndx, lnx
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1403,7 +1402,7 @@ contains
       call default_longculverts()
    end subroutine test_3pt_modelinit_succeeds
 
-   !$gtest test
+   !$gtest
    subroutine test_3pt_head_difference_drives_discharge() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -1433,7 +1432,7 @@ contains
       call default_longculverts()
    end subroutine test_3pt_head_difference_drives_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_3pt_valve_closed_blocks_flow() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -1465,7 +1464,7 @@ contains
       call default_longculverts()
    end subroutine test_3pt_valve_closed_blocks_flow
 
-   !$gtest test
+   !$gtest
    subroutine test_3pt_friction_higher_value_reduces_discharge() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1505,7 +1504,7 @@ contains
       call default_longculverts()
    end subroutine test_3pt_friction_higher_value_reduces_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_3pt_friction_converted() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1542,7 +1541,7 @@ contains
    ! 4-POINT LONG CULVERT TESTS
    ! ============================================================================
 
-   !$gtest test
+   !$gtest
    subroutine test_4pt_modelinit_succeeds() bind(C)
       use m_flowgeom, only: ndx, lnx
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1565,7 +1564,7 @@ contains
       call default_longculverts()
    end subroutine test_4pt_modelinit_succeeds
 
-   !$gtest test
+   !$gtest
    subroutine test_4pt_head_difference_drives_discharge() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -1595,7 +1594,7 @@ contains
       call default_longculverts()
    end subroutine test_4pt_head_difference_drives_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_4pt_valve_closed_blocks_flow() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -1627,7 +1626,7 @@ contains
       call default_longculverts()
    end subroutine test_4pt_valve_closed_blocks_flow
 
-   !$gtest test
+   !$gtest
    subroutine test_4pt_friction_higher_value_reduces_discharge() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -1668,7 +1667,7 @@ contains
 
    end subroutine test_4pt_friction_higher_value_reduces_discharge
 
-   !$gtest test
+   !$gtest
    !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
    !! (mass conservation within the culvert pipe).
    subroutine test_4pt_flow_continuity_across_links() bind(C)
@@ -1709,7 +1708,7 @@ contains
       call default_longculverts()
    end subroutine test_4pt_flow_continuity_across_links
 
-   !$gtest test
+   !$gtest
    !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
    !! (mass conservation within the culvert pipe).
    subroutine test_4pt_flow_continuity_converted() bind(C)
@@ -1757,7 +1756,7 @@ contains
       call default_longculverts()
    end subroutine test_4pt_flow_continuity_converted
 
-   !$gtest test
+   !$gtest
    !> Verify that a 4-point long culvert works correctly when there is already
    !! an existing 1D network (branch + cross sections) in the model.
    !! This tests that meshgeom1d arrays are properly extended and that

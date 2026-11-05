@@ -274,7 +274,7 @@ contains
       if (status /= NF90_NOERR) error stop nf90_strerror(status)
    end subroutine check_netcdf
 
-   !$gtest test
+   !$gtest
    subroutine test_polygon_preserves_uncovered_values() bind(C)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use fm_location_types, only: UNC_LOC_S
@@ -312,7 +312,7 @@ contains
       ierr = m_polygon_destructor()
    end subroutine test_polygon_preserves_uncovered_values
 
-   !$gtest test
+   !$gtest
    subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
       use m_flow, only: kmx, ndkx
       use m_polygon, only: m_polygon_destructor
@@ -371,7 +371,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_waqparameter_polygon_preserves_uncovered_values
 
-   !$gtest test
+   !$gtest
    subroutine test_waqparameter_polygon_populates_3d_layers() bind(C)
       use m_flow, only: kmx, ndkx, kbot, ktop, kmxn, zws
       use m_polygon, only: m_polygon_destructor
@@ -440,7 +440,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_waqparameter_polygon_populates_3d_layers
 
-   !$gtest test
+   !$gtest
    !> Verifies that encoded serial WAQ segment numbers are converted to the local
    !! process-space layer index and copied over each target water column.
    subroutine test_waqsegmentnumber_finalization() bind(C)
@@ -508,7 +508,7 @@ contains
       call reset_waq_segment_number_indices()
    end subroutine test_waqsegmentnumber_finalization
 
-   !$gtest test suite=test_init_spatial_field
+   !$gtest
    !> When no averaging keywords are present, read_averaging_input must return
    !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.
    subroutine test_averaging_params_defaults() bind(C)
@@ -536,7 +536,7 @@ contains
       call f90_expect_eq(avg%percentile, 0.0_dp, "default percentile should be 0")
    end subroutine test_averaging_params_defaults
 
-   !$gtest test suite=test_init_spatial_field
+   !$gtest
    !> averaging_params_to_transformcoef must write the four averaging values
    !! into the correct transformcoef slots (4, 5, 7, 8) without touching others.
    subroutine test_averaging_params_to_transformcoef() bind(C)
@@ -563,7 +563,7 @@ contains
       call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
    end subroutine test_averaging_params_to_transformcoef
 
-   !$gtest test
+   !$gtest
    !> Verifies that a [Spatial] block with forcingFileType=bcascii sets up the
    !! EC connection via the 'global' location path and activates jarain.
    !! This exercises the bcascii branch inside init_spatial_fields, which passes
@@ -615,7 +615,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_rainfall_bcascii_registers_ec_connection
 
-   !$gtest test
+   !$gtest
    !> Verifies that a simple recognized scalar can use the generic source-item
    !! connection when its provider-specific source mapping does not support BC.
    subroutine test_airpressure_bcascii_uses_generic_source_fallback() bind(C)
@@ -675,7 +675,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_airpressure_bcascii_uses_generic_source_fallback
 
-   !$gtest test
+   !$gtest
    !> Verifies that the 'atmosphericpressure' ext alias correctly works with 'airpressure' .bc data.
    subroutine test_atmosphericpressure_alias_works_as_airpressure() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
@@ -734,7 +734,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_atmosphericpressure_alias_works_as_airpressure
 
-   !$gtest test
+   !$gtest
    !> Verifies that a [Spatial] block with an unrecognized quantity causes
    !! init_spatial_fields to return .false.. The 'default' branch in
    !! init_spatial_fields emits an error and returns .false..
@@ -762,7 +762,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_unknown_quantity_returns_error
 
-   !$gtest test
+   !$gtest
    !> Verifies that enable_quantity returns .false. when netsolarradiation has
    !! already been registered. This guard in enable_quantity is only reachable
    !! after a successful EC connection, so integration tests never exercise it.
@@ -812,7 +812,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_solarradiation_conflicts_with_netsolarradiation
 
-   !$gtest test
+   !$gtest
    !> Verifies that a qext [Spatial] block with forcingFileType=sample populates
    !! the qext array immediately at initialisation (static_field=.true. path).
    !! This is the regression test for the unified EC path introduced in Step 2:
@@ -879,7 +879,7 @@ contains
       end subroutine cleanup
    end subroutine test_qext_static_field_populated_at_init
 
-   !$gtest test
+   !$gtest
    !> Verifies that qext with forcingFileType=bcascii sets up a time-varying EC relation
    !! via the tgt_data1 bypass path (quantity not registered in fm_ext_force_name_to_ec_item).
    !! This proves that user freedom is preserved: qext is not locked to sample files.
@@ -972,7 +972,7 @@ contains
       end subroutine cleanup
    end subroutine test_qext_bcascii_registers_ec_connection
 
-   !$gtest test
+   !$gtest
    subroutine test_solarradiation_scalar_netcdf_broadcast() bind(C)
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
       use m_sferic, only: jsferic
@@ -1025,7 +1025,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_solarradiation_scalar_netcdf_broadcast
 
-   !$gtest test
+   !$gtest
    subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
       use m_meteo, only: initialize_ec_module
       use m_sferic, only: jsferic
@@ -1065,7 +1065,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_located_timeseries_netcdf_is_not_scalar
 
-   !$gtest test
+   !$gtest
    subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new
@@ -1149,7 +1149,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_windxy_scalar_netcdf_override_and_multiply
 
-   !$gtest test
+   !$gtest
    subroutine test_scalar_netcdf_target_index_updates_complete_coordinate() bind(C)
       use m_ec_converter, only: ecConverterPerformConversions
       use m_ec_parameters, only: convType_netcdf, EC_OPERAND_REPLACE, elmSetType_cartesian, elmSetType_scalar, &
@@ -1211,7 +1211,7 @@ contains
       deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
    end subroutine test_scalar_netcdf_target_index_updates_complete_coordinate
 
-   !$gtest test
+   !$gtest
    !> Verifies that a time-varying WAQ function uses a one-element global target,
    !! matching the dummy target used by the old external-forcings initialization.
    subroutine test_waqfunction_uses_global_ec_target() bind(C)
@@ -1315,7 +1315,7 @@ contains
       end subroutine cleanup
    end subroutine test_waqfunction_uses_global_ec_target
 
-   !$gtest test
+   !$gtest
    !> Verifies that the new external-forcings pre-scan registers every WAQ input
    !! type handled by the legacy pre-scan before dependent arrays are sized.
    subroutine test_register_waq_targets() bind(C)
@@ -1407,7 +1407,7 @@ contains
       end subroutine cleanup
    end subroutine test_register_waq_targets
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialwaterlevel [Spatial] block populates s1 immediately at
    !! initialisation via the new init_spatial_fields static field path.
    !! This is the regression test proving the quantity was successfully migrated from
@@ -1487,7 +1487,7 @@ contains
       end subroutine cleanup
    end subroutine test_initialwaterlevel_static_field_populated_at_init
 
-   !$gtest test
+   !$gtest
    !> Verifies that a frictioncoefficient [Spatial] block populates frcu immediately at
    !! initialisation via the new init_spatial_fields static field path.
    !! Also proves UNC_LOC_U routing is correct: xu/yu are used as target coordinates.
@@ -1575,7 +1575,7 @@ contains
       end subroutine cleanup
    end subroutine test_frictioncoefficient_static_field_populated_at_init
 
-   !$gtest test
+   !$gtest
    subroutine test_datavalue_with_static_input_is_applied_once() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new, set_external_forcings
@@ -1653,7 +1653,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_datavalue_with_static_input_is_applied_once
 
-   !$gtest test
+   !$gtest
    !> A static airdensity datavalue must not be reapplied during runtime updates
    !! after a later static field has replaced it.
    subroutine test_airdensity_datavalue_with_static_input_is_applied_once() bind(C)
@@ -1727,7 +1727,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
 
-   !$gtest test
+   !$gtest
    subroutine test_static_windxy_multiple_targets_reports_error() bind(C)
       use m_flowgeom, only: lnx, xu, yu
       use m_wind, only: wx, wy
@@ -1770,7 +1770,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_static_windxy_multiple_targets_reports_error
 
-   !$gtest test
+   !$gtest
    !> A static datavalue base must be reapplied before each dynamic multiplication,
    !! rather than multiplying the previously updated target value cumulatively.
    subroutine test_static_datavalue_dynamic_multiply_resets_base() bind(C)
@@ -1865,7 +1865,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_static_datavalue_dynamic_multiply_resets_base
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialwaterdepth [Spatial] block fills hs AND derives s1 = bl + hs.
    !! The s1 derivation is post-processing performed by enable_quantity, not by
    !! timespaceinitialfield itself. This proves enable_quantity fires correctly on the
@@ -1927,7 +1927,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialwaterdepth_derives_s1
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_secchi_netcdf_interpolates_at_start() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
       use m_meteo, only: item_secchi_depth
@@ -1981,7 +1981,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_secchi_netcdf_interpolates_at_start
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_waterlevel_timeless_netcdf() bind(C)
       use m_flow, only: s1
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2027,7 +2027,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_waterlevel_timeless_netcdf
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_waterlevel_snapshot_netcdf() bind(C)
       use m_flow, only: s1
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2079,7 +2079,7 @@ contains
       end do
    end subroutine test_initial_waterlevel_snapshot_netcdf
 
-   !$gtest test
+   !$gtest
    subroutine test_secchi_timeless_netcdf_is_constant() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying, secchi_depth_is_time_varying
       use m_meteo, only: item_secchi_depth, ecInstancePtr, ec_gettimespacevalue_by_itemID
@@ -2142,7 +2142,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_secchi_timeless_netcdf_is_constant
 
-   !$gtest test
+   !$gtest
    subroutine test_netcdf_time_dimension_requires_coordinate() bind(C)
       use netcdf
       use m_flow, only: s1
@@ -2186,7 +2186,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_netcdf_time_dimension_requires_coordinate
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_secchi_netcdf_is_applied_once() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new, set_external_forcings
@@ -2254,7 +2254,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_secchi_netcdf_is_applied_once
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_temperature_netcdf_interpolates_at_start() bind(C)
       use m_flow, only: tem1, kmx
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
@@ -2313,7 +2313,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_temperature_netcdf_interpolates_at_start
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_temperature_missing_explicit_variable_succeeds() bind(C)
       use m_flow, only: tem1, kmx
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
@@ -2371,7 +2371,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_temperature_missing_explicit_variable_succeeds
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_salinity_netcdf_interpolates_at_start() bind(C)
       use m_flow, only: sa1, kmx
       use m_flowparameters, only: jasal
@@ -2425,17 +2425,17 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_3d_salinity_two_timestamps() bind(C)
       call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
    end subroutine test_initial_3d_salinity_two_timestamps
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_3d_salinity_one_timestamp() bind(C)
       call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
    end subroutine test_initial_3d_salinity_one_timestamp
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_3d_salinity_timeless() bind(C)
       call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
    end subroutine test_initial_3d_salinity_timeless
@@ -2519,7 +2519,7 @@ contains
 
    end subroutine run_initial_3d_salinity_case
 
-   !$gtest test
+   !$gtest
    subroutine test_secchidepth_static_field_and_post_processing() bind(C)
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2584,7 +2584,7 @@ contains
       end subroutine cleanup
    end subroutine test_secchidepth_static_field_and_post_processing
 
-   !$gtest test
+   !$gtest
    !> Verifies that a frictioncoefficient [Spatial] block with an explicit frictionType=
    !! keyword causes set_friction_type_values_explicit to populate ifrcutp.
    !! This is the only quantity that triggers a third call after enable_quantity and
@@ -2679,7 +2679,7 @@ contains
       end subroutine cleanup
    end subroutine test_frictioncoefficient_with_explicit_frictiontype
 
-   !$gtest test
+   !$gtest
    !> Verifies that an advectiontype [Spatial] block populates the iadv integer array
    !! via the resolve_integer_target + timespaceinitialfield_int path.
    !! Uses forcingFileType=insidePolygon since triangulation is not supported by
@@ -2773,7 +2773,7 @@ contains
       end subroutine cleanup
    end subroutine test_advectiontype_integer_field_populated
 
-   !$gtest test
+   !$gtest
    subroutine test_waqbot_vertical_layer_selection() bind(C)
       use m_flow, only: kmx, kbot, ktop, kmxn
       use fm_location_types, only: TARGET_LAYER_BOTTOM, TARGET_LAYER_TOP, TARGET_LAYER_UNIFORM
@@ -2825,7 +2825,7 @@ contains
       if (allocated(kmxn)) deallocate (kmxn)
    end subroutine test_waqbot_vertical_layer_selection
 
-   !$gtest test
+   !$gtest
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
    subroutine test_waqmassbalancearea_polygon_populated() bind(C)
@@ -2911,7 +2911,7 @@ contains
       end subroutine cleanup
    end subroutine test_waqmassbalancearea_polygon_populated
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
    !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.
    !! constituents is pointered to by resolve_initial_3D_target and must be pre-allocated.
@@ -2986,7 +2986,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialsalinity_3d_field_populated
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
    !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
    !! calls setinitialverticalprofilez directly with the polygon profile file..
@@ -3075,7 +3075,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialverticalsalinityprofile
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialverticalsedfracprofile [Spatial] block populates
    !! the selected sediment constituent using absolute z coordinates.
    subroutine test_initialverticalsedfracprofile() bind(C)
@@ -3151,7 +3151,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialverticalsedfracprofile
 
-   !$gtest test
+   !$gtest
    !> Verifies that an initialverticalsigmasedfracprofile [Spatial] block populates
    !! the selected sediment constituent using sigma coordinates.
    subroutine test_initialverticalsigmasedfracprofile() bind(C)
@@ -3231,7 +3231,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initialverticalsigmasedfracprofile
 
-   !$gtest test
+   !$gtest
    !> Verifies that a frictioncoefficient block with forcingFileType=1dField applies
    !! the [Global] value to all 1D links when no [Branch] blocks are present.
    !! Does not require a real 1D network: with no [Branch] blocks, spaceInit1dField
@@ -3288,7 +3288,7 @@ contains
       call teardown_minimal_grid()
    end subroutine test_field1d_global_value_applied_to_frictioncoefficient
 
-   !$gtest test
+   !$gtest
    subroutine test_scalar_meteo_bcascii_matrix() bind(C)
       character(len=*), parameter :: BC_FILE = 'test_scalar_meteo.bc'
       character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo.ext'
@@ -3303,7 +3303,7 @@ contains
       call cleanup_scalar_meteo_state()
    end subroutine test_scalar_meteo_bcascii_matrix
 
-   !$gtest test
+   !$gtest
    subroutine test_scalar_meteo_netcdf_matrix() bind(C)
       character(len=*), parameter :: NC_FILE = 'test_scalar_meteo.nc'
       character(len=*), parameter :: EXT_FILE = 'test_scalar_meteo_netcdf.ext'
@@ -3318,7 +3318,7 @@ contains
       call cleanup_scalar_meteo_state()
    end subroutine test_scalar_meteo_netcdf_matrix
 
-   !$gtest test
+   !$gtest
    subroutine test_gridded_meteo_netcdf_matrix() bind(C)
       character(len=*), parameter :: NC_FILE = 'test_gridded_meteo.nc'
       character(len=*), parameter :: EXT_FILE = 'test_gridded_meteo.ext'

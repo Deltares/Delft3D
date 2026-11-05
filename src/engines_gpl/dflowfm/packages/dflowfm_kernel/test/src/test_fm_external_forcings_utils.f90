@@ -8,7 +8,7 @@ module test_fm_external_forcings_utils
    integer, parameter :: STRBUFLEN = 256
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_get_constituent_name__ignore_discharge() bind(C)
       character(len=STRBUFLEN) :: constituent_name, base_quantity
         
@@ -21,7 +21,7 @@ contains
       call f90_expect_streq(cstr(base_quantity), cstr("don't touch me"), cstr("Unexpected base_quantity"))
    end subroutine test_get_constituent_name__ignore_discharge
 
-   !$gtest test
+   !$gtest
    subroutine test_get_constituent_name__with_delta() bind(C)
       character(len=STRBUFLEN) :: constituent_name, base_quantity
         
@@ -31,7 +31,7 @@ contains
       call f90_expect_streq(cstr(base_quantity), cstr("sourcesink_constituentDelta"), cstr("Unexpected base_quantity"))
    end subroutine test_get_constituent_name__with_delta
 
-   !$gtest test
+   !$gtest
    subroutine test_get_constituent_name__with_delta__strip_tracer() bind(C)
       character(len=STRBUFLEN) :: constituent_name, base_quantity
         
@@ -41,7 +41,7 @@ contains
       call f90_expect_streq(cstr(base_quantity), cstr("sourcesink_constituentDelta"), cstr("Unexpected base_quantity"))
    end subroutine test_get_constituent_name__with_delta__strip_tracer
 
-   !$gtest test
+   !$gtest
    subroutine test_get_constituent_name__with_delta__strip_sedfrac() bind(C)
       character(len=STRBUFLEN) :: constituent_name, base_quantity
         
@@ -51,7 +51,7 @@ contains
       call f90_expect_streq(cstr(base_quantity), cstr("sourcesink_constituentDelta"), cstr("Unexpected base_quantity"))
    end subroutine test_get_constituent_name__with_delta__strip_sedfrac
 
-   !$gtest test
+   !$gtest
    subroutine test_get_constituent_name__without_delta() bind(C)
       character(len=STRBUFLEN) :: constituent_name, base_quantity
         

@@ -1,11 +1,10 @@
 module test_3d_layer_administration
-   !$gtest suite=tests_3d_layer_administration
    use assertions_gtest
    implicit none
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_layer_height_water_level_consistency() bind(C)
       use precision, only: dp
       use m_sets01zbnd, only: sets01zbnd

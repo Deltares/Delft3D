@@ -1,5 +1,4 @@
 module m_test_precice_adapter
-   !$gtest suite=test_precice_adapter
    use assertions_gtest
    use precision, only: dp
    use precision_basics, only: comparereal
@@ -45,7 +44,7 @@ contains
 
    end subroutine cleanup_netcells
 
-   !$gtest test
+   !$gtest
    !> Check that the bottom mesh slot uses the first physical FM layer and its bed interface.
    subroutine test_mesh_zcoords_bottom_layer_offset() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -79,7 +78,7 @@ contains
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Z coordinates must use the bottom layer slot offset")
    end subroutine test_mesh_zcoords_bottom_layer_offset
 
-   !$gtest test
+   !$gtest
    !> Check that a layer count smaller than the bottom slot does not invalidate the physical layers.
    subroutine test_mesh_zcoords_layer_count_not_top_slot() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -112,7 +111,7 @@ contains
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Three physical layers must occupy slots four through six")
    end subroutine test_mesh_zcoords_layer_count_not_top_slot
 
-   !$gtest test
+   !$gtest
    !> Check that allocated layer slots above the current wet top retain the invalid-coordinate sentinel.
    subroutine test_mesh_zcoords_inactive_top_layers() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
@@ -145,7 +144,7 @@ contains
       call f90_expect_near(coordinates(3::3), expected, 1e-12_dp, "Slots above ktop must remain invalid despite allocated interfaces")
    end subroutine test_mesh_zcoords_inactive_top_layers
 
-   !$gtest test
+   !$gtest
    subroutine test_pack_3d_sigma_fields() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, LAYTP_SIGMA
       use precice_adapter_utils, only: pack_cell_center_mesh_data
@@ -180,7 +179,7 @@ contains
       call f90_expect_near(vector_values(3::3), 3.0_dp * expected, 1e-12_dp, "Packed z velocity")
    end subroutine test_pack_3d_sigma_fields
 
-   !$gtest test
+   !$gtest
    subroutine test_pack_3d_inactive_layers() bind(C)
       use m_flow, only: kmx, kbot, ktop, laydefnr, laytyp, laymx, nlaybn, nrlayn, LAYTP_Z
       use precice_adapter_utils, only: pack_cell_center_mesh_data, set_cell_center_mesh_zcoords
@@ -219,12 +218,12 @@ contains
       call f90_expect_near(coordinates(3::3), expected_z, 1e-12_dp, "Coordinates and data use the same layer slots")
    end subroutine test_pack_3d_inactive_layers
 
-   !$gtest test
+   !$gtest
    subroutine test_adapter_add_to_fm_administration() bind(C)
       call check_adapter_add_to_fm_administration(initialize_administration=.true.)
    end subroutine test_adapter_add_to_fm_administration
 
-   !$gtest test
+   !$gtest
    !> Check that preCICE can add the first sources/sinks to a model without conventional sources/sinks.
    subroutine test_adapter_add_to_uninitialized_fm_administration() bind(C)
       call check_adapter_add_to_fm_administration(initialize_administration=.false.)

@@ -28,7 +28,6 @@
 !
 
 module m_slow_nefis_tests
-   !$gtest suite=slow_nefis_tests
    use assertions_gtest
    use tests_nefis_helper
    implicit none
@@ -37,7 +36,7 @@ module m_slow_nefis_tests
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_06() bind(C)
       character(len=30) :: filename1
       character(len=30) :: filename2
@@ -1048,7 +1047,7 @@ contains
 
    end subroutine test_06
 
-   !$gtest test
+   !$gtest
    subroutine test_14() bind(C)
 
       integer NTIMES, BUFSIZ
@@ -1272,7 +1271,7 @@ contains
 
    end subroutine test_14
 
-   !$gtest test
+   !$gtest
    subroutine test_16() bind(C)
       integer * 4 fds_a,&
       &fds_b,&

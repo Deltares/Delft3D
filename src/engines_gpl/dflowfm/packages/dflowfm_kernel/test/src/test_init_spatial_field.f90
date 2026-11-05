@@ -19,7 +19,7 @@ module test_init_spatial_field
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_netcdf_normalizes_quantity() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -30,7 +30,7 @@ contains
       call f90_expect_eq(input%method, WEIGHTFACTORS)
    end subroutine test_initial_netcdf_normalizes_quantity
 
-   !$gtest test
+   !$gtest
    subroutine test_initial_modifier_preserves_suffix() bind(C)
       use fm_external_forcings_utils, only: split_qid
 
@@ -77,7 +77,7 @@ contains
       call f90_expect_streq(cstr(quantity), cstr('initialverticalsalinityprofile'))
    end subroutine test_initial_modifier_preserves_suffix
 
-   !$gtest test
+   !$gtest
    subroutine test_resolvers_select_3d_targets() bind(C)
       use unstruc_inifields, only: resolve_constituent_target
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D
@@ -196,7 +196,7 @@ contains
       end if
    end subroutine make_test_input
 
-   !$gtest test
+   !$gtest
    !> An unrecognized interpolationMethod= string leaves method at -1 and must fail.
    !! This branch is never exercised by integration tests because they always use
    !! valid file types with known method strings.
@@ -209,7 +209,7 @@ contains
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
    end subroutine test_validate_rejects_unknown_interpolation_method_string
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_rejects_constant_method_for_sample_file() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -220,7 +220,7 @@ contains
                             'sample files should reject constant interpolation')
    end subroutine test_validate_rejects_constant_method_for_sample_file
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_rejects_averaging_method_for_bcascii() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -231,7 +231,7 @@ contains
                             'bcascii files should reject averaging interpolation')
    end subroutine test_validate_rejects_averaging_method_for_bcascii
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_rejects_triangulation_method_for_bcascii() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -243,7 +243,7 @@ contains
    end subroutine test_validate_rejects_triangulation_method_for_bcascii
 
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_spiderweb_defaults_to_weightfactors() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -254,7 +254,7 @@ contains
       call f90_expect_eq(input%method, WEIGHTFACTORS, 'spiderweb should default to weightfactors')
    end subroutine test_validate_spiderweb_defaults_to_weightfactors
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -267,7 +267,7 @@ contains
                          'linearSpaceTime with extrapolation should select weightfactors_extrapolation')
    end subroutine test_validate_spiderweb_accepts_linearspacetime_extrapolation
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_spiderweb_rejects_constant_method() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -278,7 +278,7 @@ contains
                             'spiderweb should reject constant interpolation because its default is weightfactors')
    end subroutine test_validate_spiderweb_rejects_constant_method
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_dflowfm_map_file_type() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -291,7 +291,7 @@ contains
       call f90_expect_true(input%is_static_field, "map should be initialized as a static spatial field")
    end subroutine test_validate_dflowfm_map_file_type
 
-   !$gtest test
+   !$gtest
    subroutine test_inline_polygon_selection_restores_polygon_state() bind(C)
       use m_polygon, only: increasepol, npl, xpl, ypl, zpl
       use timespace, only: selectelset_internal_nodes
@@ -329,7 +329,7 @@ contains
       call f90_expect_true(all(zpl(1:npl) == sentinel_z))
    end subroutine test_inline_polygon_selection_restores_polygon_state
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input
       integer :: log_level
@@ -347,7 +347,7 @@ contains
       call f90_expect_true(index(message, 'Accepted extensions: .bc.') > 0)
    end subroutine test_validate_file_type_extension_mismatch
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_supported_extensions_select_effective_methods() bind(C)
       character(len=16), parameter :: file_types(11) = [character(len=16) :: &
          '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
@@ -371,7 +371,7 @@ contains
       end do
    end subroutine test_validate_supported_extensions_select_effective_methods
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_unknown_file_extension() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -380,7 +380,7 @@ contains
                             "validation should fail for an extension unsupported by forcingFileType")
    end subroutine test_validate_unknown_file_extension
 
-   !$gtest test
+   !$gtest
    !> Specifying a targetMaskFile= that does not exist on disk must fail.
    !! The inquire() branch inside validate_spatial_field_input is never reached
    !! in integration tests because they either omit the mask or supply a real file.
@@ -391,7 +391,7 @@ contains
                             "validation should fail when targetMaskFile does not exist on disk")
    end subroutine test_validate_nonexistent_target_mask_file
 
-   !$gtest test
+   !$gtest
    !> When extrapolationAllowed=true, update_method_in_case_extrapolation must
    !! mutate the derived method value. Verifies that the call is actually made
    !! and has an observable effect, which integration tests do not check directly.
@@ -412,7 +412,7 @@ contains
                            "enabling extrapolation should produce a different method value")
    end subroutine test_validate_extrapolation_changes_method
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_spatial_field_input__data_value() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
@@ -424,7 +424,7 @@ contains
       call f90_expect_true(success, cstr("forcing_file_type and forcing_file may be empty if data_value is supplied"))
    end subroutine test_validate_spatial_field_input__data_value
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_datavalue_type_accepts_constant_method() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
@@ -439,7 +439,7 @@ contains
       call f90_expect_eq(input%method, METHOD_CONSTANT, 'dataValue should accept constant interpolation')
    end subroutine test_validate_datavalue_type_accepts_constant_method
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_data_value_with_file_type_fails() bind(C)
       type(t_spatial_field_input) :: input
 
@@ -449,7 +449,7 @@ contains
                             "dataValue cannot be combined with dataFileType")
    end subroutine test_validate_data_value_with_file_type_fails
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_unknown_file_type_message() bind(C)
       type(t_spatial_field_input) :: input
       integer :: log_level
@@ -466,7 +466,7 @@ contains
       call f90_expect_true(index(message, "Field 'dataFileType' has unknown value 'not_a_file_type'") > 0)
    end subroutine test_validate_unknown_file_type_message
 
-   !$gtest test
+   !$gtest
    !> An unrecognized quantity must return .false., leave target_array null and
    !! target_location_type at the sentinel value 0.
    !! This is the regression guard for the intent(out) bug: before the fix,
@@ -490,7 +490,7 @@ contains
       call f90_expect_eq(target_location_type, 0, "target_location_type should be sentinel 0 for an unrecognized quantity")
    end subroutine test_resolve_parameter_target_unknown_quantity_returns_null
 
-   !$gtest test
+   !$gtest
    !> frictioncoefficient must resolve to UNC_LOC_U (flow links), not the default UNC_LOC_S.
    !! This is the key parameter quantity where getting the location type wrong would silently
    !! apply friction values to the wrong element set.
@@ -519,7 +519,7 @@ contains
       if (associated(target_array)) nullify (target_array)
    end subroutine test_resolve_parameter_target_friction_uses_loc_u
 
-   !$gtest test
+   !$gtest
    !> initialwaterlevel must return .true. and resolve to a pointer associated with s1 itself.
    !! Pointer identity proves the resolver wired the correct target.
    subroutine test_resolve_initial_target_waterlevel_points_to_s1() bind(C)
@@ -555,7 +555,7 @@ contains
       if (allocated(s1)) deallocate (s1)
    end subroutine test_resolve_initial_target_waterlevel_points_to_s1
 
-   !$gtest test
+   !$gtest
    !> EC-driven quantities (sea_ice_area_fraction) must return success=.true.,
    !! null target_array and UNC_LOC_S. The null target is the key correctness
    !! invariant for the whole EC-only pattern: EC writes directly, no pointer needed.
@@ -595,7 +595,7 @@ contains
       ja_ice_thickness_read = 0
    end subroutine test_resolve_parameter_null_target
 
-   !$gtest test
+   !$gtest
    !> wavesignificantheight must fail with success=.false. when jawave /= WAVE_NC_OFFLINE.
    !! This validation guard prevents silently ignoring wave quantities when the wave
    !! model is not configured, which would be a hard-to-diagnose runtime error.
@@ -625,7 +625,7 @@ contains
                             "target_array must remain null on validation failure")
    end subroutine test_resolve_parameter_target_wave_requires_wave_nc_offline
 
-   !$gtest test
+   !$gtest
    !> nudgesalinitytemperature must set kx=2 because it carries two values per location
    !! (salinity + temperature). Any other value would cause EC to allocate the wrong
    !! number of target slots and silently corrupt one of the two fields.
@@ -663,7 +663,7 @@ contains
       ndkx = 0
    end subroutine test_resolve_parameter_target_nudge_saltemp_sets_kx_2
 
-   !$gtest test
+   !$gtest
    !> Legacy single-character operand values remain supported for backward
    !! compatibility, but they must produce a deprecation warning.
    subroutine test_validate_legacy_operand_warns_but_succeeds() bind(C)
@@ -688,7 +688,7 @@ contains
       call f90_expect_true(index(message, 'deprecated') > 0)
    end subroutine test_validate_legacy_operand_warns_but_succeeds
 
-   !$gtest test
+   !$gtest
    subroutine test_validate_nonlegacy_operand_does_not_warn() bind(C)
       type(t_spatial_field_input) :: input
       logical :: success
@@ -705,7 +705,7 @@ contains
       call f90_expect_eq(GetMessageCount(), 0)
    end subroutine test_validate_nonlegacy_operand_does_not_warn
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_radiation_stress() bind(C)
       use m_waveconst
 
@@ -727,7 +727,7 @@ contains
                             "direct radiation-stress forcing does not require direction")
    end subroutine test_offline_wave_requirements_radiation_stress
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_stokes_adds_kinematics() bind(C)
       use m_waveconst
 
@@ -745,7 +745,7 @@ contains
                            "Stokes drift requires wave direction")
    end subroutine test_offline_wave_requirements_stokes_adds_kinematics
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_flow_without_waves() bind(C)
       use m_waveconst
 
@@ -763,7 +763,7 @@ contains
                             "FlowWithoutWaves does not require wave direction")
    end subroutine test_offline_wave_requirements_flow_without_waves
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_breaker_turbulence() bind(C)
       use m_waveconst
 
@@ -798,7 +798,7 @@ contains
                             "FlowWithoutWaves with breaker turbulence does not require wave direction")
    end subroutine test_offline_wave_requirements_breaker_turbulence
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_disabled_forces() bind(C)
       use m_waveconst
 
@@ -811,7 +811,7 @@ contains
       call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
    end subroutine test_offline_wave_requirements_disabled_forces
 
-   !$gtest test
+   !$gtest
    subroutine test_offline_wave_requirements_3d_dissipation() bind(C)
       use m_waveconst
 

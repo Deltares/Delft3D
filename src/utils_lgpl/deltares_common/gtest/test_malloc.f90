@@ -1,5 +1,4 @@
 module test_malloc
-   !$gtest suite=test_deltares_common_gtest
    use assertions_gtest
    use m_alloc
    use precision, only: sp, dp
@@ -9,7 +8,7 @@ module test_malloc
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Realloc on unallocated array should allocate and apply fill
    subroutine test_realloc_unallocated_with_fill() bind(C)
       real(dp), allocatable :: arr(:)
@@ -19,7 +18,7 @@ contains
       call f90_expect_true(all(equal(arr, -999.0d0)))
    end subroutine test_realloc_unallocated_with_fill
 
-   !$gtest test
+   !$gtest
    !> Growing an array preserves existing data and fills new elements
    subroutine test_realloc_grow_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
@@ -31,7 +30,7 @@ contains
       call f90_expect_true(equal(arr(4), -1.0d0) .and. equal(arr(5), -1.0d0))
    end subroutine test_realloc_grow_keeps_existing
 
-   !$gtest test
+   !$gtest
    !> Shrinking an array preserves data up to new size
    subroutine test_realloc_shrink_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
@@ -42,7 +41,7 @@ contains
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0))
    end subroutine test_realloc_shrink_keeps_existing
 
-   !$gtest test
+   !$gtest
    !> Same bounds + keepExisting=.false. + fill should overwrite in-place without reallocation
    subroutine test_realloc_same_bounds_no_keepexisting_fill() bind(C)
       real(dp), allocatable, target :: arr(:)
@@ -54,7 +53,7 @@ contains
       call f90_expect_true(associated(ptr_before, arr(1)))
    end subroutine test_realloc_same_bounds_no_keepexisting_fill
 
-   !$gtest test
+   !$gtest
    !> Same bounds and no fill should return early leaving array untouched
    subroutine test_realloc_same_bounds_no_fill_unchanged() bind(C)
       real(dp), allocatable, target :: arr(:)
@@ -67,7 +66,7 @@ contains
       call f90_expect_true(associated(ptr_before, arr(1)))
    end subroutine test_realloc_same_bounds_no_fill_unchanged
 
-   !$gtest test
+   !$gtest
    !> Shift moves existing data to new position in grown array
    subroutine test_realloc_shift() bind(C)
       real(dp), allocatable :: arr(:)
@@ -79,7 +78,7 @@ contains
       call f90_expect_true(equal(arr(3), 10.0d0) .and. equal(arr(4), 20.0d0) .and. equal(arr(5), 30.0d0))
    end subroutine test_realloc_shift
 
-   !$gtest test
+   !$gtest
    !> Non-default lower index produces correct bounds
    subroutine test_realloc_nondefault_lindex() bind(C)
       real(dp), allocatable :: arr(:)
@@ -89,7 +88,7 @@ contains
       call f90_expect_true(all(equal(arr, 1.0d0)))
    end subroutine test_realloc_nondefault_lindex
 
-   !$gtest test
+   !$gtest
    !> Pointer realloc on unassociated pointer should allocate without crash
    subroutine test_reallocp_unassociated() bind(C)
       real(dp), pointer :: arr(:)
@@ -101,7 +100,7 @@ contains
       deallocate (arr)
    end subroutine test_reallocp_unassociated
 
-   !$gtest test
+   !$gtest
    !> stat should be zero on successful allocation
    subroutine test_realloc_stat_success() bind(C)
       real(dp), allocatable :: arr(:)
@@ -110,7 +109,7 @@ contains
       call f90_expect_eq(ierr, 0)
    end subroutine test_realloc_stat_success
 
-   !$gtest test
+   !$gtest
    !> Pointer realloc grow preserves existing data
    subroutine test_reallocp_grow_keeps_existing() bind(C)
       real(dp), pointer :: arr(:)
@@ -124,7 +123,7 @@ contains
       deallocate (arr)
    end subroutine test_reallocp_grow_keeps_existing
 
-   !$gtest test
+   !$gtest
    !> Lower bound set on first alloc should be preserved when growing
    subroutine test_realloc_lindex_preserved_on_grow() bind(C)
       real(dp), allocatable :: arr(:)
@@ -136,7 +135,7 @@ contains
       call f90_expect_true(equal(arr(6), 2.0d0))
    end subroutine test_realloc_lindex_preserved_on_grow
 
-   !$gtest test
+   !$gtest
    !> Reallocating a string to a larger length preserves existing content
    subroutine test_realloc_string_grow() bind(C)
       character(len=:), allocatable :: str
@@ -148,7 +147,7 @@ contains
       call f90_expect_true(str(6:8) == 'yyy')
    end subroutine test_realloc_string_grow
 
-   !$gtest test
+   !$gtest
    !> Reallocating to size 0 should produce an allocated zero-size array
    subroutine test_realloc_zero_size() bind(C)
       real(dp), allocatable :: arr(:)
@@ -157,7 +156,7 @@ contains
       call f90_expect_eq(size(arr), 0)
    end subroutine test_realloc_zero_size
 
-   !$gtest test
+   !$gtest
    !> Reallocating to negative size should produce an allocated zero-size array
    subroutine test_realloc_negative_size() bind(C)
       real(dp), allocatable :: arr(:)
@@ -166,7 +165,7 @@ contains
       call f90_expect_eq(size(arr), 0)
    end subroutine test_realloc_negative_size
 
-   !$gtest test
+   !$gtest
    !> Rank 2: growing only second dimension preserves all data
    subroutine test_realloc_rank2_fixed_first_dim() bind(C)
       integer, allocatable :: arr(:, :)
@@ -181,7 +180,7 @@ contains
       call f90_expect_true(arr(1, 3) == -1 .and. arr(1, 4) == -1)
    end subroutine test_realloc_rank2_fixed_first_dim
 
-   !$gtest test
+   !$gtest
    !> Rank 2: growing both dimensions preserves existing data and fills new elements
    subroutine test_realloc_rank2_grow_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:, :)
@@ -196,7 +195,7 @@ contains
       call f90_expect_true(equal(arr(3, 1), -1.0d0) .and. equal(arr(1, 3), -1.0d0))
    end subroutine test_realloc_rank2_grow_keeps_existing
 
-   !$gtest test
+   !$gtest
    !> Rank 2: non-default lower bounds produce correct bounds
    subroutine test_realloc_rank2_nondefault_lindex() bind(C)
       real(dp), allocatable :: arr(:, :)
@@ -208,7 +207,7 @@ contains
       call f90_expect_true(all(equal(arr, 1.0d0)))
    end subroutine test_realloc_rank2_nondefault_lindex
 
-   !$gtest test
+   !$gtest
    !> Rank 2: shift moves data along both dimensions independently
    subroutine test_realloc_rank2_shift() bind(C)
       real(dp), allocatable :: arr(:, :)

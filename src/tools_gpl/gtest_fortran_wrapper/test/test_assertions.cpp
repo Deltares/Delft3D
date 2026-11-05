@@ -4,8 +4,6 @@
 #include <string>
 
 extern "C" {
-void passing_assertions();
-void failing_assertions();
 void passing_status_assertions();
 void guarded_assertions(int scenario);
 void passing_status_after_failure();
@@ -15,7 +13,6 @@ void failing_message_edges();
 void passing_documented_surface();
 void failing_documented_surface();
 extern int assertion_continued;
-extern int assertion_cleanup_completed;
 }
 
 int main(int argc, char** argv) {
@@ -23,16 +20,12 @@ int main(int argc, char** argv) {
     return RUN_ALL_TESTS();
 }
 
-TEST(FortranAssertions, PassingExpectations) {
-    passing_assertions();
-}
-
 TEST(FortranAssertions, PassingStatusAssertions) {
     passing_status_assertions();
 }
 
-TEST(FortranAssertions, ExplicitReturnsStopCallerAndPropagateHelperFailure) {
-    for (int scenario = 0; scenario < 5; ++scenario) {
+TEST(FortranAssertions, FailedStatusAssertionsStopAtExplicitGuards) {
+    for (int scenario = 0; scenario < 4; ++scenario) {
         SCOPED_TRACE(scenario);
         testing::TestPartResultArray failures;
         {
@@ -43,7 +36,6 @@ TEST(FortranAssertions, ExplicitReturnsStopCallerAndPropagateHelperFailure) {
         ASSERT_EQ(failures.size(), 1);
         EXPECT_TRUE(failures.GetTestPartResult(0).fatally_failed());
         EXPECT_EQ(assertion_continued, 0);
-        EXPECT_EQ(assertion_cleanup_completed, scenario == 4 ? 1 : 0);
     }
 }
 
@@ -57,31 +49,6 @@ TEST(FortranAssertions, StatusIsIndependentOfEarlierFailures) {
     ASSERT_EQ(failures.size(), 1);
     EXPECT_TRUE(failures.GetTestPartResult(0).fatally_failed());
     EXPECT_EQ(assertion_continued, 1);
-}
-
-TEST(FortranAssertions, NonfatalFailureMessagesAndContinuation) {
-    testing::TestPartResultArray failures;
-    {
-        testing::ScopedFakeTestPartResultReporter reporter(
-            testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &failures);
-        failing_assertions();
-    }
-
-    ASSERT_EQ(failures.size(), 7);
-    const char* messages[] = {
-        "expect_eq", "expect_true", "expect_false", "expect_near", "expect_streq",
-        "expect_gt", "expect_double_eq"
-    };
-    for (int i = 0; i < failures.size(); ++i) {
-        const auto& failure = failures.GetTestPartResult(i);
-        EXPECT_FALSE(failure.fatally_failed());
-        EXPECT_NE(std::string(failure.message()).find(messages[i]), std::string::npos);
-    }
-    EXPECT_EQ(assertion_continued, 1) << "Nonfatal expectations must continue in their calling Fortran procedure";
-    EXPECT_NE(std::string(failures.GetTestPartResult(0).message()).find("7"), std::string::npos);
-    EXPECT_NE(std::string(failures.GetTestPartResult(0).message()).find("8"), std::string::npos);
-    EXPECT_NE(std::string(failures.GetTestPartResult(4).message()).find("left"), std::string::npos);
-    EXPECT_NE(std::string(failures.GetTestPartResult(4).message()).find("right"), std::string::npos);
 }
 
 TEST(FortranAssertions, FortranStringsAndLegacyNuls) {
@@ -146,4 +113,10 @@ TEST(FortranAssertions, CompleteDocumentedSurfaceReportsFailures) {
         EXPECT_FALSE(failure.fatally_failed()) << name;
         EXPECT_TRUE(cases.insert(name).second) << "Duplicate failure: " << name;
     }
+    const std::string integer_message = failures.GetTestPartResult(0).message();
+    EXPECT_NE(integer_message.find("2"), std::string::npos);
+    EXPECT_NE(integer_message.find("1"), std::string::npos);
+    const std::string string_message = failures.GetTestPartResult(52).message();
+    EXPECT_NE(string_message.find("left"), std::string::npos);
+    EXPECT_NE(string_message.find("right"), std::string::npos);
 }

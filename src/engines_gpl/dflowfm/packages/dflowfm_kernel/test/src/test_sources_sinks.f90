@@ -15,7 +15,7 @@ module test_sources_sinks
 
 contains
 
-!$gtest test
+!$gtest
    subroutine test_polyline_file_missing() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -56,7 +56,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_polyline_file_missing
 
-!$gtest test
+!$gtest
    subroutine test_double_z_data_specification() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -104,7 +104,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_double_z_data_specification
 
-!$gtest test
+!$gtest
    subroutine test_xy_in_polyline_file_2_columns() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -176,7 +176,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_xy_in_polyline_file_2_columns
 
-!$gtest test
+!$gtest
    subroutine test_xyz_in_polyline_file_3_columns() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -246,7 +246,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_3_columns
 
-!$gtest test
+!$gtest
    subroutine test_xyz_in_polyline_file_4_columns() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -316,7 +316,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_4_columns
 
-!$gtest test
+!$gtest
    subroutine test_xyz_in_polyline_file_5_columns() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -386,7 +386,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_5_columns
 
-!$gtest test
+!$gtest
    subroutine test_xy_in_ext_file_single_z() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""
@@ -451,7 +451,7 @@ contains
       call tree_destroy(tree)
    end subroutine test_xy_in_ext_file_single_z
 
-!$gtest test
+!$gtest
    subroutine test_xy_in_ext_file_z_ranges() bind(C)
       character(len=256) :: base_dir = ""
       character(len=256) :: file_name = ""

@@ -11,7 +11,7 @@ module test_pol_to_cellmask
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_mixed_polygon() bind(C)
       ! Test with both enclosure (-1) and dry point (1) polygons
       integer :: i, k
@@ -112,7 +112,7 @@ contains
 
    end subroutine test_mixed_polygon
 
-   !$gtest test
+   !$gtest
    subroutine test_cell_mask_from_multiple_polygon_files() bind(C)
       use m_flowgeom, only: ndxi, ndx2d
       use m_sferic, only: jsferic
@@ -167,7 +167,7 @@ contains
 
    end subroutine test_cell_mask_from_multiple_polygon_files
 
-   !$gtest test
+   !$gtest
    subroutine test_nested_drypoint_polygons() bind(C)
       ! Test nested dry point polygons (odd-even rule)
       integer :: i, k
@@ -262,7 +262,7 @@ contains
 
    end subroutine test_nested_drypoint_polygons
 
-   !$gtest test
+   !$gtest
    subroutine test_pinpok_raycast_basic() bind(C)
       ! Test basic ray-casting algorithm directly
       real(kind=dp), dimension(5) :: x_poly, y_poly
@@ -312,7 +312,7 @@ contains
 
    end subroutine test_pinpok_raycast_basic
 
-   !$gtest test
+   !$gtest
    subroutine test_pinpok_raycast_edge_cases() bind(C)
       ! Test edge cases and special geometries
       real(kind=dp), dimension(5) :: x_poly, y_poly
@@ -355,7 +355,7 @@ contains
 
    end subroutine test_pinpok_raycast_edge_cases
 
-   !$gtest test
+   !$gtest
    subroutine test_pinpok_raycast_jins_modes() bind(C)
       ! Test both jins=1 (inside) and jins=0 (outside) modes
       use m_missing, only: jins
@@ -408,7 +408,7 @@ contains
 
    end subroutine test_pinpok_raycast_jins_modes
 
-   !$gtest test
+   !$gtest
    subroutine test_pinpok_raycast_complex() bind(C)
       ! Test complex polygon shapes (concave, with multiple crossings)
       real(kind=dp), dimension(9) :: x_poly, y_poly
@@ -444,7 +444,7 @@ contains
 
    end subroutine test_pinpok_raycast_complex
 
-   !$gtest test
+   !$gtest
    subroutine test_indexed_polygon_matches_full_scan() bind(C)
       use m_missing, only: jins
 
@@ -507,7 +507,7 @@ contains
 
    end subroutine test_indexed_polygon_matches_full_scan
 
-   !$gtest test
+   !$gtest
    subroutine test_binned_polygon_edge_cases() bind(C)
       use m_missing, only: jins
 
@@ -556,7 +556,7 @@ contains
 
    end subroutine test_binned_polygon_edge_cases
 
-!$gtest test
+!$gtest
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells
       use gridoperations, only: incells
@@ -619,7 +619,7 @@ contains
 
    end subroutine test_incells_basic_functionality
 
-!$gtest test
+!$gtest
    subroutine test_incells_complex_geometry() bind(C)
       ! Test incells with more complex netcell geometries (triangles, pentagons, hexagons)
       use gridoperations, only: incells
@@ -670,7 +670,7 @@ contains
 
    end subroutine test_incells_complex_geometry
 
-!$gtest test
+!$gtest
    subroutine test_incells_large_grid() bind(C)
       ! Test incells with a larger grid (performance sanity check)
       use gridoperations, only: incells
@@ -710,7 +710,7 @@ contains
 
    end subroutine test_incells_large_grid
 
-!$gtest test
+!$gtest
    subroutine test_incells_cache_consistency() bind(C)
       ! Test that cache initialization produces consistent results
       use gridoperations, only: incells
@@ -755,7 +755,7 @@ contains
 
    end subroutine test_incells_cache_consistency
 
-!$gtest test
+!$gtest
    subroutine test_incells_edge_cases() bind(C)
       ! Test edge cases: empty grid, single cell, point at infinity
       use gridoperations, only: incells
@@ -816,7 +816,7 @@ contains
 
    end subroutine test_incells_edge_cases
 
-!$gtest test
+!$gtest
    subroutine test_samples_to_cellmask_basic() bind(C)
       ! Test samples_to_cellmask: mark cells that contain at least one sample
       use m_samples_to_cellmask, only: samples_to_cellmask
@@ -884,7 +884,7 @@ contains
 
    end subroutine test_samples_to_cellmask_basic
 
-   !$gtest test
+   !$gtest
    subroutine test_samples_to_cellmask_edge_cases() bind(C)
       ! Test edge cases: no samples, samples outside all cells, samples on boundaries
       use m_samples_to_cellmask, only: samples_to_cellmask
@@ -955,7 +955,7 @@ contains
 
    end subroutine test_samples_to_cellmask_edge_cases
 
-!$gtest test
+!$gtest
    subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump
@@ -1022,7 +1022,7 @@ contains
 
    end subroutine test_find_cells_crossed_by_polyline_simple
 
-!$gtest test
+!$gtest
    subroutine test_find_cells_crossed_by_polyline_edge_cases() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump
@@ -1083,7 +1083,7 @@ contains
 
    end subroutine test_find_cells_crossed_by_polyline_edge_cases
 
-!$gtest test
+!$gtest
    subroutine test_find_cells_crossed_by_polyline_edge_case2() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
       use network_data, only: nump

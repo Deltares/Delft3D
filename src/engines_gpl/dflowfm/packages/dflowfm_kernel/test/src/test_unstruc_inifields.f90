@@ -14,7 +14,7 @@ module test_unstruc_inifields
 
    contains
    
-!$gtest test
+!$gtest
    subroutine test_read_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
@@ -53,7 +53,7 @@ module test_unstruc_inifields
       call tree_destroy(inifield_ptr)
    end subroutine test_read_operand
 
-!$gtest test
+!$gtest
    subroutine test_read_deprecated_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
@@ -98,7 +98,7 @@ module test_unstruc_inifields
       call tree_destroy(inifield_ptr)
    end subroutine test_read_deprecated_operand
 
-!$gtest test
+!$gtest
    subroutine test_read_unknown_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()

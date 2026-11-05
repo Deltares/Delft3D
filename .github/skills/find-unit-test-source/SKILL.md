@@ -19,8 +19,8 @@ source file(s) that define it, instead of falling back to a broad repository-wid
 
 1. **Resolve the test executable/target name.**
    CTest test names come in two shapes:
-   - GoogleTest style: `<Target>.<TestCase>`. The part before the first `.` is usually
-     the CMake target name.
+   - GoogleTest style: `<Suite>.<TestCase>`. For Fortran, the suite is the enclosing
+     module's name.
    - Plain `add_test(NAME ...)` style, e.g. `dsle_test_sealock`, where the `NAME` doesn't
      necessarily match the `COMMAND` executable.
 
@@ -49,8 +49,8 @@ source file(s) that define it, instead of falling back to a broad repository-wid
 
 4. **For a specific failing GoogleTest case** (not just the suite), grep the located
    source file(s) for `TEST(<Suite>, <Case>` or `TEST_F(<Suite>, <Case>`. For Fortran,
-   find the `!$gtest test` marker and its following subroutine; `suite=` and `name=`
-   overrides preserve public names that differ from the module or procedure.
+   find the `!$gtest` marker and its following subroutine. The suite is always the
+   enclosing module's name, and the test name is the subroutine's name.
 
 ## Example
 Failing test: `test_deltares_common_gtest.test_dp_equal_within_tolerance`

@@ -1,12 +1,11 @@
 module test_accumulate_distance
-   !$gtest suite=tests_accumulate_distance
    use assertions_gtest
    use m_accumulatedistance, only: accumulateDistance
    implicit none
 
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_simple_path() bind(C)
       use precision, only: dp
       integer, parameter :: PATH_LENGTH = 2

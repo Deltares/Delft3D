@@ -29,7 +29,7 @@ module test_mdu_file_read_write
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Tests if a mdu file can succesfully be read, written, and re-read. Also checks if the obsfile and crsfile is unchanged after read-write-read cycle
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
@@ -86,7 +86,7 @@ contains
 
    end subroutine test_mdu_read_write_read
 
-   !$gtest test
+   !$gtest
    subroutine test_mdu_fileversion_model() bind(C)
       use unstruc_model, only: readMDUFile
       use dfm_error, only: DFM_NOERR
@@ -112,7 +112,7 @@ contains
 
    end subroutine test_mdu_fileversion_model
 
-   !$gtest test
+   !$gtest
    subroutine test_mdu_fileversion_general() bind(C)
       use unstruc_model, only: readMDUFile
       use dfm_error, only: DFM_NOERR
@@ -138,7 +138,7 @@ contains
 
    end subroutine test_mdu_fileversion_general
 
-   !$gtest test
+   !$gtest
    subroutine test_read_stretch_coef() bind(C)
       use unstruc_model, only: readMDUFile
       use dfm_error, only: DFM_NOERR

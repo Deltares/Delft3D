@@ -7,7 +7,7 @@ module test_ec_module_data_value
    private
 contains
 
-   !$gtest test
+   !$gtest
    subroutine test_data_value__windx_windy() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windx, item_windy, item_windxy_x, item_windxy_y, ec_gettimespacevalue
@@ -103,7 +103,7 @@ contains
       deallocate(wx, wy)
    end subroutine test_data_value__windx_windy
 
-   !$gtest test
+   !$gtest
    subroutine test_data_value__windxy() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windxy_x, item_windxy_y, ec_gettimespacevalue
@@ -178,7 +178,7 @@ contains
       deallocate(wx, wy)
    end subroutine test_data_value__windxy
 
-   !$gtest test
+   !$gtest
    subroutine test_data_value__windx_windy_in_bc__windxy_datavalue() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_windx, item_windy, item_windxy_x, ec_gettimespacevalue
@@ -275,7 +275,7 @@ contains
       deallocate(wx, wy)
    end subroutine test_data_value__windx_windy_in_bc__windxy_datavalue
 
-   !$gtest test
+   !$gtest
    subroutine test_data_value__solarradiation() bind(C)
       use m_sferic, only: jsferic
       use m_meteo, only: initialize_ec_module, ecInstancePtr, ec_addtimespacerelation, item_solar_radiation, ec_gettimespacevalue

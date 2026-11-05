@@ -6,7 +6,7 @@ module test_timespace_parameters
 
 contains
 
-!$gtest test
+!$gtest
    subroutine test_convert_operand_string_to_integer_known_values() bind(C)
       call f90_expect_eq(convert_operand_string_to_integer('override'), OPERAND_OVERRIDE)
       call f90_expect_eq(convert_operand_string_to_integer('overrideIfMissing'), OPERAND_OVERRIDE_IF_MISSING)
@@ -25,12 +25,12 @@ contains
       call f90_expect_eq(convert_operand_string_to_integer('x'), OPERAND_MAXIMUM)
    end subroutine test_convert_operand_string_to_integer_known_values
 
-!$gtest test
+!$gtest
    subroutine test_convert_operand_string_to_integer_unknown_value() bind(C)
       call f90_expect_eq(convert_operand_string_to_integer('does_not_exist'), OPERAND_UNKNOWN)
    end subroutine test_convert_operand_string_to_integer_unknown_value
 
-!$gtest test
+!$gtest
    subroutine test_convert_legacy_operand_string_to_integer_known_values() bind(C)
       call f90_expect_eq(convert_legacy_operand_string_to_integer('o'), OPERAND_OVERRIDE)
       call f90_expect_eq(convert_legacy_operand_string_to_integer('A'), OPERAND_OVERRIDE_IF_MISSING)
@@ -41,7 +41,7 @@ contains
       call f90_expect_eq(convert_legacy_operand_string_to_integer('x'), OPERAND_MAXIMUM)
    end subroutine test_convert_legacy_operand_string_to_integer_known_values
 
-!$gtest test
+!$gtest
    subroutine test_convert_legacy_operand_string_to_integer_unknown_value() bind(C)
       call f90_expect_eq(convert_legacy_operand_string_to_integer('does_not_exist'), OPERAND_UNKNOWN)
    end subroutine test_convert_legacy_operand_string_to_integer_unknown_value

@@ -106,7 +106,7 @@ contains
 
    end function set_coastal_transport_defaults
 
-   !$gtest test name=test_rotation_Van_Thiel_Van_Rijn
+   !$gtest
    subroutine test_trab19() bind(C)
       type(coastal_transport_defaults) :: t
       type(coastal_transport_defaults) :: t_r
@@ -138,7 +138,7 @@ contains
 
    end subroutine test_trab19
 
-   !$gtest test
+   !$gtest
    subroutine test_updmorlyr_mixed_bed_update() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages
@@ -195,7 +195,7 @@ contains
       call f90_expect_eq(istat, 0, "mixed bed cleanup failed")
    end subroutine test_updmorlyr_mixed_bed_update
 
-   !$gtest test
+   !$gtest
    subroutine test_updmorlyr_layered_bed_paths() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages
@@ -276,7 +276,7 @@ contains
       call f90_expect_eq(istat, 0, "coarse-layer bed cleanup failed")
    end subroutine test_updmorlyr_layered_bed_paths
 
-   !$gtest test
+   !$gtest
    subroutine test_updmorlyr_active_layer_to_substrate_flux() bind(C)
       type(bedcomp_data) :: bed
       type(message_stack) :: messages

@@ -8,7 +8,7 @@ module test_deltares_common_gtest
 
 contains
 
-   !$gtest test
+   !$gtest
    !> Two dp numbers 1 ULP apart should be equal (within 2*epsilon)
    subroutine test_dp_equal_within_tolerance() bind(C)
       real(kind=dp) :: a, b
@@ -17,7 +17,7 @@ contains
       call f90_expect_true(equal(a, b))
    end subroutine test_dp_equal_within_tolerance
 
-   !$gtest test
+   !$gtest
    !> Two dp numbers >2 ULPs apart should not be equal
    subroutine test_dp_equal_outside_tolerance() bind(C)
       real(kind=dp) :: a, b
@@ -26,7 +26,7 @@ contains
       call f90_expect_false(equal(a, b))
    end subroutine test_dp_equal_outside_tolerance
 
-   !$gtest test
+   !$gtest
    !> Two large dp numbers 1 ULP apart at their scale should be equal (tolerance scales up)
    subroutine test_dp_equal_large_values() bind(C)
       real(kind=dp) :: a, b
@@ -35,7 +35,7 @@ contains
       call f90_expect_true(equal(a, b))
    end subroutine test_dp_equal_large_values
 
-   !$gtest test
+   !$gtest
    !> Two very small dp numbers should be equal due to the max(..., 1.0) floor
    subroutine test_dp_equal_small_values() bind(C)
       real(kind=dp) :: a, b
@@ -44,7 +44,7 @@ contains
       call f90_expect_true(equal(a, b))
    end subroutine test_dp_equal_small_values
 
-   !$gtest test
+   !$gtest
    !> Two sp numbers 1 ULP apart should be equal (within 2*epsilon)
    subroutine test_sp_equal_within_tolerance() bind(C)
       real(kind=sp) :: a, b
@@ -53,7 +53,7 @@ contains
       call f90_expect_true(equal(a, b))
    end subroutine test_sp_equal_within_tolerance
 
-   !$gtest test
+   !$gtest
    !> Two sp numbers >2 ULPs apart should not be equal
    subroutine test_sp_equal_outside_tolerance() bind(C)
       real(kind=sp) :: a, b
@@ -62,7 +62,7 @@ contains
       call f90_expect_false(equal(a, b))
    end subroutine test_sp_equal_outside_tolerance
 
-   !$gtest test
+   !$gtest
    !> Two dp numbers outside custom epsilon should not be equal
    subroutine test_dp_equal_eps_outside_tolerance() bind(C)
       real(kind=dp) :: a, b
@@ -71,7 +71,7 @@ contains
       call f90_expect_false(equal(a, b, 1.0e-6_dp))
    end subroutine test_dp_equal_eps_outside_tolerance
 
-   !$gtest test
+   !$gtest
    !> Two large dp numbers that are equal within scaled tolerance but NOT within unscaled tolerance.
     !! This test would fail with a naive abs(a-b) < 2*epsilon(1.0) check.
    subroutine test_dp_equal_large_values_requires_scaling() bind(C)
@@ -86,7 +86,7 @@ contains
       call f90_expect_true(equal(a, b))
    end subroutine test_dp_equal_large_values_requires_scaling
 
-   !$gtest test
+   !$gtest
    !> Times beyond signed 32-bit seconds produce the correct calendar date.
    subroutine test_date_time_from_ref_date_int64() bind(C)
       use iso_fortran_env, only: int64

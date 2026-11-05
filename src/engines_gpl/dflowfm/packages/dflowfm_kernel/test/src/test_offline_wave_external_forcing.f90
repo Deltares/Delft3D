@@ -159,7 +159,7 @@ contains
       if (allocated(sywav)) deallocate (sywav)
    end subroutine teardown_offline_radiation_stress_case
 
-   !$gtest test
+   !$gtest
    !> A Wavemodelnr=7 radiation-stress configuration needs only the two force
    !! components. This verifies that current-format bcascii fields can supply
    !! those inputs without NetCDF or inactive wave-kinematics fields.
@@ -210,7 +210,7 @@ contains
       call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_accepts_bcascii_without_inactive_inputs
 
-   !$gtest test
+   !$gtest
    subroutine test_radiation_stress_promotes_supplied_period() bind(C)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: finalize_offline_wave_input_requirements, init_new
@@ -241,7 +241,7 @@ contains
       call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_promotes_supplied_period
 
-   !$gtest test
+   !$gtest
    !> Omitting an inactive quantity is allowed, but omitting an active quantity
    !! leaves the provider set incomplete after current-format forcing initialization.
    subroutine test_radiation_stress_detects_missing_active_force_provider() bind(C)
@@ -273,7 +273,7 @@ contains
       call teardown_offline_radiation_stress_case()
    end subroutine test_radiation_stress_detects_missing_active_force_provider
 
-   !$gtest test
+   !$gtest
    !> Raw EC wave height and period must remain unchanged while FM recalculates
    !! the derived fields for the current water depth. FlowWithoutWaves keeps
    !! boundary fields local because its external inputs are passed through to D-WAQ.
@@ -362,7 +362,7 @@ contains
       call default_waves()
    end subroutine test_flow_without_waves_recalculates_derived_ht
 
-   !$gtest test
+   !$gtest
    !> Online wave coupling must keep EC-owned source H/T unchanged and derive
    !! every cell, including boundaries, from its local external source value.
    subroutine test_online_wave_boundary_uses_local_raw_values() bind(C)
@@ -433,7 +433,7 @@ contains
       call default_waves()
    end subroutine test_online_wave_boundary_uses_local_raw_values
 
-   !$gtest test
+   !$gtest
    subroutine test_wave_requirements_survive_flow_state_reset() bind(C)
       use m_waveconst, only: WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y
       use m_waves, only: default_waves, reset_waves, offline_wave_input_requirements
