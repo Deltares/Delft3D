@@ -69,7 +69,6 @@ When building on Linux, some third party libraries are needed that are not vendo
 These include:
 
 - libuuid
-- METIS
 - PETSc
 - ESMF
 - precice (Recently added; not yet used in the main branch)
