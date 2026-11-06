@@ -132,7 +132,7 @@ contains
                factor = 1.0_dp
             end if
             call getconveyance(network, hpr, u1(L), q1(L), s1(k2), LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
-            if (map_write_settings%chezy_links_split == 1) then
+            if (map_write_settings%chezy_links_1d_sections == 1) then
                czu_main(L) = cz
                czu_floodplain1(L) = 0.0_dp
                czu_floodplain2(L) = 0.0_dp
@@ -219,7 +219,7 @@ contains
                   q1_floodplain1(L) = q_sub(2)
                   q1_floodplain2(L) = q_sub(3)
 
-                  if (map_write_settings%chezy_links_split == 1) then
+                  if (map_write_settings%chezy_links_1d_sections == 1) then
                      czu_main(L) = get_chezy(hu(LL), cz_sub(1), u1(LL), v(LL), ifrcutp(LL))
                      czu_floodplain1(L) = get_chezy(hu(LL), cz_sub(2), u1(LL), v(LL), ifrcutp(LL))
                      czu_floodplain2(L) = get_chezy(hu(LL), cz_sub(3), u1(LL), v(LL), ifrcutp(LL))
@@ -382,7 +382,7 @@ contains
 
          end if
 
-         if (map_write_settings%chezy_links_split == 1) then
+         if (map_write_settings%chezy_links_1d_sections == 1) then
             czu_floodplain1(L) = 0.0_dp
             czu_floodplain2(L) = 0.0_dp
             ! Without subsections, use the same conversion as the link Chezy map output.
