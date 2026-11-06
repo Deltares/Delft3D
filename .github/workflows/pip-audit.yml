@@ -7,6 +7,10 @@ name: pip-audit
 permissions:
   contents: read
 
+env:
+  # Version of pip-audit used by all jobs. Pinned so a new release cannot change the results unnoticed.
+  PIP_AUDIT_VERSION: "2.10.1"
+
 on:
   pull_request:
     paths:
@@ -33,17 +37,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
 
       - name: Export locked requirements
         working-directory: ci/python
         run: uv export --frozen --all-extras --no-emit-project --no-hashes -o "${RUNNER_TEMP}/ci-tools-reqs.txt"
 
       - name: Audit dependencies with pip-audit
-        run: uvx pip-audit --requirement "${RUNNER_TEMP}/ci-tools-reqs.txt" --no-deps --disable-pip --desc
+        run: uvx pip-audit==${PIP_AUDIT_VERSION} --requirement "${RUNNER_TEMP}/ci-tools-reqs.txt" --no-deps --disable-pip --desc
 
   testbench:
     # test/deltares_testbench is locked with uv. One uv.lock covers Windows and Linux, and the exported
@@ -62,31 +68,35 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
 
       - name: Export locked requirements
         working-directory: test/deltares_testbench
         run: uv export --frozen --all-extras --no-emit-project --no-hashes -o audit-requirements.txt
 
       - name: Audit dependencies with pip-audit
-        run: uvx pip-audit --requirement test/deltares_testbench/audit-requirements.txt --no-deps --disable-pip --desc
+        run: uvx pip-audit==${PIP_AUDIT_VERSION} --requirement test/deltares_testbench/audit-requirements.txt --no-deps --disable-pip --desc
 
   fortran-styler:
     # tools/deltares_fortran_styler is locked with uv (no runtime dependencies, only the dev tools).
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
 
       - name: Export locked requirements
         working-directory: tools/deltares_fortran_styler
         run: uv export --frozen --all-extras --no-emit-project --no-hashes -o "${RUNNER_TEMP}/styler-reqs.txt"
 
       - name: Audit dependencies with pip-audit
-        run: uvx pip-audit --requirement "${RUNNER_TEMP}/styler-reqs.txt" --no-deps --disable-pip --desc
+        run: uvx pip-audit==${PIP_AUDIT_VERSION} --requirement "${RUNNER_TEMP}/styler-reqs.txt" --no-deps --disable-pip --desc
