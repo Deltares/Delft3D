@@ -260,7 +260,7 @@ contains
          end if
          call precice_adapter_write_data(self)
          call precicef_advance(max_timestep)
-         ! Read after the exchange so the next FM interval uses the newly received forcing.
+         ! Read after the exchange so the next FM interval uses the newly received data.
          call precice_adapter_read_data(self, 0.0_dp)
          call precice_adapter_add_to_fm_administration(self)
          ! Reset summed_time_progress after advancing
