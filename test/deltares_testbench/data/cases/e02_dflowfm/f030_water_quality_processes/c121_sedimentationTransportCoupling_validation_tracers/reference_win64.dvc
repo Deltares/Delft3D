@@ -1,0 +1,6 @@
+outs:
+- md5: dcdb871933647b25ea961ea82815e330.dir
+  size: 3134595
+  nfiles: 8
+  hash: md5
+  path: reference_win64
