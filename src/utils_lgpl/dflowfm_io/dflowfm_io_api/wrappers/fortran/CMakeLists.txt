@@ -1,4 +1,6 @@
 add_library(dflowfm_io_fortran
+    dflowfm_io_c.f90
+    dflowfm_io_helpers.f90
     dflowfm_io.f90
 )
 
