@@ -839,7 +839,6 @@ This section settings for online water quality processes.
 | `substanceDensityCoupling` 🔬 | Substance rho coupling. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `additionalHistoryOutputFile` 🔬 | Extra history output filename. | `<empty>` |  |  |  |
 | `statisticsFile` 🔬 | Statistics definition file. | `<empty>` |  |  |  |
-| `thetaVertical` ⚠️ | Theta value for vertical transport of water quality substances. | `0.0` |  | [-] |  |
 | `dtProcesses` 🔬 | Waq processes time step. Must be a multiple of `dtUser`. If `dtProcesses` is negative, water quality processes are calculated with every hydrodynamic time step. | `0.0` |  | [s] |  |
 | `volumeDryThreshold` 🔬 | Volume below which segments are marked as dry. | `0.001` |  | [m³] |  |
 | `depthDryThreshold` 🔬 | Water depth below which segments are marked as dry. | `0.001` |  | [m] |  |
@@ -1148,7 +1147,6 @@ The keywords and options listed below are deprecated and will be removed in a fu
 | `[physics] SecchiDepth2Fraction` | Use `[physics] SecchiDepthNonPenetrativeFraction` instead. |
 | `[physics] umodLin` | Keyword no longer supported, the provided value is ignored. |
 | `[processes] dtMassBalance` | Use `[output] MbaInterval` instead. |
-| `[processes] thetaVertical` | Use `[numerics] verticalAdvectionType` instead. |
 
 <a id="obsolete-keywords-and-options"></a>
 # Obsolete keywords and options
@@ -1168,6 +1166,7 @@ The keywords and options listed below are no longer supported and will cause an 
 | `[numerics] icgSolver=7` | Windows MPI solver is no longer supported. |
 | `[numerics] icgSolver=8` | pARMS solver is no longer supported. |
 | `[numerics] icgSolver=9` | Experimental Robin-Robin MPI solver is no longer supported. |
+| `[processes] thetaVertical` | Use `[numerics] verticalAdvectionType` instead. |
 
 <a id="release-2027.01"></a>
 ## Release 2027.01

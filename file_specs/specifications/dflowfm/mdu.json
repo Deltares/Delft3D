@@ -6061,9 +6061,9 @@
                     "description": "Theta value for vertical transport of water quality substances.",
                     "unit": "-",
                     "status": {
-                        "value": "deprecated",
+                        "value": "obsolete",
                         "comment": "Use `[numerics] verticalAdvectionType` instead.",
-                        "date": "2025-10-01"
+                        "since_release": 2027.02
                     }
                 },
                 {
