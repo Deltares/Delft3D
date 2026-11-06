@@ -49,24 +49,6 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
-  # Base images and tool versions in the Dockerfiles
-  - package-ecosystem: "docker"
-    directories:
-      - "/ci/dockerfiles/linux"
-      - "/ci/dockerfiles/windows"
-      - "/ci/teamcity/Delft3D/linux/docker"
-      - "/.devcontainer/delft3d"
-    schedule:
-      interval: "weekly"
-    cooldown:
-      # Only propose versions that have been released for at least a week.
-      default-days: 7
-    open-pull-requests-limit: 3
-    groups:
-      docker-images:
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
-
   # GitHub Actions used in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"
