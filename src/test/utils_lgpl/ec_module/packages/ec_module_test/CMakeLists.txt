@@ -52,8 +52,12 @@ configure_visual_studio_user_file(${executable_name})
 
 f90twtest(test_ec_module
     CFILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.cpp
-    F90FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
+    F90FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_harmonic_projection.f90
+    F2HFILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_harmonic_projection.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES ec_module
     VISUAL_STUDIO_PATH tests/utils_lgpl/ec_module/test
@@ -65,4 +69,3 @@ endif()
 install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION test)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/. DESTINATION test FILES_MATCHING PATTERN "*.py" PATTERN "src" EXCLUDE PATTERN "scripts" EXCLUDE PATTERN "tests" EXCLUDE)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION test)
-
