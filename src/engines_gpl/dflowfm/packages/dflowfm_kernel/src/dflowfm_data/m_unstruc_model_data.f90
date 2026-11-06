@@ -152,7 +152,6 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_oplfile = ' ' !< [-] open process library dll/so file
    character(len=max_prop_length) :: md_blmfile = ' ' !< [-] BLOOM aglae species definition file
    character(len=max_prop_length) :: md_sttfile = ' ' !< statistics definition file
-   real(kind=dp) :: md_thetav_waq = 0.0_dp !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0.0_dp !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0.0_dp !< mass balance output time step (old)
 

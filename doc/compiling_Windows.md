@@ -14,7 +14,7 @@ Deltares developers download them directly and external developers build them lo
 ## Prerequisites
 - Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
   During the installation/configuration process, choose the **"Desktop development with C++"** configuration.
-  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**; see the figure below.
+  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"** and the latest **"Windows SDK"**; see the figure below.
 
   ![List of installation details](images/VisualStudio_installed_components.png)
 
@@ -42,6 +42,7 @@ Deltares developers download them directly and external developers build them lo
   ```
   Alternatively, install it into your active Python environment with pip:
   ```
+  python -m pip install --upgrade pip
   python -m pip install conan
   ```
   Verify the installation:

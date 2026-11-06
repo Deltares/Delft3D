@@ -145,7 +145,8 @@ class Program:
                     self.__error = subprocess.CalledProcessError(
                         completed_process.returncode,
                         self.__program_config.path,
-                        "process raised non null error code",
+                        output=completed_process.stdout,
+                        stderr=completed_process.stderr,
                     )
 
             if completed_process.stderr:
@@ -155,7 +156,8 @@ class Program:
                     logger.debug(f"{prog_path} contained error message - {error_message}, but ignoring it")
                 else:
                     logger.warning(f"{prog_path} contained error message - {error_message}")
-                    self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
+                    if self.__error is None:
+                        self.__error = RuntimeError(f"{prog_path} wrote to stderr: {error_message}")
         except subprocess.TimeoutExpired as e:
             timeout_msg = (
                 f"Program {self.__program_config.path} exceeded its max run time of "

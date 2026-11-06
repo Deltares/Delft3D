@@ -1,5 +1,6 @@
 # test dependencies
 set(dependencies deltares_common
+                 waq_definition
                  waq_hyd_data
                  io_netcdf_data
                  io_netcdf

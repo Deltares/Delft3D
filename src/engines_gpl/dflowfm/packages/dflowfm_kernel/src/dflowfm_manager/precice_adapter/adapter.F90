@@ -561,6 +561,9 @@ contains
       type(t_netcell_set) :: netcell_cache
 
       netcell_cache = t_netcell_set()
+      if (.not. allocated(source_sinks%name)) then
+         call source_sinks%initialize(1)
+      end if
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       

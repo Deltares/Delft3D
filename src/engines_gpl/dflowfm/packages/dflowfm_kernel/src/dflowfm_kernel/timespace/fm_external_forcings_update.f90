@@ -51,8 +51,8 @@ module fm_external_forcings_update
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateHeight, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_gateHeight, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       item_dambreak_crestlevel, item_dambreak_breachwidth, &
-                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
-                      AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
+                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_sea_interaction_model, &
+                      AIR_SEA_INTERACTION_MODEL_MOST, wx, wy, wcharnock, item_sea_surface_temperature, TEMPERATURE_MODEL_NONE
    use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
@@ -91,6 +91,7 @@ module fm_external_forcings_update
 
    public :: set_external_forcings
    public :: compute_air_water_interaction_most_fluxes
+   public :: update_sea_surface_temperature
    public :: prepare_air_pressure_temperature_dew_point_temperature
    public :: prepare_wind
    public :: calculate_wind_stresses
@@ -118,7 +119,7 @@ contains
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
       use fm_external_forcings_utils, only: print_error_message
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
 
       ! Arguments
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
@@ -157,7 +158,7 @@ contains
       if (ja_airdensity > 0) then
          call get_timespace_value_by_item_and_consider_success_value(item_air_density, time_in_seconds)
       end if
-      if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (ja_computed_airdensity == 1 .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
          call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       end if
 
@@ -179,7 +180,15 @@ contains
          call initialize_salinity_and_temperature_with_nudge_variables()
       end if
 
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. &
+          (temperature_model == TEMPERATURE_MODEL_NONE .and. &
+          air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST)) then
+         call update_temperature_forcings(time_in_seconds)
+      end if
+
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
+         call update_sea_surface_temperature(time_in_seconds)
          call compute_air_water_interaction_most_fluxes(initialization)
       end if
 
@@ -188,11 +197,6 @@ contains
          if (iresult /= DFM_NOERR) then
             return
          end if
-      end if
-
-      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
-      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         call update_temperature_forcings(time_in_seconds)
       end if
 
       if (ja_friction_coefficient_time_dependent > 0) then
@@ -293,8 +297,7 @@ contains
          return
       end if
 
-      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE &
-          .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          if (jaheat_eachstep == 0) then
             call heatu(time_in_seconds / 3600.0_dp)
          end if
@@ -371,7 +374,7 @@ contains
       use m_get_surface_temperature, only: get_surface_temperature
       use m_get_surface_salinity, only: get_surface_salinity, get_salinity_reduction_factor_saturation_humidity
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
-      use m_atmospheric_stability, only: compute_scales_and_fluxes, atm_stability_options
+      use m_atmospheric_stability, only: atmospheric_stability
       use m_relative_wind, only: compute_wind_relative_to_surface_on_link
       use m_wind, only: relativewind
       use m_flow, only: ltop, u1, v
@@ -423,9 +426,8 @@ contains
          call get_salinity_reduction_factor_saturation_humidity(surface_salinity, salinity_reduction_factor_saturation_humidity%values)
       end if
 
-      call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
-                                     air_pressure, charnock, surface_temperature_kelvin, salinity_reduction_factor_saturation_humidity, &
-                                     atm_stability_options)
+      call atmospheric_stability%compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
+                                     air_pressure, charnock, surface_temperature_kelvin, salinity_reduction_factor_saturation_humidity)
    end subroutine compute_air_water_interaction_most_fluxes
 
    !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
@@ -522,6 +524,20 @@ contains
       success = success .and. ec_gettimespacevalue(ecInstancePtr, item, irefdate, tzone, tunit, time_in_seconds)
 
    end subroutine get_timespace_value_by_item_and_consider_success_value
+
+   !> Update the sea-surface-temperature forcing at the requested time.
+   subroutine update_sea_surface_temperature(time_in_seconds)
+      use precision, only: dp
+
+      ! Arguments
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+
+      if (item_sea_surface_temperature /= ec_undef_int) then
+         call get_timespace_value_by_item_and_consider_success_value( &
+            item_sea_surface_temperature, time_in_seconds)
+      end if
+
+   end subroutine update_sea_surface_temperature
 
    !> get_timespace_value_by_item_array_consider_success_value
    subroutine get_timespace_value_by_item_array_consider_success_value(item, array, time_in_seconds)

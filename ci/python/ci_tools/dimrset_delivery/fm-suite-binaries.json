@@ -409,32 +409,40 @@
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\mkl_avx2.2.dll",
+            "file": "bin\\mkl_avx10.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\mkl_avx512.2.dll",
+            "file": "bin\\mkl_avx2.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\mkl_core.2.dll",
+            "file": "bin\\mkl_avx512.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\mkl_def.2.dll",
+            "file": "bin\\mkl_core.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\mkl_intel_thread.2.dll",
+            "file": "bin\\mkl_def.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "bin\\mkl_sequential.2.dll",
+            "file": "bin\\mkl_intel_thread.3.dll",
+            "issuedTo": "Intel Corporation"
+        },
+        {
+            "file": "bin\\mkl_sequential.3.dll",
             "issuedTo": "Intel Corporation"
         },
         {
             "file": "bin\\mormerge.exe",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\mpi_abi.dll",
+            "issuedTo": "Intel Corporation"
         },
         {
             "file": "bin\\mpiexec.exe",

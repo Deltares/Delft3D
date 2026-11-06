@@ -1,0 +1,85 @@
+digraph fm_communication {
+    graph [label="D-Flow FM online: DIMR control, NetCDF field exchange",
+           labelloc=t, fontsize=18, fontname="Helvetica", rankdir=TB,
+           newrank=true, nodesep=0.6, ranksep=0.65, pad=0.3, bgcolor="white"];
+    node [shape=box, style="rounded,filled", fillcolor="#E7F1FA",
+          color="#7890A2", fontname="Helvetica", fontsize=11,
+          margin="0.15,0.09"];
+    edge [fontname="Helvetica", fontsize=9, color="#48647A", arrowsize=0.75];
+
+    subgraph cluster_dimr {
+        label="DIMR: lifecycle and scheduling";
+        color="#7890A2";
+        style="rounded";
+        dimr_init [fillcolor="#EAF5EC",
+                   label="Initialize D-Flow FM first; set D-Waves to mode 1\n(via a DIMR startGroup, or a non-blank FlowFile);\nthen initialize D-Waves"];
+        dimr_update [fillcolor="#EAF5EC",
+                     label="Schedule the D-Flow FM and D-Waves updates\nusing the configured component times"];
+        dimr_finish [fillcolor="#EAF5EC", label="Finalize components"];
+        dimr_init -> dimr_update -> dimr_finish;
+        dimr_update -> dimr_update [label="repeat until the end"];
+    }
+
+    subgraph cluster_fm {
+        label="D-Flow FM component";
+        color="#5A9A72";
+        style="rounded";
+        fm_init [label="D-Flow FM BMI initialize:\nwrite initial geometry and fields"];
+        fm_step [label="Advance D-Flow FM internal steps;\nwrite fields at com-output times;\nread available wave fields via EC"];
+        fm_finalize [label="D-Flow FM BMI finalize"];
+        fm_init -> fm_step -> fm_finalize;
+    }
+
+    subgraph cluster_wave {
+        label="D-Waves BMI component / MPI ranks";
+        color="#3B82A0";
+        style="rounded";
+        wave_init [label="D-Waves BMI initialize:\nread D-Flow FM and SWAN geometry;\nprepare mappings"];
+        wave_update [label="BMI update(dt):\nadvance D-Waves time"];
+        fields_in [label="Master reads and remaps D-Flow FM fields\nto the next SWAN grid"];
+        swan [label="All D-Waves MPI ranks call swan_lib\n(SwanMode=lib): MPI collective solve"];
+        fields_out [label="Master reads the SWAN results;\nmaps and writes wave fields if WriteCOM"];
+        more_grids [shape=diamond, fillcolor="white",
+                    label="More SWAN grids?"];
+        return_update [label="Return from BMI update"];
+        wave_finalize [label="D-Waves BMI finalize"];
+        wave_init -> wave_update -> fields_in -> swan -> fields_out -> more_grids;
+        more_grids -> fields_in [label="next grid / nest", constraint=false];
+        more_grids -> return_update [label="no"];
+        return_update -> wave_finalize;
+    }
+
+    com [shape=cylinder, fillcolor="#FFF9ED",
+         label="D-Flow FM NetCDF communication file(s)\n*_com.nc; one per partition if partitioned"];
+
+    dimr_init -> fm_init [style=dashed, label="BMI initialize"];
+    dimr_init -> wave_init [style=dashed, label="BMI initialize after D-Flow FM"];
+    dimr_update -> fm_step [style=dashed, label="BMI update"];
+    dimr_update -> wave_update [style=dashed, label="BMI update(dt)"];
+    dimr_finish -> fm_finalize [style=dashed, label="BMI finalize", constraint=false];
+    dimr_finish -> wave_finalize [style=dashed, label="BMI finalize", constraint=false];
+
+    fm_init -> com [label="initial geometry / fields"];
+    fm_step -> com [label="write D-Flow FM fields"];
+    com -> wave_init [label="read geometry", constraint=false];
+    com -> fields_in [label="read selected D-Flow FM fields"];
+    fields_out -> com [label="write wave fields (WriteCOM)", constraint=false];
+    com -> fm_step [label="read wave fields", constraint=false];
+
+    {rank=min; dimr_init;}
+    {rank=same; fm_init; wave_init;}
+    {rank=same; fm_step; wave_update;}
+    {rank=same; fields_in; com;}
+    fm_init -> wave_init [style=invis, weight=30];
+    fm_step -> wave_update [style=invis, weight=30];
+
+    note [shape=note, fillcolor="#F5F7F8",
+          label="DIMR carries lifecycle and timing, not gridded arrays.\nThe D-Waves master performs file I/O and remapping; all D-Waves ranks\njoin each library solve and synchronize before the output is processed.\nAlign the D-Flow FM com-output and D-Waves update schedules;\nthe arrows do not prescribe one universal update order."];
+    return_update -> note [style=invis];
+
+    diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
+                    fontname="Helvetica", fontsize=9, margin="0.12,0.06",
+                    label="Created with Copilot from prompts, using existing code as reference."];
+    {rank=sink; diagram_credit;}
+    note -> diagram_credit [style=invis];
+}
