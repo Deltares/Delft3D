@@ -40,7 +40,7 @@ commit your virtual environment to source control.
 python -m venv .venv  # Create a virtual environment named `.venv`.
 ```
 
-Before installing the requirements, you need to make sure you have 'activated' the
+Before installing the dependencies, you need to make sure you have 'activated' the
 virtual environment. You can do so with the following command:
 
 Linux: 
@@ -73,63 +73,52 @@ manually every time. Here's an example using vscode:
 }
 ```
 
-### Installing the dependencies using `pip`
-After activating your virtual environment, you're ready to install the dependencies of the
-testbench. The `pip` directory contains multiple `requirements.txt` files with 'pinned'
-versions of all the dependencies (and sub-dependencies). The full list of dependencies
-may differ slightly between platforms (different python versions and operating systems). So
-please pick the `requirements.txt` file for your platform to install the dependencies.
+### Installing the dependencies using `uv`
+The dependencies are installed with [`uv`](https://github.com/astral-sh/uv). To install `uv`, follow the
+installation steps here: https://github.com/astral-sh/uv. `uv` is not written in python, so it is much faster
+than `pip`.
 
-Notice that there's separate `requirements.txt` and `dev-requirements.txt` files. 
-The `dev-requirements.txt` files not only contain the dependencies needed to run the testbench,
-but also tools that help with development of the testbench code. You can read more about
-the differences between the normal and development dependencies 
-[in this section](#why-separate-the-dependencies-from-development-dependencies).
+The dependencies are declared in `pyproject.toml`. The exact versions of all the dependencies (and
+sub-dependencies) that we test with are pinned in `uv.lock`, which is committed to source control. One `uv.lock`
+file covers Windows and Linux (x86-64) and python 3.11 and 3.12. Run the following command in this directory. It
+creates the virtual environment `.venv` if it does not exist yet, and installs the pinned versions in it:
 
-Linux: (Choose between dev or non-dev dependencies)
 ```bash
-pip install -r pip/lnx-requirements.txt
-pip install -r pip/lnx-dev-requirements.txt
+uv sync --locked --extra dev  # Dependencies and development tools (pytest, ruff, mypy)
+uv sync --locked              # Only the dependencies needed to run the testbench
 ```
 
-Windows: (Choose between dev or non-dev dependencies)
-```cmd
-pip install -r pip/win-requirements.txt
-pip install -r pip/win-dev-requirements.txt
-```
+- `--locked` makes the command fail, instead of changing `uv.lock`, when `uv.lock` is out of date with
+  `pyproject.toml`.
+- The testbench itself is also installed (editable), so the `testbench` command is available next to
+  `python TestBench.py`.
+- `--extra dev` also installs the development dependencies. You can read more about them
+  [in this section](#why-separate-the-dependencies-from-development-dependencies).
 
-### Installing and pinning the dependencies using `uv`
-`uv` is a tool that can generate a file listing 'pinned versions' of python packages without
-actually installing any packages. It has separate steps for 'resolving' of package versions
-and 'installing' the packages. The 'pinned' versions of packages can be saved in a file and
-committed to source control. You can see some examples in the `pip` directory.
-To install `uv`, follow the installation steps here: https://github.com/astral-sh/uv.
-`uv` provides a similar command line interface as `pip-tools`. But it is not written in
-python, so it's much faster.
+Use `uv run` to run something in this environment without activating it first, for instance
+`uv run python TestBench.py --help`.
 
-The dependencies listed in `pyproject.toml` can be used by `uv` to generate the pinned
-package versions. You only need to do this after you've added a new python package to the 
-`pyproject.toml` or updated the version constraints of the python packages
-that are already there. If you just want to install the pinned python packages, you can
-skip this step. Use `uv pip compile`:
+If you cannot use `uv`, activate the virtual environment and use `pip`. This does *not* use the pinned versions
+in `uv.lock`: `pip` resolves the version constraints from `pyproject.toml` itself.
 ```bash
-# Resolve the python package versions listed in 'pyproject.toml' and save the result.
-uv pip compile pyproject.toml --upgrade --output-file pip/lnx-requirements.txt
-# Resolve the dependencies including the 'development dependencies' (linters, etc.)
-uv pip compile pyproject.toml --upgrade --extra dev --output-file pip/lnx-dev-requirements.txt
+pip install -e ".[dev]"
 ```
-Note: The pinned package versions are not entirely platform agnostic. For instance, 
-sometimes Windows requires extra packages.
 
-Use `uv pip sync` command to install the pinned dependencies:
+### Updating the pinned dependencies
+You only need to do this after you've added a python package to `pyproject.toml`, or changed the version constraints
+of the python packages that are already there. `uv.lock` is generated, never edit it by hand:
+
 ```bash
-uv pip sync pip/lnx-requirements.txt  # I don't need the development dependencies
-uv pip sync pip/lnx-dev-requirements.txt  # Install all the packages.
+uv lock                                # Re-resolve after editing pyproject.toml. Keeps the existing versions if possible.
+uv lock --upgrade-package <package>    # Upgrade a single package (and what it needs) to the newest allowed version.
+uv lock --upgrade                      # Upgrade everything to the newest versions allowed by pyproject.toml.
+uv lock --check                        # Check that uv.lock matches pyproject.toml (this is what --locked does).
 ```
+Commit the updated `uv.lock` together with `pyproject.toml`. Do not delete `uv.lock` to re-create it: that
+re-resolves everything and moves many packages to newer versions at once.
 
-Technically you can also use `pip install` to install the pinned dependencies. But `pip`
-will also try to resolve the package versions, which is not necessary anymore because
-`uv` took care of it in the `compile` command already.
+The lock only covers the platforms listed in `[tool.uv] environments` in `pyproject.toml` (Windows and Linux,
+x86-64). Add an entry there if you need another platform.
 
 
 ### Why separate the 'dependencies' from 'development dependencies'
@@ -147,7 +136,7 @@ TeamCity build servers that are running the testbench also don't need to have
 these tools installed.
 
 ### Why use version constraints?
-Over time the python packages listed in our `requirements.txt` receive updates. We 
+Over time the python packages listed in our `pyproject.toml` receive updates. We 
 distinguish between three kinds of updates:
 
 1. `PATCH`: Bugfixes, security updates
@@ -172,11 +161,9 @@ exactly as it did at the time of the commit. Version pinning eliminates problems
 arising from differences in the versions of installed packages. These kind of problems can
 be hard to solve.
 
-The tools we use to pin the versions of packages can't produce a 'platform-independent' 
-version of the pinned dependencies. Depending on the platform (Windows, Linux, or even
-python version) you can get slightly different packages. Because it's important that
-the testbench runs on both Windows and Linux, we produce a separate set of pinned
-packages for each platform.
+`uv.lock` is platform-independent: it records the exact versions for every supported platform (Windows and
+Linux), with markers for the packages that only exist on one of them (for instance `pywin32`). So there is one
+pinned set of packages for all platforms.
 
 ## Configuration tools in VSCode
 Most IDEs have some kind of plugin system that can run our python tools automatically when
