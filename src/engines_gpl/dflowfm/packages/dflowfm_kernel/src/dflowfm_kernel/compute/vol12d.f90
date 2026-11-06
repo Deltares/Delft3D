@@ -78,7 +78,7 @@ contains
 
       if (japerim == 1) then
          ! Dry links are skipped by the profile calculation below.
-         if (allocated(flow_width)) then
+         if (map_write_settings%au == 1 .and. allocated(flow_width)) then
             flow_width = 0.0_dp
             flow_width_main = 0.0_dp
             flow_width_floodplain1 = 0.0_dp

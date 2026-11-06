@@ -989,7 +989,7 @@ contains
          call realloc(hydraulic_radius_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('hydraulic_radius_floodplain2(lnkx)', ierr, lnkx)
       end if
-      if (map_write_settings%flow_width == 1) then
+      if (map_write_settings%au == 1) then
          call realloc(flow_width, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('flow_width(lnkx)', ierr, lnkx)
          call realloc(flow_width_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
