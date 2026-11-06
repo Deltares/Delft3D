@@ -3,7 +3,7 @@ sequenceDiagram
     participant FM as FM Adapter
     participant P as preCICE
 
-    rect rgb(238, 243, 201)
+    rect rgba(56, 139, 253, 0.12)
     Note over FM,P: INITIALIZATION - precice_adapter_initialize() - once
     alt MPI communicator supplied
         FM->>P: precicef_create_with_communicator()
@@ -24,11 +24,10 @@ sequenceDiagram
     FM->>P: precicef_get_mesh_vertex_size(sources_sinks_nodes)
     FM->>P: precicef_get_mesh_vertex_ids_and_coordinates(sources_sinks_nodes)
     FM->>P: precicef_read_data(source/sink quantities, relative time = 0)
-    Note over FM: Install available initial response and reset elapsed time
-    Note over FM,P: Empty mesh means no entries, while uninitialized quantities default to zero
+    Note over FM: Install initial response and reset elapsed time
     end
 
-    rect rgb(221, 235, 255)
+    rect rgba(63, 185, 80, 0.12)
     Note over FM,P: CYCLIC UPDATE - precice_adapter_update(timestep)
     loop Called after each FM user timestep
         FM->>P: precicef_is_coupling_ongoing()
@@ -37,18 +36,18 @@ sequenceDiagram
             Note over FM: Accumulate elapsed FM user timesteps
             alt Coupling boundary reached
                 FM->>P: precicef_is_time_window_complete()
-                alt preCICE reports a completed window
+                alt Returns true
                     FM->>P: precicef_reset_mesh(fm_flow_cells_3d)
                     FM->>P: precicef_set_vertices(fm_flow_cells_3d, updated coordinates)
+                else Returns false
+                    Note over FM: Keep registered mesh and continue exchange
                 end
                 FM->>P: precicef_write_data(FM fields on 2D and 3D meshes)
                 FM->>P: precicef_advance(max_timestep)
-                Note over FM,P: Data exchange and remeshing synchronization
                 FM->>P: precicef_get_mesh_vertex_size(sources_sinks_nodes)
                 FM->>P: precicef_get_mesh_vertex_ids_and_coordinates(sources_sinks_nodes)
                 FM->>P: precicef_read_data(source/sink quantities, relative time = 0)
                 Note over FM: Install newly received response and reset elapsed time
-                Note over FM,P: Current code reads after advance without a final-window guard
             else Boundary not reached
                 Note over FM: Return without exchanging data
             end
@@ -58,7 +57,7 @@ sequenceDiagram
     end
     end
 
-    rect rgb(255, 227, 209)
+    rect rgba(210, 153, 34, 0.12)
     Note over FM,P: FINALIZATION - precice_adapter_finalize() - once
     FM->>P: precicef_finalize()
     end
