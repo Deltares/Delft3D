@@ -96,11 +96,9 @@ module process_registration
     use m_npps12
     use m_staqtl
     use m_somsed
-    use m_nralgs
     use m_mac3du
     use m_ptewor
     use m_veg3dx
-    use m_rdbalg
     use m_sedox
     use m_oxymin
     use m_harves
@@ -153,8 +151,8 @@ module process_registration
     use m_vbupt
     use m_ironox
     use m_sulfid
-	use m_dynamo
-	use m_dynpro
+        use m_dynamo
+        use m_dynpro
     use m_trase2
     use m_macrop
     use m_trcoef
@@ -173,7 +171,6 @@ module process_registration
     use m_hdispa
     use m_vtrans
     use m_watage
-    use m_sdppro
     use m_satco2
     use m_rfpart
     use m_swoxy
@@ -197,7 +194,6 @@ module process_registration
     use m_methox
     use m_veloc
     use m_vbxsum
-    use m_nlalg
     use m_ssedph
     use m_phcarb
     use m_protist_mortality_salinity, only : protist_mortality_salinity
@@ -306,12 +302,8 @@ contains
                             process_routine_info('VIVIAN', VIVIAN), &
                             process_routine_info('DISSI', DISSI), &
                             process_routine_info('SEDOX', SEDOX), &
-                            process_routine_info('NLALG', NLALG), &
-                            process_routine_info('RDBALG', RDBALG), &
-							process_routine_info('DYNAMO', DYNAMO), &
-                            process_routine_info('SDPPRO', SDPPRO), &
-							process_routine_info('DYNPRO', DYNPRO), &
-                            process_routine_info('NRALGS', NRALGS), &
+                            process_routine_info('DYNAMO', DYNAMO), &
+                            process_routine_info('DYNPRO', DYNPRO), &
                             process_routine_info('OXYMIN', OXYMIN), &
                             process_routine_info('CSELAC', CSELAC), &
                             process_routine_info('EBUCH4', EBUCH4), &
