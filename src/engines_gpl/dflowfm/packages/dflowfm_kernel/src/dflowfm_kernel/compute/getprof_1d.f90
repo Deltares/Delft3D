@@ -96,7 +96,7 @@ contains
          area = hpr * width
          perim = width + 2 * hpr
 
-         if (japerim == 1 .and. calcConv == 1 .and. map_write_settings%au_split == 1) then
+         if (japerim == 1 .and. calcConv == 1 .and. map_write_settings%au_1d_sections == 1) then
             au_main(L) = area
             au_floodplain1(L) = 0.0_dp
             au_floodplain2(L) = 0.0_dp
@@ -115,7 +115,7 @@ contains
             hydrad = area / perim
             perim_sub = [perim, 0.0_dp, 0.0_dp]
             af_sub = [area, 0.0_dp, 0.0_dp]
-            if (map_write_settings%hydraulic_radius == 1) then
+            if (map_write_settings%au == 1) then
                call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
             end if
             !
@@ -169,10 +169,10 @@ contains
                   flow_width_floodplain1(L) = width_sub(2)
                   flow_width_floodplain2(L) = width_sub(3)
                end if
-               if (map_write_settings%hydraulic_radius == 1) then
+               if (map_write_settings%au == 1) then
                   call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
                end if
-               if (map_write_settings%au_split == 1) then
+               if (map_write_settings%au_1d_sections == 1) then
                   au_main(L) = af_sub(1)
                   au_floodplain1(L) = af_sub(2)
                   au_floodplain2(L) = af_sub(3)
@@ -337,7 +337,7 @@ contains
             flow_width_floodplain2(L) = 0.0_dp
          end if
 
-         if (map_write_settings%hydraulic_radius == 1) then
+         if (map_write_settings%au == 1) then
             if (abs(itp) == 101) then
                ! Legacy conveyance profiles do not return a wetted perimeter.
                call store_hydraulic_radii(L, [area, area, 0.0_dp, 0.0_dp], [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp])
@@ -346,7 +346,7 @@ contains
             end if
          end if
 
-         if (map_write_settings%au_split == 1) then
+         if (map_write_settings%au_1d_sections == 1) then
             au_main(L) = area
             au_floodplain1(L) = 0.0_dp
             au_floodplain2(L) = 0.0_dp
