@@ -121,6 +121,10 @@ module m_mass_balance_area_data
    real(kind=dp), allocatable, target :: mbaflowrainevatot(:, :) !< total flow from rain and prescribed evaporation
    real(kind=dp), allocatable, target :: mbafloweva(:) !< periodical flow from calculated evaporation
    real(kind=dp), allocatable, target :: mbaflowevatot(:) !< total flow from calculated evaporation
+   real(kind=dp), allocatable :: mbabedvolume(:) !< local water volume before a bed geometry update
+   real(kind=dp), allocatable, target :: mbaflowbed(:, :) !< periodical water volume added/removed by bed geometry updates
+   real(kind=dp), allocatable, target :: mbaflowbedtot(:, :) !< total water volume added/removed by bed geometry updates
+   real(kind=dp), allocatable :: mbaflowbedreduce(:, :) !< water volume change reduction buffer
 
    real(kind=dp), allocatable, target :: mbamassbegin(:, :) !< begin volume in mass balance area
    real(kind=dp), allocatable, target :: mbamassbegintot(:, :) !< total begin volume in mass balance area
@@ -143,6 +147,9 @@ module m_mass_balance_area_data
    real(kind=dp), allocatable, target :: mbasedflux(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable, target :: mbasedfluxtot(:, :, :, :) !< total periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable :: mbasedfluxreduce(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas (for MPI reduce)
+   real(kind=dp), allocatable, target :: mbafluxfixbed(:, :, :) !< periodical sediment exchange with a fixed bed reservoir
+   real(kind=dp), allocatable, target :: mbafluxfixbedtot(:, :, :) !< total sediment exchange with a fixed bed reservoir
+   real(kind=dp), allocatable :: mbafluxfixbedreduce(:, :, :) !< fixed bed exchange reduction buffer
 
    real(kind=dp), allocatable, target :: mbafluxhor(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas

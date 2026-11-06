@@ -38,6 +38,7 @@ module m_subsupl_update_s1
    private
 
    public :: subsupl_update_s1
+   public :: subsupl_update_constituents
 
 contains
 
@@ -70,5 +71,54 @@ contains
          end do
       end if
    end subroutine subsupl_update_s1
+
+   !> Preserve transported mass using actual volumes before and after the ground movement.
+   subroutine subsupl_update_constituents()
+      use precision, only: dp
+      use m_subsidence, only: sdu_volp
+      use m_flow, only: vol1, kmx, ktop0
+      use m_flowgeom, only: ndxi
+      use m_transport, only: numconst, constituents
+      use m_get_kbot_ktop, only: getkbotktop
+      use messagehandling, only: mess, LEVEL_FATAL
+
+      integer :: n, k, kb, kt, old_kt, receiver
+      real(dp) :: displaced_mass(numconst)
+
+      if (numconst == 0) then
+         return
+      end if
+      do n = 1, ndxi
+         call getkbotktop(n, kb, kt)
+         old_kt = kt
+         if (kmx > 0) then
+            old_kt = ktop0(n)
+         end if
+         displaced_mass = 0.0_dp
+         do k = kb, max(kt, old_kt)
+            if (vol1(k) > 0.0_dp) then
+               if (sdu_volp(k) > 0.0_dp) then
+                  constituents(:, k) = constituents(:, k) * (sdu_volp(k) / vol1(k))
+               else
+                  constituents(:, k) = 0.0_dp
+               end if
+            else
+               if (sdu_volp(k) > 0.0_dp) then
+                  displaced_mass = displaced_mass + constituents(:, k) * sdu_volp(k)
+               end if
+               constituents(:, k) = 0.0_dp
+            end if
+         end do
+         if (any(displaced_mass /= 0.0_dp)) then
+            if (sum(vol1(kb:kt)) <= 0.0_dp) then
+               call mess(LEVEL_FATAL, 'Subsidence/uplift dried a cell containing transported mass. '// &
+                         'Use SubsUplUpdateS1=1 to retain its water volume.')
+               return
+            end if
+            receiver = kb - 1 + maxloc(vol1(kb:kt), dim=1)
+            constituents(:, receiver) = constituents(:, receiver) + displaced_mass / vol1(receiver)
+         end if
+      end do
+   end subroutine subsupl_update_constituents
 
 end module m_subsupl_update_s1

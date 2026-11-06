@@ -269,7 +269,7 @@ contains
             end if
          end if
 
-         call comp_sinktot()
+         call comp_sinktot(nsubsteps, jaupdate, ndeltasteps)
 
       end do
       if (jalimitdiff == 3 .and. kmx == 0) then

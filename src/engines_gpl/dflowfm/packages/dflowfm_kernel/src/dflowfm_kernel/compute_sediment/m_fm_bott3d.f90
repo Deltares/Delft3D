@@ -46,6 +46,7 @@ module m_fm_bott3d
 
    private !Prevent used modules from being exported
    public :: fm_bott3d
+   public :: fm_suspended_sand_correction
 
 contains
 
@@ -376,9 +377,10 @@ contains
 
       integer :: ierror
       integer :: l, ll, Lx, Lf, k1, k2
-      integer :: Lb, Lt, ka, kf1, kf2, ac1, ac2
+      integer :: Lb, Lt, ka, kf1, kf2
 
-      real(kind=dp) :: cavg
+      real(kind=dp) :: ac1, ac2
+      real(kind=dp) :: integrated_concentration
       real(kind=dp) :: cavg1
       real(kind=dp) :: cavg2
       real(kind=dp) :: ceavg
@@ -538,19 +540,19 @@ contains
                               end if
                               apower = min(max(-10.0_dp, apower), 10.0_dp)
                               !
-                              ! Compute the average concentration cavg between the reference
-                              ! height a and the top of the current layer (bottom of layer above) z.
+                              ! Integrate concentration between the reference height a and
+                              ! the top of the current layer (bottom of the layer above).
                               !           /zktop                           zktop                       zktop
-                              ! cavg*dz = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
+                              ! integral = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
                               !          /a                                     a                           a
                               !
                               cavg1 = (ceavg / (apower + 1.0_dp)) * (1.0_dp / aksu)**apower
                               cavg2 = zktop**(apower + 1.0_dp) - aksu**(apower + 1.0_dp)
-                              cavg = cavg1 * cavg2 ! kg/m3/m
+                              integrated_concentration = cavg1 * cavg2 ! kg/m^2
                               !
                               ! The corresponding effective suspended load flux is
                               !
-                              cflux = u1(ka) * cavg * dz * wu_mor(Lx)
+                              cflux = u1(ka) * integrated_concentration * wu_mor(Lx)
                               !
                               ! Increment the correction by the part of the suspended load flux
                               ! that is in excess of the flux computed above, but never opposite.

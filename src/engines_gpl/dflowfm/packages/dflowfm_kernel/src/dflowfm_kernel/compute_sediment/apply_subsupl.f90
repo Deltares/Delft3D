@@ -43,7 +43,10 @@ contains
 
    subroutine apply_subsupl()
       use m_flowtimes, only: dts, dt_user
-      use m_subsidence, only: sdu_blp, subsupl, subsupl_tp
+      use m_subsidence, only: sdu_blp, subsupl, subsupl_tp, sdu_volp
+      use m_alloc, only: realloc
+      use m_flow, only: vol1
+      use m_transport, only: numconst
       use m_flowparameters, only: ibedlevtyp
       use m_flowgeom, only: lnx, ndx, bl, blu
       use network_data, only: numk, zk
@@ -52,6 +55,11 @@ contains
 
       integer :: k !< face/cell or node index
       integer :: L !< link/edge index
+
+      if (numconst > 0) then
+         call realloc(sdu_volp, size(vol1), keepExisting=.false.)
+         sdu_volp = vol1
+      end if
 
       ! copy bed level at cell centres to detect bed level changes later when updating water levels
       do k = 1, ndx
