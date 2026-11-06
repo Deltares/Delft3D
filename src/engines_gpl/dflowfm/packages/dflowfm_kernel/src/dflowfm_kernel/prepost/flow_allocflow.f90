@@ -978,7 +978,7 @@ contains
          call aerr('frculin(lnx)', ierr, lnx)
       end if
 
-      if (map_write_settings%au_split == 1) then
+      if (map_write_settings%au_1d_sections == 1) then
          call realloc(au_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('au_main(lnkx)', ierr, lnkx)
          call realloc(au_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -986,7 +986,7 @@ contains
          call realloc(au_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('au_floodplain2(lnkx)', ierr, lnkx)
       end if
-      if (map_write_settings%hydraulic_radius == 1) then
+      if (map_write_settings%au == 1) then
          call realloc(hydraulic_radius, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('hydraulic_radius(lnkx)', ierr, lnkx)
          call realloc(hydraulic_radius_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)

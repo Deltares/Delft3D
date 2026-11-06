@@ -84,7 +84,7 @@ contains
             flow_width_floodplain1 = 0.0_dp
             flow_width_floodplain2 = 0.0_dp
          end if
-         if (allocated(hydraulic_radius)) then
+         if (map_write_settings%au == 1 .and. allocated(hydraulic_radius)) then
             hydraulic_radius = 0.0_dp
             hydraulic_radius_main = 0.0_dp
             hydraulic_radius_floodplain1 = 0.0_dp
