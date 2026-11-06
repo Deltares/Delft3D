@@ -5,33 +5,78 @@ updates:
     directory: "/ci/python"
     schedule:
       interval: "weekly"
+    cooldown:
+      # Only propose versions that have been released for at least a week.
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
+      # Minor and patch updates arrive as one PR; major updates get their own PR each.
       python-deps:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # test/deltares_testbench is locked with uv (uv.lock replaced the pip/*-requirements.txt files)
   - package-ecosystem: "uv"
     directory: "/test/deltares_testbench"
     schedule:
       interval: "weekly"
+    cooldown:
+      # Only propose versions that have been released for at least a week.
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
       testbench-deps:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Deliberate pins, see test/deltares_testbench/pyproject.toml. Upgrading them is done by hand.
+      - dependency-name: "numpy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "setuptools"
+        update-types: ["version-update:semver-major"]
 
   # tools/deltares_fortran_styler is locked with uv
   - package-ecosystem: "uv"
     directory: "/tools/deltares_fortran_styler"
     schedule:
       interval: "weekly"
+    cooldown:
+      # Only propose versions that have been released for at least a week.
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
       styler-deps:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # Base images and tool versions in the Dockerfiles
+  - package-ecosystem: "docker"
+    directories:
+      - "/ci/dockerfiles/linux"
+      - "/ci/dockerfiles/windows"
+      - "/ci/teamcity/Delft3D/linux/docker"
+      - "/.devcontainer/delft3d"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      # Only propose versions that have been released for at least a week.
+      default-days: 7
+    open-pull-requests-limit: 3
+    groups:
+      docker-images:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # GitHub Actions used in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      # Only propose versions that have been released for at least a week.
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
