@@ -4162,7 +4162,7 @@ contains
             ierr = unc_put_att(mapids%ncid, mapids%id_q1, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
 
-         if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+         if (map_write_settings%q1_1d_sections > 0 .and. allocated(q1_main)) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, nc_precision, iLocU, 'q1_main', '', 'Main channel discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
             ierr = unc_put_att(mapids%ncid, mapids%id_q1main, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, nc_precision, iLocU, 'q1_floodplain1', '', 'First floodplain discharge through flow link at current time', 'm3 s-1', cell_method='sum', jabndnd=jabndnd_)
@@ -4220,7 +4220,7 @@ contains
          if (map_write_settings%chezy_links > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, nc_precision, UNC_LOC_U, 'czu', '', 'Chezy roughness on flow links', 'm0.5s-1', jabndnd=jabndnd_)
          end if
-         if (map_write_settings%chezy_links_split == 1) then
+         if (map_write_settings%chezy_links_1d_sections == 1) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, nc_precision, UNC_LOC_U, &
                                    'czu_main', '', 'Main channel Chezy roughness on flow links', 'm0.5s-1', which_meshdim=1, jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, nc_precision, UNC_LOC_U, &
@@ -5358,7 +5358,7 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1, iLocU, q1, 0.0_dp, jabndnd=jabndnd_)
       end if
 
-      if (map_write_settings%q1main == 1 .and. allocated(q1_main)) then
+      if (map_write_settings%q1_1d_sections == 1 .and. allocated(q1_main)) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1main, iLocU, q1_main, 0.0_dp, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain1, iLocU, q1_floodplain1, 0.0_dp, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1floodplain2, iLocU, q1_floodplain2, 0.0_dp, jabndnd=jabndnd_)
@@ -6458,7 +6458,7 @@ contains
       if (map_write_settings%chezy_links > 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu, UNC_LOC_U, czu, jabndnd=jabndnd_)
       end if
-      if (map_write_settings%chezy_links_split == 1) then
+      if (map_write_settings%chezy_links_1d_sections == 1) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_main, UNC_LOC_U, czu_main, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain1, UNC_LOC_U, czu_floodplain1, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_czu_floodplain2, UNC_LOC_U, czu_floodplain2, jabndnd=jabndnd_)
@@ -7030,7 +7030,7 @@ contains
                if (map_write_settings%q1 > 0) then
                   ierr = nf90_def_var(imapfile, 'q1', nf90_double, [id_laydim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_q1(iid))
                end if
-               if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+               if (map_write_settings%q1_1d_sections > 0 .and. allocated(q1_main)) then
                   ierr = nf90_def_var(imapfile, 'q1main', nf90_double, [id_laydim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_q1main(iid))
                end if
                if (map_write_settings%viu > 0) then
@@ -7121,7 +7121,7 @@ contains
                if (map_write_settings%q1 > 0) then
                   ierr = nf90_def_var(imapfile, 'q1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1(iid))
                end if
-               if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+               if (map_write_settings%q1_1d_sections > 0 .and. allocated(q1_main)) then
                   ierr = nf90_def_var(imapfile, 'q1main', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1main(iid))
                end if
                if (map_write_settings%viu > 0) then
@@ -7230,7 +7230,7 @@ contains
                ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), 'units', 'm')
                ierr = nf90_put_att(imapfile, id_flow_width_floodplain2(iid), '_FillValue', dmiss)
             end if
-            if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+            if (map_write_settings%q1_1d_sections > 0 .and. allocated(q1_main)) then
                ierr = nf90_def_var(imapfile, 'q1_floodplain1', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_q1floodplain1(iid))
                ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_q1floodplain1(iid), 'long_name', 'First floodplain discharge through flow link at current time')
@@ -8088,7 +8088,7 @@ contains
                ierr = nf90_put_att(imapfile, id_czu(iid), 'units', 'm0.5s-1')
             end if
 
-            if (map_write_settings%chezy_links_split == 1) then
+            if (map_write_settings%chezy_links_1d_sections == 1) then
                ierr = nf90_def_var(imapfile, 'czu_main', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu_main(iid))
                ierr = nf90_put_att(imapfile, id_czu_main(iid), 'long_name', 'Main channel Chezy roughness on flow links')
                ierr = nf90_put_att(imapfile, id_czu_main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
@@ -8822,7 +8822,7 @@ contains
          if (map_write_settings%chezy_links > 0) then
             ierr = nf90_put_var(imapfile, id_czu(iid), czu, [1, itim], [lnx, 1])
          end if
-         if (map_write_settings%chezy_links_split == 1) then
+         if (map_write_settings%chezy_links_1d_sections == 1) then
             ierr = nf90_put_var(imapfile, id_czu_main(iid), czu_main, [1, itim], [lnx, 1])
             ierr = nf90_put_var(imapfile, id_czu_floodplain1(iid), czu_floodplain1, [1, itim], [lnx, 1])
             ierr = nf90_put_var(imapfile, id_czu_floodplain2(iid), czu_floodplain2, [1, itim], [lnx, 1])
@@ -9014,7 +9014,7 @@ contains
             end if
          end if
 
-         if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
+         if (map_write_settings%q1_1d_sections > 0 .and. allocated(q1_main)) then
             ierr = nf90_put_var(imapfile, id_q1floodplain1(iid), q1_floodplain1, [1, itim], [lnx, 1])
             ierr = nf90_put_var(imapfile, id_q1floodplain2(iid), q1_floodplain2, [1, itim], [lnx, 1])
          end if

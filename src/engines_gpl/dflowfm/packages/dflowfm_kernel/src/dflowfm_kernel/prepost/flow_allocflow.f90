@@ -1033,7 +1033,7 @@ contains
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
       end if
-      if (map_write_settings%chezy_links_split == 1) then
+      if (map_write_settings%chezy_links_1d_sections == 1) then
          call realloc(czu_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu_main(lnkx)', ierr, lnkx)
          call realloc(czu_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
