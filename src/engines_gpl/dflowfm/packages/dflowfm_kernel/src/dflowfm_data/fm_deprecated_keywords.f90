@@ -47,6 +47,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'Wrimap_flow_flux_q1_main', DEPRECATED, &
+                                  'Use [Output] wrimap_flowflux_q1_1d_sections instead.')
 
       ! Adding OBSOLETE MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)

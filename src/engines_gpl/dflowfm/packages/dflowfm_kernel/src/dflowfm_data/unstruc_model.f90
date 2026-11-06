@@ -2168,6 +2168,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', map_write_settings%diu, success)
       call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', map_write_settings%q1, success)
       call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', map_write_settings%q1_1d_sections, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowflux_q1_1d_sections', map_write_settings%q1_1d_sections, success)
       call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', map_write_settings%fw, success)
       call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', map_write_settings%spir, success)
       call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', map_write_settings%numlimdt, success)
