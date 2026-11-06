@@ -1,7 +1,7 @@
 !> GoogleTest checks and status-returning assertions for explicit Fortran control flow.
 module assertions_gtest
-   use, intrinsic :: iso_c_binding, only: bridge_bool => c_int8_t, c_int32_t, c_float, c_double, c_bool, &
-                                                                             c_char, c_size_t, c_null_char
+   use, intrinsic :: iso_c_binding, only: gtest_wrapper_bool_t => c_int8_t, c_int32_t, c_float, c_double, c_bool, &
+                                         c_char, c_size_t, c_null_char
    implicit none(type, external)
    private
 
@@ -151,242 +151,242 @@ module assertions_gtest
    end interface f90_expect_strcasene
 
    interface
-      subroutine bridge_eq_i32(val1, val2, fatal, message, message_length) &
-         bind(C, name="bridge_eq_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      subroutine gtest_wrapper_eq_int32(val1, val2, fatal, message, message_length) &
+         bind(C, name="gtest_wrapper_eq_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: val1, val2
-         integer(bridge_bool), value, intent(in) :: fatal
+         integer(gtest_wrapper_bool_t), value, intent(in) :: fatal
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_eq_i32
-      subroutine bridge_eq_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_eq_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_eq_int32
+      subroutine gtest_wrapper_eq_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_eq_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_eq_f32
-      subroutine bridge_eq_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_eq_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_eq_float
+      subroutine gtest_wrapper_eq_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_eq_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_eq_f64
-      subroutine bridge_eq_bool(val1, val2, message, message_length) &
-         bind(C, name="bridge_eq_bool")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         integer(bridge_bool), value, intent(in) :: val1, val2
+      end subroutine gtest_wrapper_eq_double
+      subroutine gtest_wrapper_eq_bool(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_eq_bool")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         integer(gtest_wrapper_bool_t), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_eq_bool
-      subroutine bridge_ne_i32(val1, val2, message, message_length) &
-         bind(C, name="bridge_ne_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         integer(c_int32_t), value, intent(in) :: val1, val2
-         character(kind=c_char), dimension(*), intent(in) :: message
-         integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ne_i32
-      subroutine bridge_ne_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_ne_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         real(c_float), value, intent(in) :: val1, val2
-         character(kind=c_char), dimension(*), intent(in) :: message
-         integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ne_f32
-      subroutine bridge_ne_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_ne_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         real(c_double), value, intent(in) :: val1, val2
-         character(kind=c_char), dimension(*), intent(in) :: message
-         integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ne_f64
-      subroutine bridge_ne_bool(val1, val2, message, message_length) &
-         bind(C, name="bridge_ne_bool")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         integer(bridge_bool), value, intent(in) :: val1, val2
-         character(kind=c_char), dimension(*), intent(in) :: message
-         integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ne_bool
-      subroutine bridge_lt_i32(val1, val2, message, message_length) &
-         bind(C, name="bridge_lt_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_eq_bool
+      subroutine gtest_wrapper_ne_int32(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ne_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_lt_i32
-      subroutine bridge_lt_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_lt_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_ne_int32
+      subroutine gtest_wrapper_ne_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ne_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_lt_f32
-      subroutine bridge_lt_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_lt_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_ne_float
+      subroutine gtest_wrapper_ne_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ne_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_lt_f64
-      subroutine bridge_le_i32(val1, val2, message, message_length) &
-         bind(C, name="bridge_le_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_ne_double
+      subroutine gtest_wrapper_ne_bool(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ne_bool")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         integer(gtest_wrapper_bool_t), value, intent(in) :: val1, val2
+         character(kind=c_char), dimension(*), intent(in) :: message
+         integer(c_size_t), value, intent(in) :: message_length
+      end subroutine gtest_wrapper_ne_bool
+      subroutine gtest_wrapper_lt_int32(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_lt_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_le_i32
-      subroutine bridge_le_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_le_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_lt_int32
+      subroutine gtest_wrapper_lt_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_lt_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_le_f32
-      subroutine bridge_le_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_le_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_lt_float
+      subroutine gtest_wrapper_lt_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_lt_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_le_f64
-      subroutine bridge_gt_i32(val1, val2, message, message_length) &
-         bind(C, name="bridge_gt_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_lt_double
+      subroutine gtest_wrapper_le_int32(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_le_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_gt_i32
-      subroutine bridge_gt_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_gt_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_le_int32
+      subroutine gtest_wrapper_le_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_le_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_gt_f32
-      subroutine bridge_gt_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_gt_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_le_float
+      subroutine gtest_wrapper_le_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_le_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_gt_f64
-      subroutine bridge_ge_i32(val1, val2, message, message_length) &
-         bind(C, name="bridge_ge_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_le_double
+      subroutine gtest_wrapper_gt_int32(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_gt_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ge_i32
-      subroutine bridge_ge_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_ge_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_gt_int32
+      subroutine gtest_wrapper_gt_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_gt_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ge_f32
-      subroutine bridge_ge_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_ge_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_gt_float
+      subroutine gtest_wrapper_gt_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_gt_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_ge_f64
-      subroutine bridge_float_eq_f32(val1, val2, message, message_length) &
-         bind(C, name="bridge_float_eq_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_gt_double
+      subroutine gtest_wrapper_ge_int32(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ge_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         integer(c_int32_t), value, intent(in) :: val1, val2
+         character(kind=c_char), dimension(*), intent(in) :: message
+         integer(c_size_t), value, intent(in) :: message_length
+      end subroutine gtest_wrapper_ge_int32
+      subroutine gtest_wrapper_ge_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ge_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_float_eq_f32
-      subroutine bridge_double_eq_f64(val1, val2, message, message_length) &
-         bind(C, name="bridge_double_eq_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_ge_float
+      subroutine gtest_wrapper_ge_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_ge_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_double_eq_f64
-      subroutine bridge_near_f32(val1, val2, abs_error, message, message_length) &
-         bind(C, name="bridge_near_f32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_ge_double
+      subroutine gtest_wrapper_float_eq_float(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_float_eq_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         real(c_float), value, intent(in) :: val1, val2
+         character(kind=c_char), dimension(*), intent(in) :: message
+         integer(c_size_t), value, intent(in) :: message_length
+      end subroutine gtest_wrapper_float_eq_float
+      subroutine gtest_wrapper_double_eq_double(val1, val2, message, message_length) &
+         bind(C, name="gtest_wrapper_double_eq_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         real(c_double), value, intent(in) :: val1, val2
+         character(kind=c_char), dimension(*), intent(in) :: message
+         integer(c_size_t), value, intent(in) :: message_length
+      end subroutine gtest_wrapper_double_eq_double
+      subroutine gtest_wrapper_near_float(val1, val2, abs_error, message, message_length) &
+         bind(C, name="gtest_wrapper_near_float")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_float), value, intent(in) :: val1, val2, abs_error
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_near_f32
-      subroutine bridge_near_f64(val1, val2, abs_error, message, message_length) &
-         bind(C, name="bridge_near_f64")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_near_float
+      subroutine gtest_wrapper_near_double(val1, val2, abs_error, message, message_length) &
+         bind(C, name="gtest_wrapper_near_double")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          real(c_double), value, intent(in) :: val1, val2, abs_error
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_near_f64
-      subroutine bridge_true_i32(condition, fatal, message, message_length) &
-         bind(C, name="bridge_true_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_near_double
+      subroutine gtest_wrapper_true_int32(condition, fatal, message, message_length) &
+         bind(C, name="gtest_wrapper_true_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: condition
-         integer(bridge_bool), value, intent(in) :: fatal
+         integer(gtest_wrapper_bool_t), value, intent(in) :: fatal
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_true_i32
-      subroutine bridge_true_bool(condition, fatal, message, message_length) &
-         bind(C, name="bridge_true_bool")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         integer(bridge_bool), value, intent(in) :: condition
-         integer(bridge_bool), value, intent(in) :: fatal
+      end subroutine gtest_wrapper_true_int32
+      subroutine gtest_wrapper_true_bool(condition, fatal, message, message_length) &
+         bind(C, name="gtest_wrapper_true_bool")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         integer(gtest_wrapper_bool_t), value, intent(in) :: condition
+         integer(gtest_wrapper_bool_t), value, intent(in) :: fatal
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_true_bool
-      subroutine bridge_false_i32(condition, message, message_length) &
-         bind(C, name="bridge_false_i32")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_true_bool
+      subroutine gtest_wrapper_false_int32(condition, message, message_length) &
+         bind(C, name="gtest_wrapper_false_int32")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          integer(c_int32_t), value, intent(in) :: condition
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_false_i32
-      subroutine bridge_false_bool(condition, message, message_length) &
-         bind(C, name="bridge_false_bool")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
-         integer(bridge_bool), value, intent(in) :: condition
+      end subroutine gtest_wrapper_false_int32
+      subroutine gtest_wrapper_false_bool(condition, message, message_length) &
+         bind(C, name="gtest_wrapper_false_bool")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
+         integer(gtest_wrapper_bool_t), value, intent(in) :: condition
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_false_bool
-      subroutine bridge_streq_string(str1, length1, str2, length2, message, message_length) &
-         bind(C, name="bridge_streq_string")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_false_bool
+      subroutine gtest_wrapper_streq_string(str1, length1, str2, length2, message, message_length) &
+         bind(C, name="gtest_wrapper_streq_string")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          character(kind=c_char), dimension(*), intent(in) :: str1, str2
          integer(c_size_t), value, intent(in) :: length1, length2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_streq_string
-      subroutine bridge_strne_string(str1, length1, str2, length2, message, message_length) &
-         bind(C, name="bridge_strne_string")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_streq_string
+      subroutine gtest_wrapper_strne_string(str1, length1, str2, length2, message, message_length) &
+         bind(C, name="gtest_wrapper_strne_string")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          character(kind=c_char), dimension(*), intent(in) :: str1, str2
          integer(c_size_t), value, intent(in) :: length1, length2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_strne_string
-      subroutine bridge_strcaseeq_string(str1, length1, str2, length2, message, message_length) &
-         bind(C, name="bridge_strcaseeq_string")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_strne_string
+      subroutine gtest_wrapper_strcaseeq_string(str1, length1, str2, length2, message, message_length) &
+         bind(C, name="gtest_wrapper_strcaseeq_string")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          character(kind=c_char), dimension(*), intent(in) :: str1, str2
          integer(c_size_t), value, intent(in) :: length1, length2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_strcaseeq_string
-      subroutine bridge_strcasene_string(str1, length1, str2, length2, message, message_length) &
-         bind(C, name="bridge_strcasene_string")
-         import :: bridge_bool, c_int32_t, c_float, c_double, c_char, c_size_t
+      end subroutine gtest_wrapper_strcaseeq_string
+      subroutine gtest_wrapper_strcasene_string(str1, length1, str2, length2, message, message_length) &
+         bind(C, name="gtest_wrapper_strcasene_string")
+         import :: gtest_wrapper_bool_t, c_int32_t, c_float, c_double, c_char, c_size_t
          character(kind=c_char), dimension(*), intent(in) :: str1, str2
          integer(c_size_t), value, intent(in) :: length1, length2
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_strcasene_string
-      subroutine bridge_failure(message, message_length) bind(C, name="bridge_failure")
-         import :: bridge_bool, c_char, c_size_t
+      end subroutine gtest_wrapper_strcasene_string
+      subroutine gtest_wrapper_failure(message, message_length) bind(C, name="gtest_wrapper_failure")
+         import :: gtest_wrapper_bool_t, c_char, c_size_t
          character(kind=c_char), dimension(*), intent(in) :: message
          integer(c_size_t), value, intent(in) :: message_length
-      end subroutine bridge_failure
+      end subroutine gtest_wrapper_failure
    end interface
 
 contains
@@ -398,8 +398,8 @@ contains
       character(len=:), allocatable :: text
 
       passed = val1 == val2
-      text = diagnostic(message)
-      call bridge_eq_i32(val1, val2, 1_bridge_bool, text, len(text, kind=c_size_t))
+      text = format_error_message(message)
+      call gtest_wrapper_eq_int32(val1, val2, 1_gtest_wrapper_bool_t, text, len(text, kind=c_size_t))
    end function assert_eq_i32
 
    !> Check an integer condition using GoogleTest's nonzero-is-true convention.
@@ -409,8 +409,8 @@ contains
       character(len=:), allocatable :: text
 
       passed = condition /= 0_c_int32_t
-      text = diagnostic(message)
-      call bridge_true_i32(condition, 1_bridge_bool, text, len(text, kind=c_size_t))
+      text = format_error_message(message)
+      call gtest_wrapper_true_int32(condition, 1_gtest_wrapper_bool_t, text, len(text, kind=c_size_t))
    end function assert_true_i32
 
    !> Check a logical prerequisite; callers must explicitly return on failure.
@@ -420,8 +420,9 @@ contains
       character(len=:), allocatable :: text
 
       passed = condition
-      text = diagnostic(message)
-      call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition), 1_bridge_bool, text, len(text, kind=c_size_t))
+      text = format_error_message(message)
+      call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
+                                   1_gtest_wrapper_bool_t, text, len(text, kind=c_size_t))
    end function assert_true_logical
 
    !> Check a C-interoperable logical prerequisite.
@@ -431,11 +432,12 @@ contains
       character(len=:), allocatable :: text
 
       passed = condition
-      text = diagnostic(message)
-      call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition), 1_bridge_bool, text, len(text, kind=c_size_t))
+      text = format_error_message(message)
+      call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
+                                   1_gtest_wrapper_bool_t, text, len(text, kind=c_size_t))
    end function assert_true_bool
 
-   function normalized(value) result(text)
+   function truncate_at_c_null(value) result(text)
       character(len=*), intent(in) :: value
       character(len=:), allocatable :: text
       integer :: nul
@@ -445,16 +447,16 @@ contains
       else
          text = value
       end if
-   end function normalized
+   end function truncate_at_c_null
 
-   function diagnostic(message, i, j) result(text)
+   function format_error_message(message, i, j) result(text)
       character(len=*), optional, intent(in) :: message
       integer, optional, intent(in) :: i, j
       character(len=:), allocatable :: text
       character(len=64) :: indices
       text = ''
       if (present(message)) then
-         text = normalized(message)
+         text = truncate_at_c_null(message)
       end if
       if (present(i)) then
          if (present(j)) then
@@ -464,14 +466,14 @@ contains
          end if
          text = text//trim(indices)
       end if
-   end function diagnostic
+   end function format_error_message
 
    subroutine expect_eq_i32_rank0(val1, val2, message)
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_eq_i32(val1, val2, 0_bridge_bool, &
+      text = format_error_message(message)
+      call gtest_wrapper_eq_int32(val1, val2, 0_gtest_wrapper_bool_t, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_eq_i32_rank0
 
@@ -479,8 +481,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_eq_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_eq_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_eq_f32_rank0
 
@@ -488,8 +490,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_eq_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_eq_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_eq_f64_rank0
 
@@ -497,8 +499,9 @@ contains
       logical, intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_eq_bool(merge(1_bridge_bool, 0_bridge_bool, val1), merge(1_bridge_bool, 0_bridge_bool, val2), &
+      text = format_error_message(message)
+      call gtest_wrapper_eq_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
+                                 merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
                        text, len(text, kind=c_size_t))
    end subroutine expect_eq_logical_rank0
 
@@ -506,8 +509,9 @@ contains
       logical(c_bool), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_eq_bool(merge(1_bridge_bool, 0_bridge_bool, val1), merge(1_bridge_bool, 0_bridge_bool, val2), &
+      text = format_error_message(message)
+      call gtest_wrapper_eq_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
+                                 merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
                        text, len(text, kind=c_size_t))
    end subroutine expect_eq_bool_rank0
 
@@ -515,8 +519,8 @@ contains
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ne_i32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ne_int32(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ne_i32_rank0
 
@@ -524,8 +528,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ne_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ne_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ne_f32_rank0
 
@@ -533,8 +537,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ne_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ne_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ne_f64_rank0
 
@@ -542,8 +546,9 @@ contains
       logical, intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ne_bool(merge(1_bridge_bool, 0_bridge_bool, val1), merge(1_bridge_bool, 0_bridge_bool, val2), &
+      text = format_error_message(message)
+      call gtest_wrapper_ne_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
+                                 merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
                        text, len(text, kind=c_size_t))
    end subroutine expect_ne_logical_rank0
 
@@ -551,8 +556,9 @@ contains
       logical(c_bool), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ne_bool(merge(1_bridge_bool, 0_bridge_bool, val1), merge(1_bridge_bool, 0_bridge_bool, val2), &
+      text = format_error_message(message)
+      call gtest_wrapper_ne_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
+                                 merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
                        text, len(text, kind=c_size_t))
    end subroutine expect_ne_bool_rank0
 
@@ -560,8 +566,8 @@ contains
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_lt_i32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_lt_int32(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_lt_i32_rank0
 
@@ -569,8 +575,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_lt_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_lt_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_lt_f32_rank0
 
@@ -578,8 +584,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_lt_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_lt_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_lt_f64_rank0
 
@@ -587,8 +593,8 @@ contains
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_le_i32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_le_int32(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_le_i32_rank0
 
@@ -596,8 +602,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_le_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_le_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_le_f32_rank0
 
@@ -605,8 +611,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_le_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_le_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_le_f64_rank0
 
@@ -614,8 +620,8 @@ contains
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_gt_i32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_gt_int32(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_gt_i32_rank0
 
@@ -623,8 +629,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_gt_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_gt_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_gt_f32_rank0
 
@@ -632,8 +638,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_gt_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_gt_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_gt_f64_rank0
 
@@ -641,8 +647,8 @@ contains
       integer(c_int32_t), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ge_i32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ge_int32(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ge_i32_rank0
 
@@ -650,8 +656,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ge_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ge_float(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ge_f32_rank0
 
@@ -659,8 +665,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_ge_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_ge_double(val1, val2, &
                       text, len(text, kind=c_size_t))
    end subroutine expect_ge_f64_rank0
 
@@ -668,8 +674,8 @@ contains
       real(c_float), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_float_eq_f32(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_float_eq_float(val1, val2, &
                             text, len(text, kind=c_size_t))
    end subroutine expect_float_eq_f32_rank0
 
@@ -679,13 +685,13 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
-         text = diagnostic(message, i)
-         call bridge_float_eq_f32(val1(i), val2(i), &
+         text = format_error_message(message, i)
+         call gtest_wrapper_float_eq_float(val1(i), val2(i), &
                                text, len(text, kind=c_size_t))
       end do
    end subroutine expect_float_eq_f32_rank1
@@ -696,14 +702,14 @@ contains
       character(len=:), allocatable :: text
       integer :: i, j
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
          do j = 1, size(val1, 2)
-            text = diagnostic(message, i, j)
-            call bridge_float_eq_f32(val1(i, j), val2(i, j), &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_float_eq_float(val1(i, j), val2(i, j), &
                                   text, len(text, kind=c_size_t))
          end do
       end do
@@ -713,8 +719,8 @@ contains
       real(c_double), intent(in) :: val1, val2
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_double_eq_f64(val1, val2, &
+      text = format_error_message(message)
+      call gtest_wrapper_double_eq_double(val1, val2, &
                              text, len(text, kind=c_size_t))
    end subroutine expect_double_eq_f64_rank0
 
@@ -724,13 +730,13 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
-         text = diagnostic(message, i)
-         call bridge_double_eq_f64(val1(i), val2(i), &
+         text = format_error_message(message, i)
+         call gtest_wrapper_double_eq_double(val1(i), val2(i), &
                                 text, len(text, kind=c_size_t))
       end do
    end subroutine expect_double_eq_f64_rank1
@@ -741,14 +747,14 @@ contains
       character(len=:), allocatable :: text
       integer :: i, j
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
          do j = 1, size(val1, 2)
-            text = diagnostic(message, i, j)
-            call bridge_double_eq_f64(val1(i, j), val2(i, j), &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_double_eq_double(val1(i, j), val2(i, j), &
                                    text, len(text, kind=c_size_t))
          end do
       end do
@@ -759,8 +765,8 @@ contains
       real(c_float), intent(in) :: abs_error
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_near_f32(val1, val2, abs_error, &
+      text = format_error_message(message)
+      call gtest_wrapper_near_float(val1, val2, abs_error, &
                         text, len(text, kind=c_size_t))
    end subroutine expect_near_f32_rank0
 
@@ -771,13 +777,13 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
-         text = diagnostic(message, i)
-         call bridge_near_f32(val1(i), val2(i), abs_error, &
+         text = format_error_message(message, i)
+         call gtest_wrapper_near_float(val1(i), val2(i), abs_error, &
                            text, len(text, kind=c_size_t))
       end do
    end subroutine expect_near_f32_rank1
@@ -789,14 +795,14 @@ contains
       character(len=:), allocatable :: text
       integer :: i, j
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
          do j = 1, size(val1, 2)
-            text = diagnostic(message, i, j)
-            call bridge_near_f32(val1(i, j), val2(i, j), abs_error, &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_near_float(val1(i, j), val2(i, j), abs_error, &
                               text, len(text, kind=c_size_t))
          end do
       end do
@@ -807,8 +813,8 @@ contains
       real(c_double), intent(in) :: abs_error
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_near_f64(val1, val2, abs_error, &
+      text = format_error_message(message)
+      call gtest_wrapper_near_double(val1, val2, abs_error, &
                         text, len(text, kind=c_size_t))
    end subroutine expect_near_f64_rank0
 
@@ -819,13 +825,13 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
-         text = diagnostic(message, i)
-         call bridge_near_f64(val1(i), val2(i), abs_error, &
+         text = format_error_message(message, i)
+         call gtest_wrapper_near_double(val1(i), val2(i), abs_error, &
                            text, len(text, kind=c_size_t))
       end do
    end subroutine expect_near_f64_rank1
@@ -837,14 +843,14 @@ contains
       character(len=:), allocatable :: text
       integer :: i, j
       if (any(shape(val1) /= shape(val2))) then
-         text = diagnostic(message)//' : arrays of different shape'
-         call bridge_failure(text, len(text, kind=c_size_t))
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
          return
       end if
       do i = 1, size(val1, 1)
          do j = 1, size(val1, 2)
-            text = diagnostic(message, i, j)
-            call bridge_near_f64(val1(i, j), val2(i, j), abs_error, &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_near_double(val1(i, j), val2(i, j), abs_error, &
                               text, len(text, kind=c_size_t))
          end do
       end do
@@ -854,8 +860,8 @@ contains
       integer(c_int32_t), intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_true_i32(condition, 0_bridge_bool, &
+      text = format_error_message(message)
+      call gtest_wrapper_true_int32(condition, 0_gtest_wrapper_bool_t, &
                         text, len(text, kind=c_size_t))
    end subroutine expect_true_i32_rank0
 
@@ -865,8 +871,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_true_i32(condition(i), 0_bridge_bool, &
+         text = format_error_message(message, i)
+         call gtest_wrapper_true_int32(condition(i), 0_gtest_wrapper_bool_t, &
                            text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_i32_rank1
@@ -878,8 +884,8 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_true_i32(condition(i, j), 0_bridge_bool, &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_true_int32(condition(i, j), 0_gtest_wrapper_bool_t, &
                               text, len(text, kind=c_size_t))
          end do
       end do
@@ -889,8 +895,8 @@ contains
       logical, intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition), 0_bridge_bool, &
+      text = format_error_message(message)
+      call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), 0_gtest_wrapper_bool_t, &
                          text, len(text, kind=c_size_t))
    end subroutine expect_true_logical_rank0
 
@@ -900,8 +906,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i)), 0_bridge_bool, &
+         text = format_error_message(message, i)
+         call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), 0_gtest_wrapper_bool_t, &
                             text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_logical_rank1
@@ -913,8 +919,9 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i, j)), 0_bridge_bool, &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
+                                         0_gtest_wrapper_bool_t, &
                                text, len(text, kind=c_size_t))
          end do
       end do
@@ -924,8 +931,8 @@ contains
       logical(c_bool), intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition), 0_bridge_bool, &
+      text = format_error_message(message)
+      call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), 0_gtest_wrapper_bool_t, &
                          text, len(text, kind=c_size_t))
    end subroutine expect_true_bool_rank0
 
@@ -935,8 +942,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i)), 0_bridge_bool, &
+         text = format_error_message(message, i)
+         call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), 0_gtest_wrapper_bool_t, &
                             text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_bool_rank1
@@ -948,8 +955,9 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_true_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i, j)), 0_bridge_bool, &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
+                                         0_gtest_wrapper_bool_t, &
                                text, len(text, kind=c_size_t))
          end do
       end do
@@ -959,8 +967,8 @@ contains
       integer(c_int32_t), intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_false_i32(condition, &
+      text = format_error_message(message)
+      call gtest_wrapper_false_int32(condition, &
                          text, len(text, kind=c_size_t))
    end subroutine expect_false_i32_rank0
 
@@ -970,8 +978,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_false_i32(condition(i), &
+         text = format_error_message(message, i)
+         call gtest_wrapper_false_int32(condition(i), &
                             text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_i32_rank1
@@ -983,8 +991,8 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_false_i32(condition(i, j), &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_false_int32(condition(i, j), &
                                text, len(text, kind=c_size_t))
          end do
       end do
@@ -994,8 +1002,8 @@ contains
       logical, intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition), &
+      text = format_error_message(message)
+      call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
                           text, len(text, kind=c_size_t))
    end subroutine expect_false_logical_rank0
 
@@ -1005,8 +1013,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i)), &
+         text = format_error_message(message, i)
+         call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), &
                              text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_logical_rank1
@@ -1018,8 +1026,8 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i, j)), &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
                                 text, len(text, kind=c_size_t))
          end do
       end do
@@ -1029,8 +1037,8 @@ contains
       logical(c_bool), intent(in) :: condition
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition), &
+      text = format_error_message(message)
+      call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
                           text, len(text, kind=c_size_t))
    end subroutine expect_false_bool_rank0
 
@@ -1040,8 +1048,8 @@ contains
       character(len=:), allocatable :: text
       integer :: i
       do i = 1, size(condition, 1)
-         text = diagnostic(message, i)
-         call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i)), &
+         text = format_error_message(message, i)
+         call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), &
                              text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_bool_rank1
@@ -1053,8 +1061,8 @@ contains
       integer :: i, j
       do i = 1, size(condition, 1)
          do j = 1, size(condition, 2)
-            text = diagnostic(message, i, j)
-            call bridge_false_bool(merge(1_bridge_bool, 0_bridge_bool, condition(i, j)), &
+            text = format_error_message(message, i, j)
+            call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
                                 text, len(text, kind=c_size_t))
          end do
       end do
@@ -1065,10 +1073,10 @@ contains
       character(len=:), allocatable :: left, right
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      left = normalized(str1)
-      right = normalized(str2)
-      call bridge_streq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
+      text = format_error_message(message)
+      left = truncate_at_c_null(str1)
+      right = truncate_at_c_null(str2)
+      call gtest_wrapper_streq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
                             text, len(text, kind=c_size_t))
    end subroutine expect_streq_string_rank0
 
@@ -1077,10 +1085,10 @@ contains
       character(len=:), allocatable :: left, right
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      left = normalized(str1)
-      right = normalized(str2)
-      call bridge_strne_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
+      text = format_error_message(message)
+      left = truncate_at_c_null(str1)
+      right = truncate_at_c_null(str2)
+      call gtest_wrapper_strne_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
                             text, len(text, kind=c_size_t))
    end subroutine expect_strne_string_rank0
 
@@ -1089,10 +1097,10 @@ contains
       character(len=:), allocatable :: left, right
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      left = normalized(str1)
-      right = normalized(str2)
-      call bridge_strcaseeq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
+      text = format_error_message(message)
+      left = truncate_at_c_null(str1)
+      right = truncate_at_c_null(str2)
+      call gtest_wrapper_strcaseeq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
                                 text, len(text, kind=c_size_t))
    end subroutine expect_strcaseeq_string_rank0
 
@@ -1101,10 +1109,10 @@ contains
       character(len=:), allocatable :: left, right
       character(len=*), optional, intent(in) :: message
       character(len=:), allocatable :: text
-      text = diagnostic(message)
-      left = normalized(str1)
-      right = normalized(str2)
-      call bridge_strcasene_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
+      text = format_error_message(message)
+      left = truncate_at_c_null(str1)
+      right = truncate_at_c_null(str2)
+      call gtest_wrapper_strcasene_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
                                 text, len(text, kind=c_size_t))
    end subroutine expect_strcasene_string_rank0
 

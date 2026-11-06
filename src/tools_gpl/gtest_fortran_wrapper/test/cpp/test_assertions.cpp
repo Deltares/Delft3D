@@ -7,11 +7,11 @@ extern "C" {
 void passing_status_assertions();
 void guarded_assertions(int scenario);
 void passing_status_after_failure();
-void passing_string_edges();
-void failing_array_edges();
-void failing_message_edges();
-void passing_documented_surface();
-void failing_documented_surface();
+void passing_string_edge_cases();
+void failing_array_edge_cases();
+void failing_message_edge_cases();
+void passing_documented_api();
+void failing_documented_api();
 extern int assertion_continued;
 }
 
@@ -52,7 +52,7 @@ TEST(FortranAssertions, StatusIsIndependentOfEarlierFailures) {
 }
 
 TEST(FortranAssertions, FortranStringsAndLegacyNuls) {
-    passing_string_edges();
+    passing_string_edge_cases();
 }
 
 TEST(FortranAssertions, ArrayIndicesAndShapeFailures) {
@@ -60,7 +60,7 @@ TEST(FortranAssertions, ArrayIndicesAndShapeFailures) {
     {
         testing::ScopedFakeTestPartResultReporter reporter(
             testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &failures);
-        failing_array_edges();
+        failing_array_edge_cases();
     }
     ASSERT_EQ(failures.size(), 6);
     const char* messages[] = {
@@ -80,7 +80,7 @@ TEST(FortranAssertions, LongEmptyAndNulTerminatedMessages) {
     {
         testing::ScopedFakeTestPartResultReporter reporter(
             testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &failures);
-        failing_message_edges();
+        failing_message_edge_cases();
     }
     ASSERT_EQ(failures.size(), 3);
     EXPECT_NE(std::string(failures.GetTestPartResult(0).message()).find(std::string(4096, 'x') + ":end"),
@@ -91,16 +91,16 @@ TEST(FortranAssertions, LongEmptyAndNulTerminatedMessages) {
     EXPECT_FALSE(failures.GetTestPartResult(2).fatally_failed());
 }
 
-TEST(FortranAssertions, CompleteDocumentedSurfacePasses) {
-    passing_documented_surface();
+TEST(FortranAssertions, CompleteDocumentedApiPasses) {
+    passing_documented_api();
 }
 
-TEST(FortranAssertions, CompleteDocumentedSurfaceReportsFailures) {
+TEST(FortranAssertions, CompleteDocumentedApiReportsFailures) {
     testing::TestPartResultArray failures;
     {
         testing::ScopedFakeTestPartResultReporter reporter(
             testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &failures);
-        failing_documented_surface();
+        failing_documented_api();
     }
     ASSERT_EQ(failures.size(), 56);
     std::set<std::string> cases;

@@ -1,11 +1,11 @@
-module wrapper_assertion_surface
+module wrapper_assertion_api_coverage
    use, intrinsic :: iso_c_binding
    use assertions_gtest
    implicit none(type, external)
    private
-   public :: passing_documented_surface, failing_documented_surface
+   public :: passing_documented_api, failing_documented_api
 contains
-   subroutine passing_documented_surface() bind(C)
+   subroutine passing_documented_api() bind(C)
       call f90_expect_eq(1_c_int32_t, 1_c_int32_t, 'case=expect_eq_i32_rank0')
       call f90_expect_eq(1.0_c_float, 1.0_c_float, 'case=expect_eq_f32_rank0')
       call f90_expect_eq(1.0_c_double, 1.0_c_double, 'case=expect_eq_f64_rank0')
@@ -70,9 +70,9 @@ contains
       call f90_expect_strne('left', 'right', 'case=expect_strne_string_rank0')
       call f90_expect_strcaseeq('MiXeD', 'mixed', 'case=expect_strcaseeq_string_rank0')
       call f90_expect_strcasene('left', 'right', 'case=expect_strcasene_string_rank0')
-   end subroutine passing_documented_surface
+   end subroutine passing_documented_api
 
-   subroutine failing_documented_surface() bind(C)
+   subroutine failing_documented_api() bind(C)
       call f90_expect_eq(2_c_int32_t, 1_c_int32_t, 'case=expect_eq_i32_rank0')
       call f90_expect_eq(2.0_c_float, 1.0_c_float, 'case=expect_eq_f32_rank0')
       call f90_expect_eq(2.0_c_double, 1.0_c_double, 'case=expect_eq_f64_rank0')
@@ -133,6 +133,6 @@ contains
       call f90_expect_strne('same', 'same', 'case=expect_strne_string_rank0')
       call f90_expect_strcaseeq('left', 'right', 'case=expect_strcaseeq_string_rank0')
       call f90_expect_strcasene('MiXeD', 'mixed', 'case=expect_strcasene_string_rank0')
-   end subroutine failing_documented_surface
+   end subroutine failing_documented_api
 
-end module wrapper_assertion_surface
+end module wrapper_assertion_api_coverage
