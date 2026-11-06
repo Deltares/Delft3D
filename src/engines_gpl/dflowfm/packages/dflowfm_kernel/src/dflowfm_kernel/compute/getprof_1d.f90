@@ -106,7 +106,7 @@ contains
          k2 = ln(2, L)
 
          if ((japerim == 1) .and. (calcConv == 1)) then
-            if (map_write_settings%flow_width == 1) then
+            if (map_write_settings%au == 1) then
                flow_width(L) = width
                flow_width_main(L) = width
                flow_width_floodplain1(L) = 0.0_dp
@@ -163,7 +163,7 @@ contains
                                maxflowwidth=maxflowwidth, af_sub=af_sub, perim_sub=perim_sub, width_sub=width_sub)
 
             if (calcConv == 1) then
-               if (map_write_settings%flow_width == 1) then
+               if (map_write_settings%au == 1) then
                   flow_width(L) = width
                   flow_width_main(L) = width_sub(1)
                   flow_width_floodplain1(L) = width_sub(2)
@@ -330,7 +330,7 @@ contains
 
       if (japerim == 1 .and. calcconv == 1) then
 
-         if (map_write_settings%flow_width == 1) then
+         if (map_write_settings%au == 1) then
             flow_width(L) = width
             flow_width_main(L) = width
             flow_width_floodplain1(L) = 0.0_dp
