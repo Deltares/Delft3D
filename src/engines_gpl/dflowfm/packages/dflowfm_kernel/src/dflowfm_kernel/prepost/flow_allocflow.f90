@@ -982,6 +982,8 @@ contains
       if (map_write_settings%au == 1) then
          call realloc(hydraulic_radius, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('hydraulic_radius(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au_1d_sections == 1) then
          call realloc(hydraulic_radius_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('hydraulic_radius_main(lnkx)', ierr, lnkx)
          call realloc(hydraulic_radius_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -992,6 +994,8 @@ contains
       if (map_write_settings%au == 1) then
          call realloc(flow_width, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('flow_width(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au_1d_sections == 1) then
          call realloc(flow_width_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('flow_width_main(lnkx)', ierr, lnkx)
          call realloc(flow_width_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
