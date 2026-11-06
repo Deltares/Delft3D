@@ -6,7 +6,7 @@ ARG BASE_IMAGE_URL=containers.deltares.nl/docker-proxy/almalinux/8-base:latest
 
 FROM ${BASE_IMAGE_URL}
 
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.12.16
 
 RUN dnf update --assumeyes --refresh && \
     dnf clean all && \
