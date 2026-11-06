@@ -108,6 +108,8 @@ contains
          if ((japerim == 1) .and. (calcConv == 1)) then
             if (map_write_settings%au == 1) then
                flow_width(L) = width
+            end if
+            if (map_write_settings%au_1d_sections == 1) then
                flow_width_main(L) = width
                flow_width_floodplain1(L) = 0.0_dp
                flow_width_floodplain2(L) = 0.0_dp
@@ -115,7 +117,7 @@ contains
             hydrad = area / perim
             perim_sub = [perim, 0.0_dp, 0.0_dp]
             af_sub = [area, 0.0_dp, 0.0_dp]
-            if (map_write_settings%au == 1) then
+            if (map_write_settings%au == 1 .or. map_write_settings%au_1d_sections == 1) then
                call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
             end if
             !
@@ -165,11 +167,13 @@ contains
             if (calcConv == 1) then
                if (map_write_settings%au == 1) then
                   flow_width(L) = width
+               end if
+               if (map_write_settings%au_1d_sections == 1) then
                   flow_width_main(L) = width_sub(1)
                   flow_width_floodplain1(L) = width_sub(2)
                   flow_width_floodplain2(L) = width_sub(3)
                end if
-               if (map_write_settings%au == 1) then
+               if (map_write_settings%au == 1 .or. map_write_settings%au_1d_sections == 1) then
                   call store_hydraulic_radii(L, [area, af_sub], [perim, perim_sub])
                end if
                if (map_write_settings%au_1d_sections == 1) then
@@ -332,12 +336,14 @@ contains
 
          if (map_write_settings%au == 1) then
             flow_width(L) = width
+         end if
+         if (map_write_settings%au_1d_sections == 1) then
             flow_width_main(L) = width
             flow_width_floodplain1(L) = 0.0_dp
             flow_width_floodplain2(L) = 0.0_dp
          end if
 
-         if (map_write_settings%au == 1) then
+         if (map_write_settings%au == 1 .or. map_write_settings%au_1d_sections == 1) then
             if (abs(itp) == 101) then
                ! Legacy conveyance profiles do not return a wetted perimeter.
                call store_hydraulic_radii(L, [area, area, 0.0_dp, 0.0_dp], [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp])
@@ -395,6 +401,7 @@ contains
       use precision, only: dp
       use m_missing, only: dmiss
       use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
+      use m_flow, only: map_write_settings
 
       integer, intent(in) :: L !< Flow link index.
       real(kind=dp), dimension(4), intent(in) :: areas !< Total, main channel and two floodplain flow areas.
@@ -409,10 +416,14 @@ contains
          radii = areas / perimeters
       end where
 
-      hydraulic_radius(L) = radii(1)
-      hydraulic_radius_main(L) = radii(2)
-      hydraulic_radius_floodplain1(L) = radii(3)
-      hydraulic_radius_floodplain2(L) = radii(4)
+      if (map_write_settings%au == 1) then
+         hydraulic_radius(L) = radii(1)
+      end if
+      if (map_write_settings%au_1d_sections == 1) then
+         hydraulic_radius_main(L) = radii(2)
+         hydraulic_radius_floodplain1(L) = radii(3)
+         hydraulic_radius_floodplain2(L) = radii(4)
+      end if
    end subroutine store_hydraulic_radii
 
    !> Returns true if the given link has a flow1d cross section, so that the 1D flow solver may be used even if no network is loaded.

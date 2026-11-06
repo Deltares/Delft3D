@@ -1925,10 +1925,10 @@ contains
                              '', '1', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_AU, &
                              'Wrimap_flowarea_au', 'au', 'normal flow area between two neighbouring grid cells', &
-                             '', 'm2', UNC_LOC_U, description='Write flow areas au and total/subsection 1D hydraulic radii and flow widths to map file')
+                             '', 'm2', UNC_LOC_U, description='Write total flow areas au, 1D hydraulic radii and flow widths to map file')
       call add_output_config(config_set_map, IDX_MAP_AU_MAIN, &
                              'Wrimap_flowarea_au_1d_sections', 'au_main', 'Main channel flow area at flow link', &
-                             '', 'm2', UNC_LOC_U, description='Write geometric 1D flow areas in main channel and both floodplains to map file')
+                             '', 'm2', UNC_LOC_U, description='Write main channel and floodplain flow areas, hydraulic radii and flow widths to map file')
       call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN1, &
                              'Wrimap_flowarea_au_1d_sections', 'au_floodplain1', 'First floodplain flow area at flow link', &
                              '', 'm2', UNC_LOC_U)
@@ -1938,28 +1938,28 @@ contains
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS, &
                              'Wrimap_flowarea_au', 'hydraulic_radius', 'Total hydraulic radius at 1D flow link', &
                              '', 'm', UNC_LOC_U, &
-                             description='Write total and subsection 1D flow area / wet perimeter; enabled by Wrimap_flowarea_au')
+                             description='Write total 1D flow area / wet perimeter; dry=0, unavailable=missing')
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_MAIN, &
-                             'Wrimap_flowarea_au', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
                              '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1, &
-                             'Wrimap_flowarea_au', 'hydraulic_radius_floodplain1', &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_floodplain1', &
                              'First floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2, &
-                             'Wrimap_flowarea_au', 'hydraulic_radius_floodplain2', &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_floodplain2', &
                              'Second floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH, &
                              'Wrimap_flowarea_au', 'flow_width', 'Total water-surface flow width at 1D flow link', &
                              '', 'm', UNC_LOC_U, &
-                             description='Write total, main channel and both floodplain water-surface flow widths; dry links=0')
+                             description='Write total 1D water-surface flow widths; dry links=0')
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_MAIN, &
-                             'Wrimap_flowarea_au', 'flow_width_main', 'Main channel water-surface flow width at 1D flow link', &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_main', 'Main channel water-surface flow width at 1D flow link', &
                              '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN1, &
-                             'Wrimap_flowarea_au', 'flow_width_floodplain1', &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_floodplain1', &
                              'First floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN2, &
-                             'Wrimap_flowarea_au', 'flow_width_floodplain2', &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_floodplain2', &
                              'Second floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
