@@ -75,6 +75,7 @@ module mass_balance_areas_routines
 
    integer, parameter :: MASS_UNIT = 1
    integer, parameter :: CONC_UNIT = 2
+   logical :: mba_has_moving_bed = .false. !< Geometry accounting is independent of sediment transport.
 
 contains
 
@@ -91,6 +92,7 @@ contains
       use unstruc_model, only: md_ident, md_ident_sequential
       use fm_external_forcings_data
       use m_sediment, only: stm_included
+      use m_subsidence, only: jasubsupl
       use m_fm_erosed, only: lsedtot, lsed, stmpar, iflufflyr
       use unstruc_files
 
@@ -105,6 +107,7 @@ contains
 
       jamba = 1
       ibflag = 1
+      mba_has_moving_bed = stm_included .or. jasubsupl > 0
 
       timembastart = tstart_user ! when DFM doesn't start at t=0.0_dp??
       timembastarttot = timembastart
@@ -153,6 +156,14 @@ contains
       call realloc(mbavolumebegin, nomba, keepExisting=.false., fill=0.0_dp)
       call realloc(mbavolumebegintot, nomba, keepExisting=.false., fill=0.0_dp)
       call realloc(mbavolumeend, nomba, keepExisting=.false., fill=0.0_dp)
+      if (mba_has_moving_bed) then
+         call realloc(mbabedvolume, nomba, keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowbed, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowbedtot, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         if (jampi == 1) then
+            call realloc(mbaflowbedreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         end if
+      end if
 
       call realloc(mbaflowhor, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowhortot, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
@@ -168,9 +179,6 @@ contains
       call realloc(mbamassend, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (stm_included) then
-         call realloc(mbabedvolume, nomba, keepExisting=.false., fill=0.0_dp)
-         call realloc(mbaflowbed, [2, nomba], keepExisting=.false., fill=0.0_dp)
-         call realloc(mbaflowbedtot, [2, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxfixbed, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxfixbedtot, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
@@ -191,7 +199,6 @@ contains
          call realloc(mbasedfluxtot, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
          if (jampi == 1) then
             call realloc(mbasedfluxreduce, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-            call realloc(mbaflowbedreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
             call realloc(mbafluxfixbedreduce, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          end if
       end if
@@ -461,6 +468,10 @@ contains
          mbaflowraineva(:, :) = mbaflowrainevareduce(:, :)
          call reduce_double_sum(nomba, mbafloweva, mbaflowevareduce)
          mbafloweva(:) = mbaflowevareduce(:)
+         if (mba_has_moving_bed) then
+            call reduce_double_sum(2 * nomba, mbaflowbed, mbaflowbedreduce)
+            mbaflowbed = mbaflowbedreduce
+         end if
 
          call reduce_double_sum(nombs * nomba, mbamassend, mbamassreduce)
          mbamassend(:, :) = mbamassreduce(:, :)
@@ -481,8 +492,6 @@ contains
          if (jampi == 1) then
             call reduce_double_sum(2 * lsedtot * nombabnd * nombabnd, mbasedflux, mbasedfluxreduce)
             mbasedflux(:, :, :, :) = mbasedfluxreduce(:, :, :, :)
-            call reduce_double_sum(2 * nomba, mbaflowbed, mbaflowbedreduce)
-            mbaflowbed(:, :) = mbaflowbedreduce(:, :)
             call reduce_double_sum(2 * lsedtot * nomba, mbafluxfixbed, mbafluxfixbedreduce)
             mbafluxfixbed(:, :, :) = mbafluxfixbedreduce(:, :, :)
          end if
@@ -493,6 +502,9 @@ contains
       mbaflowsorsintot(:, :) = mbaflowsorsintot(:, :) + mbaflowsorsin(:, :)
       mbaflowrainevatot(:, :) = mbaflowrainevatot(:, :) + mbaflowraineva(:, :)
       mbaflowevatot(:) = mbaflowevatot(:) + mbafloweva(:)
+      if (mba_has_moving_bed) then
+         mbaflowbedtot = mbaflowbedtot + mbaflowbed
+      end if
       mbafluxhortot(:, :, :, :) = mbafluxhortot(:, :, :, :) + mbafluxhor(:, :, :, :)
       mbafluxsorsintot(:, :, :, :) = mbafluxsorsintot(:, :, :, :) + mbafluxsorsin(:, :, :, :)
       mbafluxheattot(:, :) = mbafluxheattot(:, :) + mbafluxheat(:, :)
@@ -501,7 +513,6 @@ contains
       end if
       if (stm_included) then
          mbasedfluxtot(:, :, :, :) = mbasedfluxtot(:, :, :, :) + mbasedflux(:, :, :, :)
-         mbaflowbedtot = mbaflowbedtot + mbaflowbed
          mbafluxfixbedtot = mbafluxfixbedtot + mbafluxfixbed
       end if
 
@@ -541,6 +552,9 @@ contains
       mbaflowsorsin = 0.0_dp
       mbaflowraineva = 0.0_dp
       mbafloweva = 0.0_dp
+      if (mba_has_moving_bed) then
+         mbaflowbed = 0.0_dp
+      end if
       mbafluxhor = 0.0_dp
       mbafluxsorsin = 0.0_dp
       mbafluxheat = 0.0_dp
@@ -548,7 +562,6 @@ contains
 
       if (stm_included) then
          mbasedflux(:, :, :, :) = 0.0_dp
-         mbaflowbed = 0.0_dp
          mbafluxfixbed = 0.0_dp
       end if
 
@@ -1305,7 +1318,6 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1379,7 +1391,7 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
-      if (stm_included) then
+      if (mba_has_moving_bed) then
          call add_name(balance, labelext, labelbedvol)
       end if
    end subroutine mba_prepare_names_flows
@@ -1387,7 +1399,6 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1413,7 +1424,7 @@ contains
          p_mbaflowsorsin => mbaflowsorsintot
          p_mbaflowraineva => mbaflowrainevatot
          p_mbafloweva => mbaflowevatot
-         if (stm_included) then
+         if (mba_has_moving_bed) then
             p_mbaflowbed => mbaflowbedtot
          end if
       else
@@ -1422,7 +1433,7 @@ contains
          p_mbaflowsorsin => mbaflowsorsin
          p_mbaflowraineva => mbaflowraineva
          p_mbafloweva => mbafloweva
-         if (stm_included) then
+         if (mba_has_moving_bed) then
             p_mbaflowbed => mbaflowbed
          end if
       end if
@@ -1470,7 +1481,7 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, p_mbafloweva(imba)])
       end if
-      if (stm_included) then
+      if (mba_has_moving_bed) then
          call add_values(flows, imbf, p_mbaflowbed(:, imba))
       end if
 
@@ -1481,7 +1492,6 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       integer :: jmba !< index of other mass balance area or open boundary
@@ -1532,7 +1542,7 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
-      if (stm_included) then
+      if (mba_has_moving_bed) then
          call add_name(balance, labelext, labelbedvol)
       end if
    end subroutine mba_prepare_names_flows_whole_model
@@ -1540,7 +1550,6 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_sediment, only: stm_included
       use m_mass_balance_area_data
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -1565,7 +1574,7 @@ contains
          p_mbaflowsorsin => mbaflowsorsintot
          p_mbaflowraineva => mbaflowrainevatot
          p_mbafloweva => mbaflowevatot
-         if (stm_included) then
+         if (mba_has_moving_bed) then
             p_mbaflowbed => mbaflowbedtot
          end if
       else
@@ -1574,7 +1583,7 @@ contains
          p_mbaflowsorsin => mbaflowsorsin
          p_mbaflowraineva => mbaflowraineva
          p_mbafloweva => mbafloweva
-         if (stm_included) then
+         if (mba_has_moving_bed) then
             p_mbaflowbed => mbaflowbed
          end if
       end if
@@ -1614,7 +1623,7 @@ contains
       if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, sum(p_mbafloweva(:))])
       end if
-      if (stm_included) then
+      if (mba_has_moving_bed) then
          call add_values(flows, imbf, sum(p_mbaflowbed, 2))
       end if
 
@@ -2538,17 +2547,17 @@ contains
 
          if (ised > 0) then ! sediment
             if (ised <= lsed .and. iflufflyr > 0) then ! not for bedload sediment
-               var(1:nomba) = mbafluffmassend(imbs, :)
-               var(nomba + 1) = sum(mbafluffmassend(imbs, :))
+               var(1:nomba) = mbafluffmassend(ised, :)
+               var(nomba + 1) = sum(mbafluffmassend(ised, :))
                ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_fluff_mass(imbs), var, [1, nc_bal_itime])
             end if
 
-            var(1:nomba) = mbabedmassend(imbs, :)
-            var(nomba + 1) = sum(mbabedmassend(imbs, :))
+            var(1:nomba) = mbabedmassend(ised, :)
+            var(nomba + 1) = sum(mbabedmassend(ised, :))
             ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_bed_mass(imbs), var, [1, nc_bal_itime])
 
-            var(1:nomba) = mbabedshortmassend(imbs, :)
-            var(nomba + 1) = sum(mbabedshortmassend(imbs, :))
+            var(1:nomba) = mbabedshortmassend(ised, :)
+            var(nomba + 1) = sum(mbabedshortmassend(ised, :))
             ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_bedshort_mass(imbs), var, [1, nc_bal_itime])
          end if
 
