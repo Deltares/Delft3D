@@ -54,14 +54,6 @@ dev = [
 [project.scripts]
 testbench = "TestBench:main"
 
-# uv: only lock for the platforms the testbench is run on (x86-64 Windows and Linux). `uv.lock` holds the exact
-# versions; upgrade with `uv lock --upgrade-package <name>`.
-[tool.uv]
-environments = [
-    "sys_platform == 'win32' and platform_machine == 'AMD64'",
-    "sys_platform == 'linux' and platform_machine == 'x86_64'",
-]
-
 # Needed for the editable install: ship `TestBench.py` and the `src` package (imported as `src.*`).
 [tool.setuptools]
 py-modules = ["TestBench"]
