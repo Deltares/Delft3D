@@ -13,7 +13,9 @@ on:
       - "ci/python/pyproject.toml"
       - "ci/python/uv.lock"
       - "test/deltares_testbench/pyproject.toml"
-      - "test/deltares_testbench/pip/*.txt"
+      - "test/deltares_testbench/uv.lock"
+      - "tools/deltares_fortran_styler/pyproject.toml"
+      - "tools/deltares_fortran_styler/uv.lock"
       - ".github/workflows/pip-audit.yml"
   schedule:
     # Weekly, Monday 06:00 UTC.
@@ -44,12 +46,36 @@ jobs:
         run: uvx pip-audit --requirement "${RUNNER_TEMP}/ci-tools-reqs.txt" --no-deps --disable-pip --desc
 
   testbench:
-    # The testbench pins are compiled per platform into test/deltares_testbench/pip/. The dev files are a
-    # superset of the runtime files, so auditing them covers both.
+    # test/deltares_testbench is locked with uv. One uv.lock covers Windows and Linux, and the exported
+    # requirements keep the environment markers (for example pywin32 is Windows-only). pip-audit evaluates
+    # the markers on the machine it runs on, so audit on both operating systems.
     strategy:
       fail-fast: false
       matrix:
-        requirements: [lnx-dev-requirements.txt, win-dev-requirements.txt]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      # pip-audit prints non-ASCII characters; the Windows default code page cannot encode them.
+      PYTHONUTF8: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Export locked requirements
+        working-directory: test/deltares_testbench
+        run: uv export --frozen --all-extras --no-emit-project --no-hashes -o audit-requirements.txt
+
+      - name: Audit dependencies with pip-audit
+        run: uvx pip-audit --requirement test/deltares_testbench/audit-requirements.txt --no-deps --disable-pip --desc
+
+  fortran-styler:
+    # tools/deltares_fortran_styler is locked with uv (no runtime dependencies, only the dev tools).
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -58,8 +84,9 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
 
+      - name: Export locked requirements
+        working-directory: tools/deltares_fortran_styler
+        run: uv export --frozen --all-extras --no-emit-project --no-hashes -o "${RUNNER_TEMP}/styler-reqs.txt"
+
       - name: Audit dependencies with pip-audit
-        run: >
-          uvx pip-audit
-          --requirement test/deltares_testbench/pip/${{ matrix.requirements }}
-          --no-deps --disable-pip --desc
+        run: uvx pip-audit --requirement "${RUNNER_TEMP}/styler-reqs.txt" --no-deps --disable-pip --desc

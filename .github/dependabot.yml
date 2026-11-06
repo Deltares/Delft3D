@@ -9,9 +9,8 @@ updates:
       python-deps:
         patterns: ["*"]
 
-  # Testbench dependency ranges in pyproject.toml. The compiled pip/*-requirements.txt pins are not
-  # picked up by Dependabot and have to be recompiled with `uv pip compile` when these change.
-  - package-ecosystem: "pip"
+  # test/deltares_testbench is locked with uv (uv.lock replaced the pip/*-requirements.txt files)
+  - package-ecosystem: "uv"
     directory: "/test/deltares_testbench"
     schedule:
       interval: "weekly"
