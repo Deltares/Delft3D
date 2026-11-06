@@ -7,7 +7,6 @@ module iso_c_utils
 contains
 
   !> Convert a string to a null-terminated string (C style string).
-  !! Helpful for the F90TW macros, because those expect strings to be null terminated.
   function cstr(string) result(res)
     use iso_c_binding, only: c_null_char
     character(len=*), intent(in) :: string

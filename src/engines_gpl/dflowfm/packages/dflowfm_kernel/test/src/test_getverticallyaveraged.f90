@@ -14,7 +14,7 @@ module test_getverticallyaveraged
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_getverticallyaveraged, test_depth_average_preserves_2d_salinity, test_depth_average_preserves_2d_salinity,
+   !$gtest
    !> A single wet 2D cell must retain its salinity when depth averaged.
    subroutine test_depth_average_preserves_2d_salinity() bind(C)
       real(kind=dp), dimension(1) :: salinity
@@ -31,6 +31,5 @@ contains
 
       deallocate (vol1)
    end subroutine test_depth_average_preserves_2d_salinity
-   !$f90tw)
 
 end module test_getverticallyaveraged
