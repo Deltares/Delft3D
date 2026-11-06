@@ -1427,7 +1427,8 @@ contains
    function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
-                        sensible_heat_flux_available, latent_heat_flux_available, pseudo_air_pressure_available, water_level_correction_available
+                        sensible_heat_flux_available, latent_heat_flux_available, sea_surface_temperature_available, &
+                        pseudo_air_pressure_available, water_level_correction_available
       use m_flowparameters, only: itempforcingtyp
       use stdlib_kinds, only: c_bool
       use tree_data_types
@@ -1526,6 +1527,9 @@ contains
 
       case ('latentheatflux')
          latent_heat_flux_available = .true.
+
+      case ('seasurfacetemperature')
+         sea_surface_temperature_available = .true.
 
       case ('humidity_airtemperature_cloudiness')
          itempforcingtyp = 1
@@ -2128,7 +2132,8 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
-      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation, &
+                        sensible_heat_flux, latent_heat_flux, sea_surface_temperature
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
       use fm_location_types, only: UNC_LOC_S
@@ -2173,6 +2178,9 @@ contains
       case ('latentheatflux')
          call realloc(latent_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('latent_heat_flux(ndx)', ierr, ndx)
+      case ('seasurfacetemperature')
+         call realloc(sea_surface_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sea_surface_temperature(ndx)', ierr, ndx)
       case ('humidity_airtemperature_cloudiness')
          kx = 3
       case ('dewpoint_airtemperature_cloudiness')

@@ -41,23 +41,23 @@ contains
       implicit none
       real(kind=dp) :: dster, taucr, thetcr, pclay, g, d50, rhos, rhow, FCR
       real(kind=dp) :: dsand, dsilt, cmaxs, fch1, cmax, fpack, fclay
-      if (DSTER <= 1.) then
-         THETCR = .24 ! this line added by hk and svdp: critical shields parameter
+      if (DSTER <= 1.0_dp) then
+         THETCR = 0.24_dp ! this line added by hk and svdp: critical shields parameter
       end if
-      if (DSTER <= 4.) then
-         THETCR = 0.115 / (DSTER)**0.5
+      if (1.0_dp < DSTER .and. DSTER <= 4.0_dp) then
+         THETCR = 0.115_dp / (DSTER)**0.5_dp
       end if
-      if (4. < DSTER .and. DSTER <= 10.) then
-         THETCR = .14 * DSTER**(-.64)
+      if (4.0_dp < DSTER .and. DSTER <= 10.0_dp) then
+         THETCR = 0.14_dp * DSTER**(-0.64_dp)
       end if
-      if (10. < DSTER .and. DSTER <= 20.) then
-         THETCR = .04 * DSTER**(-.1)
+      if (10.0_dp < DSTER .and. DSTER <= 20.0_dp) then
+         THETCR = 0.04_dp * DSTER**(-0.1_dp)
       end if
-      if (20. < DSTER .and. DSTER <= 150.) then
-         THETCR = .013 * DSTER**(.29)
+      if (20.0_dp < DSTER .and. DSTER <= 150.0_dp) then
+         THETCR = 0.013_dp * DSTER**(0.29_dp)
       end if
-      if (DSTER > 150.) then
-         THETCR = .055
+      if (DSTER > 150.0_dp) then
+         THETCR = 0.055_dp
       end if
 !Soulsby gives one single formula
 !THETCR=(0.24/DSTER)+0.055*(1.0-exp(-0.02*DSTER))

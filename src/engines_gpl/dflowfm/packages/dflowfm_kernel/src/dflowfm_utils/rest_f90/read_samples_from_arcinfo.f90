@@ -44,7 +44,7 @@ module m_read_samples_from_arcinfo
 contains
 
    subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
-      use m_reaarc, only: reaarc
+      use m_read_arcinfo, only: reaarc
       use m_samples, only: savesam, ns, increasesam, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok, ipsam, ipstat_ok
       use m_arcinfo, only: mca, nca, maxsamarc, x0, dxa, y0, dya, d
       use m_drawthis, only: ndraw

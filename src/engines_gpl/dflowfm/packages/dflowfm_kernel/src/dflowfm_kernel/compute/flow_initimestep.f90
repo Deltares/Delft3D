@@ -68,7 +68,8 @@ contains
       use m_partitioninfo
       use m_sethu
       use fm_external_forcings, only: prepare_air_pressure_temperature_dew_point_temperature, &
-         compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries
+         compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries, &
+         update_sea_surface_temperature
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
@@ -162,6 +163,7 @@ contains
          end if
 
          if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
+            call update_sea_surface_temperature(time0)
             call compute_air_water_interaction_most_fluxes(initialization=.false.)
          end if
 
