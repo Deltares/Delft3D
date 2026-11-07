@@ -8,11 +8,8 @@ from datetime import datetime, timedelta
 from xml.dom import minidom
 
 import numpy as np
-from pandas.plotting import register_matplotlib_converters
 
 import src.utils.comparers.time_series_set_comparer as TimeseriesSetComparer
-
-register_matplotlib_converters()
 
 
 def getTimeColumnAndFormat(descriptionXML):
