@@ -22,7 +22,7 @@ module test_bilinear_geotiff
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_numeric_bands, test_geotiff_numeric_bands,
+   !$gtest
    !> Read floating-point and integer bands without modifying global samples.
    subroutine test_geotiff_numeric_bands() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_numeric.tif'
@@ -62,9 +62,8 @@ contains
          call f90_expect_eq(mysam, saved_mysam)
       end do
    end subroutine test_geotiff_numeric_bands
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_missing_values, test_geotiff_missing_values,
+   !$gtest
    !> Normalize finite and NaN NoData and preserve the missing-corner interpolation rule.
    subroutine test_geotiff_missing_values() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_missing.tif'
@@ -107,9 +106,8 @@ contains
          call f90_expect_near(data%interpolate(21.0_dp, 28.0_dp), dmiss, 0.0_dp)
       end do
    end subroutine test_geotiff_missing_values
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_pixel_coordinates, test_geotiff_pixel_coordinates,
+   !$gtest
    !> GDAL's corner-based geotransform gives pixel centres for both Area and Point rasters.
    subroutine test_geotiff_pixel_coordinates() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_coordinates.tif'
@@ -140,9 +138,8 @@ contains
          end do
       end do
    end subroutine test_geotiff_pixel_coordinates
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_rotation_tolerance, test_geotiff_rotation_tolerance,
+   !$gtest
    !> Match the legacy rotation tolerance for both signs and both geotransform terms.
    subroutine test_geotiff_rotation_tolerance() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_rotation.tif'
@@ -180,9 +177,8 @@ contains
          end do
       end do
    end subroutine test_geotiff_rotation_tolerance
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff, test_geotiff_rejects_invalid_geometry, test_geotiff_rejects_invalid_geometry,
+   !$gtest
    !> Reject rotation, degenerate spacing, and multiple bands without retaining partial data.
    subroutine test_geotiff_rejects_invalid_geometry() bind(C)
       character(len=*), parameter :: filename = 'test_bilinear_invalid.tif'
@@ -214,10 +210,8 @@ contains
          call f90_expect_false(allocated(data%values))
       end do
    end subroutine test_geotiff_rejects_invalid_geometry
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bilinear_geotiff,
-   !$f90tw test_bilinear_arcinfo_geotiff_initial_field, test_bilinear_arcinfo_geotiff_initial_field,
+   !$gtest
    !> Equivalent ArcInfo and GeoTIFF rasters initialize identical water-level fields.
    subroutine test_bilinear_arcinfo_geotiff_initial_field() bind(C)
       use test_init_spatial_fields_integration, only: setup_minimal_grid_with_points, teardown_minimal_grid, parse_spatial_block
@@ -299,7 +293,6 @@ contains
       call delete_test_geotiff(trim(raster_files(2)))
       call delete_test_geotiff(ext_file)
    end subroutine test_bilinear_arcinfo_geotiff_initial_field
-   !$f90tw)
 
    function create_test_geotiff(filename, values, transform, data_type, file_missing, is_point) result(success)
       character(len=*), intent(in) :: filename

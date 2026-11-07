@@ -4,7 +4,7 @@ module test_3d_layer_administration
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_3d_layer_administration, test_layer_height_water_level_consistency, test_layer_height_water_level_consistency,
+   !$gtest
    subroutine test_layer_height_water_level_consistency() bind(C)
       use precision, only: dp
       use m_sets01zbnd, only: sets01zbnd
@@ -64,5 +64,4 @@ contains
       call f90_expect_near(zws(2), s0(1), tolerance, "top layer interface is not consistent with water level")
 
    end subroutine test_layer_height_water_level_consistency
-   !$f90tw)
 end module test_3d_layer_administration
