@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, parameter, location, file_type) -> None:
-    """Plot time series with matplotlib.
+    """Plot time series with matplotlib using NumPy arrays.
 
     Parameters
     ----------
@@ -38,13 +38,9 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     location = location.strip()
     file_type = file_type.strip()
 
-    diff = []
-    for i in range(0, len(yval1)):
-        diff.append(yval2[i] - yval1[i])
-
-    data = {"Reference": yval1, "Test": yval2, "Diff": diff}
-    for name, values in data.items():
-        data[name] = [numpy.nan if numpy.ma.is_masked(value) else float(value) for value in values]
+    reference = numpy.ma.asarray(yval1, dtype=float)
+    test = numpy.ma.asarray(yval2, dtype=float)
+    diff = test - reference
 
     fontP = FontProperties()
     fontP.set_size(7)
@@ -56,8 +52,8 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     fig, axes = plt.subplots(2, 1, figsize=(13, 5.5))
 
     # plot in the two axes
-    for name, style in [("Test", "r-"), ("Reference", "b--")]:
-        axes[0].plot(date_time, data[name], style, label=name)
+    for name, values, style in [("Test", test, "r-"), ("Reference", reference, "b--")]:
+        axes[0].plot(date_time, values, style, label=name)
     title = "Test and Reference Results: {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[0].set_title(title, fontsize=7)
     # axes[0].ticklabel_format(useOffset=False)
@@ -69,7 +65,7 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     axes[0].yaxis.set_major_formatter(y_formatter)
     axes[0].yaxis.set_tick_params(labelsize=7)
 
-    axes[1].plot(date_time, data["Diff"], "b-", label="Test - Reference")
+    axes[1].plot(date_time, diff, "b-", label="Test - Reference")
     title = "Difference (Test-Ref): {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[1].set_title(title, fontsize=7)
     # axes[1].ticklabel_format(useOffset=False)
