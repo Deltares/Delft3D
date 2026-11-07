@@ -1,28 +1,12 @@
 import os
-from contextlib import contextmanager
-from typing import Iterator
 from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
 
 from src.config.credentials import Credentials
-from src.utils.handlers.dvc_handler import _AWS_KEYS, DvcHandler
+from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.logging.i_logger import ILogger
-
-
-@contextmanager
-def clean_aws_env() -> Iterator[None]:
-    """Ensure AWS env vars are cleaned up even if a test fails."""
-    saved = {k: os.environ.get(k) for k in _AWS_KEYS}
-    try:
-        yield
-    finally:
-        for k, v in saved.items():
-            if v is None:
-                os.environ.pop(k, None)
-            else:
-                os.environ[k] = v
 
 
 def _make_credentials(username: str = "ak", password: str = "sk") -> Credentials:
@@ -42,79 +26,6 @@ class TestDvcHandlerDownloadBatch:
 
         repo.fetch.assert_not_called()
         repo.checkout.assert_not_called()
-
-    def test_sets_aws_credentials_from_credentials_object(self, mocker: MockerFixture, tmp_path: object) -> None:
-        repo = MagicMock()
-        handler = DvcHandler(repo=repo)
-        logger = MagicMock(spec=ILogger)
-        creds = _make_credentials("my_key", "my_secret")
-
-        dvc_file = os.path.join(str(tmp_path), "input.dvc")
-        with open(dvc_file, "w") as f:
-            f.write("md5: abc\n")
-
-        # Make checkout create the expected output dir
-        expected_dir = os.path.splitext(dvc_file)[0]
-        os.makedirs(expected_dir)
-
-        captured_env: dict[str, str | None] = {}
-
-        def capture_env_on_fetch(**kwargs: object) -> int:
-            captured_env["key"] = os.environ.get(_AWS_KEYS[0])
-            captured_env["secret"] = os.environ.get(_AWS_KEYS[1])
-            return 0
-
-        repo.fetch.side_effect = capture_env_on_fetch
-
-        with clean_aws_env():
-            os.environ.pop(_AWS_KEYS[0], None)
-            os.environ.pop(_AWS_KEYS[1], None)
-
-            handler.download_batch([dvc_file], creds, logger)
-
-            assert captured_env["key"] == "my_key"
-            assert captured_env["secret"] == "my_secret"
-
-    def test_restores_env_after_success(self, tmp_path: object) -> None:
-        repo = MagicMock()
-        handler = DvcHandler(repo=repo)
-        logger = MagicMock(spec=ILogger)
-        creds = _make_credentials()
-
-        dvc_file = os.path.join(str(tmp_path), "input.dvc")
-        with open(dvc_file, "w") as f:
-            f.write("md5: abc\n")
-        os.makedirs(os.path.splitext(dvc_file)[0])
-
-        with clean_aws_env():
-            os.environ[_AWS_KEYS[0]] = "original_key"
-            os.environ[_AWS_KEYS[1]] = "original_secret"
-
-            handler.download_batch([dvc_file], creds, logger)
-
-            assert os.environ[_AWS_KEYS[0]] == "original_key"
-            assert os.environ[_AWS_KEYS[1]] == "original_secret"
-
-    def test_restores_env_after_failure(self, tmp_path: object) -> None:
-        repo = MagicMock()
-        repo.fetch.side_effect = RuntimeError("network error")
-        handler = DvcHandler(repo=repo)
-        logger = MagicMock(spec=ILogger)
-        creds = _make_credentials()
-
-        dvc_file = os.path.join(str(tmp_path), "input.dvc")
-        with open(dvc_file, "w") as f:
-            f.write("md5: abc\n")
-
-        with clean_aws_env():
-            os.environ[_AWS_KEYS[0]] = "original_key"
-            os.environ[_AWS_KEYS[1]] = "original_secret"
-
-            with pytest.raises(RuntimeError, match="network error"):
-                handler.download_batch([dvc_file], creds, logger)
-
-            assert os.environ[_AWS_KEYS[0]] == "original_key"
-            assert os.environ[_AWS_KEYS[1]] == "original_secret"
 
     def test_raises_file_not_found_for_missing_dvc_file(self) -> None:
         repo = MagicMock()

@@ -34,22 +34,6 @@ class TestCredentialHandler:
         # Assert
         assert result == status
 
-    def test_get_credentials(self, fs: FakeFilesystem) -> None:
-        # Arrange
-        credentials = Credentials()
-        credentials.username = "test"
-        credentials.password = "test"
-        handler = CredentialHandler(credentials=credentials)
-        fs.create_file("cred_file", contents=self.setup_content())
-        handler.cred_path = Path("cred_file")
-
-        # Act
-        handler.get_credentials()
-
-        # Assert
-        assert credentials.username == "testname"
-        assert credentials.password == "testpass"
-
     @pytest.mark.parametrize(
         ("username", "password", "status"),
         [

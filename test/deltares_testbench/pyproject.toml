@@ -30,10 +30,6 @@ dependencies = [
     "pandas ~= 2.3.3",
     "matplotlib ~= 3.11.1",
     "numpy ~= 1.26.4",
-    "minio ~= 7.2.20",
-    "s3-path-wrangler ~= 0.5",
-    "urllib3 >= 2.6.3",
-    "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'",
     "dvc ~= 3.67.1",
     "dvc-s3 ~= 3.3.0",
 ]
@@ -46,7 +42,6 @@ dev = [
     "pytest-cov ~= 6.1.1",
     "pytest-mock ~= 3.12",
     "ruff ~= 0.15",
-    "requests ~= 2.32",
 ]
 
 # Optional console command, available after an editable install (`pip install -e .`) from this directory.
@@ -76,9 +71,7 @@ exclude = [
     ".vscode",
     "build",
     "dist",
-    "thirdparty",  # Contains python2 code.
-    "conversion",  # Contains python2 code.
-    "conversion-sobek",  # Contains python2 code.
+    "thirdparty",
 ]
 
 [tool.ruff.format]
@@ -149,13 +142,10 @@ addopts = """\
     --verbose \
     --junitxml=logs/pytest_results.xml \
     -W error \
-    --ignore=conversion \
-    --ignore=conversion-sobek \
     --ignore=src \
     --ignore=thirdparty \
-    --ignore=tools \
 """
-testpaths = ["test", "tools/minio/utils.py"]
+testpaths = ["test"]
 junit_family = "xunit2"
 junit_log_passing_tests = true
 junit_logging = "log"

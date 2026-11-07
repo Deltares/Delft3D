@@ -2,8 +2,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from minio.credentials.providers import AWSConfigProvider
-
 from src.config.credentials import Credentials
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.log_level import LogLevel
@@ -69,17 +67,6 @@ class CredentialHandler:
             self.logger.error("No credentials provided and no credential file is available.")
             self.credentials_instruction()
             return
-
-        self.get_credentials()
-
-    def get_credentials(self) -> AWSConfigProvider:
-        """Get credentials from file."""
-        provider = AWSConfigProvider(filename=str(self.cred_path), profile=self.profile)
-        if self.credentials is not None:
-            credentials = provider.retrieve()
-            self.credentials.username = credentials.access_key
-            self.credentials.password = credentials.secret_key
-        return provider
 
     def credential_file_exists(self) -> bool:
         """Find credential file in home directory and return if exist."""

@@ -644,48 +644,20 @@ class TestSetRunner(ABC):
                             absLocation = os.path.abspath(
                                 Paths().mergeFullPath(candidate_source, program_configuration.path)
                             )
-                            if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
-                                if os.path.exists(absLocation):
-                                    self.__logger.debug(
-                                        f"detected local path for program {program_configuration.name}, using {absLocation}"
-                                    )
-                                    program_configuration.absolute_bin_path = absLocation
-                                    resolved = True
-                                    break
-                        if not resolved:
-                            if Paths().isPath(sourceLocation):
-                                # Use engines_path as default when not found locally
-                                absLocation = os.path.abspath(
-                                    Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                            if os.path.exists(absLocation):
+                                self.__logger.debug(
+                                    f"detected local path for program {program_configuration.name}, using {absLocation}"
                                 )
-                                self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 program_configuration.absolute_bin_path = absLocation
-                            else:
-                                # download it from a remote location
-                                if loc.version:
-                                    to = loc.to_path + "_" + loc.version
-                                else:
-                                    to = loc.to_path
-                                program_local_path = Paths().rebuildToLocalPath(
-                                    os.path.join(self.__settings.local_paths.engines_path, to)
-                                )
-
-                                # if the program is remote (network or other) and it does not exist locally, download it
-                                if not os.path.exists(program_local_path):
-                                    self.__logger.debug(
-                                        f"Downloading program, {program_configuration.name} from {sourceLocation}"
-                                    )
-                                    HandlerFactory.download(
-                                        sourceLocation,
-                                        program_local_path,
-                                        self.programs,
-                                        self.__logger,
-                                        loc.credentials,
-                                        loc.version,
-                                    )
-                                program_configuration.absolute_bin_path = os.path.abspath(
-                                    Paths().mergeFullPath(program_local_path, program_configuration.path)
-                                )
+                                resolved = True
+                                break
+                        if not resolved and Paths().isPath(sourceLocation):
+                            # Use engines_path as default when not found locally
+                            absLocation = os.path.abspath(
+                                Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                            )
+                            self.__logger.warning(f"could not yet detect specified program {absLocation}")
+                            program_configuration.absolute_bin_path = absLocation
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
             elif not Paths().isPath(program_configuration.path):
