@@ -673,7 +673,7 @@ contains
 
          if (hs(k1) > 1.0e-2_dp) then
             ! NOTE: pump area-weighting across links is uniform for all links (au=1).
-            au(L) = 1.0_dp
+            ! au(L) = 1.0_dp
             hu(L) = 1.0_dp ! UNST-5835: restored original hu(L) = 1d0, originally set in furu(). Currently furu() resets it to 0d0 already while treating "old" structures.
             ap = ap + au(L)
             vp1 = vp1 + vol1(k1)
