@@ -179,6 +179,17 @@ module m_unstruc_netcdf_data
       integer :: id_hs(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_vol1(MAX_ID_VAR) = -1 !< Variable ID for volume
       integer :: id_au(MAX_ID_VAR) = -1 !< Variable ID for flow area
+      integer :: id_au_main(MAX_ID_VAR) = -1 !< Variable ID for main channel flow area
+      integer :: id_au_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain flow area
+      integer :: id_au_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain flow area
+      integer :: id_hydraulic_radius(MAX_ID_VAR) = -1 !< Variable ID for total 1D hydraulic radius
+      integer :: id_hydraulic_radius_main(MAX_ID_VAR) = -1 !< Variable ID for main channel hydraulic radius
+      integer :: id_hydraulic_radius_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain hydraulic radius
+      integer :: id_hydraulic_radius_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain hydraulic radius
+      integer :: id_flow_width(MAX_ID_VAR) = -1 !< Variable ID for total 1D water-surface flow width
+      integer :: id_flow_width_main(MAX_ID_VAR) = -1 !< Variable ID for main channel flow width
+      integer :: id_flow_width_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain flow width
+      integer :: id_flow_width_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain flow width
       integer :: id_taus(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausmax(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_tausx(MAX_ID_VAR) = -1 !< Variable ID for
@@ -199,6 +210,8 @@ module m_unstruc_netcdf_data
       integer :: id_hu(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_q1(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_q1main(MAX_ID_VAR) = -1 !< Variable ID for main channel discharge (1D quantity)
+      integer :: id_q1floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain discharge (1D quantity)
+      integer :: id_q1floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain discharge (1D quantity)
       integer :: id_fwel(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_u1(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_u0(MAX_ID_VAR) = -1 !< Variable ID for
@@ -223,6 +236,9 @@ module m_unstruc_netcdf_data
       integer :: id_cftrt(MAX_ID_VAR) = -1 !< Variable ID for netlink data of friction from trachytopes
       integer :: id_czs(MAX_ID_VAR) = -1 !< Variable ID for flow node data of chezy roughness
       integer :: id_czu(MAX_ID_VAR) = -1 !< Variable ID for flow link data of chezy roughness
+      integer :: id_czu_main(MAX_ID_VAR) = -1 !< Variable ID for main channel Chezy on flow links
+      integer :: id_czu_floodplain1(MAX_ID_VAR) = -1 !< Variable ID for first floodplain Chezy on flow links
+      integer :: id_czu_floodplain2(MAX_ID_VAR) = -1 !< Variable ID for second floodplain Chezy on flow links
       integer :: id_cfu(MAX_ID_VAR) = -1 !< Variable ID for flow link data of input roughness
       integer :: id_cfutyp(MAX_ID_VAR) = -1 !< Variable ID for flow link data of input roughness type
       integer :: id_qsun(MAX_ID_VAR) = -1 !< Variable ID for
