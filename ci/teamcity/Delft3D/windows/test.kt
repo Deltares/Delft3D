@@ -119,9 +119,7 @@ object WindowsTest : BuildType({
                 set PYTHONDONTWRITEBYTECODE=1
                 set PYTHONFAULTHANDLER=1
 
-                set argsList=--username %dvc_testbench_accesskey% ^
-                --password %dvc_testbench_secret% ^
-                --compare ^
+                set argsList=--compare ^
                 --config configs/%configfile% ^
                 --filter testcase=%case_filter% ^
                 --log-level DEBUG ^
@@ -157,6 +155,8 @@ object WindowsTest : BuildType({
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
                 --mount type=bind,source=C:/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
+                --env AWS_ACCESS_KEY_ID=%dvc_testbench_accesskey%
+                --env AWS_SECRET_ACCESS_KEY=%dvc_testbench_secret%
             """.trimIndent()
         }
         script {
