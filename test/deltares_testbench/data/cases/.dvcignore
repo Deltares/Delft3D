@@ -1,0 +1,72 @@
+# IMPORTANT: Keep the binary extensions and DVC-only exceptions in sync with .gitignore.
+
+# Track non-binary files in these suites with Git; other folders stay fully DVC-owned.
+/e02_dflowfm/**
+
+# Track all data in these validation folders with DVC.
+!/e02_dflowfm/f090_validation_realworld/**
+!/e02_dflowfm/f107_1d2d_validation/**
+
+# The following extensions are always tracked by DVC.
+# .avi
+!**/*.[aA][vV][iI]
+# .bin
+!**/*.[bB][iI][nN]
+# .bmp
+!**/*.[bB][mM][pP]
+# .db
+!**/*.[dD][bB]
+# .dbf
+!**/*.[dD][bB][fF]
+# .dll
+!**/*.[dD][lL][lL]
+# .docx
+!**/*.[dD][oO][cC][xX]
+# .dsproj
+!**/*.[dD][sS][pP][rR][oO][jJ]
+# .gz
+!**/*.[gG][zZ]
+# .jpg
+!**/*.[jJ][pP][gG]
+# .mat
+!**/*.[mM][aA][tT]
+# .nc
+!**/*.[nN][cC]
+# .nda
+!**/*.[nN][dD][aA]
+# .ndf
+!**/*.[nN][dD][fF]
+# .pcx
+!**/*.[pP][cC][xX]
+# .pdf
+!**/*.[pP][dD][fF]
+# .png
+!**/*.[pP][nN][gG]
+# .qgz
+!**/*.[qQ][gG][zZ]
+# .shp
+!**/*.[sS][hH][pP]
+# .shx
+!**/*.[sS][hH][xX]
+# .so
+!**/*.[sS][oO]
+# .tif
+!**/*.[tT][iI][fF]
+# .wdi
+!**/*.[wW][dD][iI]
+# .wdo
+!**/*.[wW][dD][oO]
+# .wdx
+!**/*.[wW][dD][xX]
+# .xls
+!**/*.[xX][lL][sS]
+# .xlsx
+!**/*.[xX][lL][sS][xX]
+# .zip
+!**/*.[zZ][iI][pP]
+
+# Keep directories traversable and DVC/ignore metadata in Git.
+!**/
+**/*.dvc
+**/.gitignore
+**/.dvcignore
