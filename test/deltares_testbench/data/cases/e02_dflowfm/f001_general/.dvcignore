@@ -1,0 +1,4 @@
+# Keep in sync with .dvcignore to ensure files are tracked by either git or dvc!
+
+**/*.mdu
+**/*.ext
