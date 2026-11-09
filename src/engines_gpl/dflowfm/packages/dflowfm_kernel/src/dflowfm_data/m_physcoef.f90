@@ -57,8 +57,8 @@ module m_physcoef
    real(kind=dp) :: maximum_friction_coefficient !< [-] Maximum friction coefficient for variable frcu. {former:frcmax}
    integer :: dynamic_vegetation_roughness_enabled !< [-] Effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction. 0=off, 1=on.
    real(kind=dp) :: manning_friction_no_vegetation !< [s/m^(1/3)] Base Manning friction without vegetation.
-   real(kind=dp) :: droot !< [m] Root depth for dynamic roughness vegetation, range 0-100m, default 0.5m.
-   real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
+   real(kind=dp) :: dynamic_vegetation_root_depth !< [m] Root depth for dynamic roughness vegetation, range 0-100m.
+   real(kind=dp) :: dynamic_vegetation_stem_height !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
    integer :: uniform_friction_type !< [-] Uniform friction type (0: chezy, 1: manning, 2: white colebrook D3D, 3: white colebrook Waqua (now only 2D)). {former:ifrctypuni}
    real(kind=dp) :: uniform_friction_coefficient_linear !< [-] Uniform linear friction coefficient. {former:frcunilin}
@@ -178,8 +178,8 @@ contains
       locsaltmax = 10.0_dp
       NFEntrainmentMomentum = 0
       dynamic_vegetation_roughness_enabled = 0
-      droot = 0.5_dp
-      dstem = 0.5_dp
+      dynamic_vegetation_root_depth = 0.5_dp
+      dynamic_vegetation_stem_height = 0.5_dp
       manning_friction_no_vegetation = 2.3e-2_dp
       tracer_concentration_min = -huge(1.0_dp)
       tracer_concentration_min_enabled = .false.
