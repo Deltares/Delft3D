@@ -1174,7 +1174,6 @@ contains
 
       call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient2D', uniform_friction_coefficient_2D, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoef' if 'uniformFrictionCoefficient2D' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient_2D)
       end if
 
@@ -1184,31 +1183,26 @@ contains
 
       call prop_get(md_ptr, 'physics', 'uniformFrictiontype', uniform_friction_type, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictType' if 'uniformFrictiontype' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
       end if
 
       call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoef1D' if 'uniformFrictionCoefficient1D' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D)
       end if
 
       call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoef1D2D' if 'uniformFrictionCoefficient1D2D' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
       end if
 
       call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficientLinear', uniform_friction_coefficient_linear, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoefLin' if 'uniformFrictionCoefficientLinear' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_friction_coefficient_linear)
       end if
 
       call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficientGroundlayer', uniform_friction_coefficient_groundlayer, success)
       if (.not. success) then
-         ! Fallback to deprecated property name 'UnifFrictCoef1DgrLay' if 'uniformFrictionCoefficientGroundlayer' is not found.
          call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', uniform_friction_coefficient_groundlayer)
       end if
 
