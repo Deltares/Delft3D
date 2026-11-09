@@ -79,7 +79,7 @@ class TestBenchParameterParser:
         # Determine type of run
         settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
         settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
-        settings.credentials = cls.__get_credentials(args, settings.teamcity, settings.log_level)
+        settings.credentials = cls.__get_credentials(args, settings.log_level)
 
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
@@ -139,7 +139,7 @@ class TestBenchParameterParser:
         return return_value
 
     @classmethod
-    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool, log_level: LogLevel) -> Credentials:
+    def __get_credentials(cls, args: Namespace, log_level: LogLevel) -> Credentials:
         credentials = Credentials()
         credential_handler = CredentialHandler(credentials=credentials, log_level=log_level)
         credentials.name = "commandline"
@@ -147,11 +147,8 @@ class TestBenchParameterParser:
         is_interactive = cls.__get_argument_value("interactive", args) or False
         make_interactive = not credential_handler.credential_file_exists() and is_interactive
         credentials.username = cls.__get_argument_value("username", args, make_interactive) or ""
-
         credentials.password = cls.__get_argument_value("password", args, make_interactive, True) or ""
-
-        if not is_active_directory_user:
-            credential_handler.setup_credentials(is_interactive)
+        credential_handler.setup_credentials(is_interactive)
         return credentials
 
     @classmethod
