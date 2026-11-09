@@ -404,7 +404,7 @@ class MapMergeTest(unittest.TestCase):
                 )
         return path
 
-    def merge(self, files, error=None):
+    def merge(self, files, error=None, cwd=None):
         output = self.root / "merged.nc"
         result = subprocess.run(
             [
@@ -419,6 +419,7 @@ class MapMergeTest(unittest.TestCase):
             capture_output=True,
             text=True,
             timeout=60,
+            cwd=cwd,
         )
         log = result.stdout + result.stderr
         self.assertEqual(result.returncode, 0, log)
@@ -585,6 +586,77 @@ class MapMergeTest(unittest.TestCase):
             np.testing.assert_array_equal(
                 ds["mesh1d_layered_vector"][:], [expected, expected + 0.5]
             )
+
+    def prepare_mdu(self, outputdir=None):
+        mdu = self.root / "model.mdu"
+        mdu.write_text(
+            "[output]\nOutputDir = " + (outputdir or "") + " # map output\n",
+            encoding="ascii",
+        )
+        directory = self.root / (outputdir or "DFM_OUTPUT_model")
+        directory.mkdir(parents=True, exist_ok=True)
+        for rank in (2, 5):
+            path = self.partition(rank)
+            if path.parent != directory:
+                path.replace(directory / path.name)
+        return mdu
+
+    def test_discover_from_mdu_default_outputdir(self):
+        mdu = self.prepare_mdu()
+        directory = self.root / "DFM_OUTPUT_model"
+        for name in ("model_map.nc", "model_merged_map.nc", "other_0000_map.nc"):
+            (directory / name).write_text("must not be read", encoding="ascii")
+        with Dataset(self.merge([mdu])) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_discover_from_mdu_relative_and_absolute_outputdirs(self):
+        for outputdir in (
+            "results with spaces",
+            str(self.root / "absolute results"),
+            ".",
+        ):
+            with self.subTest(outputdir=outputdir):
+                with Dataset(self.merge([self.prepare_mdu(outputdir)])) as ds:
+                    self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_discover_from_uppercase_mdu(self):
+        mdu = self.prepare_mdu()
+        renamed = mdu.with_suffix(".MDU")
+        mdu.rename(renamed)
+        with Dataset(self.merge([renamed])) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_mdu_without_partition_maps_is_reported(self):
+        mdu = self.root / "model.mdu"
+        mdu.write_text("[output]\n", encoding="ascii")
+        self.merge([mdu], error="no partition map files found")
+
+    def test_discover_from_model_name_without_mdu(self):
+        for rank in (2, 5):
+            self.partition(rank)
+        with Dataset(self.merge([self.root / "model.mdu"])) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_discover_from_model_name_in_current_directory(self):
+        for rank in (2, 5):
+            self.partition(rank)
+        with Dataset(self.merge(["model.mdu"], cwd=self.root)) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_missing_mdu_without_matching_maps_is_reported(self):
+        self.merge([self.root / "missing.mdu"], error="no partition map files found")
+
+    def test_mdu_with_custom_mapfile_is_reported(self):
+        mdu = self.root / "model.mdu"
+        mdu.write_text("[output]\nMapFile = custom.nc\n", encoding="ascii")
+        self.merge([mdu], error="supply custom map filenames explicitly")
+
+    def test_mdu_cannot_be_combined_with_other_inputs(self):
+        mdu = self.prepare_mdu()
+        path = self.partition(2)
+        self.merge(
+            [path, mdu], error="either one base MDU or an explicit map-file list"
+        )
 
     def test_mixed_mesh_and_contacts(self):
         files = [

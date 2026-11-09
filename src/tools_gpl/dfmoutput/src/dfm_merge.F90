@@ -52,20 +52,128 @@ contains
 !! Typically this routine should be used on output of a parallel run,
 !! i.e., on files <modelname>_000x_map.nc
    function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
+      use string_module, only: str_tolower
+
       character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input filenames.
       integer, intent(in) :: nfiles !< Number of supplied filenames.
       character(len=MAXNAMELEN), intent(inout) :: outfile !< Output filename, derived when empty.
       logical, intent(in) :: force !< Overwrite without prompting.
       integer :: ierr !< Zero on success.
       character(len=MAXNAMELEN), allocatable :: partitions(:)
+      integer :: ii, nlen
 
       partitions = infiles(1:nfiles)
+      do ii = 1, nfiles
+         nlen = len_trim(infiles(ii))
+         if (nlen < 4) then
+            cycle
+         end if
+         if (str_tolower(infiles(ii)(nlen - 3:nlen)) == '.mdu') then
+            if (nfiles /= 1) then
+               write (*, '(a)') 'Error: mapmerge: supply either one base MDU or an explicit map-file list, not both.'
+               ierr = 1
+               return
+            end if
+            call dfm_mapfiles_from_mdu(trim(infiles(ii)), partitions, ierr)
+            if (ierr /= 0) then
+               return
+            end if
+         end if
+      end do
       call dfm_order_by_partition(partitions, ierr)
       if (ierr /= 0) then
          return
       end if
       ierr = dfm_merge_partitioned_mapfiles(partitions, size(partitions), outfile, force)
    end function dfm_merge_mapfiles
+
+!> Discover partition maps using an MDU's OutputDir, or beside its name when the MDU is absent.
+   subroutine dfm_mapfiles_from_mdu(mdufile, files, ierr)
+      use properties, only: tree_data, tree_create, tree_destroy, prop_file, prop_get_alloc_string
+      use m_combinepaths, only: combinepaths
+      use system_utils, only: FILESEP
+
+      character(len=*), intent(in) :: mdufile !< Base MDU filename or naming template.
+      character(len=MAXNAMELEN), allocatable, intent(out) :: files(:) !< Existing partition map filenames.
+      integer, intent(out) :: ierr !< Zero on success.
+
+      type(tree_data), pointer :: model => null()
+      character(len=:), allocatable :: basename, outputdir, mapfile, filename
+      character(len=MAXNAMELEN), allocatable :: found(:)
+      character(len=1024) :: message
+      character(len=4) :: rank
+      integer :: separator, partition, count, ios
+      logical :: exists
+
+      ierr = 0
+      inquire(file=mdufile, exist=exists, iostat=ios)
+      if (ios /= 0) then
+         write (*, '(a)') 'Error: mapmerge: cannot inspect MDU `'//mdufile//'''.'
+         ierr = ios
+         return
+      end if
+      outputdir = '.'
+      if (exists) then
+         call tree_create('mapmerge-input', model)
+         call prop_file('ini', mdufile, model, ierr, message)
+         if (ierr /= 0) then
+            write (*, '(a)') 'Error: mapmerge: cannot read MDU `'//mdufile//''': '//trim(message)
+            call tree_destroy(model)
+            return
+         end if
+         outputdir = ''
+         mapfile = ''
+         call prop_get_alloc_string(model, 'output', 'OutputDir', outputdir)
+         call prop_get_alloc_string(model, 'output', 'MapFile', mapfile)
+         call tree_destroy(model)
+         if (len_trim(mapfile) /= 0) then
+            write (*, '(a)') 'Error: mapmerge: automatic discovery requires an empty MapFile setting; supply custom map filenames explicitly.'
+            ierr = 1
+            return
+         end if
+      else
+         write (*, '(a)') 'Info: mapmerge: MDU not found; discovering partition maps beside `'//mdufile//''' using its model name.'
+      end if
+
+      separator = scan(mdufile, '/'//achar(92), back=.true.)
+      basename = mdufile(separator + 1:len_trim(mdufile) - 4)
+      if (len_trim(basename) == 0) then
+         write (*, '(a)') 'Error: mapmerge: the base MDU must have a model name.'
+         ierr = 1
+         return
+      end if
+      if (len_trim(outputdir) == 0) then
+         outputdir = 'DFM_OUTPUT_'//basename
+      end if
+      allocate(found(10000))
+      count = 0
+      do partition = 0, 9999
+         write (rank, '(i4.4)') partition
+         filename = combinepaths(mdufile, trim(outputdir)//FILESEP//basename//'_'//rank//'_map.nc')
+         if (len(filename) > MAXNAMELEN) then
+            write (*, '(a)') 'Error: mapmerge: discovered input path exceeds the supported filename length.'
+            ierr = 1
+            return
+         end if
+         inquire(file=filename, exist=exists, iostat=ios)
+         if (ios /= 0) then
+            write (*, '(a)') 'Error: mapmerge: cannot inspect `'//filename//'''.'
+            ierr = ios
+            return
+         end if
+         if (exists) then
+            count = count + 1
+            found(count) = filename
+         end if
+      end do
+      if (count == 0) then
+         write (*, '(a)') 'Error: mapmerge: no partition map files found in `'//outputdir//''' for model `'//basename//'''.'
+         ierr = 1
+         return
+      end if
+      files = found(:count)
+      write (*, '(a,i0,a)') 'Info: mapmerge: discovered ', count, ' partition map files from `'//mdufile//'''.'
+   end subroutine dfm_mapfiles_from_mdu
 
 !> Merge partition-indexed inputs; empty slots represent partitions outside the output selection.
    function dfm_merge_partitioned_mapfiles(infiles, nfiles, outfile, force) result(ierr)
@@ -3167,4 +3275,3 @@ contains
    end function is_integer_kind
 
 end module dfm_merge
-
