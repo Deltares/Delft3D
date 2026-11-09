@@ -2,19 +2,22 @@ This repository contains the specifications for Delft3D FM kernel input files. T
 
 
 **Table of contents**
+- [Changelogs](#changelogs)
 - [Repository Contents](#repository-contents)
 - [Supported Files](#supported-files)
 - [Contributing to this repository](#contributing-to-this-repository)
   - [Making changes](#making-changes)
   - [Releasing on GitHub](#releasing-on-github)
-    - [Official Delft3D FM release](#official-delft3d-fm-release)
 - [Initiative](#initiative)
   - [Motivation](#motivation)
   - [Requirements \& decisions](#requirements--decisions)
-    - [General requirements](#general-requirements)
-    - [File Format Requirements](#file-format-requirements)
   - [Vision \& roadmap](#vision--roadmap)
 
+# Changelogs
+
+- [MDU changelog (2027.01 - main)](changelogs/dflowfm/2027.01_to_main_mdu_changelog.md)
+- [MDU changelog (2026.02 - 2027.01)](changelogs/dflowfm/2026.02_to_2027.01_mdu_changelog.md)
+- [MDU changelog (2026.01 - 2026.02)](changelogs/dflowfm/2026.01_to_2026.02_mdu_changelog.md)
 
 # Repository Contents
 

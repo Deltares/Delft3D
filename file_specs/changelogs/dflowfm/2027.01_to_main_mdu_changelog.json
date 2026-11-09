@@ -1,0 +1,352 @@
+{
+  "schema_version": "1.0.0",
+  "specification_file": "specifications/dflowfm/mdu.json",
+  "source_commit": {
+    "sha": "35335413178704caa3eacb344012b55785462512",
+    "date": "2026-09-08 09:29:38 +0200",
+    "subject": "UNST-10308: Revert to old Forester filter behaviour (#99)",
+    "ref": "2027.01"
+  },
+  "target_commit": {
+    "sha": "9bc2f1a59a6878a876e690e2be3e7ddf4863c058",
+    "date": "2026-11-09 17:31:26 +0100",
+    "subject": "Auto-generate Markdown docs",
+    "ref": "origin/generate_changelogs"
+  },
+  "changes": [
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": null,
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airSeaInteractionModel",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airTemperatureForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airViscousHeatCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "AirViscousMoistureCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airViscousMomentumCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "charnockCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "freeConvection",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "humidityForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "QsatFactor",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "rainTemperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "salinityDependentEvaporationMethod",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "stabilityFunction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "windForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "10"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "44"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "8"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "9"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "1"
+      },
+      "field": "description",
+      "old_value": "sobekGS_OMP",
+      "new_value": "Sobek Guus Stelling solver with OpenMP parallelization"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "2"
+      },
+      "field": "description",
+      "old_value": "sobekGS_OMPthreadsafe",
+      "new_value": "Thread-safe Sobek Guus Stelling solver with OpenMP parallelization"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.comment",
+      "new_value": "Sobek Guus Stelling solver without OpenMP is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "description",
+      "old_value": "sobekGS",
+      "new_value": "Sobek Guus Stelling solver without OpenMP"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "4"
+      },
+      "field": "description",
+      "old_value": "sobekGS + Saad-ILUD (default sequential)",
+      "new_value": "Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.comment",
+      "new_value": "Global Saad solver is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "6"
+      },
+      "field": "description",
+      "old_value": "PETSc (default parallel)",
+      "new_value": "PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.comment",
+      "new_value": "Windows MPI solver is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "description",
+      "old_value": "CG+MILU (parallel)",
+      "new_value": "Conjugate Gradient + MILU (parallel)"
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "old_value": "2025-10-01"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "deprecated",
+      "new_value": "obsolete"
+    }
+  ]
+}

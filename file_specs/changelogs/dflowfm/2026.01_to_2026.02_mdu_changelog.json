@@ -1,0 +1,345 @@
+{
+  "schema_version": "1.0.0",
+  "specification_file": "specifications/dflowfm/mdu.json",
+  "source_commit": {
+    "sha": "f2fc1b1d6d5fd322eb1a7943676aee65d1957982",
+    "date": "2025-10-16 14:54:22 +0200",
+    "subject": "UNST-5331: Add 'verticalAdvectionType' to MDU file (#18)",
+    "ref": "2026.01"
+  },
+  "target_commit": {
+    "sha": "411d45a19ef07bfadce905d0ca809fa79fe9c755",
+    "date": "2026-04-07 08:56:56 +0000",
+    "subject": "Auto-generate Markdown docs",
+    "ref": "2026.02"
+  },
+  "changes": [
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "zLayerGrowthFactor",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "geometry",
+        "property": "dthdth1D",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "geometry",
+        "property": "orgFloorLevTopLayDef",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterMethod",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": "internalNetlinksEdge",
+      "new_value": "allNetlinksLoop"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterTolerance",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 0.001,
+      "new_value": 1e-15
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "kmx",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Number of vertical layers. NB. If keyword `sigmaGrowthFactor` is used, then number of layers is determined by D-Flow FM.",
+      "new_value": "Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM."
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "geometry",
+        "property": "layerType",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "layerType",
+        "enum_value": "2"
+      },
+      "field": "description",
+      "old_value": "z-layers",
+      "new_value": "z- or z-sigma-layers"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "sigmaGrowthFactor",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "tSigma",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "tSigma",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Sigma adaptation period for `Layertype`=4.",
+      "new_value": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers)."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "uniformWidth1D",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Uniform width for channel profiles not specified by profLoc.",
+      "new_value": "Uniform width for 1D profiles and 1D2D internal links."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "uniformWidth1D",
+        "enum_value": null
+      },
+      "field": "unit",
+      "new_value": "m"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "vertPlizFile",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "vertPlizFile",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp.",
+      "new_value": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions)."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "minWaterlevelChangeBreak",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "pillarFarFieldVelocity",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "minTimeStepBreak",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "research"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypSal",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypTem",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "ncHisDataPrecision",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": "double",
+      "new_value": "single"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "ncMapDataPrecision",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": "double",
+      "new_value": "single"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "freeConvectionCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "physics",
+        "property": "jadelvappos",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Auto timestepping.",
+      "new_value": "Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": "4"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": "0"
+      },
+      "field": "description",
+      "old_value": "no",
+      "new_value": "Use no CFL timestep limit (use constant timestepping)"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": "1"
+      },
+      "field": "description",
+      "old_value": "2D (hor. out)",
+      "new_value": "For 2D-models; use outflows in CFL timestep limit"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": "3"
+      },
+      "field": "description",
+      "old_value": "3D (hor. out)",
+      "new_value": "For 3D-models; use horizontal outflows (per cell-layer) in CFL timestep limit"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "time",
+        "property": "autoTimestep",
+        "enum_value": "5"
+      },
+      "field": "description",
+      "old_value": "3D (hor. inout + ver. inout), smallest dt",
+      "new_value": "For 3D-models; use in- or outflows (per cell-column) in CFL timestep limit"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "wind",
+        "property": "icdTyp",
+        "enum_value": "7"
+      },
+      "field": "description",
+      "old_value": "Hersbach 2010 (2 pts)",
+      "new_value": "Hersbach 2011 (2 pts)"
+    }
+  ]
+}

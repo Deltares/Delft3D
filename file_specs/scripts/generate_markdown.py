@@ -13,12 +13,13 @@ Usage:
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 import sys
 from typing import List, Optional
 
-from ini_spec import (
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from data.ini_spec import (
     DateTimeFormatType,
     FileFormatType,
     IniFileSpec,

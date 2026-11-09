@@ -6,6 +6,10 @@ permissions:
 on:
   push:
     branches: ["**"]
+    paths:
+      - "scripts/**"
+      - "specifications/**"
+      - "changelogs/**"
 
 jobs:
   docs-generation:
@@ -15,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,8 +28,13 @@ jobs:
           python-version: "3.13"
 
       - name: Run markdown generation script
-        run: |
-          python "scripts/generate_markdown.py"
+        run: python "scripts/generate_markdown.py"
+
+      - name: Run script for creating the JSON changelogs
+        run: python "scripts/generate_json_changelog.py" 2027.01 "origin/${{ github.ref_name }}" --cicd
+
+      - name: Run script for creating the Markdown changelogs
+        run: python "scripts/generate_markdown_changelog.py"
 
       - name: Commit and push if changes
         run: |

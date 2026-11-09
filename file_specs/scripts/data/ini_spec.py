@@ -14,10 +14,12 @@ from typing import Any, Dict, List, Optional, TypeVar, Union
 
 TEnum = TypeVar("TEnum", bound=Enum)
 
+
 def parse_enum(enum_class: type[TEnum], value: Optional[str]) -> Optional[TEnum]:
     """Parse a string value into an enum member of the given enum class."""
-    
+
     return enum_class(value) if value else None
+
 
 class StatusValue(str, Enum):
     """Allowed values for a status entry."""
@@ -49,6 +51,7 @@ class FileFormatType(str, Enum):
 
     INI = "ini"
 
+
 class FloatFormatType(str, Enum):
     """Allowed float format types."""
 
@@ -56,11 +59,32 @@ class FloatFormatType(str, Enum):
     FIXED = "fixed"
     SCIENTIFIC = "scientific"
 
+
 class DateTimeFormatType(str, Enum):
     """Allowed datetime format types."""
 
     DATE = "date"
     DATETIME = "datetime"
+
+
+# Legacy datetime format values used before they were renamed to "date"/
+# "datetime" in commit e936d85. Kept so historical JSON revisions can still
+# be parsed when rebuilding the changelog from git history.
+_LEGACY_DATETIME_FORMAT_ALIASES = {
+    "yyyymmdd": DateTimeFormatType.DATE,
+    "yyyymmddhhmmss": DateTimeFormatType.DATETIME,
+}
+
+
+def parse_datetime_format(value: Optional[str]) -> Optional[DateTimeFormatType]:
+    """Parse a datetime format value, accepting legacy pre-rename aliases."""
+
+    if not value:
+        return None
+    if value in _LEGACY_DATETIME_FORMAT_ALIASES:
+        return _LEGACY_DATETIME_FORMAT_ALIASES[value]
+    return DateTimeFormatType(value)
+
 
 @dataclass
 class Status:
@@ -72,13 +96,24 @@ class Status:
     date: Optional[datetime] = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Status":
+    def from_dict(cls, data: Union[str, Dict[str, Any]]) -> "Status":
+
+        if isinstance(data, str):
+            return cls(value=parse_enum(StatusValue, data))
         return cls(
             value=parse_enum(StatusValue, data["value"]),
             comment=data.get("comment"),
             since_release=data.get("since_release"),
-            date=datetime.strptime(data["date"], "%Y-%m-%d") if data.get("date") else None
+            date=(
+                datetime.strptime(data["date"], "%Y-%m-%d")
+                if data.get("date")
+                else None
+            ),
         )
+
+    @classmethod
+    def default(cls) -> "Status":
+        return cls(value=StatusValue.GA)
 
 
 @dataclass
@@ -128,26 +163,29 @@ class EnumValue:
     object containing a ``status``. Both cases are captured here.
     """
 
+    status: Status
     description: Optional[str] = None
-    status: Optional[Status] = None
 
     @classmethod
     def from_dict(cls, data: Union[str, Dict[str, Any]]) -> "EnumValue":
         if isinstance(data, str):
-            return cls(description=data)
-        return cls(status=Status.from_dict(data["status"]), 
-                   description=data.get("description"))  
-    
+            return cls(description=data, status=Status.default())
+        status = data.get("status")
+        return cls(
+            status=Status.from_dict(status) if status is not None else Status.default(),
+            description=data.get("description"),
+        )
+
 
 @dataclass
 class IniPropertySpec:
     """A single key/value property within an INI section."""
 
     key: str
+    status: Status
     default_value: Any = None
     value_type: Optional[ValueType] = None
     description: Optional[str] = None
-    status: Optional[Status] = None
     validation: Optional[Validation] = None
     enum_values: Optional[Dict[str, EnumValue]] = None
     unit: Optional[str] = None
@@ -162,8 +200,11 @@ class IniPropertySpec:
 
         format = None
         if value_type == ValueType.DATETIME.value:
-            format = parse_enum(DateTimeFormatType, data.get("format"))
-        elif value_type == ValueType.FLOAT.value or value_type == ValueType.LIST_FLOAT.value:
+            format = parse_datetime_format(data.get("format"))
+        elif (
+            value_type == ValueType.FLOAT.value
+            or value_type == ValueType.LIST_FLOAT.value
+        ):
             format = parse_enum(FloatFormatType, data.get("format"))
 
         return cls(
@@ -171,16 +212,18 @@ class IniPropertySpec:
             default_value=data.get("default_value"),
             value_type=parse_enum(ValueType, value_type),
             description=data.get("description"),
-            status=Status.from_dict(status) if status is not None else None,
-            validation=Validation.from_dict(validation)
-            if validation is not None
-            else None,
-            enum_values={
-                name: EnumValue.from_dict(value)
-                for name, value in enum_values.items()
-            }
-            if enum_values is not None
-            else None,
+            status=Status.from_dict(status) if status is not None else Status.default(),
+            validation=(
+                Validation.from_dict(validation) if validation is not None else None
+            ),
+            enum_values=(
+                {
+                    name: EnumValue.from_dict(value)
+                    for name, value in enum_values.items()
+                }
+                if enum_values is not None
+                else None
+            ),
             unit=data.get("unit"),
             format=format,
         )
@@ -193,7 +236,7 @@ class IniSectionSpec:
     name: str
     description: str
     is_unique: bool
-    status: Optional[Status] = None
+    status: Status
     ini_properties: List[IniPropertySpec] = field(default_factory=list)
 
     @classmethod
@@ -203,7 +246,7 @@ class IniSectionSpec:
             name=data["name"],
             description=data["description"],
             is_unique=data["is_unique"],
-            status=Status.from_dict(status) if status is not None else None,
+            status=Status.from_dict(status) if status is not None else Status.default(),
             ini_properties=[
                 IniPropertySpec.from_dict(prop)
                 for prop in data.get("ini_properties", [])
@@ -229,7 +272,9 @@ class IniFileSpec:
             file_format_version=data["file_format_version"],
             file_format_type=parse_enum(FileFormatType, data.get("file_format_type")),
             description=data["description"],
-            default_float_format=parse_enum(FloatFormatType, data.get("default_float_format")),
+            default_float_format=parse_enum(
+                FloatFormatType, data.get("default_float_format")
+            ),
             ini_sections=[
                 IniSectionSpec.from_dict(section)
                 for section in data.get("ini_sections", [])
