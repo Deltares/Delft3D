@@ -89,7 +89,7 @@ call cli%add(switch='--verbose',  switch_ab='-d', help='Print verbose diagnostic
 call cli%add_group(group='mapmerge',description='Merge multiple map files from parallel run into one.')
 
 ! set Command Line Arguments of mapmerge command
-call cli%add(group='mapmerge',switch='--infile',  switch_ab='-i', help='Input map files, or one base MDU name. Discover maps in its OutputDir if the MDU exists, otherwise beside its name. ',required=.false.,act='store',def=char(0),valname='FILE',nargs='+')
+call cli%add(group='mapmerge',switch='--infile',  switch_ab='-i', help='Input map files, or one base MDU name.',required=.false.,act='store',def=char(0),valname='FILE',nargs='+')
 call cli%add(group='mapmerge',switch='--listfile',switch_ab='-F', help='Pass contents of LISTFILE as input files.',required=.false.,act='store',def='',valname='LISTFILE')
 call cli%add(group='mapmerge',switch='--outfile', switch_ab='-o', help='Write output to file DSTFILE. Default: <model>_merged_map.nc',required=.false.,act='store',def='',valname='DSTFILE')
 call cli%add(group='mapmerge',switch='--force',   switch_ab='-f', help='Force overwriting of existing output file.',required=.false.,act='store_true',def='.false.')

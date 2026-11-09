@@ -906,7 +906,7 @@ contains
       end do ! ii
 
    !! Prepare for the big loop on mesh topology, i.e. allocating relative arrays.
-      ! Global IDs and valid_max retain the original model numbering after cropping.
+      ! Determine max global number to allocate buffers in case of masked mapfiles, as then this is not equal to the number of flow nodes.
       global_count = 0
       do ii = 1, nfiles
          if (ncids(ii) == -1) then
@@ -1733,7 +1733,7 @@ contains
             topodimTmp = 2 ! For old format, the mesh topology is 2d
          end if
          if (topodimTmp == 1) then
-            ! Preserve global-ID order, but remove gaps and the original 2D offset.
+            ! Renumber 1D nodes starting from 1.
             call realloc(node_global_to_output, size(node_g2c), keepExisting=.false., fill=-1)
             inodeglob = 0
             do ip = 1, size(node_g2c)
@@ -2790,7 +2790,6 @@ contains
                            end if
                         end do
                      else if (jaugrid == 1 .and. topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
-                        ! Scatter node data to the compact output positions, including ghost removal.
                         ja1DCNVar = 1
                         nnodecount(itopo) = sum(numk(itopo, 1:ii - 1))
                         do ip = 1, item_counts(ii)
@@ -3183,11 +3182,11 @@ contains
 
    end function dfm_merge_partitioned_mapfiles
 
-!> Place filenames in partition-indexed slots, leaving absent partitions empty.
+!> Create an array of ordered partition filenames, with empty entries for missing partitions.
    subroutine dfm_order_by_partition(files, ierr)
       implicit none
 
-      character(len=MAXNAMELEN), allocatable, intent(inout) :: files(:) !< Filenames, expanded to include missing partition slots.
+      character(len=MAXNAMELEN), allocatable, intent(inout) :: files(:) !< List of filenames, will be reordered and expanded as needed.
       integer, intent(out) :: ierr !< Zero on success, nonzero for invalid or duplicate partition numbers.
 
       integer, allocatable :: idom(:)
