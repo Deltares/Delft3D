@@ -25,11 +25,8 @@ The more appropriate way to run D-Flow FM is via the BMI interface, which can be
 
 \section fm_precice_adapter preCICE adapter
 
-The diagram shows the current adapter's preCICE calls, including initial reads,
+The Mermaid diagram shows the current adapter's preCICE calls, including initial reads,
 conditional FM3D mesh resets, and received source/sink mesh access after advancing.
 Internal solver operations are omitted.
 
-\dotfile FM_preCICE_adapter_sequence_diagram.dot "FM preCICE adapter call flow"
-
-An equivalent Mermaid sequence source is maintained in
 `docs/include/FM_preCICE_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.

@@ -61,11 +61,8 @@ same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is 
 \dotfile preC_SUMO_Core_Workflow.dot "preC-SUMO core workflow overview"
 
 For the preCICE calls alone, including mesh registration and conditional source/sink mesh resets,
-see the adapter-only diagram. File exchange and near-field processing are intentionally omitted.
+see the adapter-only mermaid diagram. File exchange and near-field processing are intentionally omitted.
 
-\dotfile preC_SUMO_Adapter_Workflow.dot "preC-SUMO preCICE adapter call flow"
-
-An equivalent Mermaid sequence source is maintained in
 `docs/include/preC_SUMO_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.
 
 For a joint FM/preC-SUMO exchange overview, see

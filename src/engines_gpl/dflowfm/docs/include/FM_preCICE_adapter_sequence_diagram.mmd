@@ -24,7 +24,7 @@ sequenceDiagram
     FM->>P: precicef_get_mesh_vertex_size(sources_sinks_nodes)
     FM->>P: precicef_get_mesh_vertex_ids_and_coordinates(sources_sinks_nodes)
     FM->>P: precicef_read_data(source/sink quantities, relative time = 0)
-    Note over FM: Install initial response and reset elapsed time
+    Note over FM: Add data to FM administration and reset elapsed time
     end
 
     rect rgba(63, 185, 80, 0.12)
@@ -47,7 +47,7 @@ sequenceDiagram
                 FM->>P: precicef_get_mesh_vertex_size(sources_sinks_nodes)
                 FM->>P: precicef_get_mesh_vertex_ids_and_coordinates(sources_sinks_nodes)
                 FM->>P: precicef_read_data(source/sink quantities, relative time = 0)
-                Note over FM: Install newly received response and reset elapsed time
+                Note over FM: Add new data to FM administration and reset elapsed time
             else Boundary not reached
                 Note over FM: Return without exchanging data
             end
