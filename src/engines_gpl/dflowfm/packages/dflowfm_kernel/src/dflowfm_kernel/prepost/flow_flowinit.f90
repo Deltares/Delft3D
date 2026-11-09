@@ -744,13 +744,13 @@ contains
    end subroutine set_friction_coefficient_by_initial_fields
 
 !> initialize dynamic vegetation roughness   
-!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! All links with friction coefficient larger than manning_friction_no_vegetation are considered dynamic vegetation roughness
 !! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
    subroutine init_dynamic_vegetation_roughness(error)
       use dfm_error, only: DFM_WRONGINPUT
       use m_flowgeom, only: lnx
       use m_flow, only: frcu, frcu0, dynveg
-      use m_physcoef, only: frcu_no_vegetation, dynamic_vegetation_roughness_enabled
+      use m_physcoef, only: manning_friction_no_vegetation, dynamic_vegetation_roughness_enabled
       use m_alloc
       use unstruc_model, only: md_dynvegpol
       use timespace_parameters, only: LOCTP_POLYGON_FILE
@@ -777,7 +777,7 @@ contains
       dynveg(:) = .false.
       if (md_dynvegpol == ' ') then
          do link = 1, lnx
-            if (frcu(link) > frcu_no_vegetation) then
+            if (frcu(link) > manning_friction_no_vegetation) then
                dynveg(link) = .true.
             end if
          end do
@@ -799,7 +799,7 @@ contains
          dynveg(:) = .false.
          do k = 1, pointscount
             link = kp(k)
-            if (frcu(link) > frcu_no_vegetation) then
+            if (frcu(link) > manning_friction_no_vegetation) then
                dynveg(link) = .true.
             end if
          end do

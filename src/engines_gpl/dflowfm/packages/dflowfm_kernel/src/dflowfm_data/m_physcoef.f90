@@ -56,7 +56,7 @@ module m_physcoef
    real(kind=dp) :: uniform_friction_coefficient_groundlayer !< [m/s] Uniform friction coefficient of the groundlayer for ocean models. {former:frcuni1Dgrounlay}
    real(kind=dp) :: maximum_friction_coefficient !< [-] Maximum friction coefficient for variable frcu. {former:frcmax}
    integer :: dynamic_vegetation_roughness_enabled !< [-] Effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction. 0=off, 1=on.
-   real(kind=dp) :: frcu_no_vegetation !< [s/m^(1/3)] Base (Manning) friction (without vegetation), default 0.023.
+   real(kind=dp) :: manning_friction_no_vegetation !< [s/m^(1/3)] Base Manning friction without vegetation.
    real(kind=dp) :: droot !< [m] Root depth for dynamic roughness vegetation, range 0-100m, default 0.5m.
    real(kind=dp) :: dstem !< [m] Stem height for dynamic roughness vegetation, range 0-100m, default 0.5m.
 
@@ -180,7 +180,7 @@ contains
       dynamic_vegetation_roughness_enabled = 0
       droot = 0.5_dp
       dstem = 0.5_dp
-      frcu_no_vegetation = 2.3e-2_dp
+      manning_friction_no_vegetation = 2.3e-2_dp
       tracer_concentration_min = -huge(1.0_dp)
       tracer_concentration_min_enabled = .false.
       tracer_concentration_max = huge(1.0_dp)
