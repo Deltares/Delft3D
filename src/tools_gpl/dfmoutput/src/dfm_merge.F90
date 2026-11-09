@@ -252,7 +252,8 @@ contains
       character(len=:), allocatable :: att_value
       integer :: ilink1d2dglob, idimtime, idimlink1d2d, idimstring, idim
       integer :: id_dimTwo
-      integer :: firstfile
+      integer :: firstfile, global_count, global_max
+      integer, allocatable :: global_ids(:)
 
       noutfile = nfiles + 1
       ncids = -1
@@ -797,6 +798,43 @@ contains
       end do ! ii
 
    !! Prepare for the big loop on mesh topology, i.e. allocating relative arrays.
+      ! Global IDs and valid_max retain the original model numbering after cropping.
+      global_count = 0
+      do ii = 1, nfiles
+         if (ncids(ii) == -1) then
+            cycle
+         end if
+         do itopo = minTopodim, maxTopodim
+            if (ndx(itopo, ii) == 0) then
+               cycle
+            end if
+            if (jaugrid == 1) then
+               imesh = topo2mesh(itopo, ii)
+               ierr = ionc_inq_varid(ioncids(ii), imesh, 'flowelem_globalnr', id_flownodeglobnr)
+            else
+               ierr = nf90_inq_varid(ncids(ii), 'FlowElemGlobalNr', id_flownodeglobnr)
+            end if
+            if (ierr /= nf90_noerr) then
+               cycle
+            end if
+            global_max = 0
+            ierri = nf90_get_att(ncids(ii), id_flownodeglobnr, 'valid_max', global_max)
+            global_count = max(global_count, global_max)
+            call realloc(global_ids, ndx(itopo, ii), keepExisting=.false.)
+            ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, global_ids)
+            if (ierr /= nf90_noerr) then
+               write (*, '(a)') 'Error: mapmerge: cannot read global cell numbers from `'//trim(infiles(ii))//'''.'
+               goto 888
+            end if
+            if (any(global_ids <= 0)) then
+               write (*, '(a)') 'Error: mapmerge: nonpositive global cell number in `'//trim(infiles(ii))//'''.'
+               ierr = 1
+               goto 888
+            end if
+            global_count = max(global_count, maxval(global_ids))
+         end do
+      end do
+      ierr = nf90_noerr
       maxnvars = maxval(max_nvars)
       allocate (varids(nfiles, maxnvars, maxTopodim)); 
       allocate (varids_out(maxnvars, maxTopodim))
@@ -837,7 +875,7 @@ contains
       ndxt = sum(ndxc) ! total number of faces on all meshes
       call realloc(face_domain, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
       call realloc(face_c2g, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(face_g2c, ndxt, keepExisting=.false., fill=-1)
+      call realloc(face_g2c, max(ndxt, global_count), keepExisting=.false., fill=-1)
       call realloc(face_c2cc, ndxt, keepExisting=.false., fill=-1)
 
       lnxMax = maxval(lnxc)
@@ -850,7 +888,7 @@ contains
       numkt = sum(numkc) ! total number of nodes on all meshes
       call realloc(node_domain, (/numkMax, maxTopodim/), keepExisting=.false., fill=huge(1))
       call realloc(node_c2g, (/numkMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(node_g2c, numkt, keepExisting=.false., fill=-1)
+      call realloc(node_g2c, max(numkt, global_count), keepExisting=.false., fill=-1)
 
       numlMax = maxval(numlc)
       numlt = sum(numlc) ! total number of net edges on all meshes
@@ -1286,6 +1324,11 @@ contains
                   if (face_domain(nfacecount(itopo) + ip, itopo) == ii - 1) then
                      nfaceglob(itopo) = nfaceglob(itopo) + 1
                      ifaceglob = face_c2g(nfacecount(itopo) + ip, itopo)
+                     if (face_g2c(ifaceglob) /= -1) then
+                        write (*, '(a,i0)') 'Error: mapmerge: multiple owners for global cell ', ifaceglob
+                        ierr = 1
+                        goto 888
+                     end if
                      face_g2c(ifaceglob) = nfacecount(itopo) + ip
                      face_c2cc(nfacecount(itopo) + ip) = nfaceglob(itopo) ! "contiguous to concatinated", meaning: mapping from including ghost nodes to excluding ghost nodes.
                   end if
@@ -2173,7 +2216,7 @@ contains
          end if
 
          ! 1D tmp array: take largest of all topological position counts:
-         maxitems = max(sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
+         maxitems = max(global_count, sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
          call realloc(tmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D_tmp, maxitems, keepExisting=.false.)

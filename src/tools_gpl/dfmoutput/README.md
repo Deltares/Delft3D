@@ -8,7 +8,8 @@ merges partitioned map output, including output restricted with `MapOutputPolygo
   existing files or the full filename list; nonexistent files are skipped with a
   warning. Existing files that cannot be opened remain errors.
 - One existing partition is sufficient. Its ghost cells are still removed.
-
+- Global-ID lookups account for the original model size (`flowelem_globalnr`'s
+  `valid_max`, or the largest supplied global ID when that attribute is absent).
 
 The merged mesh represents the retained geometry and data. Its entity ordering
 and partition metadata need not match a sequential cropped map file.

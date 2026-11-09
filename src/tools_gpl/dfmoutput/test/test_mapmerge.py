@@ -321,7 +321,7 @@ class MapMergeTest(unittest.TestCase):
                 global_ids = (
                     ids
                     if ids is not None
-                    else ([1100, 1200, 1300] if dimension == 1 else [1, 2, 3])
+                    else ([1100, 1200, 1300] if dimension == 1 else [100, 200, 300])
                 )
                 mesh_owners = (
                     owners_1d if dimension == 1 and owners_1d is not None else owners
@@ -332,7 +332,7 @@ class MapMergeTest(unittest.TestCase):
             if layers:
                 ds.createDimension("mesh2d_nLayers", 2)
                 ds["mesh2d"].layer_dimension = "mesh2d_nLayers"
-                values = np.asarray([1, 2, 3], dtype=float)
+                values = np.asarray([100, 200, 300], dtype=float)
                 values = np.where(np.asarray(owners) == partition, values, -123.0)
                 values = np.stack((values, values + 1), axis=-1)
                 self.variable(
@@ -437,17 +437,42 @@ class MapMergeTest(unittest.TestCase):
             self.root / "model_0007_map.nc",
         ]
         with Dataset(self.merge(files)) as ds:
-            self.check_mesh(ds, 2, [1, 2, 3])
+            self.check_mesh(ds, 2, [100, 200, 300])
             np.testing.assert_array_equal(ds["mesh2d_flowelem_domain"][:], [2, 5, 5])
 
     def test_single_surviving_partition(self):
         with Dataset(self.merge([self.partition(5, owners=(5, 5, 5))])) as ds:
-            self.check_mesh(ds, 2, [1, 2, 3])
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_global_ids_without_original_count_attribute(self):
+        files = [self.partition(p) for p in (2, 5)]
+        for path in files:
+            with Dataset(path, "a") as ds:
+                ds["mesh2d_flowelem_globalnr"].delncattr("valid_max")
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_layered_mesh_with_missing_partitions(self):
+        files = [self.partition(p, layers=True) for p in (2, 5)]
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
+            expected = np.array([[100, 101], [200, 201], [300, 301]])
+            np.testing.assert_array_equal(
+                ds["mesh2d_temperature"][:], [expected, expected + 0.5]
+            )
+
+    def test_different_local_cropped_meshes(self):
+        files = [
+            self.partition(2, owners=(2, 5), ids=[100, 200], cell_positions=[0, 1]),
+            self.partition(5),
+        ]
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 2, [100, 200, 300])
 
     def test_partition_with_only_ghost_cells(self):
         files = [self.partition(p, owners=(5, 5, 5)) for p in (2, 5)]
         with Dataset(self.merge(files)) as ds:
-            self.check_mesh(ds, 2, [1, 2, 3])
+            self.check_mesh(ds, 2, [100, 200, 300])
 
     def test_all_files_missing_is_reported(self):
         self.merge([self.root / "model_0005_map.nc"], error="no existing input files")
