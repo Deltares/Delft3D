@@ -1355,8 +1355,8 @@ contains
       call prop_get(md_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni)
       call prop_get(md_ptr, 'physics', 'IniWithNudge', jainiwithnudge)
 
-      call prop_get(md_ptr, 'physics', 'Jadelvappos', Jadelvappos)
-      if (Jadelvappos /= 0) then
+      call prop_get(md_ptr, 'physics', 'Jadelvappos', only_positive_evaporation_fluxes)
+      if (only_positive_evaporation_fluxes /= 0) then
          call mess(LEVEL_WARN, 'Jadelvappos=0 is strongly advised and other values are discouraged.')
       end if
       call prop_get(md_ptr, 'physics', 'freeConvectionCoefficient', free_convection_coefficient)
@@ -3538,8 +3538,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
       call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
 
-      if (writeall .or. (Jadelvappos /= 0)) then
-         call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
+      if (writeall .or. (only_positive_evaporation_fluxes /= 0)) then
+         call prop_set(prop_ptr, 'physics', 'Jadelvappos', only_positive_evaporation_fluxes, 'Only positive forced evaporation fluxes')
       end if
 
       call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')

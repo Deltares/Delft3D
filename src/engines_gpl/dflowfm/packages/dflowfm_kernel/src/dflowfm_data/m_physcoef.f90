@@ -122,7 +122,7 @@ module m_physcoef
    real(kind=dp) :: surftempsmofac = 0.0_dp !< [-] Surface temperature smoothing factor (0 - 10^5).
    real(kind=dp) :: Soiltempthick = 0.0_dp !< [m] If soil buffer desired make thick > 0, e.g. 0.2 m.
 
-   integer :: Jadelvappos !< [-] Only positive forced evaporation fluxes.
+   integer :: only_positive_evaporation_fluxes !< [-] Only positive forced evaporation fluxes.
    real(kind=dp) :: free_convection_coefficient !< [-] Free convection turbulence coefficient.
 
    real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents. {former:tetav}
@@ -171,7 +171,7 @@ contains
       thermobaricity_in_pressure_gradient = .false.
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp
-      Jadelvappos = 0
+      only_positive_evaporation_fluxes = 0
       free_convection_coefficient = 0.14_dp
       locsaltlev = 1.0_dp
       locsaltmin = 5.0_dp

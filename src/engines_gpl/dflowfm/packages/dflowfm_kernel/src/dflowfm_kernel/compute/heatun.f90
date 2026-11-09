@@ -42,7 +42,7 @@ contains
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
       use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
-                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
+                            only_positive_evaporation_fluxes, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             POOLE_ATKINS_PARAMETER
       use m_heatfluxes, only: EMMISIVITY_FACTOR, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav, &
@@ -202,7 +202,7 @@ contains
          end if
 
          vapor_pressure_difference = specific_humidity_surface_saturation - specific_humidity_air_surface
-         if (jadelvappos == 1) then
+         if (only_positive_evaporation_fluxes == 1) then
             vapor_pressure_difference = max(0.0_dp, vapor_pressure_difference)
          end if
 
