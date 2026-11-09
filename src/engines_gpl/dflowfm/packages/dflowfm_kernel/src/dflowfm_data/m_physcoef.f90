@@ -118,8 +118,8 @@ module m_physcoef
    logical :: use_salinity_freezing_point = .false. !< [-] A flag to use a salinity dependent freezing point.
    real(kind=dp) :: salinity_max = -999.0_dp !< [ppt] Upper salinity limit.
    real(kind=dp) :: salinity_min = 0.0_dp !< [ppt] Lower salinity limit.
-   real(kind=dp) :: minimum_depth_for_heat_and_evaporation_fluxes = 0.001_dp !< [m] Minimum water depth for heat flux and evaporation computations.
-   real(kind=dp) :: surftempsmofac = 0.0_dp !< [-] Surface temperature smoothing factor (0 - 10^5).
+   real(kind=dp) :: minimum_depth_for_heat_and_evaporation_fluxes !< [m] Minimum water depth for heat flux and evaporation computations.
+   real(kind=dp) :: surface_temperature_smoothing_factor !< [-] Surface temperature smoothing factor in heat-flux calculations (range: 0-1).
    real(kind=dp) :: Soiltempthick = 0.0_dp !< [m] If soil buffer desired make thick > 0, e.g. 0.2 m.
 
    integer :: only_positive_evaporation_fluxes !< [-] Only positive forced evaporation fluxes.
@@ -171,6 +171,10 @@ contains
       thermobaricity_in_pressure_gradient = .false.
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp
+
+      minimum_depth_for_heat_and_evaporation_fluxes = 0.001_dp
+      surface_temperature_smoothing_factor = 0.0_dp
+
       only_positive_evaporation_fluxes = 0
       free_convection_coefficient = 0.14_dp
       locsaltlev = 1.0_dp
