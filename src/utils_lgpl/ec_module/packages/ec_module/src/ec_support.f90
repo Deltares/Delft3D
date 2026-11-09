@@ -430,8 +430,10 @@ contains
          ncvarnames(1) = 'tcc' ! cloud cover (fraction)
          ncstdnames(1) = 'cloud_area_fraction'
       case ('humidity')
+         allocate (ncvarnames(1))
          allocate (ncstdnames(1))
          allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'rhum' ! relative_humidity
          ncstdnames(1) = 'relative_humidity'
          ncstdnames_fallback(1) = 'humidity'
       case ('dewpoint')
