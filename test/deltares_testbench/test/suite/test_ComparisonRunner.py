@@ -918,35 +918,6 @@ class TestComparisonRunner:
         cleanup_mock.assert_called_once_with(config)
         logger.error.assert_any_call("Failed to validate location for 'C1': bad location")
 
-    def test_prepare_dvc_find_credentials_returns_first_with_username(self, mocker: MockerFixture) -> None:
-        # Arrange
-        settings = TestBenchSettings()
-        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
-
-        creds = Credentials()
-        creds.username = "my_user"
-        creds.password = "my_pass"
-
-        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
-        input_loc.credentials = creds
-
-        config = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc])
-        settings.configs_to_run = [config]
-
-        logger = MagicMock(spec=ConsoleLogger)
-        runner = ComparisonRunner(settings, logger)
-
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
-
-        # Act
-        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
-
-        # Assert — handler received the actual credentials, not empty defaults
-        mock_handler = mock_dvc_handler_cls.return_value
-        actual_creds = mock_handler.download_batch.call_args[0][1]
-        assert actual_creds.username == "my_user"
-        assert actual_creds.password == "my_pass"
-
     def test_prepare_dvc_apply_paths_handles_set_absolute_paths_failure(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()

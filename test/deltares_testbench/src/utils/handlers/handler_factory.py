@@ -22,9 +22,7 @@ class HandlerFactory(ABC):
     """Chooses which type of handler is used for upload and download actions."""
 
     @classmethod
-    def __get_handler(
-        cls, to_path: str, programs: List[Program], logger: ILogger, credentials: Optional[Credentials] = None
-    ) -> IHandler:
+    def __get_handler(cls, to_path: str, programs: List[Program], logger: ILogger) -> IHandler:
         """Create handler based on destination path.
 
         Parameters
@@ -44,12 +42,12 @@ class HandlerFactory(ABC):
         IHandler
             Specific handler.
         """
-        handler_type = ResolveHandler.detect(to_path, logger, credentials)
+        handler_type = ResolveHandler.detect(to_path, logger)
         handler: IHandler
 
         if handler_type == HandlerType.DVC:
             logger.debug(f"using DVC handler for {to_path}")
-            handler = DvcHandler(credentials=credentials)
+            handler = DvcHandler()
         if handler_type == HandlerType.NONE:
             raise AttributeError("upload :: no type specified")
 

@@ -20,7 +20,7 @@ class ResolveHandler(ABC):
     """Detect type of handler behind a path."""
 
     @classmethod
-    def detect(cls, path: str, logger: ILogger, credentials: Optional[Credentials] = None) -> HandlerType:
+    def detect(cls, path: str, logger: ILogger) -> HandlerType:
         """Detect which protocol handler is needed for the path.
 
         Parameters

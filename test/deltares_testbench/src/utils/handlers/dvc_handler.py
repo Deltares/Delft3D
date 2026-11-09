@@ -17,16 +17,13 @@ from src.utils.logging.i_logger import ILogger
 class DvcHandler(IHandler):
     """DVC wrapper, has handler interface."""
 
-    def __init__(self, credentials: Credentials | None = None, repo: Repo | None = None) -> None:
-        self.__repo = repo
-        if self.__repo is None:
+    def __init__(self, repo: Repo | None = None) -> None:
+        if repo is not None:
+            self.__repo = repo
+        else:
             current_file_path = os.getcwd()
             repo_root = self.__find_dvc_root(current_file_path)
             self.__repo = Repo(repo_root, scm=NoSCM())
-
-        if credentials is not None:
-            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
-            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
 
     def download(
         self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger

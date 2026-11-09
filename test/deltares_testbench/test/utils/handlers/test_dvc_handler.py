@@ -22,7 +22,7 @@ class TestDvcHandlerDownloadBatch:
         handler = DvcHandler(repo=repo)
         logger = MagicMock(spec=ILogger)
 
-        handler.download_batch([], Credentials(), logger)
+        handler.download_batch([], logger)
 
         repo.fetch.assert_not_called()
         repo.checkout.assert_not_called()
@@ -33,7 +33,7 @@ class TestDvcHandlerDownloadBatch:
         logger = MagicMock(spec=ILogger)
 
         with pytest.raises(FileNotFoundError, match="DVC file not found"):
-            handler.download_batch(["/nonexistent/input.dvc"], Credentials(), logger)
+            handler.download_batch(["/nonexistent/input.dvc"], logger)
 
     def test_calls_fetch_and_checkout_with_all_targets(self, tmp_path: object) -> None:
         repo = MagicMock()
@@ -47,7 +47,7 @@ class TestDvcHandlerDownloadBatch:
                 fh.write("md5: abc\n")
             os.makedirs(os.path.splitext(f)[0])
 
-        handler.download_batch([dvc_file_1, dvc_file_2], Credentials(), logger)
+        handler.download_batch([dvc_file_1, dvc_file_2], logger)
 
         # Both targets passed to single fetch and checkout call
         repo.fetch.assert_called_once()
@@ -68,7 +68,7 @@ class TestDvcHandlerDownloadBatch:
             f.write("md5: abc\n")
         os.makedirs(os.path.splitext(dvc_file)[0])
 
-        handler.download_batch([dvc_file], Credentials(), logger, jobs=8)
+        handler.download_batch([dvc_file], logger, jobs=8)
 
         assert repo.fetch.call_args[1]["jobs"] == 8
 
@@ -83,7 +83,7 @@ class TestDvcHandlerDownloadBatch:
         # Do NOT create the expected output dir — simulates failed checkout
 
         with pytest.raises(FileNotFoundError, match="expected directories"):
-            handler.download_batch([dvc_file], Credentials(), logger)
+            handler.download_batch([dvc_file], logger)
 
 
 class TestDvcHandlerDownload:

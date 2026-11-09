@@ -564,9 +564,8 @@ class TestSetRunner(ABC):
         if not dvc_files:
             return True
 
-        credentials = self.__find_dvc_credentials(location_infos)
         try:
-            handler = DvcHandler(credentials=credentials)
+            handler = DvcHandler()
             handler.download_batch(dvc_files, self.__logger)
             return True
         except Exception as exception:
@@ -575,14 +574,6 @@ class TestSetRunner(ABC):
                 self.cleanup_failed_preparation(config)
             log_separator(self.__logger, char="-")
             return False
-
-    @staticmethod
-    def __find_dvc_credentials(location_infos: list[DvcLocationInfo]) -> Credentials:
-        """Return the first credentials found in the location list, or empty defaults."""
-        for info in location_infos:
-            if info.location.credentials and info.location.credentials.username:
-                return info.location.credentials
-        return Credentials()
 
     def __apply_dvc_paths(self, location_infos: list[DvcLocationInfo]) -> None:
         """Set absolute paths on configs after a successful batch download."""

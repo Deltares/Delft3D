@@ -1,4 +1,5 @@
 import configparser
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -37,6 +38,8 @@ class CredentialHandler:
 
         if status == CredentialStatus.BOTH:
             self.logger.warning("Using commandline credentials!")
+            os.environ["AWS_ACCESS_KEY_ID"] = self.credentials.username  # type: ignore[union-attr]
+            os.environ["AWS_SECRET_ACCESS_KEY"] = self.credentials.password  # type: ignore[union-attr]
             if self.cred_path.exists():
                 return
             if is_interactive:
