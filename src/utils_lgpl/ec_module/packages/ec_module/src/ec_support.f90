@@ -474,6 +474,17 @@ contains
          ncstdnames(3) = 'cloud_area_fraction'
          ncvarnames(4) = 'ssrd'
          ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         allocate (ncvarnames(1:4))
+         allocate (ncstdnames(1:4))
+         ncvarnames(1) = 'rhum' ! relative_humidity
+         ncstdnames(1) = 'relative_humidity'
+         ncvarnames(2) = 't2m' ! 2-meter air temperature
+         ncstdnames(2) = 'air_temperature'
+         ncvarnames(3) = 'tcc' ! cloud cover (fraction)
+         ncstdnames(3) = 'cloud_area_fraction'
+         ncvarnames(4) = 'ssrd'
+         ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
       case ('solarradiation')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
