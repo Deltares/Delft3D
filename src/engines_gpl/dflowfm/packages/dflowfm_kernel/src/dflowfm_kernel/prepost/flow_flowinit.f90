@@ -717,11 +717,9 @@ contains
                if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = uniform_friction_coefficient_1D2D
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
-                  ! Because UNIFORM_FRICTION_COEFFICIENT_STREET_INLET is not available in the mdu file, the friction type is always manning.
                   frcu(link) = UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
                   ifrcutp(link) = MANNING
                else if (kcu(link) == LINK_1D2D_ROOF) then
-                  ! Because UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE is not available in the mdu file, the friction type is always manning
                   frcu(link) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
                   ifrcutp(link) = MANNING
                else
