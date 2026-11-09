@@ -40,7 +40,7 @@ contains
       use precision, only: dp, comparereal, fp
       use m_relative_wind, only: compute_wind_relative_to_surface_scalar
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, minimum_depth_for_heat_and_evaporation_fluxes, stanton, secchi_depth, &
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
                             only_positive_evaporation_fluxes, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             POOLE_ATKINS_PARAMETER
@@ -117,7 +117,7 @@ contains
          do ll = 1, nd(n)%lnx
             l = abs(nd(n)%ln(ll))
             k2 = ln(1, l) + ln(2, l) - n
-            if (hs(k2) > epshstem) then
+            if (hs(k2) > minimum_depth_for_heat_and_evaporation_fluxes) then
                bak2 = surftempsmofac * ba(k2)
                water_temperature_in_cell = water_temperature_in_cell + constituents(itemp, ktop(k2)) * bak2
                cell_area = cell_area + bak2

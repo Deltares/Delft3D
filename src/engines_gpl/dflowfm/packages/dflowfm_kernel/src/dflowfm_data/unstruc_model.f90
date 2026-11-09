@@ -1036,7 +1036,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Chkdifd', chkdifd)
       call prop_get(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
       call prop_get(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
-      call prop_get(md_ptr, 'numerics', 'Epshstem', epshstem)
+      call prop_get(md_ptr, 'numerics', 'Epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
 
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
@@ -3279,8 +3279,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Trsh_u1Lb', trsh_u1Lb, '2D bedfriction in 3D below this threshold (m)')
       end if
 
-      if (writeall .or. epshstem /= 0.001_dp) then
-         call prop_set(prop_ptr, 'numerics', 'Epshstem', epshstem, 'Only compute heatflx + evap if depth > epshstem')
+      if (writeall .or. minimum_depth_for_heat_and_evaporation_fluxes /= 0.001_dp) then
+         call prop_set(prop_ptr, 'numerics', 'epshstem', minimum_depth_for_heat_and_evaporation_fluxes, 'Minimum water depth for heat flux and evaporation computations.')
       end if
 
       if (writeall .or. Zwsbtol /= 0.0_dp) then
