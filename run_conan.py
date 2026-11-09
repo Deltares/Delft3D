@@ -491,6 +491,10 @@ def main() -> None:
     if not args.command:
         parser.print_help()
         sys.exit(1)
+
+    if shutil.which("conan") is None:
+        sys.exit("ERROR: Conan is not installed or is not added to PATH.")
+
     args.func(args)
 
 

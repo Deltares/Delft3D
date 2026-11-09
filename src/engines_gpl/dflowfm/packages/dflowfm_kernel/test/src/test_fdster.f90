@@ -11,7 +11,7 @@ module test_fdster
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_fdster, test_dstar_one_critical_shields, test_dstar_one_critical_shields,
+   !$gtest
    !> Dstar = 1 must use the special-case Shields value of 0.24.
    subroutine test_dstar_one_critical_shields() bind(C)
       real(kind=dp), parameter :: tolerance = 1.0e-7_dp
@@ -39,6 +39,5 @@ contains
       call f90_expect_near(tau, expected_tau, tolerance, &
                            cstr("Critical shear stress should use the special-case Shields value"))
    end subroutine test_dstar_one_critical_shields
-   !$f90tw)
 
 end module test_fdster

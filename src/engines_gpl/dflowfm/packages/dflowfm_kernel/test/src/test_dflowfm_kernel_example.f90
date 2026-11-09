@@ -5,7 +5,7 @@ module test_accumulate_distance
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_accumulate_distance, test_simple_path, test_simple_path,
+   !$gtest
    subroutine test_simple_path() bind(C)
       use precision, only: dp
       integer, parameter :: PATH_LENGTH = 2
@@ -20,9 +20,8 @@ contains
 
       call f90_expect_near(running_distance, expected_running_distance, tolerance, "path length is not square root of 2")
    end subroutine test_simple_path
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, tests_accumulate_distance, test_three_point_path, test_three_point_path,
+   !$gtest
    !> Distances along a three-point path must accumulate across both segments.
    subroutine test_three_point_path() bind(C)
       use precision, only: dp
@@ -44,5 +43,4 @@ contains
       call f90_expect_near(running_distance, expected_running_distance, tolerance, &
                            cstr("Distances should accumulate along the path: [0, 3, 7]"))
    end subroutine test_three_point_path
-   !$f90tw)
 end module test_accumulate_distance
