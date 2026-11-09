@@ -11,7 +11,7 @@ module test_interpolate_on_polyline
 
 contains
 
-   !$f90tw TESTCODE(TEST, tests_interpolate_on_polyline, test_distance_beyond_end_is_rejected, test_distance_beyond_end_is_rejected,
+   !$gtest
    !> Interpolate within a length-7 path, but reject a distance of 8.
    subroutine test_distance_beyond_end_is_rejected() bind(C)
       real(kind=dp), dimension(3), parameter :: x = [0.0_dp, 3.0_dp, 3.0_dp]
@@ -59,6 +59,5 @@ contains
 
       call f90_expect_false(inside, cstr("Distance 8 is beyond the length-7 polyline and must be rejected"))
    end subroutine test_distance_beyond_end_is_rejected
-   !$f90tw)
 
 end module test_interpolate_on_polyline
