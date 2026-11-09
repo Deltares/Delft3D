@@ -60,7 +60,7 @@ contains
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
                             rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
-      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra, ti_waqproc
+      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
       use m_transport, only: numconst, constituents, isalt, itemp, ised1
       use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNADSSEDTRA

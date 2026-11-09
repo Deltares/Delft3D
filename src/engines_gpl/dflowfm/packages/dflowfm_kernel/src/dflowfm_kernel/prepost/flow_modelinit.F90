@@ -88,7 +88,7 @@ contains
       use MessageHandling
       use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
-      use m_fm_wq_processes, only: jawaqproc, wq_processes_active, dt_processes_dynamic
+      use m_fm_wq_processes, only: jawaqproc, wq_processes_active
       use m_vegetation
       use m_hydrology, only: jadhyd, init_hydrology
       use m_integralstats, is_is_numndvals => is_numndvals
