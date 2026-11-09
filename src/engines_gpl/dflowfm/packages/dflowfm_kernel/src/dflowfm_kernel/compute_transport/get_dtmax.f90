@@ -99,7 +99,7 @@ contains
 !              compute maximum diffusion coefficient
                do j = 1, NUMCONST
 !                 compute diffusion coefficient (copied from "comp_fluxhor3D")
-                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky, viu is 0 ,
+                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky_coefficient, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
                end do

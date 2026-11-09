@@ -575,12 +575,12 @@ contains
 !> Set ihorvic related to horizontal viscosity
    subroutine set_ihorvic_related_to_horizontal_viscosity()
       use m_flowparameters, only: ihorvic, javiusp
-      use m_physcoef, only: uniform_horizontal_eddy_viscosity, Smagorinsky, elder_viscosity_contribution
+      use m_physcoef, only: uniform_horizontal_eddy_viscosity, smagorinsky_coefficient, elder_viscosity_contribution
 
       implicit none
 
       ihorvic = OFF
-      if (uniform_horizontal_eddy_viscosity > OFF .or. javiusp == ON .or. Smagorinsky > OFF .or. elder_viscosity_contribution > OFF) then
+      if (uniform_horizontal_eddy_viscosity > OFF .or. javiusp == ON .or. smagorinsky_coefficient > OFF .or. elder_viscosity_contribution > OFF) then
          ihorvic = ON
       end if
 

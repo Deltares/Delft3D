@@ -80,7 +80,7 @@ contains
       it(2 * 8) = 6
       OPTION(9) = 'Verticall Wall Nikuradse          (m)    '
       it(2 * 9) = 6
-      OPTION(10) = 'Smagorinsky                      ( )    '
+      OPTION(10) = 'smagorinsky_coefficient                      ( )    '
       it(2 * 10) = 6
       OPTION(11) = 'elder_viscosity_contribution                            ( )    '
       it(2 * 11) = 6
@@ -105,7 +105,7 @@ contains
       HELPM(7) = 'background horizontal diffusivity                           '
       HELPM(8) = 'background vertical   diffusivity (0: no vert. diff. at all)'
       HELPM(9) = 'VERTICAL WALL NIKURADSE ROUGHNESS, (wall_z0 = KS/30)     (M)'
-      HELPM(10) = 'vicuv = vicuv + ( (Smagorinsky*dx)**2)*Strainrate_S, eg 0.1 '
+      HELPM(10) = 'vicuv = vicuv + ( (smagorinsky_coefficient*dx)**2)*Strainrate_S, eg 0.1 '
       HELPM(11) = 'vicuv = vicuv +    elder_viscosity_contribution*0.009*H*U                   eg 1.0 '
       HELPM(12) = 'uniform friction coefficient 1D                             '
       HELPM(13) = 'uniform friction coefficient 1D2D internal Link             '
@@ -189,7 +189,7 @@ contains
       call IFORMPUTdouble(2 * 7, uniform_horizontal_eddy_diffusivity, '(e8.3)')
       call IFORMPUTdouble(2 * 8, background_vertical_eddy_diffusivity%scalar, '(e8.3)')
       call IFormPutDouble(2 * 9, wall_ks, '(F8.3)')
-      call IFormPutDouble(2 * 10, Smagorinsky, '(F8.3)')
+      call IFormPutDouble(2 * 10, smagorinsky_coefficient, '(F8.3)')
       call IFormPutDouble(2 * 11, elder_viscosity_contribution, '(F8.3)')
       call IFormPutDouble(2 * 12, uniform_friction_coefficient_1D, '(F8.3)')
       call IFormPutDouble(2 * 13, uniform_friction_coefficient_1D2D, '(F8.3)')
@@ -242,7 +242,7 @@ contains
             call IFORMGetdouble(2 * 7, uniform_horizontal_eddy_diffusivity)
             call IFORMGetdouble(2 * 8, background_vertical_eddy_diffusivity%scalar)
             call IFormGetDouble(2 * 9, wall_ks)
-            call IFormGetDouble(2 * 10, Smagorinsky)
+            call IFormGetDouble(2 * 10, smagorinsky_coefficient)
             call IFormGetDouble(2 * 11, elder_viscosity_contribution)
             call IFormGetDouble(2 * 12, uniform_friction_coefficient_1D)
             call IFormGetDouble(2 * 13, uniform_friction_coefficient_1D2D)
