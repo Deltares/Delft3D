@@ -1,4 +1,4 @@
-if(NOT TARGET gtest)
+if(NOT TARGET GTest::gtest_main)
     include(FetchContent)
     FetchContent_Declare(
         googletest
