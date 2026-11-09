@@ -42,6 +42,7 @@ Deltares developers download them directly and external developers build them lo
   ```
   Alternatively, install it into your active Python environment with pip:
   ```
+  python -m pip install --upgrade pip
   python -m pip install conan
   ```
   Verify the installation:

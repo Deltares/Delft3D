@@ -503,6 +503,11 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'slhf'
          ncstdnames(1) = 'surface_upward_latent_heat_flux'
+      case ('seasurfacetemperature')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'sst'
+         ncstdnames(1) = 'sea_surface_temperature'
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          allocate (ncvarnames(1:2))
          allocate (ncstdnames(1:2))

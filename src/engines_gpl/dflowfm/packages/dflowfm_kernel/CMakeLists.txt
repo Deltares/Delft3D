@@ -250,6 +250,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_errorhandler.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_opengl.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/dcross.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/m_bilinear_interpolation.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_path}/fetch_proc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")

@@ -1,4 +1,4 @@
-ARG THIRD_PARTY_LIBS_TAG=oneapi-2024-ifx-release
+ARG THIRD_PARTY_LIBS_TAG=oneapi-2026-ifx-release
 
 FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:${THIRD_PARTY_LIBS_TAG} AS base
 
