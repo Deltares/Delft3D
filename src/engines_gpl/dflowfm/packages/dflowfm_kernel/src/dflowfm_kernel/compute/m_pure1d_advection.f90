@@ -26,21 +26,26 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-module m_setuc1d
+module m_pure1d_advection
 
    implicit none
 
    private
 
    public :: setuc1d
+   public :: advect_pure1d_sobek
 
 contains
 
    subroutine setuc1d()
-      use m_netw
-      use m_flow
-      use m_flowgeom
-      use m_get_prof_1D
+      use m_flow, only: kmx, jaJunction1D, jaPure1D, uc1D, u1, qa, qin, vol0_f, vol1_f, au, &
+                        u1Du, q1D, au1D, wu1D, sar1D, volu1D, alpha_mom_1D, alpha_ene_1D, s1, lateral_correction, &
+                        volume_change
+      use m_flowgeom, only: lnx1D, ndx2D, ndxi, nd, kcu, lnxi, lnx, ln, dx, bob
+      use m_flowparameters, only: eps3
+      use m_get_prof_1D, only: getprof_1D
+      use m_flowtimes, only: dts, tstart_user, time1
+      use network_data, only: LINK_1D_BOUNDARY
       use precision, only: dp
       implicit none
 
@@ -73,6 +78,7 @@ contains
       real(kind=dp) :: flow_width !< [m] surface width of flow area
       real(kind=dp) :: total_width !< [m] surface width of total (flow + storage) area
       real(kind=dp) :: dzw_dt !< [m/s] water level change rate
+      real(kind=dp) :: lateral_flow !< [m3/s] lateral flow into the node
 
       if (kmx /= 0 .or. lnx1D == 0) then
          return
@@ -124,6 +130,31 @@ contains
          uc1D(n) = sign(uc, u1(L1))
       end do
 
+      if (japure1d >=3) then
+         lateral_correction = 0.0_dp
+         if (time1 > tstart_user) then
+            ! calculate lateral correction at the flow links
+            lateral_flow = 0.0_dp
+            do n = ndx2D + 1, ndxi
+               nx = nd(n)%lnx
+               ! Lateral discharge into the node
+               lateral_flow = qin(n)
+               ! change in storage volume storage volume = (vol1(n) - vol1_f(n))
+               ! a positive change in storage volume means that the node is storing water, so the lateral flow into the node is reduced.
+               ! volume_change is the total volume of a cell. And is calculated in flow_f0isf1.
+               ! vol1_f and vol0_f are flow volumes in a cell and these are up to date at the current time step.
+               lateral_flow = lateral_flow - ((volume_change(n) - vol1_f(n) + vol0_f(n))) / dts
+               do LL = 1, nx ! loop over all links of the upstream node
+                  L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
+                  La = abs(L)
+                  if (au(La) > eps3) then
+                     lateral_correction(La) = lateral_correction(La) + lateral_flow / (real(nx, kind=dp) * au(La) * dx(La))
+                  end if
+
+               end do
+            end do
+         end if
+      end if
       do LL = lnxi + 1, lnx ! loop over open boundary links
          if (kcu(LL) == LINK_1D_BOUNDARY) then ! 1D boundary link
             n = Ln(1, LL)
@@ -241,4 +272,68 @@ contains
 
    end subroutine setuc1d
 
-end module m_setuc1d
+   pure subroutine advect_pure1d_sobek(jaPure1D, u1, au1d1, au1d2, q1d1, q1d2, volu1d, alpha_mom1, alpha_ene1, &
+                                       alpha_mom2, alpha_ene2, lateral_correction, advi, advel)
+      use precision, only: dp
+      implicit none
+
+      integer, intent(in) :: jaPure1D
+      real(kind=dp), intent(in) :: u1
+      real(kind=dp), intent(in) :: au1d1
+      real(kind=dp), intent(in) :: au1d2
+      real(kind=dp), intent(in) :: q1d1
+      real(kind=dp), intent(in) :: q1d2
+      real(kind=dp), intent(in) :: volu1d
+      real(kind=dp), intent(in) :: alpha_mom1
+      real(kind=dp), intent(in) :: alpha_ene1
+      real(kind=dp), intent(in) :: alpha_mom2
+      real(kind=dp), intent(in) :: alpha_ene2
+      real(kind=dp), intent(in) :: lateral_correction
+      real(kind=dp), intent(inout) :: advi
+      real(kind=dp), intent(inout) :: advel
+
+      real(kind=dp) :: am
+      real(kind=dp) :: qv
+      real(kind=dp) :: u_ene
+      real(kind=dp) :: u_mom
+
+      advel = 0.0_dp
+      select case (jaPure1D)
+      case (3) ! momentum conserving
+         am = 1.0_dp
+      case (4) ! weighted
+         am = min(au1d1, au1d2) / max(1.0e-4_dp, au1d1, au1d2)
+      case (5) ! weighted in contractions, otherwise momentum conserving
+         if ((u1 > 0.0_dp .and. au1d1 > au1d2) .or. (u1 < 0.0_dp .and. au1d1 < au1d2)) then
+            am = min(au1d1, au1d2) / max(1.0e-4_dp, au1d1, au1d2)
+         else
+            am = 1.0_dp
+         end if
+      case (6) ! weighted in expansions, otherwise momentum conserving
+         if ((u1 > 0.0_dp .and. au1d1 < au1d2) .or. (u1 < 0.0_dp .and. au1d1 > au1d2)) then
+            am = min(au1d1, au1d2) / max(1.0e-4_dp, au1d1, au1d2)
+         else
+            am = 1.0_dp
+         end if
+      case (7) ! energy conserving
+         am = 0.0_dp
+      end select
+
+      if (q1d1 > 0.0_dp) then
+         qv = q1d1 / max(1.0e-5_dp, volu1d)
+         u_mom = alpha_mom1 * q1d1 / au1d1
+         u_ene = alpha_ene1 * q1d1 / au1d1
+         advel = advel - am * (u_mom - u1) * qv - (1.0_dp - am) * (u_ene - u1) * qv
+      end if
+
+      advi = advi + max(0.0_dp, lateral_correction)
+
+      if (q1d2 < 0.0_dp) then
+         qv = q1d2 / max(1.0e-5_dp, volu1d)
+         u_mom = alpha_mom2 * q1d2 / au1d2
+         u_ene = alpha_ene2 * q1d2 / au1d2
+         advel = advel + am * (u_mom - u1) * qv + (1.0_dp - am) * (u_ene - u1) * qv
+      end if
+   end subroutine advect_pure1d_sobek
+
+end module m_pure1d_advection
