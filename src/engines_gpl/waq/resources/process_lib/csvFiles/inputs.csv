@@ -2721,13 +2721,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "SedOXYDem ","TotalDepth",  21,"N","x",1
 "SedOXYDem ","COXSOD    ",  22,"Y","x",1
 "SedOXYDem ","OOXSOD    ",  23,"Y","x",1
-"DL_DiatS1 ","DayL      ",   1,"Y","x",1
-"DL_DiatS1 ","OptDLDiaS1",   2,"Y","x",1
-"Rad_DiatS1","Depth     ",   1,"N","x",1
-"Rad_DiatS1","RadBot    ",   2,"N","x",1
-"Rad_DiatS1","RadSatDiS1",   3,"Y","x",1
-"Rad_DiatS1","ExtVl     ",   4,"N","x",1
-"Rad_DiatS1","TFGroDiat ",   5,"Y","x",1
 "GroMrt_Gre","Temp      ",   1,"Y","x",1
 "GroMrt_Gre","TcGroGreen",   2,"Y","x",1
 "GroMrt_Gre","TcDecGreen",   3,"Y","x",1
@@ -2786,36 +2779,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "GroMrt_Dia","MinDiat   ",  27,"Y","x",1
 "GroMrt_Dia","UseRadAve ",  28,"Y","x",1
 "GroMrt_Dia","RadAve    ",  29,"Y","x",1
-"GroMrt_DS1","DiatS1    ",   1,"N","x",1
-"GroMrt_DS1","LimDLdiaS1",   2,"Y","x",1
-"GroMrt_DS1","LimRadDiS1",   3,"Y","x",1
-"GroMrt_DS1","TFGroDiat ",   4,"Y","x",1
-"GroMrt_DS1","TFMrtDiat ",   5,"Y","x",1
-"GroMrt_DS1","PPMaxDiaS1",   6,"O"," ",1
-"GroMrt_DS1","MRespDiaS1",   7,"Y","x",1
-"GroMrt_DS1","GRespDiaS1",   8,"Y","x",1
-"GroMrt_DS1","MrtSedDiat",   9,"Y","x",1
-"GroMrt_DS1","NH4       ",  10,"N","x",1
-"GroMrt_DS1","NO3       ",  11,"N","x",1
-"GroMrt_DS1","PO4       ",  12,"N","x",1
-"GroMrt_DS1","Si        ",  13,"Y","x",1
-"GroMrt_DS1","dSWMinDNS1",  14,"Y","x",1
-"GroMrt_DS1","dMinDetNS1",  15,"Y","x",1
-"GroMrt_DS1","dSWMinDPS1",  16,"Y","x",1
-"GroMrt_DS1","dMinDetPS1",  17,"Y","x",1
-"GroMrt_DS1","dSWMinDSS1",  18,"Y","x",1
-"GroMrt_DS1","dMinDetSiS",  19,"Y","x",1
-"GroMrt_DS1","KMDINdiaS1",  20,"Y","x",1
-"GroMrt_DS1","KMPdiatS1 ",  21,"Y","x",1
-"GroMrt_DS1","KMSidiatS1",  22,"Y","x",1
-"GroMrt_DS1","NCRatDiatS",  23,"Y","x",1
-"GroMrt_DS1","PCRatDiatS",  24,"Y","x",1
-"GroMrt_DS1","SCRatDiatS",  25,"Y","x",1
-"GroMrt_DS1","Surf      ",  26,"N","x",1
-"GroMrt_DS1","Depth     ",  27,"N","x",1
-"GroMrt_DS1","FrMinS1Bac",  28,"Y","x",1
-"GroMrt_DS1","DELT      ",  29,"N","x",1
-"GroMrt_DS1","NH4Crit   ",  30,"Y","x",1
 "NutRel_Alg","fPPGreen  ",   1,"N","x",1
 "NutRel_Alg","NCRatGreen",   2,"Y","x",1
 "NutRel_Alg","PCRatGreen",   3,"Y","x",1
@@ -2835,19 +2798,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "NutRel_Alg","FrDetGreen",  17,"Y","x",1
 "NutRel_Alg","FrAutDiat ",  18,"Y","x",1
 "NutRel_Alg","FrDetDiat ",  19,"Y","x",1
-"NRAlg_S1  ","fMrtGreeS1",   1,"Y","x",1
-"NRAlg_S1  ","NCRatGreen",   2,"Y","x",1
-"NRAlg_S1  ","PCRatGreen",   3,"Y","x",1
-"NRAlg_S1  ","FrAutGreen",   4,"Y","x",1
-"NRAlg_S1  ","FrDetGreen",   5,"Y","x",1
-"NRAlg_S1  ","fMrtDiatS1",   6,"N","x",1
-"NRAlg_S1  ","NCRatDiatS",   7,"Y","x",1
-"NRAlg_S1  ","PCRatDiatS",   8,"Y","x",1
-"NRAlg_S1  ","SCRatDiatS",   9,"Y","x",1
-"NRAlg_S1  ","FrAutDiatS",  10,"Y","x",1
-"NRAlg_S1  ","FrDetDiatS",  11,"Y","x",1
-"NRAlg_S1  ","Depth     ",  12,"N","x",1
-"NRAlg_S1  ","SedZoneSW ",  13,"Y"," ",1
 "OXYMin    ","OXY       ",   1,"N","x",1
 "OXYMin    ","Green     ",   2,"N","x",1
 "OXYMin    ","RcGroGreen",   3,"N","x",1

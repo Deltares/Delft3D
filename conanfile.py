@@ -25,6 +25,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("swan_mpi/41.51.10")
         self.requires("swan_omp/41.51.10")
         self.requires("inja/3.5.0")
+        self.requires("pugixml/1.15")
 
     def generate(self):
         save(
@@ -113,3 +114,4 @@ class Delft3DRecipe(ConanFile):
         self.options["boost"].without_url = True
         self.options["boost"].without_wave = True
         self.options["gtest"].shared = True
+        self.options["pugixml"].shared = True
