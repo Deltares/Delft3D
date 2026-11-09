@@ -1344,7 +1344,7 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
-      call prop_get(md_ptr, 'physics', 'Surftempsmofac', surface_temperature_smoothing_factor)
+      call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor)
       call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
       call prop_get(md_ptr, 'physics', 'Soiltempthick', Soiltempthick)
@@ -3562,7 +3562,7 @@ contains
                           'Enable salinity-dependent freezing point (0 = no, 1 = yes). tempMin should be below 0 degrees Celsius.')
          end if
          if (writeall .or. surface_temperature_smoothing_factor > 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'Surftempsmofac', surface_temperature_smoothing_factor, 'Hor . Smoothing factor for surface water in heatflx comp. (0.0-1.0), 0=no')
+            call prop_set(prop_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
          end if
          if (writeall .or. Soiltempthick /= 0.0_dp) then
             call prop_set(prop_ptr, 'physics', 'Soiltempthick', Soiltempthick, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
