@@ -168,6 +168,7 @@ contains
       double precision, allocatable, target :: tmpvar2D_tmp(:, :)
       double precision, allocatable, target :: tmpvar2D_tmpmax(:, :)
       double precision, allocatable, target :: tmpvar3D(:, :, :) !< array buffer for a single global variable slice, size: e.g. (kxdim, kmx, maxitems)
+      double precision, allocatable :: tmpvar3D_tmp(:, :, :)
       double precision, pointer :: tmpvarptr(:, :, :)
       character, allocatable :: ctmpvar2D(:, :) !< Character arrays
       character, allocatable :: ctmpvar2D_tmp(:, :)
@@ -244,7 +245,6 @@ contains
       integer :: nMaxvars_contact
       integer, allocatable :: icfile(:), nvars_contact(:, :), varids_contact(:, :, :), id_contactvars(:, :), nMaxvars_contact_icontact(:)
       integer, allocatable :: nvarsel(:)
-      integer :: jareadglob
       integer :: imesh, maxTopodim, minTopodim, topodimTmp, itopo
       integer, allocatable :: topodim(:, :) ! For each topology index the topology dimension
       integer, allocatable :: mesh2topo(:, :) ! A mapping from meshid to topology index
@@ -253,7 +253,7 @@ contains
       integer :: ilink1d2dglob, idimtime, idimlink1d2d, idimstring, idim
       integer :: id_dimTwo
       integer :: firstfile, global_count, global_max
-      integer, allocatable :: global_ids(:)
+      integer, allocatable :: global_ids(:), node_global_to_output(:)
 
       noutfile = nfiles + 1
       ncids = -1
@@ -914,7 +914,6 @@ contains
    !! constructing merged flow geometry (3a.),
    !! defining dimensions (3b), and
    !! defining variables (4.).
-      jareadglob = 0
       jaTopLevel = 0
       do itopo = minTopodim, maxTopodim ! Scan on different mesh topology
          ifileScan = ifile(itopo) ! will scan variables in ifileScan in the following
@@ -1294,7 +1293,6 @@ contains
                   ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, face_c2g(nfacecount(itopo) + 1:nfacecount(itopo) + ndx(itopo, ii), itopo), count=(/ndx(itopo, ii)/))
                else
                   ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, node_c2g(nnodecount(itopo) + 1:nnodecount(itopo) + ndx(itopo, ii), itopo), count=(/ndx(itopo, ii)/))
-                  jareadglob = 1
                end if
                if (ierr /= nf90_noerr) then
                   if (jaugrid == 0) then
@@ -1342,6 +1340,11 @@ contains
                   if (node_domain(nnodecount(itopo) + ip, itopo) == ii - 1) then
                      nnodeglob(itopo) = nnodeglob(itopo) + 1
                      inodeglob = node_c2g(nnodecount(itopo) + ip, itopo)
+                     if (node_g2c(inodeglob) /= -1) then
+                        write (*, '(a,i0)') 'Error: mapmerge: multiple owners for global node ', inodeglob
+                        ierr = 1
+                        goto 888
+                     end if
                      node_g2c(inodeglob) = nnodecount(itopo) + ip
                   end if
                end do
@@ -1621,6 +1624,35 @@ contains
          else
             topodimTmp = 2 ! For old format, the mesh topology is 2d
          end if
+         if (topodimTmp == 1) then
+            ! Preserve global-ID order, but remove gaps and the original 2D offset.
+            call realloc(node_global_to_output, size(node_g2c), keepExisting=.false., fill=-1)
+            inodeglob = 0
+            do ip = 1, size(node_g2c)
+               if (node_g2c(ip) > 0) then
+                  inodeglob = inodeglob + 1
+                  node_global_to_output(ip) = inodeglob
+               end if
+            end do
+            do ip = 1, sum(numk(itopo, 1:nfiles))
+               inodeglob = node_c2g(ip, itopo)
+               if (node_global_to_output(inodeglob) < 0) then
+                  write (*, '(a,i0)') 'Error: mapmerge: missing owning partition for global node ', inodeglob
+                  ierr = 1
+                  goto 888
+               end if
+               node_c2g(ip, itopo) = node_global_to_output(inodeglob)
+            end do
+         else
+            do ip = 1, sum(ndx(itopo, 1:nfiles))
+               ifaceglob = face_c2g(ip, itopo)
+               if (face_g2c(ifaceglob) < 0) then
+                  write (*, '(a,i0)') 'Error: mapmerge: missing owning partition for global cell ', ifaceglob
+                  ierr = 1
+                  goto 888
+               end if
+            end do
+         end if
          if (jamerge_cntv == 1) then
             if (topodimTmp /= 1) then ! for 1D map file, node_c2g has been read from the input map files, so skip
             !! fulfill node_c2g, because in domain that is larger than 0000, there are nodes which are in this domain but
@@ -1678,6 +1710,15 @@ contains
                   end if
                   netedgecount = sum(numl(itopo, 1:ii - 1))
                   nfacecount(itopo) = sum(nump(itopo, 1:ii - 1))
+                  if (jaugrid == 0) then
+                     ierr = nf90_inq_varid(ncids(ii), 'ElemLink', id_netedgefaces)
+                  else
+                     ierr = ionc_inq_varid(ioncids(ii), topo2mesh(itopo, ii), 'edge_faces', id_netedgefaces)
+                  end if
+                  if (ierr /= nf90_noerr) then
+                     write (*, '(a)') 'Error: mapmerge: cannot find edge-face connectivity in `'//trim(infiles(ii))//'''.'
+                     goto 888
+                  end if
                   ierr = ncu_inq_var_fill(ncids(ii), id_netedgefaces, nofill, ifill_value)
                   do ip = 1, numl(itopo, ii)
                      k1 = netedgefaces(1, netedgecount + ip) ! flowelem that edge L connects
@@ -1700,7 +1741,7 @@ contains
                            ifacec = face_g2c(ifaceglob) ! and this is now from the OTHER domain.
                            ! in which domain (iii) does iface belong
                            do iii = 1, nfiles
-                              if (ifacec > sum(nump(itopo, 1:iii - 1)) .and. ifacec < sum(nump(itopo, 1:iii))) then
+                              if (ifacec > sum(nump(itopo, 1:iii - 1)) .and. ifacec <= sum(nump(itopo, 1:iii))) then
                                  ifacefile = iii
                                  exit
                               end if
@@ -1966,12 +2007,6 @@ contains
          end if
       end if
       
-      ! When both 1D and 2D meshes are present, the global numbering of 1D nodes (read from input files) includes the 2D faces.
-      ! In merged map file, we make the global numbering of 1D nodes only for 1D nodes, not including 2D faces.
-      if (minTopodim == 1 .and. maxTopodim == 2 .and. jareadglob == 1) then
-         node_c2g(:, 1) = node_c2g(:, 1) - ndx(2, noutfile)
-      end if
-
       ! The partitions variables are used for restart. Since restart from a ugrid file is not supported yet, do not write these variables if it is ugrid.
       ! TODO: see UNST-4947 which aims to enable restart from ugrid file.
       if (jaugrid == 0) then
@@ -2045,6 +2080,8 @@ contains
             ! 'contact2' at im==1. This is a TODO task.
             do icontact = 1, maxNcontacts
                do ii = 1, nfiles
+                  nnodecount(1) = sum(numk(1, 1:ii - 1))
+                  nfacecount(2) = sum(ndx(2, 1:ii - 1))
                   if (icontact > ncontacts(ii)) then
                      cycle
                   end if
@@ -2069,7 +2106,8 @@ contains
                         link1d2d_c2g(nlink1d2dcount(icontact) + ip, icontact) = nlink1d2dglob(icontact)
 
                         links1d2dnodes_g(1, nlink1d2dglob(icontact), icontact) = node_c2g(nnodecount(1) + k1, 1)
-                        links1d2dnodes_g(2, nlink1d2dglob(icontact), icontact) = face_c2g(nfacecount(2) + k2, 2)
+                        ifaceglob = face_c2g(nfacecount(2) + k2, 2)
+                        links1d2dnodes_g(2, nlink1d2dglob(icontact), icontact) = face_c2cc(face_g2c(ifaceglob))
                      end if
                   end do
 
@@ -2354,11 +2392,17 @@ contains
                   call realloc(tmpvar3D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), count_read(var_laydimpos(iv, itopo)), maxitems/), keepExisting=.false.)
                   ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
                   tmpvarptr => tmpvar3D
+                  if (topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
+                     call realloc(tmpvar3D_tmp, shape(tmpvar3D), keepExisting=.false., fill=fill_value_double)
+                  end if
                   tmpvarDim = 3
                else if (numkx(iv, itopo) > 1) then ! for 4 dimensional sediment variables which has more than 1 sediment dimension, e.g. msed
                   call realloc(tmpvar3D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), count_read(var_kxdimpos(2, iv, itopo)), maxitems/), keepExisting=.false.)
                   ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
                   tmpvarptr => tmpvar3D
+                  if (topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
+                     call realloc(tmpvar3D_tmp, shape(tmpvar3D), keepExisting=.false., fill=fill_value_double)
+                  end if
                   tmpvarDim = 3
                else ! Only a vectormax dim
                   if (is_float_kind(var_types(iv,itopo))) then
@@ -2637,9 +2681,8 @@ contains
                               end if
                            end if
                         end do
-                     else if (jaugrid == 1 .and. topodim(imesh, ii) == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
-                        ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
-                        ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
+                     else if (jaugrid == 1 .and. topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
+                        ! Scatter node data to the compact output positions, including ghost removal.
                         ja1DCNVar = 1
                         nnodecount(itopo) = sum(numk(itopo, 1:ii - 1))
                         do ip = 1, item_counts(ii)
@@ -2647,13 +2690,24 @@ contains
                               inodeglob = node_c2g(nnodecount(itopo) + ip, itopo)
                               if (inodeglob > 0) then
                                  if (is_float_kind(var_types(iv,itopo))) then
-                                    tmpvar1D_tmp(inodeglob) = tmpvar1D(nnodecount(itopo) + ip)
+                                    select case (tmpvarDim)
+                                    case (1)
+                                       tmpvar1D_tmp(inodeglob) = tmpvar1D(nitemglob0 + ip)
+                                    case (2)
+                                       tmpvar2D_tmp(:, inodeglob) = tmpvar2D(:, nitemglob0 + ip)
+                                    case (3)
+                                       tmpvar3D_tmp(:, :, inodeglob) = tmpvar3D(:, :, nitemglob0 + ip)
+                                    end select
                                  else if (is_integer_kind(var_types(iv,itopo))) then
-                                    itmpvar1D_tmp(inodeglob) = itmpvar1D(nnodecount(itopo) + ip)
+                                    if (tmpvarDim == 2) then
+                                       itmpvar2D_tmp(:, inodeglob) = itmpvar2D(:, nitemglob0 + ip)
+                                    else
+                                       itmpvar1D_tmp(inodeglob) = itmpvar1D(nitemglob0 + ip)
+                                    end if
                                  else if (var_types(iv, itopo) == nf90_byte) then
-                                    btmpvar1D_tmp(inodeglob, itm:itm) = btmpvar1D(nnodecount(itopo) + ip, itm:itm)
+                                    btmpvar1D_tmp(inodeglob, itm:itm) = btmpvar1D(nitemglob0 + ip, itm:itm)
                                  else if (var_types(iv, itopo) == nf90_char) then
-                                    ctmpvar2D_tmp(:, inodeglob) = ctmpvar2D(:, nnodecount(itopo) + ip)
+                                    ctmpvar2D_tmp(:, inodeglob) = ctmpvar2D(:, nitemglob0 + ip)
                                  end if
                               end if
                            end if
@@ -2709,9 +2763,20 @@ contains
                   if (ja1DCNVar == 1) then
                      nitemglob = item_counts(noutfile) ! Update nitemglob, otherwise the check on nitemglob after the outer do-loop will show unexpected error message.
                      if (is_float_kind(var_types(iv,itopo))) then
-                        tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
+                        select case (tmpvarDim)
+                        case (1)
+                           tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
+                        case (2)
+                           tmpvar2D(:, 1:nitemglob) = tmpvar2D_tmp(:, 1:nitemglob)
+                        case (3)
+                           tmpvar3D(:, :, 1:nitemglob) = tmpvar3D_tmp(:, :, 1:nitemglob)
+                        end select
                      else if (is_integer_kind(var_types(iv,itopo))) then
-                        itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
+                        if (tmpvarDim == 2) then
+                           itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
+                        else
+                           itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
+                        end if
                      else if (var_types(iv, itopo) == nf90_byte) then
                         btmpvar1D(1:nitemglob, itm:itm) = btmpvar1D_tmp(1:nitemglob, itm:itm)
                      else if (var_types(iv, itopo) == nf90_char) then
@@ -3002,6 +3067,7 @@ contains
       if (allocated(tmpvar2D_tmp)) deallocate (tmpvar2D_tmp)
       if (allocated(tmpvar2D_tmpmax)) deallocate (tmpvar2D_tmpmax)
       if (allocated(tmpvar3D)) deallocate (tmpvar3D)
+      if (allocated(tmpvar3D_tmp)) deallocate (tmpvar3D_tmp)
       if (allocated(btmpvar1D)) deallocate (btmpvar1D)
       if (allocated(btmpvar1D_tmp)) deallocate (btmpvar1D_tmp)
       if (allocated(ctmpvar2D)) deallocate (ctmpvar2D)

@@ -275,6 +275,31 @@ class MapMergeTest(unittest.TestCase):
             location=location,
         )
         if dimension == 1:
+            ds.createDimension("nmesh1d_FlowElemContourPts", 5)
+            contour = np.asarray(global_ids)[:, None] + np.arange(5)
+            valid = np.arange(5) < (2 + np.asarray(global_ids)[:, None] // 100 % 3)
+            for axis, offset in (("x", 0), ("y", 10)):
+                data = np.where(
+                    np.asarray(owners)[:, None] == partition, contour + offset, -123
+                )
+                self.variable(
+                    ds,
+                    f"{name}_FlowElemContour_{axis}",
+                    "f8",
+                    (spatial_dimension, "nmesh1d_FlowElemContourPts"),
+                    np.where(valid, data, -999),
+                    mesh=name,
+                    location="node",
+                )
+            self.variable(
+                ds,
+                "mesh1d_node_vector",
+                "i4",
+                (spatial_dimension, "nmesh1d_FlowElemContourPts"),
+                np.where(np.asarray(owners)[:, None] == partition, contour, -123),
+                mesh=name,
+                location="node",
+            )
             labels = np.array(
                 [list(f"{value:08d}") for value in global_ids], dtype="S1"
             )
@@ -419,6 +444,15 @@ class MapMergeTest(unittest.TestCase):
             np.testing.assert_array_equal(edge_nodes, [[1, 2], [2, 3]])
             labels = [b"".join(row).decode() for row in ds[f"{name}_node_id"][:]]
             self.assertEqual(labels, [f"{value:08d}" for value in expected_ids])
+            contour = np.asarray(expected_ids)[:, None] + np.arange(5)
+            valid = np.arange(5) < (2 + np.asarray(expected_ids)[:, None] // 100 % 3)
+            for axis, offset in (("x", 0), ("y", 10)):
+                actual = ds[f"{name}_FlowElemContour_{axis}"][:]
+                np.testing.assert_array_equal(np.ma.getmaskarray(actual), ~valid)
+                np.testing.assert_array_equal(
+                    actual.filled(-999), np.where(valid, contour + offset, -999)
+                )
+            np.testing.assert_array_equal(ds["mesh1d_node_vector"][:], contour)
         else:
             self.assertEqual(node_count, 8)
             self.assertEqual(len(ds.dimensions[f"{name}_nEdges"]), 10)
@@ -444,6 +478,20 @@ class MapMergeTest(unittest.TestCase):
         with Dataset(self.merge([self.partition(5, owners=(5, 5, 5))])) as ds:
             self.check_mesh(ds, 2, [100, 200, 300])
 
+    def test_sparse_1d(self):
+        with Dataset(
+            self.merge(
+                [self.partition(5, dimensions=(1,)), self.partition(2, dimensions=(1,))]
+            )
+        ) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+
+    def test_single_surviving_1d_partition(self):
+        with Dataset(
+            self.merge([self.partition(5, dimensions=(1,), owners=(5, 5, 5))])
+        ) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+
     def test_global_ids_without_original_count_attribute(self):
         files = [self.partition(p) for p in (2, 5)]
         for path in files:
@@ -461,6 +509,31 @@ class MapMergeTest(unittest.TestCase):
                 ds["mesh2d_temperature"][:], [expected, expected + 0.5]
             )
 
+    def test_partitions_with_different_topologies(self):
+        files = [
+            self.partition(2, dimensions=(1,), owners=(2, 2, 2)),
+            self.partition(5, dimensions=(2,), owners=(5, 5, 5)),
+        ]
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+            self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_contact_offsets_when_previous_partition_has_no_contacts(self):
+        files = [
+            self.partition(2),
+            self.partition(5, dimensions=(1, 2), owners_1d=(5, 5, 5), contacts=True),
+        ]
+        with Dataset(files[1], "a") as ds:
+            ds["contact_1D2D"][0, 1] = 2
+            ds["contact_1D2D_q1"][:, 0] = [10, 10.5]
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+            self.check_mesh(ds, 2, [100, 200, 300])
+            np.testing.assert_array_equal(ds["contact_1D2D"][:], [[1, 2], [3, 3]])
+            np.testing.assert_array_equal(
+                ds["contact_1D2D_q1"][:], [[10, 30], [10.5, 30.5]]
+            )
+
     def test_different_local_cropped_meshes(self):
         files = [
             self.partition(2, owners=(2, 5), ids=[100, 200], cell_positions=[0, 1]),
@@ -473,6 +546,74 @@ class MapMergeTest(unittest.TestCase):
         files = [self.partition(p, owners=(5, 5, 5)) for p in (2, 5)]
         with Dataset(self.merge(files)) as ds:
             self.check_mesh(ds, 2, [100, 200, 300])
+
+    def test_1d_global_order_differs_from_partition_order(self):
+        files = [self.partition(p, dimensions=(1,), owners=(5, 2, 5)) for p in (2, 5)]
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+
+    def test_layered_1d_node_vectors(self):
+        files = [self.partition(p, dimensions=(1,), owners=(5, 2, 5)) for p in (2, 5)]
+        expected = (
+            np.asarray([1100, 1200, 1300])[:, None, None]
+            + np.arange(2)[None, :, None] * 10
+            + np.arange(5)
+        )
+        for path, rank in zip(files, (2, 5)):
+            with Dataset(path, "a") as ds:
+                ds.createDimension("mesh1d_nLayers", 2)
+                ds["mesh1d"].layer_dimension = "mesh1d_nLayers"
+                values = np.where(
+                    np.asarray([5, 2, 5])[:, None, None] == rank, expected, -123
+                )
+                self.variable(
+                    ds,
+                    "mesh1d_layered_vector",
+                    "f8",
+                    (
+                        "time",
+                        "mesh1d_nNodes",
+                        "mesh1d_nLayers",
+                        "nmesh1d_FlowElemContourPts",
+                    ),
+                    [values, values + 0.5],
+                    mesh="mesh1d",
+                    location="node",
+                )
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+            np.testing.assert_array_equal(
+                ds["mesh1d_layered_vector"][:], [expected, expected + 0.5]
+            )
+
+    def test_mixed_mesh_and_contacts(self):
+        files = [
+            self.partition(p, dimensions=(1, 2), owners=(5, 2, 5), contacts=True)
+            for p in (2, 5)
+        ]
+        files.append(self.root / "model_0007_map.nc")
+        with Dataset(self.merge(files)) as ds:
+            self.check_mesh(ds, 1, [1100, 1200, 1300])
+            self.check_mesh(ds, 2, [200, 100, 300])
+            np.testing.assert_array_equal(ds["contact_1D2D"][:], [[1, 2], [3, 3]])
+            np.testing.assert_array_equal(
+                ds["contact_1D2D_q1"][:], [[10, 30], [10.5, 30.5]]
+            )
+
+    def test_unrestricted_numbering(self):
+        for dimension in (1, 2):
+            with self.subTest(dimension=dimension):
+                files = [
+                    self.partition(
+                        p, dimensions=(dimension,), owners=(0, 1, 1), ids=[1, 2, 3]
+                    )
+                    for p in (0, 1)
+                ]
+                with Dataset(self.merge(files)) as ds:
+                    self.check_mesh(ds, dimension, [1, 2, 3])
+
+    def test_missing_owner_is_reported(self):
+        self.merge([self.partition(2)], error="missing owning partition")
 
     def test_all_files_missing_is_reported(self):
         self.merge([self.root / "model_0005_map.nc"], error="no existing input files")

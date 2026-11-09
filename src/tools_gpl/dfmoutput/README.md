@@ -8,8 +8,15 @@ merges partitioned map output, including output restricted with `MapOutputPolygo
   existing files or the full filename list; nonexistent files are skipped with a
   warning. Existing files that cannot be opened remain errors.
 - One existing partition is sufficient. Its ghost cells are still removed.
+- Every retained ghost cell/node must have an owned copy among the supplied files.
+  Missing owning partitions are reported as errors.
 - Global-ID lookups account for the original model size (`flowelem_globalnr`'s
   `valid_max`, or the largest supplied global ID when that attribute is absent).
+- Retained 1D nodes are numbered contiguously in original global-ID order.
+  Connectivity and contact references use the compact output indices; the
+  `flowelem_globalnr` and `flowelem_domain` variables retain their original values.
+- Per-node arrays, including 1D cell-contour coordinates, follow the same compact
+  numbering and ghost removal as scalar node values.
 
 The merged mesh represents the retained geometry and data. Its entity ordering
 and partition metadata need not match a sequential cropped map file.
