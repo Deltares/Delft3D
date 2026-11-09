@@ -73,7 +73,7 @@ contains
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
-      use m_physcoef, only: dynroughveg
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled
       use m_update_dynveg, only: update_dynveg
 
       implicit none
@@ -174,7 +174,7 @@ contains
       end if
 
       ! Adapt roughness according to burial/erosion
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          call update_dynveg()
       end if
 

@@ -92,7 +92,7 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
-      use m_physcoef, only: ag, rhomean, dynroughveg
+      use m_physcoef, only: ag, rhomean, dynamic_vegetation_roughness_enabled
       use m_get_kbot_ktop, only: getkbotktop
       use m_bedform, only: bfmpar
       implicit none
@@ -324,7 +324,7 @@ contains
 
       end if ! time1<tmor
 
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          call determine_linkbased_cumblchg()
       end if
       
@@ -1860,7 +1860,7 @@ contains
       use morphology_data_module, only: bedbndtype
       use fm_external_forcings_data, only: nopenbndsect
       use m_fm_dredge, only: fm_dredge
-      use m_physcoef, only: dynroughveg
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled
 
       implicit none
 
@@ -1939,7 +1939,7 @@ contains
                blchg(nm) = bl_ave(nm) - bl_ave0(nm) ! get average bed level change
             end do
             !
-            if (dynroughveg > 0) then
+            if (dynamic_vegetation_roughness_enabled > 0) then
                call determine_linkbased_cumblchg()
             end if
             !

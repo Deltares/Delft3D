@@ -750,7 +750,7 @@ contains
       use dfm_error, only: DFM_WRONGINPUT
       use m_flowgeom, only: lnx
       use m_flow, only: frcu, frcu0, dynveg
-      use m_physcoef, only: frcu_no_vegetation, dynroughveg
+      use m_physcoef, only: frcu_no_vegetation, dynamic_vegetation_roughness_enabled
       use m_alloc
       use unstruc_model, only: md_dynvegpol
       use timespace_parameters, only: LOCTP_POLYGON_FILE
@@ -769,7 +769,7 @@ contains
 
       integer, dimension(:), allocatable :: kp
    
-      if (dynroughveg == 0) then
+      if (dynamic_vegetation_roughness_enabled == 0) then
          return
       end if
    

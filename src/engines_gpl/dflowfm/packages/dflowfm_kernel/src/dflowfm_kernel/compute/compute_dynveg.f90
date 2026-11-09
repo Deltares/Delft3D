@@ -39,11 +39,11 @@ contains
 
    subroutine update_dynveg()
       use precision, only: dp
-      use m_physcoef, only: dynroughveg, dstem, droot, frcu_no_vegetation
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled, dstem, droot, frcu_no_vegetation
       use m_sediment, only: cumes
       use m_flow, only: dynveg, frcu, frcu0
 
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          if (.not. allocated(cumes)) then
             ! when sedimentation is not allocated, it's zero and frcu stays equal to frcu0
             return
