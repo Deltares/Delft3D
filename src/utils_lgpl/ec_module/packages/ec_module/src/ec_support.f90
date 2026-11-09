@@ -312,12 +312,13 @@ contains
    ! =======================================================================
 
    !> Look up the variable and standard names for a given quantity name from predefined lists
+   !! Replaces previous candidates; unknown quantities leave all outputs unallocated.
    subroutine ecSupportNetcdfGetQuantityCandidateNames(quantityName, ncstdnames, ncvarnames, ncstdnames_fallback)
       use string_module, only: str_tolower, istarts_with
       character(len=*), intent(in) :: quantityName !< name of the quantity to look up
-      character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
-      character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
-      character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
+      character(len=*), dimension(:), intent(out), allocatable :: ncstdnames !< list with standard names to be filled
+      character(len=*), dimension(:), intent(out), allocatable :: ncvarnames !< list with variable names to be filled
+      character(len=*), dimension(:), intent(out), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
 
       select case (str_tolower(trim(quantityName)))
       case ('rainfall')
@@ -442,20 +443,27 @@ contains
          ncvarnames(1) = 'd2m' ! dew-point temperature
          ncstdnames(1) = 'dew_point_temperature'
       case ('wind_speed')
+         allocate (ncvarnames(1))
          allocate (ncstdnames(1))
+         ncvarnames(1) = 'wind_speed'
          ncstdnames(1) = 'wind_speed'
       case ('wind_from_direction')
+         allocate (ncvarnames(1))
          allocate (ncstdnames(1))
+         ncvarnames(1) = 'wind_from_direction'
          ncstdnames(1) = 'wind_from_direction'
       case ('humidity_airtemperature_cloudiness')
          allocate (ncvarnames(1:3))
          allocate (ncstdnames(1:3))
+         allocate (ncstdnames_fallback(3))
          ncvarnames(1) = 'rhum' ! relative_humidity
          ncstdnames(1) = 'relative_humidity'
          ncvarnames(2) = 't2m' ! 2-meter air temperature
          ncstdnames(2) = 'air_temperature'
          ncvarnames(3) = 'tcc' ! cloud cover (fraction)
          ncstdnames(3) = 'cloud_area_fraction'
+         ncstdnames_fallback = ncstdnames
+         ncstdnames_fallback(1) = 'humidity'
       case ('dewpoint_airtemperature_cloudiness')
          allocate (ncvarnames(1:3))
          allocate (ncstdnames(1:3))
@@ -468,6 +476,7 @@ contains
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
          allocate (ncvarnames(1:4))
          allocate (ncstdnames(1:4))
+         allocate (ncstdnames_fallback(4))
          ncvarnames(1) = 'd2m' ! dew-point temperature
          ncstdnames(1) = 'dew_point_temperature'
          ncvarnames(2) = 't2m' ! 2-meter air temperature
@@ -476,9 +485,12 @@ contains
          ncstdnames(3) = 'cloud_area_fraction'
          ncvarnames(4) = 'ssrd'
          ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
+         ncstdnames_fallback = ncstdnames
+         ncstdnames_fallback(4) = 'solar_irradiance'
       case ('humidity_airtemperature_cloudiness_solarradiation')
          allocate (ncvarnames(1:4))
          allocate (ncstdnames(1:4))
+         allocate (ncstdnames_fallback(4))
          ncvarnames(1) = 'rhum' ! relative_humidity
          ncstdnames(1) = 'relative_humidity'
          ncvarnames(2) = 't2m' ! 2-meter air temperature
@@ -487,6 +499,9 @@ contains
          ncstdnames(3) = 'cloud_area_fraction'
          ncvarnames(4) = 'ssrd'
          ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
+         ncstdnames_fallback = ncstdnames
+         ncstdnames_fallback(1) = 'humidity'
+         ncstdnames_fallback(4) = 'solar_irradiance'
       case ('solarradiation')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
@@ -548,8 +563,10 @@ contains
          ncstdnames(1) = 'sea_water_y_velocity'
          ncstdnames_fallback(1) = 'northward_sea_water_velocity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
+         allocate (ncvarnames(1))
          allocate (ncstdnames(1))
-         ncstdnames(1) = quantityName
+         ncvarnames(1) = str_tolower(trim(quantityName))
+         ncstdnames(1) = str_tolower(trim(quantityName))
       case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
