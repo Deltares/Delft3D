@@ -789,7 +789,7 @@ contains
                   call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
                end if
 
-               vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
+               vicwmax = 0.1_dp * hu(LL) ! 0.009UH, elder_viscosity_contribution, uavmax=
                if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * turkin1(Lb0:Lt) / tureps1(Lb0:Lt))
                else if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then

@@ -358,7 +358,7 @@ contains
       !updvertp
 
       ihorvic = 0
-      if (uniform_horizontal_eddy_viscosity > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. Elder > 0 .or. kmx > 0) then
+      if (uniform_horizontal_eddy_viscosity > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. elder_viscosity_contribution > 0 .or. kmx > 0) then
          ihorvic = 1
       end if
       if (ihorvic > 0 .or. jaconveyance2D >= 3 .or. ndraw(29) == 37) then
@@ -377,7 +377,7 @@ contains
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
-               call compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+               call compute_viscosity_and_stress_vectorized(Smagorinsky, elder_viscosity_contribution, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
             else
                !$OMP PARALLEL DO                                  &
                !$OMP PRIVATE(L,k1,k2)
@@ -694,7 +694,7 @@ contains
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
-   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, elder_viscosity_contribution, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
       use m_physcoef, only: VON_KARMAN, sag
@@ -707,7 +707,7 @@ contains
       use m_flowtimes, only: dti
       use m_alloc, only: realloc
 
-      real(dp), intent(in) :: Smagorinsky, Elder, uniform_horizontal_eddy_viscosity, vicuship, nuhfac, rhomean
+      real(dp), intent(in) :: Smagorinsky, elder_viscosity_contribution, uniform_horizontal_eddy_viscosity, vicuship, nuhfac, rhomean
       integer, intent(in) :: javiusp, nshiptxy, ja_timestep_auto_visc
       integer, intent(in) :: jawave, swave, roller, jsferic, jasfer3D
 
@@ -752,9 +752,9 @@ contains
             drl(L) = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
          end do
       end if
-      if (Elder > 0.0_dp) then !  add Elder
+      if (elder_viscosity_contribution > 0.0_dp) then !  add elder_viscosity_contribution
          chezy_elder = get_chezy(hu, frcu, u1, v, ifrcutp)
-         chezy_elder = Elder * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
+         chezy_elder = elder_viscosity_contribution * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
       end if
 
       !$OMP SIMD
@@ -764,7 +764,7 @@ contains
          wuL = 1.0_dp / wuiL
          dxL = dx(L)
          dxiL = 1.0_dp / dxL
-         if (Elder > 0.0_dp) then !  add Elder
+         if (elder_viscosity_contribution > 0.0_dp) then !  add elder_viscosity_contribution
             vicL = vicL + chezy_elder(L)
          end if
 

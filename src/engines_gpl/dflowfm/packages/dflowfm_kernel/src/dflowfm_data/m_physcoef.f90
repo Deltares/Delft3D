@@ -72,7 +72,7 @@ module m_physcoef
    real(kind=dp) :: uniform_horizontal_eddy_viscosity !< [m2/s] Uniform horizontal eddy viscosity for momentum. {former:vicouv}
    real(kind=dp) :: uniform_horizontal_eddy_diffusivity !< [m2/s] Uniform horizontal eddy diffusivity for constituents. {former:dicouv}
 
-   real(kind=dp) :: Elder !< [-] Add Elder viscosity.
+   real(kind=dp) :: elder_viscosity_contribution !< [m2/s] elder_viscosity_contribution viscosity contribution to the horizontal eddy viscosity.
    real(kind=dp) :: Smagorinsky !< [-] Add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S.
 
    type(t_array_or_scalar), target :: background_vertical_eddy_viscosity !< [m2/s] Background vertical eddy viscosity.
@@ -151,7 +151,7 @@ contains
       wall_ks = 0.0_dp
       uniform_horizontal_eddy_viscosity = 0.1_dp
       uniform_horizontal_eddy_diffusivity = 0.1_dp
-      Elder = 0.0_dp
+      elder_viscosity_contribution = 0.0_dp
       Smagorinsky = 0.2_dp
       background_vertical_eddy_diffusivity%scalar = 1e-6_dp
       background_vertical_eddy_viscosity%scalar = 1e-6_dp
