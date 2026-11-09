@@ -52,13 +52,14 @@ contains
         use m_uitzicht_spectrum, DayLightPlanck => planck
         use m_dhnolay
         use m_logger_helper, only: write_log_message
+        use bloom_data_vtrans
 
         implicit none
 
         ! Note: see the remark below - we do not hold the spectrum in the process coefficients
         ! integer, parameter :: num_process_space_real   = num_basic + num_spectrum
 
-        integer, parameter :: num_process_input        = 40
+        integer, parameter :: num_process_input        = 42
         integer, parameter :: num_process_output       = 18
         integer, parameter :: num_process_space_real   = num_process_input + num_process_output
         integer, parameter :: num_offset = num_process_input
@@ -115,7 +116,8 @@ contains
         real(kind = dp) :: secchi, d_1, extp_d, extdet, extgl, exthum, exth2o, extchl, extdoc2, dummy
         real(kind = dp) :: depth, localdepth, sechor1, sechor2, ext_last, sechor1_last, sechor2_last
         real(kind = dp) :: secver, secvermax, zthreshold
-        integer(kind = int_wp) :: iflux, iseg, nosegl, nosegw, nolay, ihseg, i, ilay, ikmrk1, sw_uit3
+        integer(kind = int_wp) :: iflux, iseg, noseg_3dl, nosegw, nolay, ihseg, i, ilay, ikmrk1, sw_uit3
+        integer(kind = int_wp) :: first, last, step
 
 
         integer(kind = int_wp) :: ipnt(num_process_space_real)
@@ -228,26 +230,49 @@ contains
                 i_400 = nearest_spectrum_band( 400.0_dp )
             endif
 
-            call dhnolay(nolay)
-            nosegl = num_cells / nolay
+            if ( .not. fm_vtrans ) then
+                call dhnolay(nolay)
+                noseg_3dl = num_cells / nolay
 
-            if ( mod(num_cells, nolay) /= 0 ) then
-                call write_log_message( &
-                    "EXTINC (UITZICHT): Number of cells is not divisible by number of layers - this is not currently supported")
-                error stop
+                if ( mod(num_cells, nolay) /= 0 ) then
+                    call write_log_message( &
+                        "EXTINC (UITZICHT): Number of cells is not divisible by number of layers - this is not currently supported")
+                    error stop
+                endif
+            else
+                noseg_3dl = num_cells
             endif
 
-            do ihseg = 1,nosegl
+            do ihseg = 1,noseg_3dl
+                if ( .not. fm_vtrans ) then
+                    first = ihseg
+                    last  = ihseg + (nolay-1) * noseg_3dl
+                    step  = noseg_3dl
+                else
+                    ! In D-Flow FM: arrangement of grid cells in columns
+                    ! The column starts at "first" and ends at "last" cell index
+                    ! and we can simply step through the column with a unit step
+                    ! (-1 because of the ordering in D-Flow FM)
+                    first = nint(process_space_real(ipoint(41)+(ihseg-1)*increm(41)))
+                    last  = nint(process_space_real(ipoint(42)+(ihseg-1)*increm(42)))
+                    step  = -1
+
+                    ! Start the loop only if the segment is at the top
+                    if ( first /= ihseg ) then
+                        cycle
+                    endif
+                endif
+
+
                 SpectrumTop = DaylightPlanck
                 SpectrumBot = DaylightPlanck
 
-                localdepth = process_space_real(ipoint(37)+(ihseg+(nolay-1)*nosegl-1)*increm(37))
+                localdepth = process_space_real(ipoint(37)+(iseg-1)*increm(37))
                 secvermax  = localdepth
                 secver     = 0.0_dp
 
                 ! Loop over the column starting with this segment (MJ: improvement: use columns module from JvB)
-                do ilay = 1, nolay
-                    iseg = ihseg + (ilay-1) * nosegl
+                do iseg = first, last, step
 
                     if (btest(iknmrk(iseg), 0)) then
                         ipnt = ipoint + (iseg-1) * increm

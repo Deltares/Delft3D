@@ -583,6 +583,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Extinc_VLG","SW_Uit3D  ",  38,"Y","x",1
 "Extinc_VLG","ZThreshold",  39,"Y","x",1
 "Extinc_VLG","Chlfa     ",  40,"Y"," ",1
+"Extinc_VLG","FMkTop    ",  41,"Y"," ",1
+"Extinc_VLG","FMkBot    ",  42,"Y"," ",1
 "CalcRad   ","ExtVl     ",   1,"N","x",1
 "CalcRad   ","Depth     ",   2,"N","x",1
 "CalcRad   ","RadSurf   ",   3,"N","x",1
@@ -9586,6 +9588,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Secchi    ","UitZangle ",  20,"Y"," ",1
 "Secchi    ","DMCFDetC  ",  21,"Y"," ",1
 "Secchi    ","PAConstant",  22,"Y","x",1
+"Secchi    ","SW_Uit3D  ",  23,"Y","x",1
 "Prod_TEWOR","fTEWORBOD ",   1,"Y","x",1
 "Prod_TEWOR","fTEWORBOD2",   2,"Y","x",1
 "Prod_TEWOR","fTEWORBOD3",   3,"Y","x",1
