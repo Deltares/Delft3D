@@ -6,9 +6,13 @@ ARG BASE_IMAGE_URL=containers.deltares.nl/docker-proxy/almalinux/8-base:latest
 
 FROM ${BASE_IMAGE_URL}
 
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.12.16
 
-RUN curl -LsSf https://astral.sh/uv/0.11.19/install.sh | UV_INSTALL_DIR=/usr/bin sh
+RUN dnf update --assumeyes --refresh && \
+    dnf clean all && \
+    rm --recursive --force /var/cache/dnf
+
+RUN curl -LsSf https://astral.sh/uv/0.13.6/install.sh | UV_INSTALL_DIR=/usr/bin sh
 
 RUN <<EOF
 set -eo pipefail

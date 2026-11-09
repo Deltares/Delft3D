@@ -50,7 +50,7 @@ object TestBenchValidation : BuildType({
                 triggerRules = """
                     +:/test/deltares_testbench/**/*.py
                     +:/test/deltares_testbench/TestBench.py
-                    +:/test/deltares_testbench/pip/*-requirements.txt
+                    +:/test/deltares_testbench/uv.lock
                     +:/test/deltares_testbench/pyproject.toml
                     +:/ci/teamcity/Delft3D/ciUtilities/TestBenchValidation.kt
                 """.trimIndent()
@@ -69,9 +69,10 @@ object TestBenchValidation : BuildType({
             workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
-                uv venv
+                set -exo pipefail
+                # --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked --extra dev
                 source .venv/bin/activate
-                uv pip sync pip/lnx-dev-requirements.txt
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
