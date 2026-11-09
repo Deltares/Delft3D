@@ -113,9 +113,9 @@
         <argument>-n 2 -localonly</argument>
       </arguments>
     </program>
-    <program name="COUP203" logOutputToFile="true" addSearchPaths="true">
+    <!-- <program name="COUP203" logOutputToFile="true" addSearchPaths="true">
       <path>thirdparty\coup203\win64\coup203.exe</path>
-    </program>
+    </program> -->
     <program name="FLOW2D3D" logOutputToFile="true">
       <location ref="dsctestbench-references_bin" type="reference">
         <from>delft3d_open_source/win64</from>
