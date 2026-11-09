@@ -82,7 +82,7 @@ backgroundVerticalEddyViscosity                               = 0.0000000       
 backgroundVerticalEddyDiffusivity                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)
 Vicwminb                             = 0.                                    # Minimum visc in prod and buoyancy term (m2/s)
 Smagorinsky                          = 0.                                    # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
-Elder                                = 0.                                    # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
+elderViscosityContribution           = 0.                                    # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
 irov                                 = 0                                     # 0=free slip, 1 = partial slip using wall_ks
 wall_ks                              = 0.                                    # Nikuradse roughness for side walls, wall_z0=wall_ks/30
 Rhomean                              = 1000.0000000                          # Average water density (kg/m3)

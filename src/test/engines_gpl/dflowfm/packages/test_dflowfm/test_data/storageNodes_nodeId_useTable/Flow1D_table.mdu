@@ -78,7 +78,7 @@ uniformFrictionCoefficientLinear                  = 0.                  # Unifor
 uniformHorizontalEddyViscosity                            = 1.                  # Uniform horizontal eddy viscosity (m2/s)
 uniformHorizontalEddyDiffusivity                            = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
 Smagorinsky                       = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
-Elder                             = 0.                  # Elder factor in horizontal turbulence
+elderViscosityContribution        = 0.                  # Elder factor in horizontal turbulence
 irov                              = 0                   # 0=free slip, 1 = partial slip using wall_ks
 wall_ks                           = 0.                  # Wall roughness type (0: free slip, 1: partial slip using wall_ks)
 Rhomean                           = 1000.               # Average water density (kg/m3)

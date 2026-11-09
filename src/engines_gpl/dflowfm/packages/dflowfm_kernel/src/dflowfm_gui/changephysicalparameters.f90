@@ -82,7 +82,7 @@ contains
       it(2 * 9) = 6
       OPTION(10) = 'smagorinsky_coefficient                      ( )    '
       it(2 * 10) = 6
-      OPTION(11) = 'elder_viscosity_contribution                            ( )    '
+      OPTION(11) = 'Elder viscosity contribution     (m2/s) '
       it(2 * 11) = 6
       OPTION(12) = 'uniform friction coefficient 1D         '
       it(2 * 12) = 6
@@ -106,7 +106,7 @@ contains
       HELPM(8) = 'background vertical   diffusivity (0: no vert. diff. at all)'
       HELPM(9) = 'VERTICAL WALL NIKURADSE ROUGHNESS, (wall_z0 = KS/30)     (M)'
       HELPM(10) = 'vicuv = vicuv + ( (smagorinsky_coefficient*dx)**2)*Strainrate_S, eg 0.1 '
-      HELPM(11) = 'vicuv = vicuv +    elder_viscosity_contribution*0.009*H*U                   eg 1.0 '
+      HELPM(11) = 'vicuv = vicuv + elder_viscosity_contribution*0.009*H*U    eg 1.0 '
       HELPM(12) = 'uniform friction coefficient 1D                             '
       HELPM(13) = 'uniform friction coefficient 1D2D internal Link             '
       HELPM(14) = 'uniform friction coefficient 1D groundlayer                 '

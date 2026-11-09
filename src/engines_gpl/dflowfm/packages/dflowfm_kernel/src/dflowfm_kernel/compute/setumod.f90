@@ -752,7 +752,7 @@ contains
             drl(L) = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
          end do
       end if
-      if (elder_viscosity_contribution > 0.0_dp) then !  add elder_viscosity_contribution
+      if (elder_viscosity_contribution > 0.0_dp) then !  add elder viscosity contribution
          chezy_elder = get_chezy(hu, frcu, u1, v, ifrcutp)
          chezy_elder = elder_viscosity_contribution * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
       end if
@@ -764,7 +764,7 @@ contains
          wuL = 1.0_dp / wuiL
          dxL = dx(L)
          dxiL = 1.0_dp / dxL
-         if (elder_viscosity_contribution > 0.0_dp) then !  add elder_viscosity_contribution
+         if (elder_viscosity_contribution > 0.0_dp) then !  add Elder viscosity contribution
             vicL = vicL + chezy_elder(L)
          end if
 
