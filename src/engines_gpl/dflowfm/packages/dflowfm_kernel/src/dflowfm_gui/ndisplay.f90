@@ -403,7 +403,7 @@ contains
          OPTION(35) = 'Rho                              (kg/m3)'
          OPTION(36) = 'cflmx*vol1(k)/squ(k)               (   )'
 
-         if (soiltempthick == 0.0_dp) then
+         if (soil_heat_buffer_thickness == 0.0_dp) then
             OPTION(37) = '                                        '
          else
             OPTION(37) = 'soiltemp                           ( C )'

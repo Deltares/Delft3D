@@ -1347,8 +1347,8 @@ contains
       call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor)
       call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
-      call prop_get(md_ptr, 'physics', 'Soiltempthick', Soiltempthick)
-      if (soiltempthick > 0.0_dp) then
+      call prop_get(md_ptr, 'physics', 'Soiltempthick', soil_heat_buffer_thickness)
+      if (soil_heat_buffer_thickness > 0.0_dp) then
          jaheat_eachstep = 1
       end if
 
@@ -3564,8 +3564,8 @@ contains
          if (writeall .or. surface_temperature_smoothing_factor > 0.0_dp) then
             call prop_set(prop_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
          end if
-         if (writeall .or. Soiltempthick /= 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'Soiltempthick', Soiltempthick, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
+         if (writeall .or. soil_heat_buffer_thickness /= 0.0_dp) then
+            call prop_set(prop_ptr, 'physics', 'Soiltempthick', soil_heat_buffer_thickness, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
          end if
          if (writeall .or. jaheat_eachstep > 0) then
             call prop_set(prop_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep, '1=heat each timestep, 0=heat each usertimestep')

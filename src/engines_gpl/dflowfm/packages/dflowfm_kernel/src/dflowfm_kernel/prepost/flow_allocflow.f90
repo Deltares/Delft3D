@@ -61,7 +61,7 @@ contains
                         au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, uniform_friction_type, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
                         sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
-                        soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
+                        soil_heat_buffer_thickness, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
                         use_density, map_ndkx_to_ndx, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, dynveg, frcu0
@@ -1067,7 +1067,7 @@ contains
             call realloc(net_solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('net_solar_radiation(ndx)', ierr, ndx)
 
-            if (Soiltempthick > 0) then
+            if (soil_heat_buffer_thickness > 0) then
                call realloc(tbed, ndx, stat=ierr, fill=temini, keepexisting=.false.)
                call aerr('tbed(ndx)', ierr, ndx)
             end if

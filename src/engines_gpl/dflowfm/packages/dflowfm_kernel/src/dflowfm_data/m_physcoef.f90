@@ -120,7 +120,7 @@ module m_physcoef
    real(kind=dp) :: salinity_min = 0.0_dp !< [ppt] Lower salinity limit.
    real(kind=dp) :: minimum_depth_for_heat_and_evaporation_fluxes !< [m] Minimum water depth for heat flux and evaporation computations.
    real(kind=dp) :: surface_temperature_smoothing_factor !< [-] Surface temperature smoothing factor in heat-flux calculations (range: 0-1).
-   real(kind=dp) :: Soiltempthick = 0.0_dp !< [m] If soil buffer desired make thick > 0, e.g. 0.2 m.
+   real(kind=dp) :: soil_heat_buffer_thickness !< [m] If soil buffer desired make thick > 0, e.g. 0.2 m.
 
    integer :: only_positive_evaporation_fluxes !< [-] Only positive forced evaporation fluxes.
    real(kind=dp) :: free_convection_coefficient !< [-] Free convection turbulence coefficient.
@@ -174,6 +174,7 @@ contains
 
       minimum_depth_for_heat_and_evaporation_fluxes = 0.001_dp
       surface_temperature_smoothing_factor = 0.0_dp
+      soil_heat_buffer_thickness = 0.0_dp
 
       only_positive_evaporation_fluxes = 0
       free_convection_coefficient = 0.14_dp

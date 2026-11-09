@@ -4394,7 +4394,7 @@ contains
                end if
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
-               if (soiltempthick > 0.0_dp) then
+               if (soil_heat_buffer_thickness > 0.0_dp) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, nc_precision, UNC_LOC_S, 'tbed', '', 'Temperature of the bed', 'degC', jabndnd=jabndnd_)
                end if
             end if
@@ -6150,7 +6150,7 @@ contains
             end if
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
-            if (soiltempthick > 0.0_dp) then
+            if (soil_heat_buffer_thickness > 0.0_dp) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, UNC_LOC_S, tbed, jabndnd=jabndnd_)
             end if
          end if
@@ -6886,7 +6886,7 @@ contains
                   end if
 
                   call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  if (soiltempthick > 0.0_dp) then
+                  if (soil_heat_buffer_thickness > 0.0_dp) then
                      call definencvar(imapfile, id_tbed(iid), nf90_double, idims, 'tbed', 'Temperature of the bed', 'degC', 'FlowElem_xcc FlowElem_ycc')
                   end if
                end if
@@ -9496,7 +9496,7 @@ contains
             end if
 
             ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
-            if (soiltempthick > 0.0_dp) then
+            if (soil_heat_buffer_thickness > 0.0_dp) then
                ierr = nf90_put_var(imapfile, id_tbed(iid), tbed, [1, itim], [ndxndxi, 1])
             end if
          end if
