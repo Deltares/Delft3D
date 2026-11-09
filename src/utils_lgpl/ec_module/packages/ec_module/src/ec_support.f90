@@ -965,7 +965,7 @@ contains
          write (message, '(a,i0,a)') 'NetCDF error message : [', ierror, '] '//trim(nf90_strerror(ierror))
          call set_ec_message(message)
          if (present(filename)) then
-            write (message, '(a)') 'NetCDF file : "'//trim(filename)
+            write (message, '(a)') 'NetCDF file : "'//trim(filename)//'"'
             call set_ec_message(message)
          end if
          if (present(description)) then
@@ -1554,4 +1554,3 @@ contains
 end module m_ec_support
 
 ! =============================================================================
-
