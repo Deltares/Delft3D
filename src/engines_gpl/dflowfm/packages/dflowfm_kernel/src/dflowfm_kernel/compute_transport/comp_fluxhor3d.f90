@@ -76,7 +76,7 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
       real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (uniform_horizontal_eddy_diffusivity)
       real(kind=dp), dimension(NUMCONST, lnx), optional, intent(in) :: difsedsp !< spatially-varying diffusion coefficient (optional). If present, it overwrites the scalar in `difsed`
-      real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multipling background diffusion `uniform_horizontal_eddy_diffusivity` (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
+      real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multiplying uniform horizontal Eddy diffusivity (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
       real(kind=dp), dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
