@@ -1,5 +1,5 @@
 ARG PYTHON_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-python
-ARG PYTHON_IMAGE_TAG=alma8-python3.12
+ARG PYTHON_IMAGE_TAG=alma8-python3.14
 
 FROM ${PYTHON_IMAGE_URL}:${PYTHON_IMAGE_TAG} AS python
 
