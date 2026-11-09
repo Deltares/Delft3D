@@ -27,6 +27,14 @@ endif()
 
 target_link_libraries(dflowfm_ini_parser_tests PRIVATE dflowfm_ini_parser GTest::gtest_main)
 
+if(WIN32)
+    add_custom_command(TARGET dflowfm_ini_parser_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm_ini_parser_tests> $<TARGET_RUNTIME_DLLS:dflowfm_ini_parser_tests>
+        COMMAND_EXPAND_LISTS
+        VERBATIM
+    )
+endif()
+
 include(GoogleTest)
 gtest_discover_tests(dflowfm_ini_parser_tests
     DISCOVERY_MODE PRE_TEST
