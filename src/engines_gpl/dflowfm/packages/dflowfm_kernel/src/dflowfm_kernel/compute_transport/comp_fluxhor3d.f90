@@ -364,7 +364,7 @@ contains
                      difsed_const = difsed(j)
                   end if
 
-                  difcoeff = sigdifi(j) * viu(L) + difsed_const + background_diffusion_factor_local(j) * diuspL ! without smagorinsky_coefficient, viu is 0 ,
+                  difcoeff = sigdifi(j) * viu(L) + difsed_const + background_diffusion_factor_local(j) * diuspL ! without Smagorinsky coefficient, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
 

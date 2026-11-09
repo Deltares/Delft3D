@@ -426,7 +426,7 @@ contains
                         duxdt = (ucnx(k4) - ucnx(k3)) * wui(LL)
                         duydt = (ucny(k4) - ucny(k3)) * wui(LL)
                      end if
-                     if (smagorinsky_coefficient > 0 .or. NDRAW(29) == 37) then ! add smagorinsky_coefficient
+                     if (smagorinsky_coefficient > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky coefficient
                         dundn = cs * duxdn + sn * duydn
                         dutdn = -sn * duxdn + cs * duydn
                         dundt = cs * duxdt + sn * duydt

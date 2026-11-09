@@ -55,6 +55,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'vicoww', DEPRECATED, 'Use backgroundVerticalEddyViscosity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'dicoww', DEPRECATED, 'Use backgroundVerticalEddyDiffusivity instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Elder', DEPRECATED, 'Use elderViscosityContribution instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Smagorinsky', DEPRECATED, 'Use smagorinskyCoefficient instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')

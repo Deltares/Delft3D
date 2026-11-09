@@ -80,7 +80,7 @@ contains
       it(2 * 8) = 6
       OPTION(9) = 'Verticall Wall Nikuradse          (m)    '
       it(2 * 9) = 6
-      OPTION(10) = 'smagorinsky_coefficient                      ( )    '
+      OPTION(10) = 'Smagorinsky coefficient          ( )    '
       it(2 * 10) = 6
       OPTION(11) = 'Elder viscosity contribution     (m2/s) '
       it(2 * 11) = 6
