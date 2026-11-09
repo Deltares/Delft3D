@@ -566,12 +566,8 @@ class TestSetRunner(ABC):
 
         credentials = self.__find_dvc_credentials(location_infos)
         try:
-            handler = DvcHandler()
-            handler.download_batch(
-                dvc_files,
-                credentials,
-                self.__logger,
-            )
+            handler = DvcHandler(credentials=credentials)
+            handler.download_batch(dvc_files, self.__logger)
             return True
         except Exception as exception:
             self.__logger.error(f"Batch DVC download failed: {exception}")

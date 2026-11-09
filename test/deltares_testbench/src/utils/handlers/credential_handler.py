@@ -1,3 +1,4 @@
+import configparser
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -67,6 +68,17 @@ class CredentialHandler:
             self.logger.error("No credentials provided and no credential file is available.")
             self.credentials_instruction()
             return
+
+        self._set_credentials_from_aws_credentials_file()
+
+    def _set_credentials_from_aws_credentials_file(self) -> None:
+        """Get credentials from file."""
+        profile = self.profile or "default"
+        parser = configparser.ConfigParser()
+        success = parser.read(self.cred_path)
+        if self.credentials is not None and success:
+            self.credentials.username = str(parser[profile]["aws_access_key_id"])
+            self.credentials.password = str(parser[profile]["aws_secret_access_key"])
 
     def credential_file_exists(self) -> bool:
         """Find credential file in home directory and return if exist."""

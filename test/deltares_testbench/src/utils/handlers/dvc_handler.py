@@ -17,13 +17,16 @@ from src.utils.logging.i_logger import ILogger
 class DvcHandler(IHandler):
     """DVC wrapper, has handler interface."""
 
-    def __init__(self, repo: Repo | None = None) -> None:
-        if repo is not None:
-            self.__repo = repo
-        else:
+    def __init__(self, credentials: Credentials | None = None, repo: Repo | None = None) -> None:
+        self.__repo = repo
+        if self.__repo is None:
             current_file_path = os.getcwd()
             repo_root = self.__find_dvc_root(current_file_path)
             self.__repo = Repo(repo_root, scm=NoSCM())
+
+        if credentials is not None:
+            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
+            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
 
     def download(
         self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
@@ -47,9 +50,7 @@ class DvcHandler(IHandler):
         """
         self.__download_with_dvc_pull(from_path, logger)
 
-    def download_batch(
-        self, dvc_files: list[str], credentials: Credentials, logger: ILogger, jobs: Optional[int] = None
-    ) -> None:
+    def download_batch(self, dvc_files: list[str], logger: ILogger, jobs: Optional[int] = None) -> None:
         """Download multiple .dvc files in a single fetch + checkout operation.
 
         Parameters
@@ -127,7 +128,8 @@ class DvcHandler(IHandler):
                 f"DVC checkout did not produce {len(missing)} expected directories. First missing: {missing[0]}"
             )
 
-    def __find_dvc_root(self, path: str) -> str:
+    @staticmethod
+    def __find_dvc_root(path: str) -> str:
         """Find the DVC repository root by looking for .dvc directory.
 
         Parameters

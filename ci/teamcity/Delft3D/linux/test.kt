@@ -94,7 +94,9 @@ object LinuxTest : BuildType({
         scriptContent = """
             #!/bin/bash
             
-            ARGS="--compare \
+            ARGS="--username "%dvc_testbench_accesskey%" \
+                --password "%dvc_testbench_secret%" \
+                --compare \
                 --config "configs/%configfile%" \
                 --filter "testcase=%case_filter%" \
                 --log-level DEBUG \
@@ -117,8 +119,6 @@ object LinuxTest : BuildType({
             --pull always
             --shm-size 8G
             --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
-            --env AWS_ACCESS_KEY_ID=%dvc_testbench_accesskey%
-            --env AWS_SECRET_ACCESS_KEY=%dvc_testbench_secret%
         """.trimIndent()
         }
         

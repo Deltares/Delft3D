@@ -49,7 +49,7 @@ class HandlerFactory(ABC):
 
         if handler_type == HandlerType.DVC:
             logger.debug(f"using DVC handler for {to_path}")
-            handler = DvcHandler()
+            handler = DvcHandler(credentials=credentials)
         if handler_type == HandlerType.NONE:
             raise AttributeError("upload :: no type specified")
 
