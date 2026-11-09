@@ -117,9 +117,6 @@ show_error_context = true
 
 # Gets rid of complaints that type stubs are not installed for selected modules.
 [[tool.mypy.overrides]]
-module = [
-    "s3_path_wrangler.*"
-]
 ignore_missing_imports = true
 
 # Coverage settings (pytest-cov / coverage.py)
