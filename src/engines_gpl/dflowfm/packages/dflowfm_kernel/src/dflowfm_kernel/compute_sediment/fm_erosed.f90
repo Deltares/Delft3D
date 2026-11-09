@@ -815,9 +815,6 @@ contains
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*VON_KARMAN/log(zumod(nm)/z0rou - 1d0)
-         !
-         !if (scour) then
-         !
          tauadd = 0.0_dp
          
          ! Compute effective depth averaged velocity
