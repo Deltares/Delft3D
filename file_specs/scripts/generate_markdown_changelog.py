@@ -72,7 +72,7 @@ SECTION_TITLES: list[tuple[str, ChangeType]] = [
 
 
 def format_document(document: ChangelogDocument) -> list[str]:
-    lines = [f"# Changes between {document.source_commit.ref} and {document.target_commit.ref}\n"]
+    lines = [f"# Changes between {document.source_ref} and {document.target_ref}\n"]
 
     for title, change_type in SECTION_TITLES:
         section_changes = [c for c in document.changes if c.type is change_type]

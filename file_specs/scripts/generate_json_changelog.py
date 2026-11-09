@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from data.ini_spec import IniFileSpec
-from data.ini_spec_changelog import Change, ChangelogDocument, Commit
+from data.ini_spec_changelog import ChangelogDocument
 from compare_ini_specs import create_change_list
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -52,22 +52,10 @@ def get_file_at_ref(filepath: str, ref: str) -> str | None:
     return result.stdout if result.returncode == 0 else None
 
 
-def get_commit(ref: str) -> Commit | None:
-    result = git("log", "-1", "--pretty=format:%H|%s|%ci", ref)
-
-    if result.returncode != 0 or not result.stdout.strip():
-        print(f"Could not resolve ref: {ref}")
-        sys.exit(1)
-
-    sha, subject, commit_date = result.stdout.strip().split("|", 2)
-
-    return Commit(sha=sha, subject=subject, date=commit_date, ref=ref)
-
-
-def get_changed_spec_files(from_ref: str, to_ref: str) -> list[str]:
+def get_changed_spec_files(source_ref: str, target_ref: str) -> list[str]:
     """Return specification JSON files that differ between two refs (snapshot diff)."""
 
-    diff = git("diff", "--name-only", from_ref, to_ref, "--", "specifications/")
+    diff = git("diff", "--name-only", source_ref, target_ref, "--", "specifications/")
     return [f for f in diff.stdout.strip().splitlines() if is_spec_json(f)]
 
 
@@ -97,19 +85,18 @@ def _write_changelogs(documents_by_file: dict[str, ChangelogDocument], suffix: s
         print(f"Wrote changelog to {changelog_path}")
 
 
-def run(from_ref: str, to_ref: str, cicd: bool = False):
+def run(source_ref: str, target_ref: str, cicd: bool = False):
     """Diff the specification files at two refs directly, ignoring intermediate commits."""
 
-    from_commit = get_commit(from_ref)
-    to_commit = get_commit(to_ref)
-
-    changed_spec_files = get_changed_spec_files(from_ref, to_ref)
+    changed_spec_files = get_changed_spec_files(source_ref, target_ref)
 
     changelog_per_spec_file: dict[str, ChangelogDocument] = {}
 
+    target_ref_name = "main" if cicd else target_ref
+
     for spec_file_path in changed_spec_files:
-        old_content = get_file_at_ref(spec_file_path, from_ref)
-        new_content = get_file_at_ref(spec_file_path, to_ref)
+        old_content = get_file_at_ref(spec_file_path, source_ref)
+        new_content = get_file_at_ref(spec_file_path, target_ref)
 
         if old_content is None or new_content is None:
             print(f"  skipping non-diffable file lifecycle change in {spec_file_path}")
@@ -122,22 +109,19 @@ def run(from_ref: str, to_ref: str, cicd: bool = False):
         changelog_per_spec_file[spec_file_path] = ChangelogDocument(
             schema_version=CHANGELOG_SCHEMA_VERSION,
             specification_file=spec_file_path,
-            source_commit=from_commit,
-            target_commit=to_commit,
+            source_ref=source_ref,
+            target_ref=target_ref_name,
             changes=changes,
         )
 
-    if cicd:
-        to_ref = "main"
-
-    suffix = f"{_sanitize_ref(from_ref)}_to_{_sanitize_ref(to_ref)}"
+    suffix = f"{_sanitize_ref(source_ref)}_to_{_sanitize_ref(target_ref_name)}"
     _write_changelogs(changelog_per_spec_file, suffix=suffix)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("from_ref", help="The older git ref (commit, tag, or branch) to compare from.")
-    parser.add_argument("to_ref", help="The newer git ref (commit, tag, or branch) to compare to.")
+    parser.add_argument("source_ref", help="The older git ref (commit, tag, or branch) to compare from.")
+    parser.add_argument("target_ref", help="The newer git ref (commit, tag, or branch) to compare to.")
     parser.add_argument("--cicd", action="store_true", help="Enable CI/CD mode, which sets the target ref to main.")
     return parser.parse_args(argv)
 
@@ -145,7 +129,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 if __name__ == "__main__":
     try:
         args = parse_args(sys.argv[1:])
-        run(args.from_ref, args.to_ref, args.cicd)
+        run(args.source_ref, args.target_ref, args.cicd)
     except Exception as e:
         print(e)
         sys.exit(1)

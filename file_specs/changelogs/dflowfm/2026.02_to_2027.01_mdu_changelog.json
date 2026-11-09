@@ -1,18 +1,8 @@
 {
   "schema_version": "1.0.0",
   "specification_file": "specifications/dflowfm/mdu.json",
-  "source_commit": {
-    "sha": "411d45a19ef07bfadce905d0ca809fa79fe9c755",
-    "date": "2026-04-07 08:56:56 +0000",
-    "subject": "Auto-generate Markdown docs",
-    "ref": "2026.02"
-  },
-  "target_commit": {
-    "sha": "35335413178704caa3eacb344012b55785462512",
-    "date": "2026-09-08 09:29:38 +0200",
-    "subject": "UNST-10308: Revert to old Forester filter behaviour (#99)",
-    "ref": "2027.01"
-  },
+  "source_ref": "2026.02",
+  "target_ref": "2027.01",
   "changes": [
     {
       "type": "added",
@@ -25,8 +15,160 @@
     {
       "type": "added",
       "target": {
+        "section": "ice",
+        "property": "wriHis_ice_area_fraction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_default",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_lower_surface_height",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_open_water_level",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_pressure",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_surface_height",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_temperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_thickness",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_snow_temperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_snow_thickness",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
         "section": "model",
         "property": null,
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "autoStart",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "convertLongCulverts",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "guiVersion",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "inputSpecific",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "mduFormatVersion",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "modelSpecific",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "pathsRelativeToParent",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "program",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "version",
         "enum_value": null
       }
     },

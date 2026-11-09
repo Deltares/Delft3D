@@ -1,18 +1,8 @@
 {
   "schema_version": "1.0.0",
   "specification_file": "specifications/dflowfm/mdu.json",
-  "source_commit": {
-    "sha": "f2fc1b1d6d5fd322eb1a7943676aee65d1957982",
-    "date": "2025-10-16 14:54:22 +0200",
-    "subject": "UNST-5331: Add 'verticalAdvectionType' to MDU file (#18)",
-    "ref": "2026.01"
-  },
-  "target_commit": {
-    "sha": "411d45a19ef07bfadce905d0ca809fa79fe9c755",
-    "date": "2026-04-07 08:56:56 +0000",
-    "subject": "Auto-generate Markdown docs",
-    "ref": "2026.02"
-  },
+  "source_ref": "2026.01",
+  "target_ref": "2026.02",
   "changes": [
     {
       "type": "added",

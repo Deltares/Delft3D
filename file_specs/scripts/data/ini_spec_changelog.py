@@ -96,40 +96,13 @@ class Change:
 
 
 @dataclass
-class Commit:
-    """The commit that introduced a set of changes."""
-
-    sha: str
-    date: str
-    subject: str
-    ref: str
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Commit":
-        return cls(
-            sha=data["sha"],
-            date=data["date"],
-            subject=data["subject"],
-            ref=data.get("ref"),
-        )
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "sha": self.sha,
-            "date": self.date,
-            "subject": self.subject,
-            "ref": self.ref,
-        }
-
-
-@dataclass
 class ChangelogDocument:
     """Top-level changes document: the absolute diff of a spec file between two commits."""
 
     schema_version: str
     specification_file: str
-    source_commit: Commit
-    target_commit: Commit
+    source_ref: str
+    target_ref: str
     changes: List[Change] = field(default_factory=list)
 
     @classmethod
@@ -137,8 +110,8 @@ class ChangelogDocument:
         return cls(
             schema_version=data["schema_version"],
             specification_file=data["specification_file"],
-            source_commit=Commit.from_dict(data["source_commit"]),
-            target_commit=Commit.from_dict(data["target_commit"]),
+            source_ref=data["source_ref"],
+            target_ref=data["target_ref"],
             changes=[Change.from_dict(change) for change in data.get("changes", [])],
         )
 
@@ -146,7 +119,7 @@ class ChangelogDocument:
         return {
             "schema_version": self.schema_version,
             "specification_file": self.specification_file,
-            "source_commit": self.source_commit.to_dict(),
-            "target_commit": self.target_commit.to_dict(),
+            "source_ref": self.source_ref,
+            "target_ref": self.target_ref,
             "changes": [change.to_dict() for change in self.changes],
         }
