@@ -921,7 +921,8 @@ This section contains settings for the atmospheric stability module.
 | `charnockCoefficient` | Charnock coefficient for surface roughness in the atmospheric stability module. | `0.018` |  | [-] |  |
 | `airViscousMomentumCoefficient` | Air viscous momentum coefficient in the atmospheric stability module. | `0.11` |  | [-] |  |
 | `airViscousHeatCoefficient` | Air viscous heat coefficient in the atmospheric stability module. | `0.4` |  | [-] |  |
-| `AirViscousMoistureCoefficient` | Air viscous moisture coefficient in the atmospheric stability module. | `0.62` |  | [-] |  |
+| `airViscousMoistureCoefficient` | Air viscous moisture coefficient in the atmospheric stability module. | `0.62` |  | [-] |  |
+| `longwaveEmissivity` | Longwave emissivity of water surface. | `0.985` | `[0.0, 1.0]` | [-] |  |
 
 <a id="research-keywords-and-options"></a>
 # Research keywords and options

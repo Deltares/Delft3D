@@ -6517,11 +6517,24 @@
                     "unit": "-"
                 },
                 {
-                    "key": "AirViscousMoistureCoefficient",
+                    "key": "airViscousMoistureCoefficient",
                     "default_value": 0.62,
                     "value_type": "float",
                     "description": "Air viscous moisture coefficient in the atmospheric stability module.",
                     "unit": "-"
+                },
+                {
+                    "key": "longwaveEmissivity",
+                    "default_value": 0.985,
+                    "value_type": "float",
+                    "description": "Longwave emissivity of water surface.",
+                    "unit": "-",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
                 }
             ]
         }
