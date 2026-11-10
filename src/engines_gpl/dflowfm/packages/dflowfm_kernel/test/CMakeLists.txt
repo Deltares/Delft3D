@@ -35,6 +35,7 @@ add_fortran_gtest(${test_target}
         src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
+        src/test_restart_coordinates.f90
         src/test_mdu_file_read_write.f90
         src/test_getprof_1d.f90
         src/test_dflowfm_dambreak.f90
