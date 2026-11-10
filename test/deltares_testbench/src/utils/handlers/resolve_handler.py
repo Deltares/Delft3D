@@ -3,15 +3,8 @@
 Copyright (C)  Stichting Deltares, 2026
 """
 
-import re
-import ssl
-import urllib.parse as parse
-import urllib.request as url_lib
 from abc import ABC
-from typing import Optional
-from urllib.error import HTTPError, URLError
 
-from src.config.credentials import Credentials
 from src.config.types.handler_type import HandlerType
 from src.utils.logging.i_logger import ILogger
 

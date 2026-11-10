@@ -10,7 +10,6 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.credentials import Credentials
 from src.config.dependency import Dependency
 from src.config.local_paths import LocalPaths
 from src.config.location import Location

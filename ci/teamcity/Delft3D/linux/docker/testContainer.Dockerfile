@@ -29,6 +29,7 @@ RUN dnf update --assumeyes --refresh && \
 ADD wanda/bin/* /opt/dimrset/bin/
 ADD wanda/lib/* /opt/dimrset/lib/
 
+COPY --from=python /usr/bin/uv /usr/bin/uv
 COPY --from=python /opt/uv/ /opt/uv/
 COPY --from=python /opt/testbench-venv/ /opt/testbench-venv/
 

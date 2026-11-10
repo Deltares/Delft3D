@@ -141,5 +141,5 @@ uv python install 3.14 --default
 uv tool install 'conan ~= 2.29.0'
 EOF
 
-# Add python 3.12 and uv tools to PATH for all users.
+# Add python and uv tools to PATH for all users.
 ENV PATH=/opt/uv/bin:$PATH

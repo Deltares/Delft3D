@@ -16,11 +16,9 @@ from multiprocessing.synchronize import Condition
 from pathlib import Path
 from typing import Iterable, List, Optional
 
-from src.config.credentials import Credentials
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_failure import TestCaseFailure
-from src.config.types.handler_type import HandlerType
 from src.config.types.mode_type import ModeType
 from src.config.types.path_type import PathType
 from src.suite.program import Program
@@ -32,7 +30,6 @@ from src.utils.common import log_header, log_separator, log_sub_header
 from src.utils.errors.test_bench_error import TestBenchError
 from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.handler_factory import HandlerFactory
-from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
