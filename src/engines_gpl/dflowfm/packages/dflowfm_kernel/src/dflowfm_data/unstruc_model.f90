@@ -1538,13 +1538,6 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
-      call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
-      call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
-      call prop_get(md_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, has_charnock_coefficient)
-      call prop_get(md_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
-      call prop_get(md_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff)
-      call prop_get(md_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff)
       call prop_get(md_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity)
@@ -3599,13 +3592,6 @@ contains
       call convert_rain_temperature_integer_to_string(rain_temperature_method, tmpstr)
       call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''airTemperature'', ''wetBulbTemperature'').')
 
-      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
-      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
-      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
-      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
-      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
       call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
       call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
