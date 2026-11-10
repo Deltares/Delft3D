@@ -172,11 +172,17 @@ contains
                          precicef_requires_initial_data, precicef_get_mesh_dimensions, &
                          precicef_set_mesh_access_region
       use MessageHandling
+      use m_unstruc_model_data, only: md_restartfile
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
       integer(kind=c_int) :: is_initial_data_required = 0_c_int
       integer(kind=c_int) :: sources_sinks_mesh_dims = 0_c_int
+
+      if (len_trim(md_restartfile) > 0) then
+         call mess(LEVEL_ERROR, 'Restarting with the preCICE adapter is not yet implemented.')
+         return
+      end if
 
       if (self%is_communicator_set) then
          call precicef_create_with_communicator(self%name, self%config_file, self%my_rank, &
@@ -205,7 +211,12 @@ contains
       end if
 
       call precicef_initialize()
-      self%summed_time_progress = 0.0
+      ! In case FM needs to read initial data (Initialize=true in precice config file), 
+      ! we are required do  read call here.
+      ! If there is no initial data from the other participant, everything will be 0 (mesh and quantities)
+      call precice_adapter_read_data(self, 0.0_dp)
+      call precice_adapter_add_to_fm_administration(self)
+      self%summed_time_progress = 0.0_dp
    end subroutine precice_adapter_initialize
 
 
@@ -216,6 +227,7 @@ contains
    !! - Remesh the 3D mesh
    !! - Write data (2D and 3D) to preCICE
    !! - Advance preCICE
+   !! - Read and install the new window's source/sink forcing at relative time zero
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
                          precicef_is_coupling_ongoing, precicef_is_time_window_complete, &
@@ -254,11 +266,12 @@ contains
             call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
          end if
          call precice_adapter_write_data(self)
-         call precice_adapter_read_data(self, max_timestep)
-         call precice_adapter_add_to_fm_administration(self)
          call precicef_advance(max_timestep)
+         ! Read after the exchange so the next FM interval uses the newly received data.
+         call precice_adapter_read_data(self, 0.0_dp)
+         call precice_adapter_add_to_fm_administration(self)
          ! Reset summed_time_progress after advancing
-         self%summed_time_progress = 0.0
+         self%summed_time_progress = 0.0_dp
       else
          write (*, *) "Not advancing preCICE yet, summed_time_progress = ", self%summed_time_progress, " max_timestep = ", max_timestep
       end if
