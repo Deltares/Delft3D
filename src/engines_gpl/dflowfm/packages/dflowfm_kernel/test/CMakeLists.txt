@@ -25,6 +25,9 @@ add_fortran_gtest(${test_target}
         src/test_tridag.f90
         src/test_getverticallyaveraged.f90
         src/test_3d_layer_administration.f90
+        src/test_sed_transport.f90
+        src/test_sed_exchange.f90
+        src/test_mass_balance.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
@@ -53,24 +56,67 @@ add_fortran_gtest(${test_target}
 )
 add_subdirectory(helpers)
 
+# Run the complete timestep sequence in its own process, with model-owned global state.
+add_fortran_gtest(test_bedload_balance
+    SOURCES src/test_bedload_balance.f90
+    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+
 copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
 
-# Copy MSVC runtime DLLs to test output directory
-foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
-    add_custom_command(TARGET ${test_target} PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${runtime_lib}"
-            "$<TARGET_FILE_DIR:${test_target}>"
+add_executable(test_subsupl_balance src/test_subsupl_balance.f90)
+target_link_libraries(test_subsupl_balance PRIVATE dflowfm_kernel test_helpers netCDF::netcdff)
+set_target_properties(test_subsupl_balance PROPERTIES
+    FOLDER engines_gpl/dflowfm/test
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test_subsupl_balance"
+)
+if(WIN32)
+    target_link_options(test_subsupl_balance PRIVATE /STACK:${DFLOWFM_STACK_SIZE_BYTES})
+    add_custom_command(TARGET test_subsupl_balance POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:test_subsupl_balance> $<TARGET_RUNTIME_DLLS:test_subsupl_balance>
+        COMMAND_EXPAND_LISTS
     )
+endif()
+foreach(dimensions IN ITEMS 2 3)
+    foreach(morphology IN ITEMS off bedload suspended composition)
+        foreach(update_s1 IN ITEMS 0 1)
+            foreach(direction IN ITEMS -1 1)
+                set(case_name "mass_balance_subsupl.${dimensions}d_${morphology}_s1${update_s1}_${direction}")
+                set(case_directory "${CMAKE_CURRENT_BINARY_DIR}/subsupl_cases/${case_name}")
+                file(MAKE_DIRECTORY "${case_directory}")
+                add_test(NAME ${case_name} COMMAND test_subsupl_balance ${dimensions} ${morphology} ${update_s1} ${direction})
+                set_tests_properties(${case_name} PROPERTIES
+                    WORKING_DIRECTORY "${case_directory}"
+                    ENVIRONMENT "OMP_NUM_THREADS=1"
+                    TIMEOUT 30
+                )
+            endforeach()
+        endforeach()
+    endforeach()
 endforeach()
 
-# Copy pthreads runtime dependency
-add_custom_command(TARGET ${test_target} PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
-        "$<TARGET_FILE_DIR:${test_target}>"
-)
+add_test(NAME mass_balance_subsupl.volume_remap COMMAND test_subsupl_balance volume_remap)
+add_test(NAME mass_balance_subsupl.sigma_boundary COMMAND test_subsupl_balance sigma_boundary)
 
-set_target_properties(${test_target} PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${test_target}>"
-)
+foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance test_subsupl_balance)
+    # Copy MSVC runtime DLLs to test output directory
+    foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        add_custom_command(TARGET ${runtime_target} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${runtime_lib}"
+                "$<TARGET_FILE_DIR:${runtime_target}>"
+        )
+    endforeach()
+
+    # Copy pthreads runtime dependency
+    add_custom_command(TARGET ${runtime_target} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
+            "$<TARGET_FILE_DIR:${runtime_target}>"
+    )
+
+    set_target_properties(${runtime_target} PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${runtime_target}>"
+    )
+endforeach()

@@ -2553,6 +2553,7 @@ contains
             call mess(LEVEL_WARN, msgbuf)
          end if
       end if
+      call check_time_interval(tstart_user, ti_mba, tstop_user, dt_user, 'MbaInterval', tstart_user)
 
       ! Some combined validation checks of model settings:
       if (len_trim(md_restartfile) > 0 .and. t_spinup_turb_log_prof > 0.0_dp) then
