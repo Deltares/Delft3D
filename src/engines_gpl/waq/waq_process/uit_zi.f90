@@ -32,12 +32,13 @@ module m_uitzicht_spectrum
     !***********************************************************************
     !
     private
-    public :: num_spectrum, uit_zi, planck, nearest_spectrum_band
+    public :: num_spectrum, uit_zi, planck, nearest_spectrum_band, fm_uitzicht
 
     integer            :: num_spectrum
     integer, parameter :: num_spectrum_std = 61
 
     logical, save      :: init_uitzicht = .true.
+    logical, save      :: fm_uitzicht   = .false.  ! Should we use the D-Flow FM organisation of grid cells in the vertical?
 
     real(kind = dp), parameter :: target_lambda = 550.0, target_lambda_2 = 560.0
 

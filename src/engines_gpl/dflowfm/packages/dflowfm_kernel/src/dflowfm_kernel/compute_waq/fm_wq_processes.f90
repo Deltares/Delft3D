@@ -513,6 +513,7 @@ contains
       use m_wq_processes_initialise
       use m_wq_processes_pmsa_size
       use bloom_data_vtrans
+      use m_uitzicht_spectrum, only: fm_uitzicht
       use m_alloc
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi, ba
@@ -569,6 +570,7 @@ contains
       character(len=20), parameter :: cirradiation = 'radsurf'
       character(len=20), parameter :: crain = 'rain'
       character(len=20), parameter :: cvtrans = 'ACTIVE_vtrans'
+      character(len=20), parameter :: csw_uitz = 'SW_Uitz'
       character(len=20), parameter :: cvertdisp = 'ACTIVE_vertdisp'
       character(len=10), parameter :: cbloom = 'd40blo'
       character(len=20), parameter :: cdoprocesses = 'DoProcesses'
@@ -838,7 +840,7 @@ contains
          end if
       end if
 
-      !     data only needed for vtrans
+      !     data needed for vtrans
       icon = index_in_array(cvtrans, coname_sub)
       if (icon > 0) then
          icon = index_in_array(cvertdisp, coname_sub)
@@ -863,6 +865,24 @@ contains
             call mess(LEVEL_INFO, 'Found process ''vtrans'', added ''VertDisper'', ''FMLayer'', ''FMkTop'' and ''FMkBot''')
          end if
       end if
+
+      !     data needed for uitzicht
+      icon = index_in_array(csw_uitz, coname_sub)
+      if (icon > 0) then
+         if (covalue_sub(icon) > 0.0) then
+            fm_uitzicht = .true.
+            if (.not. fm_vtrans) then
+                num_spatial_time_fuctions = num_spatial_time_fuctions + 1
+                isffmktop = num_spatial_time_fuctions
+                call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkTop')
+                num_spatial_time_fuctions = num_spatial_time_fuctions + 1
+                isffmkbot = num_spatial_time_fuctions
+                call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkBot')
+            end if
+            call mess(LEVEL_INFO, 'Found switch ''sw_uitz'' > 0, added ''FMkTop'' and ''FMkBot''')
+         end if
+      end if
+
       call mess(LEVEL_INFO, '--------------------------------------------------------------------------')
 
       noconm = num_constants + 1000

@@ -52,7 +52,6 @@ contains
         use m_uitzicht_spectrum, DayLightPlanck => planck
         use m_dhnolay
         use m_logger_helper, only: write_log_message
-        use bloom_data_vtrans
 
         implicit none
 
@@ -230,7 +229,7 @@ contains
                 i_400 = nearest_spectrum_band( 400.0_dp )
             endif
 
-            if ( .not. fm_vtrans ) then
+            if ( .not. fm_uitzicht ) then
                 call dhnolay(nolay)
                 noseg_3dl = num_cells / nolay
 
@@ -244,7 +243,7 @@ contains
             endif
 
             do ihseg = 1,noseg_3dl
-                if ( .not. fm_vtrans ) then
+                if ( .not. fm_uitzicht ) then
                     first = ihseg
                     last  = ihseg + (nolay-1) * noseg_3dl
                     step  = noseg_3dl
