@@ -44,6 +44,7 @@ contains
 
    !> links in continuity eq.
    subroutine s1ini()
+      use m_atmospheric_stability, only: compute_wet_bulb_temperature, convert_dew_point_temperature_to_relative_humidity
       use m_flow
       use m_flowgeom
       use m_flowtimes
@@ -386,39 +387,5 @@ contains
       end if
 
    end subroutine s1ini
-
-   !> Use the Stull (2011) approximation to compute the wet-bulb temperature from air temperature and relative humidity
-   elemental function compute_wet_bulb_temperature(air_temperature, relative_humidity) result(wet_bulb_temperature)
-      ! Arguments
-      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
-      real(kind=dp), intent(in) :: relative_humidity !< [%] Relative humidity.
-      real(kind=dp) :: wet_bulb_temperature !< [degC] Wet-bulb temperature.
-
-      wet_bulb_temperature = air_temperature * atan(0.151977_dp * sqrt(relative_humidity + 8.313659_dp)) &
-                             + atan(air_temperature + relative_humidity) &
-                             - atan(relative_humidity - 1.676331_dp) &
-                             + 0.00391838_dp * relative_humidity**1.5_dp * atan(0.023101_dp * relative_humidity) &
-                             - 4.686035_dp
-
-   end function compute_wet_bulb_temperature
-
-   elemental function convert_dew_point_temperature_to_relative_humidity(dew_point_temperature, air_temperature) result(relative_humidity)
-      use m_atmospheric_stability, only: compute_saturation_pressure
-      use physicalconsts, only: celsius_to_kelvin
-
-      ! Arguments
-      real(kind=dp), intent(in) :: dew_point_temperature !< [degC] Dew point temperature.
-      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
-      real(kind=dp) :: relative_humidity !< [%] Relative humidity.
-
-      ! Local variables
-      real(kind=dp) :: dew_point_vapor_pressure !< Vapor pressure at dew point temperature [Pa].
-      real(kind=dp) :: saturated_vapor_pressure !< Vapor pressure at air temperature [Pa].
-
-      dew_point_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(dew_point_temperature))
-      saturated_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(air_temperature))
-      relative_humidity = 100.0_dp * dew_point_vapor_pressure / saturated_vapor_pressure
-      
-   end function convert_dew_point_temperature_to_relative_humidity
 
 end module m_s1ini
