@@ -316,6 +316,22 @@
       "new_value": "Conjugate Gradient + MILU (parallel)"
     },
     {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "tracerConcentrationMax",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "tracerConcentrationMin",
+        "enum_value": null
+      }
+    },
+    {
       "type": "removed",
       "target": {
         "section": "processes",
