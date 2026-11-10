@@ -144,7 +144,7 @@ class TestBenchParameterParser:
         credential_handler = CredentialHandler(credentials=credentials, log_level=log_level)
         credentials.name = "commandline"
 
-        is_interactive = cls.__get_argument_value("interactive", args) or False
+        is_interactive = bool(cls.__get_argument_value("interactive", args))
         make_interactive = not credential_handler.credential_file_exists() and is_interactive
         credentials.username = cls.__get_argument_value("username", args, make_interactive) or ""
         credentials.password = cls.__get_argument_value("password", args, make_interactive, True) or ""

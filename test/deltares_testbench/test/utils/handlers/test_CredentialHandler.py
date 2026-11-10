@@ -64,12 +64,14 @@ class TestCredentialHandler:
         if status == CredentialStatus.USERNAME:
             assert mocker.call("Only username was provided on the commandline.") in warningcalls
             assert mocker.call("No credential file found attempting run with only username.") in errorcalls
+            assert mocker.call(self.setup_warning(handler)) in warningcalls
         if status == CredentialStatus.PASSWORD:
             assert mocker.call("Only password was provided on the commandline.") in warningcalls
             assert mocker.call("No credential file found attempting run with only password.") in errorcalls
+            assert mocker.call(self.setup_warning(handler)) in warningcalls
         if status == CredentialStatus.MISSING:
             assert mocker.call("No credentials provided and no credential file is available.") in errorcalls
-        assert mocker.call(self.setup_warning(handler)) in warningcalls
+            assert mocker.call(self.setup_warning(handler)) in warningcalls
 
     def test_credential_creation(self, fs: FakeFilesystem) -> None:
         # Arrange

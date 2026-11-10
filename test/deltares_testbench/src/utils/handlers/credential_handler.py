@@ -53,8 +53,6 @@ class CredentialHandler:
                 )
                 if make_file.lower() in ["yes", "y"]:
                     self.setup_file()
-                    return
-            self.credentials_instruction()
             return
 
         if status == CredentialStatus.PASSWORD or status == CredentialStatus.USERNAME:
