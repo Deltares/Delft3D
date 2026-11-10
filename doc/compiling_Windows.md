@@ -12,7 +12,7 @@ Pre-built binary packages for the third-party dependencies are hosted on the Del
 Deltares developers download them directly and external developers build them locally from the recipes in [conan/recipes](../conan/recipes).
 
 ## Prerequisites
-- Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
+- Microsoft Visual Studio 2026, this can be the Enterprise Edition, Professional Edition, or the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
   During the installation/configuration process, choose the **"Desktop development with C++"** configuration.
   Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"** and the latest **"Windows SDK"**; see the figure below.
 
@@ -21,16 +21,13 @@ Deltares developers download them directly and external developers build them lo
   Links to previous Visual Studio Community Editions can be found [here](https://www.junian.net/dev/visual-studio-community-download-links/).
   See the note below on the use of different versions.
 - You may use [Visual Studio Code](https://code.visualstudio.com/) as the development environment, but a Visual Studio installation is still required for the C++ compiler and the Intel Fortran installation.
-- [Intel oneAPI Fortran Compiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler-download.html) Please make sure that it's integrated into the Visual Studio environment installed above.
-  See the note below on the use of different versions.
-- [Intel oneAPI MPI Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html)
-- [Intel oneAPI Math Kernel Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
-- [CMake](https://cmake.org/download/) for configuring the build environment.
+- [Intel oneAPI 2026.1 toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneapi-toolkit-download.html)
+- [CMake 4.4.0 or higher](https://cmake.org/download/) for configuring the build environment.
 - [Git](https://gitforwindows.org/) for downloading the Delft3D source code from this repository.
   If you prefer graphical user interfaces over command lines, you may want to additionally install [GitExtensions](https://gitextensions.github.io/) and/or [TortoiseGit](https://tortoisegit.org/).
   The former tool is generally considered more powerful and true to Git.
   The latter tool offers icon overlays for commit status.
-- [Python](https://www.python.org/downloads/) for the build scripts and the Conan package manager.
+- [Python 3.12](https://www.python.org/downloads/) for the build scripts and the Conan package manager.
   The recommended way to install Python within Deltares is via [uv](https://docs.astral.sh/uv/):
   ```
   uv python install

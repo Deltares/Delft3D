@@ -30,9 +30,6 @@ object LinuxTest : BuildType({
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
-        test\deltares_testbench\data\cases\**\*.dia      => logging
-        test\deltares_testbench\data\cases\**\*.log      => logging
-        test\deltares_testbench\logs                     => logging
         test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
@@ -147,6 +144,15 @@ object LinuxTest : BuildType({
             conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "cp -r data/cases copy_cases"
+        }
+        script {
+            name = "Publish logs for failed builds"
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
+            scriptContent = """
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.dia => logging']"
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.log => logging']"
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\logs => logging']"
+            """.trimIndent()
         }
     }
 
