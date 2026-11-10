@@ -32,19 +32,19 @@ if(CMAKE_Fortran_COMPILER)
     add_subdirectory(wrappers/fortran)
 endif()
 
-find_program(DOTNET_EXECUTABLE dotnet)
-if(DOTNET_EXECUTABLE)
-    execute_process(
-        COMMAND ${DOTNET_EXECUTABLE} --version
-        RESULT_VARIABLE DOTNET_SDK_RESULT
-        OUTPUT_QUIET ERROR_QUIET
-    )
-    if(DOTNET_SDK_RESULT EQUAL 0)
-        add_subdirectory(wrappers/csharp)
-    else()
-        message(STATUS "No .NET SDK found. Skipping C# wrappers.")
-    endif()
-endif()
+# find_program(DOTNET_EXECUTABLE dotnet)
+# if(DOTNET_EXECUTABLE)
+    # execute_process(
+        # COMMAND ${DOTNET_EXECUTABLE} --version
+        # RESULT_VARIABLE DOTNET_SDK_RESULT
+        # OUTPUT_QUIET ERROR_QUIET
+    # )
+    # if(DOTNET_SDK_RESULT EQUAL 0)
+        # add_subdirectory(wrappers/csharp)
+    # else()
+        # message(STATUS "No .NET SDK found. Skipping C# wrappers.")
+    # endif()
+# endif()
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)

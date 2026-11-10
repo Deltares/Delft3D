@@ -10,7 +10,6 @@ AutoStart         = 0
 
 [geometry]
 NetFile           = FlowFM_net.nc
-BathymetryFile    =
 DryPointsFile     =
 GridEnclosureFile =
 WaterLevIniFile   =
@@ -25,7 +24,6 @@ RoofsFile         =
 LeveeBreachFile   =
 ProfdefxyzFile    =
 Uniformwidth1D    = 2
-ManholeFile       =
 WaterLevIni       = -5
 Bedlevuni         = -5
 Bedslope          = 0
@@ -53,7 +51,7 @@ Numtopsig         = 0         # Number of sigma layers in top of z-layer model
 zLayerGrowthFactor = 1.       # z-layer thickness growth factor from DzTopUniAboveZ downwards
 StretchType       = 1         # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
 Dxwuimin2D        = 0.1       # Smallest fraction dx/wu , set dx > Dxwuimin2D*wu, Default = 0.1
-StretchCoef       = 1, 1.404019, 1.971269, 2.767610, 3.885900, 5.455881, 7.660161, 10.755012, 15.100148, 15.100148, 10.755012, 7.660161, 5.455881, 3.885900, 2.767610, 1.971269, 1.404019, 1             # Prescribes the layer thicknesses in percentages
+StretchCoef       = 1 1.404019 1.971269 2.767610 3.885900 5.455881 7.660161 10.755012 15.100148 15.100148 10.755012 7.660161 5.455881 3.885900 2.767610 1.971269 1.404019 1             # Prescribes the layer thicknesses in percentages
 
 [numerics]
 CFLMax            = 0.7
@@ -150,7 +148,7 @@ UpdateRoughnessInterval = 60
 
 [restart]
 RestartFile       =
-RestartDateTime   = 20190313
+RestartDateTime   = 20190313000000
 
 [external forcing]
 ExtForceFile      = test.ext
@@ -186,7 +184,6 @@ XLSInterval       =
 MapFile           =
 MapInterval       = 60
 RstInterval       = 86400
-S1incinterval     =
 MapFormat         = 4
 Wrihis_balance    = 1
 Wrihis_structure_gen= 1
