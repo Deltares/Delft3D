@@ -342,6 +342,7 @@ contains
       real(fp) :: vmean
       real(fp) :: dum
       real(fp) :: qbf
+      real(fp) :: morfac_correction
       integer, pointer :: bdfrlxtype
       integer, pointer :: lsedtot
       logical, pointer :: lfbdfmor
@@ -418,14 +419,16 @@ contains
       ! environment the morphological time scale should be used.
       !
       if (lfbdfmor) then ! oke, staat op false als .not. stm_included
-         dt_user_dune = dt_user * morfac
          if ((comparereal(morfac, 0.0_fp) == 0) .or. (time1 < tstart_user + tcmp * tfac)) then ! JRE+BJ to check: tcmp or tmor?
             ! no update of bedforms necessary
             return
          end if
+         morfac_correction = morfac
       else
-         dt_user_dune = dt_user
+         morfac_correction = 1.0_fp
       end if
+      dt_user_dune = dt_user * morfac_correction
+
       !
       ! Calculate equilibrium bedform heights/lengths
       !
@@ -588,7 +591,7 @@ contains
       select case (bdfrlxtype)
       case (1)
          ! TH = given
-         T_relax = max(bedformT_H * tfac, dt_dune) ! bedformT_H must be in mdu TUnits!
+         T_relax = max(bedformT_H * tfac / morfac_correction, dt_dune) ! bedformT_H must be in mdu TUnits!
          do nm = 1, ndx
             if (hs(nm) > epshs) then
                sour(nm) = duneheightequi(nm) / T_relax
@@ -601,7 +604,7 @@ contains
          do nm = 1, ndx
             if (hs(nm) > epshs) then
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), dt_dune)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
@@ -614,7 +617,7 @@ contains
             if (hs(nm) > epshs) then
                bedformL_H = bdfL_Hc * dunelength(nm)
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), dt_dune)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
@@ -628,7 +631,7 @@ contains
                phi = max(min((bdfHmax / hs(nm))**bdfL_Hp, bdfPmax), 1.0_fp)
                bedformL_H = phi * dunelength(nm)
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), dt_dune)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
