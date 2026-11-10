@@ -40,7 +40,7 @@ contains
 ! the transport formula of Soulsby / Van Rijn
 !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts
+      use m_mathconstants
 !
 ! Arguments
 !

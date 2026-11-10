@@ -40,7 +40,7 @@ contains
                    & ubot_from_com)
 !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts
+      use m_mathconstants
 !
 ! Arguments
 !

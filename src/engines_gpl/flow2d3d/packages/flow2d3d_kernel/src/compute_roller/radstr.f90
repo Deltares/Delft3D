@@ -44,7 +44,7 @@ subroutine radstr(ewave1    ,eroll1    ,sinkr     ,c         ,cgc       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

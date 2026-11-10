@@ -63,7 +63,7 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
 !!--declarations----------------------------------------------------------------
     use precision
     use morphology_data_module
-    use mathconsts, only: sqrt2, degrad, raddeg
+    use m_mathconstants, only: sqrt2, degrad, raddeg
     use ieee_arithmetic, only: ieee_is_nan
 !
 ! arguments

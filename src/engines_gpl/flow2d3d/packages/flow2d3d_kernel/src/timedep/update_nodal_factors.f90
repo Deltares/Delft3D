@@ -36,7 +36,7 @@ subroutine update_nodal_factors(timnow, kc, ntof, nto, kcd, hydrbc, omega, gdp)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

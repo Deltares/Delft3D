@@ -52,7 +52,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, degrad
+    use m_mathconstants, only: pi, degrad
     use sediment_basics_module
     use sed_support_routines, only: ruessink_etal_2012
 !

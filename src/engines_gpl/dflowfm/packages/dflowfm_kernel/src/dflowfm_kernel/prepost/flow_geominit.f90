@@ -874,8 +874,6 @@ contains
                   dx(Lf) = dxe(L)
                else if (izbndpos == 1) then ! half a grid cell outward
                   dx(Lf) = 0.5_dp * dxe(L)
-               else ! izbndpos==2                           ! on specified boundary polyline
-                  continue ! nowhere supported yet
                end if
             end if
          end do

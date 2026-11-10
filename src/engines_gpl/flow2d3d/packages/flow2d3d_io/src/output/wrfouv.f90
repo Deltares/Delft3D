@@ -47,7 +47,7 @@ subroutine wrfouv(nmax      ,mmax      ,nmaxus    ,kmax      ,nofou     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use dfparall
     use dffunctionals

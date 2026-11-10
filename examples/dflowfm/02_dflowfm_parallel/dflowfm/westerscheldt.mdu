@@ -51,7 +51,7 @@ Limtyphu                          = 0                                           
 Limtypmom                         = 4                                                                   # Limiter type for cell center advection velocity (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)
 Limtypsa                          = 4                                                                   # Limiter type for salinity transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)
 Horadvtypzlayer                   = 0                                                                   # Horizontal advection treatment zlayer, 1=default, 2 = Sigma like
-Icgsolver                         = 2                                                                   # Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)
+Icgsolver                         = 4                                                                   # Solver type (4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)
 Maxdegree                         = 6                                                                   # Maximum degree in Gauss elimination
 FixedWeirScheme                   = 0                                                                   # Fixed weir scheme (0: None, 6: Numerical, 8: Tabellenboek, 9: Villemonte)
 FixedWeirContraction              = 1                                                                   # Fixed weir flow width contraction factor

@@ -41,7 +41,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use dfparall
     use netcdf

@@ -40,7 +40,7 @@ subroutine ua_vt(facas,      facsk,        sws,      h,   &
 ! PhD van Thiel 2009
 !!--declarations----------------------------------------------------------------
    use precision
-   use mathconsts
+   use m_mathconstants
    !
    include 'RF.inc'
    !

@@ -41,7 +41,7 @@ subroutine qkwcg(tp        ,rlabda    ,teta      ,qxkw      ,qykw      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

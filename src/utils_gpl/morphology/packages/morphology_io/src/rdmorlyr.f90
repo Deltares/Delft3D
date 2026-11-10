@@ -90,6 +90,7 @@ contains
       character(20) :: parname
       character(45) :: txtput1
       character(20) :: txtput2
+      character(40) :: txtput3
       character(80) :: bndname
       character(256) :: errmsg
       character(999) :: plyrstr
@@ -109,7 +110,6 @@ contains
       real(fp), pointer :: bsfm
       real(fp), pointer :: sigma_sfm
       integer, pointer :: imobility
-      integer, pointer :: isedcrs2tr
       integer, pointer :: ihidexptrcrs
       real(fp), dimension(:), pointer :: thclyr
       !
@@ -125,6 +125,7 @@ contains
       integer, pointer :: idiffusion
       integer, pointer :: ifractions
       integer, pointer :: active_layer_diffusion
+      integer, pointer :: active_layer_to_substrate_flux
       integer, pointer :: iporosity
       integer, pointer :: iunderlyr
       integer, pointer :: maxwarn
@@ -178,14 +179,15 @@ contains
       if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'ThLaLyr', thlalyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdTopLyr' , updtoplyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'UpdBaseLyr', updbaselyr)
-      if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'track_mass_shortage', track_shortage)
+      if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'mass_shortage_track', track_shortage)
       if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'mass_shortage_thresh', minmass)
-      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'max_num_shortage_warnings', maxwarn)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'mass_shortage_max_num_warnings', maxwarn)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IConsolidate', iconsolidate)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IPorosity', iporosity)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'Ndiff', ndiff)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IDiffusion', idiffusion)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'active_layer_diffusion', active_layer_diffusion)
+      if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'active_layer_to_substrate_flux', active_layer_to_substrate_flux)
       if (istat /= 0) then
          errmsg = 'Memory problem in RDMORLYR'
          call write_error(errmsg, unit=lundia)
@@ -242,7 +244,7 @@ contains
       ! underlayer bookkeeping mechanism
       !
       call prop_get(mor_ptr, 'Underlayer', 'IUnderLyr', iunderlyr)
-      if (iunderlyr < 1 .or. iunderlyr > 2) then
+      if (iunderlyr < BED_MIXED .or. iunderlyr > BED_LAYERED) then
          errmsg = 'IUnderLyr should be 1 or 2 in '//trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
@@ -250,10 +252,32 @@ contains
       end if
       txtput1 = 'Underlayer mechanism'
       write (lundia, '(2a,i20)') txtput1, ':', iunderlyr
+      call prop_get(mor_ptr, 'Underlayer', 'ALSflux', active_layer_to_substrate_flux)
+      select case (active_layer_to_substrate_flux)
+      case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM)
+         txtput1 = 'Active-layer substrate flux'
+         txtput2 = 'Uniform'
+      case (ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST)
+         txtput1 = 'Active-layer substrate flux'
+         txtput2 = 'Immobile first'
+      case default
+         errmsg = 'ALSflux should be 1 (Uniform) or 2 (Immobile first) in '//trim(filmor)
+         call write_error(errmsg, unit=lundia)
+         error = .true.
+         return
+      end select
+      write (lundia, '(3a)') txtput1, ':', txtput2
+      if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
+          & iunderlyr /= BED_LAYERED) then
+         errmsg = 'ALSflux=2 (Immobile first) requires IUnderLyr=2 in '//trim(filmor)
+         call write_error(errmsg, unit=lundia)
+         error = .true.
+         return
+      end if
       !
       call set_default_fractions(morlyr)
       call prop_get(mor_ptr, 'Underlayer', 'IFractions', ifractions)
-      if (ifractions < 1 .or. ifractions > 2) then
+      if (ifractions < FRAC_MASS .or. ifractions > FRAC_VOLUME) then
          errmsg = 'IFractions should be 1 or 2 in ' // trim(filmor)
          call write_error(errmsg, unit=lundia)
          error = .true.
@@ -263,7 +287,7 @@ contains
       ! underlayer mechanism parameters
       !
       select case (iunderlyr)
-      case (2)
+      case (BED_LAYERED)
          !
          ! flag for coarse layer
          !
@@ -275,6 +299,13 @@ contains
             txtput2 = '                  NO'
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
+         !
+         if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. crslyr) then
+            errmsg = 'ALSflux=2 (Immobile first) cannot be used with CrsLyr in '//trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         end if
          !
          if (crslyr) then
             if (.not. lfbedfrm) then
@@ -320,6 +351,13 @@ contains
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
+         if (crslyr .and. iconsolidate /= CONSOL_NONE) then
+            errmsg = 'Coarse layer functionality cannot be used together with consolidation in '//trim(filmor)
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         endif
+         !
          idummy = -999
          call prop_get(mor_ptr, 'Consolidate', 'iero', idummy)
          call prop_get(mor_ptr, 'Consolidate', 'ierosion', idummy)
@@ -345,7 +383,7 @@ contains
          end select
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
-         if (morlyr%settings%ierosion > 0) then
+         if (morlyr%settings%ierosion > EROS_CONST) then
             call rderosion(lundia, mor_ptr, morlyr%settings%ierosion, morlyr%settings%erosion)
          endif
          !
@@ -475,7 +513,7 @@ contains
          end if
          !
          call prop_get(mor_ptr, 'Underlayer', 'UpdTopLyr', updtoplyr)
-         if (updtoplyr < 1 .or. updtoplyr > 2) then
+         if (updtoplyr < TOPLYR_POR_RESET .or. updtoplyr > TOPLYR_POR_UPDATE) then
             errmsg = 'UpdTopLyr should be 1-2 in ' // trim(filmor)
             call write_error(errmsg, unit=lundia)
             error = .true.
@@ -483,8 +521,8 @@ contains
          end if
          !
          call prop_get(mor_ptr, 'Underlayer', 'UpdBaseLyr', updbaselyr)
-         if (updbaselyr < 1 .or. updbaselyr > 4) then
-            errmsg = 'UpdBaseLyr should be 1-4 in '//trim(filmor)
+         if (updbaselyr < BASELYR_UPDATED .or. updbaselyr > BASELYR_CONST_THK) then
+            errmsg = 'UpdBaseLyr should be 1-5 in '//trim(filmor)
             call write_error(errmsg, unit=lundia)
             error = .true.
             return
@@ -492,15 +530,18 @@ contains
          !
          txtput1 = 'Base layer composition'
          select case (updbaselyr)
-         case (1)
+         case (BASELYR_UPDATED)
             txtput2 = ' computed separately'
-         case (2)
+         case (BASELYR_CONST_FRC)
             txtput2 = ' constant'
-         case (3)
+         case (BASELYR_COPY_FRC)
             txtput2 = ' same as layer above'
-         case (4)
+         case (BASELYR_CONST)
             txtput1 = 'Base layer composition and thickness'
             txtput2 = '            constant'
+         case (BASELYR_CONST_THK)
+            txtput1 = 'Base layer comp.'
+            txtput2 = ' updated, thk fixed'
          case default
             txtput2 = ' <unknown>'
          end select
@@ -510,13 +551,13 @@ contains
          !
          call prop_get(mor_ptr, 'Underlayer', 'IDiffusion', idiffusion)
          txtput1 = 'Mixing between layers'
-         if (idiffusion > 0) then
+         if (idiffusion > BDIFF_NONE) then
             txtput2 = '                 YES'
          else
             txtput2 = '                  NO'
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
-         if (idiffusion > 0) then
+         if (idiffusion > BDIFF_NONE) then
             call prop_get(mor_ptr, 'Underlayer', 'NDiff', ndiff)
             txtput1 = '# diffusion coefficients in z-direction'
             write (lundia, '(2a,i20)') txtput1, ':', ndiff
@@ -536,7 +577,7 @@ contains
       !
       ! Numerical settings
       !
-      track_shortage = iunderlyr > 1 ! default off for standard bed composition
+      track_shortage = iunderlyr > BED_MIXED ! default off for standard bed composition
       call prop_get(mor_ptr, 'Numerics', 'TrackMassShortage', track_shortage)
       if (track_shortage) then
          call prop_get(mor_ptr, 'Numerics', 'MinMassShortWarning', minmass)
@@ -553,8 +594,8 @@ contains
       ! underlayer mechanism parameters
       !
       select case (iunderlyr)
-      case (2)
-         if (idiffusion > 0) then
+      case (BED_LAYERED)
+         if (idiffusion > BDIFF_NONE) then
             !
             ! Diffusion coefficient
             !
@@ -592,7 +633,7 @@ contains
          associate (ttlform => morpar%ttlform)
             call prop_get(mor_ptr, 'Underlayer', 'TTLForm', ttlform)
             select case (ttlform)
-            case (1)
+            case (ACTIVE_LAYER_DIFFUSION_XY)
                !
                ! Transport layer thickness constant in time:
                ! uniform or spatially varying thickness
@@ -716,8 +757,7 @@ contains
          !
          ! HANNEKE
          !
-         istat = bedcomp_getpointer_integer(morlyr, 'ISedCrs2Tr', isedcrs2tr)
-         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs', ihidexptrcrs)
+         istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs', ihidexptrcrs)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IMobility', imobility)
          if (istat /= 0) then
             errmsg = 'Memory problem in RDMORLYR'
@@ -726,33 +766,45 @@ contains
             return
          end if
          !
-         if (crslyr) then
-            call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
-            call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+         if (crslyr .or. active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST) then
+            if (crslyr) then
+               call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+               txtput1 = 'Mobility model for vertical sorting'
+            else
+               txtput1 = 'Mobility model for substrate flux'
+            end if
             call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
             !
-            txtput1 = 'Mobility model for vertical sorting'
             select case (imobility)
             case (MOBILITY_OFF)
-               txtput2 = ' not used'
+               txtput3 = ' not used'
             case (MOBILITY_DISCRETE)
-               txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+               txtput3 = ' Shields curve and discrete mobility'
             case (MOBILITY_SHIELDS)
-               txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+               txtput3 = ' Shields curve and continuous mobility'
             case (MOBILITY_WILCOCKMCARDELL)
-               txtput2 = ' Wilcock and McArdell (1997)'
+               txtput3 = ' Wilcock and McArdell (1997)'
             case (MOBILITY_SEDTRANS)
-               txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+               txtput3 = ' Critical 0.047 and discrete mobility'
             case default
-               txtput2 = ' not used'
+               txtput3 = ' not used'
                errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
-               write (lundia, '(3a)') txtput1, ':', txtput2
+               write (lundia, '(3a)') txtput1, ':', txtput3
                call write_error(errmsg, unit=lundia)
                error = .true.
                return
             end select
-            write (lundia, '(3a)') txtput1, ':', txtput2
+            write (lundia, '(3a)') txtput1, ':', txtput3
+            if (active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_IMMOBILE_FIRST .and. &
+                & imobility == MOBILITY_OFF) then
+               errmsg = 'ALSflux=2 (Immobile first) requires IMobility different from 0 in '//trim(filmor)
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            end if
+         end if
 
+         if (crslyr) then
             associate (telfil => morpar%telfil)
                istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
                if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'SinkFrac_max', sinkfrac_max)
@@ -825,14 +877,14 @@ contains
          !
          associate (aldiff => morlyr%settings%aldiff, aldifffil => morpar%aldifffil)
             select case (active_layer_diffusion)
-            case (0)
+            case (ACTIVE_LAYER_DIFFUSION_OFF)
                !
                !NO diffusion in active-layer model
                !
                txtput1 = 'Diffusion in active-layer model'
                write (lundia, '(3a)') txtput1, ':', '                  NO'
                morpar%moroutput%aldiff = .false. !if you request the output but there is no diffusion, we do no write it.
-            case (1)
+            case (ACTIVE_LAYER_DIFFUSION_XY)
                !
                !YES diffusion in active-layer mode
                !
@@ -1066,7 +1118,7 @@ contains
          flcomp = ''
          call prop_get(mor_ptr, 'Underlayer', 'IniComp', flcomp)
          !
-         if (iunderlyr /= 2 .and. flcomp /= ' ') then
+         if (iunderlyr /= BED_LAYERED .and. flcomp /= ' ') then
             write (lundia, '(a)') 'WARNING: IniComp keyword only supported for IUnderLyr=2'
             flcomp = ' '
          end if
@@ -1121,7 +1173,7 @@ contains
           write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%kk
 
           select case (iconsolidate)
-          case (1) ! Gibson model parameters
+          case (CONSOL_GIBSON) ! Gibson model parameters
 
               call prop_get(mor_ptr, 'Consolidate', 'ksigma0', morlyr%settings%ksigma0)
               txtput1 = 'Effective stress coefficient, ksigma0'
@@ -1152,7 +1204,7 @@ contains
               txtput1 = 'Maximum volume fraction, svmax'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%svmax
 
-          case (2) ! Dynamic Equilibrium CONsolidation (DECON) parameters
+          case (CONSOL_DECON) ! Dynamic Equilibrium CONsolidation (DECON) parameters
               call prop_get(mor_ptr, 'Consolidate', 'dtcon', morlyr%settings%dtdecon)
               call prop_get(mor_ptr, 'Consolidate', 'dtdecon', morlyr%settings%dtdecon)
               txtput1 = 'DECON consolidation update time step (s)'
@@ -1253,20 +1305,13 @@ contains
                  call prop_get(mor_ptr, 'peat', 'peatfrac', morlyr%settings%peatfrac)
                  txtput1 = 'peatfrac'
                  write (lundia, '(2a,i2)') txtput1, ':', morlyr%settings%peatfrac
-                 if (morlyr%settings%peatfrac < 1 .or. morlyr%settings%peatfrac > morlyr%settings%nfrac) then
+                 if (morlyr%settings%peatfrac <= PEATFRAC_DISABLED .or. &
+                     morlyr%settings%peatfrac > morlyr%settings%nfrac) then
                     write(errmsg,'(a,i0,2a)') 'Peat fraction should be in range 1 to ',morlyr%settings%nfrac,' in ',trim(filmor)
                     call write_error(errmsg, unit=lundia)
                     error = .true.
                     return
                  endif
-
-                 call prop_get(mor_ptr, 'peat', 'ymodpeat', morlyr%settings%ymodpeat)
-                 txtput1 = 'ymod'
-                 write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ymodpeat
-
-                 call prop_get(mor_ptr, 'peat', 'ccpeat', morlyr%settings%ccpeat)
-                 txtput1 = 'cc'
-                 write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ccpeat
 
                  call prop_get(mor_ptr, 'peat', 'LOI', morlyr%settings%peatloi)
                  txtput1 = 'LOI'
@@ -1301,9 +1346,6 @@ contains
               txtput1 = 'consolidation rate of sand fraction'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%crsand
 
-              call prop_get(mor_ptr, 'Consolidate', 'ptr', morlyr%settings%ptr)
-              txtput1 = 'percentage of thickness reduction'
-              write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%ptr
           endif
 
           write (lundia, '(a)') '*** End   of consolidation input'
@@ -1776,7 +1818,7 @@ end subroutine rderosion
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nlyr', nlyr)
          if (istat == 0) istat = bedcomp_getpointer_realprec(morlyr, 'bodsed', bodsed)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'iporosity', iporosity)
-         if (iunderlyr == 2) then
+         if (iunderlyr == BED_LAYERED) then
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'msed', msed)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'thlyr', thlyr)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'svfrac', svfrac)
@@ -1787,7 +1829,7 @@ end subroutine rderosion
             return
          end if
          !
-         if (iunderlyr == 1 .or. flcomp == ' ') then
+         if (iunderlyr == BED_MIXED .or. flcomp == ' ') then
             !
             ! If not restart and no layer administration, then use the bed composition specified in the sed file.
             !

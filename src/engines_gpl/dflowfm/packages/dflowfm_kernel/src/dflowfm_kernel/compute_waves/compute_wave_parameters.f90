@@ -53,7 +53,7 @@ contains
       use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flow_without_waves, epshu, ag, hs, waveforcing, jawaveforces
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
-      use mathconsts, only: sqrt2_hp
+      use m_mathconstants, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp, transform_wave_period_hp
       use m_wind, only: wx, wy
 

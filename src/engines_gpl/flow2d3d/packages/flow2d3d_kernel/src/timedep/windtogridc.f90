@@ -38,7 +38,7 @@ subroutine windtogridc(mmax      ,nmax      ,nmaxus    ,kcs       ,alfas     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

@@ -80,8 +80,6 @@ get_fortran_source_files(${dflowfm_utils_path} dflowfm_utils)
 get_fortran_source_files(${dflowfm_utils_path}/rest_f90 dflowfm_utils_rest_f90)
 get_fortran_source_files(${dflowfm_utils_path}/to_deltares_common dflowfm_utils_to_deltares_common)
 
-list(REMOVE_ITEM dflowfm_utils ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_parms.F90)
-
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
 
 # --- Generated unc_put_var_map ---
@@ -252,6 +250,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_errorhandler.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_opengl.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/dcross.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/m_bilinear_interpolation.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_path}/fetch_proc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")

@@ -43,7 +43,7 @@ subroutine rolcor(hrms      ,tp        ,theta     ,hu        ,hv         , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

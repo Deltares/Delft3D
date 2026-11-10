@@ -27,16 +27,14 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_s1ini
+   use precision_basics, only: dp
    use m_update_waq_sink_source_fluxes, only: update_waq_sink_source_fluxes
    use m_update_waq_lateral_fluxes, only: update_waq_lateral_fluxes
    use m_setgrwflowexpl, only: setgrwflowexpl
    use m_source_sink, only: source_sinks
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -44,10 +42,9 @@ module m_s1ini
 
 contains
 
-!> links in continuity eq.
+   !> links in continuity eq.
    subroutine s1ini()
-      use precision, only: dp
-      use precision_basics, only: dp
+      use m_atmospheric_stability, only: compute_wet_bulb_temperature, convert_dew_point_temperature_to_relative_humidity
       use m_flow
       use m_flowgeom
       use m_flowtimes
@@ -57,9 +54,10 @@ contains
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
       use m_mass_balance_area_data
       use m_partitioninfo
-      use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, qextreal
+      use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, relative_humidity, qextreal, dew_point_temperature
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                             apply_transport
+      use messagehandling, only: mess, LEVEL_ERROR
 
       integer :: L, k1, k2, k, LL, kt, idim, imba, i_lat, i_node
       real(kind=dp) :: aufu, auru, tetau
@@ -256,7 +254,16 @@ contains
                      if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
                      else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
+
+                        if (rain_temperature_method == RAIN_TEMPERATURE_AIR) then
+                           heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k)
+                        else if (rain_temperature_method == RAIN_TEMPERATURE_WET_BULB) then
+                           if (rain_temperature_from_dew_point) then
+                              relative_humidity(k) = convert_dew_point_temperature_to_relative_humidity(dew_point_temperature(k), air_temperature(k))
+                           end if
+                           heatsrc(kt) = heatsrc(kt) + qin(kt) *  compute_wet_bulb_temperature(air_temperature(k), relative_humidity(k))
+                        end if                       
+                        
                      end if
                   else
                      heatsrc(kt) = heatsrc(kt) + qin(kt) * constituents(itemp, kt) ! extract top layer temp

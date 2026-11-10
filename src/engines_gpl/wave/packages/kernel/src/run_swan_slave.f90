@@ -53,7 +53,7 @@ subroutine run_swan_slave (command, retval)
    call wave_mpi_bcast(command, ierr)
    if ( ierr == MPI_SUCCESS ) then
       if (command == SWAN_GO) then
-         call swan(engine_comm_world)
+         call swan_lib(engine_comm_world)
          ! include barrier to make sure that all SWAN instances have
          ! finished accessing files that the master WAVE thread owill read
          ! and delete

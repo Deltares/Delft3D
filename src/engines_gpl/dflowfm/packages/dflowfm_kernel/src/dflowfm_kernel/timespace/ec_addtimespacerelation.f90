@@ -207,7 +207,8 @@ contains
             if (.not. quiet_) then
                message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             end if
-            message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
+            message = 'Could not add time-space relation for forcing '''//trim(name)//''' at location '''//trim(location)// &
+                      ''' from file '''//trim(forcingfile)//'''. Check that the file is readable and contains the requested quantity.'
             call mess(LEVEL_ERROR, message)
 
             goto 1234
@@ -580,7 +581,7 @@ contains
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
-            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
+            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux', 'seasurfacetemperature')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then

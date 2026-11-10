@@ -47,7 +47,7 @@ subroutine santoss_bss1(i2d3d, g, d, d50, d90, delta, aw, uw, &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only:degrad
+    use m_mathconstants, only:degrad
 !
 ! arguments
 !

@@ -32,39 +32,30 @@ If `uv` is installed you can use the following command with `/test/deltares_test
 as the working directory: `uv venv --python 3.12`. If `uv` is not installed, use:
 `python -m venv .venv`, where `python` points to the python installation of python 3.12.
 
-3. Install the dependencies. *Always* activate the virtual environment first:
+3. Install the dependencies. The exact (pinned) versions of all packages, for Windows and Linux, are stored in
+`uv.lock` next to `pyproject.toml`.
+
+If `uv` is available, run the following with `/test/deltares_testbench` as the working directory. It creates the
+`.venv` itself if it does not exist yet, so activating the virtual environment is not needed for this step:
+```bash
+uv sync --locked --extra dev
+```
+`--locked` makes the command fail instead of silently changing `uv.lock` when it is out of date with `pyproject.toml`.
+Leave out `--extra dev` if the development tools (pytest, ruff, mypy) are not needed. Python 3.11 and 3.12 on Windows
+and Linux (x86-64) are supported.
+
+If `uv` is not available, activate the virtual environment and use `pip`. Note that this does *not* use the pinned
+versions, `pip` resolves the version ranges from `pyproject.toml` itself:
 
 On Windows:
 ```powershell
-# In test/deltares_testbench
 .venv/Scripts/activate
+pip install -e ".[dev]"
 ```
 On Linux:
 ```bash
-# In test/deltares_testbench
 source .venv/bin/activate
-```
-Use `uv` to install the python dependencies if it is available.
-
-On Windows:
-```powershell
-uv pip sync pip/win-dev-requirements.txt
-```
-
-On Linux
-```bash
-uv pip sync pip/lnx-dev-requirements.txt
-```
-
-If `uv` is not available try it with `pip`.
-
-On Windows:
-```powershell
-pip install -r pip/win-dev-requirements.txt
-```
-On Linux:
-```bash
-pip install -r pip/lnx-dev-requirements.txt
+pip install -e ".[dev]"
 ```
 
 4. Make sure the credentials to access the _test case data_ are in place.

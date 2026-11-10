@@ -380,14 +380,14 @@ contains
       num_time_functions = 0
       call realloc(funame, num_time_functions)
 
-      num_spatial_time_fuctions = 0
+      num_spatial_time_functions = 0
       call realloc(sfunname, num_time_functions)
 
       call dfm_waq_initexternalforcings(ierr)
       if (ierr /= 0) then
          call mess(LEVEL_ERROR, 'Error reading water quality processes external forcings from ext-file')
       end if
-      nosfunext = num_spatial_time_fuctions
+      nosfunext = num_spatial_time_functions
 
       jawaqproc = 1 ! substances succesfully initiated
 
@@ -601,9 +601,9 @@ contains
       call mess(LEVEL_INFO, '==========================================================================')
       call mess(LEVEL_INFO, 'Data from hydrodynamics available for water quality')
       call mess(LEVEL_INFO, '--------------------------------------------------------------------------')
-      num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-      isfsurf = num_spatial_time_fuctions
-      call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='surf')
+      num_spatial_time_functions = num_spatial_time_functions + 1
+      isfsurf = num_spatial_time_functions
+      call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='surf')
       call mess(LEVEL_INFO, '''horizontal surface'' connected as ''surf'' (by default)')
 
       icon = index_in_array(clatitude, coname_sub)
@@ -612,9 +612,9 @@ contains
             call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because model is not spherical.')
             isflatitude = 0
          else
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isflatitude = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isflatitude = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='latitude')
             call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
          end if
       else
@@ -624,16 +624,16 @@ contains
 
       icon = index_in_array(ctauflow, coname_sub)
       if (icon > 0) then
-         num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-         isftau = num_spatial_time_fuctions
-         call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='tauflow')
+         num_spatial_time_functions = num_spatial_time_functions + 1
+         isftau = num_spatial_time_functions
+         call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='tauflow')
          call mess(LEVEL_INFO, '''bottom shear stress'' connected as ''tauflow''')
       else
          icon = index_in_array(ctau, coname_sub)
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isftau = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='tau')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isftau = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='tau')
             call mess(LEVEL_INFO, '''bottom shear stress'' connected as ''tau''')
          else
             call mess(LEVEL_INFO, '''bottom shear stress'' not connected, because ''tauflow'' or ''tau'' are not in the sub-file.')
@@ -652,9 +652,9 @@ contains
 
       icon = index_in_array(cvelocity, coname_sub)
       if (icon > 0) then
-         num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-         isfvel = num_spatial_time_fuctions
-         call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='velocity')
+         num_spatial_time_functions = num_spatial_time_functions + 1
+         isfvel = num_spatial_time_functions
+         call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='velocity')
          call mess(LEVEL_INFO, '''flow element center velocity'' connected as ''velocity''')
       else
          call mess(LEVEL_INFO, '''flow element center velocity'' not connected, because ''velocity'' is not in the sub-file.')
@@ -664,9 +664,9 @@ contains
       icon = index_in_array(cWaveH, coname_sub)
       isfwaveheight = 0
       if (icon > 0) then
-         num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-         isfwaveheight = num_spatial_time_fuctions
-         call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='WaveHeight') ! this must be the name used in waq, process input param/in sub file.
+         num_spatial_time_functions = num_spatial_time_functions + 1
+         isfwaveheight = num_spatial_time_functions
+         call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='WaveHeight') ! this must be the name used in waq, process input param/in sub file.
          call mess(LEVEL_INFO, '''flow element center WaveHeight'' connected as ''WaveHeight''')
       else
          call mess(LEVEL_INFO, '''flow element center WaveHeight'' not connected, because ''WaveHeight'' is not in the sub-file.')
@@ -676,9 +676,9 @@ contains
       icon = index_in_array(cWaveL, coname_sub)
       isfwavelength = 0
       if (icon > 0) then
-         num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-         isfwavelength = num_spatial_time_fuctions
-         call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='WaveLength') ! this must be the name used in waq, process input param/in sub file.
+         num_spatial_time_functions = num_spatial_time_functions + 1
+         isfwavelength = num_spatial_time_functions
+         call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='WaveLength') ! this must be the name used in waq, process input param/in sub file.
          call mess(LEVEL_INFO, '''flow element center WaveLength'' connected as ''WaveLength''')
       else
          call mess(LEVEL_INFO, '''flow element center WaveLength'' not connected, because ''WaveLength'' is not in the sub-file.')
@@ -688,9 +688,9 @@ contains
       icon = index_in_array(cWaveT, coname_sub)
       isfwaveperiod = 0
       if (icon > 0) then
-         num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-         isfwaveperiod = num_spatial_time_fuctions
-         call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='WavePeriod') ! this must be the name used in waq, process input param/in sub file.
+         num_spatial_time_functions = num_spatial_time_functions + 1
+         isfwaveperiod = num_spatial_time_functions
+         call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='WavePeriod') ! this must be the name used in waq, process input param/in sub file.
          call mess(LEVEL_INFO, '''flow element center WavePeriod'' connected as ''WavePeriod''')
       else
          call mess(LEVEL_INFO, '''flow element center WavePeriod'' not connected, because ''WavePeriod'' is not in the sub-file.')
@@ -701,9 +701,9 @@ contains
       isfsal = 0
       if (jasal == 1) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfsal = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='salinity')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfsal = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='salinity')
             call mess(LEVEL_INFO, '''salinity'' connected as ''salinity''')
          else
             call mess(LEVEL_INFO, '''salinity'' not connected, because ''salinity'' is not in the sub-file.')
@@ -718,16 +718,16 @@ contains
       isftem = 0
       if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isftem = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='tempflow')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isftem = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='tempflow')
             call mess(LEVEL_INFO, '''temperature'' connected as ''tempflow''')
          else
             icon = index_in_array(ctemperature, coname_sub)
             if (icon > 0) then
-               num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-               isftem = num_spatial_time_fuctions
-               call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='temp')
+               num_spatial_time_functions = num_spatial_time_functions + 1
+               isftem = num_spatial_time_functions
+               call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='temp')
                call mess(LEVEL_INFO, '''temperature'' connected as ''temp''')
             else
                call mess(LEVEL_INFO, '''temperature'' not connected, because ''tempflow'' or ''temp'' are not in the sub-file.')
@@ -747,9 +747,9 @@ contains
       isfvwind = 0
       if (jawind >= 1) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfvwind = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='vwind')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfvwind = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='vwind')
             call mess(LEVEL_INFO, '''wind velocity magnitude'' connected as ''vwind''')
          else
             call mess(LEVEL_INFO, '''wind velocity magnitude'' not connected, because ''vwind'' is not in the sub-file.')
@@ -764,9 +764,9 @@ contains
       isfwinddir = 0
       if (jawind >= 1) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfwinddir = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='winddir')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfwinddir = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='winddir')
             call mess(LEVEL_INFO, '''wind direction'' connected as ''winddir''')
          else
             call mess(LEVEL_INFO, '''wind direction'' not connected, because ''winddir'' is not in the sub-file.')
@@ -785,13 +785,13 @@ contains
       isffetchd = 0
       if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then ! copied from "set_external_forcings", call to "tauwavefetch"
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isffetchl = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='fetch')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isffetchl = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='fetch')
             call mess(LEVEL_INFO, '''fetch length'' connected as ''fetch''')
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isffetchd = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='initdepth')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isffetchd = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='initdepth')
             call mess(LEVEL_INFO, '''fetch depth'' connected as ''initdepth''')
          else
             call mess(LEVEL_INFO, '''fetch length'' and ''fetch depth'' not connected, because neither ''fetch'' or ''initdepth'' is in the sub-file.')
@@ -807,10 +807,10 @@ contains
       no_reflection_wq = .false.
       if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfradsurf = num_spatial_time_fuctions
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfradsurf = num_spatial_time_functions
             no_reflection_wq = .true.
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='radsurf')
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='radsurf')
             call mess(LEVEL_INFO, '''net solar radiation'' connected as ''radsurf''')
          else
             call mess(LEVEL_INFO, '''net solar radiation'' not connected, because ''radsurf'' is not in the sub-file.')
@@ -825,9 +825,9 @@ contains
       isfrain = 0
       if (jarain == 1) then
          if (icon > 0) then
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfrain = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='rain')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfrain = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='rain')
             call mess(LEVEL_INFO, '''rain'' (mm/day) connected as ''rain'' (mm/h)')
          else
             call mess(LEVEL_INFO, '''rain'' not connected, because ''rain'' is not in the sub-file.')
@@ -848,18 +848,18 @@ contains
             call mess(LEVEL_WARN, 'The water quality process ''vtrans'' was not switched on because the model is not 3D.')
          else
             fm_vtrans = .true.
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isfvertdisper = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='VertDisper')
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isffmlayer = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMLayer')
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isffmktop = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkTop')
-            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isffmkbot = num_spatial_time_fuctions
-            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkBot')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isfvertdisper = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='VertDisper')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isffmlayer = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='FMLayer')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isffmktop = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='FMkTop')
+            num_spatial_time_functions = num_spatial_time_functions + 1
+            isffmkbot = num_spatial_time_functions
+            call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='FMkBot')
             call mess(LEVEL_INFO, 'Found process ''vtrans'', added ''VertDisper'', ''FMLayer'', ''FMkTop'' and ''FMkBot''')
          end if
       end if
@@ -1245,9 +1245,9 @@ contains
                   isfun = find_name(sfunname, waqinput)
 
                   if (isfun == 0) then
-                     num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-                     call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill=waqinput)
-                     call reallocP(sfuninp, [num_spatial_time_fuctions, Ndkx], keepExisting=.true., fill=0.0_dp)
+                     num_spatial_time_functions = num_spatial_time_functions + 1
+                     call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill=waqinput)
+                     call reallocP(sfuninp, [num_spatial_time_functions, Ndkx], keepExisting=.true., fill=0.0_dp)
                   end if
                   success = .true.
                else
@@ -2006,7 +2006,6 @@ contains
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''
-      md_thetav_waq = 0.0_dp
       md_dt_waqproc = 0.0_dp
 
       return

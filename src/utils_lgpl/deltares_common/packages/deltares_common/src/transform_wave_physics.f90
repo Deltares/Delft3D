@@ -68,7 +68,7 @@ contains
     !!--pseudo code and references--------------------------------------------------
       ! NONE
     !!--declarations----------------------------------------------------------------
-      use mathconsts, only: sqrt2_hp, degrad_hp
+      use m_mathconstants, only: sqrt2_hp, degrad_hp
       use ieee_arithmetic, only: ieee_is_nan
       use precision
       implicit none
@@ -200,7 +200,7 @@ contains
                                  & grav, swflux, swdis, &
                                  & gamma0, wsbodyu, wsbodyv, ierr)
 
-      use mathconsts, only: sqrt2_hp, degrad_hp
+      use m_mathconstants, only: sqrt2_hp, degrad_hp
       use precision
       implicit none
       !

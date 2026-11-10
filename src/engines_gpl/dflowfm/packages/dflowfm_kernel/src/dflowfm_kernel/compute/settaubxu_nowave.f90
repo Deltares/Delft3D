@@ -46,7 +46,7 @@ contains
       use m_flow, only: taubxu, u1, u0, hu, epshu, frcu, v, ifrcutp, z0urou, vonkar, sag, rhomean
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_chezy, only: get_chezy
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       implicit none
 
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`

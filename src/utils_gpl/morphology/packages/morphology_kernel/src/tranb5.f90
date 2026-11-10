@@ -47,7 +47,7 @@ contains
 ! bijker with wave effect
 !!--declarations----------------------------------------------------------------
       use precision
-      use mathconsts
+      use m_mathconstants
 !
 ! Arguments
 !

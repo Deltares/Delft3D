@@ -3,6 +3,7 @@
 
 #include <expected>
 #include <filesystem>
+#include <functional>
 #include <optional>
 #include <pugixml.hpp>
 #include <string>
@@ -20,6 +21,20 @@ namespace pre_c_sumo
     struct WriteError
     {
         std::string message;
+    };
+
+    /**
+     * @brief Per-call file operations for FF2NF output. Defaults use the local filesystem.
+     *
+     * Replacements must be synchronous; the XML string view is only valid during write_file.
+     * No process-wide IO state is replaced.
+     */
+    struct FF2NFFileOperations
+    {
+        FF2NFFileOperations();
+
+        std::function<std::expected<void, WriteError>(const std::filesystem::path&)> create_directories;
+        std::function<std::expected<void, WriteError>(const std::filesystem::path&, std::string_view)> write_file;
     };
 
     /**
@@ -53,7 +68,7 @@ namespace pre_c_sumo
     struct FF2NFConfig
     {
         std::string ff2nf_filename;
-        std::string wait_for_file;
+        std::string wait_for_file; ///< NF2FF response path advertised to C-SUMO in <comm><waitForFile>.
         std::string ff_run_directory;
         std::string run_id;
         std::string unique_id;
@@ -96,10 +111,13 @@ namespace pre_c_sumo
          * @anchor pre_c_sumo_ff2nf_writer_to_file
          * @brief Writes the generated FF2NF XML content to a file.
          * @param file_path Destination path for the output file.
+         * @param file_operations Directory creation and file writing operations.
          * @return Empty result on success, or a WriteError on failure.
          * @note The function first calls generate() and returns any validation error from that step.
+         * @note Default file operations create the destination exclusively and fail if it already exists.
          */
-        [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path) const;
+        [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path,
+                                                             const FF2NFFileOperations& file_operations = {}) const;
 
     private:
         constexpr static std::string_view root_element_name = "COSUMO";

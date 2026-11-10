@@ -69,6 +69,27 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e100_f00_c04" ref="dimr_trunk">
+    <path version="DVC">e100_dflowfm-dwaves/f00_general/c04-fm_wave_template_coupling</path>
+
+    <!-- seconds -->
+    <checks>
+      <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="s1" toleranceAbsolute="0.1"/>
+          <parameter name="unorm" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+      <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+        <parameters>
+          <parameter name="hrms" toleranceAbsolute="0.1"/>
+          <parameter name="tp" toleranceAbsolute="1.0"/>
+          <parameter name="dir" toleranceAbsolute="400.0"/>
+          <parameter name="distot" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <!-- ======================================================================== -->
   <testCase name="e100_f02_c00" ref="dimr_trunk">
     <path version="DVC">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>

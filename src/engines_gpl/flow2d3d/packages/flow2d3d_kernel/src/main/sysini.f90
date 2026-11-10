@@ -39,7 +39,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use string_module
     use deltares_common_version_module

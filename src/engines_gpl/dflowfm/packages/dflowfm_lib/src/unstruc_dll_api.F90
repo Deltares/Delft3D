@@ -67,14 +67,17 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
 
       use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids
-      use m_unstruc_netcdf_data, only: flowgeom_full
+      use m_unstruc_netcdf_types, only: t_fm_flowgeom, reset_fm_flowgeom
       use messageHandling, only: Idlen
       use iso_c_utils
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_mapids) :: mapids
+      type(t_fm_flowgeom) :: flowgeom
 
-      call unc_write_1D_flowgeom_ugrid(flowgeom_full, mapids%id_tsp, ncid)
+      ! Volume-table output contains internal 1D nodes, independent of map-output settings.
+      call unc_write_1D_flowgeom_ugrid(flowgeom, mapids%id_tsp, ncid, jabndnd=0)
+      call reset_fm_flowgeom(flowgeom)
 
    end subroutine write_1D_flowgeom_ugrid
 

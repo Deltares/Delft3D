@@ -3259,6 +3259,7 @@ contains
       use m_reasam
       use m_read_samples_from_arcinfo, only: read_samples_from_arcinfo
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
+      use m_bilinear_interpolation, only: raster_data
       use m_filez, only: oldfil, doclose, newfil
 
       ! Arguments
@@ -3301,6 +3302,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: zh
       real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
+      type(raster_data) :: raster
       character(len=5) :: sd
       type(TerrorInfo) :: errorInfo
 
@@ -3339,14 +3341,13 @@ contains
          if (local_method == METHOD_TRIANGULATION) then
             local_method = METHOD_BILINEAR
             msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': interpolation method triangulation is not supported for filetype ArcInfo. &
-                     Method has been set to bilinear interpolation instead.'
+&                     Method has been set to bilinear interpolation instead.'
             call warn_flush()
          end if
 
-      else if (local_method == METHOD_BILINEAR) then
+      else if (local_method == METHOD_BILINEAR .and. filetype /= GEOTIFF) then
 
-         ! If method is bilinear, but filetype is not ArcInfo, raise error.
-         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for filetype ArcInfo.'
+         msgbuf = 'timespace::timespaceinitialfield: in file '''//trim(filename)//''': invalid combination, interpolation method bilinear is only supported for ArcInfo and GeoTIFF.'
          call err_flush()
          return
 
@@ -3377,7 +3378,7 @@ contains
       case (METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR)
 
          select case (filetype)
-         
+
          case (NCFLOW)
 
             call read_flowsamples_from_netcdf(filename, qid, ierr)
@@ -3390,22 +3391,29 @@ contains
             call warn_flush()
             return
 
-         case (ARCINFO)
+         case (ARCINFO, GEOTIFF)
 
-            call read_samples_from_arcinfo(filename, 0, 0)
-
-         case (GEOTIFF)
-
-            success = read_samples_from_geotiff(filename)
-            if (.not. success) then
-               return
+            if (local_method == METHOD_BILINEAR) then
+               raster = raster_data(filename, filetype, ierr)
+               if (ierr /= 0) then
+                  msgbuf = 'timespace::timespaceinitialfield: could not read bilinear interpolation data from '''//trim(filename)//'''.'
+                  call err_flush()
+                  return
+               end if
+            else if (filetype == ARCINFO) then
+               call read_samples_from_arcinfo(filename, 0, 0)
+            else
+               success = read_samples_from_geotiff(filename)
+               if (.not. success) then
+                  return
+               end if
             end if
 
          case default
 
             call reasam(minp0, 0)
 
-         end select         
+         end select
 
          select case (local_method)
 
@@ -3413,11 +3421,14 @@ contains
 
             jdla = 1
             call triinterp2(xu, yu, zh, nx, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, &
-               ZPL, transformcoef, kcc)
+                            ZPL, transformcoef, kcc)
 
          case (METHOD_BILINEAR)
 
-            call bilinarc(xu, yu, zh, nx)
+            where (zh == raster%missing_value)
+               zh = raster%interpolate(xu, yu)
+            end where
+            deallocate (raster%values)
 
          case (METHOD_AVERAGING)
 
@@ -3445,7 +3456,7 @@ contains
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
-               allocate(xx(n6, lnx), yy(n6, lnx), nnn(lnx))
+               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
                   xx(1, L) = xzw(ln(1, L))
                   yy(1, L) = yzw(ln(1, L))
@@ -3465,17 +3476,17 @@ contains
                   n6 = n6 + 2 ! safety at poles
                end if
 
-               allocate(xx(n6, nx), yy(n6, nx), nnn(nx))
-               allocate(LnnL(n6), Lorg(n6))
+               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
+               allocate (LnnL(n6), Lorg(n6))
 
                do n = 1, nx
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
 
-               deallocate(LnnL, Lorg)
+               deallocate (LnnL, Lorg)
             else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate(xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
+               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
 
                do k = 1, numk
                   if (jakc == 1) then
@@ -3493,7 +3504,7 @@ contains
                   end do
                end do
 
-               deallocate(xxx, yyy)
+               deallocate (xxx, yyy)
             end if
 
             if (jakdtree == 1) then
@@ -3507,7 +3518,7 @@ contains
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                              dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
             deallocate (xx, yy, nnn)
 
             if (errorInfo%cntNoSamples > 0) then
@@ -3520,10 +3531,6 @@ contains
                call warn_flush()
             end if
 
-            if (.not. errorInfo%success) then
-               return
-            end if
-
             ! restore settings
             iav = iav_store
             rcel = rcel_store
@@ -3534,7 +3541,15 @@ contains
                call delete_kdtree2(treeglob)
             end if
 
+            if (.not. errorInfo%success) then
+               call delsam(-1)
+               return
+            end if
+
          end select
+
+         ! Interpolation is complete; release samples without making a backup.
+         call delsam(-1)
 
          do k = 1, nx
             if (zh(k) /= dmiss_default) then
@@ -3543,11 +3558,9 @@ contains
             end if
          end do
 
-         ! sample set can be large, delete it and do not make a copy
-         call delsam(-1)
          if (allocated(d)) then
 
-            deallocate(d)
+            deallocate (d)
             mca = 0
             nca = 0
 
@@ -3561,7 +3574,7 @@ contains
       if (jawriteDFMinterpretedvalues > 0) then
          n1 = index(trim(filename), FILESEP, .true.)
 
-         !  fix for Linux-prepared input on Windows
+         ! fix for Linux-prepared input on Windows
          if (n1 == 0) then
             n1 = index(trim(filename), char(47), .true.)
          end if
@@ -3594,53 +3607,6 @@ contains
 
    end function timespaceinitialfield
 
-   !> Bilinear interpolation for uniform rectangular.
-   !! TODO: move to ec_basic_interpolation or bilin5
-   subroutine bilinarc(xk, yk, zk, n)
-      use m_missing
-      integer, intent(in) :: n
-      real(kind=dp), intent(in) :: xk(:), yk(:)
-      real(kind=dp), intent(out) :: zk(:)
-
-      integer :: k
-
-      do k = 1, n
-         if (zk(k) == dmiss) then
-            call bilinarcinfo(xk(k), yk(k), zk(k))
-         end if
-      end do
-   end subroutine bilinarc
-
-   !> Bilinear interpolation for uniform rectangular for 1 point
-   !! TODO: move to ec_basic_interpolation or bilin5
-   subroutine bilinarcinfo(x, y, z)
-      use m_arcinfo
-      use m_missing
-      real(kind=dp), intent(in) :: x, y
-      real(kind=dp), intent(out) :: z
-
-      real(kind=dp) :: dm, dn, am, an
-      integer :: m, n
-
-      dm = (x - x0) / dxa
-      m = int(dm)
-      am = dm - m
-      m = m + 1
-      dn = (y - y0) / dya
-      n = int(dn)
-      an = dn - n
-      n = n + 1
-      z = dmiss
-      if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
-         if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
-            z = am * an * d(m + 1, n + 1) + &
-                (1.0_dp - am) * an * d(m, n + 1) + &
-                (1.0_dp - am) * (1.0_dp - an) * d(m, n) + &
-                am * (1.0_dp - an) * d(m + 1, n)
-         end if
-      end if
-
-   end subroutine bilinarcinfo
    !
    !
    ! ==========================================================================
@@ -3652,7 +3618,6 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use timespace_parameters, only: OPERAND_ADD
-      implicit none
 
       logical :: success
 
@@ -3724,7 +3689,7 @@ module m_meteo
 
    type(tEcInstance), pointer, save :: ecInstancePtr !< FM's instance of the EC-module.
    character(MAXIMUM_EC_MESSAGE_LENGTH) :: message !< EC's message, to be passed to FM's log.
-   !
+   
    integer, dimension(:), allocatable, target :: item_tracerbnd !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd !< dim(numfracs)
    integer, dimension(:), allocatable, target :: item_waqfun !< dim(num_time_functions)
@@ -3776,7 +3741,7 @@ module m_meteo
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
    integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
    integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
-   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity   
+   integer, target :: item_gate_gateHeight !< Unique Item id of the structure file's 'gate gateHeight' quantity
    integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
@@ -3820,6 +3785,7 @@ module m_meteo
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
    integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
    integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
+   integer, target :: item_sea_surface_temperature !< 'seasurfacetemperature' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3847,7 +3813,7 @@ module m_meteo
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
 
    integer, allocatable, dimension(:) :: countbndpoints(:)
-   !
+   
    integer :: n_qhbnd !< Number of already connected qh-boundaries.
 
    interface ec_gettimespacevalue
@@ -3995,6 +3961,7 @@ contains
       item_long_wave_radiation = ec_undef_int
       item_sensible_heat_flux = ec_undef_int
       item_latent_heat_flux = ec_undef_int
+      item_sea_surface_temperature = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4017,16 +3984,16 @@ contains
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
       item_subsiduplift = ec_undef_int
-      !
+      
       n_qhbnd = 0
-      !
+      
       ! tracers
       if (allocated(item_tracerbnd)) then
          deallocate (item_tracerbnd)
       end if
       allocate (item_tracerbnd(numtracers))
       item_tracerbnd = ec_undef_int
-      !
+      
       if (allocated(item_sedfracbnd)) then
          deallocate (item_sedfracbnd)
       end if
@@ -4160,7 +4127,7 @@ contains
       use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
       integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
-      
+
       select case (operand)
       case (OPERAND_OVERRIDE)
          ec_operand = EC_OPERAND_REPLACE
@@ -4411,7 +4378,7 @@ contains
       case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
 
-      ! Legacy FM-structures, deprecated as of 2027.01 release.
+         ! Legacy FM-structures, deprecated as of 2027.01 release.
       case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
@@ -4480,8 +4447,11 @@ contains
          itemPtr1 => item_sensible_heat_flux
          dataPtr1 => sensible_heat_flux
       case ('latentheatflux')
-          itemPtr1 => item_latent_heat_flux
+         itemPtr1 => item_latent_heat_flux
          dataPtr1 => latent_heat_flux
+      case ('seasurfacetemperature')
+         itemPtr1 => item_sea_surface_temperature
+         dataPtr1 => sea_surface_temperature
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
