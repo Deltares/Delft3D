@@ -1545,6 +1545,20 @@ contains
       call prop_get(md_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
       call prop_get(md_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff)
       call prop_get(md_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff)
+      call prop_get(md_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity)
+      call prop_get(md_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature)
+      call prop_get(md_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity)
+      call prop_get(md_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, has_charnock_coefficient)
+      call prop_get(md_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
+      call prop_get(md_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff)
+      call prop_get(md_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff)
+
+      call prop_get(md_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, success)
+      if (success) then
+         if (longwave_emissivity < 0 .or. longwave_emissivity > 1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmissivity. Should be inclusive between 0 and 1.')
+         end if
+      end if
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -3592,6 +3606,14 @@ contains
       call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
       call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
       call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
+      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
+      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
+      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
+      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, '[-] Air viscous momentum coefficient')
+      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, '[-] Air viscous heat coefficient')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, '[-] Air viscous moisture coefficient')
+      call prop_set(prop_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, '[-] Longwave emissivity of water surface')
 
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
