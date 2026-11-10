@@ -68,7 +68,7 @@ module m_readstructures
 
    ! Structure file current version: 1.00
    integer, parameter :: StructureFileMajorVersion = 3
-   integer, parameter :: StructureFileMinorVersion = 1
+   integer, parameter :: StructureFileMinorVersion = 2
 
    ! History structure file versions:
 
@@ -81,21 +81,23 @@ module m_readstructures
    ! 2.01 (2020-10-20): Added new type=longCulvert.
    ! 3.00 (2021-06-17): Bridge field 'bedLevel' removed and replaced by 'shift' (UNST-5177).
    ! 3.01 (2024-11-25): Added new type=gate, polylineFile replaced by locationFile.
+   ! 3.02 (2026-07-29): Dambreak field 'DambreakLevelsAndWidths' deprecated and replaced by 'crestLevel'
+   !                    and 'breachWidth' (UNST-8759). Support for .bc timeseries.
 
 contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structureFiles, is_path_relative)
+   subroutine readStructures(network, structure_files, is_path_relative)
       use string_module, only: str_token
 
       type(t_network), intent(inout) :: network !< The network data structure into whose Structure Set the file(s) will be read.
-      character(len=*), intent(in) :: structurefiles !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
+      character(len=*), intent(in) :: structure_files !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
       logical, intent(in) :: is_path_relative !< whether the files in the structure file are relative to the structure file location or to the working directory.
 
       character(len=IdLen) :: file
       character(len=IdLen) :: inputFiles
 
-      inputFiles = structurefiles
+      inputFiles = structure_files
       do while (len_trim(inputfiles) > 0)
          call str_token(inputfiles, file, DELIMS=';')
          call readStructureFile(network, adjustl(trim(file)), is_path_relative)
@@ -116,7 +118,7 @@ contains
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structureFile, is_path_relative)
+   subroutine readStructureFile(network, structure_file, is_path_relative)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
@@ -126,10 +128,11 @@ contains
       implicit none
 
       type(t_network), intent(inout) :: network !< Network pointer
-      character(len=*), intent(in) :: structureFile !< Name of the structure file
+      character(len=*), intent(in) :: structure_file !< Name of the structure file
       logical, intent(in) :: is_path_relative !< if true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical :: success, success1
+      logical :: check_unused_settings
       type(tree_data), pointer :: md_ptr
       integer :: istat
       integer :: numstr
@@ -149,14 +152,14 @@ contains
       success = .true.
 
       if (is_path_relative) then
-         call get_filepath(structureFile, structure_file_directory)
+         call get_filepath(structure_file, structure_file_directory)
       else
          structure_file_directory = ''
       end if
-      call tree_create(trim(structurefile), md_ptr, maxlenpar)
-      call prop_file('ini', trim(structurefile), md_ptr, istat)
+      call tree_create(trim(structure_file), md_ptr, maxlenpar)
+      call prop_file('ini', trim(structure_file), md_ptr, istat)
 
-      msgbuf = 'Reading '//trim(structurefile)//'.'
+      msgbuf = 'Reading '//trim(structure_file)//'.'
       call msg_flush()
 
       ! check FileVersion
@@ -164,8 +167,8 @@ contains
       major = 1
       minor = 0
       call get_version_number(md_ptr, major=major, minor=minor, success=success1)
-      if (.not. success1 .OR. major == 1) then
-         msgbuf = 'Early return, file '//trim(structurefile)//' is a 2D3D structure file (version 1.0).'
+      if (.not. success1 .or. major == 1) then
+         msgbuf = 'Early return, file '//trim(structure_file)//' is a 2D3D structure file (version 1.0).'
          call msg_flush()
          ! TODO: UNST-8867: re-enable the warning below after support for old structure files is dropped/differences have been explained.
          ! msgbuf = 'This functionality is deprecated, please convert this file to the current version.'
@@ -174,7 +177,7 @@ contains
       end if
       ! For now majorVersion = 2.xx is supported for all structures, except for the bridge.
       if ((major /= StructureFileMajorVersion .and. major /= 2) .or. (major == StructureFileMajorVersion .and. minor > StructureFileMinorversion)) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of structure file detected in '''//trim(structurefile)//''': v', major, minor, '. Current format: v', StructureFileMajorVersion, StructureFileMinorVersion, '. Ignoring this file.'
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of structure file detected in '''//trim(structure_file)//''': v', major, minor, '. Current format: v', StructureFileMajorVersion, StructureFileMinorVersion, '. Ignoring this file.'
          call err_flush()
          ierr = 1
       end if
@@ -206,6 +209,7 @@ contains
 
             ! TODO: UNST-2799: temporary check on polylinefile to prevent stopping on old (1.00) structure files. They will be read by dflowfm kernel itself.
 
+            st_id = ''
             call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'id', st_id, success1)
             if (.not. success1) then
                write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ', id is missing.'
@@ -235,7 +239,7 @@ contains
             if (success1 .and. network%loaded) then
                pstru%ibran = hashsearch(network%brs%hashlist, branchID)
                if (pstru%ibran <= 0) then
-                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', branchId '''//trim(branchID)//''' not found.'
+                  write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structure_file)//''', branchId '''//trim(branchID)//''' not found.'
                   call err_flush()
                   success = .false.
                end if
@@ -262,7 +266,8 @@ contains
                   ! For backward compatibility: if locationfile is not found, try polylinefile.
                   call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'polylineFile', filename, success1)
                   if (success1) then
-                     msgbuf = 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', polylineFile is found. Please use locationFile instead.'
+                     msgbuf = 'Structure '''//trim(st_id)//''' in '''//trim(structure_file)// &
+                              & ''' uses deprecated ''polylineFile''. Replace it with ''locationFile''.'
                      call warn_flush()
                   end if
 
@@ -275,6 +280,7 @@ contains
             end if
             pstru%compound = 0
 
+            check_unused_settings = .true.
             select case (iStrucType)
             case (ST_WEIR)
                ! support for version >= 2.0 structure files weirs as general structure
@@ -285,8 +291,9 @@ contains
                call readCulvert(pstru%culvert, network, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_BRIDGE)
                if (major /= StructureFileMajorVersion) then
-                  call SetMessage(LEVEL_ERROR, 'The file version in '//structureFile//' should be at least 3.0 or higher')
+                  call SetMessage(LEVEL_ERROR, 'The file version in '//structure_file//' should be at least 3.0 or higher')
                   call SetMessage(-LEVEL_ERROR, 'when using bridges (parameter bedLevel must be changed to a shift).')
+                  check_unused_settings = .false.
                else
                   call readBridge(pstru%bridge, network, md_ptr%child_nodes(i)%node_ptr, st_id, success)
                end if
@@ -311,8 +318,13 @@ contains
                else
                   call setmessage(LEVEL_ERROR, 'Structure type: '//trim(typestr)//' not supported, see '//trim(pstru%id))
                   success = .false.
+                  check_unused_settings = .false.
                end if
             end select
+
+            if (check_unused_settings) then
+               call warn_unknown_structure_settings(md_ptr%child_nodes(i)%node_ptr, structure_file, st_id)
+            end if
 
             if (success) then
                network%sts%Count = network%sts%Count + 1
@@ -851,7 +863,10 @@ contains
       type(t_forcinglist), intent(inout) :: forcinglist !< List of all (structure) forcing parameters. (only for uniform interface now, later: to which dambreak forcing will be added if needed.)
       logical, intent(out) :: success !< Result status, whether reading of the structure was successful.
 
-      logical :: localsuccess
+      logical :: localsuccess, localsuccess2
+      logical :: timeseries_self_contained !< Whether timeseries are fully referenced (i.e. as in .bc files, so not relative to t0).
+
+      timeseries_self_contained = .false. ! Legacy behavior: .tim files relative to t0
 
       allocate (dambr)
 
@@ -911,18 +926,48 @@ contains
          end if
       end if
 
-      ! get the name of the tim file
+      ! Get breach growth timeseries from .bc files (or legacy .tim files)
       if (dambr%algorithm == BREACH_GROWTH_TIMESERIES) then
-         ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
-         !            All time-space handling of the dambreak is still done in kernel.
+         ! UNST-8759: Try new separate crestLevel and breachWidth keywords first.
+         call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', dambr%crest_level_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess)
+         call get_value_or_addto_forcinglist(md_ptr, 'breachWidth', dambr%breach_width_ini, st_id, ST_DAMBREAK, forcinglist, localsuccess2)
 
-         call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levels_and_widths, localsuccess)
-         success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
-         if (.not. success) return
+         ! NOTE: only when we declare dambreakLevelsAndWidth obsolete, fully enable the required checks below (i.e., remove if):
+         ! If *either* of crestLevel and breachWidth is present, assume new input and validate as usual, don't fall back to legacy.
+         if (localsuccess .or. localsuccess2) then
+            success = success .and. check_input_result(localsuccess, st_id, 'crestLevel')
+            success = success .and. check_input_result(localsuccess2, st_id, 'breachWidth')
+
+            ! Only if *both* were read successfully, we can declare the timeseries self-contained.
+            timeseries_self_contained = localsuccess .and. localsuccess2
+         else
+            ! Fallback only when neither crestLevel nor breachWidth was given: read legacy DambreakLevelsAndWidths filename.
+            ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
+            !            All time-space handling of the dambreak is still done in kernel.
+            call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levels_and_widths, localsuccess)
+            if (localsuccess) then
+               call setMessage(LEVEL_WARN, 'Warning Reading Dambreak '''//trim(st_id)//''': DambreakLevelsAndWidths is deprecated. Use crestLevel and breachWidth instead.')
+            end if
+            success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
+
+            timeseries_self_contained = .false.
+         end if
+
+         if (.not. success) then
+            return
+         end if
       end if
 
       call prop_get(md_ptr, 'Structure', 'T0', dambr%t0, localsuccess)
-      success = success .and. check_input_result(localsuccess, st_id, 'T0')
+      if (dambr%algorithm == BREACH_GROWTH_TIMESERIES .and. timeseries_self_contained) then
+         if (localsuccess) then
+            call setMessage(LEVEL_WARN, 'Warning Reading Dambreak '''//trim(st_id)//''': T0 is ignored when crestLevel and breachWidth are specified as time series.')
+         end if
+      else
+         ! T0 is required for all other algorithms, and for legacy .tim files.
+         success = success .and. check_input_result(localsuccess, st_id, 'T0')
+      end if
+
       if (.not. success) return
 
       call set_dambreak_coefficients(dambr)
@@ -1436,6 +1481,32 @@ contains
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
 
    end subroutine readGeneralStructure
+
+   !> Warns about unknown or unused settings in a structure property block.
+   !! Each warning identifies the setting, structure, and source file.
+   subroutine warn_unknown_structure_settings(md_ptr, structure_file, st_id)
+      type(tree_data), pointer, intent(in) :: md_ptr !< Property tree for the structure.
+      character(len=*), intent(in) :: structure_file !< Structure file containing the property block.
+      character(len=*), intent(in) :: st_id !< Identifier of the structure being read.
+
+      integer :: i
+      character(len=IdLen) :: key
+
+      if (.not. associated(md_ptr%child_nodes)) then
+         return
+      end if
+
+      do i = 1, size(md_ptr%child_nodes)
+         associate (setting => md_ptr%child_nodes(i)%node_ptr)
+            if (setting%node_visit < 1) then
+               key = tree_get_name(setting)
+               write (msgbuf, '(7a)') 'Structure ''', trim(st_id), ''' in ''', trim(structure_file), &
+                  ''': keyword ''', trim(key), ''' is unknown or not used by the program. Check possible typo.'
+               call warn_flush()
+            end if
+         end associate
+      end do
+   end subroutine warn_unknown_structure_settings
 
    !> Parses a (pump's) orientation string into an integer
    !! that can be used in its direction field.

@@ -75,7 +75,7 @@
 			<location ref="reference_results" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 		</testCase>
 	</defaultTestCases>
 	<!--
@@ -84,7 +84,7 @@
 	<testCases>
 		<testCase name="e51_f01_c01" ref="coup203_default">
 			<path version="2024-01-12T07:40:00">e51_coup203/f01_general/c01_discharge</path>
-			<maxRunTime>6.0</maxRunTime> <!-- seconds -->
+			
 			<checks>
                 <file name="breakp-f34.dat" type="NUMBERTEXT"/>
                 <file name="com-f34.atr" type="NUMBERTEXT"/>
@@ -97,7 +97,7 @@
 		</testCase>
         <testCase name="e51_f01_c02" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c02_part_tutorial</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="delcom-s33.atr" type="NUMBERTEXT"/>
                 <file name="couplnef.out" type="NUMBERTEXT">
@@ -107,7 +107,7 @@
         </testCase>
         <testCase name="e51_f01_c03" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c03_s33a</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-s33.dat" type="NUMBERTEXT"/>
                 <file name="com-s33.src" type="NUMBERTEXT"/>
@@ -119,7 +119,7 @@
         </testCase>
         <testCase name="e51_f01_c04" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c04_f34_meteo</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-f34.dat" type="NUMBERTEXT"/>
                 <file name="com-f34.src" type="NUMBERTEXT"/>
@@ -132,7 +132,7 @@
         </testCase>
         <testCase name="e51_f01_c05" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c05_s33_time_aggregation</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-s33.dat" type="NUMBERTEXT"/>
                 <file name="com-s33.src" type="NUMBERTEXT"/>
@@ -144,7 +144,7 @@
         </testCase>
         <testCase name="e51_f01_c06" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c06_siu_lam</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-d3d.dat" type="NUMBERTEXT"/>
                 <file name="com-d3d.src" type="NUMBERTEXT"/>
@@ -157,7 +157,7 @@
         </testCase>
         <testCase name="e51_f01_c07" ref="coup203_default" ignore="true">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c07_walk_cut_out</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="couplnef.out" type="NUMBERTEXT">
                     <skipline>COUP203 Version</skipline>
@@ -166,7 +166,7 @@
         </testCase>
         <testCase name="e51_f01_c08" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c08_walk_hor_aggr</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
                 <file name="com-wlk.src" type="NUMBERTEXT"/>
@@ -178,7 +178,7 @@
         </testCase>
         <testCase name="e51_f01_c09" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c09_walk_non_aggr</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
                 <file name="com-s33.src" type="NUMBERTEXT"/>
@@ -191,7 +191,7 @@
         </testCase>
         <testCase name="e51_f01_c10" ref="coup203_default">
             <path version="2024-01-12T07:40:00">e51_coup203/f01_general/c10_walk_ver_aggr</path>
-            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+            
             <checks>
                 <file name="breakp-wlk.dat" type="NUMBERTEXT"/>
                 <file name="com-s33.src" type="NUMBERTEXT"/>

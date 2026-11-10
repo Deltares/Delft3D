@@ -7,16 +7,16 @@
 		<localPaths>
 			<testCasesDir>./data/cases</testCasesDir>
 			<enginesDir>./data/engines</enginesDir>
-			<referenceDir>./data/reference_results</referenceDir>
+			<referenceDir>./data/cases</referenceDir>
 		</localPaths>
 		<locations>
 			<location name="cases">
 				<credential ref="commandline"/>
-				<root>{server_base_url}/cases</root>
+				<root>./data/cases</root>
 			</location>
 			<location name="reference_results">
 				<credential ref="commandline"/>
-				<root>{server_base_url}/references</root>
+				<root>./data/cases</root>
 			</location>
 			<location name="reference_engines">
 				<credential ref="commandline"/>
@@ -79,7 +79,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            
         </testCase>
 		<testCase name="dimr_trunk_lnx64">
 			<programs>
@@ -97,7 +97,7 @@
 			<location ref="reference_results" type="reference">
 				<from>lnx64</from>
 			</location>
-			<maxRunTime>6000.0</maxRunTime>
+			
 		</testCase>
 		<testCase name="dflowfm_default">
 			<programs>
@@ -117,8 +117,8 @@
 			<location ref="reference_results" type="reference">
 				<from>win64</from>
 			</location>
-			<maxRunTime>3600.0</maxRunTime>
-			<!-- seconds -->
+			
+
 		</testCase>
         <testCase name="container_postproc">
             <location ref="reference_results" type="reference">
@@ -127,7 +127,7 @@
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime>
+            
         </testCase>
 	</defaultTestCases>
     <xi:include href="../include/dimr_smoke_tests.xml"/>

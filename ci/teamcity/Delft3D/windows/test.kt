@@ -14,7 +14,7 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
-    description = "Run TestBench.py on a list of testbench XML files."
+    description = "Run TestBench."
 
     templates(
         TemplateMergeRequest,
@@ -29,9 +29,6 @@ object WindowsTest : BuildType({
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
-        test\deltares_testbench\data\cases\**\*.dia      => logging
-        test\deltares_testbench\data\cases\**\*.log      => logging
-        test\deltares_testbench\logs                     => logging
         test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
@@ -61,8 +58,8 @@ object WindowsTest : BuildType({
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
 
     }
@@ -122,8 +119,8 @@ object WindowsTest : BuildType({
                 set PYTHONDONTWRITEBYTECODE=1
                 set PYTHONFAULTHANDLER=1
 
-                set argsList=--username %s3_dsctestbench_accesskey% ^
-                --password %s3_dsctestbench_secret% ^
+                set argsList=--username %dvc_testbench_accesskey% ^
+                --password %dvc_testbench_secret% ^
                 --compare ^
                 --config configs/%configfile% ^
                 --filter testcase=%case_filter% ^
@@ -138,11 +135,11 @@ object WindowsTest : BuildType({
                 rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
                 rem to avoid os error 32 file-lock failures on the mount during install.
                 rem Wheels come from the mounted uv cache volume.
-                uv venv C:\venv
+                set UV_PROJECT_ENVIRONMENT=C:\venv
+                rem --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
                 call C:\venv\Scripts\activate.bat
-                uv pip sync pip/win-requirements.txt
-                if %%ERRORLEVEL%% NEQ 0 exit /b 1
 
                 rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
                 rem been dealing with during the module import phase of "Python TestBench.py"
@@ -159,6 +156,7 @@ object WindowsTest : BuildType({
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
                 --volume test-environment-uv-cache:C:\uv\cache
+                --mount type=bind,source=C:/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }
         script {
@@ -167,6 +165,17 @@ object WindowsTest : BuildType({
             conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
+        }
+        powerShell {
+            name = "Publish logs for failed builds"
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
+            scriptMode = script {
+                content = """
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.dia => logging']"
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.log => logging']"
+                    Write-Host "##teamcity[publishArtifacts 'test\deltares_testbench\logs => logging']"
+                """.trimIndent()
+            }
         }
     }
 

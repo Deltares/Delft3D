@@ -9,7 +9,7 @@ import Delft3D.step.*
 
 object LinuxCollect : BuildType({
 
-    description = "Prepping the binaries for testing/release."
+    description = "Prepare binaries for testing and release."
 
     templates(
         TemplateLinuxAgent,

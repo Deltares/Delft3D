@@ -40,23 +40,26 @@ module m_accumulatedistance
 
 contains
 
-   !> Stop afstand tussen polygoonpunten vanaf begin in array
-   subroutine accumulateDistance(X, Y, T, MMAX)
+   !> Compute cumulative distances from the start of a polyline.
+   subroutine accumulateDistance(polyline_x, polyline_y, cumulative_distance, num_points)
       use precision, only: dp
 
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
 
-      integer :: mmax
-      real(kind=dp), intent(in) :: X(MMAX), Y(MMAX) !< Input polyline coordinates
-      real(kind=dp), intent(out) :: T(MMAX) !< Output accumulated distances along polyline segments.
+      integer, intent(in) :: num_points !< Number of polyline points.
+      real(kind=dp), dimension(num_points), intent(in) :: polyline_x, polyline_y !< Input polyline coordinates.
+      real(kind=dp), dimension(num_points), intent(out) :: cumulative_distance !< Accumulated distances along the polyline.
 
-      integer :: k
+      integer :: point_index
 
-      T(1) = 0.0_dp
-      do K = 2, MMAX
-         T(K) = T(K - 1) + dbdistance(x(k), y(k), x(k - 1), y(k - 1), jsferic, jasfer3D, dmiss)
+      cumulative_distance(1) = 0.0_dp
+      do point_index = 2, num_points
+         cumulative_distance(point_index) = cumulative_distance(point_index - 1) + &
+                                            dbdistance(polyline_x(point_index), polyline_y(point_index), &
+                                                       polyline_x(point_index - 1), polyline_y(point_index - 1), &
+                                                       jsferic, jasfer3D, dmiss)
       end do
       return
    end subroutine accumulateDistance

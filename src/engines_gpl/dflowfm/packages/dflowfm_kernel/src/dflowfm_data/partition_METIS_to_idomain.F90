@@ -285,6 +285,7 @@ contains
 !! Now ONLY support structures defined by polylines. TODO: support setting special weights on structures that are defined by other ways.
    subroutine set_edge_weights_and_vsize_for_METIS(Ne, Nparts, njadj, xadj, adjncy, vsize, adjw)
       use m_find_netcells_for_structures, only: find_netcells_for_structures
+      use m_alloc, only: aerr
 
       integer, intent(in) :: Ne !< Number of vertices
       integer, intent(in) :: Nparts !< Number of partition subdomains
@@ -295,14 +296,16 @@ contains
       integer, dimension(Ne), intent(inout) :: vsize !< Vertex size used to minimize total communication volume (see METIS manual)
 
       integer :: number_of_vertices_related_to_structures
-      integer, dimension(Ne) :: list_of_vertices_related_to_structures
-      integer :: vertex_index, vertex, higher_weight
+      integer, dimension(:), allocatable :: list_of_vertices_related_to_structures
+      integer :: vertex_index, vertex, higher_weight, ierror
       integer, parameter :: DEFAULT_WEIGHT_VALUE = 1
       integer, parameter :: INITIAL_HALO_LEVEL = 0
 
       adjw(:) = DEFAULT_WEIGHT_VALUE
       vsize(:) = DEFAULT_WEIGHT_VALUE
 
+      allocate (list_of_vertices_related_to_structures(Ne), stat=ierror)
+      call aerr('list_of_vertices_related_to_structures(Ne)', ierror, Ne)
       call find_netcells_for_structures(Ne, number_of_vertices_related_to_structures, list_of_vertices_related_to_structures)
 
       if (number_of_vertices_related_to_structures > 0) then

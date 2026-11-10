@@ -27,33 +27,41 @@
 !
 !-------------------------------------------------------------------------------
 
-submodule(fm_external_forcings) fm_external_forcings_init_old
+module fm_external_forcings_init_old
    use fm_external_forcings_data, only: have_laterals_in_external_forcings_file
+   use fm_external_forcings_init, only: adduniformtimerelation_objects
+   use fm_external_forcings_utils, only: ini_alloc_laterals, allocatewindarrays
+   use fm_external_forcings_update_boundaries, only: addtimespacerelation_boundaries
    use m_setfixedweirscheme3onlink, only: setfixedweirscheme3onlink
 
-   implicit none
+   implicit none(type, external)
+
+   private
+
+   public :: init_old
 
 contains
 
    !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_old(iresult)
+   subroutine init_old(iresult)
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
-      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use m_setinitialverticalprofile, only: setinitialverticalprofilez
       use precision, only: dp
-      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
+      use m_source_sink, only: source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr, md_mbafile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, const_names, constituents, itrac2const
-      use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+      use m_mass_balance_area, only: initialize_mass_balance_area_arrays, finalize_mass_balance_area_arrays
+      use m_mass_balance_area_data, only: mbaname, nomba, mbadef, nammbalen
       use mass_balance_areas_routines, only: get_mbainputname
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -67,6 +75,7 @@ contains
       use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -76,11 +85,13 @@ contains
       use m_fm_wq_processes_sub, only: get_waqinputname
       use network_data, only: LINK_1D, LINK_ALL
 
+      ! Arguments
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
+      ! Local variables
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat, nselected, node
       integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
@@ -89,14 +100,15 @@ contains
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
-      real(kind=dp), allocatable :: viuh(:), tt(:)
+      real(kind=dp), dimension(:), allocatable :: viuh, tt
       integer, dimension(:), pointer :: pkbot, pktop
       real(kind=dp) :: factor
       real(kind=dp), external :: ran0
       character(len=256) :: rec
-      integer, allocatable :: mask(:)
-      real(kind=dp), allocatable :: xdum(:), ydum(:)
-      integer, allocatable :: kdum(:)
+      integer, dimension(:), allocatable :: mask
+      integer, dimension(:), allocatable :: selected_nodes
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
+      integer, dimension(:), allocatable :: kdum
 
       ! Finish with all remaining old-style ExtForceFile quantities.
       if (mext == 0) then
@@ -109,6 +121,10 @@ contains
       ydum = 1.0_dp
       kdum = 1
 
+      if (len_trim(md_mbafile) == 0) then
+         call initialize_mass_balance_area_arrays()
+      end if
+
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
 
@@ -117,6 +133,7 @@ contains
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
+            qid = quantity_name_config_file_to_internal_name(qid)
             call resolvePath(filename, md_extfile_dir)
 
             call mess(LEVEL_INFO, 'External Forcing or Initialising '''//trim(qid)//''' from file '''//trim(filename)//'''.')
@@ -473,12 +490,12 @@ contains
 
             else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename)
+               call setinitialverticalprofilez(tem1, ndkx, filename)
                success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename)
+               call setinitialverticalprofilez(sa1, ndkx, filename)
                success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
@@ -501,8 +518,8 @@ contains
                   end if
                   allocate (viuh(Ndkx))
 
-                  !          copy existing values (if they existed) in temp array
-                  !          this assumes uniform vertical distribution
+                  ! copy existing values (if they existed) in temp array
+                  ! this assumes uniform vertical distribution
                   do kk = 1, Ndx
                      viuh(kk) = constituents(iconst, kk)
                      call getkbotktop(kk, kb, kt)
@@ -539,7 +556,7 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename)
+                  call setinitialverticalprofilez(tt, ndkx, filename)
                   success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
@@ -1150,6 +1167,7 @@ contains
             else if (jaoldstr > 0 .and. qid == 'generalstructure') then
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
+               call remove_longculvert_flowlinks(numgen, kegen(ncgen + 1:numl))
                success = .true.
                write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
                call msg_flush()
@@ -1207,7 +1225,7 @@ contains
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
                ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
-               call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
+               call source_sinks%add_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
@@ -1235,9 +1253,6 @@ contains
 
             else if (qid(1:15) == 'massbalancearea' .or. qid(1:18) == 'waqmassbalancearea') then
                if (ti_mba > 0) then
-                  if (.not. allocated(mbaname)) then
-                     allocate (mbaname(0))
-                  end if
                   imba = find_name(mbaname, mbainputname)
 
                   if (imba == 0) then
@@ -1245,26 +1260,28 @@ contains
                      imba = nomba
                      call realloc(mbaname, nomba, keepExisting=.true., fill=mbainputname)
                   end if
-                  call realloc(viuh, Ndkx, keepExisting=.false., Fill=dmiss)
 
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  allocate (selected_nodes(ndxi))
+                  call selectelset_internal_nodes(xz, yz, kcs, ndxi, selected_nodes, nselected, &
+                                                  LOCTP_POLYGON_FILE, filename)
 
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           if (mbadef(kk) /= -999) then
-                              ! warn that segment nn at xx, yy is nog mon area imba
-                           end if
-                           mbadef(kk) = imba
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mbadef(k) = imba
-                           end do
-                        end if
+                  do kk = 1, nselected
+                     node = selected_nodes(kk)
+                     if (mbadef(node) /= -999) then
+                        ! warn that segment nn at xx, yy is nog mon area imba
+                     end if
+
+                     mbadef(node) = imba
+                     call getkbotktop(node, kb, kt)
+
+                     do k = kb, kb + kmxn(node) - 1
+                        mbadef(k) = imba
                      end do
-                  end if
-                  deallocate (viuh)
+                  end do
+
+                  deallocate (selected_nodes)
+                  success = .true.
+
                else
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
@@ -1459,12 +1476,16 @@ contains
       end do
       call timstop(handle_extra(50)) ! extforcefile old
 
+      if (len_trim(md_mbafile) == 0) then
+         call finalize_mass_balance_area_arrays()
+      end if
+
       call init_misc(iresult)
 
    end subroutine init_old
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
-   module subroutine init_misc(iresult)
+   subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
       use m_source_sink, only: source_sinks
@@ -1485,25 +1506,27 @@ contains
       use unstruc_messages, only: callback_msg, loglevel_StdOut
       use timespace_parameters, only: OPERAND_OVERRIDE
 
+      ! Arguments
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
+      ! Local variables
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, ja, method, filetype0
       integer :: k1, l1, l2
       character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
-      real(kind=dp), allocatable :: hulp(:, :)
-      real(kind=dp), allocatable :: widths(:)
-      real(kind=dp), allocatable :: xdum(:), ydum(:)
-      integer, allocatable :: kdum(:)
+      real(kind=dp), dimension(:,:), allocatable :: hulp
+      real(kind=dp), dimension(:), allocatable :: widths
+      real(kind=dp), dimension(:), allocatable :: xdum, ydum
+      integer, dimension(:), allocatable :: kdum
 
+      ! Initialization
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
       xdum = 1.0_dp
       ydum = 1.0_dp
       kdum = 1
-
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
@@ -1983,4 +2006,4 @@ contains
 
    end subroutine init_misc
 
-end submodule fm_external_forcings_init_old
+end module fm_external_forcings_init_old

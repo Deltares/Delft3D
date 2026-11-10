@@ -7,13 +7,14 @@ contains
 !> Generic reader for polyline coordinates from either a locationFile (pli/pliz) or inline keys
    !! (numCoordinates + xCoordinates + yCoordinates + optionally zCoordinates).
    !! Can be reused by source/sinks, long culverts, or any other feature that needs polyline input.
-   subroutine read_polyline_coordinates(block_ptr, object_id, file_name, base_dir, group_name, x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+   subroutine read_polyline_coordinates(block_ptr, object_id, file_name, base_dir, group_name, x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful, fourth_coordinates)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use m_missing, only: dmiss
       use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, colpl, m_polygon_destructor
+      use m_polygon, only: xpl, ypl, zpl, dzl, npl, colpl, m_polygon_destructor
+      use m_delpol, only: delpol
       use precision, only: dp
       use m_reapol, only: reapol
       use unstruc_files, only: resolvePath
@@ -29,6 +30,7 @@ contains
       real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
       integer, intent(out) :: num_columns
       logical, intent(out) :: is_successful
+      real(kind=dp), dimension(:), allocatable, optional, intent(out) :: fourth_coordinates
 
       character(len=256) :: location_file
       integer :: num_coordinates
@@ -43,6 +45,7 @@ contains
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
          ! Read data from polyline file (pli or pliz)
+         ierr = m_polygon_destructor()
          call resolvePath(location_file, base_dir)
          call oldfil(polyline_file_lun, location_file)
          if (polyline_file_lun == 0) then
@@ -51,11 +54,11 @@ contains
             return
          end if
 
-         ierr = m_polygon_destructor()
          call reapol(polyline_file_lun, 0)
          if (npl == 0) then
             write (msgbuf, '(a)') trim(file_name)//" '"//trim(group_name)//" '"//trim(object_id)//"': no data in polyline file '"//trim(location_file)//"'"
             call err_flush()
+            call delpol()
             return
          end if
 
@@ -75,6 +78,11 @@ contains
             call prop_get(block_ptr, '', 'zCoordinates', z_coordinates, npl, is_read)
             ! zCoordinates optional: keep dmiss if absent
          end if
+         if (present(fourth_coordinates) .and. num_columns > 3) then
+            allocate (fourth_coordinates(npl), stat=ierr)
+            fourth_coordinates = dzl(1:npl)
+         end if
+         call delpol()
 
       else
          ! Read data directly from block

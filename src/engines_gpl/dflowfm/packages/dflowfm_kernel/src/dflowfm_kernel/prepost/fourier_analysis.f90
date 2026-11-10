@@ -220,7 +220,7 @@ contains
    !> allocate the arrays for fourier and min/max
    subroutine alloc_fourier_analysis_arrays()
       use m_flowgeom, only: bl, bl_min, ndx
-      use m_flow, only: s1, s1max, kmx, laytyp, numtopsig
+      use m_flow, only: s1, s1max, kmx, laytyp, numtopsig, LAYTP_SIGMA
       use precision
       implicit none
 
@@ -324,7 +324,7 @@ contains
       end if
 
       ! Create fourier specific bl and s1 array, only if required
-      if (kmx > 0 .and. (laytyp(1) == 1 .or. numtopsig > 0)) then
+      if (kmx > 0 .and. (laytyp(1) == LAYTP_SIGMA .or. numtopsig > 0)) then
          call realloc(bl_min, ndx, keepExisting=.false., stat=istat)
          call realloc(s1max, ndx, keepExisting=.false., stat=istat)
          bl_min = bl
@@ -336,7 +336,7 @@ contains
    !! variables necessary for the analysis in arrays.
    subroutine reafou(lunfou, filfou, kmax, lstsc, lsal, ltem, tstart, tstop, ti_fou, success)
       use precision
-      use mathconsts
+      use m_mathconstants
       use string_module
       use m_flowtimes, only: Tudunitstr
       implicit none
@@ -1554,7 +1554,7 @@ contains
       dtw = dts / dt_user
 
       !Update fourier specific bl and s1 array, only if required
-      if (kmx > 0 .and. (laytyp(1) == 1 .or. numtopsig > 0)) then
+      if (kmx > 0 .and. (laytyp(1) == LAYTP_SIGMA .or. numtopsig > 0)) then
          bl_min = min(bl, bl_min) ! lowest bed level
          s1max = max(s1, s1max) ! highest water level
       end if
@@ -1702,7 +1702,7 @@ contains
    !! - closes fourier analysis output file
    subroutine wrfou()
       use precision, only: fp
-      use mathconsts, only: raddeg
+      use m_mathconstants, only: raddeg
       use netcdf
       use unstruc_netcdf
       use m_sferic, only: jsferic
@@ -2111,7 +2111,7 @@ contains
 
    !> final update of fousma and fousmb
    subroutine fourier_final(ifou, nmaxus)
-      use mathconsts, only: raddeg
+      use m_mathconstants, only: raddeg
       integer, intent(in) :: ifou !< Fourier counter
       integer, intent(in) :: nmaxus !< dimension of current quantity
       real(kind=fp) :: freqnt !< Frequency in degrees per hour

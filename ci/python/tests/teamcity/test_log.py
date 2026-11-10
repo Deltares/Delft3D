@@ -55,12 +55,15 @@ class TestTeamCityServiceMessageFormatter:
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
-        # Act
-        with enter_test_context("test2", logger):
-            logger.debug("qux")
-            raise ValueError("Kaboom!")
+        # Act / Assert: still emit TeamCity fail messages, but re-raise so callers fail.
+        def _run_failing_test() -> None:
+            with enter_test_context("test2", logger):
+                logger.debug("qux")
+                raise ValueError("Kaboom!")
 
-        # Assert
+        with pytest.raises(ValueError, match="Kaboom!"):
+            _run_failing_test()
+
         stream.seek(0)
         lines = [line.rstrip("\n") for line in stream]
 

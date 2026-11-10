@@ -808,10 +808,8 @@ contains
       allocate (outfld%dhsign(outfld%mmax, outfld%nmax))
       allocate (outfld%drtm01(outfld%mmax, outfld%nmax))
       allocate (outfld%setup(outfld%mmax, outfld%nmax))
-      if (outfld%n_outpars > 0) then
-         allocate (outfld%add_out_vals(outfld%mmax, outfld%nmax, outfld%n_outpars))
-         allocate (outfld%add_out_names(outfld%n_outpars))
-      end if
+      allocate (outfld%add_out_vals(outfld%mmax, outfld%nmax, outfld%n_outpars))
+      allocate (outfld%add_out_names(outfld%n_outpars))
       !
       ! Initialise arrays
       !
@@ -850,10 +848,8 @@ contains
       outfld%dhsign = 0.
       outfld%drtm01 = 0.
       outfld%setup = 0.
-      if (outfld%n_outpars > 0) then
-         outfld%add_out_vals = 0.
-         outfld%add_out_names = ' '
-      end if
+      outfld%add_out_vals = 0.
+      outfld%add_out_names = ' '
    end subroutine alloc_output_fields
 !
 !

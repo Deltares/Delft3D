@@ -1,7 +1,7 @@
 module m_bubblescreen
    use precision_basics, only: dp, comparereal
    use fm_external_forcings_data, only: t_BubbleScreen, bubblescreens, bubblescreen_air_discharge
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use m_source_sink, only: source_sinks, source_sink_all_discharges, SINK_SIDE, SOURCE_SIDE
    use m_alloc, only: realloc
    use messageHandling, only: err_flush, msgbuf, msg_flush, warn_flush
 
@@ -219,10 +219,10 @@ contains
       integer, intent(in) :: k_max_velocity !< [-] Layer index with maximum downward velocity; in {m_flow::zws}
 
       ! Update source/sink top and bottom z-levels
-      source_sinks%z_bottom(source_sink_index, 1) = (zws(k_start) + zws(k_start + 1)) / 2.0_dp
-      source_sinks%z_bottom(source_sink_index, 2) = (zws(k_max_velocity) + zws(k_max_velocity + 1)) / 2.0_dp
-      source_sinks%z_top(source_sink_index, 1) = (zws(k_max_velocity) + zws(k_max_velocity - 1)) / 2.0_dp
-      source_sinks%z_top(source_sink_index, 2) = (zws(k_stop) + zws(k_stop - 1)) / 2.0_dp
+      source_sinks%z_bottom(source_sink_index, SINK_SIDE) = (zws(k_start) + zws(k_start + 1)) / 2.0_dp
+      source_sinks%z_bottom(source_sink_index, SOURCE_SIDE) = (zws(k_max_velocity) + zws(k_max_velocity + 1)) / 2.0_dp
+      source_sinks%z_top(source_sink_index, SINK_SIDE) = (zws(k_max_velocity) + zws(k_max_velocity - 1)) / 2.0_dp
+      source_sinks%z_top(source_sink_index, SOURCE_SIDE) = (zws(k_stop) + zws(k_stop - 1)) / 2.0_dp
 
    end subroutine update_bubblescreen_source_sink_layer_indices
 

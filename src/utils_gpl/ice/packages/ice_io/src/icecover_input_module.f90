@@ -236,6 +236,8 @@ subroutine read_output_flags_per_quantity(outflags, md_ptr, chapter, prefix, mod
    call prop_get(md_ptr, chapter, prefix//'_ice_temperature', outflags%ice_temperature)
    call prop_get(md_ptr, chapter, prefix//'_snow_thickness', outflags%snow_thickness)
    call prop_get(md_ptr, chapter, prefix//'_snow_temperature', outflags%snow_temperature)
+   call prop_get(md_ptr, chapter, prefix//'_heatflux_air_to_ice', outflags%qh_air2ice)
+   call prop_get(md_ptr, chapter, prefix//'_heatflux_ice_to_water', outflags%qh_ice2wat)
 end subroutine read_output_flags_per_quantity
 
 
@@ -381,6 +383,8 @@ subroutine echo_icecover_output(lundia, outflags, model_type)
    call write_quantity_name(outflags%ice_temperature, lundia, 'temperature of ice cover', any_quantity)
    call write_quantity_name(outflags%snow_thickness, lundia, 'snow thickness', any_quantity)
    call write_quantity_name(outflags%snow_temperature, lundia, 'temperature of snow cover', any_quantity)
+   call write_quantity_name(outflags%qh_air2ice, lundia, 'heat flux from air to ice', any_quantity)
+   call write_quantity_name(outflags%qh_ice2wat, lundia, 'heat flux from ice to water', any_quantity)
    if (.not. any_quantity) then
       write(lundia, '(a)') '  * No ice cover output quantities selected'
    end if

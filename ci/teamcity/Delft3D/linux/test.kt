@@ -14,7 +14,7 @@ import CsvProcessor
 
 object LinuxTest : BuildType({
 
-    description = "Run TestBench.py within the Docker container on a list of testbench XML files."
+    description = "Run TestBench in the test container."
 
     templates(
         TemplateLinuxAgent,
@@ -30,9 +30,6 @@ object LinuxTest : BuildType({
 
     artifactRules = """
         test\deltares_testbench\data\cases\**\*.pdf      => pdf
-        test\deltares_testbench\data\cases\**\*.dia      => logging
-        test\deltares_testbench\data\cases\**\*.log      => logging
-        test\deltares_testbench\logs                     => logging
         test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
@@ -75,8 +72,8 @@ object LinuxTest : BuildType({
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
-        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
     }
 
     features {
@@ -97,8 +94,8 @@ object LinuxTest : BuildType({
         scriptContent = """
             #!/bin/bash
             
-            ARGS="--username "%s3_dsctestbench_accesskey%" \
-                --password "%s3_dsctestbench_secret%" \
+            ARGS="--username "%dvc_testbench_accesskey%" \
+                --password "%dvc_testbench_secret%" \
                 --compare \
                 --config "configs/%configfile%" \
                 --filter "testcase=%case_filter%" \
@@ -121,6 +118,7 @@ object LinuxTest : BuildType({
             --rm
             --pull always
             --shm-size 8G
+            --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
         """.trimIndent()
         }
         
@@ -146,6 +144,15 @@ object LinuxTest : BuildType({
             conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "cp -r data/cases copy_cases"
+        }
+        script {
+            name = "Publish logs for failed builds"
+            executionMode = BuildStep.ExecutionMode.RUN_ONLY_ON_FAILURE
+            scriptContent = """
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.dia => logging']"
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\data\cases\**\*.log => logging']"
+                echo "##teamcity[publishArtifacts 'test\deltares_testbench\logs => logging']"
+            """.trimIndent()
         }
     }
 

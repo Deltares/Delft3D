@@ -11,8 +11,8 @@ import java.io.File
 import Trigger
 
 object LinuxDevContainer : BuildType({
-    name = "Dev Container"
-    description = "Test Build the dev container"
+    name = "Dev container"
+    description = "Build the development container."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
@@ -30,8 +30,8 @@ object LinuxDevContainer : BuildType({
     }
 
     params {
-        param("intel_oneapi_version", "2024")
-        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2024")
+        param("intel_oneapi_version", "2026")
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2026")
         param("intel_fortran_compiler", "ifx")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs")

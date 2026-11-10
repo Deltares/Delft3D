@@ -39,7 +39,7 @@ subroutine c_vort(mmax      ,nmax      ,kmax      ,nmaxus    ,kcs       ,kfu    
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use dfparall
     use globaldata
     !

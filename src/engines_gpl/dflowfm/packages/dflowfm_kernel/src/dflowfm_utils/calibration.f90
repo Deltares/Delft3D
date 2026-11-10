@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> This module reads and handles the computation of calibration factors.
 !!
 !! It consists of
@@ -39,7 +36,8 @@
 
 module m_calibration
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    public cldtype
    public clddata
@@ -48,7 +46,7 @@ module m_calibration
    public update_clddata
    public calibration_backup_frcu
 
-! parameters
+   ! parameters
    integer, parameter, public :: CL_UNDEFINED = -99999
    integer, parameter, public :: CL_NOT_IN_SUBDOMAIN = -77777
    integer, parameter, public :: CL_WATERLEVEL_TYPE = 1
@@ -61,7 +59,7 @@ module m_calibration
    integer, parameter, public :: GET_DIMENSIONS = 101
    integer, parameter, public :: FILL_DATA = 102
 
-! dimensions
+   ! dimensions
    integer :: ncld !> Total number of calibration definitions
    integer :: ncldnrm !> Total number of calibration definitions non-h, non-q
    integer :: ncldcrs !> Total number cross sections referred to in discharge dependent calibration definitions
@@ -72,7 +70,6 @@ module m_calibration
    integer :: ncll !> Total number of calibration area definitions
 
    type cldtype
-      ! definitions
       real(kind=dp), dimension(:), allocatable :: cldtable_q !> Calibration defintion q values
       real(kind=dp), dimension(:), allocatable :: cldtable_zs !> Calibration defintion zs values
       real(kind=dp), dimension(:), allocatable :: rttdef !> Calibration defintion real values (non-h, non-q, and non-interpolated h and q)
@@ -116,18 +113,18 @@ contains
       use precision, only: dp
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: dmiss, intmiss
+      use m_scannr, only: scannr
       use unstruc_files, only: mdia
       use system_utils, only: exifil
       use m_monitoring_crosssections, only: crs, ncrs
       use m_observations_data, only: namobs, numobs
 
+      ! Arguments
       character(len=*), intent(in) :: md_cldfile
       integer, intent(in) :: phase
       type(cldtype), intent(inout) :: clddata
 
-!
-! Local variables
-!
+      ! Local variables
       integer :: icld = 0
       integer :: icldnrm = 0
       integer :: icldcrs = 0
@@ -153,14 +150,12 @@ contains
       character(len=255) :: filtmp
       character(len=132) :: rec132
       logical :: error
-!    logical                          :: cld_in_arl = .true.
+      ! logical :: cld_in_arl = .true.
       real(kind=dp), dimension(CLD_MAXFLD) :: rfield
 
-!
-!! executable statements -------------------------------------------------------
-!
+      ! executable statements -------------------------------------------------------
       error = .false.
-!
+
       if (phase == GET_DIMENSIONS) then
          call mess(LEVEL_INFO, ' ')
          call mess(LEVEL_INFO, '*** Start of calibration definition input: '//trim(md_cldfile))
@@ -244,7 +239,6 @@ contains
             goto 9999
          end if
          clddata%def2icld = intmiss
-         !
       elseif (phase == GET_DIMENSIONS) then
          ncld = 0
          ncldnrm = 0
@@ -253,21 +247,17 @@ contains
          n_q = 0
          n_zs = 0
       end if
-      !
+
       ! Initialize array dimensions for default empty settings
-      !
-      !
       ! keyword not found ?
-      !
       if (filtmp == ' ') then
          errmsg = 'Missing value (or the keyword):  [calibration]DefinitionFile in .mdu file'
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999
       end if
-      !
+
       ! test file existence
-      !
       if (.not. exifil(filtmp, lundia)) then
          !
          ! file does not exist !!
@@ -277,9 +267,8 @@ contains
          error = .true.
          goto 9999
       end if
-      !
+
       ! open trachytope definition file
-      !
       open (newunit=luntmp, file=trim(filtmp), form='formatted', iostat=iocond,  &
           & status='old')
       if (iocond /= 0) then
@@ -288,34 +277,24 @@ contains
          error = .true.
          goto 9999
       end if
-      !
-      !
+
       ! freeformatted file
-      !           read record and add 1 to NCLD till end of file
-      !
+      ! read record and add 1 to NCLD till end of file
       ! -->
-      !
       ! read line
-      !
 110   continue
       read (luntmp, '(a)', iostat=iocond) rec132
       if (iocond /= 0) then
-         !
          ! End-of-file ?
-         !
          if (iocond < 0) then
             goto 199
          end if
-         !
          ! Reading error
-         !
          errmsg = 'Read error from file: '//trim(filtmp)
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          ! <--
-         !
          ! close file
-         !
 199      continue
 
          if (phase == FILL_DATA) then
@@ -330,21 +309,15 @@ contains
          close (luntmp)
          goto 9999
       end if
-      !
       ! Interpret line ...
-      !
-      !
       ! Comment line
-      !
       if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
          goto 110
       end if
       ibeg = 1
       iend = 132
       ! Comment at end of line
-      !
       ! loop over rec132 and find #
-      !
       comment_at_end_of_line_loop: &
          do istr = ibeg, iend
          if (rec132(istr:istr) == '#') then
@@ -356,9 +329,7 @@ contains
       call scannr(rec132, ibeg, iend, nrflds, itype, &
             & ifield, rfield, cfield, lenchr, CLD_MAXFLD, &
             & .true., .true., .true.)
-      !
       ! When sub-fields are found, reserve space
-      !
       if (nrflds > 0) then
          if (itype(1) == 1 .and. itype(2) /= 3 .and. ifield(1) /= prev_cld_no) then
             icld = icld + 1
@@ -514,9 +485,10 @@ contains
    end subroutine read_cldfile
 
    subroutine read_cllfile(md_cllfile, clddata, phase)
-      use precision, only: dp
+      use precision, only: dp, comparereal
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess, errmsg
       use m_missing, only: intmiss
+      use m_scannr, only: scannr
       use unstruc_files, only: mdia
       use system_utils, only: exifil
       use network_data, only: lnn, numl
@@ -531,33 +503,32 @@ contains
       integer :: lundia
       logical :: error
       character(len=256) :: filnam
-!
-! Local variables
-!
-!    integer                          :: i
+
+      ! Local variables
+      ! integer :: i
       integer :: ibeg
       integer :: icld
       integer :: icll
       integer :: icll_found
-!    integer                          :: icurec
+      ! integer :: icurec
       integer :: iend
       integer :: iocond
       integer :: istat
       integer :: jcll
       integer :: L
-!    integer                          :: lcurec
-!    integer                          :: lfile
+      ! integer :: lcurec
+      ! integer :: lfile
       integer :: luntmp
       integer :: mcurec
       integer :: nrflds
-!    integer, dimension(4)            :: nmpblk
+      ! integer, dimension(4) :: nmpblk
       integer, dimension(CLL_MAXFLD) :: ifield
       integer, dimension(CLL_MAXFLD) :: itype
       integer, dimension(CLL_MAXFLD) :: lenchr
-!    logical                          :: leql
-!    logical                          :: lfirst
+      ! logical :: leql
+      ! logical :: lfirst
       logical :: lokay
-!    logical                          :: lprblk
+      ! logical :: lprblk
       real(kind=dp), dimension(CLL_MAXFLD) :: rfield
       character(30), dimension(CLL_MAXFLD) :: cfield
       character(132) :: rec132
@@ -567,6 +538,7 @@ contains
       real(kind=dp) :: x
       real(kind=dp) :: y
       real(kind=dp) :: dist
+      real(kind=dp) :: tolerance
 
       istat = 0
       lundia = mdia
@@ -593,24 +565,17 @@ contains
          clddata%sumar = 0.0_dp
          clddata%linar = intmiss
       end if
-!
-!! executable statements -------------------------------------------------------
-!
-      !
+
+      !! executable statements -------------------------------------------------------
       ! test file existence
-      !
       if (.not. exifil(filnam, lundia)) then
-         !
          ! file does not exist !!
-         !
          errmsg = 'The specified file '//trim(filnam)//' does not exist '
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999
       end if
-      !
       ! open file
-      !
       open (newunit=luntmp, file=trim(filnam), form='formatted', iostat=iocond,  &
           & status='old')
       if (iocond /= 0) then
@@ -619,32 +584,24 @@ contains
          error = .true.
          goto 9999
       end if
-      !
       ! freeformatted file
       !       read record and count number of useful areas
       !       till end of file
-      !
       icll = 0
       icll_found = 0
       !lprblk = .false.
       mcurec = 0
       ! -->
-      !
       ! read line
-      !
 210   continue
       read (luntmp, '(a)', iostat=iocond) rec132
       if (iocond == 0) then
          mcurec = mcurec + 1
       else
-         !
          ! End-of-file ?
-         !
          if (iocond < 0) then
             ! <--
-            !
             ! close file
-            !
             close (luntmp)
 
             if (phase == FILL_DATA) then
@@ -657,9 +614,7 @@ contains
 
             goto 9999
          end if
-         !
          ! Reading error
-         !
          error = .true.
          rec132 = ' '
          write (rec132, '(i12)') mcurec + 1
@@ -668,36 +623,24 @@ contains
          close (luntmp)
          goto 9999
       end if
-      !
       ! Interpret line ...
-      !
-      !
       ! Comment line
-      !
       if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
          goto 210
       end if
-      !
       ! Scan the record
-      !
       ibeg = 1
       iend = 132
       call scannr(rec132, ibeg, iend, nrflds, itype, &
                 & ifield, rfield, cfield, lenchr, CLL_MAXFLD, &
                 & .true., .true., .true.)
-      !
       ! When no sub-fields are found, record appears to be empty
-      !
       if (nrflds == 0) then
          goto 210
       end if
-      !
       ! Check the contents
-      !
       lokay = .false.
-      !
       ! Check if it is a valid net link record for unstructured input
-      !
       if (nrflds == 5 .and. &
         & (itype(1) == 2 .or. itype(1) == 1) .and. &
         & (itype(2) == 2 .or. itype(2) == 1) .and. &
@@ -706,26 +649,25 @@ contains
          lokay = .true.
          icll = icll + 1
       end if
-      !
-    !! TO DO: Update to allow observation stations for parts outside domain which are inactive
-    !!itrt = trachy_fl%gen%ittdef(trachy_fl%gen%crs(itrtcrs)%itrt,1)
-      !
-    !!cld_in_arl =  .false.
-    !!itt = 0
-    !!do while ((.not. trt_in_arl) .and. (itt < trachy_fl%dir(1)%nttaru))
-    !!   itt = itt + 1
-    !!   if (trachy_fl%dir(1)%ittaru(itt,3) == itrt) then    ! if trachytope is included in .arl file
-    !!      trt_in_arl = .true.
-    !!   end if
-    !!enddo
-      !
-    !! To do move to after reading cll ?
-      !if ((clddata%obs(icldobs) == intmiss) .and. cld_in_arl) then
+
+      !! TO DO: Update to allow observation stations for parts outside domain which are inactive
+      ! itrt = trachy_fl%gen%ittdef(trachy_fl%gen%crs(itrtcrs)%itrt,1)
+         
+      ! cld_in_arl =  .false.
+      ! itt = 0
+      ! do while ((.not. trt_in_arl) .and. (itt < trachy_fl%dir(1)%nttaru))
+      !   itt = itt + 1
+      !   if (trachy_fl%dir(1)%ittaru(itt,3) == itrt) then    ! if trachytope is included in .arl file
+      !      trt_in_arl = .true.
+      !   end if
+      ! enddo
+      
+      !! To do move to after reading cll ?
+      ! if ((clddata%obs(icldobs) == intmiss) .and. cld_in_arl) then
       !    call mess(LEVEL_ERROR, 'Error reading calibration definition file: Observation station does not exist in "'//trim(md_cldfile)//'": '//rec132)
       !    error = .true.
       !    goto 9999
-      !end if
-      !
+      ! end if
       if (phase == FILL_DATA) then
          clddata%ittar(icll, 1) = intmiss
 
@@ -761,7 +703,8 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (clddata%sumar(L) > 1.0_dp) then
+            tolerance = 2.0_dp * real(icll, kind=dp) * epsilon(1.0_dp)
+            if (comparereal(clddata%sumar(L), 1.0_dp, eps=tolerance) == 1) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
@@ -782,11 +725,8 @@ contains
          end if
 
       end if
-      !
       if (.not. lokay) then
-         !
          ! Cannot interpret line
-         !
          error = .true.
          rec132 = ' '
          write (rec132, '(i12)') mcurec
@@ -825,16 +765,13 @@ contains
          call f_from_table_of_x(clddata%cldtable_zs, clddata%rttdef_zs, clddata%start_zs(icldobs), clddata%end_zs(icldobs), clddata%slope_zs, clddata%cross_zs, zs, f)
          ! store to definitions
          clddata%rttdef(clddata%icld_zs(icldobs)) = f
-         !
       end do
-      !
       ! Set discharge dependent calibration value
       do icldcrs = 1, ncldcrs
          q = crs(clddata%crs(icldcrs))%sumvalcur(IPNT_Q1C)
          call f_from_table_of_x(clddata%cldtable_q, clddata%rttdef_q, clddata%start_q(icldcrs), clddata%end_q(icldcrs), clddata%slope_q, clddata%cross_q, q, f)
          ! store to definitions
          clddata%rttdef(clddata%icld_q(icldcrs)) = f
-         !
       end do
 
    end subroutine update_clddata
@@ -843,7 +780,7 @@ contains
       use network_data, only: numl
       use m_flow, only: cfclval
 
-! Updates and averages all calibration factors on net links
+      ! Updates and averages all calibration factors on net links
       integer :: icll
       integer :: L
       integer :: icld
@@ -865,11 +802,9 @@ contains
    end subroutine update_clldata
 
    subroutine f_from_table_of_x(xvals, fvals, idx_start, idx_end, fslope, fcross, x, f)
-! Calibration helper function -- Determines f value from a f table which is a function of x based on a query value x
-! TO DO: general function available? combine with trachy?
+      ! Calibration helper function -- Determines f value from a f table which is a function of x based on a query value x
+      ! TO DO: general function available? combine with trachy?
       use precision, only: dp
-
-      implicit none
 
       real(kind=dp), dimension(:), intent(in) :: xvals
       real(kind=dp), dimension(:), intent(in) :: fvals
@@ -906,11 +841,9 @@ contains
       end if
    end subroutine f_from_table_of_x
 
-! Initialise calibration factors
+   ! Initialise calibration factors
    subroutine calibration_backup_frcu()
       use m_flow, only: frcu, frcu_bkp
-
-      implicit none
 
       frcu_bkp = frcu
 

@@ -1771,6 +1771,7 @@ contains
       isFirst = .true.
       if (associated(anode)) then
          do
+            anode%node_visit = anode%node_visit + 1
             call tree_get_data_alloc_string(anode, localvaluetemp, success_)
             localvalue = localvaluetemp
 
@@ -1818,9 +1819,6 @@ contains
                exit
             end if
          end do
-         if (size(anode%node_data) > 0) then
-            anode%node_visit = anode%node_visit + 1 ! Count visits (request of the value)
-         end if
       else
          ! Key not found
       end if
@@ -3251,6 +3249,10 @@ contains
       integer :: iend
       integer :: major_, minor_
 
+      ! Default to version 1.0 when no version key is present or cannot be parsed.
+      major_ = 1
+      minor_ = 0
+
       if (present(chapterin)) then
          chapterin_ = chapterin
       else
@@ -3260,6 +3262,15 @@ contains
          keyin_ = keyin
       else
          keyin_ = 'fileVersion'
+      end if
+
+      ! Set the (optional) intent(out) results to their defaults before any early
+      ! return below, so that a present major/minor is never left undefined.
+      if (present(major)) then
+         major = major_
+      end if
+      if (present(minor)) then
+         minor = minor_
       end if
 
       call prop_get_string(tree, chapterin_, keyin_, string, success)

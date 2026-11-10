@@ -32,6 +32,7 @@
       use m_logger_helper, only : write_error_message, stop_with_error
       use m_hydmod
       use m_aggregate_waqgeom
+      use m_agr_poi
       use m_alloc, only : realloc
       use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
 
@@ -128,7 +129,9 @@
           endif
           output_hyd%num_layers_grid  = input_hyd%num_layers_grid
           output_hyd%num_layers = maxval(ipnt_v)
-          output_hyd%nosegl= maxval(ipnt_h)
+          output_hyd%nosegl = maxval(ipnt_h)
+          output_hyd%num_columns = output_hyd%nosegl
+          output_hyd%num_rows = 1
           output_hyd%num_cells = output_hyd%num_layers*output_hyd%nosegl
           output_hyd%crs = input_hyd%crs
           output_hyd%openbndsect_coll%current_size = 0

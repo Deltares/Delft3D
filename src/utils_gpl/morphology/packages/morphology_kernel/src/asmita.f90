@@ -1,10 +1,3 @@
-module m_asmita
-   implicit none
-
-contains
-
-!> This routine implements ASMITA equilibrium relation.
-   subroutine asmita(zb, timhr, npar, par, sbot, cesus, t_relax)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -32,9 +25,17 @@ contains
 !
 !-------------------------------------------------------------------------------
 
+module m_asmita
+   implicit none
+   private
+   public asmita
+
+contains
+
+!> This routine implements ASMITA equilibrium relation.
+   subroutine asmita(zb, timhr, npar, par, sbot, cesus, t_relax)
 !!--declarations----------------------------------------------------------------
       use precision
-      implicit none
 !
 ! Arguments
 !

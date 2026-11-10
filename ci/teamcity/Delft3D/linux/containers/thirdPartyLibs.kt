@@ -10,7 +10,7 @@ import java.io.File
 
 object LinuxThirdPartyLibs : BuildType({
     name = "Third-party libraries"
-    description = "Add third-party libraries to the build-environment container image to build our Delf3D software in."
+    description = "Add third-party libraries to the build image."
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
@@ -27,8 +27,8 @@ object LinuxThirdPartyLibs : BuildType({
     }
 
     params {
-        param("intel_oneapi_version", "2024")
-        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2024")
+        param("intel_oneapi_version", "2026")
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2026")
         param("intel_fortran_compiler", "ifx")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs")

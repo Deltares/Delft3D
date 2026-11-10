@@ -418,10 +418,14 @@ contains
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
 
+      use m_alloc, only: realloc
       use m_dambreak_breach, only: reset_dambreak_counters
+      use timespace_parameters, only: OPERAND_UNKNOWN
 
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis
+      operand = OPERAND_UNKNOWN
+      transformcoef = -999.0_dp
       numbnp = 0 ! total nr of open boundary cells for network extension
       nopenbndsect = 0 ! Nr. of open boundary sections.
       nbndz = 0 ! waterlevel boundary points dimension
@@ -456,6 +460,12 @@ contains
       ! JRE
       nzbnd = 0
       nubnd = 0
+
+      if (allocated(bubblescreens)) then
+         deallocate (bubblescreens)
+      end if
+      allocate (bubblescreens(0))
+      call realloc(bubblescreen_air_discharge, 0, keepExisting=.false.)
 
    end subroutine default_fm_external_forcing_data
 

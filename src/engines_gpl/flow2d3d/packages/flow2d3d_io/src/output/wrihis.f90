@@ -2,7 +2,7 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
                 & itdate    ,tzone     ,tunit     ,dt        ,nostat    , &
                 & ntruv     ,nmax      ,mmax      ,kmax      ,lmax      , &
                 & lstsci    ,ltur      ,grdang    ,sferic    ,lsed      , &
-                & lsedtot   ,zmodel    ,namcon    ,namsed    ,xz        , &
+                & lsedtot   ,zmodel    ,namcon    ,xz        , &
                 & yz        ,alfas     ,dps       ,thick     ,sig       , &
                 & zk        ,irequest  ,fds       ,nostatto  ,nostatgl  , &
                 & order_sta ,ntruvto   ,ntruvgl   ,order_tra ,xcor      , &
@@ -76,6 +76,7 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     character(20) , dimension(:)    , pointer :: namtra
     logical                         , pointer :: ztbml
     type (flwoutputtype)            , pointer :: flwoutput
+    character(20) , dimension(:)    , pointer :: namsed
 !
 ! Global variables
 !
@@ -114,7 +115,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     character(16)                                                       , intent(in)  :: simdat   !  Simulation date representing the flow condition at this date
     character(20) , dimension(nsluv)                                    , intent(in)  :: nambar   !  Description and declaration in esm_alloc_char.f90
     character(20) , dimension(lmax)                                     , intent(in)  :: namcon   !  Description and declaration in esm_alloc_char.f90
-    character(20) , dimension(lsedtot)                                  , intent(in)  :: namsed   !  Description and declaration in esm_alloc_char.f90
     character(23)                                                       , intent(in)  :: selhis   !  Description and declaration in tricom.igs
     integer                                                             , intent(in)  :: fds      !  File handle of output NEFIS/NetCDF file
     integer                                                             , intent(in)  :: nostatgl ! global number of stations (i.e. original number excluding duplicate stations located in the halo regions)
@@ -197,6 +197,7 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     namtra      => gdp%gdstations%namtra
     ztbml       => gdp%gdzmodel%ztbml
     flwoutput   => gdp%gdflwpar%flwoutput
+    namsed      => gdp%gdsedpar%namsed
     !
     ! Initialize local variables
     !

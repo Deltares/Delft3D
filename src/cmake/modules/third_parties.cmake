@@ -12,9 +12,6 @@ set(md5_module ${third_party_open_path}/md5/${cmake_directory})
 # metis
 set(metis_module ${third_party_open_path}/metis/${cmake_directory})
 
-# precice
-set(precice_module ${third_party_open_path}/precice)
-
 # libsigwatch
 set(libsigwatch_module ${third_party_open_path}/libsigwatch/${cmake_directory})
 
@@ -30,11 +27,6 @@ set(polypack_module ${third_party_open_path}/polypack)
 
 # interacter_stub
 set(interacter_stub_module ${third_party_path}/interacter_stub)
-
-# swan
-set(swan_mpi_lib_module ${third_party_open_path}/swan)
-set(swan_mpi_module ${third_party_open_path}/swan/swan_mpi)
-set(swan_omp_module ${third_party_open_path}/swan/swan_omp)
 
 # solvesaphe
 set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
@@ -56,6 +48,3 @@ endif(WIN32)
 
 # precicef (preCICE fortran bindings)
 set(precicef_module "${third_party_open_path}/precicef")
-
-# pugixml
-set(pugixml_module ${third_party_open_path}/pugixml)

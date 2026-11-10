@@ -1,0 +1,6 @@
+outs:
+- md5: b9724b3aaa652520615f61b39595dcad.dir
+  size: 62394
+  nfiles: 14
+  hash: md5
+  path: input

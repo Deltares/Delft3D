@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <testCases>
+    <testCase name="inactive_case">
+      <maxRunTime>42</maxRunTime>
+    </testCase>
+  </testCases>
+</deltaresTestbench_v3>

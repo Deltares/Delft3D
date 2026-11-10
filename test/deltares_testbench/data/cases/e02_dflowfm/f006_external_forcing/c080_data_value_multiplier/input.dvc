@@ -1,0 +1,6 @@
+outs:
+- md5: ccbc9b74b8241764d82d63515987cabc.dir
+  size: 95059
+  nfiles: 9
+  hash: md5
+  path: input

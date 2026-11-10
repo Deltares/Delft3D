@@ -54,7 +54,7 @@ contains
 
       if (timprev < 0.0_dp) then
          ! This realloc should not be needed
-         call source_sinks%resize(source_sinks%num_total)
+         call source_sinks%realloc(source_sinks%num_total)
       else
          timstep = tim1 - timprev
          ! cumulative volume from Tstart

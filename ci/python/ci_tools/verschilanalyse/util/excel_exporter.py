@@ -7,7 +7,13 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from ci_tools.verschilanalyse.util.slurm_log_data import LogComparison, SlurmLogData, Status
 from ci_tools.verschilanalyse.util.verschilanalyse_comparison import VerschilanalyseComparison
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Tolerances, Variable, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import (
+    OutputType,
+    Tolerances,
+    Variable,
+    VerschillentoolOutput2D,
+    VerschillentoolOutput3D,
+)
 
 
 class ExcelExporter:
@@ -40,21 +46,41 @@ class ExcelExporter:
     }
 
     @classmethod
-    def _append_row(cls, sheet: Worksheet, model_name: str, stats: VerschillentoolOutput, ndigits: int = 4) -> None:
-        sheet.append(
-            [
-                model_name,
-                stats.row_count,
-                round(stats.water_level.avg_max, ndigits=ndigits),
-                round(stats.water_level.avg_bias, ndigits=ndigits),
-                round(stats.water_level.avg_rms, ndigits=ndigits),
-                round(stats.water_level.max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_bias, ndigits=ndigits),
-                round(stats.flow_velocity.avg_rms, ndigits=ndigits),
-                round(stats.flow_velocity.max, ndigits=ndigits),
+    def _append_row(
+        cls,
+        sheet: Worksheet,
+        model_name: str,
+        stats: VerschillentoolOutput2D | VerschillentoolOutput3D,
+        ndigits: int = 4,
+    ) -> None:
+        new_row = [
+            model_name,
+            stats.row_count,
+            round(stats.water_level.avg_max, ndigits=ndigits),
+            round(stats.water_level.avg_bias, ndigits=ndigits),
+            round(stats.water_level.avg_rms, ndigits=ndigits),
+            round(stats.water_level.max, ndigits=ndigits),
+            round(stats.flow_velocity.avg_max, ndigits=ndigits),
+            round(stats.flow_velocity.avg_bias, ndigits=ndigits),
+            round(stats.flow_velocity.avg_rms, ndigits=ndigits),
+            round(stats.flow_velocity.max, ndigits=ndigits),
+        ]
+
+        if isinstance(stats, VerschillentoolOutput3D):
+            new_row += [
+                round(stats.salinity.avg_max, ndigits=ndigits),
+                round(stats.salinity.avg_bias, ndigits=ndigits),
+                round(stats.salinity.avg_rms, ndigits=ndigits),
+                round(stats.salinity.max, ndigits=ndigits),
+                round(stats.temperature.avg_max, ndigits=ndigits),
+                round(stats.temperature.avg_bias, ndigits=ndigits),
+                round(stats.temperature.avg_rms, ndigits=ndigits),
+                round(stats.temperature.max, ndigits=ndigits),
             ]
-        )
+        else:
+            new_row += ["N/A"] * 8
+
+        sheet.append(new_row)
 
         row = sheet[sheet.max_row]
         red_fill = cls._status_to_fill(Status.ERROR)
@@ -68,6 +94,10 @@ class ExcelExporter:
         if stats.water_level.avg_rms > Tolerances.rms(stats.output_type, Variable.WATER_LEVEL):
             row[4].fill = red_fill
             row[4].value = f"❌ {row[4].value}"
+        if stats.water_level.max > Tolerances.max(stats.output_type, Variable.WATER_LEVEL):
+            row[5].fill = red_fill
+            row[5].value = f"❌ {row[5].value}"
+
         if stats.flow_velocity.avg_max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
             row[6].fill = red_fill
             row[6].value = f"❌ {row[6].value}"
@@ -77,6 +107,36 @@ class ExcelExporter:
         if stats.flow_velocity.avg_rms > Tolerances.rms(stats.output_type, Variable.FLOW_VELOCITY):
             row[8].fill = red_fill
             row[8].value = f"❌ {row[8].value}"
+        if stats.flow_velocity.max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
+            row[9].fill = red_fill
+            row[9].value = f"❌ {row[9].value}"
+
+        if isinstance(stats, VerschillentoolOutput3D):
+            if stats.salinity.avg_max > Tolerances.max(stats.output_type, Variable.SALINITY):
+                row[10].fill = red_fill
+                row[10].value = f"❌ {row[10].value}"
+            if stats.salinity.avg_bias > Tolerances.bias(stats.output_type, Variable.SALINITY):
+                row[11].fill = red_fill
+                row[11].value = f"❌ {row[11].value}"
+            if stats.salinity.avg_rms > Tolerances.rms(stats.output_type, Variable.SALINITY):
+                row[12].fill = red_fill
+                row[12].value = f"❌ {row[12].value}"
+            if stats.salinity.max > Tolerances.max(stats.output_type, Variable.SALINITY):
+                row[13].fill = red_fill
+                row[13].value = f"❌ {row[13].value}"
+
+            if stats.temperature.avg_max > Tolerances.max(stats.output_type, Variable.TEMPERATURE):
+                row[14].fill = red_fill
+                row[14].value = f"❌ {row[14].value}"
+            if stats.temperature.avg_bias > Tolerances.bias(stats.output_type, Variable.TEMPERATURE):
+                row[15].fill = red_fill
+                row[15].value = f"❌ {row[15].value}"
+            if stats.temperature.avg_rms > Tolerances.rms(stats.output_type, Variable.TEMPERATURE):
+                row[16].fill = red_fill
+                row[16].value = f"❌ {row[16].value}"
+            if stats.temperature.max > Tolerances.max(stats.output_type, Variable.TEMPERATURE):
+                row[17].fill = red_fill
+                row[17].value = f"❌ {row[17].value}"
 
     @staticmethod
     def _to_column(log_data: SlurmLogData | None) -> Sequence[str | int | float]:
@@ -153,7 +213,7 @@ class ExcelExporter:
         cls,
         sheet: Worksheet,
         output_type: OutputType,
-        model_stats: dict[str, VerschillentoolOutput],
+        model_stats: dict[str, VerschillentoolOutput2D | VerschillentoolOutput3D],
         ndigits: int = 4,
     ) -> None:
         if output_type == OutputType.HIS:
@@ -172,6 +232,14 @@ class ExcelExporter:
             f"Bias flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
             f"RMSE flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
             f"Maximum flow velocity over all {unit} ({Variable.FLOW_VELOCITY.unit})",
+            f"Maximum salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"Bias salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"RMSE salinity averaged over {unit} ({Variable.SALINITY.unit})",
+            f"Maximum salinity over all {unit} ({Variable.SALINITY.unit})",
+            f"Maximum temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"Bias temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"RMSE temperature averaged over {unit} ({Variable.TEMPERATURE.unit})",
+            f"Maximum temperature over all {unit} ({Variable.TEMPERATURE.unit})",
         ]
 
         count_header = cls.VERSCHILLENTOOL_COUNT_HEADERS[output_type]

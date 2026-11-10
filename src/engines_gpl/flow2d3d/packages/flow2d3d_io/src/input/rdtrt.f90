@@ -42,6 +42,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     use string_module
     use dfparall
     use system_utils, only: exifil
+    use m_scannr, only: scannr
     !
     implicit none
     !

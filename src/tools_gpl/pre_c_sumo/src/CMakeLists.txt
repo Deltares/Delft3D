@@ -1,5 +1,4 @@
 set(source_files
-    endpoints.cpp
     pre_c_sumo_lib.cpp
     connected_sinks_sources.cpp
     coupling_steps.cpp
@@ -14,7 +13,6 @@ set(header_files
     ${include_dir}/connected_sinks_sources.hpp
     ${include_dir}/coupling_steps.hpp
     ${include_dir}/csumo_settings_reader.hpp
-    ${include_dir}/endpoints.hpp
     ${include_dir}/monadic_utils.hpp
     ${include_dir}/FF2NF_writer.hpp
     ${include_dir}/NF2FF_reader.hpp
@@ -63,6 +61,5 @@ endif()
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
 set_target_properties(preC-SUMO pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo)
 
-install(TARGETS preC-SUMO
-    RUNTIME DESTINATION bin
-)
+install(TARGETS preC-SUMO RUNTIME DESTINATION bin)
+install(FILES $<TARGET_RUNTIME_DLLS:preC-SUMO> DESTINATION bin)

@@ -10,7 +10,7 @@ import Delft3D.step.*
 
 object WindowsCollectEnvironment : BuildType({
 
-    description = "Collect-environment container image for prepping and verifying Delft3D Windows binaries."
+    description = "Image used to prepare and verify Windows binaries."
 
     templates(
         TemplateMergeRequest,
@@ -20,7 +20,7 @@ object WindowsCollectEnvironment : BuildType({
         TemplateBuildConcurrency
     )
 
-    name = "Delft3D collect environment container"
+    name = "Collect environment"
     buildNumberPattern = "%build.vcs.number%"
 
     params {

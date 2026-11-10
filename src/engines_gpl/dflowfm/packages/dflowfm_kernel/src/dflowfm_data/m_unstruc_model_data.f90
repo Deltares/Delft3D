@@ -123,7 +123,11 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
    character(len=max_prop_length) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
    character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
-  character(len=max_prop_length) :: md_map_output_polyfile = ' ' !< Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)
+   character(len=max_prop_length) :: md_map_output_polyfile = ' ' !< Space-separated output polygon file(s) to restrict map output to (e.g., *_out.pol)
+
+   character(len=max_prop_length) :: md_mbafile = ' ' !< Space-separated input mass balance area file(s) (*_mba.ini).
+   integer, parameter :: MBA_MAJOR_FILE_VERSION = 1 !< Major version of the mass balance area file format.
+   integer, parameter :: MBA_MINOR_FILE_VERSION = 0 !< Minor version of the mass balance area file format.
 
    character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
    character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
@@ -148,7 +152,6 @@ module m_unstruc_model_data
    character(len=max_prop_length) :: md_oplfile = ' ' !< [-] open process library dll/so file
    character(len=max_prop_length) :: md_blmfile = ' ' !< [-] BLOOM aglae species definition file
    character(len=max_prop_length) :: md_sttfile = ' ' !< statistics definition file
-   real(kind=dp) :: md_thetav_waq = 0.0_dp !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0.0_dp !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0.0_dp !< mass balance output time step (old)
 
@@ -194,11 +197,6 @@ module m_unstruc_model_data
    integer :: md_M = 1024 !< size of x in Axpy
    integer :: md_N = 2048 !< size of y in Axpy
    integer :: md_Nruns = 10 ! number of test runs
-   integer :: md_soltest = 0 !< solver test (1) or not (0)
-   integer :: md_CFL = 0 !< wave-based Courant number (if > 0)
-   integer :: md_maxmatvecs = 0 !< maximum number of matrix-vector multiplications in Krylov solver (if > 0 )
-   integer :: md_epscg = 0 !< -10log(epscg) (if > 0), tolerance in (inner) Krylov iterations
-   integer :: md_epsdiff = 0 !< -10log(epsdiff) (if > 0), tolerance in (outer) Schwarz iterations
    integer :: md_convnetcells = 0 !< Convert _net.nc files with only netnodes/links into _net.nc files with netcell info.
    integer :: md_findcells = 0 !< read netcell info from files and bypass findcells. If not 0, findcells are called.
    integer :: md_pressakey = 0 !< press a key (1) or not (0)

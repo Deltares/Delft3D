@@ -53,6 +53,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
    logical, pointer :: lfbedfrm
    real(hp), pointer :: morft
    real(hp), pointer :: morft0
+   real(fp), pointer :: ag
 !
 ! Global variables
 !
@@ -96,6 +97,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
    morft => gdp%gdmorpar%morft
    morft0 => gdp%gdmorpar%morft0
    lfbedfrm => gdp%gdbedformpar%lfbedfrm
+   ag => gdp%gdphysco%ag
    !
    error = .false.
    !
@@ -151,7 +153,7 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       call rdmor(lundia, error, filmor, lsec, lsedtot, &
                & lsed, nmaxus, nto, lfbedfrm, &
                & nambnd, gdp%gdinttim%julday, mor_ptr, gdp%gdsedpar, &
-               &gdp%gdmorpar, fwfacmor, gdp%gdmorlyr, gdp%griddim)
+               &gdp%gdmorpar, fwfacmor, gdp%gdmorlyr, gdp%griddim, ag)
    end if
    if (.not. error) then
       !

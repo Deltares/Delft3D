@@ -42,7 +42,7 @@ subroutine tfzeta(timnow    ,nmax      ,mmax      ,tgfsep    ,xz        , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

@@ -52,6 +52,7 @@ contains
       use unstruc_files, only: resolvePath
       use string_module, only: strcmpi
       use m_longculverts_data, only: nlongculverts
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
       use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, remove_1d_links_from_dambreak_polygon_list
@@ -116,6 +117,10 @@ contains
             call selectelset_internal_links(lnx, kegen(1:numl), numgen, loc_spec_type, nump=pstru%numCoordinates, &
                                             xpin=pstru%xCoordinates, ypin=pstru%yCoordinates, &
                                             branchindex=pstru%ibran, chainage=pstru%chainage, sortLinks=1, lftopol=lftopol(num_dambreak_links + 1:numl))
+            select case (pstru%type)
+            case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE, ST_GATE)
+               call remove_longculvert_flowlinks(numgen, kegen)
+            end select
             call reallocp(pstru%linknumbers, numgen)
             pstru%linknumbers = kegen(1:numgen)
 
@@ -252,6 +257,7 @@ contains
       use unstruc_files, only: resolvePath
       use string_module, only: str_tolower, strcmpi
       use m_longculverts_data, only: nlongculverts
+      use m_longculverts, only: remove_longculvert_flowlinks
       use m_partitioninfo, only: jampi
       use m_qnerror, only: qnerror
       use m_read_property, only: read_property
@@ -552,6 +558,7 @@ contains
             else
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, plifile, sortLinks=1)
             end if
+            call remove_longculvert_flowlinks(numgen, kegen(ncgen + 1:numl))
 
             success = .true.
             write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(plifile), numgen, ' nr of '//trim(strtype)//' cells'

@@ -134,7 +134,6 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     integer(pntrsize)                , pointer :: namdro
     integer(pntrsize)                , pointer :: namsrc
     real(fp)                         , pointer :: zbot
-    character(20) , dimension(:)     , pointer :: namsed
     character(8)                     , pointer :: dpsopt
 !
 ! Global variables
@@ -257,7 +256,6 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     namdro      => gdp%gdr_i_ch%namdro
     namsrc      => gdp%gdr_i_ch%namsrc
     zbot        => gdp%gdzmodel%zbot
-    namsed      => gdp%gdsedpar%namsed
     dpsopt      => gdp%gdnumeco%dpsopt
     !
     call dattim(rundat    )

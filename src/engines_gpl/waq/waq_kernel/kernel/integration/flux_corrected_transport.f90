@@ -59,7 +59,7 @@ contains
         real(kind = real_wp), intent(in) :: conc(num_substances_total, num_cells)!< concentrations at previous time level
         real(kind = real_wp), intent(in) :: bound(num_substances_transported, *)      !< open boundary concentrations
         integer(kind = int_wp), intent(in) :: idt                  !< time step in seconds
-        real(kind = real_wp), intent(inout) :: deriv(num_substances_total, num_cells)!< derivatives of the concentraions
+        real(kind = real_wp), intent(inout) :: deriv(num_substances_total, num_cells)!< derivatives of the concentrations
         integer(kind = int_wp), intent(in) :: iaflag               !< if 1 then accumulate mass in report array
         real(kind = real_wp), intent(inout) :: amass2(num_substances_total, 5)     !< report array for monitoring file
 

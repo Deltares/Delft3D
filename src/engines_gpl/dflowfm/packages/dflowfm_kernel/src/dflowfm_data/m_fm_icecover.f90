@@ -314,7 +314,7 @@ contains
 
       ! Compute freezing point
       t_freeze = freezing_temperature(saltcon)
-      t_ref = celsius_to_kelvin(0.0_fp) ! 0.0 or t_freeze ?
+      t_ref = celsius_to_kelvin(t_freeze)
 
       select case (ja_icecover)
       case (ICECOVER_SEMTNER)
@@ -341,7 +341,7 @@ contains
             tsi = tsi + D_t
             if (abs(D_t) < 1e-2_fp) then
                converged = .true.
-               if (tsi > 0.0_fp) then
+               if (tsi > t_ref) then
                   ! melting
                   Qlong = coef1
                else
@@ -388,7 +388,7 @@ contains
          sum = 0.0_fp
          icount = 0
          do LL = 1, nd(n)%lnx
-            sum = sum + hu(LL)
+            sum = sum + hu(abs(nd(n)%ln(LL)))
             icount = icount + 1
          end do
          hdz = 0.5_fp * sum / max(1, icount)
@@ -399,7 +399,9 @@ contains
          !
          ! Calculate heat flux out of the ocean
          !
-         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
+         ! the heat flux from ice to water is negative since the water temperature is at or above freezing point
+         ! assume at least a temperature difference of 0.01 degC to represent some sediment heat release that is not otherwise accounted for in the model
+         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * min(-0.01_fp, t_freeze - tempwat)
          !
          ! adaptation of QH_ICE2WAT conform KNMI approach (QH_ICE2WAT = 2.4 W/m2)
          !

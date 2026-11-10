@@ -11,12 +11,9 @@ import java.io.File
 
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
-    name = "TestBench validation"
+    name = "TestBench checks"
     buildNumberPattern = "%build.vcs.number%"
-    description = """
-        Runs the TestBench validation. 
-        This includes the pytest test-suite, the formatter check, the linter and the type checker.
-    """.trimIndent()
+    description = "pytest and ruff for test/deltares_testbench."
 
     // The name `coverage.zip` for the pytest coverage report should not be changed.
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
@@ -53,7 +50,7 @@ object TestBenchValidation : BuildType({
                 triggerRules = """
                     +:/test/deltares_testbench/**/*.py
                     +:/test/deltares_testbench/TestBench.py
-                    +:/test/deltares_testbench/pip/*-requirements.txt
+                    +:/test/deltares_testbench/uv.lock
                     +:/test/deltares_testbench/pyproject.toml
                     +:/ci/teamcity/Delft3D/ciUtilities/TestBenchValidation.kt
                 """.trimIndent()
@@ -72,9 +69,10 @@ object TestBenchValidation : BuildType({
             workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
-                uv venv
+                set -exo pipefail
+                # --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked --extra dev
                 source .venv/bin/activate
-                uv pip sync pip/lnx-dev-requirements.txt
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux

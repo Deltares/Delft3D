@@ -49,10 +49,10 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_filez, only: oldfil
 
-      integer :: ny
+      integer, intent(in) :: ny
       real(kind=dp) :: xx(kmxx), xxx(kmxx)
-      real(kind=dp) :: yy(ny)
-      character(*), intent(in) :: filename ! file name for polygonfile
+      real(kind=dp), dimension(ny), intent(inout) :: yy
+      character(len=*), intent(in) :: filename ! file name for polygonfile
 
       integer :: minp0, n, k, kb, kt, ktx
 

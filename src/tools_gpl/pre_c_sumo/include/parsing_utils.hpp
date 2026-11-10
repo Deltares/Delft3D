@@ -14,59 +14,66 @@
 namespace parsing_utils
 {
     /**
-     * @brief Parse a space-separated list of double values.
-     * @param text The text to parse.
-     * @param element_name The name of the XML element (for error messages).
-     * @return A vector of doubles on success, or a ParseError on failure.
+     * @anchor parsing_utils_parse_double_vector
+     * @brief Parses a space-separated list of floating-point values.
+     * @param text Input text to interpret as a numeric list.
+     * @param element_name XML element name used in validation messages.
+     * @return Parsed values on success, or a ParseError on failure.
      */
     [[nodiscard]] std::expected<std::vector<double>, ParseError> parseDoubleVector(std::string_view text,
                                                                                    std::string_view element_name);
 
     /**
-     * @brief Parse a single double value.
-     * @param text The text to parse.
-     * @param element_name The name of the XML element (for error messages).
-     * @return The parsed double on success, or a ParseError on failure.
+     * @anchor parsing_utils_parse_double
+     * @brief Parses a single floating-point value from an XML or text field.
+     * @param text Input text to parse.
+     * @param element_name XML element name used in validation messages.
+     * @return Parsed numeric value on success, or a ParseError on failure.
      */
     [[nodiscard]] std::expected<double, ParseError> parseDouble(std::string_view text, std::string_view element_name);
 
     /**
-     * @brief Parse a 2-D coordinate pair (x, y).
-     * @param text The text to parse.
-     * @param element_name The name of the XML element (for error messages).
-     * @return The parsed Point2D on success, or a ParseError on failure.
+     * @anchor parsing_utils_parse_point_2d
+     * @brief Parses a two-dimensional coordinate pair in the form "x y".
+     * @param text Input string containing the point values.
+     * @param element_name XML element name used in validation messages.
+     * @return Parsed Point2D on success, or a ParseError on failure.
      */
     [[nodiscard]] std::expected<Point2D, ParseError> parsePoint2D(std::string_view text, std::string_view element_name);
 
     /**
-     * @brief Find a child node with the given name, case-insensitively.
-     * @param parent The parent XML node to search within.
-     * @param name The name of the child node to find (case-insensitive).
-     * @return The found child node, or an empty node if not found.
+     * @anchor parsing_utils_find_child
+     * @brief Finds the first child node with the requested name, ignoring case.
+     * @param parent Parent XML node to search.
+     * @param name Child element name to look for.
+     * @return Matching child node, or an empty node if it is not found.
      */
     [[nodiscard]] pugi::xml_node findChild(pugi::xml_node parent, std::string_view name);
 
     /**
-     * @brief Retrieve the text content of a required child node, case-insensitively.
-     * @param parent The parent XML node.
-     * @param child_name The name of the child node to retrieve.
-     * @return The text content of the child node, or a ParseError if the child node is not found or empty.
+     * @anchor parsing_utils_required_child_text
+     * @brief Retrieves the text content of a required child node.
+     * @param parent Parent XML node.
+     * @param child_name Child element name to read.
+     * @return Text content on success, or a ParseError if the child is missing or empty.
      */
     [[nodiscard]] std::expected<std::string, ParseError> requiredChildText(pugi::xml_node parent,
                                                                            std::string_view child_name);
 
     /**
-     * @brief Retrieve the text content of an optional child node, case-insensitively.
-     * @param parent The parent XML node.
-     * @param child_name The name of the child node to retrieve.
-     * @return The text content of the child node, or std::nullopt if the child node is not found or empty.
+     * @anchor parsing_utils_optional_child_text
+     * @brief Retrieves the text content of an optional child node.
+     * @param parent Parent XML node.
+     * @param child_name Child element name to read.
+     * @return Text content when present, otherwise std::nullopt.
      */
     [[nodiscard]] std::optional<std::string> optionalChildText(pugi::xml_node parent, std::string_view child_name);
 
     /**
-     * @brief Normalize a filesystem path by converting backslashes to forward slashes and removing any trailing slash.
-     * @param path The input path string.
-     * @return A normalized std::filesystem::path.
+     * @anchor parsing_utils_normalize_path
+     * @brief Normalizes a filesystem path by standardizing separators and removing a trailing slash.
+     * @param path Input path string.
+     * @return Normalized path object.
      */
     [[nodiscard]] std::filesystem::path normalizePath(std::string path);
 } // namespace parsing_utils

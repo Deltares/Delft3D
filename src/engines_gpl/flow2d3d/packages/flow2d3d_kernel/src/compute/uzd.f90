@@ -80,7 +80,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use dfparall
     use flow2d3d_timers

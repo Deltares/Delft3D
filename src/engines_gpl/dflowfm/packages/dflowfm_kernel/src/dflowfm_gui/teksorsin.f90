@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_teksorsin
 
    implicit none
@@ -39,7 +36,7 @@ contains
    subroutine teksorsin() ! teksrc
       use precision, only: dp
       use m_settextsizefac
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use unstruc_display, only: klsrc
       use m_transport, only: isalt, itemp
       use m_drawthis
@@ -47,7 +44,6 @@ contains
       use m_gtext
       use m_inview
 
-      implicit none
       integer :: n, k, n2, ncol
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
@@ -60,7 +56,7 @@ contains
       call settextsizefac(1.0_dp)
 
       do n = 1, source_sinks%num_total ! teksorsin
-         k = source_sinks%indices(n, 1)
+         k = source_sinks%indices(n, FLOWCELL_SINK)
          if (k /= 0) then
             n2 = 1
             xp = source_sinks%x(n, n2)
@@ -90,7 +86,7 @@ contains
                end if
             end if
          end if
-         k = source_sinks%indices(n, 4)
+         k = source_sinks%indices(n, FLOWCELL_SOURCE)
          if (k /= 0) then
             n2 = source_sinks%max_xy_points(n)
             xp = source_sinks%x(n, n2)

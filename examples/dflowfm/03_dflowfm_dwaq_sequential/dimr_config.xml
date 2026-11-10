@@ -37,7 +37,6 @@
     <process>0</process>
     <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
     <workingDir>dflowfm</workingDir>
-    <setting key="processlibrary" value="${PROC_DEF_DIR}/proc_def.dat"/>
     <inputFile>f34_dynamo.mdu</inputFile>
   </component>
 </dimrConfig>

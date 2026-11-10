@@ -1,5 +1,7 @@
 :: Run this script at your own risk.
-:: Requires valid NF2FF XML inputs in cosumo\NF2FF\<case>.
+:: This script calls script run.bat repeatedly
+::
+:: Run this example12 testcase with various NF2FF XML inputs in cosumo\NF2FF\
 ::
 :: Purpose:
 ::   - Run one or more NF2FF matrix cases.
@@ -11,10 +13,10 @@
 ::
 :: Arguments:
 ::   [case_list] Optional. One case or comma-separated cases.
-::              Allowed: i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si42so1
+::              Allowed: i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si40so1 i0si2so2m i0si2so3m
 ::              Example: i0si2so2,i1si2so2
 ::              If omitted: all allowed cases are run.
-::   [mode] Optional. precice | dimr | both
+::   [mode] Optional. precice | dimr | both | cleanupOnly
 ::          If omitted: uses MATRIX_RUN_MODES, otherwise defaults to "precice dimr".
 ::
 :: Expected outputs:
@@ -41,11 +43,12 @@ set "LOGDIR=%RESULTS%\logs"
 set "SUMMARY=%RESULTS%\summary.csv"
 set "MATRIX=%RESULTS%\matrix.md"
 
-set "ALL_CASES=i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si42so1"
+set "ALL_CASES=i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si40so1 i0si2so2m i0si2so3m"
 set "CASES=%ALL_CASES%"
 set "RUN_MODES=precice dimr"
 if defined MATRIX_RUN_MODES set "RUN_MODES=%MATRIX_RUN_MODES%"
-set "REQUIRED_FILES=NF2FF__FlowFM_SubMod001_0.000.xml NF2FF__FlowFM_SubMod001_120.000.xml NF2FF__FlowFM_SubMod001_240.000.xml NF2FF__preC-SUMO_SubMod001_0.000.xml NF2FF__preC-SUMO_SubMod001_120.000.xml NF2FF__preC-SUMO_SubMod001_240.000.xml"
+rem NF2FF filenames use minutes: cover initialization and the six-hour coupling window.
+set "REQUIRED_FILES=NF2FF__FlowFM_SubMod001_0.000.xml NF2FF__FlowFM_SubMod001_120.000.xml NF2FF__FlowFM_SubMod001_240.000.xml NF2FF__FlowFM_SubMod001_360.000.xml NF2FF__preC-SUMO_SubMod001_0.000.xml NF2FF__preC-SUMO_SubMod001_120.000.xml NF2FF__preC-SUMO_SubMod001_240.000.xml"
 set "WRITE_AGGREGATES=1"
 set "ALLOW_DELETE_OLD=0"
 set "RAW_ARGS=%*"
@@ -76,7 +79,7 @@ if %ARG_COUNT% GTR 0 (
             for %%K in (!CASE_TOKEN_SPLIT!) do (
                 call :validate_case "%%~K"
                 if errorlevel 1 (
-                    echo ERROR: Case folder not found: "%NFROOT%\%%~K"
+                    echo ERROR: Case file not found: "%NFROOT%\NF2FF__%%~K.xml"
                     popd
                     exit /b 4
                 )
@@ -96,9 +99,11 @@ if %ARG_COUNT% GTR 0 (
             set "RUN_MODES=precice"
         ) else if /i "!MODE_INPUT!"=="dimr" (
             set "RUN_MODES=dimr"
+        ) else if /i "!MODE_INPUT!"=="cleanupOnly" (
+            set "RUN_MODES=cleanupOnly"
         ) else (
             echo ERROR: Unknown mode "!MODE_INPUT!"
-            echo Allowed modes: precice dimr both
+            echo Allowed modes: precice dimr both cleanupOnly
             popd
             exit /b 5
         )
@@ -174,13 +179,14 @@ popd
 exit /b %OVERALL_RC%
 
 :validate_case
-if exist "%NFROOT%\%~1" exit /b 0
+if exist "%NFROOT%\NF2FF__%~1.xml" exit /b 0
 exit /b 1
 
 :is_mode
 if /i "%~1"=="precice" exit /b 0
 if /i "%~1"=="dimr" exit /b 0
 if /i "%~1"=="both" exit /b 0
+if /i "%~1"=="cleanupOnly" exit /b 0
 exit /b 1
 
 :confirm_cleanup
@@ -189,13 +195,16 @@ if exist "%SUMMARY%" set "HAS_OLD_ARTIFACTS=1"
 if exist "%MATRIX%" set "HAS_OLD_ARTIFACTS=1"
 if exist "%LOGDIR%" set "HAS_OLD_ARTIFACTS=1"
 
-for %%C in (%CASES%) do (
-    for %%M in (%RUN_MODES%) do (
-        if exist "%RESULTS%\%%C\%%M" set "HAS_OLD_ARTIFACTS=1"
+rem check case/mode directories only when RUN_MODES is defined
+if defined RUN_MODES (
+    for %%C in (%CASES%) do (
+        for %%M in (%RUN_MODES%) do (
+            if exist "%RESULTS%\%%C\%%M" set "HAS_OLD_ARTIFACTS=1"
+        )
     )
 )
 
-if "%HAS_OLD_ARTIFACTS%"=="0" exit /b 0
+::if "%HAS_OLD_ARTIFACTS%"=="0" exit /b 0
 
 if /i "%AUTO_CONFIRM_DELETE%"=="1" (
     set "DELETE_REPLY=Y"
@@ -210,10 +219,24 @@ if /i "%DELETE_REPLY%"=="y" (
     if exist "%SUMMARY%" del /f /q "%SUMMARY%"
     if exist "%MATRIX%" del /f /q "%MATRIX%"
     if exist "%LOGDIR%" rmdir /s /q "%LOGDIR%"
-    for %%C in (%CASES%) do (
-        for %%M in (%RUN_MODES%) do (
-            if exist "%RESULTS%\%%C\%%M" rmdir /s /q "%RESULTS%\%%C\%%M"
+
+    rem only remove case/mode directories when RUN_MODES is defined
+    if defined RUN_MODES (
+        for %%C in (%CASES%) do (
+            for %%M in (%RUN_MODES%) do (
+                if exist "!RESULTS!\%%C\%%M" rmdir /s /q "!RESULTS!\%%C\%%M"
+            )
         )
+    )
+
+    if /i "!MODE_INPUT!"=="cleanupOnly" (
+        if exist "%RESULTS%" rmdir /s /q "%RESULTS%"
+        set "CLEANUP_ONLY_OVERRIDE=1"
+        call "%RUNBAT%"
+        rem Set the NF2FF files to the default ones
+        call :sync_case i0si2so2
+        echo ... Finished with cleanupOnly
+        exit /b 1
     )
 ) else (
     set "ALLOW_DELETE_OLD=0"
@@ -226,12 +249,10 @@ exit /b 0
 set "MISSING_ANY=0"
 for %%C in (%CASES%) do (
     set "CASE_MISSING=0"
-    for %%F in (%REQUIRED_FILES%) do (
-        if not exist "%NFROOT%\%%C\%%F" (
-            set "CASE_MISSING=1"
-            set "MISSING_ANY=1"
-            echo MISSING: %NFROOT%\%%C\%%F
-        )
+    if not exist "%NFROOT%\NF2FF__%%C.xml" (
+        set "CASE_MISSING=1"
+        set "MISSING_ANY=1"
+        echo MISSING: %NFROOT%\NF2FF__%%C.xml
     )
 
     if "%WRITE_AGGREGATES%"=="1" (
@@ -298,6 +319,7 @@ for %%C in (%CASES%) do (
         copy /y "%FMROOT%\*.nc" "!CASE_OUT!\" >nul 2>nul
         if exist "%FMROOT%\precice_debug_output.txt" copy /y "%FMROOT%\precice_debug_output.txt" "!CASE_OUT!\precice_debug_output_fm.txt" >nul 2>nul
         if exist "%ROOT%cosumo\precice_debug_output.txt" copy /y "%ROOT%cosumo\precice_debug_output.txt" "!CASE_OUT!\precice_debug_output_csumo.txt" >nul 2>nul
+        if exist "%ROOT%pictures_compare_dimr_precice.qplog" copy /y "%ROOT%pictures_compare_dimr_precice.qplog" "%RESULTS%\%%C\" >nul 2>nul
         if /i "%MODE%"=="precice" (
             if exist "%FMROOT%\precice_debug_output.txt" copy /y "%FMROOT%\precice_debug_output.txt" "%RESULTS%\%%C_precice_debug_output_fm.txt" >nul 2>nul
             if exist "%ROOT%cosumo\precice_debug_output.txt" copy /y "%ROOT%cosumo\precice_debug_output.txt" "%RESULTS%\%%C_precice_debug_output_csumo.txt" >nul 2>nul
@@ -316,11 +338,10 @@ exit /b 0
 :sync_case
 set "CASE_NAME=%~1"
 for %%F in (%REQUIRED_FILES%) do (
-    copy /y "%NFROOT%\%CASE_NAME%\%%F" "%NFROOT%\%%F" >nul
+    copy /y "%NFROOT%\NF2FF__%CASE_NAME%.xml" "%NFROOT%\%%F" >nul
     if errorlevel 1 exit /b 1
 )
 
-if exist "%NFROOT%\NF2FF__FLowFM_SubMod001_240.000.xml" del /f /q "%NFROOT%\NF2FF__FLowFM_SubMod001_240.000.xml"
 exit /b 0
 
 :cleanup_processes

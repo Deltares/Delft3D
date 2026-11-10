@@ -1,5 +1,5 @@
 module m_file_helpers
-   implicit none
+   implicit none(type, external)
 
 contains
    !> Create a file with the specified name and content. If the file already exists it will be replaced.
@@ -22,5 +22,38 @@ contains
       end do
       close (file_lun)
    end subroutine create_file
+
+   !> Create a dummy file with the specified content.
+   subroutine create_scratch_file(lines, unit, iostat)
+      character(len=*), intent(in) :: lines(:) !< Lines to write to the dummy file
+      integer, intent(out) :: unit !< Unit number of the dummy file
+      integer, optional, intent(out) :: iostat !< Error code returned by open
+
+      integer :: i
+      integer :: iostat_
+
+      if (present(iostat)) then
+         iostat = 0
+      end if
+
+      open(newunit=unit, status="scratch", iostat=iostat_)
+      if (iostat_ /= 0) then
+         if (present(iostat)) then
+            iostat = iostat_
+            return
+         end if
+      end if
+
+      do i = 1, size(lines)
+         write (unit, '(A)', iostat=iostat_) trim(lines(i))
+         if (iostat_ /= 0) then
+            if (present(iostat)) then
+               iostat = iostat_
+               return
+            end if
+         end if
+      end do
+      rewind(unit=unit, iostat=iostat_)
+   end subroutine create_scratch_file
 
 end module

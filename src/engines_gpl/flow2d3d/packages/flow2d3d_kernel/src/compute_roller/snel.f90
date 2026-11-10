@@ -36,7 +36,7 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

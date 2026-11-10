@@ -1,18 +1,3 @@
-module m_tram1
-   implicit none
-
-contains
-
-   subroutine tram1(numrealpar, realpar, wave, npar, par, &
-                   & num_layers_grid, bed, &
-                   & tauadd, taucr0, aks, eps, camax, &
-                   & frac, sig, thick, ws, &
-                   & dicww, ltur, &
-                   & kmaxsd, taurat, caks, &
-                   & seddif, sigmol, rsedeq, scour, bedw, &
-                   & susw, sbcu, sbcv, sbwu, sbwv, &
-                   & sswu, sswv, conc2d, error, &
-                   & message)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -39,20 +24,35 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tram1
+   implicit none
+   private
+   public tram1
+
+contains
+
+   subroutine tram1(numrealpar, realpar, wave, npar, par, &
+                   & num_layers_grid, bed, taucrb, &
+                   & tauadd, taucr0, aks, eps, camax, &
+                   & frac, sig, thick, ws, &
+                   & dicww, ltur, &
+                   & kmaxsd, taurat, caks, &
+                   & seddif, sigmol, rsedeq, scour, bedw, &
+                   & susw, sbcu, sbcv, sbwu, sbwv, &
+                   & sswu, sswv, conc2d, error, &
+                   & message)
 !!--description-----------------------------------------------------------------
 !
 ! computes sediment transport according to
 ! the formula of Van Rijn 1993
 !
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module ! for MISSING_VALUE and various RP_* parameters
-      !
-      implicit none
+      use m_bedbc1993, only: bedbc1993
+      use m_bedtr1993, only: bedtr1993
+      use m_calseddf1993, only: calseddf1993
 !
 ! Arguments
 !
@@ -72,6 +72,7 @@ contains
       real(fp), intent(in) :: sigmol !  Description and declaration in rjdim.f90
       real(fp), intent(in) :: susw
       real(fp), intent(in) :: tauadd
+      real(fp), intent(in) :: taucrb !  critical shear stress of bed material [N/m2]
       real(fp), intent(in) :: taucr0
       real(fp), dimension(num_layers_grid), intent(in) :: thick !  Description and declaration in rjdim.f90
       real(fp), dimension(0:num_layers_grid), intent(in) :: ws !  Description and declaration in rjdim.f90
@@ -98,6 +99,7 @@ contains
 ! Local variables
 !
       integer :: iopsus
+      integer :: itaucr
       real(fp) :: aksfac
       real(fp) :: rwave
       real(fp) :: rdc
@@ -153,6 +155,7 @@ contains
       real(fp) :: ta
       real(fp) :: taubcw
       real(fp) :: tauc
+      real(fp) :: taucr1
       real(fp) :: tauwav
       real(fp) :: u
       real(fp) :: uoff
@@ -212,17 +215,24 @@ contains
       iopkcw = int(par(16))
       epspar = par(17) > 0.0_fp
       betam = par(18)
+      itaucr = int(par(19))
       !
       sag = sqrt(ag)
       !
+      if (itaucr == 1) then
+          taucr1 = taucr0*(1.0_fp + mudfrac)**betam
+      else
+          taucr1 = taucrb
+      endif
+      !
       call bedbc1993(tp, uorb, rhowat, h1, umod, &
                    & zumod, di50, d90, z0cur, z0rou, &
-                   & dstar, taucr0, aks, usus, zusus, &
+                   & dstar, taucr1, aks, usus, zusus, &
                    & uwb, delr, muc, tauwav, ustarc, &
                    & tauc, taubcw, taurat, ta, caks, &
-                   & dss, mudfrac, eps, aksfac, rwave, &
+                   & dss, eps, aksfac, rwave, &
                    & camax, rdc, rdw, iopkcw, iopsus, &
-                   & vonkar, wave, tauadd, betam, awb)
+                   & vonkar, wave, tauadd, awb)
       realpar(RP_DSS) = real(dss, hp)
       !
       ! Find bottom cell for SAND sediment calculations and store for use

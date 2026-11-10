@@ -37,7 +37,7 @@ module m_flow_flowinit
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
    use m_setpillars, only: setpillars
-   use m_setinitialverticalprofile, only: setinitialverticalprofile
+   use m_setinitialverticalprofile, only: setinitialverticalprofilez
    use m_setfixedweirs, only: setfixedweirs
    use m_setbobs_fixedweirs, only: setbobs_fixedweirs
    use m_flow_setstarttime, only: flow_setstarttime
@@ -49,7 +49,6 @@ module m_flow_flowinit
    use m_thacker1d, only: thacker1d
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
-   use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
@@ -69,7 +68,6 @@ module m_flow_flowinit
    use m_rearst, only: rearst
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
-   use m_alloc_jacobi
    use m_waveconst
 
    implicit none
@@ -104,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries, validate_most_input_providers
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -121,6 +119,14 @@ contains
       use m_solve_guus, only: reducept
       use m_upotukinueaa, only: upotukinueaa
       use m_density_formulas, only: DENSITY_OPTION_UNIFORM
+      use m_atmospheric_stability, only: atmospheric_stability
+      use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
+                                  free_convection, FREE_CONVECTION_ON, &
+                                  sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+                                  air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
+                                  air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, &
+                                  temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
+                                  pillar_method, PILLAR_NONE
 
       implicit none
 
@@ -197,6 +203,24 @@ contains
          return
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
+
+      call atmospheric_stability%initialize_atmospheric_stability( &
+         atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
+         free_convection == FREE_CONVECTION_ON, &
+         sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
+         air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff)
+
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
+         if ( .not. any(temperature_model == [TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE])) then
+            call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST is only supported with temperature model = 0 or 5.')
+            error = DFM_WRONGINPUT
+            return
+         end if
+         call validate_most_input_providers(error)
+         if (is_error_at_any_processor(error)) then
+             return
+         end if
+      end if
 
       ! it has to be called after EC module initialization
       call read_moving_stations(md_obsfile)
@@ -380,9 +404,6 @@ contains
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
          call reducept(Ndx, Lnx) ! also alloc arrays for reduce
-         if (icgsolver == 10) then
-            call alloc_jacobi(ndx, lnx)
-         end if
       end if
 
       ! In 2D set AUTO_TIMESTEP_2D_OUT as default
@@ -400,7 +421,7 @@ contains
          call setstruclink()
       end if
 
-      if (japillar > OFF) then
+      if (pillar_method > PILLAR_NONE) then
          call setpillars()
       end if
 
@@ -1189,7 +1210,7 @@ contains
             inquire (file='verticalsalinityprofile.pli', exist=success)
             call set_kbot_ktop(jazws0=1)
             if (success) then
-               call setinitialverticalprofile(sa1, ndkx, 'verticalsalinityprofile.pli')
+               call setinitialverticalprofilez(sa1, ndkx, 'verticalsalinityprofile.pli')
             end if
          end if
       end if
@@ -1344,24 +1365,20 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, jawavestokes
       use m_flow, only: hs, hu, kmx
-      use mathconsts, only: sqrt2_hp
+      use m_mathconstants, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
-      use m_flowgeom, only: lnx, ln, csu, snu, ndx
+      use m_flowgeom, only: lnx, ln, csu, snu
       use m_physcoef, only: ag
-      use m_transform_wave_physics
+      use m_compute_wave_parameters, only: compute_wave_parameters
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_UNIFORM, WAVE_NC_OFFLINE
 
       implicit none
-
-      integer, parameter :: SWAN = 3
-      integer, parameter :: CONST = 5
-      integer, parameter :: SWAN_NETCDF = 6
 
       integer :: link
       integer :: left_node
       integer :: right_node
-      integer :: ierror
 
       real(kind=dp) :: hw
       real(kind=dp) :: tw
@@ -1372,54 +1389,25 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
-         if (jawave >= SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         twav = twavcom
-         !
-         if (jawave == WAVE_NC_OFFLINE) then
-            !
-            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
-                               & sxwav, sywav, mxwav, mywav, &
-                               & distot, dsurf, dwcap, &
-                               & ndx, 1, hwav, twav, &
-                               & ag, .true., waveforcing, &
-                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
-         end if
-         !
-         call wave_uorbrlabda()
+         call compute_wave_parameters()
          if (kmx == 0) then
-            call wave_comp_stokes_velocities()
             call tauwave()
          end if
          call setwavfu()
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave >= WAVE_NC_OFFLINE) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
-         ! Only compute uorb
-         ! Works both for 2D and 3D
-         if (jawave == SWAN_NETCDF) then
-            ! HSIG is read from SWAN NetCDF file. Convert to HRMS
-            hwav = hwavcom / sqrt2_hp
-         else
-            hwav = hwavcom
-         end if
-         hwav = min(hwav, gammax * hs)
-         call wave_uorbrlabda() ! hwav gets depth-limited here
+         call compute_wave_parameters()
       end if
 
-      if (jawave == CONST .and. .not. flow_without_waves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavcom, gammax * hs)
+         hwav = min(hwavuni, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then

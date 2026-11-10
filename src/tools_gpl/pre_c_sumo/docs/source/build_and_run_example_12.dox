@@ -1,0 +1,73 @@
+/*!
+\page build_and_run_example_12 Build and run Example 12
+
+This page points to the standard Delft3D build instructions and the example run instructions for the
+preC-SUMO / D-Flow FM coupling case in Example 12.
+
+\section build_compile Build and compile Delft3D
+
+The canonical build documentation lives in the project docs folder:
+- <a href="https://github.com/Deltares/Delft3D/blob/main/doc/compiling_Windows.md">Building Delft3D on Windows</a>
+- <a href="https://github.com/Deltares/Delft3D/blob/main/doc/compiling_Linux.md">Building Delft3D on Linux</a>
+
+The repository-level build scripts are also the starting point for local builds:
+- <a href="https://github.com/Deltares/Delft3D/blob/main/run_conan.py">run_conan.py</a>
+- <a href="https://github.com/Deltares/Delft3D/blob/main/build.py">build.py</a>
+
+In practice the usual workflow is:
+1. configure the Conan environment,
+2. run the repository build script,
+3. build the required binaries and then use the generated executables from the install tree.
+
+\section run_example_12 Run Example 12
+
+The example case is located here:
+- <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/readme.md">Example 12: D-Flow FM / preC-SUMO</a>
+
+The graph below is best read as a data-channel inventory for the example configuration, not as the first design overview.
+If you are new to the coupling, start with the main page workflow diagram and then use this figure to confirm which meshes and data are exchanged in Example 12.
+The most important parts to inspect first are:
+- FM far-field meshes sent into preC-SUMO (\c fm_flow_cells and \c fm_flow_cells_3d),
+- the C-SUMO-side meshes used inside preC-SUMO (\c csumo_2d_nodes and \c csumo_3d_nodes),
+- the \c sources_sinks_nodes mesh used to send the converted NF2FF result back to FM.
+
+\dotfile preciceconfig_example12.dot "Example 12 preCICE Config"
+
+That example contains the configuration and launch scripts for both coupled workflows:
+- <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/dimr_config.xml">dimr_config.xml</a> for the DIMR-based run,
+- <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/precice_config.xml">precice_config.xml</a> for the preCICE-based run,
+- <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/run.bat">run.bat</a> / <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/run.sh">run.sh</a> for the preCICE workflow,
+- <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/run_parallel.bat">run_parallel.bat</a> / <a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/run_parallel.sh">run_parallel.sh</a> for the parallel variant.
+
+\section run_nf2ff_matrix_wrapper_windows Windows NF2FF matrix wrapper script
+
+For Windows test-matrix runs, Example 12 also provides
+<a href="https://github.com/Deltares/Delft3D/blob/main/examples/dflowfm/12_dflowfm_pre_C_SUMO/run_nf2ff_matrix_wrapper.bat">run_nf2ff_matrix_wrapper.bat</a>.
+This wrapper repeatedly calls <code>run.bat</code> for selected NF2FF cases and run modes, depending on the case related NF2FF files being present.
+
+Supported usage:
+- <code>run_nf2ff_matrix_wrapper.bat [case_list] [mode]</code>
+- <code>case_list</code>: one case or comma-separated cases (if omitted, all predefined cases are run)
+- <code>mode</code>: <code>precice</code>, <code>dimr</code>, <code>both</code>, or <code>cleanupOnly</code>
+
+What it does:
+- validates requested case XML files exist under <code>cosumo/NF2FF</code>,
+- performs cleanup (with confirmation, unless <code>AUTO_CONFIRM_DELETE=1</code>),
+- runs each selected case in the selected mode(s),
+- writes logs under <code>results/logs</code>,
+- writes artifacts under <code>results/&lt;case&gt;/&lt;mode&gt;[ _timestamp ]</code>,
+- creates summary files (<code>summary.csv</code> and <code>matrix.md</code>) for multi-case runs.
+
+The example uses the same pattern as the project scripts:
+- preCICE coupling starts preC-SUMO and D-Flow FM from the example directory,
+- the DIMR option runs the DIMR configuration when the preCICE route is not selected.
+
+\section results Compare results
+
+Once the run completes, results can be compared in the user's preferred tooling:
+- Delft3D Q-Plot,
+- NetCDF comparison tools,
+- or any other output diff / validation workflow the user chooses.
+
+This page is intentionally kept brief; it points to the canonical build and example documentation rather than repeating the detailed comparison procedures.
+*/

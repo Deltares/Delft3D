@@ -7,7 +7,10 @@ for /d %%D in (*) do (
         echo "##teamcity[testStarted name='%%D' captureStandardOutput='true']"
         call run.bat
         echo "##teamcity[testFinished name='%%D']"
-
+    ) else if exist run_parallel.bat (
+        echo "##teamcity[testStarted name='%%D' captureStandardOutput='true']"
+        call run_parallel.bat
+        echo "##teamcity[testFinished name='%%D']"
     ) else (
         echo No run script in %%D
     )

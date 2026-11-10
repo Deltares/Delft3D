@@ -840,7 +840,7 @@ contains
                call doclose(mtek)
                md_partugrid = 1
                call getint('NetCDF ugrid? (0:UGRID-0.9, 1:UGRID-1.0, needed for 1D)', md_partugrid)
-               call partition_write_domains(filnam, 6, 1, 1, md_partugrid) ! make subdomains for default solver
+               call partition_write_domains(filnam, 1, 1, md_partugrid) ! make subdomains for default solver
                call MESSAGE('YOU SAVED ', filnam, ' partitions')
                md_netfile = ' '
                md_netfile = filnam

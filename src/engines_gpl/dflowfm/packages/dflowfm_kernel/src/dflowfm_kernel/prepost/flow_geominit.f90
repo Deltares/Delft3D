@@ -570,12 +570,12 @@ contains
       call realloc(ln0, [2, lnx])
       call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
-      if (allocated(xu)) then
-         deallocate (xu, yu, blu)
-      end if
-      allocate (xu(lnx), yu(lnx), blu(lnx), stat=ierr)
-      call aerr('xu(lnx), yu(lnx) , blu(lnx)', ierr, 3 * lnx)
-      blu = dmiss
+      call realloc(xu, lnx, keepExisting=.false., stat=ierr)
+      call aerr('xu(lnx)', ierr, lnx)
+      call realloc(yu, lnx, keepExisting=.false., stat=ierr)
+      call aerr('yu(lnx)', ierr, lnx)
+      call realloc(blu, lnx, keepExisting=.false., stat=ierr, fill=dmiss)
+      call aerr('blu(lnx)', ierr, lnx)
       if (jafullgridoutput > 0) then
          call realloc(blup, lnx, keepExisting=.false., fill=dmiss, stat=ierr)
          call aerr('blup(lnx)', ierr, lnx)
@@ -874,8 +874,6 @@ contains
                   dx(Lf) = dxe(L)
                else if (izbndpos == 1) then ! half a grid cell outward
                   dx(Lf) = 0.5_dp * dxe(L)
-               else ! izbndpos==2                           ! on specified boundary polyline
-                  continue ! nowhere supported yet
                end if
             end if
          end do

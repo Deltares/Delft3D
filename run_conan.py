@@ -15,8 +15,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-DEFAULT_CONAN_PROFILE_LINUX = "delft3d_alma8_intel_2024_v3"
-DEFAULT_CONAN_PROFILE_WINDOWS = "delft3d_windows_msvc_194_v3"
+DEFAULT_CONAN_PROFILE_LINUX = "delft3d_alma8_intel_2026_v1"
+DEFAULT_CONAN_PROFILE_WINDOWS = "delft3d_windows_msvc_195_v1"
 CONAN_PROFILE_ENV_VAR = "CONAN_DEFAULT_PROFILE"
 
 ROOT = Path(__file__).resolve().parent
@@ -491,6 +491,10 @@ def main() -> None:
     if not args.command:
         parser.print_help()
         sys.exit(1)
+
+    if shutil.which("conan") is None:
+        sys.exit("ERROR: Conan is not installed or is not added to PATH.")
+
     args.func(args)
 
 

@@ -45,7 +45,7 @@ contains
 subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julrefdate, &
                   & cell_area, griddim, domain_name, nmlb, nmub, error)
     use precision
-    use mathconsts
+    use m_mathconstants
     use properties
     use table_handles
     use polygon_module

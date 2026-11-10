@@ -48,7 +48,6 @@
     <xs:complexType name="T_MaxRunTime">
         <xs:simpleContent>
             <xs:extension base="xs:decimal">
-                <xs:attribute name="OverruleRefMaxRunTime" type="xs:boolean"/>
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>

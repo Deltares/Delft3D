@@ -27,35 +27,34 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 module m_flow_f0isf1
-
    use m_a1vol1tot, only: a1vol1tot
-
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
+
 contains
+
    subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
       use m_flowgeom, only: ndxi
-      use m_flow, only : hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, &
-         voutbndcum, vincelcum, voutcelcum, volerr, vol0tot, volerrcum, his_write_settings, vinrain, qinrain, vinrainground, &
-         qinrainground, vouteva, qouteva, voutevaicept, qoutevaicept, vinlat, qinlat, voutlat, qoutlat, vingrw, qingrw, voutgrw, &
-         qoutgrw, qinsrc, qoutsrc, vinsrc, voutsrc, vinext, qinext, voutext, qoutext, vinraincum, voutevacum, vinlatcum,&
-         voutlatcum, vingrwcum, voutgrwcum, vinsrccum, voutsrccum, vinextcum, voutextcum, volcur, idx_stor, idx_voltot, &
-         idx_volerr, idx_bndin, idx_bndout, idx_bndtot, idx_exchin, idx_exchout, idx_exchtot, q1, idx_precip_total, &
-         idx_precip_ground, idx_evap, idx_sour, idx_icept, vol1icept, idx_evap_icept, jafrcinternaltides2d, &
-         idx_internaltidesdissipation, dissinternaltides, jatidep, jaselfal, idx_gravinput, gravinput, idx_salinput, salinput, &
-         idx_salinput2, salinput2, idx_grwin, idx_grwout, idx_grwtot, idx_latin, idx_latout, idx_lattot, idx_latin1d, &
-         idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, &
-         idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
+      use m_flow, only: hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, &
+                        voutbndcum, vincelcum, voutcelcum, volerr, vol0tot, volerrcum, his_write_settings, vinrain, qinrain, vinrainground, &
+                        qinrainground, vouteva, qouteva, voutevaicept, qoutevaicept, vinlat, qinlat, voutlat, qoutlat, vingrw, qingrw, voutgrw, &
+                        qoutgrw, qinsrc, qoutsrc, vinsrc, voutsrc, vinext, qinext, voutext, qoutext, vinraincum, voutevacum, vinlatcum, &
+                        voutlatcum, vingrwcum, voutgrwcum, vinsrccum, voutsrccum, vinextcum, voutextcum, volcur, idx_stor, idx_voltot, &
+                        idx_volerr, idx_bndin, idx_bndout, idx_bndtot, idx_exchin, idx_exchout, idx_exchtot, q1, idx_precip_total, &
+                        idx_precip_ground, idx_evap, idx_sour, idx_icept, vol1icept, idx_evap_icept, jafrcinternaltides2d, vol1_f, vol0_f, volume_change, &
+                        idx_internaltidesdissipation, dissinternaltides, jatidep, jaselfal, idx_gravinput, gravinput, idx_salinput, salinput, &
+                        idx_salinput2, salinput2, idx_grwin, idx_grwout, idx_grwtot, idx_latin, idx_latout, idx_lattot, idx_latin1d, &
+                        idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, &
+                        idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
+      use m_flowparameters, only: japure1D
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
-      use m_sediment, only: jamorf, stm_included
       use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
 
       integer :: k, kk, kb, kt, Lf, i, k1, k2
 
@@ -75,25 +74,13 @@ contains
       voutbnd = qoutbnd * dts
       vincel = qincel * dts ! do *dts here to avoid inconsistencies
       voutcel = qoutcel * dts
-      !volerr      = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel
 
       vinbndcum = vinbndcum + vinbnd
       voutbndcum = voutbndcum + voutbnd
       vincelcum = vincelcum + vincel
       voutcelcum = voutcelcum + voutcel
 
-      if (jamorf == 1 .and. .not. stm_included) then
-         !volerrcum = volerrcum + dvolbot
-      end if
-
-      !if (stm_included) then
-      !   dvolbot = 0d0
-      !   do ll=1,stmpar%lsedtot
-      !      dvolbot = dvolbot + sum(sedtra%dbodsd(ll,:)/stmpar%sedpar%cdryb(ll)*ba)
-      !   enddo
-      !   !volerrcum = volerrcum + dvolbot
-      !end if
-      volerr = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel !+ dvolbot
+      volerr = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel
       volerrcum = volerrcum + volerr
 
       if (his_write_settings%bal > 0) then
@@ -111,11 +98,11 @@ contains
          qoutsrc = 0.0_dp
          do i = 1, source_sinks%num_total
             if (source_sinks%discharge(i) > 0.0_dp) then
-               k1 = source_sinks%indices(i, 1)
-               k2 = source_sinks%indices(i, 4)
+               k1 = source_sinks%indices(i, FLOWCELL_SINK)
+               k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
             else
-               k1 = source_sinks%indices(i, 4)
-               k2 = source_sinks%indices(i, 1)
+               k1 = source_sinks%indices(i, FLOWCELL_SOURCE)
+               k2 = source_sinks%indices(i, FLOWCELL_SINK)
             end if
 
             if (k1 > 0) then
@@ -153,6 +140,7 @@ contains
          volcur(IDX_EXCHIN) = 0.0_dp
          volcur(IDX_EXCHOUT) = 0.0_dp
          volcur(IDX_EXCHTOT) = 0.0_dp
+
          do i = 1, nbnd1d2d
             Lf = kbnd1d2d(3, i)
             volcur(IDX_EXCHTOT) = volcur(IDX_EXCHTOT) + q1(Lf) * dts
@@ -162,6 +150,7 @@ contains
                volcur(IDX_EXCHOUT) = volcur(IDX_EXCHOUT) - q1(Lf) * dts
             end if
          end do
+
          volcur(IDX_PRECIP_TOTAL) = vinrain
          volcur(IDX_PRECIP_GROUND) = vinrainground
          volcur(IDX_EVAP) = vouteva
@@ -188,6 +177,7 @@ contains
             volcur(IDX_SALInput) = 0.0_dp
             volcur(IDX_SALInput2) = 0.0_dp
          end if
+
          volcur(IDX_GRWIN) = vingrw
          volcur(IDX_GRWOUT) = voutgrw
          volcur(IDX_GRWTOT) = (vingrw - voutgrw)
@@ -214,9 +204,11 @@ contains
 
          ! cumulate
          cumvolcur = cumvolcur + volcur
+
       end if
 
       if (NDRAW(28) == 34) then ! Display values at flow nodes: volerror
+
          if (kmx == 0) then
             do kk = 1, ndxi
                if (jampi == 1) then
@@ -226,7 +218,9 @@ contains
                end if
                volerror(kk) = vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk)) ! array transfer
             end do
+
          else
+
             do kk = 1, ndxi
                if (jampi == 1) then
                   if (idomain(kk) /= my_rank) then
@@ -239,9 +233,16 @@ contains
                   volerror(k) = vol1(k) - vol0(k) - dts * (sqi(k) - squ(k))
                end do
             end do
+
          end if
       end if
 
+      if (jaPure1D >=3) then
+         ! this step is necessary to compute the volume change for 1D flow, because of
+         ! the update of vol0.
+         volume_change = vol1 - vol0
+         vol0_f = vol1_f ! array
+      end if
       vol0 = vol1 ! array
 
       vol0tot = vol1tot ! scalar

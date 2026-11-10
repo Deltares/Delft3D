@@ -10,7 +10,7 @@ import Delft3D.step.*
 
 object WindowsConanPackages : BuildType({
 
-    description = "Build all Conan packages from source and push them to the Deltares Nexus remote."
+    description = "Build Conan packages and push them to Nexus."
 
     templates(
         TemplateMergeRequest,
@@ -26,7 +26,7 @@ object WindowsConanPackages : BuildType({
     allowExternalStatus = true
 
     params {
-        param("container.tag", "vs2022-intel2024-ltsc2025")
+        param("container.tag", "vs2026-intel2026-ltsc2025")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         param("conan_build_option", "--build-missing")

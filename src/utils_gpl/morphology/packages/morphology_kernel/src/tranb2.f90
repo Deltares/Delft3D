@@ -1,10 +1,3 @@
-module m_tranb2
-   implicit none
-
-contains
-
-   subroutine tranb2(utot, d50, d90, chezy, water_depth, &
-                   & npar, par, hidexp, sbot, ssus)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -31,14 +24,19 @@ contains
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
-!
+
+module m_tranb2
+   implicit none
+   private
+   public tranb2
+
+contains
+
+   subroutine tranb2(utot, d50, d90, chezy, water_depth, &
+                   & npar, par, hidexp, sbot, ssus)
 !!--description-----------------------------------------------------------------
 ! computes sediment transport according to
 ! meyer-peter-muller (comor/rivcom)
-! -
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
       use precision
       use morphology_data_module, only: MISSING_VALUE

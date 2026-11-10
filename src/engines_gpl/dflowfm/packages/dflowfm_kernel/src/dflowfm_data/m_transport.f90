@@ -96,7 +96,7 @@ module m_transport
    ! work arrays
    real(kind=dp), dimension(:, :), allocatable :: rhs ! right-hand side, dim(numconst,Ndkx)
    real(kind=dp), dimension(:, :), allocatable :: a, b, c, d ! aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
-   real(kind=dp), dimension(:), allocatable :: sol, e ! solution and dummy array in tridag, respectively
+   real(kind=dp), dimension(:), allocatable :: sol, e ! Solution and tridag workspace, solve_vertical uses OpenMP-private storage.
 
    ! for local timestepping
    real(kind=dp), dimension(:, :), allocatable :: sumhorflux !< sum of horizontal fluxes, dim(numconst,Ndkx)
@@ -122,6 +122,7 @@ module m_transport
 
    real(kind=dp) :: dsum
    real(kind=dp) :: maserrsed !< cumulative sediment mass error because of volume truncation in shallow areas
+   real(kind=dp), dimension(:, :), allocatable :: tracer_limiter_mass_error !< cumulative mass error per tracer due to concentration limitation
 
    real(kind=dp), dimension(:), allocatable :: u1sed
    real(kind=dp), dimension(:), allocatable :: q1sed

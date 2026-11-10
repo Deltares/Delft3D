@@ -44,7 +44,7 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use dfparall
     use globaldata
     use geometry_module, only: clockwise

@@ -81,7 +81,7 @@ contains
       end if
       !
       ! Surfbeat model
-      if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0) then
+      if (jawave == WAVE_SURFBEAT .and. nwbnd > 0) then
          if (swave == 1) then
             call xbeach_wave_bc()
             call xbeach_apply_wave_bc()
@@ -102,8 +102,9 @@ contains
          !
          if (kmx == 0) then
             call tauwave()
-            call xbeach_flow_bc()
          end if
+         !
+         call xbeach_flow_bc()
       end if
       !
       ! Uniform wave field

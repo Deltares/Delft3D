@@ -4,7 +4,8 @@ import jetbrains.buildServer.configs.kotlin.Template
 import jetbrains.buildServer.configs.kotlin.BuildsLimitingMode
 
 object TemplateBuildConcurrency : Template({
-    name = "Build Concurrency Settings"
+    name = "Build concurrency"
+    description = "Limit concurrent builds per branch."
 
     // add branch-specific rules as needed
     maxRunningBuildsPerBranch = """

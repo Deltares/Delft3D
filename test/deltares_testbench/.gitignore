@@ -1,7 +1,9 @@
 /logs/**
+/failed/**
 /data/**
 !/data/**/
 !/data/**/*.dvc
+!/data/cases/.ignore
 
 # python virtual environment and caches
 .venv
@@ -15,3 +17,8 @@ __pycache__
 
 # dotenv
 .env
+
+# packaging artifacts (editable install / wheel build)
+*.egg-info
+build/
+dist/
