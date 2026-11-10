@@ -62,7 +62,7 @@ module m_nearfield
    integer, parameter :: NF_IS = 4 !< Column 4 in COSUMO data          : S-factor: if S changes along the sink traject, then entrainment appears
    integer, parameter :: NF_IH = 5 !< Column 5 in COSUMO data          : half the plume height
    integer, parameter :: NF_IW = 6 !< Column 6 in COSUMO data          : half the plume width
-   integer, parameter :: NF_IUMAG = 7 !< Column 7 in COSUMO data, OPTIONAL: momentum magnitude
+   integer, parameter :: NF_IUMAG = 7 !< Column 7 in COSUMO data, OPTIONAL: source velocity magnitude [m/s]
    integer, parameter :: NF_IUDIR = 8 !< Column 8 in COSUMO data, OPTIONAL: momentum direction: 0: to North, 90: to East
    integer, parameter :: NUM_TRACK = 1000 !< If there is only one source point, a track is created perpendicular to "last sink -> source",
    !< using NF_IW. NUM_TRACK points are defined on this track to detect all cells containing source points.
@@ -826,8 +826,8 @@ contains
          !
          source_sinks%area(source_sinks%num_total) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
-         ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
-         ! To be consistent with Delft3D4, change this into: 0=north, 90=east
+         ! NF2FF UDIR is consumed as a clockwise bearing towards 0=north, 90=east, as in Delft3D4.
+         ! Convert the bearing to the Cartesian angle for x/y components.
          source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = cos(degrad * (90.0_dp - nf_sour(idif, sourId, NF_IUDIR)))
          source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = sin(degrad * (90.0_dp - nf_sour(idif, sourId, NF_IUDIR)))
       end do

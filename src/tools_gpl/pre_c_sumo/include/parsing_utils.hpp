@@ -16,6 +16,7 @@ namespace parsing_utils
     /**
      * @anchor parsing_utils_parse_double_vector
      * @brief Parses a space-separated list of floating-point values.
+     * @note Every non-whitespace token must be consumed completely.
      * @param text Input text to interpret as a numeric list.
      * @param element_name XML element name used in validation messages.
      * @return Parsed values on success, or a ParseError on failure.

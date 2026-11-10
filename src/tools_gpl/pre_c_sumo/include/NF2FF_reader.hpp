@@ -48,8 +48,8 @@ namespace pre_c_sumo
         double entrainment;
         double half_plume_height;
         double half_plume_width;
-        double u_magnitude;
-        double u_direction;
+        double u_magnitude; ///< NF2FF Umag: source velocity magnitude [m/s].
+        double u_direction; ///< NF2FF Udir, passed unchanged to preCICE [degrees clockwise from north, pointing towards].
         double weight;
         bool has_u;
         bool has_weight;

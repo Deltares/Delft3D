@@ -6,6 +6,7 @@
 #include <string>
 #include <expected>
 #include <array>
+#include <span>
 #include <string_view>
 
 namespace pre_c_sumo
@@ -48,8 +49,8 @@ namespace pre_c_sumo
          * @param source_z_bottom Lower z-boundary of the source.
          * @param source_z_top Upper z-boundary of the source.
          * @param discharge Discharge value [m³/s].
-         * @param momentum_magnitude_weighted Weighted momentum magnitude.
-         * @param momentum_direction Momentum direction [rad].
+         * @param momentum_magnitude_weighted Effective source speed [m/s], used by FM to reconstruct source area.
+         * @param momentum_direction Source direction [degrees clockwise from north, pointing towards].
          * @param constituents Constituents (maximum 10)
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
@@ -88,7 +89,16 @@ namespace pre_c_sumo
          * @brief Returns the discharge values in read-only form.
          * @return Vector of discharge values used by unit tests and diagnostics.
          */
-        const std::vector<double>& get_discharge_value() const { return discharge_vector; }
+        const std::vector<double>& get_discharge_value() const;
+
+        /// Read-only effective source speeds [m/s], in preCICE entry order.
+        const std::vector<double>& get_momentum_magnitude_weighted_values() const;
+
+        /// Read-only source directions [degrees clockwise from north, pointing towards].
+        const std::vector<double>& get_momentum_directions() const;
+
+        /// Read-only constituent values in preCICE slot and entry order.
+        std::span<const std::vector<double>, constituent_ids.size()> get_constituent_values() const;
 
     private:
         // attributes
@@ -101,8 +111,8 @@ namespace pre_c_sumo
         std::vector<double> source_z_bottom_vector;                          ///< Lowest z-boundary of source extents.
         std::vector<double> source_z_top_vector;                             ///< Highest z-boundary of source extents.
         std::vector<double> discharge_vector;                                ///< Discharges [m³/s].
-        std::vector<double> momentum_magnitude_weighted_vector;              ///< Weighted momentum magnitude [kg m/s].
-        std::vector<double> momentum_direction_vector;                       ///< Momentum direction [rad].
+        std::vector<double> momentum_magnitude_weighted_vector;              ///< Effective source speeds [m/s].
+        std::vector<double> momentum_direction_vector;                       ///< Source bearings [degrees clockwise from north].
         std::vector<double> constituents_vectors[max_number_of_consituents]; ///< Consituents
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo

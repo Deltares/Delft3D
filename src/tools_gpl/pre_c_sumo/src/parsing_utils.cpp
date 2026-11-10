@@ -26,8 +26,8 @@ namespace parsing_utils
         auto is_non_empty = [](const std::string_view token) { return !token.empty(); };
         auto to_double = [element_name](const std::string_view token) -> std::expected<double, ParseError> {
             double value{};
-            const auto [_, error_code] = std::from_chars(token.data(), token.data() + token.size(), value);
-            if (error_code != std::errc{})
+            const auto [parsed_end, error_code] = std::from_chars(token.data(), token.data() + token.size(), value);
+            if (error_code != std::errc{} || parsed_end != token.data() + token.size())
             {
                 return std::unexpected(
                     ParseError{std::format("<{}> contains invalid token: '{}'", element_name, token)});
