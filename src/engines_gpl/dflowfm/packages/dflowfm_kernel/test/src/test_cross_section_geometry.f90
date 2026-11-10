@@ -10,7 +10,7 @@ module test_cross_section_geometry
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_cross_section_geometry, single_link, test_single_link,
+   !$gtest
    !> Verify that one cross-section link contributes both endpoints and their coordinates.
    subroutine test_single_link() bind(C)
       integer :: original_jampi
@@ -31,9 +31,8 @@ contains
       call cleanup_geometry()
       jampi = original_jampi
    end subroutine test_single_link
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_cross_section_geometry, mixed_paths, test_mixed_paths,
+   !$gtest
    !> Verify node counts and coordinates for connected and disconnected cross-section paths.
    subroutine test_mixed_paths() bind(C)
       integer :: original_jampi, i
@@ -65,7 +64,6 @@ contains
       call cleanup_geometry()
       jampi = original_jampi
    end subroutine test_mixed_paths
-   !$f90tw)
 
    subroutine set_path(index, x)
       integer, intent(in) :: index

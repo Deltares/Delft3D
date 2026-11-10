@@ -10,8 +10,8 @@ module test_bedload_balance
 
 contains
 
-   !$f90tw TESTCODE(TEST, mass_balance_integration, bedload_call_order, test_bedload_order,
-   !> Corrected boundary bedload and layer inventory must balance at every output time.
+   !$gtest
+   !> Corrected boundary bedload and sediment layer mass must balance at every output time.
    subroutine test_bedload_order() bind(C)
       use unstruc_api, only: init_core, api_loadmodel, flowinit, flowstep, flowfinalize
       use m_flowtimes, only: time_user, tstop_user
@@ -53,7 +53,7 @@ contains
          call f90_expect_near(const_flux(1)%bal_error, [0.0_dp, 0.0_dp], 1.0e-9_dp, 'Fine sediment must balance per output interval')
          call f90_expect_near(const_flux(2)%bal_error, [0.0_dp, 0.0_dp], 1.0e-9_dp, 'Coarse sediment must balance per output interval')
          if (time_user < 1.2_dp - 1.0e-9_dp) then
-            call f90_expect_near(sum(abs(mbasedfluxtot)), 0.0_dp, 1.0e-12_dp, 'Spin-up potential flux is not an inventory transfer')
+            call f90_expect_near(sum(abs(mbasedfluxtot)), 0.0_dp, 1.0e-12_dp, 'Spin-up potential flux must not transfer sediment mass')
          end if
       end do
       call f90_expect_near(time_user, tstop_user, 1.0e-9_dp)
@@ -64,7 +64,6 @@ contains
       call f90_expect_near(const_flux(1)%bal_error, [0.0_dp, 0.0_dp], 1.0e-9_dp, 'The fine sediment whole-period budget must close')
       call f90_expect_near(const_flux(2)%bal_error, [0.0_dp, 0.0_dp], 1.0e-9_dp, 'The coarse sediment whole-period budget must close')
    end subroutine test_bedload_order
-   !$f90tw)
 
    !> Generate a portable three-cell channel with two bedload fractions and a layered bed.
    subroutine create_bedload_input()

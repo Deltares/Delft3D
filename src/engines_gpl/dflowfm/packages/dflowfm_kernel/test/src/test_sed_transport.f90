@@ -16,7 +16,7 @@ module test_sed_transport
 
 contains
 
-   !$f90tw TESTCODE(TEST, sediment_transport, suscor_integral, test_suscor_integral,
+   !$gtest
    !> Integrating 5*(0.02/z)^2 from 0.02 to 0.1 m gives 0.08 kg/m^2.
    subroutine test_suscor_integral() bind(C)
       real(dp) :: correction, thinner_layer_correction
@@ -34,9 +34,8 @@ contains
       call f90_expect_near(thinner_layer_correction, correction, tolerance, &
                            "Changing a layer bottom below the reference height must not rescale its retained flux")
    end subroutine test_suscor_integral
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, suscor_weights, test_suscor_weights,
+   !$gtest
    !> A quarter/three-quarter interpolation of concentrations 3 and 7 is 6.
    subroutine test_suscor_weights() bind(C)
       real(dp) :: correction
@@ -49,9 +48,8 @@ contains
       call f90_expect_near(0.8_dp + 10.0_dp * correction, 0.288_dp, tolerance, &
                            "The retained flux must use real-valued interpolation weights")
    end subroutine test_suscor_weights
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, suscor_reverse, test_suscor_reverse,
+   !$gtest
    !> Reversing an edge and its unequal adjacent profiles must only reverse the flux sign.
    subroutine test_suscor_reverse() bind(C)
       real(dp) :: forward, reverse
@@ -64,9 +62,8 @@ contains
       call f90_expect_near(reverse, -forward, tolerance, &
                            "Suspended transport correction must be independent of edge orientation")
    end subroutine test_suscor_reverse
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, suscor_donor, test_suscor_donor,
+   !$gtest
    !> The correction uses its own upwind availability and vanishes without transported flux.
    subroutine test_suscor_donor() bind(C)
       real(dp) :: unlimited, limited, zero_flux
@@ -86,9 +83,8 @@ contains
                            "The negative correction must use availability from its donating second cell")
       call f90_expect_near(zero_flux, 0.0_dp, tolerance, "No transported flux requires no correction")
    end subroutine test_suscor_donor
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, mor_dt_weights, test_mor_dt_weights,
+   !$gtest
    !> An outgoing volumetric transport of 5 m^3/s permits a 0.2 s bed step.
    subroutine test_mor_dt_weights() bind(C)
       real(dp) :: result
@@ -104,9 +100,8 @@ contains
       call f90_expect_near(result, 0.08_dp, tolerance, &
                            "Morphology timestep must retain nonuniform real-valued weights")
    end subroutine test_mor_dt_weights
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, mor_dt_reverse, test_mor_dt_reverse,
+   !$gtest
    !> Reversing the same geometric edge must not change its outgoing timestep bound.
    subroutine test_mor_dt_reverse() bind(C)
       real(dp) :: forward, reverse
@@ -119,9 +114,8 @@ contains
       call f90_expect_near(real(reverse_cell, dp), real(forward_cell, dp), 0.0_dp, &
                            "Reversing an edge must preserve the limiting physical cell")
    end subroutine test_mor_dt_reverse
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, mor_dt_zero, test_mor_dt_zero,
+   !$gtest
    !> A zero sediment flux must leave the hydrodynamic timestep and limiting cell unchanged.
    subroutine test_mor_dt_zero() bind(C)
       real(dp) :: result
@@ -132,9 +126,8 @@ contains
       call f90_expect_near(real(limiting_cell, dp), 7.0_dp, 0.0_dp, &
                            "No morphology restriction must preserve the prior limiting cell")
    end subroutine test_mor_dt_zero
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, bedtr_opposing, test_bedtr_opposing,
+   !$gtest
    !> Opposing wave/current transport stays bounded at and near an equal contribution ratio.
    subroutine test_bedtr_opposing() bind(C)
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -181,9 +174,8 @@ contains
          end do
       end do
    end subroutine test_bedtr_opposing
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, bedtr_angles, test_bedtr_angles,
+   !$gtest
    !> At ratio one each magnitude is qbt/sqrt(2), independently of the angle between vectors.
    subroutine test_bedtr_angles() bind(C)
       use m_mathconstants, only: degrad
@@ -206,9 +198,8 @@ contains
                               "Wave transport y component must rotate with its direction")
       end do
    end subroutine test_bedtr_angles
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, bedtr_limits, test_bedtr_limits,
+   !$gtest
    !> Preserve legacy current transport and the zero-current/zero-wave limits.
    subroutine test_bedtr_limits() bind(C)
       real(fp) :: flux(6), uon, uoff, vcr, expected
@@ -235,9 +226,8 @@ contains
       call evaluate_bedtr(0.0_fp, 0.0_fp, 0.0_fp, .true., flux, uon, uoff, vcr)
       call f90_expect_near(maxval(abs(flux)), 0.0_fp, tolerance, "Still water must produce no sediment transport")
    end subroutine test_bedtr_limits
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_transport, bedtr_cutoffs, test_bedtr_cutoffs,
+   !$gtest
    !> Existing small/large wave-current ratio cutoffs retain their one-component limits.
    subroutine test_bedtr_cutoffs() bind(C)
       real(fp), parameter :: ratios(2) = [0.005_fp, 101.0_fp]
@@ -258,7 +248,6 @@ contains
          end if
       end do
    end subroutine test_bedtr_cutoffs
-   !$f90tw)
 
    !> Evaluate the actual transport formula using fixed sand and wave parameters.
    subroutine evaluate_bedtr(current, wave_angle, wave_height, waves, flux, uon, uoff, vcr)

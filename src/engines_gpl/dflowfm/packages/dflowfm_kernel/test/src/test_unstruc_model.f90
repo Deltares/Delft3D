@@ -3,13 +3,12 @@ module test_unstruc_model
     use precision, only: dp
     use unstruc_model, only: set_time_interval
     use messagehandling, only: getMaxErrorLevel, LEVEL_ERROR
-    use iso_c_binding, only: c_null_char
     implicit none
 
     integer, parameter :: MESSAGE_BUFFER_SIZE = 256
 contains
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_set_time_interval__default_simulation_start_stop, test_set_time_interval__default_simulation_start_stop,
+    !$gtest
     subroutine test_set_time_interval__default_simulation_start_stop() bind(C)
         character(len=*), parameter :: INTERVAL_NAME = "FooInterval"
         real(kind=dp), parameter :: SIMULATION_START = 7.0_dp, SIMULATION_STOP = 42.0_dp
@@ -21,13 +20,12 @@ contains
 
         call set_time_interval(interval_input, start, step, end_, SIMULATION_START, SIMULATION_STOP, .true., interval_name=INTERVAL_NAME)
 
-        call F90_EXPECT_DOUBLE_EQ(start, SIMULATION_START)
-        call F90_EXPECT_DOUBLE_EQ(step, 7.0_dp)
-        call F90_EXPECT_DOUBLE_EQ(end_, SIMULATION_STOP)
+        call f90_expect_double_eq(start, SIMULATION_START)
+        call f90_expect_double_eq(step, 7.0_dp)
+        call f90_expect_double_eq(end_, SIMULATION_STOP)
     end subroutine test_set_time_interval__default_simulation_start_stop
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_set_time_interval__dont_read_interval_input, test_set_time_interval__dont_read_interval_input,
+    !$gtest
     subroutine test_set_time_interval__dont_read_interval_input() bind(C)
         real(kind=dp), parameter :: SIMULATION_START = 7.0_dp, SIMULATION_STOP = 42.0_dp
 
@@ -38,12 +36,11 @@ contains
 
         call set_time_interval(interval_input, start, step, end_, SIMULATION_START, SIMULATION_STOP, .false.)
 
-        call F90_EXPECT_DOUBLE_EQ(start, SIMULATION_START)
-        call F90_EXPECT_DOUBLE_EQ(end_, SIMULATION_STOP)
+        call f90_expect_double_eq(start, SIMULATION_START)
+        call f90_expect_double_eq(end_, SIMULATION_STOP)
     end subroutine test_set_time_interval__dont_read_interval_input
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_set_time_interval__start_stop_out_of_bounds, test_set_time_interval__start_stop_out_of_bounds,
+    !$gtest
     subroutine test_set_time_interval__start_stop_out_of_bounds() bind(C)
         use MessageHandling, only: SetMessageHandling, GetMessageCount, GetMessage_MH, LEVEL_WARN
         character(len=*), parameter :: INTERVAL_NAME = "FooInterval"
@@ -63,77 +60,71 @@ contains
         call set_time_interval(interval_input, start, step, end_, SIMULATION_START, SIMULATION_STOP, .true., interval_name=INTERVAL_NAME)
 
         ! Assert
-        call F90_EXPECT_DOUBLE_EQ(start, 14.0_dp)
-        call F90_EXPECT_DOUBLE_EQ(step, 7.0_dp)
-        call F90_EXPECT_DOUBLE_EQ(end_, 35.0_dp)
+        call f90_expect_double_eq(start, 14.0_dp)
+        call f90_expect_double_eq(step, 7.0_dp)
+        call f90_expect_double_eq(end_, 35.0_dp)
 
-        call F90_EXPECT_EQ(GetMessageCount(), 2, "Expected two messages to be written to the log" // c_null_char)
+        call f90_expect_eq(GetMessageCount(), 2, "Expected two messages to be written to the log")
         
         ! First log line is about the out-of-bounds interval start
         log_level = GetMessage_MH(1, message)
-        call F90_EXPECT_EQ(log_level, LEVEL_WARN, "Log level of interval start message must be WARNING" // c_null_char)
-        call F90_EXPECT_TRUE(index(message, "Setting FooInterval start time to TStart") > 0, "Unexpected interval start log line" // c_null_char)
+        call f90_expect_eq(log_level, LEVEL_WARN, "Log level of interval start message must be WARNING")
+        call f90_expect_true(index(message, "Setting FooInterval start time to TStart") > 0, "Unexpected interval start log line")
         
         ! Second log line is about the out-of-bounds interval end
         log_level = GetMessage_MH(2, message)
-        call F90_EXPECT_EQ(log_level, LEVEL_WARN, "Log level of interval stop message must be WARNING" // c_null_char)
-        call F90_EXPECT_TRUE(index(message, "Setting FooInterval stop time to TStop") > 0, "Unexpected interval stop log line" // c_null_char)
+        call f90_expect_eq(log_level, LEVEL_WARN, "Log level of interval stop message must be WARNING")
+        call f90_expect_true(index(message, "Setting FooInterval stop time to TStop") > 0, "Unexpected interval stop log line")
     end subroutine test_set_time_interval__start_stop_out_of_bounds
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_mba_bad_step, test_mba_bad_step,
+    !$gtest
     !> Reject the mass balance interval that skips its first scheduled output time.
     subroutine test_mba_bad_step() bind(C)
         call read_mba_test_mdu(100.0_dp, 1800.0_dp)
 
-        call F90_EXPECT_EQ(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_eq(getMaxErrorLevel(), LEVEL_ERROR)
     end subroutine test_mba_bad_step
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_mba_aligned, test_mba_aligned,
+    !$gtest
     !> Accept integer and decimal intervals aligned with a fractional user timestep.
     subroutine test_mba_aligned() bind(C)
         use m_flowtimes, only: ti_mba
 
         call read_mba_test_mdu(120.0_dp, 1800.0_dp)
-        call F90_EXPECT_LT(getMaxErrorLevel(), LEVEL_ERROR)
-        call F90_EXPECT_DOUBLE_EQ(ti_mba, 120.0_dp)
+        call f90_expect_lt(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_double_eq(ti_mba, 120.0_dp)
 
         call read_mba_test_mdu(100.08_dp, 1800.0_dp)
-        call F90_EXPECT_LT(getMaxErrorLevel(), LEVEL_ERROR)
-        call F90_EXPECT_DOUBLE_EQ(ti_mba, 100.08_dp)
+        call f90_expect_lt(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_double_eq(ti_mba, 100.08_dp)
     end subroutine test_mba_aligned
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_mba_bad_end, test_mba_bad_end,
+    !$gtest
     !> Reject an unaligned final output time even when the interval is aligned.
     subroutine test_mba_bad_end() bind(C)
         call read_mba_test_mdu(120.0_dp, 1800.1_dp)
 
-        call F90_EXPECT_EQ(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_eq(getMaxErrorLevel(), LEVEL_ERROR)
     end subroutine test_mba_bad_end
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_mba_disabled, test_mba_disabled,
+    !$gtest
     !> Skip output time validation when mass balance output is disabled.
     subroutine test_mba_disabled() bind(C)
         use m_flowtimes, only: ti_mba
 
         call read_mba_test_mdu(0.0_dp, 1800.1_dp)
 
-        call F90_EXPECT_LT(getMaxErrorLevel(), LEVEL_ERROR)
-        call F90_EXPECT_DOUBLE_EQ(ti_mba, 0.0_dp)
+        call f90_expect_lt(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_double_eq(ti_mba, 0.0_dp)
     end subroutine test_mba_disabled
-    !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_unstruc_model, test_mba_legacy_step, test_mba_legacy_step,
+    !$gtest
     !> Validate the effective interval after reading the legacy DtMassBalance setting.
     subroutine test_mba_legacy_step() bind(C)
         call read_mba_test_mdu(100.0_dp, 1800.0_dp, legacy=.true.)
 
-        call F90_EXPECT_EQ(getMaxErrorLevel(), LEVEL_ERROR)
+        call f90_expect_eq(getMaxErrorLevel(), LEVEL_ERROR)
     end subroutine test_mba_legacy_step
-    !$f90tw)
 
     !> Read a minimal MDU with a fractional user timestep and mass balance settings.
     subroutine read_mba_test_mdu(interval, stop_time, legacy)
@@ -189,6 +180,6 @@ contains
 
         open (newunit=mdu_unit, file=filename, status='old')
         close (mdu_unit, status='delete')
-        call F90_EXPECT_EQ(ierr, DFM_NOERR)
+        call f90_expect_eq(ierr, DFM_NOERR)
     end subroutine read_mba_test_mdu
 end module test_unstruc_model

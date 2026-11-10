@@ -12,7 +12,7 @@ module test_sed_exchange
 
 contains
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, settle_cutoff, test_settle_cutoff,
+   !$gtest
    !> Implicit settling observes the same sediment reference level as explicit fluxes.
    subroutine test_settle_cutoff() bind(C)
       real(dp) :: implicit_result(2, 3), explicit_result(2, 3), explicit_flux(2, 2)
@@ -26,9 +26,8 @@ contains
       call f90_expect_near(explicit_flux(1, :), [0.0_dp, -1.5_dp], tolerance, &
                            "Settling is zero below the reference and remains active above it")
    end subroutine test_settle_cutoff
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, settle_tracer, test_settle_tracer,
+   !$gtest
    !> A settling tracer continues through all layers when morphology is enabled.
    subroutine test_settle_tracer() bind(C)
       real(dp) :: implicit_result(2, 3), explicit_result(2, 3), explicit_flux(2, 2)
@@ -42,9 +41,8 @@ contains
       call f90_expect_near(explicit_flux(2, :), [-0.5_dp, -1.5_dp], tolerance, &
                            "The tracer must retain its settling flux below the sediment reference layer")
    end subroutine test_settle_tracer
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, settle_mass, test_settle_mass,
+   !$gtest
    !> Both settling paths conserve each constituent across unequal layer volumes.
    subroutine test_settle_mass() bind(C)
       real(dp), parameter :: volumes(3) = [1.0_dp, 2.0_dp, 4.0_dp]
@@ -60,9 +58,8 @@ contains
                               "Explicit settling must conserve mass with unequal layer volumes")
       end do
    end subroutine test_settle_mass
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, settle_semi, test_settle_semi,
+   !$gtest
    !> The semi-implicit advection path observes the same sediment settling cutoff.
    subroutine test_settle_semi() bind(C)
       real(dp), parameter :: volumes(3) = [1.0_dp, 2.0_dp, 4.0_dp]
@@ -80,9 +77,8 @@ contains
                               "Semi-implicit settling must conserve each constituent with unequal layer volumes")
       end do
    end subroutine test_settle_semi
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, settle_bedref, test_settle_bedref,
+   !$gtest
    !> A cohesive or bottom-layer reference must retain sediment settling on every internal face.
    subroutine test_settle_bedref() bind(C)
       real(dp), parameter :: volumes(3) = [1.0_dp, 2.0_dp, 4.0_dp]
@@ -101,9 +97,8 @@ contains
       call f90_expect_near(dot_product(volumes, explicit_result(1, :)), 21.0_dp, tolerance, &
                            "Full-depth explicit sediment settling must conserve mass")
    end subroutine test_settle_bedref
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, sink_substeps, test_sink_substeps,
+   !$gtest
    !> Accumulate updated internal cells using their full local timestep and each solver's dry-cell rule.
    subroutine test_sink_substeps() bind(C)
       real(dp) :: deposited(2, 4), fluff(2, 4), expected_deposition(4), expected_fluff(4)
@@ -127,9 +122,8 @@ contains
                               "Non-sediment constituents must not accumulate fluff deposition")
       end do
    end subroutine test_sink_substeps
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, sink_fullstep, test_sink_fullstep,
+   !$gtest
    !> Without subcycling the ordinary timestep applies independently of work-array values.
    subroutine test_sink_fullstep() bind(C)
       real(dp) :: deposited(2, 4), fluff(2, 4), expected_deposition(4), expected_fluff(4)
@@ -149,9 +143,8 @@ contains
                               "Single-step fluff deposition must use dt without substep multipliers")
       end do
    end subroutine test_sink_fullstep
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, sediment_exchange, sink_closure, test_sink_closure,
+   !$gtest
    !> A skipped substep followed by a two-step implicit sink update closes the actual sediment budget.
    subroutine test_sink_closure() bind(C)
       use m_solve_2d, only: solve_2d
@@ -260,7 +253,6 @@ contains
       call f90_expect_near(sum(updated), 1.0_dp, tolerance, &
                            "Remaining suspended mass plus deposited mass must close the coupled sediment budget")
    end subroutine test_sink_closure
-   !$f90tw)
 
    !> Compare actual implicit and explicit settling paths on one three-layer column.
    !! All replaced allocations, scalars and pointer associations are restored.

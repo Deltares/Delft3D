@@ -35,7 +35,7 @@ module test_mass_balance
 
 contains
 
-   !$f90tw TESTCODE(TEST, mass_balance, spinup, test_mba_spinup,
+   !$gtest
    !> Account for fixed-bed exchange and stop that term exactly when composition updates start.
    subroutine test_mba_spinup() bind(C)
       call setup_mba([1, 1])
@@ -63,9 +63,8 @@ contains
       call expect_entry(const_flux(1)%bal_area(2), 'External forcing', 'Fixed bed exchange', [6.0_dp, 4.0_dp])
       call cleanup_mba()
    end subroutine test_mba_spinup
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, fixed_composition, test_mba_fixed_cmp,
+   !$gtest
    !> A permanently fixed composition remains an external reservoir after the start time.
    subroutine test_mba_fixed_cmp() bind(C)
       call setup_mba([1, 1])
@@ -80,9 +79,8 @@ contains
       call f90_expect_near(sum(abs(mbasedflux)), 0.0_dp, tolerance)
       call cleanup_mba()
    end subroutine test_mba_fixed_cmp
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, composition_only, test_mba_cmp_only,
+   !$gtest
    !> Composition changes inventory through exchange and bedload while the bed level remains fixed.
    subroutine test_mba_cmp_only() bind(C)
       call setup_mba([1, 1])
@@ -106,9 +104,8 @@ contains
       call expect_entry(water_flow%bal_area(1), 'External forcing', 'Moving bed', [0.0_dp, 0.0_dp])
       call cleanup_mba()
    end subroutine test_mba_cmp_only
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, bed_starts_first, test_mba_bed_first,
+   !$gtest
    !> Moving-bed water volume and fixed-composition exchange are independent contributions.
    subroutine test_mba_bed_first() bind(C)
       call setup_mba([1, 1])
@@ -132,9 +129,8 @@ contains
       call expect_entry(water_flow%bal_area(1), 'External forcing', 'Moving bed', [0.5_dp, 0.0_dp])
       call cleanup_mba()
    end subroutine test_mba_bed_first
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, bedload_start, test_mba_bedload_start,
+   !$gtest
    !> Potential boundary bedload becomes an inventory transfer when composition updates start.
    subroutine test_mba_bedload_start() bind(C)
       call setup_mba([1, 1])
@@ -148,9 +144,8 @@ contains
       call f90_expect_near(mbasedflux(:, 1, 1, 3), [0.0_dp, 60.0_dp], tolerance)
       call cleanup_mba()
    end subroutine test_mba_bedload_start
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, fluff_spinup, test_mba_fluff_spin,
+   !$gtest
    !> Include frozen fluff exchange and exclude cells owned by another domain.
    subroutine test_mba_fluff_spin() bind(C)
       call setup_mba([1, 2])
@@ -163,9 +158,8 @@ contains
       call f90_expect_near(sum(abs(mbafluxfixbed(:, :, 2))), 0.0_dp, tolerance)
       call cleanup_mba()
    end subroutine test_mba_fluff_spin
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, moving_volume, test_mba_moving_volume,
+   !$gtest
    !> Actual geometry changes close area and whole-model water balances across output resets.
    subroutine test_mba_moving_volume() bind(C)
       call setup_mba([1, 2])
@@ -189,9 +183,8 @@ contains
       call expect_entry(water_flow%bal_area(3), 'External forcing', 'Moving bed', [1.5_dp, 1.5_dp])
       call cleanup_mba()
    end subroutine test_mba_moving_volume
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, moving_3d, test_mba_moving_3d,
+   !$gtest
    !> Sum all layers and skip non-owned cells when measuring moving-bed water volumes.
    subroutine test_mba_moving_3d() bind(C)
       call setup_mba([1, 2])
@@ -207,9 +200,8 @@ contains
       call f90_expect_near(mbaflowbed(:, 2), [0.0_dp, 0.0_dp], tolerance)
       call cleanup_mba()
    end subroutine test_mba_moving_3d
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, mass_balance, sediment_labels, test_mba_labels,
+   !$gtest
    !> Names and values agree for every combination of boundary and inter-area lumping.
    subroutine test_mba_labels() bind(C)
       use m_flowparameters, only: jambalumpmba, jambalumpbnd
@@ -244,7 +236,6 @@ contains
          end do
       end do
    end subroutine test_mba_labels
-   !$f90tw)
 
    !> Build two internal cells, two boundaries and one suspended sediment fraction.
    subroutine setup_mba(area_map, lump_mba, lump_bnd)
