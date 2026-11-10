@@ -1356,6 +1356,7 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     real(fp)                                           :: mpeat
     real(fp), dimension(:,:)                 , pointer :: preload
     real(fp), dimension(:,:)                 , pointer :: depos_time
+    logical                                            :: track_load_history !< preload and depos_time are only allocated for the Terzaghi models
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1369,6 +1370,7 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     thlyr       => this%state%thlyr
     preload     => this%state%preload
     depos_time => this%state%depos_time
+    track_load_history = this%settings%iconsolidate == CONSOL_TERZAGHI
     !
     k   = 2
     if (this%settings%exchlyr) k = k + 1
@@ -1415,12 +1417,16 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
             dz          = dz - thlyr(k, nm)
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*thlyr(k, nm)
-               preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*thlyr(k, nm)
-               depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*thlyr(k, nm)
+               if (track_load_history) then
+                  preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*thlyr(k, nm)
+                  depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*thlyr(k, nm)
+               end if
                thlyr(kero1, nm)  = thlyr(kero1, nm) + thlyr(k, nm)
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
-               preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
-               depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
+               if (track_load_history) then
+                  preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
+                  depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
+               end if
             endif
             thlyr(k, nm) = 0.0_fp
             k           = k+1
@@ -1442,12 +1448,16 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
             thlyr(k, nm)       = thlyr(k, nm)   - dz
             if (.not.remove) then
                svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*dz
-               preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*dz
-               depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*dz
+               if (track_load_history) then
+                  preload(kero1,nm) = preload(kero1,nm)*thlyr(kero1, nm) + preload(k,nm)*dz
+                  depos_time(kero1,nm) = depos_time(kero1,nm)*thlyr(kero1, nm) + depos_time(k,nm)*dz
+               end if
                thlyr(kero1, nm)  = thlyr(kero1, nm) + dz
                svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
-               preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
-               depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
+               if (track_load_history) then
+                  preload(kero1,nm) = preload(kero1,nm)/thlyr(kero1,nm)
+                  depos_time(kero1,nm) = depos_time(kero1,nm)/thlyr(kero1,nm)
+               end if
             endif
             !
             ! erosion complete (dz=0) now continue to replenish the
