@@ -1527,6 +1527,17 @@ contains
          end if
       end if
 
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'rainTemperature', tmpstr, success)
+      if (success) then
+         call convert_rain_temperature_string_to_integer(tmpstr, ibuf)
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''airTemperature'' or ''wetBulbTemperature''.')
+         else
+            rain_temperature_method = ibuf
+         end if
+      end if
+
       call prop_get(md_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity)
       call prop_get(md_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature)
       call prop_get(md_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity)
@@ -3577,6 +3588,10 @@ contains
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
+
+      call convert_rain_temperature_integer_to_string(rain_temperature_method, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''airTemperature'', ''wetBulbTemperature'').')
+
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
       call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
       call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
