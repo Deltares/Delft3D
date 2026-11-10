@@ -1153,7 +1153,7 @@ contains
                              WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_DISSIPATION_TOTAL, &
                              WAVE_INPUT_DISSIPATION_SURFACE, WAVE_INPUT_DISSIPATION_WHITE_CAPPING, wave_input_is_required
       use m_waves, only: offline_wave_input_requirements
-      use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
+      use processes_input, only: sfunname, sfuninp, num_spatial_time_functions
       use fm_external_forcings_utils, only: split_qid
       use string_module, only: str_tolower
       use processes_input, only: funame, funinp, num_time_functions
@@ -1367,7 +1367,7 @@ contains
 
       case ('waqsegmentfunction')
          target_location_type = UNC_LOC_S
-         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., &
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_functions, .true., &
                                     waq_values_ptr=sfuninp, index_waq_input=index_waq_input)
       case ('waqfunction')
          target_location_type = UNC_LOC_GLOBAL
@@ -1404,7 +1404,7 @@ contains
       use m_fm_wq_processes, only: register_waq_segment_number_index
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
-                                 sfunname, sfuninp, num_spatial_time_fuctions
+                                 sfunname, sfuninp, num_spatial_time_functions
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: qid !< name of the quantity to register if it is a waq target.
@@ -1424,7 +1424,7 @@ contains
          call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., &
                                     waq_values_ptr=funinp, index_waq_input=index_waq_input)
       case ('waqsegmentfunction')
-         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., &
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_functions, .true., &
                                     waq_values_ptr=sfuninp, index_waq_input=index_waq_input)
       end select
    end subroutine register_waq_target

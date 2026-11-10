@@ -31,15 +31,15 @@ contains
 
 
     subroutine exchange_values(name, nosss, value, num_constants, num_spatial_parameters, &
-            num_time_functions, num_spatial_time_fuctions, const, coname, param, &
+            num_time_functions, num_spatial_time_functions, const, coname, param, &
             paname, funcs, funame, sfuncs, sfname, &
             lget, ierr)
 
         character(len = 20) :: name, coname(*), paname(*), funame(*), sfname(*)
         real(kind = real_wp) :: value(nosss), const(num_constants), param (num_spatial_parameters, nosss), &
-                funcs(num_time_functions), sfuncs(nosss, num_spatial_time_fuctions)
+                funcs(num_time_functions), sfuncs(nosss, num_spatial_time_functions)
         logical :: lget
-        integer(kind = int_wp) :: nosss, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, ierr
+        integer(kind = int_wp) :: nosss, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, ierr
 
         ! local
         integer(kind = int_wp) :: indx
@@ -47,7 +47,7 @@ contains
         if (timon) call timstrt ("values", ithandl)
 
         ierr = 1
-        indx = index_in_array(name, sfname(:num_spatial_time_fuctions))
+        indx = index_in_array(name, sfname(:num_spatial_time_functions))
         if (indx > 0) then
             if (lget) then
                 value(1:nosss) = sfuncs(1:nosss, indx)
