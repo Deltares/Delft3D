@@ -79,6 +79,8 @@ module m_flowparameters
 
    integer :: immersed_boundary !< Enable the immersed-boundary method (0: off, 1: on)
    real(kind=dp) :: immersed_boundary_min_area_frac !< Minimum active area fraction for IBM cut cells
+   real(kind=dp) :: immersed_boundary_merge_area_frac !< Wet area fraction below which an IBM small cell is merged into its
+                                                      !< wet neighbour (0: off)
    real(kind=dp) :: immersed_boundary_cartesian_tol !< Relative tolerance for the IBM Cartesian mesh check
    integer :: immersed_boundary_tangential_correction !< Enable the explicit IBM tangential pressure correction
    real(kind=dp) :: immersed_boundary_small_edge_frac !< Wet edge fraction threshold for IBM small-edge treatment
@@ -707,6 +709,7 @@ contains
 
       immersed_boundary = 0
       immersed_boundary_min_area_frac = 0.1_dp
+      immersed_boundary_merge_area_frac = 0.0_dp
       immersed_boundary_cartesian_tol = 1.0e-6_dp
       immersed_boundary_tangential_correction = 0
       immersed_boundary_small_edge_frac = 0.5_dp

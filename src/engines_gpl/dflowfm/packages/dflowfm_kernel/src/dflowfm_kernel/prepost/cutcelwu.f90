@@ -831,6 +831,7 @@ contains
       use m_cutcells
       use m_tpoly, only: tpoly, isize_tpoly
       use m_immersed_boundary, only: ibm_state
+      use m_flowparameters, only: immersed_boundary_merge_area_frac
       use messagehandling, only: LEVEL_ERROR, mess
 
       type(tpoly), dimension(:), allocatable, intent(in) :: polygons !< All solid components from Cutcelllist.
@@ -1023,6 +1024,9 @@ contains
          end if
 
          kfs(n) = 1
+         if (allocated(ibm_state%ba_wet)) then
+            ibm_state%ba_wet(n) = wet_area
+         end if
          ba(n) = max(wet_area, baorgfracmin * full_area)
          ba(n) = max(ba(n), bamin)
          if (allocated(nd(n)%x)) then
@@ -1083,6 +1087,10 @@ contains
 
          deallocate (wet_x, wet_y)
       end do
+
+      if (immersed_boundary_merge_area_frac > 0.0_dp) then
+         call cutcelwu_merge_small_cells(polygons, snap_tol)
+      end if
    end subroutine cutcelwu_ibm_union
 
    !> Subtract one solid from a wet polygon using Polypack's difference operation.
@@ -1179,5 +1187,290 @@ contains
       end if
       deallocate (rwrk, iwrk, shifted_x, shifted_y)
    end subroutine ibm_subtract_solid_polygon
+
+   !> Merge each selected small wet cell into its target: rewire its remaining links to the target and make it solid.
+   !!
+   !! The shared link between the two cells is kept in the link list with zero width.
+   !! The removed wet area is not added to the target, because the target polygon is not updated.
+   subroutine cutcelwu_apply_small_cell_merges(merge_target, merge_link)
+      use m_flowgeom, only: nd, ln, wu, kfs, ba, bai, tnode
+      use m_immersed_boundary, only: ibm_state
+
+      integer, dimension(:), intent(in) :: merge_target !< Target cell per source cell, zero otherwise.
+      integer, dimension(:), intent(in) :: merge_link !< Shared link per source cell, zero otherwise.
+
+      integer, dimension(:), allocatable :: moved
+      integer :: icell, itgt, l0, i, lk, v, k
+
+      ibm_state%nmerged = 0
+      do icell = 1, size(merge_target)
+         itgt = merge_target(icell)
+         if (itgt <= 0) then
+            cycle
+         end if
+         l0 = merge_link(icell)
+
+         allocate (moved(nd(icell)%lnx))
+         k = 0
+         do i = 1, nd(icell)%lnx
+            v = nd(icell)%ln(i)
+            lk = abs(v)
+            if (lk == l0) then
+               cycle
+            end if
+            if (ln(1, lk) == icell) then
+               ln(1, lk) = itgt
+            else
+               ln(2, lk) = itgt
+            end if
+            k = k + 1
+            moved(k) = sign(lk, v)
+         end do
+         call ibm_node_replace_links(nd(itgt), l0, moved(1:k))
+         deallocate (moved)
+
+         wu(l0) = 0.0_dp
+         ba(icell) = 0.0_dp
+         bai(icell) = 0.0_dp
+         kfs(icell) = 0
+         nd(icell)%lnx = 0
+         if (allocated(nd(icell)%ln)) then
+            deallocate (nd(icell)%ln)
+         end if
+         allocate (nd(icell)%ln(0))
+         if (allocated(nd(icell)%x)) then
+            deallocate (nd(icell)%x)
+         end if
+         if (allocated(nd(icell)%y)) then
+            deallocate (nd(icell)%y)
+         end if
+         allocate (nd(icell)%x(0), nd(icell)%y(0))
+         ibm_state%nmerged = ibm_state%nmerged + 1
+      end do
+   end subroutine cutcelwu_apply_small_cell_merges
+
+   !> Select small-cell merges for the current IBM cut-cell state and apply them. Opt-in via ImmersedBoundaryMergeAreaFrac.
+   !!
+   !! Each target wet polygon becomes the wet region of its own cell plus all cells merged into it, so the
+   !! rewired links lie on the boundary of their target. The region is the bounding box of the group, minus the
+   !! other cells inside that box, minus the solids.
+   subroutine cutcelwu_merge_small_cells(polygons, snap_tol)
+      use precision, only: dp
+      use m_flowgeom
+      use m_netw
+      use m_flow, only: baorgfracmin
+      use m_flowparameters, only: immersed_boundary_merge_area_frac
+      use m_partitioninfo, only: jampi
+      use m_tpoly, only: tpoly
+      use m_immersed_boundary, only: ibm_state, ibm_select_small_cell_merges
+      use messagehandling, only: LEVEL_ERROR, mess
+
+      type(tpoly), dimension(:), intent(in) :: polygons !< All solid components from Cutcelllist.
+      real(kind=dp), intent(in) :: snap_tol !< Snapping tolerance for polygon clipping.
+
+      integer, allocatable :: merge_target(:), merge_link(:)
+      logical, allocatable :: in_group(:), done(:)
+      real(kind=dp), allocatable :: region_x(:), region_y(:), wet_x(:), wet_y(:), next_x(:), next_y(:)
+      real(kind=dp) :: xmin, xmax, ymin, ymax, cx, cy, area, cell_x(4), cell_y(4)
+      integer :: s, t, m, k, k2, ll, l, n_region, n_wet, n_next, ierror
+      type(tpoly) :: cell_solid
+
+      if (jampi > 0) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryMergeAreaFrac > 0 is not supported with MPI partitioning.')
+         return
+      end if
+
+      allocate (merge_target(size(kfs)), merge_link(size(kfs)), in_group(size(kfs)), done(size(kfs)))
+      call ibm_select_small_cell_merges(kcu, ln, wu, kfs, ibm_state%ba_wet, ibm_state%ba_full, &
+                                        immersed_boundary_merge_area_frac, merge_target, merge_link)
+
+      done = .false.
+      do s = 1, size(merge_target)
+         t = merge_target(s)
+         if (t <= 0) then
+            cycle
+         end if
+         if (done(t)) then
+            cycle
+         end if
+         done(t) = .true.
+
+         in_group = .false.
+         in_group(t) = .true.
+         do m = 1, size(merge_target)
+            if (merge_target(m) == t) then
+               in_group(m) = .true.
+            end if
+         end do
+
+         xmin = huge(1.0_dp)
+         ymin = huge(1.0_dp)
+         xmax = -huge(1.0_dp)
+         ymax = -huge(1.0_dp)
+         do m = 1, nump
+            if (.not. in_group(m)) then
+               cycle
+            end if
+            do ll = 1, 4
+               l = netcell(m)%nod(ll)
+               xmin = min(xmin, xk(l))
+               xmax = max(xmax, xk(l))
+               ymin = min(ymin, yk(l))
+               ymax = max(ymax, yk(l))
+            end do
+         end do
+
+         allocate (region_x(4), region_y(4))
+         region_x = [xmin, xmax, xmax, xmin]
+         region_y = [ymin, ymin, ymax, ymax]
+         n_region = 4
+
+         ! Remove flow cells inside the bounding box that do not belong to this group.
+         do m = 1, nump
+            if (in_group(m)) then
+               cycle
+            end if
+            do ll = 1, 4
+               l = netcell(m)%nod(ll)
+               cell_x(ll) = xk(l)
+               cell_y(ll) = yk(l)
+            end do
+            cx = sum(cell_x) / 4.0_dp
+            cy = sum(cell_y) / 4.0_dp
+            if (cx <= xmin .or. cx >= xmax .or. cy <= ymin .or. cy >= ymax) then
+               cycle
+            end if
+            cell_solid%len = 4
+            cell_solid%x = cell_x
+            cell_solid%y = cell_y
+            cell_solid%xmin = minval(cell_x)
+            cell_solid%xmax = maxval(cell_x)
+            cell_solid%ymin = minval(cell_y)
+            cell_solid%ymax = maxval(cell_y)
+            call ibm_subtract_solid_polygon(cell_solid, region_x, region_y, n_region, snap_tol, next_x, next_y, &
+                                            n_next, ierror)
+            if (ierror /= 0) then
+               call mess(LEVEL_ERROR, 'ImmersedBoundaryMergeAreaFrac: merged region of flow cell could not be clipped, cell ', t)
+               return
+            end if
+            call move_alloc(next_x, region_x)
+            call move_alloc(next_y, region_y)
+            n_region = n_next
+         end do
+
+         call ibm_clip_region_by_solids(region_x, region_y, n_region, polygons, snap_tol, wet_x, wet_y, n_wet, ierror)
+         if (ierror /= 0) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundaryMergeAreaFrac: merged wet region is invalid or disconnected for flow cell ', t)
+            return
+         end if
+
+         area = 0.0_dp
+         do k = 1, n_wet
+            k2 = k + 1
+            if (k2 > n_wet) then
+               k2 = 1
+            end if
+            area = area + wet_x(k) * wet_y(k2) - wet_x(k2) * wet_y(k)
+         end do
+         area = 0.5_dp * abs(area)
+         if (n_wet < 3 .or. area <= 0.0_dp) then
+            call mess(LEVEL_ERROR, 'ImmersedBoundaryMergeAreaFrac: merged wet region has no area for flow cell ', t)
+            return
+         end if
+
+         ibm_state%ba_wet(t) = area
+         ba(t) = max(area, baorgfracmin * ibm_state%ba_full(t))
+         ba(t) = max(ba(t), bamin)
+         if (allocated(nd(t)%x)) then
+            deallocate (nd(t)%x)
+         end if
+         if (allocated(nd(t)%y)) then
+            deallocate (nd(t)%y)
+         end if
+         allocate (nd(t)%x(n_wet), nd(t)%y(n_wet))
+         nd(t)%x = wet_x
+         nd(t)%y = wet_y
+
+         deallocate (region_x, region_y, wet_x, wet_y)
+      end do
+
+      call cutcelwu_apply_small_cell_merges(merge_target, merge_link)
+      deallocate (merge_target, merge_link, in_group, done)
+   end subroutine cutcelwu_merge_small_cells
+
+   !> Subtract every solid from a region polygon. Returns the remaining wet polygon, or a non-zero error code.
+   subroutine ibm_clip_region_by_solids(region_x, region_y, region_count, polygons, snap_tol, wet_x, wet_y, wet_count, &
+                                        error_code)
+      use precision, only: dp
+      use m_tpoly, only: tpoly
+
+      real(kind=dp), dimension(:), intent(in) :: region_x !< Region x coordinates.
+      real(kind=dp), dimension(:), intent(in) :: region_y !< Region y coordinates.
+      integer, intent(in) :: region_count !< Number of region vertices.
+      type(tpoly), dimension(:), intent(in) :: polygons !< All solid components from Cutcelllist.
+      real(kind=dp), intent(in) :: snap_tol !< Snapping tolerance for polygon clipping.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: wet_x !< Wet-polygon x coordinates.
+      real(kind=dp), dimension(:), allocatable, intent(out) :: wet_y !< Wet-polygon y coordinates.
+      integer, intent(out) :: wet_count !< Number of wet-polygon vertices.
+      integer, intent(out) :: error_code !< Non-zero if clipping fails.
+
+      real(kind=dp), dimension(:), allocatable :: next_x, next_y
+      real(kind=dp) :: xmin, xmax, ymin, ymax
+      integer :: p, n_next
+
+      allocate (wet_x(region_count), wet_y(region_count))
+      wet_x = region_x(1:region_count)
+      wet_y = region_y(1:region_count)
+      wet_count = region_count
+      error_code = 0
+      xmin = minval(wet_x)
+      xmax = maxval(wet_x)
+      ymin = minval(wet_y)
+      ymax = maxval(wet_y)
+
+      do p = 1, size(polygons)
+         if (wet_count < 3) then
+            exit
+         end if
+         if (polygons(p)%xmax < xmin - snap_tol .or. polygons(p)%xmin > xmax + snap_tol .or. &
+             polygons(p)%ymax < ymin - snap_tol .or. polygons(p)%ymin > ymax + snap_tol) then
+            cycle
+         end if
+         call ibm_subtract_solid_polygon(polygons(p), wet_x, wet_y, wet_count, snap_tol, next_x, next_y, n_next, &
+                                         error_code)
+         if (error_code /= 0) then
+            return
+         end if
+         call move_alloc(next_x, wet_x)
+         call move_alloc(next_y, wet_y)
+         wet_count = n_next
+      end do
+   end subroutine ibm_clip_region_by_solids
+
+   !> Remove link drop from a node's link list and append the links in add.
+   subroutine ibm_node_replace_links(node, drop, add)
+      use m_flowgeom, only: tnode
+
+      type(tnode), intent(inout) :: node !< Node whose link list is updated.
+      integer, intent(in) :: drop !< Link number to remove.
+      integer, dimension(:), intent(in) :: add !< Signed link numbers to append.
+
+      integer, dimension(:), allocatable :: kept
+      integer :: i, n
+
+      allocate (kept(node%lnx + size(add)))
+      n = 0
+      do i = 1, node%lnx
+         if (abs(node%ln(i)) == drop) then
+            cycle
+         end if
+         n = n + 1
+         kept(n) = node%ln(i)
+      end do
+      kept(n + 1:n + size(add)) = add
+      n = n + size(add)
+      node%ln = kept(1:n)
+      node%lnx = n
+   end subroutine ibm_node_replace_links
 
 end module m_cutcelwu

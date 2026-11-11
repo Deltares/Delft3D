@@ -14,6 +14,8 @@ module m_immersed_boundary
    public :: ibm_reset_state
    public :: ibm_save_full_area
    public :: ibm_save_full_width
+   public :: ibm_select_small_cell_merges
+   public :: ibm_measure_wet_face
    public :: ibm_save_full_link_metrics
    public :: ibm_validate_cutcelllist
    public :: ibm_measure_wet_polygon
@@ -77,6 +79,7 @@ module m_immersed_boundary
       real(kind=dp), dimension(:), allocatable :: edge_frac !< Wet fraction for each flow link.
       real(kind=dp), dimension(:), allocatable :: wu_full !< Link widths before cut-cell clipping.
       real(kind=dp), dimension(:), allocatable :: ba_full !< Cell areas before cut-cell clipping.
+      real(kind=dp), dimension(:), allocatable :: ba_wet !< Wet cell areas before the storage floor, used for small-cell merging.
       real(kind=dp), dimension(:), allocatable :: acl_full !< Link weights before IBM overrides.
       real(kind=dp), dimension(:), allocatable :: dxi_full !< Link distances before IBM overrides.
       type(t_ibm_cut_cell), dimension(:), allocatable :: cut !< Cut-cell metadata.
@@ -89,6 +92,7 @@ module m_immersed_boundary
       integer :: nclipped_dn = 0 !< Number of wet-centroid link distances clipped to the minimum.
       real(kind=dp) :: min_area_frac = 1.0_dp !< Minimum geometric cut-cell area fraction.
       real(kind=dp) :: area_deficit = 0.0_dp !< Total area added by the minimum-area floor.
+      integer :: nmerged = 0 !< Number of small wet cells merged into a neighbour.
    end type t_ibm_state
 
    type(t_ibm_state), save :: ibm_state
@@ -108,7 +112,89 @@ contains
          return
       end if
       ibm_state%ba_full = area
+      ibm_state%ba_wet = area
    end subroutine ibm_save_full_area
+
+   !> Select small wet cells to merge into a neighbour across their narrowest wet link.
+   !!
+   !! A source is a flow cell whose wet area is at most merge_frac times its full area.
+   !! A source is blocked, and not merged, when it touches another source or a non-2D link.
+   !! Targets are active non-source cells, so no merge chains form.
+   subroutine ibm_select_small_cell_merges(kcu, ln, wu, kfs, ba_wet, ba_full, merge_frac, target, link)
+      integer, dimension(:), intent(in) :: kcu !< Link type per flow link.
+      integer, dimension(:, :), intent(in) :: ln !< Flow-cell pair per flow link.
+      real(kind=dp), dimension(:), intent(in) :: wu !< Link widths.
+      integer, dimension(:), intent(in) :: kfs !< Flow-cell activity.
+      real(kind=dp), dimension(:), intent(in) :: ba_wet !< Wet cell areas before the storage floor.
+      real(kind=dp), dimension(:), intent(in) :: ba_full !< Full cell areas.
+      real(kind=dp), intent(in) :: merge_frac !< Merge threshold as a fraction of the full area.
+      integer, dimension(:), intent(out) :: target !< Target cell per source cell, zero otherwise.
+      integer, dimension(:), intent(out) :: link !< Shared link per source cell, zero otherwise.
+
+      logical, dimension(:), allocatable :: is_source, blocked
+      real(kind=dp), dimension(:), allocatable :: best_width
+      integer :: L, a, b, n, ncell, nlink
+
+      ncell = size(kfs)
+      nlink = size(kcu)
+      target = 0
+      link = 0
+      if (merge_frac <= 0.0_dp) then
+         return
+      end if
+
+      allocate (is_source(ncell), blocked(ncell), best_width(ncell))
+      is_source = .false.
+      blocked = .false.
+      best_width = huge(1.0_dp)
+      do n = 1, ncell
+         is_source(n) = kfs(n) == 1 .and. ba_full(n) > 0.0_dp .and. ba_wet(n) > 0.0_dp &
+                        .and. ba_wet(n) <= merge_frac * ba_full(n)
+      end do
+
+      do L = 1, nlink
+         a = ln(1, L)
+         b = ln(2, L)
+         if (abs(kcu(L)) /= 2) then
+            if (is_source(a)) then
+               blocked(a) = .true.
+            end if
+            if (is_source(b)) then
+               blocked(b) = .true.
+            end if
+            cycle
+         end if
+         if (is_source(a) .and. is_source(b)) then
+            blocked(a) = .true.
+            blocked(b) = .true.
+            cycle
+         end if
+         if (wu(L) <= 0.0_dp) then
+            cycle
+         end if
+         if (is_source(a) .and. kfs(b) == 1) then
+            if (wu(L) < best_width(a)) then
+               best_width(a) = wu(L)
+               target(a) = b
+               link(a) = L
+            end if
+         end if
+         if (is_source(b) .and. kfs(a) == 1) then
+            if (wu(L) < best_width(b)) then
+               best_width(b) = wu(L)
+               target(b) = a
+               link(b) = L
+            end if
+         end if
+      end do
+
+      do n = 1, ncell
+         if (blocked(n)) then
+            target(n) = 0
+            link(n) = 0
+         end if
+      end do
+   end subroutine ibm_select_small_cell_merges
 
    !> Save full link widths before cut-cell clipping.
    subroutine ibm_save_full_width(width)
@@ -1348,9 +1434,10 @@ contains
       real(kind=dp), intent(out) :: ym !< Midpoint y coordinate of the wet face interval.
       logical, intent(out) :: valid !< Whether at least two wet face vertices were found.
 
-      integer :: i
+      integer :: i, j
       real(kind=dp) :: dx_face, dy_face, face_length, face_length_squared
       real(kind=dp) :: projection, distance, projection_min, projection_max
+      real(kind=dp) :: dist_i, dist_j, proj_i, proj_j, overlap_min, overlap_max
       integer :: point_count
 
       valid = .false.
@@ -1375,6 +1462,28 @@ contains
             projection_min = min(projection_min, projection)
             projection_max = max(projection_max, projection)
             point_count = point_count + 1
+         end if
+      end do
+      ! A polygon edge lying along the face can cross a face endpoint without a vertex there (e.g. after merging
+      ! cells), so the wet interval also takes the overlap of such edges with the face.
+      do i = 1, size(wet_x)
+         j = i + 1
+         if (j > size(wet_x)) then
+            j = 1
+         end if
+         dist_i = abs((wet_x(i) - face_x(1)) * dy_face - (wet_y(i) - face_y(1)) * dx_face) / face_length
+         dist_j = abs((wet_x(j) - face_x(1)) * dy_face - (wet_y(j) - face_y(1)) * dx_face) / face_length
+         if (dist_i > tolerance .or. dist_j > tolerance) then
+            cycle
+         end if
+         proj_i = ((wet_x(i) - face_x(1)) * dx_face + (wet_y(i) - face_y(1)) * dy_face) / face_length_squared
+         proj_j = ((wet_x(j) - face_x(1)) * dx_face + (wet_y(j) - face_y(1)) * dy_face) / face_length_squared
+         overlap_min = max(0.0_dp, min(proj_i, proj_j))
+         overlap_max = min(1.0_dp, max(proj_i, proj_j))
+         if ((overlap_max - overlap_min) * face_length > tolerance) then
+            projection_min = min(projection_min, overlap_min)
+            projection_max = max(projection_max, overlap_max)
+            point_count = point_count + 2
          end if
       end do
       if (point_count < 2 .or. projection_max <= projection_min) then

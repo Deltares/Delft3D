@@ -3,7 +3,8 @@ module test_ibm_geometry
    use precision, only: dp
    use m_immersed_boundary, only: ibm_build_geometry, ibm_measure_wet_polygon, ibm_validate_cutcelllist, &
                                   ibm_set_perot_weights, ibm_set_wet_link_metrics, ibm_set_wet_bed, &
-                                  ibm_wet_area_from_polygon, t_ibm_cut_cell, t_ibm_state
+                                  ibm_wet_area_from_polygon, ibm_select_small_cell_merges, ibm_measure_wet_face, &
+                                  t_ibm_cut_cell, t_ibm_state
    implicit none(type, external)
 
 contains
@@ -1326,6 +1327,95 @@ contains
       call F90_ASSERT_TRUE(.not. valid, 'Sparse wet-bed fit accepted a missing input bed level.')
       call F90_ASSERT_EQ(error_index, 1, 'Sparse wet-bed fit reported the wrong failing cell.')
    end subroutine test_wet_bed_sparse_neighbour_fallback
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_small_cell_merge_selection, test_small_cell_merge_selection,
+   subroutine test_small_cell_merge_selection() bind(C)
+      integer, dimension(3) :: kcu
+      integer, dimension(2, 3) :: ln
+      integer, dimension(4) :: kfs, tgt, lnk
+      real(kind=dp), dimension(3) :: wu
+      real(kind=dp), dimension(4) :: ba_wet, ba_full
+
+      kfs = [1, 1, 1, 0]
+      ba_full = [625.0_dp, 625.0_dp, 625.0_dp, 625.0_dp]
+      ba_wet = [0.29_dp, 182.0_dp, 470.8_dp, 0.0_dp]
+      kcu = [2, 2, 2]
+      ln(:, 1) = [1, 3]
+      ln(:, 2) = [1, 2]
+      ln(:, 3) = [1, 4]
+      wu = [1.046_dp, 0.562_dp, 0.0_dp]
+
+      call ibm_select_small_cell_merges(kcu, ln, wu, kfs, ba_wet, ba_full, 0.01_dp, tgt, lnk)
+      call F90_ASSERT_EQ(tgt(1), 2, 'Small cell should merge across the narrowest wet edge.')
+      call F90_ASSERT_EQ(lnk(1), 2, 'Merge link should be the narrowest wet edge.')
+      call F90_ASSERT_EQ(tgt(2) + tgt(3) + tgt(4), 0, 'Non-source cells must not receive a merge target.')
+
+      call ibm_select_small_cell_merges(kcu, ln, wu, kfs, ba_wet, ba_full, 1.0e-4_dp, tgt, lnk)
+      call F90_ASSERT_EQ(tgt(1), 0, 'Cell above the merge threshold must not merge.')
+      call F90_ASSERT_EQ(lnk(1), 0, 'No merge link expected above the threshold.')
+
+      call ibm_select_small_cell_merges(kcu, ln, wu, kfs, ba_wet, ba_full, 0.0_dp, tgt, lnk)
+      call F90_ASSERT_EQ(tgt(1), 0, 'Merging must be off when the fraction is zero.')
+   end subroutine test_small_cell_merge_selection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_small_cell_merge_blocked, test_small_cell_merge_blocked,
+   subroutine test_small_cell_merge_blocked() bind(C)
+      integer, dimension(1) :: kcu_src
+      integer, dimension(2, 1) :: ln_src
+      integer, dimension(2) :: kfs_src, tgt_src, lnk_src
+      real(kind=dp), dimension(1) :: wu_src
+      real(kind=dp), dimension(2) :: ba_wet_src, ba_full_src
+
+      integer, dimension(2) :: kcu_1d
+      integer, dimension(2, 2) :: ln_1d
+      integer, dimension(3) :: kfs_1d, tgt_1d, lnk_1d
+      real(kind=dp), dimension(2) :: wu_1d
+      real(kind=dp), dimension(3) :: ba_wet_1d, ba_full_1d
+
+      ! Two adjacent sources must not merge into each other (no merge chains).
+      kfs_src = [1, 1]
+      kcu_src = [2]
+      ln_src(:, 1) = [1, 2]
+      wu_src = [0.5_dp]
+      ba_wet_src = [0.29_dp, 0.29_dp]
+      ba_full_src = [625.0_dp, 625.0_dp]
+      call ibm_select_small_cell_merges(kcu_src, ln_src, wu_src, kfs_src, ba_wet_src, ba_full_src, 0.01_dp, tgt_src, lnk_src)
+      call F90_ASSERT_EQ(tgt_src(1) + tgt_src(2), 0, 'Adjacent small cells must not merge into each other.')
+
+      ! A source with a 1D link must be left unmerged.
+      kfs_1d = [1, 1, 1]
+      kcu_1d = [2, 1]
+      ln_1d(:, 1) = [1, 2]
+      ln_1d(:, 2) = [1, 3]
+      wu_1d = [0.5_dp, 0.5_dp]
+      ba_wet_1d = [0.29_dp, 625.0_dp, 625.0_dp]
+      ba_full_1d = [625.0_dp, 625.0_dp, 625.0_dp]
+      call ibm_select_small_cell_merges(kcu_1d, ln_1d, wu_1d, kfs_1d, ba_wet_1d, ba_full_1d, 0.01_dp, tgt_1d, lnk_1d)
+      call F90_ASSERT_EQ(tgt_1d(1), 0, 'Source with a non-2D link must not merge.')
+      call F90_ASSERT_EQ(lnk_1d(1), 0, 'Source with a non-2D link must have no merge link.')
+   end subroutine test_small_cell_merge_blocked
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_ibm_geometry, test_wet_face_along_merged_edge, test_wet_face_along_merged_edge,
+   subroutine test_wet_face_along_merged_edge() bind(C)
+      ! The wet polygon of a merged cell has a single edge along y = 75 that passes the face end x = 25 without a vertex.
+      real(kind=dp), dimension(2) :: face_x, face_y
+      real(kind=dp), dimension(4) :: wet_x, wet_y
+      real(kind=dp) :: face_fraction, xm, ym
+      logical :: valid
+
+      face_x = [25.0_dp, 0.0_dp]
+      face_y = [75.0_dp, 75.0_dp]
+      wet_x = [0.0_dp, 25.0_dp, 26.05_dp, 0.0_dp]
+      wet_y = [61.0_dp, 74.44_dp, 75.0_dp, 75.0_dp]
+      call ibm_measure_wet_face(face_x, face_y, wet_x, wet_y, 1.0e-9_dp, face_fraction, xm, ym, valid)
+      call F90_ASSERT_TRUE(valid, 'Face on a merged polygon edge should be recovered.')
+      call F90_ASSERT_NEAR(face_fraction, 1.0_dp, 1.0e-12_dp, 'Face on a merged polygon edge should be fully wet.')
+      call F90_ASSERT_NEAR(xm, 12.5_dp, 1.0e-12_dp, 'Wet face midpoint x should be the face midpoint.')
+      call F90_ASSERT_NEAR(ym, 75.0_dp, 1.0e-12_dp, 'Wet face midpoint y should lie on the face.')
+   end subroutine test_wet_face_along_merged_edge
    !$f90tw)
 
 end module test_ibm_geometry

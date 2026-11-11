@@ -1122,6 +1122,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
       call prop_get(md_ptr, 'numerics', 'ImmersedBoundary', immersed_boundary)
       call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryMinAreaFrac', immersed_boundary_min_area_frac)
+      call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryMergeAreaFrac', immersed_boundary_merge_area_frac)
       call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryCartesianTol', immersed_boundary_cartesian_tol)
       call prop_get(md_ptr, 'numerics', 'ImmersedBoundaryTangentialCorrection', immersed_boundary_tangential_correction)
       call prop_get(md_ptr, 'numerics', 'ImmersedBoundarySmallEdgeFrac', immersed_boundary_small_edge_frac)
@@ -1132,6 +1133,9 @@ contains
       end if
       if (immersed_boundary_min_area_frac <= 0.0_dp .or. immersed_boundary_min_area_frac > 1.0_dp) then
          call mess(LEVEL_ERROR, 'ImmersedBoundaryMinAreaFrac must be in (0, 1].')
+      end if
+      if (immersed_boundary_merge_area_frac < 0.0_dp .or. immersed_boundary_merge_area_frac > 1.0_dp) then
+         call mess(LEVEL_ERROR, 'ImmersedBoundaryMergeAreaFrac must be in [0, 1].')
       end if
       if (immersed_boundary_cartesian_tol <= 0.0_dp .or. immersed_boundary_cartesian_tol > 1.0e-3_dp) then
          call mess(LEVEL_ERROR, 'ImmersedBoundaryCartesianTol must be in (0, 1e-3].')
@@ -3445,6 +3449,10 @@ contains
       end if
       if (writeall .or. comparereal(immersed_boundary_min_area_frac, 0.1_dp) /= 0) then
          call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryMinAreaFrac', immersed_boundary_min_area_frac, 'Minimum active area fraction for IBM cut cells')
+      end if
+      if (writeall .or. comparereal(immersed_boundary_merge_area_frac, 0.0_dp) /= 0) then
+         call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryMergeAreaFrac', immersed_boundary_merge_area_frac, &
+                       'Wet area fraction below which an IBM small cell is merged into its wet neighbour (0: off)')
       end if
       if (writeall .or. comparereal(immersed_boundary_cartesian_tol, 1.0e-6_dp) /= 0) then
          call prop_set(prop_ptr, 'numerics', 'ImmersedBoundaryCartesianTol', immersed_boundary_cartesian_tol, 'Relative tolerance for the IBM Cartesian mesh check')

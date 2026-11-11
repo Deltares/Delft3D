@@ -12,6 +12,92 @@ Evidence labels used throughout:
 
 Abbreviation: `K = src/engines_gpl/dflowfm/packages/dflowfm_kernel/src`.
 
+## 0. Resume point (living section — update at every stop)
+
+**Status (2026‑11‑11): mechanism (i), small-cell merging, works at 1 h and 8 h; default path unchanged.**
+- Tests after the final style fixes: `cmake --build build_dflowfm_debug` exit 0; `ctest -R 'test_ibm|test_mdu'` 47/47; full kernel `ctest` 298/298.
+- Style: the single-line `if` statements and the over-long lines introduced by this work were converted (fortran.instructions.md).
+- **Open decision (user):** keep the threshold merge (24 cells in c05 at `ImmersedBoundaryMergeAreaFrac = 0.01`) or restrict it to face 8 only. Not yet answered. The 8 h result above is for the 24-cell set.
+- Flooding/drying and morphology challenges and the decisions they require are in §9.1.
+- Code: `ImmersedBoundaryMergeAreaFrac` (default 0, range [0, 1], opt-in) → `ibm_select_small_cell_merges` (m_immersed_boundary.f90), called from `cutcelwu_ibm_union` (cutcelwu.f90) via `cutcelwu_merge_small_cells`. MPI (`jampi > 0`) is rejected.
+- Geometry fix (option (a)): the merge target's wet polygon is the union of its own wet region and the merged cells' wet regions. The region is built as the group bounding box minus other flow cells minus solids (`ibm_clip_region_by_solids`).
+- Failures on the way:
+  - Index 15 (`wet link face could not be recovered`): a rewired link kept the face of the original cell, which was not on the target's wet polygon. Fixed by the union above.
+  - Index 7 (same error after the union): the union's top edge runs through the face endpoint (25, 75), but the endpoint is not a polygon vertex because clipping dropped the collinear vertex. `ibm_measure_wet_face` counted vertices only. Fixed by also counting the overlap of polygon edges lying along the face (`ibm_measure_wet_face`, m_immersed_boundary.f90 ~1421–1480).
+- Tests: `test_small_cell_merge_selection`, `test_small_cell_merge_blocked`, `test_wet_face_along_merged_edge` in `test_ibm_geometry.f90`. `ctest -R 'test_ibm|test_mdu'` → 47/47 pass.
+- c05 1 h with `ImmersedBoundaryMergeAreaFrac = 0.01` (`input_work/run_merge1h_v4.log`, `input_work/dflowfmoutput_merge1h/`): exits 0. Face 8 velocity is 0 (merged). Max |u| is 2.10 m/s at cell 164 (baseline 3.59 m/s at cell 8). Cell 73 is 2.04 m/s.
+- Key-off regression (`input_work/dflowfmoutput_keyoff_1h/`, `run_keyoff_1h.log`): bit-identical to the baseline at 1 h (max diff 0.0 for ucx, ucy, s1).
+- 8 h merged run (`input_work/c05_merge8h.mdu` → `input_work/dflowfmoutput_merge8h/`, `run_merge8h.log`): **completes, exit 0, no errors** (simulated 8 h; timeloop ≈ 3.5 min wall). Max |u| is 3.57 m/s at 2 h onward for the baseline and **2.09 m/s from 1 h onward** with merging, steady to 8 h (no growth, unlike the floor run). Cell 8 is merged (`ba` = 0). Cell 164 (2.09 m/s, `ba` = 62.5) is the new maximum. It was already 2.12 m/s in the baseline, so the remaining ~2 m/s level is a general feature of clamped cut cells, not a new spike.
+- Scope of the merge: the selection uses the **true** wet fraction (below `ImmersedBoundaryMergeAreaFrac` of the full area), so it merged **24 cells**, not only face 8. All 24 had the clamped solver storage of 62.5 m². Their storage is removed, which lowers total storage by 1451 m² out of 1.5 × 10⁶ m² (≈ 0.1 %). The targets gain only 48.5 m² in total, because the merged target's extra area is its own wet overlap.
+- Count of Numlimdt (Courant-limit events): 45 272 baseline vs 43 424 merged at 8 h (cumulative).
+- `input_work/c05_channel_oblique_ibm.mdu` is the baseline (key removed, TStop 8, OutputDir `dflowfmoutput`).
+- Morphodynamics: merges and merged polygons must be recomputed whenever the bank geometry changes. Out of scope for static banks (see §9).
+
+**Current investigation (2026‑11‑09):** c05 runs to completion but one small cut cell carries an unrealistic velocity (~3.5 m/s, see the colour plot of `mesh2d_ucmag`). The cell sits at x 25–50 m, y 50–75 m, next to the oblique solid boundary, and is almost fully solid.
+
+Run used for evidence: `test/deltares_testbench/data/cases/e02_dflowfm/f600_ibm/c05_channel_oblique_ibm/input_work/` (debug `dflowfm-cli`, built from the current tree). Outputs are in `input_work/dflowfmoutput/`.
+
+Findings so far (2026‑11‑09):
+
+- Red cell = face 8 (1‑based; python index 7), x 25–50, y 50–75. Solver `mesh2d_flowelem_ba` = 62.5 m².
+- Analytic wet area from `solid_001.pol` / `solid_002.pol` (clipping, all 10 680 faces) = **0.29 m²**. Only 78 faces differ, and they are all clamped to 62.5 m² (= 0.1 × 625 m²).
+- The clamp is `ba(n) = max(wet_area, baorgfracmin * full_area)` at `cutcelwu.f90:1026`. In c05 `Baorgfracmin = 0.1` is set explicitly in `[numerics]` (mdu line 20), so it is not the `ImmersedBoundaryMinAreaFrac` default.
+- Edge wet widths are **not** clamped: left edge 0.56 m and top edge 1.04 m match the analytic values. Edge flux through the left edge is 7.4 m³/s, so the edge velocity is 3.1 m/s (`u1`), and the cell-centre velocity is ~3.6 m/s.
+- Working hypothesis: the storage area is floored to 10 % while the flow area is true, so the velocity is q / (true width × depth), which is inflated by a sliver-shaped cut cell. Still to confirm: the flux through the sliver is 36× the average channel flux per metre width (7.4 m³/s / 0.56 m vs about 0.36 m³/s per m), which suggests the momentum/flux on that edge is not physically constrained.
+
+Further findings (2026‑11‑09, second pass):
+
+- Edge momentum: `u1 = ru − fu·Δs1` (`compute/u1q1.f90:80`, `:100`). `fu = cu·bui`, `ru = du·bui`, `bui = 1/(dti + advi + frL)` (`compute/furu.f90:163–213`). The edge velocity does not use `wu` or `ba`. `wu` enters only through `au = hu·wu`, which sets `q1 = au·u1`.
+- IBM pressure gradient: `gdxi = ag·dxi_wet` for cut links (`compute/furu.f90:150–154`). `dxi_wet = 1/max(dn, dmin)`, with `dmin = 0.25·dx` (`prepost/m_immersed_boundary.f90:1035`). The wet-centroid distance is physically consistent, so this is not a formula error.
+- Mass balance at face 8 is consistent: inflow 7.44 m³/s (left) equals outflow 7.44 m³/s (top). Its bottom and right edges are dry.
+- Working hypothesis (bottleneck): the upstream column of cells carries roughly 8–9 m³/s (157 m³/s over ~441 m of normal width, times 25 m). Face 8 is the only wet opening for that column, so the whole flux passes through its 0.56 m left edge. The velocity is then q/(wet width·depth) ≈ 7.4/(0.56·4.18) ≈ 3.2 m/s. This is a staircase throat effect of the cut-cell representation, not a numerical bug. It is not yet confirmed against the flux of the upstream column.
+- Experiment `exp_baorg_1e-4/` finished (8 h). Its results are in the checklist below.
+
+Next steps (tick off as done):
+
+- [x] Identify the face index of the red cell and its neighbours.
+- [x] Extract `mesh2d_flowelem_ba`, `mesh2d_s1`, `mesh2d_ucx/ucy`, `mesh2d_u1`, `mesh2d_q1` for that cell.
+- [x] Compare the solver wet area with the analytic clipping result (mismatch found: storage floor).
+- [x] Find where the edge velocity `u1` is computed from `q1` and the edge wet width (see second pass above). The storage floor does not drive `u1`.
+- [x] Check whether the 1e-4 experiment finishes (done, 8 h). Final face velocity: baseline 3.57 m/s, `Baorgfracmin = 1e-4` 3.90 m/s, so the storage floor is ruled out. Both runs: 214/227 faces above 1.5 m/s.
+- [x] Decide the fix with the user. **Decision: option (a), floor the partly wet edge width to a fraction of the full edge length.**
+- [x] Add opt-in key `ImmersedBoundaryMinEdgeWidthFrac` (default 0 = off, so default behaviour is unchanged). Wired through `m_flowparameters.f90`, `unstruc_model.f90` (read, validate in [0, 1], write), and `test_mdu_file_read_write.f90`.
+- [x] Apply the floor in `cutcelwu_ibm_union` (`cutcelwu.f90`, after the per-cell loop). Only partly wet edges (`0 < wu < wu_full`) are raised, so dry faces stay closed.
+- [x] Rebuild the debug binary and run the unit tests. First attempt failed at initialization: `ibm_build_geometry` (`m_immersed_boundary.f90`, wet-face check) compares the polygon width with `edge_frac` and reported "wet-face width mismatch on link 8" (polygon 0.0225 vs cutcelwu 0.1). Fix: `ibm_build_geometry` takes an optional trailing `min_edge_frac` (passed from `flow_geominit.f90`). A floored edge (`edge_frac == min_edge_frac` and polygon width smaller) is accepted; any other mismatch still errors. New unit test `test_floored_wet_edge` (`test_ibm_geometry.f90`) covers accept, reject without floor, and reject a non-floor mismatch. Result: 45/45 IBM and MDU tests pass.
+- [x] Run c05 in `input_work/` with the key set to 0.1. **Result: the floor makes the run worse and it aborts.** Speeds at matching times (baseline vs floor): 1 h face 8 = 3.59 vs 7.02 m/s, max 3.59 (face 8) vs 109.8 (face 5569); 2 h face 8 = 3.57 vs 21.1, max vs 126.6 (face 5555); 3 h face 8 = 3.57 vs 15.9, max vs 191.7 (face 5555). Faces above 1.5 m/s at 3 h: 214 vs 2403. The run then stopped at 3h23m with `ERROR: Average computational time step below threshold: 0.9346E-03 < 0.1000E-02`. Baseline reaches 8 h cleanly. Evidence: `input_work/dflowfmoutput_floor0.1_aborted/`, baseline: `input_work/dflowfmoutput_baseline_bafloor0/`. Conclusion: widening partly wet edge conveyance without matching storage destabilises the solver. The "larger wu, lower u" hypothesis is rejected.
+- [x] **Decision (user, 2026‑11‑10): revert the floor and investigate further.** Reverted all kernel and test changes (`git checkout`, only the floor work was uncommitted). Removed the key from `input_work/` mdu. Rebuilt `dflowfm-cli` and `test_dflowfm_kernel_gtest`. `ctest -R 'test_ibm|test_mdu'`: 44/44 pass.
+
+Direction from user (2026‑11‑11): **no ad‑hoc velocity limiter**. Work on steps 1 and 2 below first.
+
+Next steps (investigation, no code change yet):
+
+- [x] **Step 1, staircase throat (done 2026‑11‑11, baseline t = 8 h).** Flux through the vertical line x = 25 m, per 25 m band (eastward): band y 50–75 (face 8 row) = 7.4 m³/s; band 75–100 = 156.6; 100–125 = 103.8; 125–150 = 123.4; most others 106–114. The bank line `y = 61 + 0.5375·x` passes y ≈ 74.4 at x = 25, so the wet part of the face 8 band is only the top ~0.56 m. Unit flux there is 7.4/0.56 ≈ 13 m³/s/m, against ≈ 6.3 m³/s/m in the free band above (≈ 1.5 m/s) and ≈ 4.4 m³/s/m channel average. **Result:** the sliver carries about twice the unit flux of the free channel. The "8–9 m³/s column" estimate in the text above was too rough. The throat hypothesis is partly confirmed (the sliver is bank-trapped and its flux is set by link widths and momentum), but the sliver's unit flux being higher than its neighbours is not physically expected for a wall-adjacent strip. Not yet checked at 1 h or 2 h. **Checked (2026‑11‑11):** the band fluxes are the same at 1 h, 2 h and 8 h (band 50–75: 7.5 / 7.4 / 7.4 m³/s; band 75–100: 156.6 at all times). So the throat flux is steady, not a start-up transient.
+- [x] **Step 2, storage clamp vs time step (done 2026‑11‑11).** Correction: the log column "Interval-averaged time step" (≈ 0.07–0.1 s) is not the solver dt. The `.dia` gives `total/(dnt·ndx) = 2.52e‑6 s`, which implies about 10 200 steps over 8 h, so the mean dt is about 2.8 s. `mesh2d_Numlimdt` confirms it: 9 815 of 10 069 Courant-limit events come from **face 73** (1‑based; x 162.5, y 137.5). Its wet storage is 65.2 m² (not clamped, since 65 > 62.5). It passes 62.5 m³/s, giving `dtsc = CFLMax·vol/outflow ≈ 0.7·(65.2·4.05)/62.5 = 2.96 s`. This matches the solver's limiter. Face 8 is not the limiter. Its clamped storage (62.5 m²) gives `dtsc ≈ 24.7 s`. With the true wet area (0.29 m²) it would be `0.7·(0.29·4.19)/7.44 ≈ 0.11 s`, which matches the earlier 1e‑4 run. **Result:** the clamp is load-bearing for the time step. It is what keeps the global dt near 3 s. Removing it drives dt to about 0.1 s (about 30× more steps), so it cannot be removed as a fix. Face 73 is a second small-storage cut cell (10 % wet) with a large throughput and is the stability limit at about 3 s. The clamp hides this from face 8, but it is not the same mechanism as the velocity spike.
+- Useful checks: `Wrimap_flow_analysis = 1` (`[output]`, `unstruc_model.f90:2219`) writes the time-step analysis table. It was off in the baseline run. Map variables for Courant: `mesh2d_Numlimdt`. Post-processing script: `/tmp/ibm_flux_analysis.py` (scratch).
+- [ ] Decide the remaining options with the user: (b) small-cell redistribution or merging, (c) velocity limiter. Do not implement until the user chooses.
+- [x] Delete `exp_baorg_1e-4/` (storage-floor experiment, finished and recorded above). Keep `dflowfmoutput_baseline_bafloor0/` and `dflowfmoutput_floor0.1_aborted/` as evidence.
+- [x] **Decision (user, 2026‑11‑11): mechanism (ii) area-weighted coupling; key `ImmersedBoundaryMergeAreaFrac` default 0 (off); target = largest wet-area neighbour sharing a wet edge.**
+  - **Caveat (raised before coding, 2026‑11‑11):** under (ii) the small cell keeps its own links, so its 0.56 m wet edge width and the edge velocity `u1 = ru − fu·Δs1` are unchanged. Storage merging should fix the dt bottleneck (face 8 dt ≈ 0.11 s true vs 25 s clamped), but it is not expected to lower the ~3 m/s speed. Only (i) rewiring widens the throat.
+  - **Superseded (user, 2026‑11‑11): switch to mechanism (i), rewire links to the merged neighbour.** Target: lower the ~3 m/s speed at the throat.
+  - **Target rule corrected (2026‑11‑11, geometry check).** "Largest wet-area neighbour" is wrong. For face 8 it picks the north cell U (470.8 m²). Merging into U keeps the 0.56 m west sliver as the throat, so it does not fix the speed. The rule is: merge the small cell S into the wet neighbour across its **narrowest** shared wet edge. For face 8 this is L (west, shared edge 0.56 m → L ∪ S throat 1.05 m, the north edge). Narrowest-edge is also flow-direction independent and a pure function of geometry. Estimate (untested): throat velocity ≈ 7.4/(1.05·4.19) ≈ 1.7 m/s, down from ≈ 3.1 m/s at the sliver.
+  - **Alias overlay design for (i) (proposed, not yet coded).** Keep link indices, cell count, `ndx`/`lnx` and `ba_full` unchanged. For merged S with target N:
+    1. **Storage is not transferred (decision, 2026‑11‑11, implementation).** `ba(S) = bai(S) = 0`; `kfs(S) = 0`. S's unclamped wet area is not added to `ba(N)`, because `ibm_measure_wet_polygon` ([m_immersed_boundary.f90:292](/workspaces/Delft3D_2/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost/m_immersed_boundary.f90)) rejects an `area_used` that differs from the polygon-based area, and N's polygon is not unioned with S. Cost: about 0.16 % of N's area (0.29 m² of 182 m² for face 8 → L). Flag for morphodynamics.
+    2. The internal S–N link: `wu = 0` (dead).
+    3. Each live link of S to X ≠ N: replace S by N in `ln` for that link. Keep its geometry (dx, csu, snu, xu, yu).
+    4. `netcell(N)%lin`: reuse the dead internal-link slot, keeping the sign convention. Realloc only if N needs more slots.
+    5. The rewired link's normal distance is the original S–X distance. This is exact in c05 (L and S share a y-centre) and an approximation in general (document it).
+  - **Consistency arrays found for the overlay (2026‑11‑11, code read).** The overlay must update more than `ln`:
+    - `nd(k)%ln` / `nd(k)%lnx`: signed cell→link adjacency. Convention from [flow_geominit.f90:868-871](/workspaces/Delft3D_2/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost/flow_geominit.f90): `nd(k1)%ln = −L`, `nd(k2)%ln = +L`. A rewired link moves its entry from S to N with the same sign.
+    - `lncn(:, L)` holds net nodes, not flow cells (checked 2026‑11‑11). It needs no remapping. `netcell%lin` is net-link level and is not used by the overlay.
+    - `lnn` is not a flow-geometry array (only a network array in `m_netstore.f90`). Do not use it.
+    - `LLkkk` (Coriolis stencil, `icorio > 40`) has no readers outside `inifcori`, so a rewired link cannot leave a stale stencil.
+    - `ba`, `bai`, `kfs`, `wu` (internal link = 0), and `numlimdt` is handled by the existing Courant path.
+    - **Insertion point:** right after `cutcell_list(n12, 3)` ([flow_geominit.f90:1267](/workspaces/Delft3D_2/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost/flow_geominit.f90)). There `nd`, `ln`, `lncn` and `wu/ba` all exist. `lne2ln` and the net-level `netcell%lin` are not needed for the overlay. The restart path (`update_ibm_wet_bed_after_restart`, [flow_flowinit.f90:978](/workspaces/Delft3D_2/src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_kernel/prepost/flow_flowinit.f90)) also needs the overlay re-applied.
+  - **Morphodynamics solution (proposed, 2026‑11‑11).** Because cell and link indices do not change, `s1`, `u1` and `q1` need no remapping. The merged cells share one head, so un-merging gives `s1(S) = s1(N)` and conserves volume. Keep pristine copies of `ln`, `netcell%lin`, `lnn` and `ba`. On each geometry update, recompute the merge selection and overlay from those copies, so un-merge is trivial. Only `ba` and the overlay change. A full topology rebuild is needed only if the cell or link count changes (not in this design). Limitation: the link's dx and bed geometry still come from the original cell pair, so the rewired link is an approximation for large bank moves.
+  - **Open concern (user): morphodynamics.** Bank lines will move later, so small-cell sets change and the rewiring would have to be redone. Assessment: the plan keeps banks static for now (§5 / line ~395 "Bank erosion… separate plan"), and §5.3 M2 already re-evaluates `bl` of cut cells after `bathyupdate`. A topology change is more than that, since FM sizes `ndx`, `lnx`, netlinks and `Cutcelllist` at init. Rewiring on every morph step would need a full topology rebuild plus remapping of `s1`, `u1`, `q1` between the old and new mesh. So it is a real problem for morphodynamics, but not for the static-bank goal. Mitigation to evaluate: make the merge a pure function of the current cut-cell geometry (same rule each time the geometry is built), so a future rebuild reuses the same code path. Decision needed: proceed with (i) for static banks while flagging the morph rebuild cost, or first design the topology-change path.
+
+
+
 ---
 
 ## 1. Executive summary and recommendation
@@ -179,6 +265,15 @@ U35 parses a multipart `.pol` file and exercises `cutcelwu(4)` with both polygon
 **No test yet exercises the complete `cutcell_list` → `cutcelwu(4/5)` →
 `ibm_build_geometry` path**, which is where F1–F3 occur. Still missing: U14 as a `cutcelwu` case,
 U17–U22, U24, U26, U30, and U36 (§7.1).
+
+**Progress update (2026‑11‑09, c05 re‑run):** The F1 failure no longer reproduces. The Debug
+`dflowfm-cli` target was rebuilt from the current tree (`cmake --build build_dflowfm_debug --target
+dflowfm-cli`) and c05 was run in a scratch copy of `input/` with `OMP_NUM_THREADS=1`. It completes the
+8‑hour simulation with exit code 0, with no "could not be recovered" or "adjacent to a solid cell"
+messages (F2 is not reproduced either), and with finite `mesh2d_s1`, `mesh2d_ucx` and `mesh2d_ucy`.
+The `dflowfmoutput/…dia` in `c05…/input_work` is from 2026‑11‑02 and predates the last change to
+`m_immersed_boundary.f90`, so it is not evidence for the current code. The c05 result is a smoke run
+only; it is not a metric check, and `verify_metrics.py` is still missing.
 
 **Findings** (severity: B = blocks running the cases; H = high; M = medium; L = low).
 
@@ -764,6 +859,7 @@ MDU files of existing models do not change):
 |---|---|---|---|
 | `[numerics]` | `ImmersedBoundary` | `0` | 0 off; 1 = POC IBM (Cartesian 2D, free slip). |
 | `[numerics]` | `ImmersedBoundaryMinAreaFrac` | `0.1` | Floor on cut‑cell area fraction (sets `Baorgfracmin` if that is 0). |
+| `[numerics]` | `ImmersedBoundaryMergeAreaFrac` | `0` | Opt-in small-cell merging (mechanism (i)). A cut cell with wet area below this fraction of its full area is merged into the wet neighbour across its narrowest shared wet edge (its links are rewired). Range [0, 1]. Not supported with MPI (`jampi > 0`, error). |
 | `[numerics]` | `ImmersedBoundaryCartesianTol` | `1e‑6` | Relative tolerance of the Cartesian check. |
 | `[numerics]` | `ImmersedBoundaryTangentialCorrection` | `0` (slice 1) | M1 step 2 on/off. The default becomes 1 only if the stability study passes. |
 | `[numerics]` | `ImmersedBoundarySmallEdgeFrac` | `0.5` | M4 threshold `f_se` for small‑edge advection treatment. |
@@ -1507,6 +1603,10 @@ stencil generalises); immersed partial/no slip via pseudo‑walls; 3D; cell merg
 |---|---|---|
 | Small cut cells limit Δt (explicit advection CFL `setdtorg`) | Slow runs or instability | φ floor (existing `Baorgfracmin`); report % limited steps. Fallback: cell merging (paper‑like area‑weighted coupling of a small cell with its largest neighbour); or exclude IBM cut cells from the CFL check if `ja_timestep_*`‑style options allow — needs a stability study first. |
 | Floor alters the effective planform area | Small mass‑consistent bias (area error) | Report `area_deficit`; refinement study I6. |
+| Small-cell merging (`ImmersedBoundaryMergeAreaFrac > 0`): merged cell's storage is not transferred to the target (`ba` of the merged cell = 0) | Volume bias of about 0.16 % of the target's area in c05 (0.29 m² of 182 m²) | Accepted for the POC; quantify in a mass-balance check. |
+| Small-cell merging under morphodynamics: moving banks change the set of merged cells, so the rewiring and the target's wet polygon must be recomputed at every geometry update | Topology must be rebuilt, or the overlay recomputed, on each bank move. `ndx`/`lnx` are sized at init. | Out of scope for static banks. The merge is a pure function of the cut-cell geometry, so a future rebuild can reuse the same code path. |
+| Merged target's `ba` may exceed its full area (merged area is added to the polygon) | Unverified | Check `ba ≤ ba_full` in the 8 h run; add a unit check if needed. |
+| Several small cells merging into one target (group logic) | Untested | Add a unit test for a two-source group before relying on it. |
 | `cutcelwu` behaviour differs from the IBM geometry (snap rules, `BAMIN`, `ba` vs `numlimdt_baorg`) | Cross‑check failures | Align snap tolerance. If impossible, IBM overwrites `ba`/`wu` from its own geometry (one assignment loop) and the cross‑check becomes informational. |
 | Pressure‑gradient inconsistency at cut cells (`s1` at wet centroid, `dxi` from uncut centres) | **Dominant** near‑bank error: spurious force along the bank. Hidden by the §4.1 test. | M1 step 1 in slice 1 (implicit, structure‑preserving). M1 step 2 explicit with a stability study (W7). Exposed by I7, I9 and `E_grad`. Fallback: partially implicit (D8) or Strategy 3. |
 | M1 step 2 unstable (as the paper found for explicit corrections) | Tangential remainder of the gradient error stays | Limiter, Δt/θ sweep; if still unstable, Checkpoint E decision. The step‑1‑only result remains valid and is reported. |
@@ -1538,6 +1638,41 @@ stencil generalises); immersed partial/no slip via pseudo‑walls; 3D; cell merg
 
 The POC prepares for this by owning `wu_full`/`ba_full` and a single build entry point, and by not
 storing geometry in restart files.
+
+### 9.1 Flooding, drying and morphology: challenges and decisions (2026‑11‑11)
+
+Status: the static-bank, fixed-water-level path is tested at 1 h and 8 h (c05). Nothing below is
+tested yet. Each item is a question the design has to answer before it is extended.
+
+**Flooding and drying**
+
+| Challenge | What the current code does | Decision needed |
+|---|---|---|
+| Overtopping of banks | The IBM wet polygon is impermeable at every water level. Water cannot cross a bank even when `s1` is above the bank crest. | Accept for POC (bank crest above the maximum water level). Otherwise a flux path over the bank must be designed. |
+| Wetting and drying of partly wet cut cells | Storage is `ba` (fixed by geometry, clamped at `Baorgfracmin · ba_full`). Flow area is `hu · wu`, so the edge wet/dry state follows the existing `hu` threshold. The IBM widths `wu` do not change with the water level. Not verified for cut cells. | Test a cut cell that dries and wets again, with a sliver edge. Decide whether the existing threshold is enough. |
+| Merged cells have no head | Merged cells are inactive (`kfs = 0`), so `s1` of S is not solved. The target carries the head for the whole group. | Accept (the group shares one head). Check that a dry target does not leave an active rewired throat with no storage. |
+| Bed mismatch across a rewired throat | The target's storage uses its own centre bed. The rewired link keeps the original S–X bed. For a sloped bank, the throat can sit below the storage bed. | Choose a rule: a bed for the group (for example the minimum over the group), or reject merges when the bed difference exceeds a threshold. |
+| Volume below the bed of a merged cell | S's storage is dropped (about 0.16 % of the target area in c05). Water below the bed of S is also not counted. | Quantify it in a drying test. Decide if a mass-balance check is required. |
+| No drying case | c05 is a steady channel and does not dry. | Add a drying or flooding case (bank toe and a tidal or ramped stage) before merging is used with real water-level changes. |
+
+**Morphology**
+
+| Challenge | What the current code does | Decision needed |
+|---|---|---|
+| Bed change alone | `bl` of cut cells is re-evaluated after `bathyupdate` (§5.3 M2). The merge set depends on planform wet fractions only, so bed change alone does not change the set. The throat bed of a rewired link still comes from the original pair. | Accept, and document the throat-bed approximation. |
+| Bank movement changes the merge set | Each bank move changes the wet polygon, the merge set, the target polygon and the rewired links. `ndx`, `lnx` and netlinks are sized at init. | **Main decision:** keep banks static in this phase (as §3 and §5 say), or design an incremental rebuild (`ibm_rebuild`, §9 above) that re-applies the merge overlay from pristine copies of `ln`, `netcell%lin` and `ba`. |
+| Sediment flux through a rewired link | The flux is attributed to the cells of the link. For a rewired link this is the target's bed area, not S's. Mass is conserved in sum, but erosion and deposition are assigned to the target. | Decide whether this is acceptable for bank erosion (small cells at the toe are the main erosion sites), or whether flux should be split by wet area. |
+| Accumulated volume bias | The merged cell's storage is not transferred (§5 storage decision). The bias is small per step, but it may grow over long morphological runs. | Add a total-volume check (water plus bed) over a long run before morphology is switched on. |
+| Restart with morphology | The current restart path re-applies the wet-bed fit after reading the restart (F9, `update_ibm_wet_bed_after_restart`). That overwrites morphological `bl`. | Skip the fit when `bl` comes from the restart file (required before morphology). |
+| Merge-set stability over time | With static banks, the set is fixed for the run. | No decision now. Re-check when banks move. |
+
+**Decisions to make before morphology is switched on** (in order):
+1. Static banks only for this phase, or an incremental rebuild path (drives the design of the overlay).
+2. Merge scope: 24 threshold cells (current) or face 8 only (open decision in §0).
+3. Bed rule for merged groups and the drying test case.
+4. Sediment flux assignment through rewired links.
+5. Restart: skip the wet-bed fit when `bl` comes from the restart file.
+6. Mass-balance check (water plus bed volume) over a long run.
 
 ---
 
