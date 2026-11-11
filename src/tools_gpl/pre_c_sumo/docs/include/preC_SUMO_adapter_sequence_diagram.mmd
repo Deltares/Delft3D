@@ -1,0 +1,48 @@
+sequenceDiagram
+    autonumber
+    participant S as preC-SUMO Adapter
+    participant P as preCICE
+
+    rect rgba(56, 139, 253, 0.12)
+        Note over S,P: INITIALIZATION - once
+        S->>P: precice::Participant(...)
+        S->>P: setMeshVertices(csumo_2d_nodes)
+        S->>P: setMeshVertices(csumo_3d_nodes)
+        S->>P: setMeshVertices(sources_sinks_nodes)
+        S->>P: requiresInitialData()
+        alt Initial outgoing data required
+            Note over S: Report configuration error and return -1
+        else No initial outgoing data required
+            S->>P: initialize()
+        end
+    end
+
+    opt Initialization succeeded
+        rect rgba(63, 185, 80, 0.12)
+            Note over S,P: CYCLIC UPDATE - one iteration per preCICE window
+            loop While coupling ongoing
+                S->>P: isCouplingOngoing()
+                S->>P: dt = getMaxTimeStepSize()
+                Note over S: Full window dt, no internal timestep or subcycling
+                S->>P: readData(csumo_2d_nodes, relative time = dt)
+                S->>P: readData(csumo_3d_nodes, relative time = dt)
+                Note over S: First read follows initialize and uses initialized FM fields
+                Note over S: Prepare connected source/sink data using the FM fields just read
+                S->>P: isTimeWindowComplete()
+                alt Returns true
+                    S->>P: resetMesh(sources_sinks_nodes)
+                    S->>P: setMeshVertices(sources_sinks_nodes, updated vertices)
+                else Returns false
+                    Note over S: Keep registered mesh and continue exchange
+                end
+                S->>P: writeData(source/sink data)
+                S->>P: advance(dt)
+            end
+            S->>P: isCouplingOngoing() returns false
+        end
+
+        rect rgba(210, 153, 34, 0.12)
+            Note over S,P: CLEANUP - once
+            Note over S: Participant destructor cleanup, no explicit finalize() call
+        end
+    end

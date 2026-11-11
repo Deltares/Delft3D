@@ -15548,7 +15548,7 @@ contains
       return
    end subroutine find_flownodesorlinks_merge
 
-!! check if the flownodes or flowlinks in the current model have the same numbering with in the rst file
+!> Checks restart node/link ordering, allowing up to 10 micrometres of coordinate roundoff.
    subroutine check_flownodesorlinks_numbering_rst(n, janode, x_rst, y_rst, ierror)
       use precision, only: dp
       use network_data, only: xzw, yzw
@@ -15566,44 +15566,49 @@ contains
 
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
       integer :: i
-      real(kind=dp) :: dist, dtol = 1.0e-8_dp
+      real(kind=dp) :: dist
+      real(kind=dp), parameter :: COORDINATE_TOLERANCE = 1.0e-5_dp
       character(len=128) :: message
+      character(len=128) :: model_message, restart_message, distance_message
+      character(len=*), parameter :: COORDINATE_FORMAT = '(A, F24.11, A, F24.11, A)'
 
       ierror = 0
 
       allocate (x_tmp(n))
       allocate (y_tmp(n))
       if (janode == 1) then
-         call mess(LEVEL_INFO, 'Check flownodes numbering when restart:')
+         call mess(LEVEL_INFO, 'Checking flow-node ordering and coordinates against the restart file.')
          x_tmp = xzw
          y_tmp = yzw
       else
-         call mess(LEVEL_INFO, 'Check flowlinks numbering when restart:')
+         call mess(LEVEL_INFO, 'Checking flow-link ordering and coordinates against the restart file.')
          x_tmp = xu
          y_tmp = yu
       end if
 
       do i = 1, n
          dist = dbdistance(x_tmp(i), y_tmp(i), x_rst(i), y_rst(i), jsferic, jasfer3D, dmiss)
-         if (dist > dtol) then
+         if (dist > COORDINATE_TOLERANCE) then
             ierror = 1
             if (janode == 1) then
                if (jampi > 0) then
-                  write (message, "('my_rank=', I0, ': flownode mismatches: node=', I0,'.')") my_rank, i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('MPI rank ', I0, ': Restart coordinate mismatch at flow node ', I0,'.')") my_rank, i
                else
-                  write (message, "('flownode mismatches: node=', I0,'.')") i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('Restart coordinate mismatch at flow node ', I0,'.')") i
                end if
             else
                if (jampi > 0) then
-                  write (message, "('my_rank=', I0, ': flowlink mismatches: link=', I0,'.')") my_rank, i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('MPI rank ', I0, ': Restart coordinate mismatch at flow link ', I0,'.')") my_rank, i
                else
-                  write (message, "('flowlink mismatches: link=', I0,'.')") i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('Restart coordinate mismatch at flow link ', I0,'.')") i
                end if
             end if
+            write (model_message, COORDINATE_FORMAT) 'NetFile (x, y):   (', x_tmp(i), ', ', y_tmp(i), ')'
+            write (restart_message, COORDINATE_FORMAT) 'RestartFile (x, y): (', x_rst(i), ', ', y_rst(i), ')'
+            write (distance_message, "('Distance: ', ES10.3, ' m; tolerance: ', ES10.3, ' m.')") &
+               dist, COORDINATE_TOLERANCE
+            call mess(LEVEL_ERROR, trim(message)//new_line('a')//trim(model_message)//new_line('a')// &
+                      trim(restart_message)//new_line('a')//trim(distance_message))
 
             exit
          end if

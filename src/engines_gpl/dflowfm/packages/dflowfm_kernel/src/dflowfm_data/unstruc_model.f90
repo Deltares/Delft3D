@@ -1602,13 +1602,31 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'meteo', 'WindForcingHeight', sensor_height_wind_velocity)
-      call prop_get(md_ptr, 'meteo', 'AirTemperatureForcingHeight', sensor_height_air_temperature)
-      call prop_get(md_ptr, 'meteo', 'HumidityForcingHeight', sensor_height_humidity)
-      call prop_get(md_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, has_charnock_coefficient)
-      call prop_get(md_ptr, 'meteo', 'AirViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
-      call prop_get(md_ptr, 'meteo', 'AirViscousHeatCoefficient', air_viscous_heat_coeff)
-      call prop_get(md_ptr, 'meteo', 'AirViscousMoistureCoefficient', air_viscous_moisture_coeff)
+      tmpstr = ''
+      call prop_get(md_ptr, 'meteo', 'rainTemperature', tmpstr, success)
+      if (success) then
+         call convert_rain_temperature_string_to_integer(tmpstr, ibuf)
+         if (ibuf == -1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''airTemperature'' or ''wetBulbTemperature''.')
+         else
+            rain_temperature_method = ibuf
+         end if
+      end if
+
+      call prop_get(md_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity)
+      call prop_get(md_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature)
+      call prop_get(md_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity)
+      call prop_get(md_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, has_charnock_coefficient)
+      call prop_get(md_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, has_air_viscous_momentum_coefficient)
+      call prop_get(md_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff)
+      call prop_get(md_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff)
+
+      call prop_get(md_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, success)
+      if (success) then
+         if (longwave_emissivity < 0 .or. longwave_emissivity > 1) then
+            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmissivity. Should be inclusive between 0 and 1.')
+         end if
+      end if
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1968,7 +1986,7 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
       if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
@@ -2582,10 +2600,13 @@ contains
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
-
+      call prop_get(md_ptr, 'processes', 'sedimentationTransportCoupling', waq_sediment_transport_coupling)
+      perform_waq_sediment_transport_coupling = waq_sediment_transport_coupling == 1
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
-      ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .false.
+         ti_waqproc = md_dt_waqproc
          if (dt_user > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
             if (md_dt_waqproc < dt_user .or. modulo(md_dt_waqproc, dt_user) /= 0.0_dp) then
                ti_waqproc = max(1, floor(md_dt_waqproc / dt_user)) * dt_user
@@ -2595,6 +2616,9 @@ contains
             end if
          end if
       else if (md_dt_waqproc < 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .true.
+         ti_waqproc = 1.0_dp
          ! DtProcesses is negative
          call mess(LEVEL_INFO, 'DtProcesses is negative. Water quality processes are calculated with every hydrodynamic time step.')
       end if
@@ -3526,8 +3550,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
-      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep. Default: no limit)')
-      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep. Default: no limit)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep; default: no limit.')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep; default: no limit.')
 
       call prop_set(prop_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, '[-] Smagorinsky coefficient in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'ElderCoefficient', elder_coefficient, '[m2/s] Elder viscosity contribution in horizontal turbulence.')
@@ -3645,13 +3669,18 @@ contains
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
       end if
-      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, 'Sensor height of prescribed wind velocity [m]')
-      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, 'Sensor height of prescribed air temperature [m]')
-      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, 'Sensor height of prescribed humidity variable [m]')
-      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, 'Charnock coefficient [-] (may be overridden by space-varying input)')
-      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, 'Air viscous momentum coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, 'Air viscous heat coefficient [-]')
-      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, 'Air viscous moisture coefficient [-]')
+
+      call convert_rain_temperature_integer_to_string(rain_temperature_method, tmpstr)
+      call prop_set(prop_ptr, 'meteo', 'rainTemperature', tmpstr, 'Temperature to be used in rain temperature calculations (options: ''airTemperature'', ''wetBulbTemperature'').')
+
+      call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
+      call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
+      call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
+      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, '[-] Air viscous momentum coefficient')
+      call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, '[-] Air viscous heat coefficient')
+      call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, '[-] Air viscous moisture coefficient')
+      call prop_set(prop_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, '[-] Longwave emissivity of water surface')
 
       if (writeall .or. jased > 0) then
          call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
@@ -4186,6 +4215,7 @@ contains
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
+      call prop_set(prop_ptr, 'processes', 'sedimentationTransportCoupling', waq_sediment_transport_coupling, 'Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.')
 
       call datum(rundat)
       write (mout, '(a,a)') '# Generated on ', trim(rundat)

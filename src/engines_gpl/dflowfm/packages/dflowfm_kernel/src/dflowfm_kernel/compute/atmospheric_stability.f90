@@ -31,6 +31,10 @@ module m_atmospheric_stability
    public :: atmospheric_stability
    public :: t_atmospheric_stability
 
+   public :: compute_saturation_pressure
+   public :: compute_wet_bulb_temperature
+   public :: convert_dew_point_temperature_to_relative_humidity
+
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
    real(kind=dp), parameter :: CONST_Md = 28.9644e-3_dp ! dry air molar mass [kg/mol]
@@ -727,7 +731,7 @@ contains
    !> Compute saturation-vapor-pressure from temperature (ECMWF_T2esat).
    !! It uses Tetens formula from IFS documentation, Part IV, Section 7.5.2 Relative Humidity.
    !! If input is dew-point temperature, it gives actual vapor-pressure.
-   pure function compute_saturation_pressure(temperature) result(vapor_pressure)
+   elemental function compute_saturation_pressure(temperature) result(vapor_pressure)
       real(kind=dp), intent(in) :: temperature !< Temperature [K].
       real(kind=dp) :: vapor_pressure !< Saturation pressure [Pa].
       real(kind=dp), parameter :: COEFF_A = 17.502_dp
@@ -903,5 +907,38 @@ contains
       buoyancy_flux = max(0.0_dp, -CONST_GRAVITY * friction_velocity * virtual_temperature_scale / max(air_temperature, 1.0e-8_dp))
       convective_velocity_scale = (buoyancy_flux * boundary_layer_height)**(1.0_dp / 3.0_dp)
    end function compute_convective_velocity_scale
+
+   !> Use the Stull (2011) approximation to compute the wet-bulb temperature from air temperature and relative humidity
+   elemental function compute_wet_bulb_temperature(air_temperature, relative_humidity) result(wet_bulb_temperature)
+      ! Arguments
+      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
+      real(kind=dp), intent(in) :: relative_humidity !< [%] Relative humidity.
+      real(kind=dp) :: wet_bulb_temperature !< [degC] Wet-bulb temperature.
+
+      wet_bulb_temperature = air_temperature * atan(0.151977_dp * sqrt(relative_humidity + 8.313659_dp)) &
+                             + atan(air_temperature + relative_humidity) &
+                             - atan(relative_humidity - 1.676331_dp) &
+                             + 0.00391838_dp * relative_humidity**1.5_dp * atan(0.023101_dp * relative_humidity) &
+                             - 4.686035_dp
+
+   end function compute_wet_bulb_temperature
+
+   elemental function convert_dew_point_temperature_to_relative_humidity(dew_point_temperature, air_temperature) result(relative_humidity)
+      use physicalconsts, only: celsius_to_kelvin
+
+      ! Arguments
+      real(kind=dp), intent(in) :: dew_point_temperature !< [degC] Dew point temperature.
+      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
+      real(kind=dp) :: relative_humidity !< [%] Relative humidity.
+
+      ! Local variables
+      real(kind=dp) :: dew_point_vapor_pressure !< Vapor pressure at dew point temperature [Pa].
+      real(kind=dp) :: saturated_vapor_pressure !< Vapor pressure at air temperature [Pa].
+
+      dew_point_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(dew_point_temperature))
+      saturated_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(air_temperature))
+      relative_humidity = 100.0_dp * dew_point_vapor_pressure / saturated_vapor_pressure
+      
+   end function convert_dew_point_temperature_to_relative_humidity
 
 end module m_atmospheric_stability
