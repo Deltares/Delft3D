@@ -41,8 +41,8 @@ module m_physcoef
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
-   real(kind=dp), parameter :: vonkar = 0.41_dp !< von Karman constant ()
-   real(kind=dp), parameter :: vonkarw = 0.40_dp !< von Karman constant used in wind formulations
+   real(kind=dp), parameter :: VON_KARMAN = 0.41_dp !< von Karman constant ()
+   real(kind=dp), parameter :: VON_KARMAN_WIND = 0.40_dp !< von Karman constant used in wind formulations
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
@@ -76,13 +76,13 @@ module m_physcoef
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp), parameter :: c9of1 = 9.0_dp !< vonkar/log(c9of1 + dzb / z0)
+   real(kind=dp), parameter :: c9of1 = 9.0_dp !< VON_KARMAN/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
-   real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
+   real(kind=dp), parameter :: VISKIN = 1e-6_dp !< kinematic  viscosity water in keps model
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
-   real(kind=dp), parameter :: difmolsal = viskin / 700.0_dp !< molecular diffusivity of salinity
-   real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !< diffusivity of temperature
+   real(kind=dp), parameter :: difmolsal = VISKIN / 700.0_dp !< molecular diffusivity of salinity
+   real(kind=dp), parameter :: difmoltem = VISKIN / 6.7_dp !< diffusivity of temperature
    integer, parameter :: difmolsed = 0 !< diffusivity of sediment
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
@@ -124,9 +124,8 @@ module m_physcoef
    integer :: Jadelvappos !< only positive forced evaporation fluxes
    real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
 
-   real(kind=dp) :: tetav !< vertical teta transport
-   real(kind=dp) :: tetavkeps !< vertical teta k-eps
-   real(kind=dp) :: tetavmom !< vertical teta momentum
+   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents.
+   real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion.
 
    real(kind=dp) :: locsaltlev !< salinity level for case of lock exchange
    real(kind=dp) :: locsaltmin !< minimum salinity for case of lock exchange
@@ -174,9 +173,6 @@ contains
       Dalton = 0.0013_dp
       Jadelvappos = 0
       free_convection_coefficient = 0.14_dp
-      tetav = 0.55_dp
-      tetavkeps = 0.55_dp
-      tetavmom = 0.55_dp
       locsaltlev = 1.0_dp
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp

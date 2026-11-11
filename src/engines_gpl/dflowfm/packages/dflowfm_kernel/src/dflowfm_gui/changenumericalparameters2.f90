@@ -37,7 +37,7 @@ module m_changenumericalparameters2
 contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
-      use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, &
+      use m_flow, only: iturbulencemodel, jaustarint, turbulent_advection_scheme, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, &
          cffachormom, cfexphormom, cfconhormom, javatem, jaqaisq1, jalogprofatubndin, &
          javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
       use m_source_sink, only: source_sinks
@@ -70,7 +70,7 @@ contains
       OPTION(i) = 'JAUSTARINT                           ( )'
       it(2 * i) = 2
       i = i + 1
-      OPTION(i) = 'JAVAKEPS                                '
+      OPTION(i) = 'turbulent_advection_scheme                                '
       it(2 * i) = 2
       i = i + 1
       OPTION(i) = 'IDENSFORM                               '
@@ -256,7 +256,7 @@ contains
       i = i + 1
       call IFORMPUTINTEGER(2 * i, JAUSTARINT)
       i = i + 1
-      call IFORMPUTINTEGER(2 * i, JAVAKEPS)
+      call IFORMPUTINTEGER(2 * i, turbulent_advection_scheme)
       i = i + 1
       call IFORMPUTINTEGER(2 * i, IDENSFORM)
       i = i + 1
@@ -346,7 +346,7 @@ contains
             i = i + 1
             call IFORMGETINTEGER(2 * i, JAUSTARINT)
             i = i + 1
-            call IFORMGETINTEGER(2 * i, JAVAKEPS)
+            call IFORMGETINTEGER(2 * i, turbulent_advection_scheme)
             i = i + 1
             call IFORMGETINTEGER(2 * i, IDENSFORM)
             i = i + 1
