@@ -47,7 +47,7 @@ contains
     !> Carries out a Particle tracking step.
     subroutine delpar01 (itime, num_cells, num_layers, num_exchanges, num_substances_transported, &
             num_substances_total, dwqvol, surface, dwqflo, syname, &
-            num_spatial_time_fuctions, sfname, segfun, amass, conc, &
+            num_spatial_time_functions, sfname, segfun, amass, conc, &
             iaflag, intopt, num_monitoring_cells, isdmp, dmps, &
             amass2)
 
@@ -83,9 +83,9 @@ contains
         real(kind = real_wp), intent(in) :: surface(num_cells)           !< Horizontal surfaces
         real(kind = real_wp), intent(in) :: dwqflo (num_exchanges)             !< Delwaq flows
         character(20), intent(in) :: syname (num_substances_total)           !< Names of substances
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                   !< Number of segment functions
-        character(20), intent(in) :: sfname (num_spatial_time_fuctions)          !< Names of segment functions
-        real(kind = real_wp), intent(in) :: segfun (num_cells, num_spatial_time_fuctions)   !< Segment function values
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions                   !< Number of segment functions
+        character(20), intent(in) :: sfname (num_spatial_time_functions)          !< Names of segment functions
+        real(kind = real_wp), intent(in) :: segfun (num_cells, num_spatial_time_functions)   !< Segment function values
         real(kind = real_wp), intent(inout) :: amass  (num_substances_total, num_cells)    !< Delwaq mass array
         real(kind = real_wp), intent(inout) :: conc   (num_substances_total, num_cells)    !< Delwaq conc array
         integer(kind = int_wp), intent(in) :: iaflag                   !< If 1 then accumulation of balances

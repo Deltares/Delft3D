@@ -36,7 +36,7 @@ contains
     !
 
     subroutine set_old_items(lurep, old_items, num_substances_total, num_spatial_parameters, num_time_functions, &
-            num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
+            num_spatial_time_functions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
             funame, sfname, diname, vename, constants)
 
         !     Deltares Software Centre
@@ -57,13 +57,13 @@ contains
         integer(kind = int_wp), intent(in) :: num_substances_total             !< Number of systems
         integer(kind = int_wp), intent(in) :: num_spatial_parameters              !< Number of parameters
         integer(kind = int_wp), intent(in) :: num_time_functions             !< Number of functions ( user )
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions            !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions            !< Number of segment functions
         integer(kind = int_wp), intent(in) :: num_dispersion_arrays            !< Number of dispersion array's
         integer(kind = int_wp), intent(in) :: num_velocity_arrays            !< Number of velocity array's
         character(20), intent(inout) :: syname(num_substances_total)     !< Systems names
         character(20), intent(inout) :: paname(num_spatial_parameters)      !< Parameter names
         character(20), intent(inout) :: funame(num_time_functions)    !< Function names
-        character(20), intent(inout) :: sfname(num_spatial_time_fuctions)    !< Segment function names
+        character(20), intent(inout) :: sfname(num_spatial_time_functions)    !< Segment function names
         character(20), intent(inout) :: diname(num_dispersion_arrays)    !< Dispersion array names
         character(20), intent(inout) :: vename(num_velocity_arrays)    !< Velocity array names
         type(t_waq_item), intent(inout) :: constants  !< delwaq constants list

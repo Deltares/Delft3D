@@ -36,7 +36,7 @@ contains
     subroutine zlayer(nosegw, num_cells, num_substances_transported, num_substances_total, num_layers, &
             volume, noq12, num_exchanges, area, num_constants, &
             coname, cons, num_spatial_parameters, paname, param, &
-            num_spatial_time_fuctions, sfname, segfun, conc, mass, &
+            num_spatial_time_functions, sfname, segfun, conc, mass, &
             iknmrk, iknmkv, ifrmto)
 
         !>      Sets feature of dry cells below bed to zero, determines position bed layer
@@ -79,9 +79,9 @@ contains
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                 !< number of parameters
         character(20), intent(in) :: paname(num_spatial_parameters)       !< names of the parameters
         real(kind = real_wp), intent(in) :: param (num_spatial_parameters, num_cells) !< values of the parametrs
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions               !< number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)       !< names of the segment functions
-        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_fuctions) !< values of the constants
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions               !< number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)       !< names of the segment functions
+        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_functions) !< values of the constants
         real(kind = real_wp), intent(inout) :: conc  (num_substances_total, num_cells) !< model concentrations
         real(kind = real_wp), intent(inout) :: mass  (num_substances_total, num_cells) !< model masses
         integer(kind = int_wp), intent(inout) :: iknmrk(num_cells)       !< constant feature array

@@ -25,26 +25,38 @@
 !
 !-------------------------------------------------------------------------------
 
+!> Version strings and accessors for the volume tool.
 module dfm_volume_tool_version_module
-    use dfm_volume_tool_static_version_info
+   use dfm_volume_tool_static_version_info, only: TOOL_VERSION_PREFIX, TOOL_VERSION_PREFIX_ID, &
+                                                  TOOL_PRODUCT_NAME, TOOL_VERSION_SUFFIX, TOOL_VERSION_SUFFIX_FULL, TOOL_BRANCH, offset
 
-    implicit none
+   implicit none(type, external)
+   private
 
-    character(*),  public, parameter :: dfm_volume_tool_version_full = version_prefix // ', ' // product_name // version_suffix
-    character(*),  public, parameter :: dfm_volume_tool_version_id   = version_prefix_id // ', ' // product_name // ' ' // version_suffix_full
+   public :: DFM_VOLUME_TOOL_VERSION_FULL, DFM_VOLUME_TOOL_VERSION_ID
+   public :: getfullversionstring_dfm_volume_tool, getbranch_dfm_volume_tool
+
+   !> Product and build metadata written to NetCDF output.
+   character(*), parameter :: DFM_VOLUME_TOOL_VERSION_FULL = &
+                              TOOL_VERSION_PREFIX//', '//TOOL_PRODUCT_NAME//TOOL_VERSION_SUFFIX
+   !> Searchable product and build identification string.
+   character(*), parameter :: DFM_VOLUME_TOOL_VERSION_ID = &
+                              TOOL_VERSION_PREFIX_ID//', '//TOOL_PRODUCT_NAME//' '//TOOL_VERSION_SUFFIX_FULL
 
 contains
 
-    subroutine getfullversionstring_dfm_volume_tool(stringout)
-        character(*), intent(out) :: stringout
+   !> Return the full version string without its searchable marker.
+   subroutine getfullversionstring_dfm_volume_tool(stringout)
+      character(*), intent(out) :: stringout !< Product and build identification.
 
-        stringout = dfm_volume_tool_version_id(offset:)
-    end subroutine getfullversionstring_dfm_volume_tool
+      stringout = DFM_VOLUME_TOOL_VERSION_ID(offset:)
+   end subroutine getfullversionstring_dfm_volume_tool
 
-    subroutine getbranch_dfm_volume_tool(stringout)
-        character(*), intent(out) :: stringout
+   !> Return the source branch recorded at build time.
+   subroutine getbranch_dfm_volume_tool(stringout)
+      character(*), intent(out) :: stringout !< Source branch name.
 
-        stringout = branch
-    end subroutine getbranch_dfm_volume_tool
+      stringout = TOOL_BRANCH
+   end subroutine getbranch_dfm_volume_tool
 
 end module dfm_volume_tool_version_module

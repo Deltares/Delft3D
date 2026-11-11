@@ -2,6 +2,7 @@
 
 #include <array>
 #include <limits>
+#include <ranges>
 #include <sstream>
 #include <utility>
 
@@ -146,16 +147,10 @@ namespace
         // Add dummy preCICE quantity data buffers.
         mesh.quantities[pre_c_sumo::densities_id] = std::vector<double>(12);
         mesh.quantities[pre_c_sumo::flow_velocities_id] = std::vector<double>(12 * 3);
-        mesh.quantities[pre_c_sumo::c01_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c02_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c03_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c04_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c05_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c06_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c07_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c08_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c09_id] = std::vector<double>(12);
-        mesh.quantities[pre_c_sumo::c10_id] = std::vector<double>(12);
+        for (const auto id : pre_c_sumo::constituent_ids)
+        {
+            mesh.quantities[id] = std::vector<double>(12);
+        }
 
         return mesh;
     }
@@ -222,11 +217,18 @@ TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
     ASSERT_EQ(mesh_3d.number_of_nodes, 12);
     ASSERT_TRUE(mesh_3d.forward_map[0].has_intake);
     const auto intake_index = mesh_3d.forward_map[0].intake_index;
-    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index] = 1.0;
-    mesh_3d.quantities[pre_c_sumo::c01_id][intake_index + 1] = 5.0;
+    for (const auto& [index, id] : pre_c_sumo::constituent_ids | std::views::enumerate)
+    {
+        // The test 3d mesh has two z layers, write different concentrations in each layer
+        mesh_3d.quantities[id][intake_index] = static_cast<double>(index) + 1.0;
+        mesh_3d.quantities[id][intake_index + 1] = static_cast<double>(index) + 5.0;
+    }
     auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
     EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_consituents);
-    EXPECT_DOUBLE_EQ(constituents[0], 3.0);
+    for (std::size_t index = 0; index < constituents.size(); ++index)
+    {
+        EXPECT_DOUBLE_EQ(constituents[index], static_cast<double>(index) + 3.0); // Average value over all layers
+    }
 }
 
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
@@ -235,6 +237,34 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
     auto result = pre_c_sumo::readCsumoSettingsFile("non_existent_file.xml");
     EXPECT_FALSE(result.has_value());
     EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
+}
+
+TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesPropagatesValidationErrorWithoutIO)
+{
+    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
+    ASSERT_TRUE(settings.has_value()) << settings.error().message;
+    pre_c_sumo::Mesh mesh_2d{};
+    mesh_2d.coordinates = {1.0, 2.0};
+    mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{}};
+    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0.0}}, {pre_c_sumo::bed_levels_id, {1.0}}};
+    pre_c_sumo::Mesh mesh_3d{};
+    mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{}};
+    pre_c_sumo::FF2NFFileOperations file_operations;
+    file_operations.create_directories =
+        [](const std::filesystem::path&) -> std::expected<void, pre_c_sumo::WriteError> {
+        ADD_FAILURE() << "Directory creation must not be reached after a validation failure";
+        return std::unexpected(pre_c_sumo::WriteError{"unexpected directory creation"});
+    };
+    file_operations.write_file = [](const std::filesystem::path&,
+                                    std::string_view) -> std::expected<void, pre_c_sumo::WriteError> {
+        ADD_FAILURE() << "File writing must not be reached after a validation failure";
+        return std::unexpected(pre_c_sumo::WriteError{"unexpected file writing"});
+    };
+
+    const auto result = pre_c_sumo::writeFF2NFFiles(*settings, mesh_2d, mesh_3d, 0.0, file_operations);
+
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "Ambient points were not set");
 }
 
 TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndOneSink)
