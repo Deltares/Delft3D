@@ -139,14 +139,14 @@ contains
    end subroutine cleanup
 
    !$gtest
-   subroutine prepare_distinct_projections() bind(C)
+   subroutine test_multiple_projections() bind(C)
       type(tEcHarmonicsFrame), target :: frame
       type(tEcHarmonicProjection), pointer :: proj
       ! A shared phase frame needs separate projections when any source, target or converter ID differs.
       integer, dimension(3, 4), parameter :: IDS = reshape([1, 2, 3, &
-                                                         4, 2, 3, &
-                                                         1, 5, 3, &
-                                                         1, 2, 6], [3, 4])
+                                                            4, 2, 3, &
+                                                            1, 5, 3, &
+                                                            1, 2, 6], [3, 4])
       integer :: i
 
       do i = 1, size(IDS, 2)
@@ -164,10 +164,10 @@ contains
          call f90_expect_near(proj%sin_weight(1), -real(i, dp), 1.0e-12_dp, 'growth must preserve sine coefficients')
          call f90_expect_eq(proj%mask(1), i, 'growth must preserve masks')
       end do
-   end subroutine prepare_distinct_projections
+   end subroutine test_multiple_projections
 
    !$gtest
-   subroutine dense_coefficients() bind(C)
+   subroutine test_initialize_dense_projection() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcHarmonicProjection) :: proj
       logical :: success
@@ -183,10 +183,10 @@ contains
       call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'dense sine must use bilinear corner order')
       call f90_expect_true(all(proj%mask == [1, 0]), 'outside grid targets must be masked out')
       call cleanup(f)
-   end subroutine dense_coefficients
+   end subroutine test_initialize_dense_projection
 
    !$gtest
-   subroutine sparse_coefficients() bind(C)
+   subroutine test_initialize_sparse_projection() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcHarmonicProjection) :: proj
       logical :: success
@@ -201,10 +201,10 @@ contains
       call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'sparse sine must use full-grid phase indices')
       call f90_expect_true(all(proj%mask == [1, 0]), 'outside sparse targets must be masked out')
       call cleanup(f)
-   end subroutine sparse_coefficients
+   end subroutine test_initialize_sparse_projection
 
    !$gtest
-   subroutine station_coefficients() bind(C)
+   subroutine test_initialize_station_projection() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcHarmonicProjection) :: proj
       logical :: success
@@ -220,9 +220,9 @@ contains
       call f90_expect_near(proj%sin_weight(2), -8.0_dp, 1.0e-12_dp, 'a single station must support nearest-neighbour mapping')
       call f90_expect_true(all(proj%mask == 1), 'valid stations must be active')
       call cleanup(f)
-   end subroutine station_coefficients
+   end subroutine test_initialize_station_projection
 
-   subroutine check_missing_sources(f, phase_col, phase_row, expect_success)
+   subroutine test_missing_sources(f, phase_col, phase_row, expect_success)
       type(coefficient_fixture), target, intent(inout) :: f
       integer, intent(in) :: phase_col, phase_row
       logical, intent(in) :: expect_success
@@ -255,34 +255,34 @@ contains
             f%frame%phases(phase_col, phase_row) = 0.0_dp
          end block
       end do
-   end subroutine check_missing_sources
+   end subroutine test_missing_sources
 
    !$gtest
-   subroutine dense_missing_sources() bind(C)
+   subroutine test_dense_missing_sources() bind(C)
       type(coefficient_fixture), target :: f
       call setup_dense(f)
-      call check_missing_sources(f, 1, 1, .true.)
+      call test_missing_sources(f, 1, 1, .true.)
       call cleanup(f)
-   end subroutine dense_missing_sources
+   end subroutine test_dense_missing_sources
 
    !$gtest
-   subroutine sparse_missing_sources() bind(C)
+   subroutine test_sparse_missing_sources() bind(C)
       type(coefficient_fixture), target :: f
       call setup_sparse(f)
-      call check_missing_sources(f, 2, 2, .true.)
+      call test_missing_sources(f, 2, 2, .true.)
       call cleanup(f)
-   end subroutine sparse_missing_sources
+   end subroutine test_sparse_missing_sources
 
    !$gtest
-   subroutine station_missing_sources() bind(C)
+   subroutine test_station_missing_sources() bind(C)
       type(coefficient_fixture), target :: f
       call setup_stations(f)
-      call check_missing_sources(f, 1, 1, .false.)
+      call test_missing_sources(f, 1, 1, .false.)
       call cleanup(f)
-   end subroutine station_missing_sources
+   end subroutine test_station_missing_sources
 
    !$gtest
-   subroutine no_overlapping_targets() bind(C)
+   subroutine test_zero_overlap() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcHarmonicProjection) :: proj
       logical :: success
@@ -302,12 +302,12 @@ contains
          call cleanup(f)
          return
       end if
-      call f90_expect_true(all(proj%mask == 0), 'no overlap must produce an inactive projection')
+      call f90_expect_true(all(proj%mask == 0), 'zero overlap must produce an inactive projection')
       call cleanup(f)
-   end subroutine no_overlapping_targets
+   end subroutine test_zero_overlap
 
    !$gtest
-   subroutine coefficient_donors() bind(C)
+   subroutine test_initialize_extrapolation() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcHarmonicProjection) :: proj
       logical :: success
@@ -324,10 +324,10 @@ contains
       call f90_expect_eq(f%weights%substndx(2), 1, 'missing cell must use the valid target as donor')
       call f90_expect_eq(f%weights%substndx(3), 0, 'outside targets must not acquire donors')
       call cleanup(f)
-   end subroutine coefficient_donors
+   end subroutine test_initialize_extrapolation
 
    !$gtest
-   subroutine apply_known_angles() bind(C)
+   subroutine test_known_angles() bind(C)
       real(dp), dimension(3) :: values
       real(dp), dimension(4), parameter :: ANGLES = [0.0_dp, PI / 2.0_dp, PI, -PI / 2.0_dp]
       real(dp), dimension(4), parameter :: EXPECTED = [2.0_dp, 4.0_dp, -2.0_dp, -4.0_dp]
@@ -345,13 +345,13 @@ contains
          call f90_expect_near(values(2), 7.0_dp, 1.0e-12_dp, 'inactive targets must remain untouched')
          call f90_expect_near(values(3), 0.0_dp, 1.0e-12_dp, 'zero coefficients must produce zero')
       end do
-   end subroutine apply_known_angles
+   end subroutine test_known_angles
 
    !$gtest
-   subroutine apply_operands() bind(C)
+   subroutine test_apply_operands() bind(C)
       integer, dimension(8), parameter :: OPERANDS = [EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT, &
-         EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT, EC_OPERAND_MULTIPLY, &
-         EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM]
+                                                      EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT, EC_OPERAND_MULTIPLY, &
+                                                      EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM]
       real(dp), dimension(8), parameter :: EXPECTED = [2.0_dp, 2.0_dp, 7.0_dp, 9.0_dp, 9.0_dp, 14.0_dp, 2.0_dp, 7.0_dp]
       real(dp), dimension(2) :: values
       integer :: i
@@ -373,10 +373,10 @@ contains
       end if
       call f90_expect_near(values(1), 2.0_dp, 1.0e-12_dp, 'undefined targets must receive harmonic values')
       call f90_expect_near(values(2), 3.0_dp, 1.0e-12_dp, 'all active undefined targets must be replaced')
-   end subroutine apply_operands
+   end subroutine test_apply_operands
 
    !$gtest
-   subroutine apply_undefined_targets() bind(C)
+   subroutine test_apply_undefined_targets() bind(C)
       integer, dimension(4), parameter :: OPERANDS = [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM]
       real(dp), dimension(2) :: values
       integer :: i
@@ -389,10 +389,10 @@ contains
          call f90_expect_near(values(1), 7.0_dp, 1.0e-12_dp, 'validation failure must not partially update targets')
          call f90_expect_near(values(2), ec_undef_hp, 1.0e-12_dp, 'validation failure must preserve undefined targets')
       end do
-   end subroutine apply_undefined_targets
+   end subroutine test_apply_undefined_targets
 
    !$gtest
-   subroutine conversion_reuses_projection() bind(C)
+   subroutine test_conversion_reuses_projection() bind(C)
       type(coefficient_fixture), target :: f
       type(tEcConnection) :: connection
       type(tEcField), target :: t0, target_field
@@ -452,6 +452,6 @@ contains
       call f90_expect_false(success, 'conversion must reject a zero harmonic period')
       deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
       call cleanup(f)
-   end subroutine conversion_reuses_projection
+   end subroutine test_conversion_reuses_projection
 
 end module test_ec_harmonic_projection
