@@ -3151,7 +3151,7 @@
                 },
                 {
                     "key": "tracerConcentrationMax",
-                    "default_value": 1.797693134862316E+308,
+                    "default_value": 1.0E+300,
                     "value_type": "float",
                     "description": "Upper limit of cell centre tracer concentration after transport timestep.",
                     "status": {
@@ -3160,7 +3160,7 @@
                 },
                 {
                     "key": "tracerConcentrationMin",
-                    "default_value": -1.797693134862316E+308,
+                    "default_value": -1.0E+300,
                     "value_type": "float",
                     "description": "Lower limit of cell centre tracer concentration after transport timestep.",
                     "status": {

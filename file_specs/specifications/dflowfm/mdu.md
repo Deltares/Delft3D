@@ -389,8 +389,8 @@ In this field, physical model parameters can be inserted, for instance related t
 | `tempMin` | Limit the temperature to min value. | `0.0` |  | [°C] |  |
 | `saliMax` | Limit for salinity to max value. | `-999.0` |  | [ppt] |  |
 | `saliMin` | Limit for salinity to min value. | `0.0` |  | [ppt] |  |
-| `tracerConcentrationMax` 🔬 | Upper limit of cell centre tracer concentration after transport timestep. | `inf` |  |  |  |
-| `tracerConcentrationMin` 🔬 | Lower limit of cell centre tracer concentration after transport timestep. | `-inf` |  |  |  |
+| `tracerConcentrationMax` 🔬 | Upper limit of cell centre tracer concentration after transport timestep. | `1e+300` |  |  |  |
+| `tracerConcentrationMin` 🔬 | Lower limit of cell centre tracer concentration after transport timestep. | `-1e+300` |  |  |  |
 | `heat_eachStep` | Switch for heat each time step or each user time step. | `0` | <ul><li>**`0`**: each user time step</li><li>**`1`**: each time step</li></ul> |  |  |
 | `nudgeTimeUni` | Uniform nudge relaxation time. | `3600.0` |  | [s] |  |
 | `iniWithNudge` | Initialize salinity and temperature with nudge variables. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only initialize, no nudging</li></ul> |  |  |
