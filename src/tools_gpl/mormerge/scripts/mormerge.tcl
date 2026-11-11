@@ -2688,6 +2688,19 @@ foreach anode $nodelist {
 }
 
 if { $queuesys == "slurm" } {
+   if {$infillist(dimrexedir) != " " || ($infillist(runscript) == " " && $waveonline)} {
+      # Validate before starting MorMerge processes that wait for the conditions.
+      if {![info exists env(OMP_NUM_THREADS_SWAN)] || $env(OMP_NUM_THREADS_SWAN) eq ""} {
+         set env(OMP_NUM_THREADS_SWAN) 1
+      }
+      set swanThreads [string trimleft $env(OMP_NUM_THREADS_SWAN) 0]
+      set cpusPerTask $infillist(slurmcpuspertask)
+      if {![regexp {^[1-9][0-9]*$} $swanThreads] || $swanThreads > $cpusPerTask} {
+         puts stderr "ERROR: OMP_NUM_THREADS_SWAN must be an integer from 1 to\
+            slurmCpusPerTask ($cpusPerTask). Got \"$env(OMP_NUM_THREADS_SWAN)\"."
+         exit 1
+      }
+   }
    putsDebug "slurmNodesPerCondition   : $infillist(slurmnodespercondition)"
    putsDebug "slurmTasksPerCondition   : $infillist(slurmtaskspercondition)"
    putsDebug "slurmConditionStepsPerAllocationNode : $infillist(slurmconditionstepsperallocationnode)"
