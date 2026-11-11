@@ -81,7 +81,7 @@ module processes_input
     real   (KIND = real_wp), allocatable :: velo  (:, :)     !< Original velocities
     integer(KIND = int_wp) :: num_velocity_arrays_extra           !< Nr. of calculated velocities
     real   (KIND = real_wp), allocatable :: velx  (:, :)     !< Calculated velocities
-    real   (KIND = real_wp), allocatable :: vsto  (:)       !< Factor for velocitie
+    real   (KIND = real_wp), allocatable :: vsto  (:)       !< Factor for velocities
 
 end module processes_input
 

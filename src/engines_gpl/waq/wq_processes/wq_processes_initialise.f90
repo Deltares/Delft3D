@@ -188,7 +188,7 @@ contains
         character(len=200)  identification_text
         character(len=20)   rundat
         character(:), allocatable :: config
-        logical :: parsing_error, laswi, swi_nopro
+        logical :: parsing_error, laswi, swi_nopro, mergevelocities
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
         ! information
@@ -689,8 +689,19 @@ contains
 
         call primpro (procesdef, num_substances_total, syname, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
                 ioffx, num_substances_transported, dsto, vsto, num_dispersion_arrays_new, &
-                idpnw, num_velocity_arrays_new, ivpnw, noqtt, &
-                temp_status)
+                idpnw, num_velocity_arrays_new, ivpnw, noqtt, temp_status, mergevelocities=mergevelocities)
+        
+        ! Check vsto: within the context of D-FlowFM, the assumption is made that each substance has only one fall velocity with
+        ! a factor of 1.0, which is currently true for the current processes library. Then we can directly 
+        if(mergevelocities) then
+           write(*, *) 'ERROR: More than one extra velocity array found for at least one substance,'
+           write(*, *) '       or a fall velocity factor not equal to 1.0. This is currently not'
+           write(*, *) '       supported in D-Flow FM. Please contact Deltares for support.'
+           write(lunlsp, *) 'ERROR: More than one extra velocity array found for at least one substance,'
+           write(lunlsp, *) '       or a fall velocity factor not equal to 1.0. This is currently not'
+           write(lunlsp, *) '       supported in D-Flow FM. Please contact Deltares for support.'
+           call stop_with_error()
+        endif
 
         if (temp_status%ierr /= 0) then
             call main_status%increase_error_count()
