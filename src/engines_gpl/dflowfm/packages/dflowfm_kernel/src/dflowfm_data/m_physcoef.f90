@@ -125,7 +125,7 @@ module m_physcoef
    integer :: only_positive_evaporation_fluxes !< [-] Only positive forced evaporation fluxes.
    real(kind=dp) :: free_convection_coefficient !< [-] Free convection turbulence coefficient.
 
-   real(kind=dp), parameter :: THETA_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents. {former:tetav}
+   real(kind=dp), parameter :: THETA_VERTICAL_TRANSPORT = 0.55_dp !< [-] Theta used for vertical transport of constituents. {former:tetav}
    real(kind=dp), parameter :: THETA_KEPS_DIFFUSION = 0.55_dp !< [-] Theta used for k-epsilon vertical diffusion. {former:tetavkeps}
 
    real(kind=dp) :: locsaltlev !< [ppt] Salinity level for case of lock exchange.
