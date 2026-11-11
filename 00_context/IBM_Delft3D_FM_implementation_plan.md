@@ -28,6 +28,7 @@ Abbreviation: `K = src/engines_gpl/dflowfm/packages/dflowfm_kernel/src`.
 - Tests: `test_small_cell_merge_selection`, `test_small_cell_merge_blocked`, `test_wet_face_along_merged_edge` in `test_ibm_geometry.f90`. `ctest -R 'test_ibm|test_mdu'` → 47/47 pass.
 - c05 1 h with `ImmersedBoundaryMergeAreaFrac = 0.01` (`input_work/run_merge1h_v4.log`, `input_work/dflowfmoutput_merge1h/`): exits 0. Face 8 velocity is 0 (merged). Max |u| is 2.10 m/s at cell 164 (baseline 3.59 m/s at cell 8). Cell 73 is 2.04 m/s.
 - Key-off regression (`input_work/dflowfmoutput_keyoff_1h/`, `run_keyoff_1h.log`): bit-identical to the baseline at 1 h (max diff 0.0 for ucx, ucy, s1).
+- **Full IBM-off regression (2026‑11‑11): 33/33 f600 cases bit-identical** to the pre-IBM baseline (`8079e737ae`, built in a temporary worktree). Current build `build_dflowfm_debug/dflowfm_cli_exe/dflowfm`. Both binaries ran the same staged inputs (`build_regression/ibm_off_inputs/`), with `ImmersedBoundary = 0` in the 13 IBM cases and `OMP_NUM_THREADS=1`. Every variable in each `*_map.nc` and `*_his.nc` was compared byte for byte (`build_regression/compare.py`, run with the testbench venv). Run and compare with `build_regression/run_case.sh` and `build_regression/compare.py`. Scope caveat: c06 (MPI case) was run serially with IBM off, so MPI IBM-off is not covered.
 - 8 h merged run (`input_work/c05_merge8h.mdu` → `input_work/dflowfmoutput_merge8h/`, `run_merge8h.log`): **completes, exit 0, no errors** (simulated 8 h; timeloop ≈ 3.5 min wall). Max |u| is 3.57 m/s at 2 h onward for the baseline and **2.09 m/s from 1 h onward** with merging, steady to 8 h (no growth, unlike the floor run). Cell 8 is merged (`ba` = 0). Cell 164 (2.09 m/s, `ba` = 62.5) is the new maximum. It was already 2.12 m/s in the baseline, so the remaining ~2 m/s level is a general feature of clamped cut cells, not a new spike.
 - Scope of the merge: the selection uses the **true** wet fraction (below `ImmersedBoundaryMergeAreaFrac` of the full area), so it merged **24 cells**, not only face 8. All 24 had the clamped solver storage of 62.5 m². Their storage is removed, which lowers total storage by 1451 m² out of 1.5 × 10⁶ m² (≈ 0.1 %). The targets gain only 48.5 m² in total, because the merged target's extra area is its own wet overlap.
 - Count of Numlimdt (Courant-limit events): 45 272 baseline vs 43 424 merged at 8 h (cumulative).
@@ -987,7 +988,7 @@ status must be re-checked before the work package is closed.
 | Wetting and drying | Unchanged `kfs`/`hu` logic; a dried cut cell acts as an ordinary cell with smaller `ba`. Moving bank shorelines are out of scope (§5.2) | Planned (see §9.1) | Target test in §7.2 |
 | Map restart | Restart holds state only (§2.2). Wet-bed fit must not overwrite evolved `bl` after restart (F9) | Planned (F9 open) | Target restart test (§7.2) |
 | Morphology (bed update) | Out of scope for this phase; banks static (decision recorded in §0) | Out of scope | §9.1 |
-| IBM off | Bit-identical to the current code (§5.5) | Partly verified: c05 1 h key-off is bit-identical; all c01–c15 not yet run | Full regression run (target, §8) |
+| IBM off | Bit-identical to the pre-IBM code (§5.5) | Verified: 33/33 f600 cases bit-identical to `8079e737ae` (§0). MPI IBM-off not covered | Done; MPI IBM-off run open |
 | Hot-loop overhead, IBM off | `furu`/`advec` hooks must cost < 1 % (F11) | Not measured | Timing run (target, §8) |
 | MPI (`jampi > 0`) | Owner-only fitting and reductions (§5.6); merge rejected | Partly implemented (W2, F10); c06 2-rank smoke run passes | I5 serial/MPI equivalence (§7.2) |
 
@@ -1816,7 +1817,7 @@ plan; `[ ]` = open, with the reason.
 - [ ] Every degenerate case in §3.2 has a named test. Open: check each row of the §3.2 table (plan ~line 594) against §7.
 - [ ] Every new keyword is implemented or rejected with a tested message. Partly: the rejection rules are in §5.5 and §5.7. Their tests are still targets.
 - [ ] Every option interaction is supported, rejected, or ignored, with a test (§5.7). Most rows have a status, but many tests are still targets.
-- [ ] IBM-off results are proven bit-identical, and the hot-loop overhead is measured. Open: only c05 at 1 h is verified; the full regression and the timing run are not done.
+- [ ] IBM-off results are proven bit-identical, and the hot-loop overhead is measured. Done: 33/33 f600 cases bit-identical to the pre-IBM baseline (§0). Open: MPI IBM-off run (c06 was run serially) and the hot-loop timing run (F11).
 - [x] Verification uses an oracle independent of the code under test (analytical solutions, §8 and §7.2).
 - [x] Every work package has a definition of done that requires executed, passing tests (§6, §8). Status is tracked per work package in §0.
 - [ ] Every build and test command names the exact target and has been checked against the repo docs. Open: §11 names targets; the check against the repo docs has not been done.
