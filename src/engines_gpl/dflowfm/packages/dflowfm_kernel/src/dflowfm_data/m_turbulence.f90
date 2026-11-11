@@ -41,7 +41,7 @@ module m_turbulence
    integer, parameter :: SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE = 1
    real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION = 1.3_dp
    real(kind=dp), parameter :: SIGMA_TURBULENT_DISSIPATION_INVERSE = 1.0_dp / SIGMA_TURBULENT_DISSIPATION
-   real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
+   real(kind=dp), parameter :: SIGRHO = 0.7_dp !< Buoyancy
    real(kind=dp), parameter :: C2E = 1.92_dp
    real(kind=dp), parameter :: C2T = 1.0_dp - C2E
    real(kind=dp), parameter :: C3T_STABLE = CMUKEP
