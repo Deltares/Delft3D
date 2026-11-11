@@ -390,11 +390,6 @@ namespace ini
     IniData Parse(const std::string& ini, IniScheme scheme, IniParserOptions options)
     {
         std::istringstream stream(ini);
-        return Parse(stream, std::move(scheme), std::move(options));
-    }
-
-    IniData Parse(std::istream& stream, IniScheme scheme, IniParserOptions options)
-    {
         return ParsingContext(scheme, options).Parse(stream);
     }
 

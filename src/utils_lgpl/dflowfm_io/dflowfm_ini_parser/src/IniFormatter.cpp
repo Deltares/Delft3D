@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
-#include <utility>
 #include <vector>
 
 namespace ini
@@ -158,13 +157,8 @@ namespace ini
     std::string Format(const IniData& iniData, IniScheme scheme, IniFormatterOptions options)
     {
         std::ostringstream oss;
-        Format(iniData, oss, std::move(scheme), std::move(options));
+        WriteSections(iniData, oss, scheme, options);
         return oss.str();
-    }
-
-    void Format(const IniData& iniData, std::ostream& stream, IniScheme scheme, IniFormatterOptions options)
-    {
-        WriteSections(iniData, stream, scheme, options);
     }
 
 } // namespace ini

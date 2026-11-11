@@ -3,7 +3,9 @@
 #include "ini/IniParser.h"
 
 #include <fstream>
+#include <iterator>
 #include <stdexcept>
+#include <string>
 
 namespace ini
 {
@@ -17,7 +19,8 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a readable state.");
         }
 
-        data = Parse(in, options.scheme, options.parserOptions);
+        const std::string ini{std::istreambuf_iterator<char>{in}, std::istreambuf_iterator<char>{}};
+        data = Parse(ini, options.scheme, options.parserOptions);
     }
 
     void IniFile::Load(const std::filesystem::path& path)
@@ -43,7 +46,7 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a writable state.");
         }
 
-        Format(data, out, options.scheme, options.formatterOptions);
+        out << Format(data, options.scheme, options.formatterOptions);
     }
 
     void IniFile::Save(const std::filesystem::path& path) const

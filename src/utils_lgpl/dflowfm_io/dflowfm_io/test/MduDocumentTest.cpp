@@ -70,9 +70,7 @@ namespace dflowfm_io::test
         iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", ini::IniValueConverter::IntegerToString(-1212));
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", ini::IniValueConverter::FloatingPointToString(32424.22));
 
-        std::ostringstream out;
-        ini::Format(iniData, out);
-        auto stream = std::istringstream(out.str());
+        auto stream = std::istringstream(ini::Format(iniData));
 
         doc.Load(stream);
 
@@ -92,9 +90,7 @@ namespace dflowfm_io::test
         iniData.GetSection("numerics").RemoveAllProperties("maxNonLinearIterations");
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        std::ostringstream out;
-        ini::Format(iniData, out);
-        auto stream = std::istringstream(out.str());
+        auto stream = std::istringstream(ini::Format(iniData));
 
         doc.Load(stream);
 
