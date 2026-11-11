@@ -31,23 +31,26 @@
 !> @file setlinktocenterweights.f90
 !! Subroutine for allocating center related link x- and y weights.
 module m_setlinktocenterweights
+   use precision, only: dp
 
    implicit none
 
    public :: setlinktocenterweights
 
+   real(kind=dp), dimension(:), allocatable :: area_normalization
+
 contains
 
    !> set center related linkxy weights
    subroutine setlinktocenterweights()
-      use precision, only: dp
       use m_flow
       use m_netw
       use m_flowgeom
       use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use network_data, only: LINK_1D2D_INTERNAL
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET
+      use m_alloc, only: realloc
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
@@ -61,6 +64,7 @@ contains
       wcL = 0
       wcxy = 0
       wc = 0
+      call realloc(area_normalization, ndx, keepExisting=.false., fill=0.0_dp)
 
       do L = 1, lnx
 
@@ -90,12 +94,25 @@ contains
          wcx2(L) = cs * wuL2
          wcy2(L) = sn * wuL2
 
-         wcxy(1, k1) = wcxy(1, k1) + abs(wcx1(L))
-         wcxy(2, k1) = wcxy(2, k1) + abs(wcy1(L))
+         if (kcu(L) == LINK_1D2D_STREETINLET .and. k1 <= ndx2d) then
+            area_normalization(k1) = area_normalization(k1) + wuL1
+         else
+            wcxy(1, k1) = wcxy(1, k1) + abs(wcx1(L))
+            wcxy(2, k1) = wcxy(2, k1) + abs(wcy1(L))
+         end if
 
-         wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
-         wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
+         if (kcu(L) == LINK_1D2D_STREETINLET .and. k2 <= ndx2d) then
+            area_normalization(k2) = area_normalization(k2) + wuL2
+         else
+            wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
+            wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
+         end if
       end do
+
+      ! correct for the area of 1D2D street inlet links, 
+      where (area_normalization > 0.0_dp)
+         area_normalization = 1.0_dp / (1.0_dp + area_normalization * bai) ! = ba / (ba + sum(pipe_areas), to ensure the weightfactors sum to 1.
+      end where
 
       lnxmax = 0
       do n = 1, mxwalls ! wall contribution to scalar linktocenterweights
@@ -162,11 +179,22 @@ contains
                end if
             end if
          else
-            wcx1(L) = wcx1(L) * bai(k1) !if (wcxy(2,k1) .ne. 0) /wcxy(2,k1)
-            wcy1(L) = wcy1(L) * bai(k1) !if (wcxy(1,k1) .ne. 0) /wcxy(1,k1)
-            wcx2(L) = wcx2(L) * bai(k2) !if (wcxy(2,k2) .ne. 0) /wcxy(2,k2)
-            wcy2(L) = wcy2(L) * bai(k2) !if (wcxy(1,k2) .ne. 0) /wcxy(1,k2)
+            wcx1(L) = wcx1(L) * bai(k1)
+            wcy1(L) = wcy1(L) * bai(k1)
+            wcx2(L) = wcx2(L) * bai(k2)
+            wcy2(L) = wcy2(L) * bai(k2)
          end if
+
+         ! correct by area normalization for 1D2D street inlet links
+         if (area_normalization(k1) > 0.0_dp) then
+            wcx1(L) = wcx1(L) * area_normalization(k1)
+            wcy1(L) = wcy1(L) * area_normalization(k1)
+         end if
+         if (area_normalization(k2) > 0.0_dp) then
+            wcx2(L) = wcx2(L) * area_normalization(k2)
+            wcy2(L) = wcy2(L) * area_normalization(k2)
+         end if
+
          if (wc(k1) > 0.0_dp) then
             wcL(1, L) = wcL(1, L) / wc(k1)
          end if
