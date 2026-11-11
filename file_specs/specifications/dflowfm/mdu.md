@@ -845,6 +845,7 @@ This section settings for online water quality processes.
 | `volumeDryThreshold` 🔬 | Volume below which segments are marked as dry. | `0.001` |  | [m³] |  |
 | `depthDryThreshold` 🔬 | Water depth below which segments are marked as dry. | `0.001` |  | [m] |  |
 | `dtMassBalance` ⚠️ | Mass balance area output interval | `0.0` |  | [s] |  |
+| `sedimentationTransportCoupling` 🔬 | Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 <a id="supported-keywords-and-options-particles"></a>
@@ -1068,6 +1069,7 @@ The keyword and options listed below are available for research purposes.
 | `[processes] additionalHistoryOutputFile` |  |
 | `[processes] depthDryThreshold` |  |
 | `[processes] dtProcesses` |  |
+| `[processes] sedimentationTransportCoupling` |  |
 | `[processes] statisticsFile` |  |
 | `[processes] substanceDensityCoupling` |  |
 | `[processes] substanceFile` |  |

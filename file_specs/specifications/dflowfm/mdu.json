@@ -6151,6 +6151,15 @@
                         "comment": "Use `[output] MbaInterval` instead.",
                         "date": "2026-03-09"
                     }
+                },
+				{
+                    "key": "sedimentationTransportCoupling",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.",
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },

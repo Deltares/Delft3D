@@ -332,6 +332,14 @@
       }
     },
     {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "sedimentationTransportCoupling",
+        "enum_value": null
+      }
+    },
+    {
       "type": "removed",
       "target": {
         "section": "processes",
