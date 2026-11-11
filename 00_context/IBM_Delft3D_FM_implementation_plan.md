@@ -17,7 +17,7 @@ Abbreviation: `K = src/engines_gpl/dflowfm/packages/dflowfm_kernel/src`.
 **Status (2026‑11‑11): mechanism (i), small-cell merging, works at 1 h and 8 h; default path unchanged.**
 - Tests after the final style fixes: `cmake --build build_dflowfm_debug` exit 0; `ctest -R 'test_ibm|test_mdu'` 47/47; full kernel `ctest` 298/298.
 - Style: the single-line `if` statements and the over-long lines introduced by this work were converted (fortran.instructions.md).
-- **Open decision (user):** keep the threshold merge (24 cells in c05 at `ImmersedBoundaryMergeAreaFrac = 0.01`) or restrict it to face 8 only. Not yet answered. The 8 h result above is for the 24-cell set.
+- **Decided (user, 2026‑11‑11): keep the threshold merge (24 cells in c05 at `ImmersedBoundaryMergeAreaFrac = 0.01`).** The 8 h result above is for this 24-cell set. **Decided: banks stay static for this phase** (no topology rebuild; see §9.1).
 - Flooding/drying and morphology challenges and the decisions they require are in §9.1.
 - Code: `ImmersedBoundaryMergeAreaFrac` (default 0, range [0, 1], opt-in) → `ibm_select_small_cell_merges` (m_immersed_boundary.f90), called from `cutcelwu_ibm_union` (cutcelwu.f90) via `cutcelwu_merge_small_cells`. MPI (`jampi > 0`) is rejected.
 - Geometry fix (option (a)): the merge target's wet polygon is the union of its own wet region and the merged cells' wet regions. The region is built as the group bounding box minus other flow cells minus solids (`ibm_clip_region_by_solids`).
@@ -1667,8 +1667,8 @@ tested yet. Each item is a question the design has to answer before it is extend
 | Merge-set stability over time | With static banks, the set is fixed for the run. | No decision now. Re-check when banks move. |
 
 **Decisions to make before morphology is switched on** (in order):
-1. Static banks only for this phase, or an incremental rebuild path (drives the design of the overlay).
-2. Merge scope: 24 threshold cells (current) or face 8 only (open decision in §0).
+1. **Decided (2026‑11‑11): static banks for this phase.** An incremental rebuild path is deferred to the morphology phase.
+2. **Decided (2026‑11‑11): keep the threshold merge (24 cells in c05).** Restricting to face 8 is not planned.
 3. Bed rule for merged groups and the drying test case.
 4. Sediment flux assignment through rewired links.
 5. Restart: skip the wet-bed fit when `bl` comes from the restart file.
