@@ -1036,7 +1036,11 @@ contains
       call prop_get(md_ptr, 'numerics', 'Chkdifd', chkdifd)
       call prop_get(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
       call prop_get(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
-      call prop_get(md_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes)
+
+      call prop_get(md_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'numerics', 'Epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
+      end if
 
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
@@ -1211,7 +1215,11 @@ contains
       end if
 
       ! Additions for dynamic roughness for storm impacts with morphology
-      call prop_get(md_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled)
+      call prop_get(md_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled)
+      end if
+
       if (dynamic_vegetation_roughness_enabled /= 0) then
          if (uniform_friction_type /= 1) then
             call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness. Switched off.')
@@ -1254,8 +1262,16 @@ contains
          call prop_get(md_ptr, 'physics', 'Dicoww', background_vertical_eddy_diffusivity%scalar)
       end if
 
-      call prop_get(md_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production)
-      call prop_get(md_ptr, 'physics', 'oxmidovLengthScale', ozmidov_length_scale)
+      call prop_get(md_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'oxmidovLengthScale', ozmidov_length_scale, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Xlozmidov', ozmidov_length_scale)
+      end if
+
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
       if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
          call prop_get(md_ptr, 'physics', 'TAUMin', eps_min)
@@ -1276,8 +1292,16 @@ contains
          call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
       end if
 
-      call prop_get(md_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient)
-      call prop_get(md_ptr, 'physics', 'ElderCoefficient', elder_coefficient)
+      call prop_get(md_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient)
+      end if
+
+      call prop_get(md_ptr, 'physics', 'ElderCoefficient', elder_coefficient, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Elder', elder_coefficient)
+      end if
+
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30.0_dp
@@ -1344,10 +1368,19 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
-      call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor)
+
+      call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'Surftempsmofac', surface_temperature_smoothing_factor)
+      end if
+
       call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
-      call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness)
+
+      call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, success)
+      if (.not. success) then
+         call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness)
+      end if
       if (soil_heat_buffer_thickness > 0.0_dp) then
          jaheat_eachstep = 1
       end if
