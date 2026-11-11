@@ -19,6 +19,7 @@ Abbreviation: `K = src/engines_gpl/dflowfm/packages/dflowfm_kernel/src`.
 - Style: the single-line `if` statements and the over-long lines introduced by this work were converted (fortran.instructions.md).
 - **Decided (user, 2026‑11‑11): keep the threshold merge (24 cells in c05 at `ImmersedBoundaryMergeAreaFrac = 0.01`).** The 8 h result above is for this 24-cell set. **Decided: banks stay static for this phase** (no topology rebuild; see §9.1).
 - Flooding/drying and morphology challenges and the decisions they require are in §9.1.
+- Option-interaction matrix (§5.7) and self-check (§12) were merged from the planning prompt; this file is the only plan. Open self-check items are listed in §12.
 - Code: `ImmersedBoundaryMergeAreaFrac` (default 0, range [0, 1], opt-in) → `ibm_select_small_cell_merges` (m_immersed_boundary.f90), called from `cutcelwu_ibm_union` (cutcelwu.f90) via `cutcelwu_merge_small_cells`. MPI (`jampi > 0`) is rejected.
 - Geometry fix (option (a)): the merge target's wet polygon is the union of its own wet region and the merged cells' wet regions. The region is built as the group bounding box minus other flow cells minus solids (`ibm_clip_region_by_solids`).
 - Failures on the way:
@@ -959,6 +960,37 @@ which cells limit Δt. Report the fraction of steps limited by cut cells in `ibm
 
 ---
 
+### 5.7 Option interactions and compatibility (matrix)
+
+Each row names how IBM treats an existing feature: **Supported** (works with IBM on), **Rejected**
+(fatal error at input time), **Ignored** (no effect, must be documented), or **Planned** (target
+behaviour, not yet implemented). The test column names the proving test (§7). "Target" means the
+status must be re-checked before the work package is closed.
+
+| Feature | IBM treatment | Status | Proving test / evidence |
+|---|---|---|---|
+| `BedlevType` | Only `1` accepted; other values rejected (§5.5) | Implemented (W1, F4) | Config-error test in §7.1 (target) |
+| `Conveyance2D` | Must be ≤ 0 with `BedlevType = 1`; POC uses `-1` | Implemented (W1, F4) | Config-error test (target) |
+| `jsferic` | Must be 0; checked in `flow_geominit` with the Cartesian check | Implemented (W2, F6) | U1–U8 (`test_ibm_cartesian`) |
+| `kmx > 0` | Rejected (3D not in scope) | Implemented (W1) | Config-error test (target) |
+| `FlowSolver` | Only the supported solver; others rejected (§5.5) | Implemented (W1) | Config-error test (target) |
+| `Nonlin2D > 0` | Rejected | Implemented (W1) | Config-error test (target) |
+| Spherical coordinates / 1D or 1D2D links (`numl1d > 0`) | Rejected by Cartesian criteria 1 (§5.5) | Implemented (W2) | U1–U8 |
+| Mixed or non-quad cells (triangles, pentagons) | Rejected by Cartesian criterion 2 | Implemented (W2) | U1–U8 |
+| Rotated or non-uniform grid | Rejected by Cartesian criteria 4–5 | Implemented (W2) | U1–U8; U3/U4 rejection messages |
+| Multiple polygons in `Cutcelllist` | Required: each polygon is closed and searched separately (F13) | Required (F13); check in U9–U16 | U9–U16 (`test_ibm_geometry`); multi-polygon test (target) |
+| Small-cell merge (`ImmersedBoundaryMergeAreaFrac > 0`) | Supported with IBM on; rejected with MPI (`jampi > 0`); not re-applied on map restart | Implemented (opt-in) | `test_ibm_geometry` merge tests (3); `test_mdu_file_read_write` round trip; c05 1 h and 8 h runs |
+| `ImmersedBoundaryTangentialCorrection = 1` | Rejected until W7 (F5) | Planned (rejection implemented as in §5.5) | Rejection message test (target) |
+| `ImmersedBoundaryProjection = 1` | Rejected until `ibm_apply_velocity_bc` exists (W4) | Planned | Rejection message test (target) |
+| `ImmersedBoundarySmallEdgeFrac ≠ default` | Rejected or warned until W8 | Planned | Rejection/warning test (target) |
+| Open boundaries | Target: cut boundary links allowed (§5.1, §5.2). Current: F2 rejects them | Planned (blocked by F2) | No end-to-end test yet; U32 uses a synthetic virtual boundary |
+| Wetting and drying | Unchanged `kfs`/`hu` logic; a dried cut cell acts as an ordinary cell with smaller `ba`. Moving bank shorelines are out of scope (§5.2) | Planned (see §9.1) | Target test in §7.2 |
+| Map restart | Restart holds state only (§2.2). Wet-bed fit must not overwrite evolved `bl` after restart (F9) | Planned (F9 open) | Target restart test (§7.2) |
+| Morphology (bed update) | Out of scope for this phase; banks static (decision recorded in §0) | Out of scope | §9.1 |
+| IBM off | Bit-identical to the current code (§5.5) | Partly verified: c05 1 h key-off is bit-identical; all c01–c15 not yet run | Full regression run (target, §8) |
+| Hot-loop overhead, IBM off | `furu`/`advec` hooks must cost < 1 % (F11) | Not measured | Timing run (target, §8) |
+| MPI (`jampi > 0`) | Owner-only fitting and reductions (§5.6); merge rejected | Partly implemented (W2, F10); c06 2-rank smoke run passes | I5 serial/MPI equivalence (§7.2) |
+
 ## 6. File‑ and symbol‑level implementation work plan
 
 **W0 — Spike (no merge)**
@@ -1774,3 +1806,19 @@ python data/cases/e02_dflowfm/f600_ibm/doc/verify_metrics.py <case> <work_dir>/d
 - MPI comparison I5 vs I4.
 - Proof of no regression with IBM off (TestBench run or TeamCity build link).
 - Rejection messages for U3/U4/U6 and the config errors.
+
+## 12. Self-check against the planning prompt
+
+Checked against the planning prompt (v2, now merged here and removed). `[x]` = satisfied by this
+plan; `[ ]` = open, with the reason.
+
+- [ ] Every existing feature in §2.1 of the prompt is reused, extended, replaced, or bypassed, with a reason. Open: the §2.2 table lists the features, but the reason is not stated on every row.
+- [ ] Every degenerate case in §3.2 has a named test. Open: check each row of the §3.2 table (plan ~line 594) against §7.
+- [ ] Every new keyword is implemented or rejected with a tested message. Partly: the rejection rules are in §5.5 and §5.7. Their tests are still targets.
+- [ ] Every option interaction is supported, rejected, or ignored, with a test (§5.7). Most rows have a status, but many tests are still targets.
+- [ ] IBM-off results are proven bit-identical, and the hot-loop overhead is measured. Open: only c05 at 1 h is verified; the full regression and the timing run are not done.
+- [x] Verification uses an oracle independent of the code under test (analytical solutions, §8 and §7.2).
+- [x] Every work package has a definition of done that requires executed, passing tests (§6, §8). Status is tracked per work package in §0.
+- [ ] Every build and test command names the exact target and has been checked against the repo docs. Open: §11 names targets; the check against the repo docs has not been done.
+- [ ] Every path, symbol, and line reference was checked in the repository. Open: references in §1.1 and §2.2 were verified at the review date (2026‑10‑31); re-check before implementation.
+
