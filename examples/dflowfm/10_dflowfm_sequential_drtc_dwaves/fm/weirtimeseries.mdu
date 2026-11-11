@@ -80,8 +80,8 @@ uniformHorizontalEddyViscosity                            = 0                   
 uniformHorizontalEddyDiffusivity                            = 0                                                                   # Uniform horizontal eddy diffusivity
 backgroundVerticalEddyViscosity                            = 0                                                                   # Uniform vertical eddy viscosity
 backgroundVerticalEddyDiffusivity                            = 0                                                                   # Uniform vertical eddy diffusivity
-smagorinskyCoefficient            = 0                                                                   # Smagorinsky factor in horizontal turbulence
-elderCoefficient                  = 0                                                                   # Elder factor in horizontal turbulence
+SmagorinskyCoefficient            = 0                                                                   # Smagorinsky factor in horizontal turbulence
+ElderCoefficient                  = 0                                                                   # Elder factor in horizontal turbulence
 Irov                              = 0                                                                   # Wall roughness type (0: free-slip, 1: partial-slip using wall_ks, 2: no-slip)
 wall_ks                           = 0                                                                   # Nikuradse roughness for side walls
 TidalForcing                      = 0                                                                   # Tidal forcing, if jsferic = 1 (0: no, 1: yes)

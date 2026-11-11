@@ -77,8 +77,8 @@ uniformFrictionCoefficient1D2D                 = 50                  # Uniform f
 uniformFrictionCoefficientLinear                  = 0.                  # Uniform linear friction coefficient for ocean models (m/s) (0: no friction)
 uniformHorizontalEddyViscosity                            = 1.                  # Uniform horizontal eddy viscosity (m2/s)
 uniformHorizontalEddyDiffusivity                            = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
-smagorinskyCoefficient            = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
-elderCoefficient                  = 0.                  # Elder factor in horizontal turbulence
+SmagorinskyCoefficient            = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
+ElderCoefficient                  = 0.                  # Elder factor in horizontal turbulence
 irov                              = 0                   # 0=free slip, 1 = partial slip using wall_ks
 wall_ks                           = 0.                  # Wall roughness type (0: free slip, 1: partial slip using wall_ks)
 Rhomean                           = 1000.               # Average water density (kg/m3)
