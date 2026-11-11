@@ -3150,24 +3150,6 @@
                     "unit": "ppt"
                 },
                 {
-                    "key": "tracerConcentrationMax",
-                    "default_value": 1.0E+300,
-                    "value_type": "float",
-                    "description": "Upper limit of cell centre tracer concentration after transport timestep.",
-                    "status": {
-                        "value": "research"
-                    }
-                },
-                {
-                    "key": "tracerConcentrationMin",
-                    "default_value": -1.0E+300,
-                    "value_type": "float",
-                    "description": "Lower limit of cell centre tracer concentration after transport timestep.",
-                    "status": {
-                        "value": "research"
-                    }
-                },
-                {
                     "key": "heat_eachStep",
                     "default_value": 0,
                     "value_type": "intenum",
