@@ -59,6 +59,7 @@ contains
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
+      use m_fm_wq_processes, only: iconstituent_to_fall_velocity_waq, fall_velocity_waq
 
       implicit none
 
@@ -88,7 +89,7 @@ contains
       real(kind=dp), dimension(kmx, NUMCONST) :: lower, diagonal, upper, column_rhs ! Tridiagonal coefficients and column right-hand sides.
       real(kind=dp), dimension(kmx) :: sol, normalized_upper ! Solution and normalized upper-diagonal scratch coefficients.
       real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
-      real(kind=dp) :: fluxfac, dvol1i, dvol2i
+      real(kind=dp) :: fall_velocity_local, fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
       integer :: kk, k, kb, kt, ktx, nel
       integer :: j, n
@@ -112,7 +113,7 @@ contains
       ! The following PRIVATE arrays have local values per OMP thread, they are kept global to prevent stack overflows.
       !$OMP PARALLEL DO                                                 &
       !$OMP PRIVATE(kk,kb,ktx,kt,lower,diagonal,upper,sol,j,column_rhs,k,n,dvol1i,dvol2i,fluxfac,normalized_upper,dtbazi,dtba, &
-      !$OMP ozmid,bruns,qw_loc,nel) &
+      !$OMP ozmid,bruns,qw_loc,nel,  fall_velocity_local) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -191,16 +192,19 @@ contains
                diagonal(n + 1, j) = diagonal(n + 1, j) + fluxfac * dvol2i
                lower(n + 1, j) = lower(n + 1, j) - fluxfac * dvol2i
 
+               if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
+                  fall_velocity_local = mtd%ws(k, j - ISED1 + 1)
+               else if (iconstituent_to_fall_velocity_waq(j) > 0) then
+                  fall_velocity_local = fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j))
+               else
+                  fall_velocity_local = wsf(j)
+               end if
+
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
+                  qw_loc = qw(k)
                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
-                     if (jased < 4) then
-                        qw_loc = qw(k) - wsf(j) * a1(kk)
-                     else if (j >= ISED1 .and. j <= ISEDN) then
-                        qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
-                     end if
-                  else
-                     qw_loc = qw(k)
+                     qw_loc = qw_loc - fall_velocity_local * a1(kk)
                   end if
                   fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
 
@@ -211,18 +215,8 @@ contains
                   upper(n, j) = upper(n, j) + fluxfac * dvol1i
                end if
 
-               if (jaimplicitfallvelocity == 1) then ! implicit fallvelocity
-                  fluxfac = 0.0_dp
-                  if (jased == 4) then
-                     if (j >= ISED1 .and. j <= ISEDN) then
-                        fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
-                     else
-                        ! tracers
-                        fluxfac = wsf(j) * a1(kk) * dt_loc
-                     end if
-                  else
-                     fluxfac = wsf(j) * a1(kk) * dt_loc
-                  end if
+               if (jaimplicitfallvelocity == 1) then
+                  fluxfac = fall_velocity_local * a1(kk) * dt_loc
                   if (fluxfac > 0.0_dp) then
                      upper(n, j) = upper(n, j) - fluxfac * dvol1i
                      diagonal(n + 1, j) = diagonal(n + 1, j) + fluxfac * dvol2i
