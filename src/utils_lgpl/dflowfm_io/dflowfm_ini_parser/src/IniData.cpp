@@ -154,8 +154,4 @@ namespace ini
         }
     }
 
-    bool IniData::operator==(const IniData& other) const { return sections == other.sections; }
-
-    bool IniData::operator!=(const IniData& other) const { return !(*this == other); }
-
 } // namespace ini

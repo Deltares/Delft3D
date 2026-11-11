@@ -120,14 +120,6 @@ namespace ini
         /// @throws std::invalid_argument When @p oldName or @p newName is empty.
         void RenameSections(const std::string& oldName, const std::string& newName);
 
-        /// @brief Returns whether this INI data is equal to @p other.
-        /// @details Two INI data objects are equal when their sections are equal.
-        bool operator==(const IniData& other) const;
-
-        /// @brief Returns whether this INI data is not equal to @p other.
-        /// @details Two INI data objects are not equal when their sections differ.
-        bool operator!=(const IniData& other) const;
-
     private:
         std::vector<IniSection> sections;
     };

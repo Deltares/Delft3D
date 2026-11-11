@@ -885,7 +885,7 @@ namespace ini::test
         section.AddProperty(property);
         expected.AddSection(std::move(section));
 
-        EXPECT_EQ(iniData, expected);
+        EXPECT_TRUE(std::ranges::equal(iniData.GetSections(), expected.GetSections()));
     }
 
     // -------------------------------------------------------------------------

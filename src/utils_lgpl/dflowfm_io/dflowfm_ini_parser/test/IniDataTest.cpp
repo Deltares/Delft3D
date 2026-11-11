@@ -688,58 +688,6 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // Equality
-    // -------------------------------------------------------------------------
-
-    TEST(IniDataTest, Equals_SameReference_ReturnsTrue)
-    {
-        IniData iniData;
-
-        EXPECT_TRUE(iniData == iniData);
-    }
-
-    TEST(IniDataTest, Equals_SameIniDataCaseInsensitive_ReturnsTrue)
-    {
-        IniData iniData1;
-        IniData iniData2;
-
-        iniData1.AddSection("TestSection");
-        iniData2.AddSection("TESTSECTION");
-
-        EXPECT_TRUE(iniData1 == iniData2);
-    }
-
-    TEST(IniDataTest, Equals_DifferentIniData_ReturnsFalse)
-    {
-        IniData iniData1;
-        IniData iniData2;
-
-        iniData1.AddSection("TestSection");
-        iniData2.AddSection("OtherSection");
-
-        EXPECT_FALSE(iniData1 == iniData2);
-    }
-
-    TEST(IniDataTest, Equals_EmptyIniData_ReturnsTrue)
-    {
-        IniData iniData1;
-        IniData iniData2;
-
-        EXPECT_TRUE(iniData1 == iniData2);
-    }
-
-    TEST(IniDataTest, NotEquals_DifferentIniData_ReturnsTrue)
-    {
-        IniData iniData1;
-        IniData iniData2;
-
-        iniData1.AddSection("TestSection");
-        iniData2.AddSection("OtherSection");
-
-        EXPECT_TRUE(iniData1 != iniData2);
-    }
-
-    // -------------------------------------------------------------------------
     // GetSections indexed access
     // -------------------------------------------------------------------------
 
