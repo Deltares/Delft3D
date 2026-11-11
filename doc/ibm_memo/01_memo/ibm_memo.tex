@@ -1,0 +1,436 @@
+%Locate this file one level lower than the folder with references:
+%		-https://svn.oss.deltares.nl/repos/openearthtools/trunk/references
+%which must be checkout with in a folder named <00_references>.
+%E.g., locate this file renamed as <memo.tex> in a structure:
+%		-<#/00_references/>
+%		-<#/01_memo/memo.tex>
+%
+%Folder <#00_reference/02_textree> must be in the MikTeX path. See <#00_reference/02_textree/readme>
+%
+%
+%
+%
+%
+%
+%----------------------------
+%---------LOCAL COMMANDS
+%----------------------------
+%
+
+\newcommand{\isreport}{0} %0=memo; 1=report
+\newcommand{\addAppendix}{0} %0=no appendix; 1=add appendix
+\newcommand{\addCitation}{0} %0=no; 1=yes
+\newcommand{\addMemoSignatures}{0} %0=no; 1=yes
+\newcommand{\addLastPage}{1} %0=no; 1=yes
+\newcommand{\addBibliography}{1} %0=no; 1=yes
+
+%
+%
+%
+%----------------------------
+%---------COMMON COMMANDS
+%----------------------------
+%
+
+\input{../00_references/abbreviations}
+%\input{../00_references/project_info} %common data in proposals
+
+%
+%
+%
+%----------------------------
+%---------COMMON INPUT
+%----------------------------
+%
+
+%Add colon in \mySubtitle if desired or leave empty if no substitle is desired. 
+\def\myTitle{Fixed weirs in 6th generation models for BOI.}
+%\def\myTitle{\projectname{}} %use in proposal					
+\def\mySubtitle{}
+
+\def\myOrganisationi{Deltares}
+\def\myAuthori{V\'ictor Chavarr\'ias}
+\def\myPhonei{+31\,(0)88\,335\,8033}
+\def\myEmaili{victor.chavarrias@deltares.nl}
+
+%\def\myOrganisationii{Deltares}
+%\def\myAuthorii{Willem Ottevanger}
+%\def\myPhoneii{+31\,(0)88\,335\,8033}
+%\def\myEmailii{willem.ottevanger@deltares.nl}
+
+%Document ID and version
+% \def\myVersion{\projectnumberinput{}-001\_v1.\svnInfoRevision} %using common data in proposals
+\newcommand{\projectnumberinput}{11212772-006} %comment out in proposal, data in `project_info`
+\newcommand{\documentcode}{HDM-0009}
+\newcommand{\documentversion}{1.\svnInfoRevision}
+\def\myVersion{\projectnumberinput-\documentcode\_v\documentversion} %11212772-006-HDM-0009_v0.1-Analysis of the numerical scheme of FM.docx
+\def\myDate{\today}
+
+%Victor Chavarrias 
+%Willem Ottevanger
+%Aukje Spruyt
+%Bert Jagers 
+%Mohamed Yossef  
+%Koen Berends 
+%Anna Kosters 
+%Amgad Omer 
+%Anke Becker 
+%Anna van den Hoek 
+%Robert  Groenewege
+ 
+%+31\,(0)88\,335\,8033 \\ %VC
+%+31\,(0)88\,335\,8532 \\ %WO
+%+31\,(0)88\,335\,7961 \\ %AS
+%+31\,(0)88\,335\,8264 \\ %BJ
+%+31\,(0)88\,335\,8149 \\ %MY
+%+31\,(0)88\,335\,8385 \\ %KB
+%+31\,(0)88\,335\,8065 \\ %AK
+%+31\,(0)88\,335\,7983 \\ %AO
+%+31\,(0)88\,335\,8161 \\ %AB
+%+31\,(0)62\,739\,5038 \\ %AH
+%+31\,(0)64\,691\,1978 \\ %RG
+
+%victor.chavarrias@deltares.nl 
+%willem.ottevanger@deltares.nl 
+%aukje.spruyt@deltares.nl 
+%bert.jagers@deltares.nl 
+%mohamed.yossef@deltares.nl 
+%koen.berends@deltares.nl 
+%anna.kosters@deltares.nl 
+%amgad.omer@deltares.nl 
+%anke.becker@deltares.nl
+%anna.vandenhoek@deltares.nl
+%robert.groenewege@deltares.nl
+
+%
+%
+%
+%----------------------------
+%---------DOCUMENT CLASS
+%----------------------------
+%
+
+\ifnum \isreport=1
+	\documentclass[english,signature]{deltares_report}
+	%language: english, ducth, spanish
+	%nosummary: writes no executive summary 
+	%signature: adds box for signatures
+\else
+	\documentclass{deltares_memo}
+\fi
+
+\input{../00_references/packages}
+
+%
+%
+%
+%----------------------------
+%---------REPORT INPUT
+%----------------------------
+%
+
+\ifnum \isreport=1
+
+\def\authorList{\myAuthori{}, \myAuthorii{}} %Where does this go in the layout?
+
+%adding a different figure on the cover
+%
+%\renewcommand{\FrontCover}{\includegraphics[height=182mm,width=182mm]{../00_figures/12_other/DJI_0017.JPG}}
+% \renewcommand{\FrontCover}{\includegraphics[height=182mm,width=182mm]{../00_layouts/cover/Deltares_rapport_omslag_gennepperhuis.jpg}}															   
+\renewcommand{\FrontCover}{\includegraphics[height=182mm,width=182mm]{../00_layouts/cover/flow_mesh.png}}															   
+\renewcommand{\FrontCircle}{\includegraphics[height=182mm,width=182mm]{../00_layouts/cover/cover_transparant_circle.pdf}}		
+%prevent sentence break between pages		
+\widowpenalties 1 10000
+\raggedbottom
+	
+\begin{document}
+
+
+\title{\myTitle}
+\subtitle{\mySubtitle}
+\author{\myAuthori{}}
+%\author{\myAuthori{} \\ \myAuthorii{}}
+\partner{}
+\coverPhoto{Cover: Flow of water and mesh.}
+\date{\today}
+\version{1.\svnInfoRevision}
+\authori{\myAuthori{}}
+\organisationi{\myOrganisationi}
+
+
+%\foreach \var [evaluate=\var as \myindex using {int(\var-1)}] in {1} {
+%	\pgfmathparse{\authorList[\myindex]}\pgfmathresult
+%}
+
+\authorii{\myAuthorii{}}
+\organisationii{\myOrganisationi}
+
+%\authorlistiii{Mohamed Yossef}
+%\organisationiii{Deltares}
+
+%revision table
+\revieweri{Migena Zagonjoli}
+\datei{\myDate}
+\versioni{\myVersion}
+%\approvali{Bianca Peters}  
+\approvali{Helena van der Vegt}  
+\publisheri{}
+
+%\authorii{}
+%\reviewerii{}
+%\dateii{}
+%\versionii{}
+%\approvalii{}
+%\publisherii{}
+
+\client{Rijkswaterstaat}
+\contact{Arjan Sieben}
+\keywords{Meuse, Lixhe, Keizersveer, D-HYDRO, SMT, morphology.}
+\reference{}
+\classification{}
+\status{draft}
+\disclaimer{}
+%\summary{Executive summary} 
+ 
+\documentid{\myVersion}
+\projectnumber{\projectnumberinput{}}
+
+%
+%
+%
+%----------------------------
+%---------MEMO INPUT
+%----------------------------
+%
+
+\else
+
+\begin{document}
+\memoTo{Aukje Spruyt, Johan Boon} %\memoTo*{Person} hides "To" 
+%\memoTo{\contactname{}\newline \clientname{}\newline\clientaddress{}} %use in proposal
+\memoConfidentialUntil{}
+%\memoName{Memo} %Name in header. If commented out, default "Memo" is used. 
+%\memoName{Quotation} %use in proposals
+%\memoDate{\today~\currenttime}
+\memoDate{\today}
+\memoVersion{\myVersion{}} %11206793-013-ZWS-0001_v0.1-groynes.docx
+\memoFrom{\parbox[t]{3cm}{
+\myAuthori{} \\
+%\myAuthorii{} \\ 
+}}
+\memoTelephone{\parbox[t]{3cm}{
+\myPhonei{} \\
+%\myPhoneii{} \\
+}}
+\memoEmail{\parbox[t]{3cm}{
+\myEmaili{} \\
+%\myEmailii{} \\
+}}
+\memoSubject{\myTitle{}\mySubtitle{}}
+\memoCopy{Erik de Goede, Jan van Kester, Tjitske Geertsema}
+
+\fi
+
+%
+%
+%
+%----------------------------
+%---------COVER
+%----------------------------
+%
+
+\svnInfo $Id: report.tex 83 2022-12-05 10:24:56Z ottevan $
+\deltarestitle
+\ifnum \isreport=1
+	\newpage
+\fi
+
+%
+%
+%
+%----------------------------
+%---------TABLE SIGNATURES
+%----------------------------
+%
+
+\ifnum \isreport=0
+\ifnum \addMemoSignatures=1
+\begin{tabular}{p{\textwidth/8}|p{0.175\textwidth}|p{0.2\textwidth}|p{0.2\textwidth}|p{0.2\textwidth}}
+    \rowcolor{dblue1}  \textbf{Document version} & \textbf{Date} & \textbf{Author} & \textbf{Reviewer} & \textbf{Approval} \\
+    \topline
+    0.2   & & Victor Chavarrias   & Erik de Goede  &  \\
+		\midline
+		0.3   & & Victor Chavarrias   & Erik de Goede  &  \\
+		\midline
+		1.0   & \today{} & Victor Chavarrias   & Erik de Goede  &  Johan Boon \\
+		\midline
+		& & & \\
+    \midline                                                 
+\end{tabular}
+\fi
+\fi
+
+%
+%
+%
+%----------------------------
+%---------START DOCUMENT
+%----------------------------
+%
+
+%
+%
+%
+%----------------------------
+%---------LETTER
+%----------------------------
+
+%Dear ,\\
+%\vspace{1cm}
+%
+%here letter
+%
+%\vfill
+%Yours faithfully,\\
+%\vspace{2.5cm}
+%Johan Boon \\
+%Head of department Rivers and Inland Shipping
+%
+%\FloatBarrier
+%\newpage
+
+%
+%
+%
+%----------------------------
+%---------SECTIONS
+%----------------------------
+
+%Second input is the level of the section.
+
+%----------------------------
+%----------------------------
+%----------------------------
+\FloatBarrier
+\gensection{\isreport}{1}{Introduction}
+lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+%
+%
+%
+%----------------------------
+%---------GLOSSARY
+%----------------------------
+%
+%\section{List of Mathematical Symbols}
+%\printglossary[title=]
+
+%define
+% \newglossaryentry{H}{
+  % name={$H$},
+  % description={weir height. Distance between the crest and the bed level on the downstream side.},
+  % sort={H}
+% }
+
+%use
+% \gls{H}
+
+%
+%
+%
+%----------------------------
+%---------BIBLIOGRAPHY
+%----------------------------
+%
+
+\ifnum \addBibliography=1
+\newpage
+\gensection{\isreport}{1}{References}
+\DeclareRobustCommand{\van}[3]{#3}
+%\bibliographystyle{agufull08_mod}
+\bibliography{../00_references/references}
+\fi %BIBLIOGRAPHY
+
+%
+%
+%
+%----------------------------
+%---------CITATION
+%----------------------------
+%
+\vfill
+\ifnum \addCitation=1
+Please cite this work using: \\
+~\\
+\texttt{@TechReport\{[Add\_bibtex\_reference],\\
+~~author~~~~~~= \{\myAuthori{} and \myAuthorii{}\},\\
+~~title~~~~~~~=  \{\myTitle{}\mySubtitle{}\},\\
+~~number~~~~~~=      \{\myVersion{}\},\\
+~~year~~~~~~~~=        \{\myDate{}\},\\
+~~institution~= \{{Deltares, Delft, the Netherlands}\}\\
+\ifnum \isreport=1
+~~type~~~~~~~~=  \{\{T\}ech. \{R\}ep.\},\\
+\else
+~~type~~~~~~~~= \{\{M\}emo\}, \\
+\fi
+~~\}
+}
+\fi %CITATION
+
+%
+%
+%
+%----------------------------
+%---------APPENDIX
+%----------------------------
+%
+\ifnum \addAppendix=1
+
+\newpage
+\appendix
+\renewcommand\thesection{\AlphAlph{\value{section}}}
+
+%---------GENERAL
+%\FloatBarrier
+%\gensection{\isreport}{1}{This and that}
+%\label{app:tad}
+
+%---------CV
+%\FloatBarrier
+%\gensection{\isreport}{1}{Curricula Vit\ae}
+%\label{app:CV}
+
+%\includepdf[pages=-,offset=2.54cm -2.54cm,angle=0]{../11_CV/CV_VC.pdf}
+%\includepdf[pages=-,offset=2.54cm -2.54cm,angle=0]{../11_CV/CV_AB.pdf}
+%\includepdf[pages=-,offset=2.54cm -2.54cm,angle=0]{../11_CV/CV_BvM.pdf}
+%\includepdf[pages=-,offset=2.54cm -2.54cm,angle=0]{../11_CV/CV_BS.pdf}
+
+%---------TERMS AND CONDITIONS
+%\FloatBarrier
+%\gensection{\isreport}{1}{Terms and Conditions}
+%\label{app:conditions}
+%
+%\includepdf[pages=-,offset=2.54cm -2.54cm,angle=0]{../12_conditions/conditions.pdf}
+
+\fi %APPENDINX
+
+%
+%
+%
+%----------------------------
+%---------LAST PAGE
+%----------------------------
+%
+\ifnum \addLastPage=1
+\LastPage
+\fi %LAST PAGE
+
+%
+%
+%
+%----------------------------
+%---------END 
+%----------------------------
+%
+
+\end{document}
