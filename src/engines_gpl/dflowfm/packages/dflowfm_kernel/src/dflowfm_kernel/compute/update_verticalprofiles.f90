@@ -949,7 +949,7 @@ contains
                do L = kb, kt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
-                  k = L - Lb + 1
+                  k = L - kb + 1
                   ku = k + 1
 
                   ! We move up a layer, viscosity up becomes viscosity down
@@ -1077,7 +1077,7 @@ contains
                do L = kb, kt - 1
                   Lu = L + 1
 
-                  k = L - Lb + 1
+                  k = L - kb + 1
                   ku = k + 1
 
                   ! We move up a layer, viscosity up becomes viscosity down
