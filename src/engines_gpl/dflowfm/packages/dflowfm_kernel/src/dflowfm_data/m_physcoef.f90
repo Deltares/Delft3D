@@ -94,7 +94,7 @@ module m_physcoef
    real(kind=dp) :: tracer_concentration_max !< [kg/m3] Upper limit for tracer concentration.
    logical :: tracer_concentration_max_enabled !< [-] Is upper limit for tracer concentration enabled?
 
-   real(kind=dp) :: vicwminb !< [m2/s] Minimum eddy viscosity in production terms shear and buoyancy
+   real(kind=dp) :: minimum_vertical_eddy_viscosity_for_production !< [m2/s] Minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< [m] Ozmidov length scale.
 
    real(kind=dp), parameter :: VISKINAIR = 1.5e-5_dp !< [m2/s] Kinematic air viscosity.
@@ -164,7 +164,7 @@ contains
       secchi_radiation_fraction(2) = 0.0_dp
       diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
       diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
-      vicwminb = 0.0_dp
+      minimum_vertical_eddy_viscosity_for_production = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2
       apply_thermobaricity = .false.

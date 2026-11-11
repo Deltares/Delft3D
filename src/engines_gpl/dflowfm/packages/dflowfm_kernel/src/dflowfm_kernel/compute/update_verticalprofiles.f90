@@ -52,7 +52,7 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, C9OF1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        rhomean, bruva, buoflu, minimum_vertical_eddy_viscosity_for_production, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, lnxi
@@ -343,7 +343,7 @@ contains
                      else ! Weighted average
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
-                     buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
+                     buoflu(k) = max(vicwwu(L), minimum_vertical_eddy_viscosity_for_production) * bruva(k)
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
@@ -382,7 +382,7 @@ contains
                      rich(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
-                  sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
+                  sourtu = max(vicwwu(L), minimum_vertical_eddy_viscosity_for_production) * dijdij(k)
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
                      sinktu = tureps0(L) / turkin0(L)
