@@ -98,7 +98,6 @@ contains
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
       use m_physcoef, only: dynroughveg, frcuni
-      use precision_basics, only: comparereal
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -106,7 +105,8 @@ contains
       integer :: nlayb1L, nrlay1L, nlayb2L, nrlay2L
       integer :: ndx1d
 
-      real(kind=dp) :: zmn, zmx, dzm
+      real(kind=dp), parameter :: MINIMUM_LAYER_THICKNESS = 1.0e-2_dp
+      real(kind=dp) :: zmn, zmx, dzm, ztol
       real(kind=dp) :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
       logical :: jawel
 
@@ -291,27 +291,24 @@ contains
             else
                dzm = dztop
                mxlayz = floor((zmx - zbt) / dzm)
-               if (comparereal(modulo(zmx - zbt, dzm), 0.0_dp) > 0) then
-                  mxlayz = mxlayz + 1
-               end if
                if (numtopsig > 0 .and. janumtopsiguniform == 1) then
                   mxlayz = max(mxlayz, numtopsig)
                end if
             end if
 
+            dzm = max(dzm, MINIMUM_LAYER_THICKNESS)
             kuni = mxlayz
             mx = kuni
-            if (zbt > zmn) then ! count extra layers needed to fill out till bottom
-               zbb = zbt
-               dzb = dzm
-               do while (zbb > zmn .and. mx < kmxx - 1)
-                  dzb = dzb * z_layer_growth_factor
-                  zbb = zbb - dzb
-                  mx = mx + 1
-               end do
-            end if
+            ! Count extra layers from the actual bottom of the uniform layers.
+            zbb = zmx - kuni * dzm
+            ztol = 2.0_dp * epsilon(dzm) * max(1.0_dp, abs(zmx), abs(zmn), abs(kuni * dzm))
+            dzb = dzm
+            do while (zbb - zmn > ztol .and. mx < kmxx - 1)
+               dzb = dzb * z_layer_growth_factor
+               zbb = zbb - dzb
+               mx = mx + 1
+            end do
 
-            dzm = max(dzm, 1.0e-2_dp)
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
