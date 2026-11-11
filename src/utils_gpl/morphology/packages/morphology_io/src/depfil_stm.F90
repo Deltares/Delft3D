@@ -282,7 +282,7 @@ contains
          open (newunit=minp0, file=fildep, form=fmttmp, status='old', iostat=ios)
          if (ios /= 0) then
             write (*, *) 'Error opening file:', trim(fildep)
-            success = .false.
+            error = .true.
             return
          end if
          success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
