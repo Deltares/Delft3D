@@ -121,7 +121,7 @@ export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
     printf '    %q' "$scriptfile" "${run_args[@]}"
     echo
     echo
-    "$scriptfile" "${run_args[@]}"
+    "$scriptfile" "${run_args[@]}" || exit $?
 
 
 

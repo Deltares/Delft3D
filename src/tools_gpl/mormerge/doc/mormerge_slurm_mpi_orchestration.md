@@ -18,13 +18,14 @@ When started outside a Slurm allocation with `queueSystem = slurm`, `mormerge.tc
 
 Inside the allocation, the launcher takes these steps.
 
-1. Clone the model input into one directory per condition.
-2. Clear the synchronization directory.
-3. Start the serial MorMerge process for every run ID.
-4. Wait for the MorMerge synchronization markers.
-5. Start one direct DIMR job step for every condition.
-6. Wait for all condition and MorMerge processes.
-7. Return a nonzero status when a condition launcher fails.
+1. Run the MPI preflight for direct multi-rank DIMR.
+2. Clone the model input into one directory per condition.
+3. Clear the synchronization directory.
+4. Start the serial MorMerge process for every run ID.
+5. Wait for the MorMerge synchronization markers.
+6. Launch the condition models.
+7. Wait for all condition and MorMerge processes.
+8. Return a nonzero status when a condition launcher or MorMerge server fails.
 
 The MorMerge processes run as ordinary serial child processes of the batch script. DIMR owns the MPI model execution inside the Slurm job step.
 
@@ -77,6 +78,8 @@ The generated batch script requests these resources.
 
 Slurm verifies whether it can allocate the requested CPU layout. Choose `P` so the concurrent conditions fit in node memory, since their memory requirements are outside the MorMerge packing calculation.
 
+For legacy online FLOW/WAVE, each condition launches two one-task steps. MorMerge sizes the allocation using `2 * P` tasks per node and `2 * P * H` CPUs per node. For example, four conditions packed onto two nodes require four tasks per node so FLOW and WAVE can run concurrently for every condition.
+
 ## 5. Direct DIMR job step
 
 The generated launcher creates the following job step for each condition. Square brackets indicate an optional argument.
@@ -94,7 +97,7 @@ srun --exclusive --exact --kill-on-bad-exit=1 \
 
 `--exclusive` prevents concurrent condition steps from using the same CPU set. `--exact` restricts a step to its requested resources so that other condition steps can use the remaining CPUs on the node. The target Slurm installation must support exact job-step resource allocation for packed runs.
 
-For multi-rank conditions, the launcher first verifies that the configured Slurm MPI plugin exports an MPI rank environment recognized by DIMR. This detects an incompatible Slurm/MPI combination before the model starts. `srun` launches DIMR directly and serves as the only MPI launcher.
+For direct multi-rank DIMR, MorMerge runs one MPI preflight step inside the allocation with the same Slurm options as the condition steps. It checks for an MPI rank environment recognized by DIMR and exits on failure before starting any MorMerge servers. A custom `runscript` manages its own MPI setup.
 
 ## 6. Supported MPI layouts
 
@@ -218,7 +221,7 @@ MorMerge uses a stream protocol in which the server waits for the next frame. Th
 GetPutArrayError: ABORT Recv ... returns 0 bytes
 ```
 
-This is the expected server teardown after a condition stream closes. `mormerge.tcl` reports that known terminal status as informational. A failed condition DIMR job step, MPI preflight, or other child process is fatal and produces a nonzero final status.
+For a Slurm MorMerge server, `mormerge.tcl` reports expected teardown when the server exits with status `1`, its screen log contains this diagnostic, and the condition launchers finish successfully. Other child failures produce a nonzero final status once the children exit. A rejected `sbatch` submission or failed DIMR MPI preflight returns a nonzero status immediately.
 
 A condition launched with one task is a serial DIMR run and normally reports `MPI: no`. A condition with more than one task should report MPI as enabled and show the expected rank and OpenMP thread counts.
 
@@ -236,7 +239,7 @@ Check the job output for the following details.
 - DIMR reporting of MPI and OpenMP status
 - Nonzero condition-step exits or failed MPI environment preflights
 
-If a job remains pending, compare `slurmConditionsPerNode * slurmTasksPerNode * slurmCpusPerTask` with the usable CPUs per node and check the site's memory request policy. If DIMR does not recognize MPI, verify that `slurmMPI` matches the loaded MPI library and the Slurm plugins installed on the cluster.
+If a job remains pending, compare the requested CPUs per node with the usable CPUs per node and check the site's memory request policy. If DIMR does not recognize MPI, verify that `slurmMPI` matches the loaded MPI library and the Slurm plugins installed on the cluster.
 
 ## 10. More info
 

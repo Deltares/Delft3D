@@ -268,7 +268,7 @@ proc setPlatform { } {
 # Side effect:
 #     Command started, output will be redirected to the output window
 # --------------------------------------------------------------------
-proc runcmd {command tag} {
+proc runcmd {command tag {mergeLog ""}} {
     global processes
     global processhandles
 
@@ -278,7 +278,7 @@ proc runcmd {command tag} {
 
     fconfigure $infile -buffering none
     #fconfigure $infile -buffering line
-    fileevent $infile readable [list getInput $infile $tag]
+    fileevent $infile readable [list getInput $infile $tag $mergeLog]
 
     lappend processhandles $infile
     lappend processes [pid $infile]
@@ -293,12 +293,14 @@ proc runcmd {command tag} {
 # Arguments:
 #     channel        Channel to the external program
 #     tag            The tag that identifies the program (different colours)
+#     mergeLog       Screen log for a directly launched Slurm MorMerge server
 # Returns:
 #     Nothing
 # --------------------------------------------------------------------
-proc getInput {channel tag} {
+proc getInput {channel tag mergeLog} {
     global processes
     global processfailures
+    global mergeStreamClosures
 
     if { [gets $channel line] >= 0 } {
         puts "$tag : $line"
@@ -306,11 +308,15 @@ proc getInput {channel tag} {
         set idx [lsearch $processes [pid $channel]]
         set processes [lreplace $processes $idx $idx]
         puts "$tag : Finished"
-        if { [catch {close $channel} errmsg] } {
-            if {[string match "merge:*" $tag] &&
-                [string match "*child process exited abnormally*" $errmsg]} {
-                puts "INFO: tag=$tag : mormerge stopped after a condition stream closed"
+        if { [catch {close $channel} errmsg options] } {
+            set errorCode [dict get $options -errorcode]
+            if {$mergeLog ne "" && [lindex $errorCode 0] eq "CHILDSTATUS" &&
+                [lindex $errorCode 2] == 1 && [hasMergeStreamClosure $mergeLog]} {
+                lappend mergeStreamClosures $tag
             } else {
+                if {$mergeLog ne ""} {
+                    append errmsg " (see $mergeLog)"
+                }
                 puts "\nERROR: tag=$tag : $errmsg"
                 lappend processfailures [list $tag $errmsg]
             }
@@ -321,6 +327,31 @@ proc getInput {channel tag} {
             putsDebug "Waiting for [llength $processes] processes to finish..."
         }
     }
+}
+
+
+proc hasMergeStreamClosure {logPath} {
+   set diagnostic {^GetPutArrayError: ABORT Recv from .+ returns 0 bytes\. Is the peer process dead\?$}
+   set found 0
+   if {[catch {
+      set log [open $logPath r]
+      set readFailed [catch {
+         while {[gets $log line] >= 0} {
+            if {[regexp $diagnostic [string trim $line]]} {
+               set found 1
+               break
+            }
+         }
+      } readError]
+      close $log
+      if {$readFailed} {
+         error $readError
+      }
+   } errmsg]} {
+      puts stderr "ERROR: Unable to inspect MorMerge log $logPath: $errmsg"
+      return 0
+   }
+   return $found
 }
 
 
@@ -437,14 +468,22 @@ proc readSlurmNodeList { count nodes } {
 #   Procedure: configureSlurmGeometry
 #   Purpose:   Derive Slurm condition-step geometry from the allocation
 # --------------------------------------------------------------------
-proc configureSlurmGeometry { inflist } {
+proc configureSlurmGeometry { inflist waveonline } {
    upvar $inflist infillist
 
    set totalnodes $infillist(numnodes)
    set controlnodes $infillist(slurmcontrolnodes)
    set nodespercondition $infillist(slurmnodespercondition)
+   set taskspernode $infillist(slurmtaskspernode)
    set conditionspernode $infillist(slurmconditionspernode)
    set numconditions $infillist(numconditions)
+
+   if {$waveonline} {
+      # The legacy launcher starts one serial step each for FLOW and WAVE.
+      set nodespercondition 1
+      set taskspernode 1
+      set infillist(slurmnodespercondition) 1
+   }
 
    if {$controlnodes >= $totalnodes} {
       puts "ERROR: slurmControlNodes ($controlnodes) leaves no nodes for Slurm condition steps"
@@ -470,13 +509,13 @@ proc configureSlurmGeometry { inflist } {
          ($requiredconditionslots + $availableconditionnodes - 1) / $availableconditionnodes
       }]
       set infillist(slurmconditionspernode) $conditionspernode
-      puts "INFO: Auto-selected $conditionspernode Slurm condition step(s) per allocation node"
+      puts "INFO: Auto-selected a Slurm packing factor of $conditionspernode conditions per node"
    }
 
    set availableconditionslots [expr {$availableconditionnodes * $conditionspernode}]
    if {$requiredconditionslots > $availableconditionslots} {
       puts "ERROR: Packed Slurm geometry provides $availableconditionslots condition-node slot(s)"
-      puts "       Required = conditions * slurmNodesPerCondition = $requiredconditionslots"
+      puts "       Required = conditions * nodes per condition = $requiredconditionslots"
       puts "       Increase nodes or slurmConditionsPerNode, or reduce slurmNodesPerCondition"
       exit 1
    } elseif {$requiredconditionslots < $availableconditionslots} {
@@ -485,14 +524,14 @@ proc configureSlurmGeometry { inflist } {
    }
 
    if {$conditionspernode > 1} {
-      puts "INFO: Up to $conditionspernode condition steps share each allocation node"
+      puts "INFO: Each allocation node has capacity for $conditionspernode condition(s)"
       puts "      Each step keeps an exclusive Slurm CPU set"
    }
 
-   set infillist(slurmtaskspercondition) [expr {$nodespercondition * $infillist(slurmtaskspernode)}]
+   set infillist(slurmtaskspercondition) [expr {$nodespercondition * $taskspernode}]
    set infillist(slurmconditionstepsperallocationnode) $conditionspernode
    set infillist(slurmallocationtaskspernode) [expr {
-      $conditionspernode * $infillist(slurmtaskspernode)
+      $conditionspernode * ($waveonline ? 2 : $taskspernode)
    }]
    set infillist(slurmallocationcpuspernode) [expr {
       $infillist(slurmallocationtaskspernode) * $infillist(slurmcpuspertask)
@@ -652,6 +691,51 @@ proc getSlurmDirectDimrArguments { inflist } {
       lappend shellargs [shellQuote $argument]
    }
    return [join $shellargs " "]
+}
+
+
+proc prepareSlurmDimr { inflist } {
+   upvar $inflist infillist
+
+   set infillist(slurmdimrargs) [getSlurmDirectDimrArguments infillist]
+   set mpiPlugin $infillist(slurmmpi)
+   set tasks $infillist(slurmtaskspercondition)
+   set threads $infillist(slurmcpuspertask)
+   set step [list srun --exclusive --exact --kill-on-bad-exit=1 \
+      --nodes=$infillist(slurmnodespercondition) --ntasks=$tasks \
+      --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$threads \
+      --export=ALL,OMP_NUM_THREADS=$threads]
+   if {$mpiPlugin ne " "} {
+      lappend step --mpi=$mpiPlugin
+   }
+
+   if {$tasks > 1} {
+      if {$mpiPlugin eq " "} {
+         puts stderr "ERROR: Direct DIMR MPI runs require slurmMPI to name a compatible Slurm MPI plugin"
+         exit 1
+      }
+      set rankCheck {
+         if [ -z "${PMI_RANK:-}" ] && [ -z "${OMPI_COMM_WORLD_RANK:-}" ] &&
+            [ -z "${OMPI_MCA_ns_nds_vpid:-}" ] && [ -z "${MPIRUN_RANK:-}" ] &&
+            [ -z "${MV2_COMM_WORLD_RANK:-}" ] && [ -z "${MP_CHILD:-}" ]; then
+            echo "Slurm MPI plugin did not export a DIMR MPI rank variable" >&2
+            exit 1
+         fi
+      }
+      if {[catch {exec {*}$step /bin/sh -c $rankCheck 2>@1} result]} {
+         puts stderr "ERROR: DIMR MPI environment preflight failed: $result"
+         exit 1
+      }
+      if {$result ne ""} {
+         puts $result
+      }
+   }
+
+   set shellStep {srun}
+   foreach argument [lrange $step 1 end] {
+      lappend shellStep [shellQuote $argument]
+   }
+   set infillist(slurmdimrstep) [join $shellStep " "]
 }
 
 
@@ -1592,7 +1676,7 @@ proc waitForNodes { mergedir alist inflist } {
       puts $scriptfile "echo \"SLURM_JOB_NODELIST=\${SLURM_JOB_NODELIST:-unknown}\""
       puts $scriptfile "echo \"SLURM_SUBMIT_DIR=\${SLURM_SUBMIT_DIR:-unknown}\""
       puts $scriptfile "echo \"Slurm allocation geometry: nodes=$infillist(numnodes),\
-         condition steps/node=$infillist(slurmconditionstepsperallocationnode),\
+         conditions/node=$infillist(slurmconditionstepsperallocationnode),\
          tasks/node=$infillist(slurmallocationtaskspernode),\
          CPUs/task=$infillist(slurmcpuspertask), CPUs/node=$infillist(slurmallocationcpuspernode)\""
       puts $scriptfile "scontrol show hostnames \"\$SLURM_JOB_NODELIST\""
@@ -1644,23 +1728,29 @@ proc waitForNodes { mergedir alist inflist } {
 
    if {$queuesys == "slurm"} {
       puts "Waiting for sbatch to assign $infillist(numnodes) nodes"
+      if {[catch {exec $sfilnamewait 2>@1} result]} {
+         puts stderr "ERROR: Slurm submission failed: $result"
+         exit 1
+      }
+      puts $result
       puts "The mormerge script is started automatically by sbatch when the nodes are available"
-   } else {
-      puts "Waiting for qsub to assign $infillist(numnodes) nodes"
-      puts "The mormerge script is started automatically by qsub when the nodes are available"
+      after $waittime
+      if {[catch {exec squeue 2>@1} result]} {
+         puts stderr "WARNING: squeue failed after Slurm accepted the MorMerge job: $result"
+      } else {
+         puts $result
+      }
+      puts "Finished normally"
+      exit 0
    }
+   puts "Waiting for qsub to assign $infillist(numnodes) nodes"
+   puts "The mormerge script is started automatically by qsub when the nodes are available"
    puts "Finished normally"
-   if {$queuesys == "slurm"} {
-      runcmd $sfilnamewait "merge:sbatch"
-   } else {
-      runcmd $sfilnamewait "merge:qsub"
-   }
+   runcmd $sfilnamewait "merge:qsub"
    vwait finished
    set finished 0
    after $waittime
-   if {$queuesys == "slurm"} {
-      runcmd "squeue" "merge:squeue"
-   } elseif {$queuesys == "sge"} {
+   if {$queuesys == "sge"} {
       runcmd "qstat" "merge:qstat"
    } else {
       runcmd "qstat -n" "merge:qstat"
@@ -1881,6 +1971,9 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       puts $scriptfile "\n# Start mormerge\n"
       puts $scriptfile "\"$mergeexe\" -i [file tail $inputfilename]\
          -w $rundir -r $runid >$screenfile 2>&1"
+      if {$queuesys == "slurm"} {
+         puts $scriptfile {merge_status=$?}
+      }
       if { $localrun } {
          puts $scriptfile "\n# Copy rundir data back to modeldir\n"
          if {$workdir == "sgestage"} {
@@ -1893,6 +1986,9 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
             puts $scriptfile "cd .."
             puts $scriptfile "rmdir --ignore-fail-on-non-empty $worksubdir"
          }
+      }
+      if {$queuesys == "slurm"} {
+         puts $scriptfile {exit "$merge_status"}
       }
       puts $scriptfile "\n# End of script\n"
    } else {
@@ -1993,7 +2089,11 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
 
    putsDebug "mormergeruncommand:$shellscriptname"
    after $waittime
-   set returnval [runcmd $shellfilname "merge:$runid"]
+   if {$queuesys == "slurm"} {
+      set returnval [runcmd $shellfilname "merge:$runid" [file join $rundir $screenfile]]
+   } else {
+      set returnval [runcmd $shellfilname "merge:$runid"]
+   }
    #after [expr 10000 + $waittime]
    set syncfile [file nativename [file join $syncdir "merge$runid"] ]
    set fileexists 0
@@ -2108,33 +2208,9 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          set slurmNodeCount $infillist(slurmnodespercondition)
          set slurmTaskCount $infillist(slurmtaskspercondition)
          set slurmThreadCount $infillist(slurmcpuspertask)
-         set slurmMpiOption ""
-         if {$infillist(slurmmpi) != " "} {
-            set slurmMpiOption "--mpi=$infillist(slurmmpi) "
-         }
          set slurmExport "ALL,OMP_NUM_THREADS=$slurmThreadCount"
-         set slurmMultiRun "srun --exclusive --exact --kill-on-bad-exit=1\
-            $slurmMpiOption--nodes=$slurmNodeCount --ntasks=$slurmTaskCount\
-            --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$slurmThreadCount\
-            --export=$slurmExport"
-         set slurmSerialRun "srun --nodes=1 --ntasks=1 --ntasks-per-node=1\
+         set slurmSerialRun "srun --exact --nodes=1 --ntasks=1 --ntasks-per-node=1\
             --cpus-per-task=$slurmThreadCount --export=$slurmExport"
-         set slurmMpiProbe ""
-         if {$slurmTaskCount > 1} {
-            if {$infillist(slurmmpi) == " "} {
-               puts "ERROR: Direct DIMR MPI runs require slurmMPI to name a compatible\
-                  Slurm MPI plugin"
-               exit 1
-            }
-            set slurmMpiProbeTemplate {__SLURM_MULTI_RUN__ /bin/sh -c\
-               'if [ -z "${PMI_RANK:-}" ] && [ -z "${OMPI_COMM_WORLD_RANK:-}" ] &&\
-               [ -z "${OMPI_MCA_ns_nds_vpid:-}" ] && [ -z "${MPIRUN_RANK:-}" ] &&\
-               [ -z "${MV2_COMM_WORLD_RANK:-}" ] && [ -z "${MP_CHILD:-}" ]; then\
-               echo "ERROR: Slurm MPI plugin did not export an MPI-rank environment required by\
-               DIMR" >&2; exit 1; fi'}
-            set slurmMpiProbe \
-               [string map [list __SLURM_MULTI_RUN__ $slurmMultiRun] $slurmMpiProbeTemplate]
-         }
          puts $scriptfile "\n# Slurm task geometry for this condition\n"
          puts $scriptfile "slurm_step_pids=()"
          puts $scriptfile "export MORMERGE_SLURM_NODES=$slurmNodeCount"
@@ -2185,14 +2261,8 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       if { $infillist(dimrexedir) != " " } {
          puts $scriptfile "\n# Start DIMR\n"
          if {$queuesys == "slurm"} {
-            set slurmDimrArgs [getSlurmDirectDimrArguments infillist]
-            if {$slurmTaskCount > 1} {
-               puts $scriptfile "if ! $slurmMpiProbe; then"
-               puts $scriptfile "   echo \"ERROR: DIMR MPI environment preflight failed\" >&2"
-               puts $scriptfile "   exit 1"
-               puts $scriptfile "fi"
-            }
-            puts $scriptfile "$slurmMultiRun \"$dimrexe\" $slurmDimrArgs >dimr.scr 2>&1 &"
+            puts $scriptfile "$infillist(slurmdimrstep) [shellQuote $dimrexe]\
+               $infillist(slurmdimrargs) >dimr.scr 2>&1 &"
             puts $scriptfile "slurm_step_pids+=(\"\$!\")"
          } else {
             puts $scriptfile "\"$dimrexe\" $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1 &"
@@ -2459,6 +2529,7 @@ after 1000
 setPlatform
 
 set processfailures {}
+set mergeStreamClosures {}
 
 if {$platform == "linux"} {
    if { $queuesys == "slurm" } {
@@ -2667,7 +2738,7 @@ if { $infillist(runscript) eq " " } {
 }
 
 if { $queuesys == "slurm" } {
-   configureSlurmGeometry infillist
+   configureSlurmGeometry infillist $waveonline
 }
 
 #
@@ -2852,6 +2923,10 @@ if { $waveonline } {
    set waveexe " "
 }
 
+if {$queuesys == "slurm" && $infillist(dimrexedir) != " "} {
+   prepareSlurmDimr infillist
+}
+
 
 
 #
@@ -2968,6 +3043,9 @@ if {[llength $processfailures] > 0} {
    exit 1
 }
 
+foreach tag $mergeStreamClosures {
+   puts "INFO: tag=$tag : mormerge stopped after a condition stream closed"
+}
 puts "mormerge.tcl : Finished"
 cd $startdir
 
