@@ -44,7 +44,7 @@
 %
 
 %Add colon in \mySubtitle if desired or leave empty if no substitle is desired. 
-\def\myTitle{Fixed weirs in 6th generation models for BOI.}
+\def\myTitle{Immersed Boundary Method in Delft3D Flexible Mesh: technical documentation}
 %\def\myTitle{\projectname{}} %use in proposal					
 \def\mySubtitle{}
 
@@ -120,6 +120,8 @@
 \fi
 
 \input{../00_references/packages}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,patterns}
 
 %
 %
@@ -206,7 +208,7 @@
 \else
 
 \begin{document}
-\memoTo{Aukje Spruyt, Johan Boon} %\memoTo*{Person} hides "To" 
+\memoTo{-} %\memoTo*{Person} hides "To" 
 %\memoTo{\contactname{}\newline \clientname{}\newline\clientaddress{}} %use in proposal
 \memoConfidentialUntil{}
 %\memoName{Memo} %Name in header. If commented out, default "Memo" is used. 
@@ -227,7 +229,7 @@
 %\myEmailii{} \\
 }}
 \memoSubject{\myTitle{}\mySubtitle{}}
-\memoCopy{Erik de Goede, Jan van Kester, Tjitske Geertsema}
+\memoCopy{-}
 
 \fi
 
@@ -313,7 +315,493 @@
 %----------------------------
 \FloatBarrier
 \gensection{\isreport}{1}{Introduction}
-lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+This memo documents the implementation of the Immersed Boundary Method (IBM) in the Delft3D Flexible Mesh (D-Flow FM) kernel. The method represents solid obstacles that are not aligned with the computational grid by cutting them into the staggered grid. Cells that are partly covered by a solid are called cut cells; cells that are fully covered are called solid cells. The implementation follows the mass-conservative staggered immersed boundary approach of Canestrelli et al.~\cite{Canestrelli16}, adapted to the unstructured-network data structures and time integration of D-Flow FM.
+
+The memo is written as the basis for a code review. It states the equations that are solved, the assumptions on which they rely, and the implementation details. Section~\ref{sec:differences} lists every point at which the implementation departs from the original (pre-IBM) code. Section~\ref{sec:notimpl} lists the parts of the original design that are not implemented. Section~\ref{sec:review} lists the points that deserve particular attention during review.
+
+The scope of the change is the following. The IBM is switched on with the key \texttt{ImmersedBoundary}. With the key off (default), the model follows the original code path. The change set comprises a new module \texttt{m\_immersed\_boundary.f90} (about 1650 lines) and modifications in 16 further kernel files. The baseline used for all comparisons is the parent of the first IBM commit.
+
+%
+\gensection{\isreport}{1}{Equations solved and scope}
+\label{sec:equations}
+
+The IBM modifies the discretisation of the depth-averaged shallow water equations on the staggered D-Flow FM grid at three places: the pressure gradient on links that touch a cut cell, the advective volumes and velocities on those links, and the reconstruction of the cell-centre velocity from the link velocities (Perot weights). The continuity equation and the time integration are not changed. The bed level of cut cells is reconstructed separately (Section~\ref{sec:bed}).
+
+Figure~\ref{fig:staggered} sketches the notation. Each link $L$ connects two cells, $k_1$ (cell 1) and $k_2$ (cell 2). The unit normal $\mathbf{n}$ of the link points from cell 1 to cell 2. The link has a width $w_L$, and the distance between the two cell centres measured along $\mathbf{n}$ is $\Delta n_L$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[thick, fill=gray!8] (-2.2,-1.2) rectangle (0,1.2);
+  \draw[thick, fill=gray!8] (0,-1.2) rectangle (2.2,1.2);
+  \node at (-1.1,0.6) {cell $k_1$};
+  \node at (1.1,0.6) {cell $k_2$};
+  \fill (-1.1,0) circle (1.6pt) node[below] {$\mathbf{x}_{1}$};
+  \fill (1.1,0) circle (1.6pt) node[below] {$\mathbf{x}_{2}$};
+  \draw[very thick, blue!70!black] (0,-0.9) -- (0,0.9);
+  \node[blue!70!black, above] at (0,0.9) {link $L$};
+  \draw[->, red, thick] (0.25,0) -- (0.85,0) node[above right] {$\mathbf{n}$};
+  \draw[<->] (-1.1,-1.5) -- (1.1,-1.5) node[midway, below] {$\Delta n_L$};
+  \draw[<->] (-0.7,1.5) -- (0.7,1.5) node[midway, above] {$w_L$};
+\end{tikzpicture}
+\caption{Schematic of two uncut cells and the link between them (not to scale). The width $w_L$ is measured tangentially to $\mathbf{n}$, and $\Delta n_L$ is measured along $\mathbf{n}$.}
+\label{fig:staggered}
+\end{figure}
+
+The continuity equation is the existing D-Flow FM finite-volume form on the staggered grid,
+\begin{equation}
+\frac{\partial \zeta}{\partial t} + \frac{1}{A_k}\sum_{L \in \mathcal{L}(k)} \sigma_{kL}\, Q_L = 0,
+\qquad Q_L = h_L\, w_L\, u_L,
+\label{eq:cont}
+\end{equation}
+with the following symbols.
+\begin{itemize}
+  \item $\zeta$: water level relative to the datum (m).
+  \item $t$: time (s).
+  \item $k$: cell index (-). $\mathcal{L}(k)$ is the set of links of cell $k$ (-).
+  \item $A_k$: storage area of cell $k$ (m$^2$). In the code this is \texttt{ba}.
+  \item $\sigma_{kL}$: $+1$ or $-1$, depending on whether the normal of link $L$ points out of or into cell $k$ (-).
+  \item $Q_L$: volume flux through link $L$ (m$^3$/s).
+  \item $h_L$: water depth at link $L$ (m). In the code this is \texttt{hu}.
+  \item $w_L$: width of link $L$ used by the solver (m). It is the length of the face through which the flux passes, not an area. For a cut link it is the wet width. In the code this is \texttt{wu}, so \texttt{wu(L)} is $w_L$ in metres. The wet cross-section of the link is $h_L w_L$ (m$^2$), which the code stores as \texttt{au}.
+  \item $u_L$: velocity normal to link $L$, positive from cell 1 to cell 2 (m/s).
+\end{itemize}
+Links with $h_L = 0$ are inactive. A solid cell has no active links and is not solved. The IBM does not change Equation~\eqref{eq:cont}. Its effect on mass conservation comes through the storage $A_k$ and the link widths $w_L$, which follow from the cut-cell geometry (Section~\ref{sec:geom}).
+
+The momentum equation is the depth-averaged shallow-water momentum equation. In vector form, with $\mathbf{u}$ the depth-averaged velocity,
+\begin{equation}
+\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u}\cdot\nabla)\mathbf{u} + f\,\hat{\mathbf{z}}\times\mathbf{u} + \frac{g\,|\mathbf{u}|\,\mathbf{u}}{C^{2}\,h} = -\,g\,\nabla\zeta + \mathbf{F}.
+\label{eq:momvec}
+\end{equation}
+Projecting Equation~\eqref{eq:momvec} on the normal $\mathbf{n}$ of link $L$ and using $\hat{\mathbf{z}}\times\mathbf{n} = \mathbf{t}$ and $\hat{\mathbf{z}}\times\mathbf{t} = -\mathbf{n}$, with $\mathbf{t} = (-n_y, n_x)$, gives the momentum equation for link $L$,
+\begin{equation}
+\frac{\partial u_L}{\partial t} + (\mathbf{u}\cdot\nabla)u_L - f\,u_{t,L} + \frac{g\,|\mathbf{u}|\,u_L}{C^{2}\,h_L} = -\,g\,\frac{\partial \zeta}{\partial n} + F_L,
+\label{eq:mom}
+\end{equation}
+where $g$ appears once in the friction term and once in the pressure term. The symbols are the following.
+\begin{itemize}
+  \item $t$: time (s).
+  \item $\mathbf{u} = (u, v)$: depth-averaged velocity vector (m/s). $|\mathbf{u}|$ is the speed (m/s).
+  \item $u_L = \mathbf{u}\cdot\mathbf{n}$: normal velocity on link $L$ (m/s). This is the unknown of the discrete scheme.
+  \item $u_{t,L} = \mathbf{u}\cdot\mathbf{t}$: tangential velocity on link $L$ (m/s).
+  \item $\mathbf{n}$, $\mathbf{t}$: unit normal and unit tangent of link $L$ (-).
+  \item $\hat{\mathbf{z}}$: unit vertical vector (-).
+  \item $f$: Coriolis parameter (1/s).
+  \item $g$: gravitational acceleration (m/s$^2$).
+  \item $C$: Chézy coefficient (m$^{1/2}$/s).
+  \item $h$: water depth (m). $h_L$ is the depth at link $L$.
+  \item $\zeta$: water level (m). $\partial\zeta/\partial n$ is the derivative of $\zeta$ along $\mathbf{n}$ (-).
+  \item $\mathbf{F}$, $F_L = \mathbf{F}\cdot\mathbf{n}$: other accelerations, including horizontal eddy viscosity, wind, waves, and ship forcing (m/s$^2$).
+  \item $(\mathbf{u}\cdot\nabla)u_L$: advective acceleration (m/s$^2$). It is discretised in \texttt{advec.f90}.
+\end{itemize}
+
+The discrete form solved on each link is obtained with the $\theta$-method for the pressure term. Superscripts $\mathrm{old}$ and $\mathrm{new}$ denote the known and the unknown time level. The discrete pressure coefficient of link $L$ is
+\begin{equation}
+\gamma_L = \frac{g}{\Delta n^{\ast}_L}\qquad(\text{1/s}^2),
+\label{eq:gamma}
+\end{equation}
+where $\Delta n^{\ast}_L$ is defined in Section~\ref{sec:momentum}. The code variable \texttt{gdxi} is $\gamma_L$. Equation~\eqref{eq:mom} then becomes
+\begin{multline}
+\Big(\frac{1}{\Delta t} + \lambda_L + \kappa_L\Big)\, u_L^{\mathrm{new}} + \theta\,\gamma_L\,\big(\zeta_{k_2}^{\mathrm{new}} - \zeta_{k_1}^{\mathrm{new}}\big) \\
+= \frac{1}{\Delta t}\,u_L^{\mathrm{old}} - E_L + \gamma_L\, s_L - (1-\theta)\,\gamma_L\,\big(\zeta_{k_2}^{\mathrm{old}} - \zeta_{k_1}^{\mathrm{old}}\big).
+\label{eq:discrete}
+\end{multline}
+The symbols in Equation~\eqref{eq:discrete} are the following.
+\begin{itemize}
+  \item $\Delta t$: time step (s). The code stores its inverse as \texttt{dti} $=1/\Delta t$ (1/s).
+  \item $\theta$: time-weighting factor of the pressure term (-). In the code this is \texttt{teta(L)}, which is $|\texttt{Teta0}|$ for constant $\theta$.
+  \item $\lambda_L$: implicit advection rate (1/s). In the code this is \texttt{advi(L)}.
+  \item $\kappa_L$: friction rate (1/s). In the code this is \texttt{frL}. It is $\kappa_L = g\,|\mathbf{u}^{\ast}|/(C^{2}h_L)$, where $\mathbf{u}^{\ast}$ is the provisional velocity. Friction is therefore linearised with the provisional speed.
+  \item $E_L$: explicit acceleration (m/s$^2$). In the code this is \texttt{adve(L)}. It collects the explicit advection, Coriolis, horizontal viscosity, and forcing terms, divided by the summed link volume weight (\texttt{vluban}).
+  \item $s_L$: drop or lateral-overflow correction (m). In the code this is \texttt{slopec}. It is zero unless the lateral-overflow advection option is active.
+  \item $\zeta_{k_1}$, $\zeta_{k_2}$: water levels of cells 1 and 2 (m).
+\end{itemize}
+The structure of Equation~\eqref{eq:discrete} is the baseline one. The IBM changes only the value of $\gamma_L$ on links that touch a cut cell (Section~\ref{sec:momentum}), and the advective weights of the same links (Section~\ref{sec:momentum}).
+
+The continuity matrix uses the same coefficient. Writing $\gamma_L\theta$ as $\Gamma_L$ (1/s$^2$), the velocity is corrected after the water levels are solved, as $u_L^{\mathrm{new}} = u_L^{\ast} - \Gamma_L\,(\Delta\zeta^{\mathrm{new}}_L - \Delta\zeta^{\mathrm{old}}_L)$, where $\Delta\zeta_L = \zeta_{k_2} - \zeta_{k_1}$ (m) and $u_L^{\ast}$ is the provisional velocity. This is the form in \texttt{u1q1.f90}. The same $\Gamma_L$ appears in the continuity matrix assembled in \texttt{s1nod.f90}.
+
+As a consistency check, for a flat, frictionless channel without advection, forcing, or Coriolis, with $\theta=1$, Equation~\eqref{eq:discrete} reduces to $\partial u_L/\partial t = -g\,\Delta\zeta_L/\Delta n^{\ast}_L$, which is the discrete form of Equation~\eqref{eq:mom}.
+
+The assumptions underlying the implementation are the following.
+\begin{enumerate}
+  \item The grid is Cartesian and uniform in each direction, with axis-aligned links. This is enforced by a check at start-up (Section~\ref{sec:cartesian}). The implementation is not valid for general unstructured grids.
+  \item The model is two-dimensional in the vertical sense: \texttt{kmx} $=0$ (one layer). The IBM is rejected for multi-layer models.
+  \item The solver is the generic 1D2D3D flow solver with \texttt{AdvecType} $=33$, \texttt{BedlevType} $=1$, and \texttt{Nonlin2D} $=0$ (Section~\ref{sec:config}).
+  \item Solid obstacles are fixed in time. Their geometry does not move during a run.
+  \item Walls are represented as the boundary of the wet part of the cut cell. The solver does not apply an explicit no-slip or free-slip boundary condition on the solid face. The wall is enforced through the reduced link width: links adjacent to a solid cell have zero width, and the cut links carry their wet width.
+\end{enumerate}
+
+%
+\gensection{\isreport}{1}{Geometry and cell classification}
+\label{sec:geom}
+
+The solid geometry is supplied as a list of polygons (\texttt{md\_cutcelllist}, for example a file named \texttt{*\_cut.lst}). For every cell $k$ the module \texttt{m\_immersed\_boundary} (routine \texttt{ibm\_build\_geometry}) computes the following quantities.
+\begin{itemize}
+  \item $f_k = A^{\text{wet}}_k / A^{\text{full}}_k$ (-): wet fraction of cell $k$, where $A^{\text{wet}}_k$ is the wet area (m$^2$) and $A^{\text{full}}_k$ the area of the full cell (m$^2$).
+  \item Cell class: solid if $f_k \le 10^{-12}$ (class 2); cut if the cell is partly covered (class 1); fluid if it is fully wet (class 0). In the code this is \texttt{cell\_class}.
+  \item $\beta_L = w_L / w^{\text{full}}_L$ (-): width fraction of link $L$, where $w_L$ is the width used by the solver (m) and $w^{\text{full}}_L$ is the width of the full face (m). In the code this is \texttt{edge\_frac}. Links adjacent to a solid cell have $\beta_L = 0$.
+  \item $\mathbf{x}_m = (x_m, y_m)$ (m): wet midpoint of a link with a cut side. It is the midpoint of the wet part of the face when a wet face exists, and the midpoint of the full face otherwise.
+\end{itemize}
+
+The wet area of a cut cell is computed from the wet polygon (routines \texttt{ibm\_measure\_wet\_polygon} and \texttt{ibm\_wet\_area\_from\_polygon}). The wet face on each side of a cell is found with \texttt{ibm\_measure\_wet\_face}. A face is accepted as wet when it overlaps a wet polygon edge, not only when its end points coincide with polygon vertices. This is needed because the polygon clipping removes collinear vertices, so a face lying along a wet edge would otherwise be missed. The wet centroid $\mathbf{c}_k$ of a cut cell is the centroid of its wet polygon.
+
+Links of cut cells are stored as \emph{cut links} (\texttt{clink} entries) with their wet midpoint $\mathbf{x}_m$, the wet width, and the neighbour information needed by the momentum and Perot routines. The flag \texttt{small\_edge} is set when $\beta_L < $ \texttt{ImmersedBoundarySmallEdgeFrac} (default 0.5). This flag is only a classification. No code consumes it (Section~\ref{sec:notimpl}).
+
+Figure~\ref{fig:cutcell} sketches a cut cell and the quantities defined above, for a link in the $x$ direction. The solid part is hatched, the cell centre $\mathbf{x}_1$ is the geometric centre of the full cell, and $\mathbf{c}_1$ is the centroid of the wet part.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  % solid part of cut cell k1
+  \fill[pattern=north east lines, pattern color=gray] (-1,-1) rectangle (-0.2,1);
+  \draw[thick] (-1,-1) rectangle (1,1);
+  \draw[thick, fill=gray!8] (1,-1) rectangle (3,1);
+  \node at (-0.85,0.8) {\small solid};
+  \node at (0.4,0.8) {\small wet part of $k_1$};
+  \node at (2,0.8) {cell $k_2$};
+  % full-cell centre x1 and wet centroid c1
+  \draw (0,0) circle (2pt) node[below left] {$\mathbf{x}_1$};
+  \fill (0.4,0) circle (1.6pt) node[below] {$\mathbf{c}_1$};
+  % cell 2 centre and wet centroid (uncut)
+  \fill (2,0) circle (1.6pt) node[below] {$\mathbf{c}_2 = \mathbf{x}_2$};
+  % wet midpoint of link face
+  \fill[red] (1,0) circle (1.6pt) node[above right, red] {$\mathbf{x}_m$};
+  % distances
+  \draw[<->] (0,-1.35) -- (2,-1.35) node[midway, below] {$\Delta n_L = 2$ (full)};
+  \draw[<->, dashed] (0.4,-1.7) -- (2,-1.7) node[midway, below] {$\Delta n^{\text{wet}}_L = 1.6$};
+  \draw[->, red, thick] (0.4,0.35) -- (1.0,0.35) node[right, red] {$\mathbf{n}$};
+\end{tikzpicture}
+\caption{Schematic of a cut cell $k_1$ (left) and an uncut cell $k_2$ (right), for a link in the $x$ direction (not to scale; lengths in m). Open circle: full-cell centre $\mathbf{x}_1$. Filled dots: wet centroid $\mathbf{c}_1$, cell-2 centre, and wet link midpoint $\mathbf{x}_m$. Hatching: solid part. The wet distance $\Delta n^{\text{wet}}_L = (\mathbf{c}_2-\mathbf{c}_1)\cdot\mathbf{n}$ is shorter than the full distance $\Delta n_L$, so $\gamma_L$ is larger on this link.}
+\label{fig:cutcell}
+\end{figure}
+
+%
+\gensection{\isreport}{1}{Discretisation of the momentum equation}
+\label{sec:momentum}
+
+\subsection*{Pressure gradient on cut links (M1)}
+
+For a link between two uncut cells the baseline coefficient is used, $\Delta n^{\ast}_L = \Delta n_L$, where $\Delta n_L = (\mathbf{x}_2 - \mathbf{x}_1)\cdot\mathbf{n}$ is the distance between the two cell centres measured along the normal.
+
+For a link $L$ that touches a cut cell, the IBM uses the distance between the wet centroids. The symbols are the following.
+\begin{itemize}
+  \item $\mathbf{n} = (n_x, n_y)$ (-): unit normal of link $L$, from cell 1 to cell 2. In the code the normal is normalised to unit length in \texttt{ibm\_set\_wet\_link\_metrics}.
+  \item $\mathbf{t} = (-n_y, n_x)$ (-): unit tangent of link $L$.
+  \item $\mathbf{c}_k$ (m): wet centroid of cell $k$. For an uncut cell it is the cell centre $\mathbf{x}_k$.
+  \item $\Delta x$, $\Delta y$ (m): grid spacings in the $x$ and $y$ directions (\texttt{grid\%dx}, \texttt{grid\%dy}).
+  \item $\Delta n^{\text{wet}}_L = (\mathbf{c}_2 - \mathbf{c}_1)\cdot\mathbf{n}$ (m): wet distance between the centroids, measured along the normal. In the code this is \texttt{dn}.
+  \item $\Delta n^{\min}_L = \tfrac14\sqrt{(n_x\Delta x)^2 + (n_y\Delta y)^2}$ (m): floor on the wet distance. In the code this is \texttt{dmin}.
+  \item $\Delta n^{\ast}_L = \max(\Delta n^{\text{wet}}_L, \Delta n^{\min}_L)$ (m): effective distance used by the momentum equation.
+  \item $d_{t,L} = (\mathbf{c}_2 - \mathbf{c}_1)\cdot\mathbf{t}$ (m): tangential offset between the centroids. In the code this is \texttt{dt12}.
+\end{itemize}
+These give
+\begin{equation}
+\Delta n^{\text{wet}}_L = (\mathbf{c}_2 - \mathbf{c}_1)\cdot \mathbf{n},
+\qquad
+\Delta n^{\min}_L = \tfrac14 \sqrt{(n_x \Delta x)^2 + (n_y \Delta y)^2},
+\qquad
+\Delta n^{\ast}_L = \max\!\left(\Delta n^{\text{wet}}_L,\; \Delta n^{\min}_L\right),
+\label{eq:dnwet}
+\end{equation}
+and the pressure coefficient of Equation~\eqref{eq:gamma} is $\gamma_L = g/\Delta n^{\ast}_L$. In the code this is \texttt{gdxi} $= g\cdot$\texttt{dxi\_wet}, with \texttt{dxi\_wet} $=1/\Delta n^{\ast}_L$. The floor $\Delta n^{\min}_L$ prevents a very small wet distance from producing a very large pressure gradient. Links where the floor is active are counted (\texttt{nclipped\_dn}) and a warning is reported at start-up. If $\Delta n^{\text{wet}}_L$ is not finite or not positive, the run stops with the error \emph{IBM wet centroids are not ordered along the link normal}.
+
+The tangential offset $d_{t,L}$ is computed and stored, but the solver does not use it. The explicit tangential pressure correction that would use it is not implemented (Section~\ref{sec:notimpl}). Setting \texttt{ImmersedBoundaryTangentialCorrection} to a non-zero value is rejected at start-up (Section~\ref{sec:config}).
+
+\subsection*{Advective weights and volumes}
+
+The advective weight of a link is the fraction $\alpha_L$ of the volume of cell 1 that is assigned to the link. The baseline is $\alpha_L = d_{1,L}/(d_{1,L}+d_{2,L})$, where $d_{1,L}$ and $d_{2,L}$ are the distances (m) from the centres of cells 1 and 2 to the dual face of the link (code \texttt{dxn1e}, \texttt{dxn2e}). The link volume is then
+\begin{equation}
+V_L = \alpha_L\, V_{k_1} + (1-\alpha_L)\, V_{k_2},
+\label{eq:volu}
+\end{equation}
+where $V_k$ is the volume of cell $k$ (m$^3$), in the code \texttt{vol1}. In the code $\alpha_L$ is \texttt{acl}.
+
+For a cut link, the IBM replaces $\alpha_L$ by the wet weight
+\begin{equation}
+\alpha^{\text{wet}}_L = \frac{(\mathbf{x}_m - \mathbf{c}_1)\cdot \mathbf{n}}{\Delta n^{\text{wet}}_L},
+\label{eq:aclwet}
+\end{equation}
+where $\mathbf{x}_m$ is the wet midpoint of the link (m). This is the same convention as the baseline, with the wet distances $d^{\text{wet}}_{1,L} = (\mathbf{x}_m - \mathbf{c}_1)\cdot\mathbf{n}$ and $d^{\text{wet}}_{2,L} = \Delta n^{\text{wet}}_L - d^{\text{wet}}_{1,L}$ in place of $d_{1,L}$ and $d_{2,L}$. In the code this is \texttt{acl\_wet}.
+
+The bounds are checked in \texttt{ibm\_set\_wet\_link\_metrics}. If $\alpha^{\text{wet}}_L \le 0$ or $\alpha^{\text{wet}}_L \ge 1$ on a link with positive width, the run stops with the error \emph{IBM wet interpolation weight is outside (0, 1)}. The value is not clamped. On a link with zero width the baseline weight $\alpha_L$ is used instead. The weight then enters \texttt{advec.f90} through Equation~\eqref{eq:volu}, with $\alpha^{\text{wet}}_L$ replacing $\alpha_L$ on cut links.
+
+The convention in Equation~\eqref{eq:volu}, in which $\alpha_L$ multiplies $V_{k_1}$, is the baseline one. With linear interpolation between the two centres the weight of $V_{k_1}$ would be $d_{2,L}/(d_{1,L}+d_{2,L})$. This is listed as a review point (Section~\ref{sec:review}).
+
+%
+\gensection{\isreport}{1}{Reconstruction of the cell-centre velocity (M3)}
+\label{sec:perot}
+
+The cell-centre velocity is reconstructed from the link velocities, component by component, as
+\begin{equation}
+u^{\text{cc},x}_{k} = \sum_{L \in \mathcal{L}(k)} \omega^{x}_{kL}\, u_L,
+\qquad
+u^{\text{cc},y}_{k} = \sum_{L \in \mathcal{L}(k)} \omega^{y}_{kL}\, u_L,
+\label{eq:perot}
+\end{equation}
+with the following symbols.
+\begin{itemize}
+  \item $u^{\text{cc},x}_k$, $u^{\text{cc},y}_k$ (m/s): $x$ and $y$ components of the reconstructed velocity at the centre of cell $k$.
+  \item $\omega^{x}_{kL}$, $\omega^{y}_{kL}$ (-): $x$ and $y$ Perot weights of link $L$ for cell $k$. The side-1 weights are $\omega_{1,L}$ (applies when $k=k_1$) and the side-2 weights are $\omega_{2,L}$ (applies when $k=k_2$). In the code these are \texttt{wcx1}, \texttt{wcy1}, \texttt{wcx2}, \texttt{wcy2}.
+  \item $u_L$ (m/s): normal velocity of link $L$ (Section~\ref{sec:equations}).
+  \item $\mathcal{L}(k)$ (-): set of links of cell $k$.
+\end{itemize}
+In the baseline (\texttt{setlinktocenterweights.f90}) the side-1 $x$ weight is $\omega^x_{1,L} = c_{x,L}\,\alpha_L\,\Delta x\, w_L$ before normalisation, where $c_{x,L}$ (-) is the $x$ projection of the link normal (code \texttt{cs}), $\alpha_L$ (-) is the advective weight of Section~\ref{sec:momentum}, $\Delta x$ (m) is the $x$ distance term used by the baseline, and $w_L$ (m) is the link width. The normalisation depends on the side. For a cut-flagged cell the weight is multiplied by $\texttt{bai}(k) = 1/\texttt{ba}(k)$, where \texttt{ba} (m$^2$) is the cell area used at set-up. For an uncut cell the weight is divided by the sum of absolute weights of the cell, \texttt{wcxy} (-).
+
+For every link with a cut side, the IBM replaces the weights of that side with a position-vector form. The symbols are the following.
+\begin{itemize}
+  \item $\mathbf{x}_m = (x_m, y_m)$ (m): wet midpoint of the link (the midpoint of the wet part of the face).
+  \item $\mathbf{c}_k = (x_{c,k}, y_{c,k})$ (m): wet centroid of the cut cell on that side.
+  \item $A^{\text{wet}}_k$ (m$^2$): wet area of the cut cell, computed as the cut fraction times the full cell area.
+  \item $w_L$ (m): width of the link used by the solver (zero-width links are handled separately below).
+\end{itemize}
+The $x$ and $y$ weights on side 1 are
+\begin{equation}
+\omega^{x}_{1,L} = \frac{(x_m - x_{c,1})\, w_L}{A^{\text{wet}}_1},
+\qquad
+\omega^{y}_{1,L} = \frac{(y_m - y_{c,1})\, w_L}{A^{\text{wet}}_1},
+\label{eq:perotibm}
+\end{equation}
+which are dimensionless because the numerator is m$^2$ and the denominator is m$^2$. On side 2 the same expressions are used with the cut cell of side 2, but with the opposite sign, $\omega^{x}_{2,L} = -(x_m - x_{c,2})\, w_L / A^{\text{wet}}_2$ and likewise for $y$. This sign convention is listed as a review point (Section~\ref{sec:review}). The IBM weight uses the wet area $A^{\text{wet}}_k$, not the clamped storage area (Section~\ref{sec:storage}). Links with zero width get zero weights on the cut side. Links without a cut side keep the baseline weights.
+
+The uncut neighbour of a cut link is still normalised with the baseline \texttt{wcxy} sum. That sum is computed before the IBM override, so for such a neighbour the normalisation uses the baseline value for the cut link. This may be a subtle inconsistency and is a review point.
+
+Projection onto the cut-cell face (\texttt{ImmersedBoundaryProjection}) is not implemented. Setting it to a non-zero value is rejected at start-up.
+
+%
+\gensection{\isreport}{1}{Bed levels of cut cells (M2)}
+\label{sec:bed}
+
+Cut cells need a bed level at their wet centroid, because the pressure gradient on the cut links and the wet area depend on it. The IBM reconstructs this bed level by a local plane fit to the neighbouring uncut cells. The routine is \texttt{ibm\_set\_wet\_bed} (\texttt{m\_immersed\_boundary.f90}), and it solves a $3\times 3$ system with \texttt{ibm\_solve\_3x3}.
+
+The symbols are the following.
+\begin{itemize}
+  \item $k$ (-): index of a cut cell. In the code the bed level array is \texttt{bed\_level} and the result is stored in \texttt{bed\_level(k)}.
+  \item $\mathbf{c}_k = (x_{c,k}, y_{c,k})$ (m): wet centroid of cut cell $k$.
+  \item $b^{\text{wet}}_k$ (m): reconstructed bed level of cut cell $k$ at its wet centroid.
+  \item $j$ (-): index of a sample cell. A sample is an uncut fluid cell with a finite, non-missing supplied bed level $b_j$ (m) and centre $(x_j, y_j)$ (m).
+  \item $\Delta x$, $\Delta y$ (m): uniform grid spacings in $x$ and $y$ (code \texttt{state\%grid\%dx} and \texttt{dy}). The Cartesian check (Section~\ref{sec:cartesian}) guarantees that they are the spacings of the whole lattice.
+\end{itemize}
+
+The sampling is a breadth-first search from the cut cell over links that have a positive width and where neither endpoint is of class 2 (solid or absent). Cut cells (class 1) are traversed but do not contribute samples. A sample found within two link hops of $k$ is a primary sample. A sample found within three link hops is a fallback sample. Figure~\ref{fig:bedstencil} shows the stencil.
+
+For each sample, the basis vector is $\boldsymbol{\varphi}_j = (1,\ \xi_j,\ \eta_j)$, with the dimensionless offsets
+\begin{equation}
+\xi_j = \frac{x_j - x_{c,k}}{\Delta x}, \qquad \eta_j = \frac{y_j - y_{c,k}}{\Delta y}.
+\end{equation}
+The fitted plane is
+\begin{equation}
+b(x,y) = a_0 + a_1\,\frac{x-x_{c,k}}{\Delta x} + a_2\,\frac{y-y_{c,k}}{\Delta y},
+\end{equation}
+with $a_0$ (m) the bed level at the wet centroid, and $a_1$, $a_2$ (m) the bed-level change per grid spacing in $x$ and $y$. The bed level of the cut cell is $b^{\text{wet}}_k = a_0$. The coefficients solve the normal equations $\mathbf{M}\,\mathbf{a} = \mathbf{r}$, with
+\begin{equation}
+\mathbf{M} = \sum_j \boldsymbol{\varphi}_j \boldsymbol{\varphi}_j^{\mathsf{T}}\quad(\text{-}), \qquad
+\mathbf{r} = \sum_j \boldsymbol{\varphi}_j\, b_j\quad(\text{m}),
+\end{equation}
+and the samples are not weighted.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.75]
+  \foreach \i in {-2,...,2} {
+    \foreach \j in {-2,...,2} {
+      \draw[gray!60] (\i-0.5,\j-0.5) rectangle (\i+0.5,\j+0.5);
+    }
+  }
+  \fill[gray!55] (-1.5,0.5) rectangle (-0.5,1.5);
+  \fill[pattern=north east lines, pattern color=gray] (-0.5,-0.5) rectangle (0.5,0.5);
+  \draw[very thick] (-0.5,-0.5) rectangle (0.5,0.5);
+  \fill[red] (0.1,-0.1) circle (2.2pt);
+  \node[red, below right=-2pt] at (0.1,-0.1) {\scriptsize $\mathbf{c}_k$};
+  \foreach \p in {(1,0),(-1,0),(0,1),(0,-1)} {
+    \fill[blue] \p circle (4pt);
+  }
+  \foreach \p in {(2,0),(-2,0),(0,2),(0,-2),(1,1),(1,-1),(-1,-1)} {
+    \draw[blue, thick, fill=white] \p circle (4pt);
+  }
+  \node[anchor=west] at (2.7,1.7) {\small solid or absent (class 2)};
+  \node[anchor=west] at (2.7,0.9) {\small cut cell $k$ (class 1)};
+  \fill[blue] (2.7,0.1) circle (3pt);
+  \node[anchor=west] at (3.0,0.1) {\small primary sample, hop 1};
+  \draw[blue, thick, fill=white] (2.7,-0.6) circle (3pt);
+  \node[anchor=west] at (3.0,-0.6) {\small primary sample, hop 2};
+  \node[anchor=west] at (2.7,-1.3) {\small (hop 3 fallback samples not drawn)};
+\end{tikzpicture}
+\caption{Illustrative stencil of the bed-level fit for a cut cell $k$ at the centre. Hatched: cut cell. Grey: solid cell, which blocks the search. Filled dots: primary samples at hop 1. Open dots: primary samples at hop 2. Hop-3 cells are used only by the fallback fit. The sketch is not to scale and is not an actual case.}
+\label{fig:bedstencil}
+\end{figure}
+
+The fit is performed in the following order.
+\begin{enumerate}
+  \item Primary fit: samples within two link hops. It is used when there are at least three primary samples and the normal matrix $\mathbf{M}$ is non-singular.
+  \item Fallback fit: samples within three link hops. It is used when the primary fit is not available and there are at least three fallback samples. Its matrix is solved in the same way.
+  \item If neither fit gives a plane but at least one fallback sample exists, the supplied bed level of the cut cell $b^{\text{sup}}_k$ (m) is kept, provided it is finite and not the missing value. The fit then sets $b^{\text{wet}}_k = b^{\text{sup}}_k$.
+  \item Otherwise the run stops with an error. The message gives the cell index and its coordinates when fewer than three samples were found.
+\end{enumerate}
+
+The fit runs only for cells owned by the local MPI partition (\texttt{flow\_geominit.f90}). The values are then propagated with \texttt{update\_geom(2)}. The exact propagation to ghost cells on other partitions has not been verified and is a review point.
+
+After a restart, \texttt{update\_ibm\_wet\_bed\_after\_restart} (\texttt{flow\_flowinit.f90}) repeats the fit, so the reconstructed values are not read from the restart file. The bed levels on faces are then set with \texttt{setbobs}, which is called after the IBM block. The face bed level uses the existing \texttt{BedlevType}~$=1$ rule, $b_{f} = \max(b_{k_1}, b_{k_2})$ (m), where $b_{k_1}$ and $b_{k_2}$ are the bed levels of the two cells adjacent to the face and $b_f$ is the face bed level. The rule itself is not changed by the IBM.
+
+%
+\gensection{\isreport}{1}{Storage floor and time step}
+\label{sec:storage}
+
+Very small cut cells have a small storage area. The storage area appears in the continuity equation, and it limits the time step through a Courant-type estimate. The symbols are the following.
+\begin{itemize}
+  \item $A_k$ (m$^2$): storage area of cell $k$ used by the solver (code \texttt{ba}).
+  \item $A^{\text{wet}}_k$ (m$^2$): true wet area of cut cell $k$ (code \texttt{ba\_wet} for the IBM).
+  \item $A^{\text{full}}_k$ (m$^2$): full area of cell $k$ (code \texttt{ba\_full}).
+  \item $f_{\min}$ (-): storage floor fraction (code \texttt{Baorgfracmin}).
+  \item $A_{\min}$ (m$^2$): absolute storage floor (code \texttt{bamin}).
+  \item $V_k$ (m$^3$): volume of cell $k$ (code \texttt{vol1}).
+  \item $Q_{\text{out},k}$ (m$^3$/s): total outflow through the links of cell $k$.
+  \item $\text{CFL}_{\max}$ (-): Courant limit.
+  \item $\Delta t_k$ (s): time-step estimate of cell $k$.
+\end{itemize}
+In \texttt{cutcelwu.f90} the storage of a cut cell is
+\begin{equation}
+A_k = \max\!\left(A^{\text{wet}}_k,\ f_{\min}\,A^{\text{full}}_k,\ A_{\min}\right),
+\end{equation}
+and the time-step estimate is $\Delta t_k = \text{CFL}_{\max}\,V_k / Q_{\text{out},k}$. The original code already applies this floor. The IBM keeps this structure. The true wet area $A^{\text{wet}}_k$ is stored separately, and the Perot weights of Section~\ref{sec:perot} use it. Cut cells are set to \texttt{kfs}~$=1$ (active).
+
+The floor fraction $f_{\min}$ is set from the key \texttt{ImmersedBoundaryMinAreaFrac} (default 0.1) only when the IBM is on and the internal value is zero (\texttt{unstruc\_model.f90}). A user-set positive value of the internal variable therefore silently overrides \texttt{ImmersedBoundaryMinAreaFrac}. This is the behaviour of the code and should be kept in mind when the two are both set.
+
+The clamp is load-bearing for the time step. The plan records the following figures (these were not re-run for this memo). For a bank-trapped cut cell with a true wet area of 0.29~m$^2$, the time-step estimate would be about 0.11~s without the clamp. With the clamped storage of 62.5~m$^2$, it is about 24.7~s. The global time step is then limited by a different, unclamped face with a storage of 65.2~m$^2$ (about 2.96~s). Removing the clamp therefore reduces the time step drastically for the cells that the clamp protects, so the floor must be considered together with the time step in review.
+
+%
+\gensection{\isreport}{1}{Small-cell merging (opt-in)}
+\label{sec:merge}
+
+Small-cell merging is off by default (\texttt{ImmersedBoundaryMergeAreaFrac} $=0$). When enabled, the routine \texttt{cutcelwu\_merge\_small\_cells} in \texttt{cutcelwu.f90} is applied. It is rejected for parallel runs with \texttt{jampi} $>0$. The symbols are the following.
+\begin{itemize}
+  \item $f_{\text{merge}}$ (-): merge threshold (key \texttt{ImmersedBoundaryMergeAreaFrac}, range $[0,1]$).
+  \item $S$, $T$ (-): source cell (the small cell that is merged) and target cell (the neighbour that receives the merge).
+  \item $A^{\text{wet}}_S$, $A^{\text{full}}_S$ (m$^2$): wet and full area of the source.
+  \item $A_S$ (m$^2$): storage area of the source after the merge.
+  \item $\text{kfs}_S$ (-): active flag of the source (1 active, 0 inactive).
+\end{itemize}
+
+A source cell is a flow cell with $A^{\text{wet}}_S \le f_{\text{merge}}\,A^{\text{full}}_S$. A source that touches another source, or that has a non-2D link, is blocked. The target $T$ is a neighbour with $\text{kfs}_T = 1$ across the narrowest wet link. Because a source cannot be a target, chains of merges cannot form.
+
+The storage of the source is not transferred to the target. The source is set to $A_S = 0$ and $\text{kfs}_S = 0$. This introduces an area bias, because the target keeps only its own storage. For the example in the plan, the omitted area would be about 0.29~m$^2$ on a target of 182~m$^2$, about 0.16\%. This bias is relevant for the morphodynamic use of the model and is a review point.
+
+The plan records the following effect on a test case (not re-run for this memo). With a threshold $f_{\text{merge}} = 0.01$, 24 cells are merged. The maximum speed over 8 hours reduced from 3.57~m/s to 2.09~m/s. The remaining high speed is a general feature of clamped cut cells and is not removed by merging.
+
+%
+\gensection{\isreport}{1}{Configuration keys and requirements}
+\label{sec:config}
+
+The IBM is controlled by the following keys in the model definition file. Defaults are set in \texttt{m\_flowparameters.f90}, and the reading and validation are in \texttt{unstruc\_model.f90}.
+
+{\footnotesize
+\begin{tabular}{p{6.4cm}p{1.6cm}p{2.2cm}p{3.8cm}}
+\toprule
+Key & Default & Allowed & Effect \\
+\midrule
+\texttt{ImmersedBoundary} & 0 & 0 or 1 & Switches the IBM on. \\
+\texttt{ImmersedBoundaryMinAreaFrac} & 0.1 & $(0,1]$ & Sets the storage floor fraction $f_{\min}$ if it is zero (Section~\ref{sec:storage}). \\
+\texttt{ImmersedBoundaryMergeAreaFrac} & 0 & $[0,1]$ & Small-cell merge threshold (Section~\ref{sec:merge}). \\
+\texttt{ImmersedBoundaryCartesianTol} & $10^{-6}$ & $(0,10^{-3}]$ & Tolerance of the Cartesian check (Section~\ref{sec:cartesian}). \\
+\texttt{ImmersedBoundaryTangentialCorrection} & 0 & must be 0 & Not implemented; non-zero is rejected. \\
+\texttt{ImmersedBoundaryProjection} & 0 & must be 0 & Not implemented; non-zero is rejected. \\
+\texttt{ImmersedBoundarySmallEdgeFrac} & 0.5 & $[0,1]$ & Classification only; no effect on the solver. \\
+\bottomrule
+\end{tabular}}
+
+When \texttt{ImmersedBoundary} $=1$, the following must hold, and the run stops otherwise (\texttt{unstruc\_model.f90}): \texttt{kmx} $=0$; \texttt{FlowSolver} $=$ generic1d2d3d; \texttt{Nonlin2D} $=0$; \texttt{AdvecType} $=33$; \texttt{BedlevType} $=1$; \texttt{Conveyance2D} $\in\{-1,0\}$; no \texttt{PerotWeightUpdate}; and a \texttt{Perot\_type} must be defined.
+
+%
+\gensection{\isreport}{1}{Cartesian check}
+\label{sec:cartesian}
+
+The IBM requires an axis-aligned, uniform, Cartesian lattice. The routine \texttt{ibm\_check\_cartesian} is called at start-up (\texttt{flow\_geominit.f90}). The symbols are the following.
+\begin{itemize}
+  \item $\varepsilon$ (-): relative tolerance (key \texttt{ImmersedBoundaryCartesianTol}, in $(0, 10^{-3}]$).
+  \item $\Delta x_L$, $\Delta y_L$ (m): absolute differences of the $x$ and $y$ coordinates of the two nodes of link $L$.
+  \item $\ell_L = \max(\Delta x_L, \Delta y_L)$ (m): length of link $L$ used by the check.
+  \item $\Delta x$, $\Delta y$ (m): lattice spacings, taken as the smallest $\Delta x_L$ over the horizontal links and the smallest $\Delta y_L$ over the vertical links.
+  \item $x_0$, $y_0$ (m): lattice origin, the smallest node coordinates.
+\end{itemize}
+The checks are the following. The first failure stops the run and reports the offending link or node.
+\begin{enumerate}
+  \item Axis alignment: every link must satisfy $\Delta y_L \le \varepsilon\,\ell_L$ (horizontal) or $\Delta x_L \le \varepsilon\,\ell_L$ (vertical). A link that satisfies neither is rejected. The lattice must contain both horizontal and vertical links.
+  \item Uniform spacing: $\max\!\left(\dfrac{\Delta x_{\max}-\Delta x_{\min}}{\Delta x_{\min}},\ \dfrac{\Delta y_{\max}-\Delta y_{\min}}{\Delta y_{\min}}\right) \le \varepsilon$, where the minima and maxima are taken over the horizontal and vertical links (m).
+  \item Node lattice alignment: for every node $i$, the lattice coordinates $(x_i-x_0)/\Delta x$ and $(y_i-y_0)/\Delta y$ (both dimensionless) must lie within $\varepsilon$ of an integer.
+\end{enumerate}
+A failure reports the maximum deviation found.
+
+%
+\gensection{\isreport}{1}{Differences from the original code}
+\label{sec:differences}
+
+Table~\ref{tab:diff} lists every change in behaviour relative to the baseline, which is the parent of the first IBM commit. The changes are active only when \texttt{ImmersedBoundary} $=1$, except where noted.
+
+\begin{table}[htbp]
+\centering
+\caption{Differences from the original code.}
+\label{tab:diff}
+\small
+\begin{tabular}{p{3.6cm}p{4.9cm}p{5.4cm}}
+\toprule
+Item & Original code & IBM implementation \\
+\midrule
+Pressure coefficient $\gamma_L$ on cut links & $\gamma_L = g/\Delta n_L$, with $\Delta n_L$ the distance between cell centres & $\gamma_L = g/\Delta n^{\ast}_L$, with $\Delta n^{\ast}_L = \max(\Delta n^{\text{wet}}_L, \Delta n^{\min}_L)$ (Eq.~\eqref{eq:dnwet}) \\
+Advective weight $\alpha_L$ on cut links & $\alpha_L = d_{1,L}/(d_{1,L}+d_{2,L})$ from cell centres & $\alpha^{\text{wet}}_L$ from wet centroids (Eq.~\eqref{eq:aclwet}); an error if outside $(0,1)$ on positive-width links \\
+Perot weights $\omega_{kL}$ on cut sides & $\omega^x_{kL} \propto c_{x,L}\,\alpha_L\,\Delta x\,w_L$, multiplied by $1/A_k$ (\texttt{bai}) on cut cells, or divided by the sum \texttt{wcxy} on uncut cells & $\omega^{x}_{kL}$, $\omega^{y}_{kL}$ from the wet position vector, divided by $A^{\text{wet}}_k$ (Eq.~\eqref{eq:perotibm}); side 2 with a minus sign \\
+Storage $A_k$ of cut cells & $A_k = \max(A^{\text{wet}}_k, f_{\min} A^{\text{full}}_k, A_{\min})$ & Same structure; $f_{\min}$ set from \texttt{ImmersedBoundaryMinAreaFrac} if zero (Section~\ref{sec:storage}); $A^{\text{wet}}_k$ stored separately for the Perot weights \\
+Bed level of cut cells & Supplied value & Plane fit to neighbouring uncut cells, with fallback (Section~\ref{sec:bed}) \\
+Small-cell handling & None & Optional merge of small cells into a neighbour; storage not transferred (Section~\ref{sec:merge}) \\
+Link disabling (\texttt{cutcell\_list.f90}) & The \texttt{n12==5} block disables netlinks & Block skipped when the IBM is on \\
+Zero-diagonal warning (\texttt{s1nod.f90}) & Warning for any node with zero diagonal & Warning restricted to \texttt{kfs}$=1$ nodes; text changed to ``diagonal'' (original: ``surface area'') \\
+Start-up checks & None for geometry & Cartesian check; IBM requirement checks; \texttt{nclipped\_dn} warning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In addition, two kernel files are changed in the IBM branch without a behavioural change in the IBM-off path: \texttt{rest\_f90/find\_crossed\_links\_kdtree2.f90} and \texttt{dflowfm\_utils/solve\_petsc.F90}. These were not reviewed in detail for this memo.
+
+%
+\gensection{\isreport}{1}{Features not implemented}
+\label{sec:notimpl}
+
+The following elements of the design are not implemented in the current code.
+\begin{itemize}
+  \item Explicit tangential pressure correction (M1 step 2). Non-zero \texttt{ImmersedBoundaryTangentialCorrection} is rejected.
+  \item Projection of the cell-centre velocity onto the cut-cell face. Non-zero \texttt{ImmersedBoundaryProjection} is rejected.
+  \item Small-edge extrapolation (M4). The \texttt{small\_edge} flag is set but no routine uses it, so \texttt{ImmersedBoundarySmallEdgeFrac} has no effect on the solution.
+  \item Morphodynamic updating of cut-cell bed levels, and wetting and drying of cut cells beyond the existing logic.
+  \item Multi-layer (\texttt{kmx} $>0$) and non-Cartesian grids.
+\end{itemize}
+
+%
+\gensection{\isreport}{1}{Validation status}
+\label{sec:validation}
+
+The following results are taken from the implementation plan and were recorded during development. They were not re-run for this memo.
+\begin{itemize}
+  \item With the IBM off, the 33 cases of the f600 TestBench suite give results that are bit-identical to the baseline commit.
+  \item The unit tests \texttt{ctest -R 'test\_ibm|test\_mdu'} pass (47 of 47).
+  \item The full kernel \texttt{ctest} passes (298 of 298).
+  \item Parallel (MPI) runs with the IBM off are not covered. The recorded IBM case (c06) was run serially.
+\end{itemize}
+The unit tests check the geometry, the Cartesian check, the momentum coefficients, and the MDU read and write of the new keys (\texttt{test\_ibm\_geometry.f90}, \texttt{test\_ibm\_cartesian.f90}, \texttt{test\_ibm\_momentum.f90}, \texttt{test\_mdu\_file\_read\_write.f90}).
+
+%
+\gensection{\isreport}{1}{Review points and limitations}
+\label{sec:review}
+
+The following points should receive particular attention during review.
+\begin{enumerate}
+  \item Interpolation weight on cut links (Eq.~\eqref{eq:aclwet}). On a positive-width cut link the wet weight must lie in $(0,1)$, and the run stops otherwise. The check is an error, not a clamp, so skewed wet geometry that triggers it should be reviewed. On a zero-width link the baseline weight $\alpha_L$ is used instead.
+  \item Convention of the advective weight. The baseline (Eq.~\eqref{eq:volu}) gives $\alpha_L = d_{1,L}/(d_{1,L}+d_{2,L})$ as the weight of $V_{k_1}$. Linear interpolation between the two centres would give $d_{2,L}/(d_{1,L}+d_{2,L})$ for $V_{k_1}$. The IBM keeps the baseline convention, and the wet weight follows it.
+  \item Perot normalisation of uncut neighbours of cut links (Section~\ref{sec:perot}). The uncut-side normalisation is computed before the IBM override and may be inconsistent with the new cut-side weights.
+  \item Sign convention of the side-2 Perot weight (Eq.~\eqref{eq:perotibm}).
+  \item Interaction of \texttt{Baorgfracmin} with \texttt{ImmersedBoundaryMinAreaFrac} (Section~\ref{sec:storage}). A user-set positive value silently overrides the key.
+  \item Time-step sensitivity to the storage clamp (Section~\ref{sec:storage}).
+  \item Area bias introduced by small-cell merging, which does not transfer storage (Section~\ref{sec:merge}).
+  \item Ghost-cell propagation of the fitted bed levels under MPI (Section~\ref{sec:bed}).
+  \item MPI with the IBM off is not covered by the recorded validation.
+\end{enumerate}
 
 %
 %
