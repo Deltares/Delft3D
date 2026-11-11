@@ -56,15 +56,16 @@ def _dvc_pull(targets: list[Path], repo_root: Path, batch_label: str, engine_dir
     cmd = ["dvc", "pull", *[str(t) for t in targets]]
     print(f"[BATCH {batch_label}] Running: {' '.join(cmd)}")
     # Run from repo root so DVC finds .dvc/config regardless of target paths.
-    result = subprocess.run(cmd, cwd=repo_root)
+    result = subprocess.run(cmd, check=False, cwd=repo_root)
     if result.returncode != 0:
         print(f"[ERROR] Failed to pull batch {batch_label}", file=sys.stderr)
         _teamcity_build_problem(
             f"DVC pull failed: batch {batch_label} ({engine_dir})",
             f"dvc_pull_batch_{batch_label}",
         )
-        sys.exit(result.returncode or 1)
+        return False
     print(f"[PULL OK] Batch {batch_label} completed")
+    return True
 
 
 def main() -> int:
@@ -102,7 +103,7 @@ def main() -> int:
         return 1
 
     # Confirm dvc is on PATH (venv from TeamCity python step).
-    which = subprocess.run(["dvc", "--version"], capture_output=True, text=True)
+    which = subprocess.run(["dvc", "--version"], capture_output=True, check=False, text=True)
     if which.returncode != 0:
         print("[ERROR] dvc is not available in this environment", file=sys.stderr)
         print(which.stderr, file=sys.stderr)
@@ -122,11 +123,18 @@ def main() -> int:
         return 0
 
     batch_size = max(1, args.batch_size)
-    batch_count = 0
-    for i in range(0, total, batch_size):
-        batch_count += 1
+    failed_batches = []
+    for i, batch_count in enumerate(range(0, total, batch_size)):
+        print(f"i: {i}")
+        print(f"batch_count: {batch_count}")
         chunk = all_doc_dvc[i : i + batch_size]
-        _dvc_pull(chunk, repo_root, str(batch_count), args.engine_dir)
+        if not _dvc_pull(chunk, repo_root, str(batch_count), args.engine_dir):
+            failed_batches.append(i)
+
+    if len(failed_batches) > 0:
+        print(f"Failed batches: {failed_batches}")
+        sys.exit(1)
+
 
     print("[VERIFICATION START]")
     verified = 0
