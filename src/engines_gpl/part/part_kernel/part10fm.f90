@@ -454,7 +454,7 @@ contains
                 vyw       = - wvelo(mpart(ipart)) * cos(wdirr_lee)
 
                 ! drag on the difference vector: cd * (wind - flow)
-                if ( abs(vxw-ux0old) == 0.0 .and. abs(vyw-uy0old) == 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                if ( abs(vxw-ux0old) /= 0.0 .or. abs(vyw-uy0old) /= 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
                     dwx = (cdrag*(vxw-ux0old) + leeway_modifier * sin(wdirr_lee)) * dts    ! THis modifier may need to be adjusted de to the angle
                     dwy = (cdrag*(vyw-uy0old) + leeway_modifier * cos(wdirr_lee)) * dts    !
                 endif
