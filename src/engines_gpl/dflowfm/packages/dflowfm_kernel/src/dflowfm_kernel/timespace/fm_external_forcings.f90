@@ -38,7 +38,8 @@ module fm_external_forcings
    use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, adduniformtimerelation_objects
    use fm_external_forcings_init_old, only: init_old
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
-      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses
+      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses, &
+      update_sea_surface_temperature
    use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries, addtimespacerelation_boundaries
    use m_waveconst
 
@@ -49,6 +50,7 @@ module fm_external_forcings
    public :: flow_initexternalforcings
    public :: findexternalboundarypoints
    public :: finalize_offline_wave_input_requirements
+   public :: validate_most_input_providers
 
    ! Expose fm_external_forcings_utils functions
    public :: allocatewindarrays
@@ -62,6 +64,7 @@ module fm_external_forcings
    ! Expose fm_external_forcings_update functions
    public :: set_external_forcings
    public :: compute_air_water_interaction_most_fluxes
+   public :: update_sea_surface_temperature
    public :: prepare_air_pressure_temperature_dew_point_temperature
    public :: prepare_wind
    public :: calculate_wind_stresses
@@ -1231,6 +1234,67 @@ contains
          iresult = DFM_WRONGINPUT
       end if
    end subroutine validate_heat_flux_input_providers
+   
+   !> Validate required MOST providers and initialize default pressure when no pressure provider is supplied.
+   subroutine validate_most_input_providers(iresult)
+      use m_meteo, only: item_windx, item_windy, item_windxy_x, item_windxy_y, &
+                        item_apwxwy_x, item_apwxwy_y, item_apwxwy_p, item_apwxwy_c, item_airpressure, item_charnock, &
+                        item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
+                        item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
+                        item_dacs_dew_point_temperature, item_dew_point_temperature
+      use m_ec_parameters, only: ec_undef_int
+      use m_wind, only: PavBnd, wcharnock, jawindstressgiven, air_pressure
+      use m_alloc, only: realloc
+      use m_flowgeom, only: ndx
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use messagehandling, only: mess, LEVEL_ERROR, LEVEL_INFO
+
+      integer, intent(out) :: iresult
+      logical :: wind_x_available, wind_y_available
+      real(kind=dp) :: default_pressure
+      character(len=256) :: message
+
+      iresult = DFM_NOERR
+      wind_x_available = any([item_windx, item_windxy_x] /= ec_undef_int) .or. &
+                (item_apwxwy_x /= ec_undef_int .and. jawindstressgiven == 0)
+      wind_y_available = any([item_windy, item_windxy_y] /= ec_undef_int) .or. &
+                (item_apwxwy_y /= ec_undef_int .and. jawindstressgiven == 0)
+      if (.not. (wind_x_available .and. wind_y_available)) then
+         call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST requires wind velocity forcing for both components. Please check ext file.')
+         iresult = DFM_WRONGINPUT
+      end if
+      if (all([item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
+               item_dacs_air_temperature, item_air_temperature] == ec_undef_int)) then
+         call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST requires air temperature forcing. Please check ext file.')
+         iresult = DFM_WRONGINPUT
+      end if
+      if (all([item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature] == ec_undef_int)) then
+         call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST requires dew point temperature forcing. Please check ext file.')
+         iresult = DFM_WRONGINPUT
+      end if
+      if (iresult /= DFM_NOERR) then
+         return
+      end if
+
+      if (all([item_apwxwy_p, item_airpressure] == ec_undef_int)) then
+         default_pressure = BACKGROUND_AIR_PRESSURE
+         if (PavBnd > 0.0_dp) then
+            default_pressure = PavBnd
+         end if
+         call realloc(air_pressure, ndx, fill=default_pressure, keepExisting=.false.)
+         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable air pressure forcing specified in ext file; ' // &
+             'simulation continues with constant air pressure = ', &
+            default_pressure, ' Pa.'
+         call mess(LEVEL_INFO, trim(message))
+      end if
+      if (all([item_apwxwy_c, item_charnock] == ec_undef_int)) then
+         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable Charnock specified in ext file; ' // &
+             'simulation continues with constant Charnock coefficient = ', &
+            wcharnock%scalar, ' [-].'
+         call mess(LEVEL_INFO, trim(message))
+      end if
+   end subroutine validate_most_input_providers
 
    !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings
    subroutine setup(iresult)
@@ -2011,6 +2075,7 @@ contains
    subroutine finalize(iresult)
       use m_fm_wq_processes_sub, only: finalize_waq_spatial_fields
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
+      use m_flowparameters, only: rain_temperature_method, RAIN_TEMPERATURE_WET_BULB, rain_temperature_from_dew_point
       use m_storage, only: t_storage, get_surface
       use m_structures, only: network
       use m_meteo
@@ -2040,6 +2105,8 @@ contains
       real(kind=dp) :: area, width, hdx
       type(t_storage), dimension(:), pointer :: stors
       type(t_netcell_set) :: netcell_cache
+      logical :: relative_humidity_provided !< Indicates if relative humidity is provided in the .ext file
+      logical :: dew_point_temperature_provided !< Indicates if dew point temperature is provided in the .ext file
 
       call finalize_waq_spatial_fields()
       call finalize_source_sinks()
@@ -2191,6 +2258,36 @@ contains
                spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
+      end if
+
+      ! When rain temperature is specified as wet bulb temperature, air temperature AND either relative humidity or dew point temperature must be provided.
+      if (rain_temperature_method == RAIN_TEMPERATURE_WET_BULB) then
+         relative_humidity_provided = .true.
+         dew_point_temperature_provided = .true.
+
+         if ((item_hac_air_temperature == ec_undef_int) .and. (item_hacs_air_temperature == ec_undef_int) .and. &
+             (item_dac_air_temperature == ec_undef_int) .and. (item_dacs_air_temperature == ec_undef_int) .and. &
+             (item_air_temperature == ec_undef_int)) then
+            call mess(LEVEL_ERROR, 'When "rainTemperature == wetBulbTemperature", quantity airTemperature must be provided in the .ext file.')
+         end if
+
+         if ((item_hac_humidity == ec_undef_int) .and. (item_hacs_relative_humidity == ec_undef_int) .and. &
+             (item_relative_humidity == ec_undef_int)) then
+            relative_humidity_provided = .false.
+         end if
+
+         if ((item_dac_dew_point_temperature == ec_undef_int) .and. (item_dacs_dew_point_temperature == ec_undef_int) .and. &
+             (item_dew_point_temperature == ec_undef_int)) then
+            dew_point_temperature_provided = .false.
+         end if
+
+         if (.not. relative_humidity_provided .and. dew_point_temperature_provided) then
+            ! Rain temperature will be determined from dew point temperature since relative humidity is not provided.
+            rain_temperature_from_dew_point = .true.
+         else if (.not. relative_humidity_provided .and. .not. dew_point_temperature_provided) then
+            ! Raise an error since neither relative humidity nor dew point temperature is provided.
+            call mess(LEVEL_ERROR, 'When "rainTemperature == wetBulbTemperature", either humidity or dew point temperature must be provided in the .ext file.')
+         end if
       end if
 
       if (inivel == 1) then
