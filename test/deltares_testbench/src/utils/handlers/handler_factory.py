@@ -43,15 +43,12 @@ class HandlerFactory(ABC):
             Specific handler.
         """
         handler_type = ResolveHandler.detect(to_path, logger)
-        handler: IHandler
 
         if handler_type == HandlerType.DVC:
             logger.debug(f"using DVC handler for {to_path}")
-            handler = DvcHandler()
-        if handler_type == HandlerType.NONE:
-            raise AttributeError("upload :: no type specified")
+            return DvcHandler()
 
-        return handler
+        raise RuntimeError(f"Unsupported handler type detected for {to_path}: {handler_type}")
 
     @classmethod
     def download(
@@ -81,7 +78,7 @@ class HandlerFactory(ABC):
         """
         rtp = Paths().rebuildToLocalPath(to_path)
 
-        handler = cls.__get_handler(from_path, programs, logger, credentials)
+        handler = cls.__get_handler(from_path, programs, logger)
 
         # DVC manages file placement itself based on the .dvc file;
         # creating to_path would leave an empty directory.

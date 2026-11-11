@@ -753,9 +753,10 @@ class TestSetRunner(ABC):
 
     def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Process all locations for a test case, downloading files as needed."""
+        skip_download_list = self.settings.command_line_settings.skip_download or []
         for location in config.locations:
             # Skip CHECK locations — those are for program binaries, handled by __update_programs
-            if location.type == PathType.CHECK:
+            if location.type == PathType.CHECK or location.type in skip_download_list:
                 continue
             self.__validate_location(config, location)
             remote_path = self.__build_remote_path(config, location)

@@ -1,7 +1,6 @@
 import glob
 import os
 import pathlib as pl
-from datetime import datetime, timezone
 from enum import Enum
 from typing import List
 from unittest.mock import MagicMock, PropertyMock, call
@@ -125,6 +124,7 @@ class TestComparisonRunner:
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
         settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_download = list(PathType)  # Skip downloading all PathTypes
         ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
         case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
         config = TestComparisonRunner.create_test_case_config("Name_1", locations=[ref_location, case_location])
@@ -146,43 +146,12 @@ class TestComparisonRunner:
         assert call(expected_log_message) in testcase_logger.info.call_args_list
         run_mock.assert_not_called()
 
-    def test_prepare_case_uses_minio(self, mocker: MockerFixture) -> None:
-        # Arrange
-        settings = TestBenchSettings()
-        settings.local_paths = LocalPaths()
-        settings.command_line_settings.skip_run = True
-        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
-        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
-        now = datetime.now(timezone.utc).replace(second=0, microsecond=0)
-        version = now.isoformat().split("+", 1)[0]
-        testcase_path = TestCasePath(prefix="abc/prefix", version=version)
-        config = TestComparisonRunner.create_test_case_config(
-            name="testname", testcase_path=testcase_path, locations=[ref_location, case_location]
-        )
-        settings.configs_to_run = [config]
-        logger = MagicMock(spec=ConsoleLogger)
-        testcase_logger = MagicMock()
-        logger.create_test_case_logger.return_value = testcase_logger
-        mocker.patch.object(ComparisonRunner, "show_summary")
-
-        runner = ComparisonRunner(settings, logger)
-
-        # Act
-        runner.run()
-
-        # Assert
-        ref_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("references", "win64", "testname"))
-        case_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("cases", "win64", "testname"))
-        expected_log_message1 = f"Downloading reference result, {ref_path} from https://deltares.nl/win64/abc/prefix"
-        expected_log_message2 = f"Downloading input of case, {case_path} from https://deltares.nl/win64/abc/prefix"
-        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
-        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
-
     def test_prepare_case_uses_dvc(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
         settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_download = []
 
         testcase_path = TestCasePath(prefix="abc/prefix", version="DVC")
 
@@ -323,6 +292,7 @@ class TestComparisonRunner:
         settings.command_line_settings.skip_run = False
         settings.command_line_settings.parallel = False
         settings.command_line_settings.skip_post_processing = True
+        settings.command_line_settings.skip_download = []
         settings.local_paths = LocalPaths()
 
         # Create one failing and one succeeding `TestCaseConfig`
