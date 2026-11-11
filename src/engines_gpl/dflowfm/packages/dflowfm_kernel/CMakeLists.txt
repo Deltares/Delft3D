@@ -144,6 +144,7 @@ target_link_libraries(${library_name} PRIVATE
                       kdtree_wrapper
                       kdtree2
                       fortrangis
+                      fortran_stdlib::fortran_stdlib
                       libsigwatch
                       md5digest
                       md5

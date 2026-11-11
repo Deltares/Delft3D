@@ -36,4 +36,49 @@ contains
       call f90_expect_false(is_structure_output_field('generalstructures', 'pressure_difference'))
       call f90_expect_eq(structure_output_field_count('observations'), 0)
    end subroutine structure_bmi_field_metadata
+
+   !$gtest
+   !> Hash membership must preserve every collection's supported fields and enumeration order.
+   subroutine structure_bmi_named_fields() bind(C)
+      call expect_fields('pumps', [character(len=24) :: &
+         'discharge', 'water_level_up', 'water_level_down', 'head_difference'])
+      call expect_fields('weirs', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'force_difference', 'water_level_at_crest'])
+      call expect_fields('orifices', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'force_difference', 'water_level_at_crest'])
+      call expect_fields('gates', [character(len=24) :: &
+         'discharge', 'water_level_up', 'water_level_down', 'opening_height'])
+      call expect_fields('generalstructures', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'force_difference', 'water_level_at_crest'])
+      call expect_fields('culverts', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'crest_level', 'gate_lower_edge_level'])
+
+      call f90_expect_false(is_structure_output_field('', 'discharge'))
+      call f90_expect_false(is_structure_output_field('pumps', ''))
+      call f90_expect_false(is_structure_output_field('pumps', 'unknown_field'))
+      call f90_expect_false(is_structure_output_field('observations', 'discharge'))
+      call f90_expect_true(structure_output_field_name('observations', 1) == '')
+   end subroutine structure_bmi_named_fields
+
+   subroutine expect_fields(collection, expected)
+      character(len=*), intent(in) :: collection
+      character(len=*), dimension(:), intent(in) :: expected
+      character(len=24), dimension(11), parameter :: all_fields = [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'force_difference', 'water_level_at_crest', &
+         'crest_level', 'gate_lower_edge_level']
+      integer :: i
+
+      call f90_expect_eq(structure_output_field_count(collection), size(expected))
+      do i = 1, size(expected)
+         call f90_expect_true(structure_output_field_name(collection, i) == expected(i))
+      end do
+      do i = 1, size(all_fields)
+         call f90_expect_true(is_structure_output_field(collection, all_fields(i)) .eqv. any(expected == all_fields(i)))
+      end do
+   end subroutine expect_fields
 end module test_structure_bmi

@@ -2,6 +2,7 @@
 module m_structure_bmi
    use iso_c_binding, only: c_ptr, c_null_ptr, c_loc
    use precision, only: dp
+   use stdlib_hashmaps, only: chaining_hashmap_type
    use m_structures_indices, only: IVAL_DIS, IVAL_VEL, IVAL_AREA, IVAL_S1UP, IVAL_S1DN, &
                                   IVAL_HEAD, IVAL_OPENH, IVAL_FORCEDIF, IVAL_S1ONCREST, IVAL_CL_OPENH, &
                                   IVAL_CL_CRESTL, IVAL_CL_EDGEL, IVAL_GATE_FLOWH
@@ -17,6 +18,8 @@ module m_structure_bmi
       'crest_level', 'gate_lower_edge_level']
    integer, dimension(11), parameter :: VALUE_INDICES = [IVAL_DIS, IVAL_VEL, IVAL_AREA, IVAL_S1UP, &
       IVAL_S1DN, IVAL_HEAD, IVAL_OPENH, IVAL_FORCEDIF, IVAL_S1ONCREST, IVAL_CL_CRESTL, IVAL_CL_EDGEL]
+   type(chaining_hashmap_type), save :: supported_fields
+   logical, save :: fields_initialized = .false.
 
 contains
 
@@ -52,34 +55,58 @@ contains
    logical function is_structure_output_field(collection, field_name) result(supported)
       character(len=*), intent(in) :: collection !< BMI collection name.
       character(len=*), intent(in) :: field_name !< Lowercase field name.
+
+      if (.not. fields_initialized) then
+         call initialize_supported_fields()
+      end if
+      call supported_fields%key_test(trim(collection)//'/'//trim(field_name), supported)
+   end function is_structure_output_field
+
+   subroutine initialize_supported_fields()
+      call add_fields('pumps', [character(len=24) :: &
+         'discharge', 'water_level_up', 'water_level_down', 'head_difference'])
+      call add_fields('gates', [character(len=24) :: &
+         'discharge', 'water_level_up', 'water_level_down', 'opening_height'])
+      call add_fields('weirs', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'force_difference', 'water_level_at_crest'])
+      call add_fields('orifices', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'force_difference', 'water_level_at_crest'])
+      call add_fields('generalstructures', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'force_difference', 'water_level_at_crest'])
+      call add_fields('culverts', [character(len=24) :: &
+         'discharge', 'velocity', 'flow_area', 'water_level_up', 'water_level_down', &
+         'head_difference', 'opening_height', 'crest_level', 'gate_lower_edge_level'])
+      fields_initialized = .true.
+   end subroutine initialize_supported_fields
+
+   subroutine add_fields(collection, fields)
+      use messagehandling, only: mess, LEVEL_ERROR
+
+      character(len=*), intent(in) :: collection
+      character(len=*), dimension(:), intent(in) :: fields
+      logical :: conflict
       integer :: i
 
-      supported = .false.
-      do i = 1, size(FIELD_NAMES)
-         if (field_name == FIELD_NAMES(i)) then
-            supported = field_supported(collection, i)
-            return
+      do i = 1, size(fields)
+         call supported_fields%map_entry(trim(collection)//'/'//trim(fields(i)), conflict=conflict)
+         if (conflict) then
+            call mess(LEVEL_ERROR, 'BMI: duplicate structure output field '//trim(collection)//'/'//trim(fields(i)))
          end if
       end do
-   end function is_structure_output_field
+   end subroutine add_fields
 
    logical function field_supported(collection, field_index) result(supported)
       character(len=*), intent(in) :: collection
       integer, intent(in) :: field_index
 
       supported = .false.
-      select case (collection)
-      case ('pumps')
-         supported = any(field_index == [1, 4, 5, 6])
-      case ('gates')
-         supported = any(field_index == [1, 4, 5, 7])
-      case ('weirs')
-         supported = any(field_index == [1, 2, 3, 4, 5, 6, 8, 9])
-      case ('orifices', 'generalstructures')
-         supported = field_index >= 1 .and. field_index <= 9
-      case ('culverts')
-         supported = any(field_index == [1, 2, 3, 4, 5, 6, 7, 10, 11])
-      end select
+      if (field_index < 1 .or. field_index > size(FIELD_NAMES)) then
+         return
+      end if
+      supported = is_structure_output_field(collection, FIELD_NAMES(field_index))
    end function field_supported
 
    integer function count_fields(collection, last) result(number)
@@ -165,7 +192,7 @@ contains
             if (allocated(weir2cgen)) then
                column = mapped_index(weir2cgen, nweirgen, item_index)
             end if
-            if (field > 6) then
+            if (field_name == 'force_difference' .or. field_name == 'water_level_at_crest') then
                column = 0 ! Legacy structures do not compute crest water levels or forces.
             end if
          end if
@@ -218,7 +245,8 @@ contains
             if (allocated(genstru2cgen)) then
                column = mapped_index(genstru2cgen, ngenstru, item_index)
             end if
-            if (field > 6) then
+            if (field_name == 'opening_height' .or. field_name == 'force_difference' .or. &
+                field_name == 'water_level_at_crest') then
                column = 0
             end if
          end if
