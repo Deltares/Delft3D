@@ -307,14 +307,14 @@ contains
       use message_module
       use m_get_Lbot_Ltop
       use m_fm_advec_diff_2d, only: fm_advec_diff_2d
-      use m_turbulence, only: BACKGROUND_DIFFUSION_ON
+      use m_turbulence, only: BACKGROUND_DIFFUSION_OFF
       !
       ! Global variables
       !
       real(fp), dimension(:), allocatable :: sink
       real(fp), dimension(:), allocatable :: sour
       !
-      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_ON] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
+      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
       integer, parameter :: LIMITER_TYPE = 4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`.
       !
       !Local parameters
