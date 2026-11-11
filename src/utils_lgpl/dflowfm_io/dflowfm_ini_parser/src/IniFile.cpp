@@ -17,8 +17,7 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a readable state.");
         }
 
-        IniParser parser(options.scheme, options.parserOptions);
-        data = parser.Parse(in);
+        data = Parse(in, options.scheme, options.parserOptions);
     }
 
     void IniFile::Load(const std::filesystem::path& path)

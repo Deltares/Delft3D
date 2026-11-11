@@ -14,29 +14,24 @@
 namespace ini::test
 {
 
-    static IniParser CreateParser() { return IniParser{}; }
-
     // -------------------------------------------------------------------------
     // Parse - empty input
     // -------------------------------------------------------------------------
 
     TEST(IniParserTest, Parse_EmptyString_ReturnsIniDataWithoutSections)
     {
-        IniParser parser = CreateParser();
-
-        const IniData iniData = parser.Parse("");
+        const IniData iniData = Parse("");
 
         EXPECT_TRUE(iniData.GetSections().empty());
     }
 
     TEST(IniParserTest, Parse_EmptyLinesString_ReturnsIniDataWithoutSections)
     {
-        IniParser parser = CreateParser();
-
-        const IniData iniData = parser.Parse("\n\n");
+        const IniData iniData = Parse("\n\n");
 
         EXPECT_TRUE(iniData.GetSections().empty());
     }
+
 
     // -------------------------------------------------------------------------
     // Parse - sections
@@ -48,9 +43,7 @@ namespace ini::test
 
     TEST_P(IniParserValidSectionFormatTest, Parse_ValidSectionFormat_IniDataHasSection)
     {
-        IniParser parser = CreateParser();
-
-        const IniData iniData = parser.Parse(GetParam());
+        const IniData iniData = Parse(GetParam());
 
         EXPECT_TRUE(iniData.HasSection("section"));
     }
@@ -60,12 +53,10 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_SectionWithNullChar_IniDataHasSection)
     {
-        IniParser parser = CreateParser();
-
         using namespace std::string_literals;
         const std::string ini = "[section\0]"s;
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
 
         EXPECT_TRUE(iniData.HasSection("section"));
     }
@@ -76,10 +67,9 @@ namespace ini::test
 
     TEST_P(IniParserSpecialCharactersSectionNameTest, Parse_SpecialCharactersInSectionName_IniDataHasSection)
     {
-        IniParser parser = CreateParser();
         const std::string sectionName = GetParam();
 
-        const IniData iniData = parser.Parse("[" + sectionName + "]");
+        const IniData iniData = Parse("[" + sectionName + "]");
 
         EXPECT_TRUE(iniData.HasSection(sectionName));
     }
@@ -95,13 +85,11 @@ namespace ini::test
 
     TEST_P(IniParserInvalidSectionFormatTest, Parse_InvalidSectionFormat_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse(GetParam());
+                    Parse(GetParam());
                 }
                 catch (const std::format_error& ex)
                 {
@@ -122,13 +110,11 @@ namespace ini::test
 
     TEST_P(IniParserEmptySectionNameTest, Parse_EmptySectionName_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse(GetParam());
+                    Parse(GetParam());
                 }
                 catch (const std::format_error& ex)
                 {
@@ -145,7 +131,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowDuplicateSections = false;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\n[section]";
 
@@ -153,7 +138,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -168,11 +153,10 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowDuplicateSections = true;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\n[section]";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
 
         EXPECT_EQ(iniData.GetSections().size(), 2);
         ASSERT_TRUE(iniData.HasSection("section"));
@@ -180,11 +164,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_MultipleSections_SectionsHaveLineNumbers)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section1]\n[section2]";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
 
         ASSERT_TRUE(iniData.HasSection("section1"));
         ASSERT_TRUE(iniData.HasSection("section2"));
@@ -206,9 +188,7 @@ namespace ini::test
 
     TEST_P(IniParserSectionWithCommentFormatTest, Parse_SectionWithCommentFormat_IniDataHasSection)
     {
-        IniParser parser = CreateParser();
-
-        const IniData iniData = parser.Parse(GetParam());
+        const IniData iniData = Parse(GetParam());
 
         EXPECT_TRUE(iniData.HasSection("section"));
     }
@@ -225,14 +205,13 @@ namespace ini::test
 
     TEST_P(IniParserInvalidCommentDelimiterTest, Parse_SectionWithInvalidCommentDelimiter_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
         const std::string ini = std::string(1, GetParam()) + " section comment\n[section]";
 
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -252,10 +231,9 @@ namespace ini::test
 
     TEST_P(IniParserSectionCommentLineTest, Parse_SectionWithCommentLine_SectionHasComment)
     {
-        IniParser parser = CreateParser();
         const std::string ini = GetParam() + "\n[section]";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_EQ(section.GetComments().size(), 1);
@@ -272,10 +250,9 @@ namespace ini::test
 
     TEST_P(IniParserEmptySectionCommentTest, Parse_SectionWithEmptyCommentLine_SectionHasEmptyComment)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "#" + GetParam() + "\n[section]";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_EQ(section.GetComments().size(), 1);
@@ -288,11 +265,10 @@ namespace ini::test
     {
         IniParserOptions options;
         options.parseComments = false;
-        IniParser parser({}, options);
 
         const std::string ini = "# section comment\n[section]";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
 
         EXPECT_TRUE(section.GetComments().empty());
@@ -300,9 +276,7 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_SectionWithInlineComment_SectionCommentsIsEmpty)
     {
-        IniParser parser = CreateParser();
-
-        const IniData iniData = parser.Parse("[section] # inline comment");
+        const IniData iniData = Parse("[section] # inline comment");
         const IniSection section = iniData.GetSection("section");
 
         EXPECT_TRUE(section.GetComments().empty());
@@ -318,10 +292,9 @@ namespace ini::test
 
     TEST_P(IniParserValidPropertyFormatTest, Parse_ValidPropertyFormat_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "[section]\n" + GetParam();
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property"));
@@ -339,11 +312,10 @@ namespace ini::test
 
     TEST_P(IniParserSpecialCharactersPropertyKeyTest, Parse_SpecialCharactersInPropertyKey_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
         const std::string propertyKey = GetParam();
         const std::string ini = "[section]\n" + propertyKey + "=value";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty(propertyKey));
@@ -359,12 +331,10 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithNullChar_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
-
         using namespace std::string_literals;
         const std::string ini = "[section]\nprop\0erty=val\0ue"s;
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property"));
@@ -375,13 +345,11 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithoutSection_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
-
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse("property = value");
+                    Parse("property = value");
                 }
                 catch (const std::format_error& ex)
                 {
@@ -398,14 +366,13 @@ namespace ini::test
 
     TEST_P(IniParserPropertyWithoutKeyTest, Parse_PropertyWithoutKey_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "[section]\n" + GetParam();
 
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -425,14 +392,13 @@ namespace ini::test
 
     TEST_P(IniParserPropertyKeyWithSpacesTest, Parse_PropertyKeyWithSpaces_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "[section]\n" + GetParam();
 
         EXPECT_THROW(
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -455,7 +421,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowPropertyKeysWithSpaces = true;
-        IniParser parser({}, options);
 
         const std::string propertyKey = GetParam();
         const std::string ini = "[section]\n" + propertyKey + "=value";
@@ -463,7 +428,7 @@ namespace ini::test
         std::string normalizedKey = propertyKey;
         std::replace(normalizedKey.begin(), normalizedKey.end(), '\t', ' ');
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty(normalizedKey));
@@ -479,7 +444,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowDuplicateProperties = false;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nproperty=value2";
 
@@ -487,7 +451,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -502,11 +466,10 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowDuplicateProperties = true;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nproperty=value2";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
 
         EXPECT_EQ(section.GetProperties().size(), 2);
@@ -515,11 +478,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_MultipleProperties_PropertiesHaveLineNumbers)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section]\nproperty1=value1\nproperty2=value2";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property1"));
@@ -534,11 +495,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithoutValue_PropertyHasEmptyValue)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section]\nproperty=";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property"));
@@ -553,11 +512,10 @@ namespace ini::test
 
     TEST_P(IniParserSpecialCharactersPropertyValueTest, Parse_SpecialCharactersInPropertyValue_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
         const std::string propertyValue = GetParam();
         const std::string ini = "[section]\nproperty=" + propertyValue;
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property"));
@@ -581,10 +539,9 @@ namespace ini::test
 
     TEST_P(IniParserPropertyWithCommentFormatTest, Parse_PropertyWithCommentFormat_SectionHasProperty)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "[section]\n" + GetParam();
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
         ASSERT_TRUE(section.HasProperty("property"));
@@ -600,11 +557,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithCommentLines_CommentLinesAreIgnored)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section]\n# property comment 1\n# property comment 2\nkey=value";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("key");
 
@@ -618,7 +573,6 @@ namespace ini::test
 
     TEST_P(IniParserPropertyInvalidCommentDelimiterTest, Parse_PropertyWithInvalidCommentDelimiter_ThrowsFormatError)
     {
-        IniParser parser = CreateParser();
         const std::string ini =
             "[section]\nproperty1=value1\n" + std::string(1, GetParam()) + " property comment\nproperty2=value2";
 
@@ -626,7 +580,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -642,11 +596,9 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_PropertyWithInlineComment_PropertyHasComment)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section]\nproperty=value # inline comment";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -657,11 +609,10 @@ namespace ini::test
     {
         IniParserOptions options;
         options.parseComments = false;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value # inline comment";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -675,10 +626,9 @@ namespace ini::test
     TEST_P(IniParserPropertyEmptyValueAndCommentTest,
            Parse_PropertyWithEmptyValueAndComment_PropertyValueAndCommentIsEmpty)
     {
-        IniParser parser = CreateParser();
         const std::string ini = "[section]\nproperty=#" + GetParam();
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -705,12 +655,11 @@ namespace ini::test
         IniScheme scheme;
         const char delimiter = GetParam();
         scheme.multiLineValueDelimiter = delimiter;
-        IniParser parser(scheme, options);
 
         const std::string ini = "[section]\nproperty=value1 " + std::string(1, delimiter) + "\nvalue2 " +
                                 std::string(1, delimiter) + "\nvalue3";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, scheme, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -726,11 +675,10 @@ namespace ini::test
 
         IniScheme scheme;
         scheme.multiLineValueDelimiter = std::nullopt;
-        IniParser parser(scheme, options);
 
         const std::string ini = "[section]\nproperty=value1\nvalue2\nvalue3";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, scheme, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -741,7 +689,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowMultiLineValues = true;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1\nvalue2";
 
@@ -749,7 +696,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -764,7 +711,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowMultiLineValues = true;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nvalue1 \\\nvalue2 \\\nvalue3";
 
@@ -772,7 +718,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -787,7 +733,6 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowMultiLineValues = false;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\\nvalue2 \\\nvalue3";
 
@@ -795,7 +740,7 @@ namespace ini::test
             {
                 try
                 {
-                    parser.Parse(ini);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -810,12 +755,11 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowMultiLineValues = true;
-        IniParser parser({}, options);
 
         const std::string ini =
             "[section]\nproperty=value1 \\\n# value comment 1\nvalue2 \\\n# value comment 2\nvalue3";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -828,11 +772,10 @@ namespace ini::test
     {
         IniParserOptions options;
         options.allowMultiLineValues = true;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\ # comment1\nvalue2 \\ # comment2\nvalue3 # comment3";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -845,11 +788,10 @@ namespace ini::test
         IniParserOptions options;
         options.allowMultiLineValues = true;
         options.parseComments = false;
-        IniParser parser({}, options);
 
         const std::string ini = "[section]\nproperty=value1 \\ # comment1\nvalue2 \\ # comment2\nvalue3 # comment3";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
@@ -871,11 +813,10 @@ namespace ini::test
         scheme.propertyAssignmentDelimiter = ':';
         scheme.commentDelimiter = ';';
         scheme.multiLineValueDelimiter = '-';
-        IniParser parser(scheme, options);
 
         const std::string ini = "<section>\nproperty1:value1 - ; comment1\nvalue2 ; comment2";
 
-        const IniData iniData = parser.Parse(ini);
+        const IniData iniData = Parse(ini, scheme, options);
 
         IniData expected;
         IniSection section("section");
@@ -894,22 +835,18 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_ValidStream_KeepsStreamOpen)
     {
-        IniParser parser = CreateParser();
-
         std::istringstream stream("");
-        parser.Parse(stream);
+        Parse(stream);
 
         EXPECT_FALSE(stream.bad());
     }
 
     TEST(IniParserTest, Parse_AnsiEncodedTextWithUnicodeCharacters_ReadsFromStream)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "[section]\nproperty1=value¹²³";
         std::istringstream stream(ini);
 
-        const IniData iniData = parser.Parse(stream);
+        const IniData iniData = Parse(stream);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property1");
 
@@ -918,12 +855,10 @@ namespace ini::test
 
     TEST(IniParserTest, Parse_Utf8BomEncodedTextWithUnicodeCharacters_ReadsFromStream)
     {
-        IniParser parser = CreateParser();
-
         const std::string ini = "\xEF\xBB\xBF[section]\nproperty=value¹²³";
         std::istringstream stream(ini);
 
-        const IniData iniData = parser.Parse(stream);
+        const IniData iniData = Parse(stream);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 
