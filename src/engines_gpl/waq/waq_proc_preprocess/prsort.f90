@@ -31,7 +31,7 @@ module m_prsort
 contains
 
 
-    subroutine prsort(lurep, ProcesDef, num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, &
+    subroutine prsort(lurep, ProcesDef, num_substances_total, num_spatial_parameters, num_spatial_time_functions, &
             syname, num_constants, num_time_functions, constants, paname, &
             funame, sfname, status)
 
@@ -49,7 +49,7 @@ contains
         type(ProcesPropColl) :: ProcesDef       ! all processes
         integer(kind = int_wp) :: num_substances_total           ! number of substances
         integer(kind = int_wp) :: num_spatial_parameters            ! number of parameters
-        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_functions          ! number of segment functions
         character(len = *) :: syname(*)       ! substance name
         integer(kind = int_wp) :: num_constants          ! number of constants
         integer(kind = int_wp) :: num_time_functions           ! number of functions
@@ -106,7 +106,7 @@ contains
                                 ! see if it not specified in the input, then the process needs to be moved
 
                                 valnam = ProcesDef%ProcesProps(iproc)%output_item(i_out)%name
-                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                                         num_time_functions, constants, paname, funame, sfname, &
                                         valnam, ivalip, line)
 
@@ -129,7 +129,7 @@ contains
                                 ! see if it not specified in the input, then the process needs to be moved
 
                                 valnam = ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name
-                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                                         num_time_functions, constants, paname, funame, sfname, &
                                         valnam, ivalip, line)
 

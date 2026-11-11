@@ -67,6 +67,7 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
    real(kind=dp), dimension(:), allocatable, target :: sensible_heat_flux !< sensible heat flux (W/m2)
    real(kind=dp), dimension(:), allocatable, target :: latent_heat_flux !< latent heat flux (W/m2)
+   real(kind=dp), dimension(:), allocatable, target :: sea_surface_temperature !< sea surface temperature (degC)
    real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
    real(kind=dp), dimension(:), allocatable :: tbed !< bed temperature (degC)
@@ -85,6 +86,7 @@ module m_wind
    logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
    logical :: sensible_heat_flux_available = .false. !< sensible heat flux provided by user
    logical :: latent_heat_flux_available = .false. !< latent heat flux provided by user
+   logical :: sea_surface_temperature_available = .false. !< sea surface temperature provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no
    integer :: jaqin !< use qin , sum of all in fluxes
@@ -170,6 +172,7 @@ contains
    !! Upon loading of new model/MDU, call default_wind() instead.
    subroutine reset_wind()
       air_pressure_available = .false. !< use air_pressure yes or no
+      sea_surface_temperature_available = .false.
       jaspacevarcharn = 0 !< use space varying Charnock coefficients
       jawindstressgiven = 0 !< wind stress given in meteo file
       ja_airdensity = 0
