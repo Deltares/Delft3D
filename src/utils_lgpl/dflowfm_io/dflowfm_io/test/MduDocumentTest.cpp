@@ -71,7 +71,7 @@ namespace dflowfm_io::test
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", ini::IniValueConverter::FloatingPointToString(32424.22));
 
         std::ostringstream out;
-        ini::IniFormatter{}.Format(iniData, out);
+        ini::Format(iniData, out);
         auto stream = std::istringstream(out.str());
 
         doc.Load(stream);
@@ -93,7 +93,7 @@ namespace dflowfm_io::test
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
         std::ostringstream out;
-        ini::IniFormatter{}.Format(iniData, out);
+        ini::Format(iniData, out);
         auto stream = std::istringstream(out.str());
 
         doc.Load(stream);

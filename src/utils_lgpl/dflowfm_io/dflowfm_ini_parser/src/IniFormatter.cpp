@@ -2,162 +2,169 @@
 #include "ini/IniProperty.h"
 #include "ini/IniSection.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 namespace ini
 {
 
-    IniFormatter::IniFormatter(IniScheme scheme, IniFormatterOptions options)
-        : scheme(std::move(scheme)), options(std::move(options)) {}
-
-    std::string IniFormatter::Format(const IniData& iniData) const
+    namespace
     {
-        std::ostringstream oss;
-        Format(iniData, oss);
-        return oss.str();
-    }
+        void WriteNewLine(std::ostream& stream) { stream << '\n'; }
 
-    void IniFormatter::Format(const IniData& iniData, std::ostream& stream) const { WriteIniData(iniData, stream); }
-
-    void IniFormatter::WriteIniData(const IniData& iniData, std::ostream& stream) const
-    {
-        WriteSections(iniData, stream);
-    }
-
-    void IniFormatter::WriteSections(const IniData& iniData, std::ostream& stream) const
-    {
-        for (const IniSection& section : iniData.GetSections())
+        void WriteComment(const std::string& comment, std::ostream& stream, const IniScheme& scheme,
+                          const IniFormatterOptions& options)
         {
-            if (CanWriteSection(section))
-            {
-                WriteSection(section, stream);
-                WriteNewLine(stream);
-            }
-        }
-    }
+            if (comment.empty()) return;
 
-    bool IniFormatter::CanWriteSection(const IniSection& section) const
-    {
-        return !section.GetProperties().empty() || options.writeEmptySections;
-    }
+            stream << scheme.commentDelimiter;
 
-    void IniFormatter::WriteSection(const IniSection& section, std::ostream& stream) const
-    {
-        const std::vector<std::string>& comments = section.GetComments();
-
-        if (options.writeComments && !comments.empty())
-        {
-            WriteComments(comments, stream);
-        }
-
-        stream << scheme.sectionStartDelimiter << section.GetName() << scheme.sectionEndDelimiter;
-
-        if (!section.GetProperties().empty())
-        {
-            WriteNewLine(stream);
-            WriteProperties(section, stream);
-        }
-    }
-
-    void IniFormatter::WriteProperties(const IniSection& section, std::ostream& stream) const
-    {
-        for (const IniProperty& property : section.GetProperties())
-        {
-            if (CanWriteProperty(property))
-            {
-                WriteProperty(property, stream);
-                WriteNewLine(stream);
-            }
-        }
-    }
-
-    bool IniFormatter::CanWriteProperty(const IniProperty& property) const
-    {
-        return property.HasValue() || options.writePropertyWithoutValue;
-    }
-
-    void IniFormatter::WriteProperty(const IniProperty& property, std::ostream& stream) const
-    {
-        if (options.propertyIndentationLevel > 0) stream << std::setw(options.propertyIndentationLevel) << "";
-
-        const std::string& key = property.GetKey();
-        if (options.propertyKeyWidth > 0)
-        {
-            stream << std::left << std::setw(options.propertyKeyWidth) << key;
-        }
-        else
-        {
-            stream << key;
-        }
-
-        if (options.propertyAssignmentPadding > 0)
-        {
-            stream << std::setw(options.propertyAssignmentPadding) << "";
-        }
-
-        stream << scheme.propertyAssignmentDelimiter;
-
-        if (options.propertyAssignmentPadding > 0)
-        {
-            stream << std::setw(options.propertyAssignmentPadding) << "";
-        }
-
-        if (options.propertyValueWidth > 0)
-        {
-            // If the key exceeded the configurable key width, reduce the value width to compensate
-            const int keyOverflow = static_cast<int>(key.size()) - options.propertyKeyWidth;
-            const int adjustedValueWidth = options.propertyValueWidth - std::max(0, keyOverflow);
-
-            if (adjustedValueWidth > 0)
-            {
-                stream << std::left << std::setw(adjustedValueWidth) << property.GetValue();
-            }
-            else
-            {
-                stream << property.GetValue();
-            }
-        }
-        else
-        {
-            stream << property.GetValue();
-        }
-
-        if (options.writeComments && property.HasComment())
-        {
             if (options.propertyCommentPadding > 0)
             {
                 stream << std::setw(options.propertyCommentPadding) << "";
             }
 
-            WriteComment(property.GetComment(), stream);
+            stream << comment;
         }
-    }
 
-    void IniFormatter::WriteComments(const std::vector<std::string>& comments, std::ostream& stream) const
-    {
-        for (const std::string& comment : comments)
+        void WriteComments(const std::vector<std::string>& comments, std::ostream& stream, const IniScheme& scheme,
+                           const IniFormatterOptions& options)
         {
-            WriteComment(comment, stream);
-            WriteNewLine(stream);
+            for (const std::string& comment : comments)
+            {
+                WriteComment(comment, stream, scheme, options);
+                WriteNewLine(stream);
+            }
         }
-    }
 
-    void IniFormatter::WriteComment(const std::string& comment, std::ostream& stream) const
-    {
-        if (comment.empty()) return;
-
-        stream << scheme.commentDelimiter;
-
-        if (options.propertyCommentPadding > 0)
+        bool CanWriteProperty(const IniProperty& property, const IniFormatterOptions& options)
         {
-            stream << std::setw(options.propertyCommentPadding) << "";
+            return property.HasValue() || options.writePropertyWithoutValue;
         }
 
-        stream << comment;
+        void WriteProperty(const IniProperty& property, std::ostream& stream, const IniScheme& scheme,
+                           const IniFormatterOptions& options)
+        {
+            if (options.propertyIndentationLevel > 0) stream << std::setw(options.propertyIndentationLevel) << "";
+
+            const std::string& key = property.GetKey();
+            if (options.propertyKeyWidth > 0)
+            {
+                stream << std::left << std::setw(options.propertyKeyWidth) << key;
+            }
+            else
+            {
+                stream << key;
+            }
+
+            if (options.propertyAssignmentPadding > 0)
+            {
+                stream << std::setw(options.propertyAssignmentPadding) << "";
+            }
+
+            stream << scheme.propertyAssignmentDelimiter;
+
+            if (options.propertyAssignmentPadding > 0)
+            {
+                stream << std::setw(options.propertyAssignmentPadding) << "";
+            }
+
+            if (options.propertyValueWidth > 0)
+            {
+                // If the key exceeded the configurable key width, reduce the value width to compensate
+                const int keyOverflow = static_cast<int>(key.size()) - options.propertyKeyWidth;
+                const int adjustedValueWidth = options.propertyValueWidth - std::max(0, keyOverflow);
+
+                if (adjustedValueWidth > 0)
+                {
+                    stream << std::left << std::setw(adjustedValueWidth) << property.GetValue();
+                }
+                else
+                {
+                    stream << property.GetValue();
+                }
+            }
+            else
+            {
+                stream << property.GetValue();
+            }
+
+            if (options.writeComments && property.HasComment())
+            {
+                if (options.propertyCommentPadding > 0)
+                {
+                    stream << std::setw(options.propertyCommentPadding) << "";
+                }
+
+                WriteComment(property.GetComment(), stream, scheme, options);
+            }
+        }
+
+        void WriteProperties(const IniSection& section, std::ostream& stream, const IniScheme& scheme,
+                             const IniFormatterOptions& options)
+        {
+            for (const IniProperty& property : section.GetProperties())
+            {
+                if (CanWriteProperty(property, options))
+                {
+                    WriteProperty(property, stream, scheme, options);
+                    WriteNewLine(stream);
+                }
+            }
+        }
+
+        bool CanWriteSection(const IniSection& section, const IniFormatterOptions& options)
+        {
+            return !section.GetProperties().empty() || options.writeEmptySections;
+        }
+
+        void WriteSection(const IniSection& section, std::ostream& stream, const IniScheme& scheme,
+                          const IniFormatterOptions& options)
+        {
+            const std::vector<std::string>& comments = section.GetComments();
+
+            if (options.writeComments && !comments.empty())
+            {
+                WriteComments(comments, stream, scheme, options);
+            }
+
+            stream << scheme.sectionStartDelimiter << section.GetName() << scheme.sectionEndDelimiter;
+
+            if (!section.GetProperties().empty())
+            {
+                WriteNewLine(stream);
+                WriteProperties(section, stream, scheme, options);
+            }
+        }
+
+        void WriteSections(const IniData& iniData, std::ostream& stream, const IniScheme& scheme,
+                           const IniFormatterOptions& options)
+        {
+            for (const IniSection& section : iniData.GetSections())
+            {
+                if (CanWriteSection(section, options))
+                {
+                    WriteSection(section, stream, scheme, options);
+                    WriteNewLine(stream);
+                }
+            }
+        }
+
+    } // namespace
+
+    std::string Format(const IniData& iniData, IniScheme scheme, IniFormatterOptions options)
+    {
+        std::ostringstream oss;
+        Format(iniData, oss, std::move(scheme), std::move(options));
+        return oss.str();
     }
 
-    void IniFormatter::WriteNewLine(std::ostream& stream) const { stream << '\n'; }
+    void Format(const IniData& iniData, std::ostream& stream, IniScheme scheme, IniFormatterOptions options)
+    {
+        WriteSections(iniData, stream, scheme, options);
+    }
 
 } // namespace ini

@@ -52,8 +52,6 @@ namespace ini::test
         return CreateIniData(section);
     }
 
-    static IniFormatter CreateFormatter() { return IniFormatter(); }
-
     // -------------------------------------------------------------------------
     // Format - empty
     // -------------------------------------------------------------------------
@@ -61,9 +59,8 @@ namespace ini::test
     TEST(IniFormatterTest, Format_EmptyIniData_ReturnsEmptyString)
     {
         IniData iniData = CreateEmptyIniData();
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
 
         EXPECT_EQ(ini, "");
     }
@@ -75,9 +72,8 @@ namespace ini::test
     TEST(IniFormatterTest, Format_EmptySection_ReturnsFormattedString)
     {
         IniData iniData = CreateIniData(CreateEmptySection());
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
         const std::string expected = "[section]\n";
 
         EXPECT_EQ(ini, expected);
@@ -90,9 +86,8 @@ namespace ini::test
         section.AddComment("comment2");
 
         IniData iniData = CreateIniData(section);
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
         const std::string expected =
             "# comment1\n"
             "# comment2\n"
@@ -108,9 +103,8 @@ namespace ini::test
         section.AddComment("");
 
         IniData iniData = CreateIniData(section);
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
         const std::string expected =
             "# comment\n"
             "\n"
@@ -128,9 +122,8 @@ namespace ini::test
         IniData iniData = CreateIniData(section);
         IniFormatterOptions options;
         options.writeComments = false;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected = "[section]\n";
 
         EXPECT_EQ(ini, expected);
@@ -145,9 +138,8 @@ namespace ini::test
         IniData iniData = CreateIniData(CreateEmptySection());
         IniFormatterOptions options;
         options.writeEmptySections = false;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected = "";
 
         EXPECT_EQ(ini, expected);
@@ -158,9 +150,8 @@ namespace ini::test
         IniData iniData = CreateIniData(CreateEmptySection());
         IniFormatterOptions options;
         options.writeEmptySections = true;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected = "[section]\n";
 
         EXPECT_EQ(ini, expected);
@@ -173,9 +164,8 @@ namespace ini::test
     TEST(IniFormatterTest, Format_PropertiesAndComments_ReturnsFormattedString)
     {
         IniData iniData = CreateIniDataWithSingleSection();
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
         const std::string expected =
             "[section]\n"
             "property1             = value1               # comment\n"
@@ -189,9 +179,8 @@ namespace ini::test
     TEST(IniFormatterTest, Format_PropertyAndEmptyComment_SkipsComment)
     {
         IniData iniData = CreateIniDataFromProperty("property", "value", "");
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
         const std::string expected =
             "[section]\n"
             "property              = value               \n"
@@ -205,9 +194,8 @@ namespace ini::test
         IniData iniData = CreateIniDataWithSingleSection();
         IniFormatterOptions options;
         options.writeComments = false;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "property1             = value1              \n"
@@ -227,9 +215,8 @@ namespace ini::test
         IniData iniData = CreateIniDataFromProperty("property", "", "");
         IniFormatterOptions options;
         options.writePropertyWithoutValue = false;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "\n";
@@ -242,9 +229,8 @@ namespace ini::test
         IniData iniData = CreateIniDataFromProperty("property", "", "");
         IniFormatterOptions options;
         options.writePropertyWithoutValue = true;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "property              =                     \n"
@@ -266,9 +252,8 @@ namespace ini::test
         options.propertyValueWidth = 10;
         options.propertyAssignmentPadding = 1;
         options.propertyCommentPadding = 1;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "    property1  = value1     # comment\n"
@@ -292,9 +277,8 @@ namespace ini::test
         options.propertyValueWidth = 10;
         options.propertyAssignmentPadding = 1;
         options.propertyCommentPadding = 1;
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "short      = value1     # comment1\n"
@@ -309,9 +293,8 @@ namespace ini::test
     {
         IniData iniData = CreateIniDataWithSingleSection();
         IniFormatterOptions options = IniFormatterOptions::EmptySpace();
-        IniFormatter formatter({}, options);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, {}, options);
         const std::string expected =
             "[section]\n"
             "property1=value1#comment\n"
@@ -334,9 +317,8 @@ namespace ini::test
     {
         auto [key, value] = GetParam();
         IniData iniData = CreateIniDataFromProperty(key, value, "");
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData);
 
         EXPECT_TRUE(ini.find(key) != std::string::npos) << "Expected key '" << key << "' in:\n" << ini;
         EXPECT_TRUE(ini.find(value) != std::string::npos) << "Expected value '" << value << "' in:\n" << ini;
@@ -361,9 +343,8 @@ namespace ini::test
         scheme.sectionStartDelimiter = '<';
         scheme.sectionEndDelimiter = '>';
         scheme.propertyAssignmentDelimiter = ':';
-        IniFormatter formatter(scheme);
 
-        const std::string ini = formatter.Format(iniData);
+        const std::string ini = Format(iniData, scheme);
         const std::string expected =
             "<section>\n"
             "property1             : value1               ; comment\n"
@@ -381,10 +362,9 @@ namespace ini::test
     TEST(IniFormatterTest, Format_EmptyIniData_WritesEmptyStringToStream)
     {
         IniData iniData = CreateEmptyIniData();
-        IniFormatter formatter = CreateFormatter();
 
         std::ostringstream oss;
-        formatter.Format(iniData, oss);
+        Format(iniData, oss);
 
         EXPECT_EQ(oss.str(), "");
     }
@@ -392,10 +372,9 @@ namespace ini::test
     TEST(IniFormatterTest, Format_SectionWithPropertiesAndComments_WritesToStream)
     {
         IniData iniData = CreateIniDataWithSingleSection();
-        IniFormatter formatter = CreateFormatter();
 
         std::ostringstream oss;
-        formatter.Format(iniData, oss);
+        Format(iniData, oss);
 
         const std::string expected =
             "[section]\n"
@@ -410,12 +389,11 @@ namespace ini::test
     TEST(IniFormatterTest, Format_FormatToStreamAndFormatToString_ReturnSameResult)
     {
         IniData iniData = CreateIniDataWithSingleSection();
-        IniFormatter formatter = CreateFormatter();
 
-        const std::string fromString = formatter.Format(iniData);
+        const std::string fromString = Format(iniData);
 
         std::ostringstream oss;
-        formatter.Format(iniData, oss);
+        Format(iniData, oss);
 
         EXPECT_EQ(fromString, oss.str());
     }

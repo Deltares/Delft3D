@@ -43,8 +43,7 @@ namespace ini
             throw std::ios_base::failure("Stream is not in a writable state.");
         }
 
-        IniFormatter formatter(options.scheme, options.formatterOptions);
-        formatter.Format(data, out);
+        Format(data, out, options.scheme, options.formatterOptions);
     }
 
     void IniFile::Save(const std::filesystem::path& path) const

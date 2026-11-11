@@ -275,7 +275,7 @@ namespace dflowfm_io::test
     inline std::string TestMduString()
     {
         std::ostringstream out;
-        ini::IniFormatter{}.Format(TestIniData(), out);
+        ini::Format(TestIniData(), out);
         return out.str();
     }
 
