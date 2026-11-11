@@ -1267,7 +1267,7 @@ contains
          call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
       end if
 
-      call prop_get(md_ptr, 'physics', 'oxmidovLengthScale', ozmidov_length_scale, success)
+      call prop_get(md_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, success)
       if (.not. success) then
          call prop_get(md_ptr, 'physics', 'Xlozmidov', ozmidov_length_scale)
       end if
@@ -3510,7 +3510,7 @@ contains
          if (writeall .or. (minimum_vertical_eddy_viscosity_for_production > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
-         call prop_set(prop_ptr, 'physics', 'oxmidovLengthScale', ozmidov_length_scale, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
+         call prop_set(prop_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
          if (writeall .or. (comparereal(tke_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
             call prop_set(prop_ptr, 'physics', 'TKEMin', tke_min, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if
