@@ -3113,9 +3113,9 @@ contains
       end do
 
       ! Step 2: weighted sums of the source coefficients per target point.
-      allocate (temp_proj%cos(targetset%nCoordinates), temp_proj%sin(targetset%nCoordinates), temp_proj%mask(targetset%nCoordinates))
-      temp_proj%cos = 0.0_dp
-      temp_proj%sin = 0.0_dp
+      allocate (temp_proj%cos_weight(targetset%nCoordinates), temp_proj%sin_weight(targetset%nCoordinates), temp_proj%mask(targetset%nCoordinates))
+      temp_proj%cos_weight = 0.0_dp
+      temp_proj%sin_weight = 0.0_dp
       temp_proj%mask = 0
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          x_extrapolate = targetset%x
@@ -3155,8 +3155,8 @@ contains
                valid = .false.
                exit
             end if
-            temp_proj%cos(j) = temp_proj%cos(j) + weights%weightFactors(k, j) * source_cos(point)
-            temp_proj%sin(j) = temp_proj%sin(j) + weights%weightFactors(k, j) * source_sin(point)
+            temp_proj%cos_weight(j) = temp_proj%cos_weight(j) + weights%weightFactors(k, j) * source_cos(point)
+            temp_proj%sin_weight(j) = temp_proj%sin_weight(j) + weights%weightFactors(k, j) * source_sin(point)
          end do
          if (valid) then
             temp_proj%mask(j) = 1
@@ -3188,8 +3188,8 @@ contains
          call delete_kdtree2(tree)
       end if
       ! succesfully initialized the projection, so move the temporary arrays to the returned projection object.
-      call move_alloc(temp_proj%cos, proj%cos)
-      call move_alloc(temp_proj%sin, proj%sin)
+      call move_alloc(temp_proj%cos_weight, proj%cos_weight)
+      call move_alloc(temp_proj%sin_weight, proj%sin_weight)
       call move_alloc(temp_proj%mask, proj%mask)
       success = .true.
    end function ecConverterHarmonicCoefficients
@@ -3226,8 +3226,8 @@ contains
                projections(k)%sourceItemId = proj%sourceItemId
                projections(k)%targetItemId = proj%targetItemId
                projections(k)%converterId = proj%converterId
-               call move_alloc(proj%cos, projections(k)%cos)
-               call move_alloc(proj%sin, projections(k)%sin)
+               call move_alloc(proj%cos_weight, projections(k)%cos_weight)
+               call move_alloc(proj%sin_weight, projections(k)%sin_weight)
                call move_alloc(proj%mask, projections(k)%mask)
             end do
             call move_alloc(projections, frame%projections)
@@ -3302,7 +3302,7 @@ contains
       call prepare_projections(frame, source_item%id, target_item%id, converter%id, proj)
 
       ! Step 2: first call only, compute the cached coefficients.
-      if (.not. allocated(proj%cos)) then
+      if (.not. allocated(proj%cos_weight)) then
          success = ecConverterHarmonicCoefficients(proj, source_item, target_item, converter)
          if (.not. success) then
             return
@@ -3311,7 +3311,7 @@ contains
 
       ! Step 3: evaluate the harmonic at time t and apply the operand.
       angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
-      success = apply_harmonics(proj%cos, proj%sin, proj%mask, angle, converter%operandType, targetfield(1:size(proj%mask)))
+      success = apply_harmonics(proj%cos_weight, proj%sin_weight, proj%mask, angle, converter%operandType, targetfield(1:size(proj%mask)))
       if (.not. success) then
          return
       end if

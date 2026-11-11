@@ -349,8 +349,8 @@ module m_ec_typedefs
       integer :: sourceItemId = ec_undef_int !< Source quantity whose amplitudes were projected.
       integer :: targetItemId = ec_undef_int !< Target item receiving the projected coefficients.
       integer :: converterId = ec_undef_int !< Converter supplying the fixed spatial mapping.
-      real(dp), dimension(:), allocatable :: cos !< Interpolated amplitude times cosine of phase.
-      real(dp), dimension(:), allocatable :: sin !< Interpolated amplitude times sine of phase.
+      real(dp), dimension(:), allocatable :: cos_weight !< Interpolated amplitude times cosine of phase.
+      real(dp), dimension(:), allocatable :: sin_weight !< Interpolated amplitude times sine of phase.
       integer, dimension(:), allocatable :: mask !< One for valid targets, zero for untouched or extrapolated targets.
    end type tEcHarmonicProjection
 
