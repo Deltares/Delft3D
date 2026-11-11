@@ -1,3 +1,4 @@
+#include <ini/IniValueConverter.h>
 #include <gtest/gtest.h>
 
 #include <dflowfm_io/IssueReport.h>
@@ -405,7 +406,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ReturnsError)
     {
-        iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
+        iniData.GetSection("numerics").SetPropertyValue("qhRelax", ini::IniValueConverter::FloatingPointToString(0.02));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -414,7 +415,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
     {
-        iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
+        iniData.GetSection("numerics").SetPropertyValue("qhRelax", ini::IniValueConverter::FloatingPointToString(0.02));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -432,7 +433,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ReturnsError)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(4));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -441,7 +442,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(4));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -460,7 +461,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_ReturnsWarning)
     {
-        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", ini::IniValueConverter::IntegerToString(6));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -469,7 +470,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
     {
-        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", ini::IniValueConverter::IntegerToString(6));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -486,7 +487,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(3));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 
@@ -495,7 +496,7 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
     {
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(3));
 
         const IssueReport report = MduValidator::Validate(iniData, schema);
 

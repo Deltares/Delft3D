@@ -3,7 +3,6 @@
 #include "ini/IniProperty.h"
 
 #include <functional>
-#include <optional>
 #include <span>
 #include <string>
 #include <vector>
@@ -64,18 +63,6 @@ namespace ini
         /// @throws std::invalid_argument When @p key is empty.
         IniProperty& AddProperty(const std::string& key, const std::string& value = {});
 
-        /// @brief Adds a new property with the specified key and value to the section.
-        /// @tparam T The type of the value.
-        /// @param key The key of the property.
-        /// @param value The value of the property.
-        /// @return A reference to the added property.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        IniProperty& AddProperty(const std::string& key, const T& value)
-        {
-            return AddProperty(IniProperty::Create(key, value));
-        }
-
         /// @brief Adds a property to the section.
         /// @param property The property to add.
         /// @return A reference to the added property.
@@ -90,42 +77,11 @@ namespace ini
         void AddPropertyIf(const std::string& key, const std::string& value,
                            const std::function<bool(const std::string&)>& predicate);
 
-        /// @brief Adds a new property with the specified key and value to the section if
-        ///        the specified condition is met.
-        /// @tparam T The type of the value.
-        /// @param key The key of the property.
-        /// @param value The value of the property.
-        /// @param predicate A predicate function; the property is added only if it returns @c true.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        void AddPropertyIf(const std::string& key, const T& value, const std::function<bool(const T&)>& predicate)
-        {
-            if (predicate(value))
-            {
-                AddProperty(key, value);
-            }
-        }
-
-        /// @brief Adds a new multi-value property with the specified key and values to the section.
-        /// @tparam T The type of the values.
-        /// @param key The key of the property.
-        /// @param values The collection of values associated with the property.
-        /// @param separator The character used to separate the values. The default is a space.
-        /// @return A reference to the added property.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        IniProperty& AddProperty(const std::string& key, const std::vector<T>& values, char separator = ' ')
-        {
-            return AddProperty(IniProperty::Create(key, values, separator));
-        }
-
         /// @brief Adds multiple properties with the same key to the section, each with a different value.
-        /// @tparam T The type of the values.
         /// @param key The key of the properties to add.
         /// @param values The collection of values for the properties to add.
         /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        void AddProperties(const std::string& key, const std::vector<T>& values)
+        void AddProperties(const std::string& key, const std::vector<std::string>& values)
         {
             for (const auto& value : values)
             {
@@ -170,75 +126,11 @@ namespace ini
         /// @throws std::invalid_argument When @p key is empty.
         std::string GetPropertyValue(const std::string& key, const std::string& defaultValue = {}) const;
 
-        /// @brief Gets the converted value of the first property with the specified key, or a
-        ///        default value if the property is not found or conversion fails.
-        /// @tparam T The target type to convert the property value to.
-        /// @param key The key to search for (case-insensitive).
-        /// @param defaultValue The value to return if the property is not found or conversion fails.
-        /// @return The converted value of the first matching property, or @p defaultValue.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        T GetPropertyValue(const std::string& key, const T& defaultValue = {}) const
-        {
-            const IniProperty* property = FindProperty(key);
-            if (property == nullptr)
-            {
-                return defaultValue;
-            }
-
-            auto convertedValue = property->TryGetValue<T>();
-            return convertedValue.value_or(defaultValue);
-        }
-
         /// @brief Gets the values of all properties with the specified key.
         /// @param key The key to search for (case-insensitive).
         /// @return The values of all matching properties that have a non-empty value.
         /// @throws std::invalid_argument When @p key is empty.
         std::vector<std::string> GetAllPropertyValues(const std::string& key) const;
-
-        /// @brief Gets the converted values of all properties with the specified key.
-        /// @tparam T The target type to convert the property values to.
-        /// @param key The key to search for (case-insensitive).
-        /// @return The successfully converted values of all matching properties.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        std::vector<T> GetAllPropertyValues(const std::string& key) const
-        {
-            std::vector<T> result;
-            for (const auto& property : properties)
-            {
-                if (!property.IsKeyEqualTo(key))
-                {
-                    continue;
-                }
-
-                if (auto convertedValue = property.TryGetValue<T>())
-                {
-                    result.push_back(std::move(*convertedValue));
-                }
-            }
-
-            return result;
-        }
-
-        /// @brief Gets the converted values of the first multi-value property with the specified key.
-        /// @tparam T The target type to convert the values to.
-        /// @param key The key to search for (case-insensitive).
-        /// @param delimiter The character used to separate the values. The default is a space.
-        /// @return The converted values, or an empty collection if the property was not found.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        std::vector<T> GetPropertyValues(const std::string& key, char delimiter = ' ') const
-        {
-            const IniProperty* property = FindProperty(key);
-            if (property == nullptr)
-            {
-                return {};
-            }
-
-            auto convertedValues = property->TryGetValues<T>(delimiter);
-            return convertedValues.value_or(std::vector<T>{});
-        }
 
         /// @brief Sets the value of the first property with the specified key, or adds a new
         ///        property if none is found.
@@ -247,47 +139,6 @@ namespace ini
         /// @return A reference to the added or updated property.
         /// @throws std::invalid_argument When @p key is empty.
         IniProperty& SetPropertyValue(const std::string& key, const std::string& value);
-
-        /// @brief Sets the value of the first property with the specified key, or adds a new
-        ///        property if none is found.
-        /// @tparam T The type of the value.
-        /// @param key The key to search for (case-insensitive).
-        /// @param value The value to set.
-        /// @return A reference to the added or updated property.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        IniProperty& SetPropertyValue(const std::string& key, const T& value)
-        {
-            IniProperty* property = FindProperty(key);
-            if (property == nullptr)
-            {
-                return AddProperty(key, value);
-            }
-
-            property->SetValue(value);
-            return *property;
-        }
-
-        /// @brief Sets the values of the first multi-value property with the specified key, or
-        ///        adds a new property if none is found.
-        /// @tparam T The type of the values.
-        /// @param key The key to search for (case-insensitive).
-        /// @param values The collection of values to set.
-        /// @param separator The character used to separate the values. The default is a space.
-        /// @return A reference to the added or updated property.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        IniProperty& SetPropertyValues(const std::string& key, const std::vector<T>& values, char separator = ' ')
-        {
-            IniProperty* property = FindProperty(key);
-            if (property == nullptr)
-            {
-                return AddProperty(key, values, separator);
-            }
-
-            property->SetValues(values, separator);
-            return *property;
-        }
 
         /// @brief Removes the specified property from the section.
         /// @param property The property to remove.

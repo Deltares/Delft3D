@@ -1,10 +1,7 @@
 #pragma once
 
-#include "ini/IniValueConverter.h"
-
-#include <optional>
 #include <string>
-#include <vector>
+#include <utility>
 
 namespace ini
 {
@@ -56,31 +53,6 @@ namespace ini
         /// @param value The new line number.
         void SetLineNumber(int value) { lineNumber = value; }
 
-        /// @brief Creates a new @ref IniProperty with the specified key and a string
-        ///        representation of @p value.
-        /// @tparam T The type of the value.
-        /// @param key The key of the property.
-        /// @param value The value to convert and store.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        static IniProperty Create(std::string key, const T& value)
-        {
-            return IniProperty(std::move(key), IniValueConverter::ToString(value));
-        }
-
-        /// @brief Creates a new @ref IniProperty with the specified key and a delimited string
-        ///        representation of the specified collection.
-        /// @tparam T The type of the values in the collection.
-        /// @param key The key of the property.
-        /// @param values The collection of values to format as a delimited string.
-        /// @param separator The character used to separate the values. The default is a space.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        static IniProperty Create(std::string key, const std::vector<T>& values, char separator = ' ')
-        {
-            return IniProperty(std::move(key), IniValueConverter::ToMultiValueString(values, separator));
-        }
-
         /// @brief Returns whether the property has a non-empty value.
         /// @return @c true if the property has a value; otherwise @c false.
         bool HasValue() const;
@@ -88,69 +60,6 @@ namespace ini
         /// @brief Returns whether the property has a non-empty comment.
         /// @return @c true if the property has a comment; otherwise @c false.
         bool HasComment() const;
-
-        /// @brief Tries to convert the property value to the specified type.
-        /// @tparam T The type to convert to.
-        /// @return The converted value if successful; otherwise std::nullopt.
-        template <typename T>
-        std::optional<T> TryGetValue() const
-        {
-            if (!HasValue())
-            {
-                return std::nullopt;
-            }
-
-            try
-            {
-                return IniValueConverter::FromString<T>(value);
-            }
-            catch (const std::exception&)
-            {
-                return std::nullopt;
-            }
-        }
-
-        /// @brief Tries to convert the property value, which can be a delimited string, to a
-        ///        collection of the specified type.
-        /// @tparam T The type to convert the values to.
-        /// @param delimiter The character used to separate the values. The default is a space.
-        /// @return The converted values if successful; otherwise std::nullopt.
-        template <typename T>
-        std::optional<std::vector<T>> TryGetValues(char delimiter = ' ') const
-        {
-            if (!HasValue())
-            {
-                return std::nullopt;
-            }
-
-            try
-            {
-                return IniValueConverter::FromMultiValueString<T>(value, delimiter);
-            }
-            catch (const std::exception&)
-            {
-                return std::nullopt;
-            }
-        }
-
-        /// @brief Sets the property value by converting @p value to a string representation.
-        /// @tparam T The type of the value.
-        /// @param value The new value to convert and store.
-        template <typename T>
-        void SetValue(const T& value)
-        {
-            this->value = IniValueConverter::ToString(value);
-        }
-
-        /// @brief Sets the property value by converting the specified collection to a delimited string.
-        /// @tparam T The type of the values in the collection.
-        /// @param values The collection of values to convert and store.
-        /// @param separator The character used to separate the values. The default is a space.
-        template <typename T>
-        void SetValues(const std::vector<T>& values, char separator = ' ')
-        {
-            value = IniValueConverter::ToMultiValueString(values, separator);
-        }
 
         /// @brief Returns whether the key of this property equals @p other (case-insensitive).
         /// @param other The key to compare against.

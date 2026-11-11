@@ -1,3 +1,4 @@
+#include <ini/IniValueConverter.h>
 #include <gtest/gtest.h>
 
 #include <dflowfm_io/MduConverter.h>
@@ -320,7 +321,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ConvertIniData_ObsoleteProperty_PropertyOmittedFromMduData)
     {
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("numerics").AddProperty("qhRelax", 0.05);
+        iniData.GetSection("numerics").AddProperty("qhRelax", ini::IniValueConverter::FloatingPointToString(0.05));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
@@ -331,7 +332,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ConvertIniData_ObsoletePropertyValue_ObsoleteValueSkippedAndDefaultValueUsedInstead)
     {
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(4));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
@@ -349,7 +350,7 @@ namespace dflowfm_io::test
     {
         ini::IniData iniData = TestIniData();
         auto& section = iniData.AddSection("sediment");
-        section.AddProperty("nrOfSedFractions", 2);
+        section.AddProperty("nrOfSedFractions", ini::IniValueConverter::IntegerToString(2));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
@@ -362,7 +363,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ConvertIniData_DeprecatedProperty_PropertyPresentInMduData)
     {
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", ini::IniValueConverter::IntegerToString(6));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
@@ -374,7 +375,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ConvertIniData_DeprecatedEnumValue_PropertyPresentInMduData)
     {
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
+        iniData.GetSection("geometry").SetPropertyValue("layerType", ini::IniValueConverter::IntegerToString(3));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
@@ -468,7 +469,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ConvertIniData_ValidIntEnumValue_ConvertsSuccessfully)
     {
         ini::IniData iniData = TestIniData();
-        iniData.GetSection("numerics").SetPropertyValue("timeStepType", 2);
+        iniData.GetSection("numerics").SetPropertyValue("timeStepType", ini::IniValueConverter::IntegerToString(2));
 
         const auto [mduData, report] = MduConverter::Convert(iniData, schema);
 
