@@ -98,6 +98,7 @@ module m_general_structure
       real(kind=dp), pointer, dimension(:) :: au_max => null() !< maximal flow area for each flow link, when discarding the gate obstructing the structure opening (length = numlinks)
       integer :: numlinks !< Nr of flow links that cross this generalstructure.
       logical :: velheight !< Flag indicates the use of the velocity height or not
+      logical :: useDensity = .false. !< Use depth-averaged side densities in the hydraulic calculation (opt-in).
       integer :: openingDirection !< possible values GEN_SYMMETRIC, GEN_FROMLEFT, GEN_FROMRIGHT
       real(kind=dp), pointer, dimension(:) :: sOnCrest => null() !< water level on crest per link (length = numlinks)
       integer, pointer, dimension(:, :) :: state => null() !< state(1:3,L0) contains flow state on the L0th link of the structure for General Structure, Weir and Orifice
@@ -126,7 +127,7 @@ contains
 
    !> compute FU, RU and AU for a single flow link in a general structure.
    subroutine compute_general_structure(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
-                                        qtotal, Cz, dxL, dt, SkipDimensionChecks)
+                                        qtotal, Cz, dxL, dt, SkipDimensionChecks, densities)
       ! modules
       use precision, only: compareReal
 
@@ -151,6 +152,7 @@ contains
       real(kind=dp), intent(in) :: dt !< Time step (s).
       logical, intent(in) :: SkipDimensionChecks !< Flag indicating whether the dimensions of the structure is to be limited
       !< by the cross sectional dimensions of the channel and correct, or not.
+      real(kind=dp), dimension(2), optional, intent(in) :: densities !< Positive depth-averaged densities [kg/m3] at s1m1 and s1m2; used only with useDensity.
       !
       !
       ! Local variables
@@ -228,8 +230,13 @@ contains
 
       velheight = genstr%velheight
       !
-      call UpAndDownstreamParameters(s1ml, s1mr, alm, arm, qtotal, velheight, &
-                                     rholeft, rhoright, crest, hu, hd, uu, ud, flowDir)
+      if (genstr%useDensity) then
+         call UpAndDownstreamParameters(s1ml, s1mr, alm, arm, qtotal, velheight, &
+                                        rholeft, rhoright, crest, hu, hd, uu, ud, flowDir, densities)
+      else
+         call UpAndDownstreamParameters(s1ml, s1mr, alm, arm, qtotal, velheight, &
+                                        rholeft, rhoright, crest, hu, hd, uu, ud, flowDir)
+      end if
       !
       ! apply orientation of the flow link to the direction dependend parameters
 
@@ -536,7 +543,7 @@ contains
          ! Compute critical water depth at the
          ! sill, dc and water depth at the sill,ds
          if (.not. velheight) then
-            ds = hd - zs
+            ds = rhoast * (hd - zs)
          else
             dlim = hs1 * (wstr / w2 * 2.0_dp / 3.0_dp * sqrt(2.0_dp / 3.0_dp))**(2.0_dp / 3.0_dp)
             hd1 = max(hd, zb2 + dlim * 0.9_dp)
@@ -589,7 +596,7 @@ contains
             if (velheight) then
                call flgsd2(wsd, wstr, zs, w2, zb2, dg, ds1, ds2, elu, hd1, rhoast, cgd2, imag, ds, lambda)
             else
-               ds = hd - zs
+               ds = rhoast * (hd - zs)
                imag = .false.
             end if
 
