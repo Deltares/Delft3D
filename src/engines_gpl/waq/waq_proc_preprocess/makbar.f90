@@ -33,7 +33,7 @@ contains
 
 
     subroutine makbar (procesdef, num_substances_total, syname, num_constants, constants, &
-            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
             sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
             num_exchanges_z_dir, laswi, no_act, actlst, &
             status)
@@ -63,7 +63,7 @@ contains
         integer(kind = int_wp) :: num_constants ! number of constants
         integer(kind = int_wp) :: num_spatial_parameters   ! number of parameters
         integer(kind = int_wp) :: num_time_functions  ! number of functions
-        integer(kind = int_wp) :: num_spatial_time_fuctions ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_functions ! number of segment functions
         integer(kind = int_wp) :: num_dispersion_arrays ! number of dispersions
         integer(kind = int_wp) :: num_velocity_arrays ! number of velocities
         integer(kind = int_wp) :: num_exchanges_z_dir   ! number of exhcanges in third direction
@@ -156,7 +156,7 @@ contains
                     ! specified in input?
 
                     line_input = ' '
-                    call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                    call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                             num_time_functions, constants, paname, funame, sfname, &
                             valnam, ivalip, line_input)
 

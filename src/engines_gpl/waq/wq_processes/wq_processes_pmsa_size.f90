@@ -121,7 +121,7 @@ contains
         arrnam(iisfun) = 'SFUNC '
         arrknd(iisfun) = 3
         arrdm1(iisfun) = num_cells
-        arrdm2(iisfun) = num_spatial_time_fuctions
+        arrdm2(iisfun) = num_spatial_time_functions
         arrdm3(iisfun) = 1
 
         arrnam(iiploc) = 'LOCAL '

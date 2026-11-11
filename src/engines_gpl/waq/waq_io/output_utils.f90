@@ -33,7 +33,7 @@ contains
 
     subroutine get_output_pointers(num_output_files, nrvar, nrvarm, dlwnam, iopoin, &
             nmis, num_substances_total, syname, num_constants, coname, &
-            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
             sfname, lurep)
 
         !! Sets the pointers for all extra vars
@@ -48,14 +48,14 @@ contains
         integer(kind = int_wp), intent(out) :: iopoin(nrvarm, num_output_files)   !< Number of missing input vars
         integer(kind = int_wp), intent(in) :: num_substances_total                  !< Total number of substances
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                   !< Number of parameters
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                 !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions                 !< Number of segment functions
         character(20), intent(in) :: syname(num_substances_total)         !< Names of systems
         integer(kind = int_wp), intent(in) :: num_constants                 !< Number of constants used
         integer(kind = int_wp), intent(in) :: num_time_functions                  !< Number of functions ( user )
         character(20), intent(in) :: coname(num_constants)        !< Constant names
         character(20), intent(in) :: paname(num_spatial_parameters)        !< Parameter names
         character(20), intent(in) :: funame(num_time_functions)        !< Function names
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)        !< Segment function names
+        character(20), intent(in) :: sfname(num_spatial_time_functions)        !< Segment function names
         integer(kind = int_wp), intent(in) :: lurep                  !< Unit nr. report file
 
         character(20) varnam            ! Name of variable to be identified
@@ -77,7 +77,7 @@ contains
                 if (varnam == ' ') then
                     ivarip = 0
                 else
-                    call set_output_pointers (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                    call set_output_pointers (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                             num_time_functions, coname, paname, funame, sfname, &
                             varnam, ivarip, lurep)
                     if (ivarip == -1) then
@@ -94,7 +94,7 @@ contains
         return
     end subroutine get_output_pointers
 
-    subroutine set_output_pointers(num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+    subroutine set_output_pointers(num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
             num_time_functions, coname, paname, funame, sfname, &
             varnam, ivarip, lurep)
 
@@ -106,14 +106,14 @@ contains
 
         integer(kind = int_wp), intent(in) :: num_substances_total              !< Total number of substances
         integer(kind = int_wp), intent(in) :: num_spatial_parameters               !< Number of parameters
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions             !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions             !< Number of segment functions
         character(20), intent(in) :: syname(num_substances_total)     !< Names of systems
         integer(kind = int_wp), intent(in) :: num_constants             !< Number of constants used
         integer(kind = int_wp), intent(in) :: num_time_functions              !< Number of functions ( user )
         character(20), intent(in) :: coname(num_constants)    !< Constant names
         character(20), intent(in) :: paname(num_spatial_parameters)    !< Parameter names
         character(20), intent(in) :: funame(num_time_functions)    !< Function names
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)    !< Segment function names
+        character(20), intent(in) :: sfname(num_spatial_time_functions)    !< Segment function names
         character(20), intent(in) :: varnam            !< Name of variable to be identified
         integer(kind = int_wp), intent(out) :: ivarip             !< Pointer in the SSA
         integer(kind = int_wp), intent(in) :: lurep              !< Unit nr. report file
@@ -154,7 +154,7 @@ contains
         indx = index_in_array(varnam, syname)
         if (indx > 0) then
             write(lurep, *) '       ', varnam, '; Using substance nr', indx
-            ivarip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + indx
+            ivarip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + indx
             goto 800
         endif
 

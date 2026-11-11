@@ -30,7 +30,7 @@ contains
 
     subroutine intoou (procesdef, num_processes_activated, num_fluxes, nsvar, pronam, &
             iflux, process_space_int, ipssa, process_space_int_len, ioffx, &
-            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
+            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_substances_total, &
             num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, &
             num_velocity_arrays_extra, num_local_vars_exchange, nopred, prvvar, prvtyp, &
             num_vars, progrd, prondt)
@@ -58,7 +58,7 @@ contains
         integer(kind = int_wp) :: num_constants          ! number of constants
         integer(kind = int_wp) :: num_spatial_parameters            ! number of parameters
         integer(kind = int_wp) :: num_time_functions           ! number of functions
-        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_functions          ! number of segment functions
         integer(kind = int_wp) :: num_substances_total           ! number of substances
         integer(kind = int_wp) :: num_dispersion_arrays          ! number of dispersions
         integer(kind = int_wp) :: num_velocity_arrays          ! number of velocities
@@ -135,7 +135,7 @@ contains
         ivpar = ivcns + num_constants
         ivfun = ivpar + num_spatial_parameters
         ivsfu = ivfun + num_time_functions
-        ivcnc = ivsfu + num_spatial_time_fuctions
+        ivcnc = ivsfu + num_spatial_time_functions
         ivmas = ivcnc + num_substances_total
         ivder = ivmas + num_substances_total
         ivdsp = ivder + num_substances_total
@@ -182,12 +182,12 @@ contains
                             proc%input_item(i_input)%type == IOTYPE_SEGMENT_WORK) then
                         if (proc%input_item(i_input)%ip_val == 3) then
                             ! idt, voor fractional step aparte ingang in default array
-                            ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars
+                            ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_local_vars
                             proc%input_item(i_input)%ip_val = ioff + num_defaults - 2 * num_processes_activated + iproc_act
                         endif
                         if (proc%input_item(i_input)%ip_val == 4) then
                             ! delt, voor fractional step aparte ingang in default array
-                            ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars
+                            ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_local_vars
                             proc%input_item(i_input)%ip_val = ioff + num_defaults - num_processes_activated + iproc_act
                         endif
                         process_space_int(itel1) = proc%input_item(i_input)%ip_val
@@ -203,7 +203,7 @@ contains
                     ipssa(itel1) = 0
                     call ip2var &
                             (process_space_int(itel1), prvvar(itel1), num_constants, num_spatial_parameters, num_time_functions, &
-                            num_spatial_time_fuctions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                            num_spatial_time_functions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                             num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                             nopred)
                 enddo
@@ -232,7 +232,7 @@ contains
                     endif
                     call ip2var &
                             (ipssa(itel1), prvvar(itel1), num_constants, num_spatial_parameters, num_time_functions, &
-                            num_spatial_time_fuctions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                            num_spatial_time_functions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                             num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                             nopred)
                 enddo
@@ -255,12 +255,12 @@ contains
     end
 
     subroutine ip2var (ipin, ivar, num_constants, num_spatial_parameters, num_time_functions, &
-            num_spatial_time_fuctions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+            num_spatial_time_functions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
             num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
             nopred)
 
         use timers       !   performance timers
-        integer(kind = int_wp) :: num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+        integer(kind = int_wp) :: num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                 num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, nopred
 
         integer(kind = int_wp) :: ithndl = 0
@@ -284,7 +284,7 @@ contains
         ivpar = ivcns + num_constants
         ivfun = ivpar + num_spatial_parameters
         ivsfu = ivfun + num_time_functions
-        ivcnc = ivsfu + num_spatial_time_fuctions
+        ivcnc = ivsfu + num_spatial_time_functions
         ivmas = ivcnc + num_substances_total
         ivder = ivmas + num_substances_total
         ivdsp = ivder + num_substances_total
@@ -337,14 +337,14 @@ contains
             goto 65
         endif
         ioff = ioff + num_time_functions
-        if (ip <= num_spatial_time_fuctions + ioff) then
+        if (ip <= num_spatial_time_functions + ioff) then
 
             ! segment function
 
             ivar = ivsfu + ip - ioff - 1
             goto 65
         endif
-        ioff = ioff + num_spatial_time_fuctions
+        ioff = ioff + num_spatial_time_functions
         if (ip <= num_substances_total + ioff) then
 
             ! concentration
