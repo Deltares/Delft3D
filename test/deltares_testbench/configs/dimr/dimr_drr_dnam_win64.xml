@@ -46,10 +46,6 @@
         <argument>/C</argument>
       </arguments>
     </program>
-    <!-- <program name="reahis" logOutputToFile="true" addSearchPaths="true">
-      <path>thirdparty\reahis\reahis.exe</path>
-      <shell ref="command_prompt"/>
-    </program> -->
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
       <path>bin/run_dimr.bat</path>
       <shell ref="command_prompt"/>
