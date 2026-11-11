@@ -2802,7 +2802,7 @@ contains
       logical :: utm_success
 
       success = .false.
-      fa = pi / 180.0_dp
+      fa = degrad_hp
       fi = 180.0_dp / pi
       earthrad = 6378137.0_dp
       n_rows = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
@@ -3123,8 +3123,8 @@ contains
       do point = 1, n_source
          amplitude = sourcefield%arr1d(point)
          source_valid(point) = comparereal(amplitude, source_missing, .true.) /= 0 .and. comparereal(source_phase(point), source_missing, .true.) /= 0
-         source_cos(point) = amplitude * cos(source_phase(point) * PI / 180.0_dp)
-         source_sin(point) = amplitude * sin(source_phase(point) * PI / 180.0_dp)
+         source_cos(point) = amplitude * cos(source_phase(point) * degrad_hp)
+         source_sin(point) = amplitude * sin(source_phase(point) * degrad_hp)
       end do
       end associate
    end subroutine compute_source_harmonic_coefficients
@@ -3617,7 +3617,7 @@ contains
          if (associated(windxPtr%elementsetPtr%dir)) then
             has_rotated_wind = .true.
             do ipt = 1, windxPtr%elementsetPtr%ncoordinates
-               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.0_dp
+               phi = windxPtr%elementsetPtr%dir(ipt) * degrad_hp
                xtmp = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * sin(phi)
                windyPtr%SourceT0fieldptr%arr1dptr(ipt) = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * (-sin(phi)) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi)
                windxPtr%SourceT0fieldptr%arr1dptr(ipt) = xtmp
@@ -3693,7 +3693,7 @@ contains
                          comparereal(phase0, sourceMissing, .true.) == 0) then
                         sourceT0Field%arr1d(ipt) = sourceMissing
                      else
-                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                      end if
                   end do
                else
@@ -3776,7 +3776,7 @@ contains
                                   comparereal(phase0, sourceMissing, .true.) == 0) then
                                  sourceT0Field%arr1d(ipt) = sourceMissing
                               else
-                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                               end if
                            end do
                         end if
@@ -3795,7 +3795,7 @@ contains
                                      comparereal(phase0, sourceMissing, .true.) == 0) then
                                     sourceT0Field%arr1d(ipt) = sourceMissing
                                  else
-                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                                  end if
                               end do
                            end do
