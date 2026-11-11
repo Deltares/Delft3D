@@ -52,7 +52,7 @@ contains
       use m_make_rhs, only: make_rhs
       use m_flowgeom, only: Ndxi, kfs, ba, ndx ! static mesh information
       use m_flowtimes, only: dts
-      use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
+      use m_flow, only: kmxn, ozmidov_length_scale, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
       use m_turbulence, only: difwws, difwws_total
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
@@ -165,11 +165,11 @@ contains
             dtba = dt_loc * ba(kk)
             dtbazi = dtba / max(1.0e-4_dp, 0.5_dp * (zws(k + 1) - zws(k - 1))) ! another safety check
             ozmid = 0.0_dp
-            if (xlozmidov > 0.0_dp) then
+            if (ozmidov_length_scale > 0.0_dp) then
                if (rho(k) < rho(k - 1)) then
                   bruns = (rho(k - 1) - rho(k)) / (0.5_dp * (zws(k + 1) - zws(k - 1))) ! = -drhodz
                   bruns = sqrt(bruns * ag / rhomean)
-                  ozmid = 0.2_dp * xlozmidov * xlozmidov * bruns
+                  ozmid = 0.2_dp * ozmidov_length_scale * ozmidov_length_scale * bruns
                end if
             end if
 
