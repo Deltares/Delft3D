@@ -2,7 +2,7 @@ import os
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
-from conan.tools.files import collect_libs, copy, get, rmdir
+from conan.tools.files import copy, get, rmdir
 
 required_conan_version = ">=2"
 
@@ -60,5 +60,46 @@ class FortranStdlibConan(ConanFile):
         self.cpp_info.set_property(
             "cmake_target_name", "fortran_stdlib::fortran_stdlib"
         )
-        self.cpp_info.libs = collect_libs(self)
-        self.cpp_info.includedirs = ["include"]
+        # Match stdlib 0.8.1's target_link_libraries graph, not archive file order.
+        dependencies = {
+            "ansi": ["core", "strings"],
+            "array": [],
+            "bitsets": ["core"],
+            "blas": ["core", "linalg_core"],
+            "constants": ["core"],
+            "core": [],
+            "hash": ["core"],
+            "hashmaps": ["hash"],
+            "intrinsics": ["linalg_core", "blas", "constants"],
+            "io": ["core", "strings"],
+            "lapack": ["core", "linalg_core", "blas", "strings"],
+            "lapack_extended": ["core", "linalg_core"],
+            "linalg_core": ["core"],
+            "linalg_iterative": ["linalg", "sparse"],
+            "linalg": [
+                "core", "linalg_core", "constants", "lapack",
+                "lapack_extended", "sorting", "intrinsics",
+            ],
+            "logger": ["core"],
+            "math": ["bitsets", "core", "strings"],
+            "quadrature": ["core", "specialfunctions"],
+            "selection": ["core"],
+            "sorting": ["bitsets", "core", "strings"],
+            "specialfunctions": ["intrinsics"],
+            "specialmatrices": [
+                "constants", "linalg_core", "linalg", "lapack", "lapack_extended",
+            ],
+            "stringlist": ["math", "strings"],
+            "strings": ["core"],
+            "system": ["core", "linalg_core", "strings"],
+            "stats": ["core", "linalg_core", "linalg", "selection", "strings"],
+            "sparse": ["constants", "sorting"],
+        }
+        for name, requires in dependencies.items():
+            component = self.cpp_info.components[name]
+            component.set_property("cmake_target_name", f"fortran_stdlib::fortran_stdlib_{name}")
+            component.libs = [f"fortran_stdlib_{name}"]
+            component.requires = requires
+
+        self.cpp_info.components["stdlib"].libs = ["fortran_stdlib"]
+        self.cpp_info.components["stdlib"].requires = list(dependencies)
