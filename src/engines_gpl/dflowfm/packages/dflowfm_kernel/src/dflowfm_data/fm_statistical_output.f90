@@ -2721,24 +2721,24 @@ contains
          end if
          if (model_is_3D()) then
             if (his_write_settings%tur > 0) then
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTERS) then
                   output_config_set%configs(IDX_HIS_TKIN)%long_name = 'turbulent kinetic energy at pressure point'
                   output_config_set%configs(IDX_HIS_TKIN)%nc_dim_ids = station_nc_dims_3D_interface_center
                   output_config_set%configs(IDX_HIS_EPS)%long_name = 'turbulent energy dissipation at pressure point'
                   output_config_set%configs(IDX_HIS_EPS)%nc_dim_ids = station_nc_dims_3D_interface_center
                end if
 
-               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER])) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKIN:IPNT_TKIN + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
                end if
 
-               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KEPS_CELL_CENTER])) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KEPS_CELL_CENTERS])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
                end if
 
-               if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER])) then
+               if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS])) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS_TOTAL:IPNT_VICWWS_TOTAL + kmx)
@@ -2750,7 +2750,7 @@ contains
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
                end if
-               
+
                if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAU), temp_pointer)

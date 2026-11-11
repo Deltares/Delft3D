@@ -50,7 +50,7 @@ contains
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
-                        u1, v, ltop, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER
+                        u1, v, ltop, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS
       use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
@@ -168,7 +168,7 @@ contains
       if ( &
          model_is_3D() .and. &
          his_write_settings%tur > 0 .and. &
-         any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER]) &
+         any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS]) &
       ) then
          vicwwu_total = 0.0_dp
          vicwws_total = 0.0_dp
@@ -661,13 +661,13 @@ contains
                call getlayerindices(k, nlayb, nrlay)
                do kk = kb - 1, kt
                   klay = kk - kb + nlayb + 1
-                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTER .and. his_write_settings%tur > 0) then
+                  if (iturbulencemodel == TURBULENCE_MODEL_KEPS_CELL_CENTERS .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_TKIN + klay - 1) = turbulent_kinetic_energy_wu(kk)
                      valobs(i, IPNT_TEPS + klay - 1) = turbulent_dissipation_wu(kk)
                   end if
                   ! Taken care of by interpolate_horizontal
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER]) .and. his_write_settings%tur > 0) then
+                  if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS]) .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_VICWWS_TOTAL + klay - 1) = vicwws_total(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)

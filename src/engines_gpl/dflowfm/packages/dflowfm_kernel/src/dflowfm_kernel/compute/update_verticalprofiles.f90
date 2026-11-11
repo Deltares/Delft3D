@@ -54,7 +54,7 @@ contains
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
                         rhomean, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, ktop, kbot, hs, epshu, ucx, ucy, kmxn, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, &
-                        TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTER
+                        TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: ndx, lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -838,7 +838,7 @@ contains
          turbulent_kinetic_energy_wu_old = turbulent_kinetic_energy_wu
          turbulent_dissipation_wu_old = turbulent_dissipation_wu
 
-      case (TURBULENCE_MODEL_KEPS_CELL_CENTER)
+      case (TURBULENCE_MODEL_KEPS_CELL_CENTERS)
 
          call calculate_drhodz(zws, drhodz)
 
@@ -1214,7 +1214,7 @@ contains
 
       end select
 
-      if (iturbulencemodel /= TURBULENCE_MODEL_KEPS_CELL_CENTER) then
+      if (iturbulencemodel /= TURBULENCE_MODEL_KEPS_CELL_CENTERS) then
          call links_to_centers(vicwws, vicwwu)
          if (jarichardsononoutput > 0) then
             call links_to_centers(richs, rich)
