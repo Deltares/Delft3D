@@ -99,6 +99,7 @@ module m_source_sink
       procedure :: add => add_source_sink
       procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
       procedure :: update_discharges => update_source_sink_discharges
+      procedure :: get_nearfield_discharge
 
    end type SourceSinks
 
@@ -521,7 +522,7 @@ contains
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine update_source_sink_discharges(self)
-      use m_flow, only: kmx, zws, vol1, qin, epshs
+      use m_flow, only: kmx, zws, vol1, qin
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi, reduce_srsn
@@ -541,7 +542,6 @@ contains
       integer :: numvals
       real(kind=dp) :: flowcell_discharge !< Source/sink discharge of the (whole) flowcell
       real(kind=dp) :: layer_discharge !< Source/sink discharge of a layer
-      real(kind=dp) :: flowcell_height !< Vertical height of the flowcell
       real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
@@ -699,12 +699,9 @@ contains
             qin(sink_flowcell_index) = qin(sink_flowcell_index) - layer_discharge ! add to 2D pressure cell nr
             do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SINK), self%indices(source_sink_index, TOP_LAYER_SINK)
                if (kmx > 0) then
-                  flowcell_height = zws(self%indices(source_sink_index, TOP_LAYER_SINK)) - zws(self%indices(source_sink_index, BOTTOM_LAYER_SINK) - 1)
-                  if (flowcell_height > epshs) then
-                     flowcell_discharge = layer_discharge * (zws(layer_index) - zws(layer_index - 1)) / flowcell_height
-                  else
-                     flowcell_discharge = layer_discharge / (self%indices(source_sink_index, TOP_LAYER_SINK) - self%indices(source_sink_index, BOTTOM_LAYER_SINK) + 1)
-                  end if
+                  flowcell_discharge = calculate_layer_discharge(layer_discharge, layer_index, &
+                                                                 self%indices(source_sink_index, BOTTOM_LAYER_SINK), &
+                                                                 self%indices(source_sink_index, TOP_LAYER_SINK))
                   qin(layer_index) = qin(layer_index) - flowcell_discharge
                end if
             end do
@@ -715,12 +712,9 @@ contains
             qin(source_flowcell_index) = qin(source_flowcell_index) + layer_discharge ! add to 2D pressure cell nr
             do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), self%indices(source_sink_index, TOP_LAYER_SOURCE)
                if (kmx > 0) then
-                  flowcell_height = zws(self%indices(source_sink_index, TOP_LAYER_SOURCE)) - zws(self%indices(source_sink_index, BOTTOM_LAYER_SOURCE) - 1)
-                  if (flowcell_height > epshs) then
-                     flowcell_discharge = layer_discharge * (zws(layer_index) - zws(layer_index - 1)) / flowcell_height
-                  else
-                     flowcell_discharge = layer_discharge / (self%indices(source_sink_index, TOP_LAYER_SOURCE) - self%indices(source_sink_index, BOTTOM_LAYER_SOURCE) + 1)
-                  end if
+                  flowcell_discharge = calculate_layer_discharge(layer_discharge, layer_index, &
+                                                                 self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), &
+                                                                 self%indices(source_sink_index, TOP_LAYER_SOURCE))
                   qin(layer_index) = qin(layer_index) + flowcell_discharge
                end if
             end do
@@ -728,5 +722,79 @@ contains
       end do
 
    end subroutine update_source_sink_discharges
+
+   !> Collect the signed nearfield discharges per volume cell for map output.
+   subroutine get_nearfield_discharge(self, discharge)
+      class(SourceSinks), intent(in) :: self !< Source/sink object instance.
+      real(kind=dp), dimension(:), intent(out) :: discharge !< Net nearfield discharge per volume cell [m3/s].
+
+      integer :: isrc
+
+      discharge = 0.0_dp
+      do isrc = self%num_total - self%num_nearfield + 1, self%num_total
+         call add_layer_discharge(self%indices(isrc, FLOWCELL_SINK), &
+                                  self%indices(isrc, BOTTOM_LAYER_SINK), self%indices(isrc, TOP_LAYER_SINK), &
+                                  -self%discharge(isrc), discharge)
+         call add_layer_discharge(self%indices(isrc, FLOWCELL_SOURCE), &
+                                  self%indices(isrc, BOTTOM_LAYER_SOURCE), self%indices(isrc, TOP_LAYER_SOURCE), &
+                                  self%discharge(isrc), discharge)
+      end do
+   end subroutine get_nearfield_discharge
+
+   !> Accumulate one source/sink side's discharge in the map output array using the solver's layer range.
+   subroutine add_layer_discharge(flowcell, &
+                                  bottom_layer, &
+                                  top_layer, &
+                                  side_discharge, &
+                                  map_discharge)
+      integer, intent(in) :: flowcell !< 2D flow-cell index; nonpositive for a nonlocal or absent side.
+      integer, intent(in) :: bottom_layer !< Bottom volume-cell index selected by the solver; zero before initialization.
+      integer, intent(in) :: top_layer !< Top volume-cell index selected by the solver.
+      real(kind=dp), intent(in) :: side_discharge !< Discharge on this side [m3/s], positive for inflow and negative for outflow.
+      real(kind=dp), dimension(:), intent(inout) :: map_discharge !< Map output: net discharge per volume cell [m3/s].
+
+      integer :: layer_index
+      real(kind=dp) :: layer_discharge
+
+      if (flowcell <= 0) then
+         return
+      end if
+      ! Layer indices are zero before the first discharge update.
+      if (bottom_layer == 0 .or. top_layer < bottom_layer) then
+         return
+      end if
+      do layer_index = bottom_layer, top_layer
+         layer_discharge = calculate_layer_discharge(side_discharge, layer_index, bottom_layer, top_layer)
+         map_discharge(layer_index) = map_discharge(layer_index) + layer_discharge
+      end do
+   end subroutine add_layer_discharge
+
+   !> Compute one layer's discharge using the same distribution for the solver and map output.
+   !! Use thickness weighting, or equal shares when the column height is negligible.
+   pure function calculate_layer_discharge(total_discharge, &
+                                           layer_index, &
+                                           bottom_layer, &
+                                           top_layer) result(layer_discharge)
+      use m_flow, only: kmx, zws, epshs
+
+      real(kind=dp), intent(in) :: total_discharge !< Signed discharge over the selected layer range [m3/s].
+      integer, intent(in) :: layer_index !< Volume-cell index for which to calculate the discharge.
+      integer, intent(in) :: bottom_layer !< Bottom volume-cell index of the selected layer range.
+      integer, intent(in) :: top_layer !< Top volume-cell index of the selected layer range.
+      real(kind=dp) :: layer_discharge !< Signed discharge in the requested layer [m3/s].
+
+      real(kind=dp) :: height
+
+      if (kmx == 0) then
+         layer_discharge = total_discharge
+         return
+      end if
+      height = zws(top_layer) - zws(bottom_layer - 1)
+      if (height > epshs) then
+         layer_discharge = total_discharge * (zws(layer_index) - zws(layer_index - 1)) / height
+      else
+         layer_discharge = total_discharge / real(top_layer - bottom_layer + 1, dp)
+      end if
+   end function calculate_layer_discharge
 
 end module m_source_sink
