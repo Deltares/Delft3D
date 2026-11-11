@@ -37,7 +37,7 @@ module m_setlinktocenterweights
 
    public :: setlinktocenterweights
 
-   real(kind=dp), dimension(:), allocatable :: area_normalization
+   real(kind=dp), dimension(:), allocatable :: cell_area_inv
 
 contains
 
@@ -64,7 +64,8 @@ contains
       wcL = 0
       wcxy = 0
       wc = 0
-      call realloc(area_normalization, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(cell_area_inv, ndx, keepExisting=.false.)
+      cell_area_inv = ba ! start out noninverted to accumulate areas.
 
       do L = 1, lnx
 
@@ -95,25 +96,24 @@ contains
          wcy2(L) = sn * wuL2
 
          if (kcu(L) == LINK_1D2D_STREETINLET .and. k1 <= ndx2d) then
-            area_normalization(k1) = area_normalization(k1) + wuL1
+            cell_area_inv(k1) = cell_area_inv(k1) + wuL1
          else
             wcxy(1, k1) = wcxy(1, k1) + abs(wcx1(L))
             wcxy(2, k1) = wcxy(2, k1) + abs(wcy1(L))
          end if
 
          if (kcu(L) == LINK_1D2D_STREETINLET .and. k2 <= ndx2d) then
-            area_normalization(k2) = area_normalization(k2) + wuL2
+            cell_area_inv(k2) = cell_area_inv(k2) + wuL2
          else
             wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
             wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
          end if
       end do
-
-      ! correct for the area of 1D2D street inlet links, 
-      where (area_normalization > 0.0_dp)
-         area_normalization = 1.0_dp / (1.0_dp + area_normalization * bai) ! = ba / (ba + sum(pipe_areas), to ensure the weightfactors sum to 1.
-      end where
-
+      
+      where (cell_area_inv > 0.0_dp)
+         cell_area_inv = 1.0_dp / cell_area_inv
+      end where      
+      
       lnxmax = 0
       do n = 1, mxwalls ! wall contribution to scalar linktocenterweights
          k1 = walls(1, n)
@@ -156,43 +156,33 @@ contains
          k2 = ln(2, L)
          if (abs(kcu(L)) == 2 .or. abs(kcu(L)) == 4) then ! 2D links and 1D2D lateral links
             if (kfs(K1) == 0) then ! kfs temporarily used as cutcell flag, set in cutcelwu
-               wcx1(L) = wcx1(L) * bai(k1)
-               wcy1(L) = wcy1(L) * bai(k1)
+               wcx1(L) = wcx1(L) * cell_area_inv(k1)
+               wcy1(L) = wcy1(L) * cell_area_inv(k1)
             else
                if (wcxy(1, k1) /= 0) then
-                  wcx1(L) = wcx1(L) / wcxy(1, k1)
+                  wcx1(L) = wcx1(L) / wcxy(1, k1) * ba(k1) * cell_area_inv(k1)
                end if
                if (wcxy(2, k1) /= 0) then
-                  wcy1(L) = wcy1(L) / wcxy(2, k1)
+                  wcy1(L) = wcy1(L) / wcxy(2, k1) * ba(k1) * cell_area_inv(k1)
                end if
             end if
 
             if (kfs(K2) == 0) then
-               wcx2(L) = wcx2(L) * bai(k2)
-               wcy2(L) = wcy2(L) * bai(k2)
+               wcx2(L) = wcx2(L) * cell_area_inv(k2)
+               wcy2(L) = wcy2(L) * cell_area_inv(k2)
             else
                if (wcxy(1, k2) /= 0) then
-                  wcx2(L) = wcx2(L) / wcxy(1, k2)
+                  wcx2(L) = wcx2(L) / wcxy(1, k2) * ba(k2) * cell_area_inv(k2)
                end if
                if (wcxy(2, k2) /= 0) then
-                  wcy2(L) = wcy2(L) / wcxy(2, k2)
+                  wcy2(L) = wcy2(L) / wcxy(2, k2) * ba(k2) * cell_area_inv(k2)
                end if
             end if
          else
-            wcx1(L) = wcx1(L) * bai(k1)
-            wcy1(L) = wcy1(L) * bai(k1)
-            wcx2(L) = wcx2(L) * bai(k2)
-            wcy2(L) = wcy2(L) * bai(k2)
-         end if
-
-         ! correct by area normalization for 1D2D street inlet links
-         if (area_normalization(k1) > 0.0_dp) then
-            wcx1(L) = wcx1(L) * area_normalization(k1)
-            wcy1(L) = wcy1(L) * area_normalization(k1)
-         end if
-         if (area_normalization(k2) > 0.0_dp) then
-            wcx2(L) = wcx2(L) * area_normalization(k2)
-            wcy2(L) = wcy2(L) * area_normalization(k2)
+            wcx1(L) = wcx1(L) * cell_area_inv(k1)
+            wcy1(L) = wcy1(L) * cell_area_inv(k1)
+            wcx2(L) = wcx2(L) * cell_area_inv(k2)
+            wcy2(L) = wcy2(L) * cell_area_inv(k2)
          end if
 
          if (wc(k1) > 0.0_dp) then
