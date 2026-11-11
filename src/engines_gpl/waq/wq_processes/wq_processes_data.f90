@@ -29,7 +29,7 @@ module processes_input
     integer  (KIND = int_wp) :: noconm          !< Maximum number of constants used
     integer  (KIND = int_wp) :: num_spatial_parameters            !< Number of parameters
     integer  (KIND = int_wp) :: num_time_functions           !< Number of functions ( user )
-    integer  (KIND = int_wp) :: num_spatial_time_fuctions          !< Number of segment functions
+    integer  (KIND = int_wp) :: num_spatial_time_functions          !< Number of segment functions
     integer  (KIND = int_wp) :: nosfunext       !< Number of segment functions from the ext file
     integer  (KIND = int_wp) :: num_dispersion_arrays          !< Number of dispersion arrays
     integer  (KIND = int_wp) :: num_velocity_arrays          !< Number of velocity arrays

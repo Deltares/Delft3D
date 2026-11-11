@@ -32,7 +32,7 @@ contains
 
 
     subroutine getinv (procesdef, num_substances_total, syname, num_constants, constants, &
-            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
             sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
             nmis, defaul, num_local_vars, num_defaults, dename, outputs, &
             num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, locnam, refday)
@@ -60,7 +60,7 @@ contains
         character(len = *) :: paname(*)       ! parameter names
         integer(kind = int_wp) :: num_time_functions           ! number of functions
         character(len = *) :: funame(*)       ! function names
-        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_functions          ! number of segment functions
         character(len = *) :: sfname(*)       ! segment function names
         integer(kind = int_wp) :: num_dispersion_arrays          ! number of dispersions
         character(len = *) :: diname(*)       ! dispersion names
@@ -110,7 +110,7 @@ contains
 
         ! some init
 
-        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total
         ioffx = 4 + num_dispersion_arrays + num_velocity_arrays + num_time_functions + num_constants + num_dispersion_arrays_extra + num_velocity_arrays_extra
         line2 = ' '
 
@@ -143,7 +143,7 @@ contains
 
                         10             continue
 
-                        call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                        call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                                 num_time_functions, constants, paname, funame, sfname, &
                                 valnam, ivalip, line1)
 
