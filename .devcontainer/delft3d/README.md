@@ -324,8 +324,7 @@ the following commands:
 ```bash
 # From test/deltares_testbench
 rm -rf .venv
-uv venv --python=3.12 .venv
-uv pip sync pip/lnx-dev-requirements.txt
+uv sync --python=3.12 --locked --extra dev
 ```
 
 #### Setting the path to the Delft3D binaries

@@ -60,7 +60,7 @@ contains
             iaflag, syname, conc, volume, vol2, &
             flow, ipoint, wastid, wstnam, wsttyp, &
             iwtype, iwaste, iwstkind, waste, deriv, &
-            iknmrk, num_spatial_parameters, paname, param, num_spatial_time_fuctions, &
+            iknmrk, num_spatial_parameters, paname, param, num_spatial_time_functions, &
             sfname, segfun, isdmp, dmps, amass2, &
             wstdmp, substance_i, nsys)
 
@@ -106,9 +106,9 @@ contains
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                    !< Number of parameters
         character(20), intent(in) :: paname(num_spatial_parameters)            !< Names of the parameters
         real(kind = real_wp), intent(in) :: param(num_spatial_parameters, num_cells)      !< Parameter values
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                  !< Number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)          !< Names of the segment functions
-        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_fuctions)   !< Segment function values
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions                  !< Number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)          !< Names of the segment functions
+        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_functions)   !< Segment function values
         integer(kind = int_wp), intent(in) :: isdmp(num_cells)            !< Volume to dump-location pointer
         real(kind = real_wp), intent(inout) :: dmps(num_substances_total, num_monitoring_cells, *)   !< Dumped segment fluxes if INTOPT > 7
         real(kind = real_wp), intent(inout) :: amass2(num_substances_total, 5)        !< Mass balance array
@@ -529,7 +529,7 @@ contains
             iaflag, syname, conc, volume, vol2, &
             flow, ipoint, wastid, wstnam, wsttyp, &
             iwtype, iwaste, iwstkind, waste, deriv, &
-            wdrawal, iknmrk, num_spatial_parameters, paname, param, num_spatial_time_fuctions, &
+            wdrawal, iknmrk, num_spatial_parameters, paname, param, num_spatial_time_functions, &
             sfname, segfun, isdmp, dmps, amass2, &
             wstdmp, substance_i, nsys)
 
@@ -577,9 +577,9 @@ contains
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                    !< Number of parameters
         character(20), intent(in) :: paname(num_spatial_parameters)            !< Names of the parameters
         real(kind = real_wp), intent(in) :: param(num_spatial_parameters, num_cells)      !< Parameter values
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                  !< Number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)          !< Names of the segment functions
-        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_fuctions)   !< Segment function values
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions                  !< Number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)          !< Names of the segment functions
+        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_functions)   !< Segment function values
         integer(kind = int_wp), intent(in) :: isdmp(num_cells)            !< Volume to dump-location pointer
         real(kind = real_wp), intent(inout) :: dmps(num_substances_total, num_monitoring_cells, *)   !< Dumped segment fluxes if INTOPT > 7
         real(kind = real_wp), intent(inout) :: amass2(num_substances_total, 5)        !< Mass balance array

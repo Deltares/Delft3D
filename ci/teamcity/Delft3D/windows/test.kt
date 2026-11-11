@@ -135,11 +135,11 @@ object WindowsTest : BuildType({
                 rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
                 rem to avoid os error 32 file-lock failures on the mount during install.
                 rem Wheels come from the mounted uv cache volume.
-                uv venv C:\venv
+                set UV_PROJECT_ENVIRONMENT=C:\venv
+                rem --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
+                uv sync --locked
                 if %%ERRORLEVEL%% NEQ 0 exit /b 1
                 call C:\venv\Scripts\activate.bat
-                uv pip sync pip/win-requirements.txt
-                if %%ERRORLEVEL%% NEQ 0 exit /b 1
 
                 rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
                 rem been dealing with during the module import phase of "Python TestBench.py"

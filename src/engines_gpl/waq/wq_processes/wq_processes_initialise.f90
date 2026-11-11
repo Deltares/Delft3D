@@ -459,7 +459,7 @@ contains
 
         nocon2 = num_constants
         call set_old_items(lunlsp, old_items, num_substances_total, num_spatial_parameters, num_time_functions, &
-                num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
+                num_spatial_time_functions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
                 funame, sfunname, diname, vename, constants)
 
         ! replace proto with actual processes
@@ -581,7 +581,7 @@ contains
 
         ! sort processes according to input - output relation
 
-        call prsort (lunlsp, procesdef, num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, &
+        call prsort (lunlsp, procesdef, num_substances_total, num_spatial_parameters, num_spatial_time_functions, &
                 syname, num_constants, num_time_functions, constants, paname, &
                 funame, sfunname, main_status)
 
@@ -659,12 +659,12 @@ contains
 
         ! set offset local array
 
-        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total
 
         ! check which processes can be turned on
 
         call makbar (procesdef, num_substances_total, syname, num_constants, constants, &
-                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
                 sfunname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
                 noqtt, laswi, no_act, actlst, &
                 temp_status)
@@ -720,14 +720,14 @@ contains
         ! num_local_vars is already 1?, use this space!
 
         call getinv (procesdef, num_substances_total, syname, num_constants, constants, &
-                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
                 sfunname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
                 nmis, defaul, num_local_vars, num_defaults, dename, outputs, &
                 num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, locnam, refday)
 
         ! report on the use of the delwaq input
 
-        call repuse (procesdef, num_constants, coname, num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, sfunname, main_status%noinfo)
+        call repuse (procesdef, num_constants, coname, num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, sfunname, main_status%noinfo)
 
         ! set output pointers to process arrays parloc and defaul
 
@@ -768,7 +768,7 @@ contains
         ! calculate and fill output structure
 
         process_space_int_len = 0
-        ioffx = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars + num_defaults
+        ioffx = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_local_vars + num_defaults
         mxpmsa = no_ine + no_ins + no_ous + no_oue + no_flu
         call realloc(prvnio, nbpr, keepExisting = .false., Fill = 0)
         call realloc(iflux, nbpr, keepExisting = .false., Fill = 0)
@@ -781,7 +781,7 @@ contains
         call realloc(pronam, nbpr, keepExisting = .false., Fill = ' ')
         call intoou (procesdef, num_processes_activated, num_fluxes, prvnio, pronam, &
                 iflux, process_space_int, ipssa, process_space_int_len, ioffx, &
-                num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
+                num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_substances_total, &
                 num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, &
                 num_velocity_arrays_extra, num_local_vars_exchange, nopred, prvvar, prvtyp, &
                 num_vars, progrd, prondt)
@@ -798,7 +798,7 @@ contains
         call realloc(vardag, num_vars, keepExisting = .false., Fill = 0)
         call realloc(vartag, num_vars, keepExisting = .false., Fill = 0)
         call realloc(varagg, num_vars, keepExisting = .false., Fill = 0)
-        call setvat (lunlsp, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        call setvat (lunlsp, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                 num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                 nopred, num_vars, vararr, varidx, vartda, &

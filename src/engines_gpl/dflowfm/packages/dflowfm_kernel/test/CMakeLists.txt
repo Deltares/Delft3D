@@ -14,11 +14,10 @@ endfunction()
 set(test_target test_dflowfm_kernel_gtest)
 if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
-    set(geotiff_test_header_source ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bilinear_geotiff.f90)
 endif()
-f90twtest(${test_target}
-    CFILES test_dflowfm_kernel.cpp
-    F90FILES
+add_fortran_gtest(${test_target}
+    TEST_TEARDOWN reset_dflowfm_after_test
+    SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
         src/test_interpolate_on_polyline.f90
@@ -36,6 +35,7 @@ f90twtest(${test_target}
         src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
+        src/test_restart_coordinates.f90
         src/test_mdu_file_read_write.f90
         src/test_getprof_1d.f90
         src/test_dflowfm_dambreak.f90
@@ -48,38 +48,6 @@ f90twtest(${test_target}
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
         src/test_cross_section_geometry.f90
-    F2HFILES
-        # test_dflowfm_kernel_example.f90 must remain the first entry.
-        # It sets the name of the header file test_dflowfm_kernel_example.f90.h, which is included in test_dflowfm_kernel.cpp.
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_interpolate_on_polyline.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_fdster.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_tridag.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_getverticallyaveraged.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bubblescreen.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sources_sinks.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_timespace_parameters.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_block.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_data_value.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_inifields.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_getprof_1d.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bilinear_arcinfo.f90
-        ${geotiff_test_header_source}
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field_integration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_offline_wave_external_forcing.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_precice_adapter.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_fm_external_forcings_utils.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_cross_section_geometry.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )

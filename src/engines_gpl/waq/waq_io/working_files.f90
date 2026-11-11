@@ -155,7 +155,7 @@ contains
     subroutine read_working_file_4 (iin, lurep, modid, sysid, num_substances_total, &
             num_monitoring_points, num_substances_transported, num_boundary_conditions, num_waste_loads, num_constants, &
             num_spatial_parameters, num_cells, num_cells_bottom, coname, paname, &
-            funame, num_time_functions, sfname, num_spatial_time_fuctions, num_dispersion_arrays, &
+            funame, num_time_functions, sfname, num_spatial_time_functions, num_dispersion_arrays, &
             num_velocity_arrays, diname, vename, idpnt, ivpnt, &
             ndmpar, ntdmpq, ntdmps, noqtt, num_transects, &
             num_transect_exchanges, num_boundary_types, num_waste_load_types, num_grids, grdref, &
@@ -190,7 +190,7 @@ contains
         integer(kind = int_wp), intent(in) :: num_cells              !< Number of segments
         integer(kind = int_wp), intent(in) :: num_cells_bottom              !< Number of layered bed segments
         integer(kind = int_wp), intent(in) :: num_time_functions              !< Number of functions ( user )
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions             !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions             !< Number of segment functions
         integer(kind = int_wp), intent(in) :: num_dispersion_arrays             !< Number of dispersion array's
         integer(kind = int_wp), intent(in) :: num_velocity_arrays             !< Number of velocity array's
         integer(kind = int_wp), intent(in) :: ndmpar             !< number of dump areas
@@ -208,7 +208,7 @@ contains
         character(20), intent(out) :: coname(num_constants)    !< Constant names
         character(20), intent(out) :: paname(num_spatial_parameters)      !< Parameter names
         character(20), intent(out) :: funame(num_time_functions)    !< Function names
-        character(20), intent(out) :: sfname(num_spatial_time_fuctions)    !< Segment function names
+        character(20), intent(out) :: sfname(num_spatial_time_functions)    !< Segment function names
         character(20), intent(out) :: diname(num_dispersion_arrays)    !< Dispersion array names
         character(20), intent(out) :: vename(num_velocity_arrays)    !< Velocity array names
         integer(kind = int_wp), intent(out) :: grdref(num_grids)     !< Reference grid number
@@ -310,7 +310,7 @@ contains
         if (num_constants > 0) read (iin, end = 20, err = 20) (coname(k), k = 1, num_constants)
         if (num_spatial_parameters   > 0) read (iin, end = 20, err = 20) (paname(k), k = 1, num_spatial_parameters)
         if (num_time_functions  > 0) read (iin, end = 20, err = 20) (funame(k), k = 1, num_time_functions)
-        if (num_spatial_time_fuctions > 0) read (iin, end = 20, err = 20) (sfname(k), k = 1, num_spatial_time_fuctions)
+        if (num_spatial_time_functions > 0) read (iin, end = 20, err = 20) (sfname(k), k = 1, num_spatial_time_functions)
 
         ! completion successful
         if (timon) call timstop(ithndl)
