@@ -79,7 +79,8 @@ set clusterName "h7"
 
 # platform=linux: slash=/
 # platform=win32: slash=\
-# although the / is also accepted on Windows, it is NOT accepted in all directory related commands in batch files.
+# Windows accepts forward slashes in paths. Some batch commands that operate on directories
+# require backslashes.
 # the \ is necessary on Windows
 global slash
 set slash "unknown"
@@ -245,7 +246,8 @@ proc setPlatform { } {
       } elseif {$mainVersion == "6"} {
          set OS "Vista"
       } else {
-         puts "WARNING: This Windows version is not recognised as XP or Vista. This application is not tested on this platform."
+         puts "WARNING: This Windows version is not recognised as XP or Vista.\
+            This application is not tested on this platform."
       }
    } else {
       # linux
@@ -305,7 +307,8 @@ proc getInput {channel tag} {
         set processes [lreplace $processes $idx $idx]
         puts "$tag : Finished"
         if { [catch {close $channel} errmsg] } {
-            if {[string match "merge:*" $tag] && [string match "*child process exited abnormally*" $errmsg]} {
+            if {[string match "merge:*" $tag] &&
+                [string match "*child process exited abnormally*" $errmsg]} {
                 puts "INFO: tag=$tag : mormerge stopped after a condition stream closed"
             } else {
                 puts "\nERROR: tag=$tag : $errmsg"
@@ -456,13 +459,16 @@ proc configureSlurmGeometry { inflist } {
    }
 
    if {$nodespercondition > $availableconditionnodes} {
-      puts "ERROR: A condition step requires $nodespercondition node(s), but only $availableconditionnodes node(s) are available"
+      puts "ERROR: A condition step requires $nodespercondition node(s),\
+         but only $availableconditionnodes node(s) are available"
       exit 1
    }
 
    set requiredconditionslots [expr {$numconditions * $nodespercondition}]
    if {$conditionspernode == 0} {
-      set conditionspernode [expr {($requiredconditionslots + $availableconditionnodes - 1) / $availableconditionnodes}]
+      set conditionspernode [expr {
+         ($requiredconditionslots + $availableconditionnodes - 1) / $availableconditionnodes
+      }]
       set infillist(slurmconditionspernode) $conditionspernode
       puts "INFO: Auto-selected $conditionspernode Slurm condition step(s) per allocation node"
    }
@@ -474,7 +480,8 @@ proc configureSlurmGeometry { inflist } {
       puts "       Increase nodes or slurmConditionsPerNode, or reduce slurmNodesPerCondition"
       exit 1
    } elseif {$requiredconditionslots < $availableconditionslots} {
-      puts "WARNING: Packed Slurm geometry leaves [expr {$availableconditionslots - $requiredconditionslots}] condition-node slot(s) unused"
+      puts "WARNING: Packed Slurm geometry leaves\
+         [expr {$availableconditionslots - $requiredconditionslots}] condition-node slot(s) unused"
    }
 
    if {$conditionspernode > 1} {
@@ -484,8 +491,12 @@ proc configureSlurmGeometry { inflist } {
 
    set infillist(slurmtaskspercondition) [expr {$nodespercondition * $infillist(slurmtaskspernode)}]
    set infillist(slurmconditionstepsperallocationnode) $conditionspernode
-   set infillist(slurmallocationtaskspernode) [expr {$conditionspernode * $infillist(slurmtaskspernode)}]
-   set infillist(slurmallocationcpuspernode) [expr {$infillist(slurmallocationtaskspernode) * $infillist(slurmcpuspertask)}]
+   set infillist(slurmallocationtaskspernode) [expr {
+      $conditionspernode * $infillist(slurmtaskspernode)
+   }]
+   set infillist(slurmallocationcpuspernode) [expr {
+      $infillist(slurmallocationtaskspernode) * $infillist(slurmcpuspertask)
+   }]
 }
 
 
@@ -533,7 +544,8 @@ proc getSlurmDirectDimrArguments { inflist } {
                exit 1
             }
             if {$corespernode != $infillist(slurmtaskspernode)} {
-               puts "ERROR: $argument is $corespernode, but slurmTasksPerNode is $infillist(slurmtaskspernode)"
+               puts "ERROR: $argument is $corespernode,\
+                  but slurmTasksPerNode is $infillist(slurmtaskspernode)"
                exit 1
             }
          }
@@ -549,7 +561,8 @@ proc getSlurmDirectDimrArguments { inflist } {
                exit 1
             }
             if {$dimrnodes != $infillist(slurmnodespercondition)} {
-               puts "ERROR: --NNODES is $dimrnodes, but slurmNodesPerCondition is $infillist(slurmnodespercondition)"
+               puts "ERROR: --NNODES is $dimrnodes,\
+                  but slurmNodesPerCondition is $infillist(slurmnodespercondition)"
                exit 1
             }
          }
@@ -1028,13 +1041,16 @@ proc readInputFile { inputfilename iflist } {
       puts "ERROR: In file $inputfilename"
       puts "       Expecting executable direction specification, examples:"
       puts "       dimrexedir         = /opt/delft3dfm/2.0.2_54830/lnx64/bin"
-      puts "       flowexedir         = /opt/delft3d4/Delft3D-FLOW_WAVE/6.02.13.7545/lnx64/flow2d3d/bin"
-      puts "       runscript          = /opt/delft3d4/Delft3D-FLOW_WAVE/6.02.13.7545/lnx64/bin/run.sh"
+      puts "       flowexedir         =\
+         /opt/delft3d4/Delft3D-FLOW_WAVE/6.02.13.7545/lnx64/flow2d3d/bin"
+      puts "       runscript          =\
+         /opt/delft3d4/Delft3D-FLOW_WAVE/6.02.13.7545/lnx64/bin/run.sh"
       exit 1
    }
    if {$runscript == " " && $dimrexedir == " " && $flowexename ni $flowNames} {
       puts "ERROR: In file $inputfilename"
-      puts "       Expecting executable name being \"deltares_hydro\" (default), \"trisim\" (default) or \"delftflow\" or \"runscript\", example:"
+      puts "       Expecting executable name being \"deltares_hydro\" (default),\
+         \"trisim\" (default) or \"delftflow\" or \"runscript\", example:"
       puts "       flowexename         = delftflow"
       exit 1
    }
@@ -1102,7 +1118,8 @@ proc readInputFile { inputfilename iflist } {
          puts "         queueSystem TORQUE is outdated; use SGE if possible, example:"
          puts "         queueSystem         = SGE"
       } else {
-         if {[string compare -nocase [string range $workdir 1 3] "var"] == 0 || [string compare -nocase [string range $workdir 1 3] "tmp"] == 0} {
+         if {[string compare -nocase [string range $workdir 1 3] "var"] == 0 ||
+             [string compare -nocase [string range $workdir 1 3] "tmp"] == 0} {
             # set workdir "sgestage"
             # puts "WARNING: copying to $workdir is done by SGE (StageIn, StageOut)"
          }
@@ -1523,13 +1540,15 @@ proc waitForNodes { mergedir alist inflist } {
    set scriptfile [open "$sfilnamewait" "w"]
    puts $scriptfile "#!/bin/bash"
    if {$queuesys == "slurm"} {
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $scriptfile "sbatch $scriptnamego"
    } else {
       puts $scriptfile "#\$ -V"
       puts $scriptfile "#\$ -j yes"
       puts $scriptfile "#\$ -cwd"
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$queuesys == "sge"} {
          if {$clusterName != "h5" && $clusterName != "h6"} {
             puts $scriptfile "\n. /opt/sge/InitSGE\n"
@@ -1562,24 +1581,27 @@ proc waitForNodes { mergedir alist inflist } {
       puts $scriptfile ""
       puts $scriptfile "set -euo pipefail"
       puts $scriptfile "export OMP_NUM_THREADS=$infillist(slurmcpuspertask)"
-      puts $scriptfile "export MKL_NUM_THREADS=\$OMP_NUM_THREADS"
-      puts $scriptfile "export OPENBLAS_NUM_THREADS=\$OMP_NUM_THREADS"
-      puts $scriptfile "export NUMEXPR_NUM_THREADS=\$OMP_NUM_THREADS"
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
-      puts $scriptfile "\n# See also: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes."
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# See also: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes."
       if {$infillist(slurmmodulecommand) != " "} {
          puts $scriptfile "\n$infillist(slurmmodulecommand)"
       }
       puts $scriptfile "\necho \"SLURM_JOB_ID=\${SLURM_JOB_ID:-unknown}\""
       puts $scriptfile "echo \"SLURM_JOB_NODELIST=\${SLURM_JOB_NODELIST:-unknown}\""
       puts $scriptfile "echo \"SLURM_SUBMIT_DIR=\${SLURM_SUBMIT_DIR:-unknown}\""
-      puts $scriptfile "echo \"Slurm allocation geometry: nodes=$infillist(numnodes), condition steps/node=$infillist(slurmconditionstepsperallocationnode), tasks/node=$infillist(slurmallocationtaskspernode), CPUs/task=$infillist(slurmcpuspertask), CPUs/node=$infillist(slurmallocationcpuspernode)\""
+      puts $scriptfile "echo \"Slurm allocation geometry: nodes=$infillist(numnodes),\
+         condition steps/node=$infillist(slurmconditionstepsperallocationnode),\
+         tasks/node=$infillist(slurmallocationtaskspernode),\
+         CPUs/task=$infillist(slurmcpuspertask), CPUs/node=$infillist(slurmallocationcpuspernode)\""
       puts $scriptfile "scontrol show hostnames \"\$SLURM_JOB_NODELIST\""
    } else {
       puts $scriptfile "#\$ -V"
       puts $scriptfile "#\$ -j yes"
       puts $scriptfile "#\$ -cwd"
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$queuesys == "sge"} {
          if {$clusterName != "h5" && $clusterName != "h6"} {
             puts $scriptfile "\n. /opt/sge/InitSGE\n"
@@ -1601,9 +1623,13 @@ proc waitForNodes { mergedir alist inflist } {
       puts $scriptfile "cd merge"
    }
    if {$queuesys == "slurm"} {
-      puts $scriptfile "/usr/bin/tclsh $arglist(mmscriptfile) -i [file join $infillist(workdir) [file tail $arglist(infile)]] -s $arglist(mmscriptfile) -n $infillist(numnodes)"
+      puts $scriptfile "/usr/bin/tclsh $arglist(mmscriptfile)\
+         -i [file join $infillist(workdir) [file tail $arglist(infile)]]\
+         -s $arglist(mmscriptfile) -n $infillist(numnodes)"
    } else {
-      puts $scriptfile "/usr/bin/tclsh $arglist(mmscriptfile) -i [file join \$DELTAQ_LocalTempDir "merge" [file tail $arglist(infile)]] -s $arglist(mmscriptfile) -n $infillist(numnodes)"
+      puts $scriptfile "/usr/bin/tclsh $arglist(mmscriptfile)\
+         -i [file join \$DELTAQ_LocalTempDir "merge" [file tail $arglist(infile)]]\
+         -s $arglist(mmscriptfile) -n $infillist(numnodes)"
    }
    if {$infillist(workdir) == "sgestage"} {
       puts $scriptfile "cd .."
@@ -1820,7 +1846,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
          puts $scriptfile "#\$ -j yes"
          puts $scriptfile "#\$ -cwd"
       }
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$queuesys == "sge"} {
          if { $clusterName != "h5" && $clusterName != "h6"} {
             puts $scriptfile "\n. /opt/sge/InitSGE\n"
@@ -1844,14 +1871,16 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
             puts $scriptfile "mkdir -p $worksubdir"
             puts $scriptfile "cd $worksubdir"
          }
-         puts $scriptfile "cp -fr \"[file nativename [file join $rootdir "merge"] ]\" $worksubsubdir"
+         puts $scriptfile \
+            "cp -fr \"[file nativename [file join $rootdir "merge"] ]\" $worksubsubdir"
          puts $scriptfile "cd $worksubsubdir"
       } else {
          puts $scriptfile "\n# Jump to run directory\n"
          puts $scriptfile "cd [file nativename [file join $rootdir "merge"] ]"
       }
       puts $scriptfile "\n# Start mormerge\n"
-      puts $scriptfile "\"$mergeexe\" -i [file tail $inputfilename] -w $rundir -r $runid >$screenfile 2>&1"
+      puts $scriptfile "\"$mergeexe\" -i [file tail $inputfilename]\
+         -w $rundir -r $runid >$screenfile 2>&1"
       if { $localrun } {
          puts $scriptfile "\n# Copy rundir data back to modeldir\n"
          if {$workdir == "sgestage"} {
@@ -1872,7 +1901,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       set sharedir [string map {"bin" "share"} $exedir]
       #
       puts $scriptfile "@ echo off"
-      puts $scriptfile "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
       #puts $scriptfile "\nrem Set some environment parameters\n"
       if { $localrun } {
          set worksubdir $idstring
@@ -1892,7 +1922,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       }
       puts $scriptfile "\nrem Start mormerge\n"
       puts $scriptfile "set PATH=$exedir;$sharedir;%PATH%"
-      puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename] -w [spaceSafe $rundir] -r $runid >$screenfile 2>&1"
+      puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename]\
+         -w [spaceSafe $rundir] -r $runid >$screenfile 2>&1"
       if { $localrun } {
          puts $scriptfile "\nrem Copy rundir data back to modeldir\n"
          puts $scriptfile "copy /Y $screenfile $rundir"
@@ -1922,7 +1953,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
    set shellscriptfile [open "$shellfilname" "w"]
    if {$queuesys == "slurm"} {
       puts $shellscriptfile "#!/bin/bash"
-      puts $shellscriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $shellscriptfile "\n# Start mormerge on the batch/control node\n"
       puts $shellscriptfile "\"$sfilname\"\n"
    } elseif {$platform == "linux"} {
@@ -1930,7 +1962,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       puts $scriptfile "#\$ -V"
       puts $scriptfile "#\$ -j yes"
       puts $scriptfile "#\$ -cwd"
-      puts $shellscriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$localhost} {
           puts $shellscriptfile "\"$sfilname\" &\n"
       } else {
@@ -1939,7 +1972,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
    } else {
       # win32
       puts $shellscriptfile "@ echo off"
-      puts $shellscriptfile "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $shellscriptfile "start /b [spaceSafe $sfilname]\n"
    }
    close $shellscriptfile
@@ -2001,7 +2035,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
 #   Note:
 #
 # --------------------------------------------------------------------
-proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe waveexe dimrexe runscript node } {
+proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe waveexe
+                 dimrexe runscript node } {
    global rootdir
    global syncdir
    global version
@@ -2038,7 +2073,7 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       set exename $infillist(flowexename)
    } else {
       set exedir "not defined"
-      set exename "noet defined"
+      set exename "not defined"
    }
    if { $waveonline } {
       set waveexedir [file dirname $waveexe]
@@ -2062,7 +2097,8 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          puts $scriptfile "#\$ -j yes"
          puts $scriptfile "#\$ -cwd"
       }
-      puts $scriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$queuesys == "sge"} {
          if {$clusterName != "h5" && $clusterName != "h6"} {
             puts $scriptfile "\n. /opt/sge/InitSGE\n"
@@ -2076,17 +2112,28 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          if {$infillist(slurmmpi) != " "} {
             set slurmMpiOption "--mpi=$infillist(slurmmpi) "
          }
-         set slurmExport "ALL,OMP_NUM_THREADS=$slurmThreadCount,MKL_NUM_THREADS=$slurmThreadCount,OPENBLAS_NUM_THREADS=$slurmThreadCount,NUMEXPR_NUM_THREADS=$slurmThreadCount"
-         set slurmMultiRun "srun --exclusive --exact --kill-on-bad-exit=1 $slurmMpiOption--nodes=$slurmNodeCount --ntasks=$slurmTaskCount --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$slurmThreadCount --export=$slurmExport"
-         set slurmSerialRun "srun --nodes=1 --ntasks=1 --ntasks-per-node=1 --cpus-per-task=$slurmThreadCount --export=$slurmExport"
+         set slurmExport "ALL,OMP_NUM_THREADS=$slurmThreadCount"
+         set slurmMultiRun "srun --exclusive --exact --kill-on-bad-exit=1\
+            $slurmMpiOption--nodes=$slurmNodeCount --ntasks=$slurmTaskCount\
+            --ntasks-per-node=$infillist(slurmtaskspernode) --cpus-per-task=$slurmThreadCount\
+            --export=$slurmExport"
+         set slurmSerialRun "srun --nodes=1 --ntasks=1 --ntasks-per-node=1\
+            --cpus-per-task=$slurmThreadCount --export=$slurmExport"
          set slurmMpiProbe ""
          if {$slurmTaskCount > 1} {
             if {$infillist(slurmmpi) == " "} {
-               puts "ERROR: Direct DIMR MPI runs require slurmMPI to name a compatible Slurm MPI plugin"
+               puts "ERROR: Direct DIMR MPI runs require slurmMPI to name a compatible\
+                  Slurm MPI plugin"
                exit 1
             }
-            set slurmMpiProbeTemplate {__SLURM_MULTI_RUN__ /bin/sh -c 'if [ -z "${PMI_RANK:-}" ] && [ -z "${OMPI_COMM_WORLD_RANK:-}" ] && [ -z "${OMPI_MCA_ns_nds_vpid:-}" ] && [ -z "${MPIRUN_RANK:-}" ] && [ -z "${MV2_COMM_WORLD_RANK:-}" ] && [ -z "${MP_CHILD:-}" ]; then echo "ERROR: Slurm MPI plugin did not export an MPI-rank environment required by DIMR" >&2; exit 1; fi'}
-            set slurmMpiProbe [string map [list __SLURM_MULTI_RUN__ $slurmMultiRun] $slurmMpiProbeTemplate]
+            set slurmMpiProbeTemplate {__SLURM_MULTI_RUN__ /bin/sh -c\
+               'if [ -z "${PMI_RANK:-}" ] && [ -z "${OMPI_COMM_WORLD_RANK:-}" ] &&\
+               [ -z "${OMPI_MCA_ns_nds_vpid:-}" ] && [ -z "${MPIRUN_RANK:-}" ] &&\
+               [ -z "${MV2_COMM_WORLD_RANK:-}" ] && [ -z "${MP_CHILD:-}" ]; then\
+               echo "ERROR: Slurm MPI plugin did not export an MPI-rank environment required by\
+               DIMR" >&2; exit 1; fi'}
+            set slurmMpiProbe \
+               [string map [list __SLURM_MULTI_RUN__ $slurmMultiRun] $slurmMpiProbeTemplate]
          }
          puts $scriptfile "\n# Slurm task geometry for this condition\n"
          puts $scriptfile "slurm_step_pids=()"
@@ -2094,17 +2141,16 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          puts $scriptfile "export MORMERGE_SLURM_TASKS=$slurmTaskCount"
          puts $scriptfile "export MORMERGE_SLURM_TASKS_PER_NODE=$infillist(slurmtaskspernode)"
          puts $scriptfile "export MORMERGE_SLURM_CPUS_PER_TASK=$slurmThreadCount"
-         puts $scriptfile "export MORMERGE_SLURM_CONDITIONS_PER_NODE=$infillist(slurmconditionstepsperallocationnode)"
+         puts $scriptfile "export\
+            MORMERGE_SLURM_CONDITIONS_PER_NODE=$infillist(slurmconditionstepsperallocationnode)"
          puts $scriptfile "export OMP_NUM_THREADS=$slurmThreadCount"
-         puts $scriptfile "export MKL_NUM_THREADS=\$OMP_NUM_THREADS"
-         puts $scriptfile "export OPENBLAS_NUM_THREADS=\$OMP_NUM_THREADS"
-         puts $scriptfile "export NUMEXPR_NUM_THREADS=\$OMP_NUM_THREADS"
          puts $scriptfile "export D3D_HOME=$D3D_HOME"
          puts $scriptfile "export LD_LIBRARY_PATH=$libdir:\$LD_LIBRARY_PATH"
          puts $scriptfile "export PATH=[file join $D3D_HOME bin]:\$PATH"
          puts $scriptfile "export PROC_DEF_DIR=[file join $D3D_HOME share delft3d]"
          puts $scriptfile "ulimit -s unlimited"
-         puts $scriptfile "echo \"Slurm condition geometry: nodes=$slurmNodeCount, tasks=$slurmTaskCount, CPUs/task=$slurmThreadCount\""
+         puts $scriptfile "echo \"Slurm condition geometry: nodes=$slurmNodeCount,\
+            tasks=$slurmTaskCount, CPUs/task=$slurmThreadCount\""
       }
       # Needed when compiled with newer Gnu compiler than the default on the calculation machine:
       # puts $scriptfile "export LD_PRELOAD=[file join $exedir libgfortran.so.3]"
@@ -2153,17 +2199,17 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
          }
       } elseif { $infillist(runscript) != " " } {
          puts $scriptfile "\n# Start $infillist(runscript) $infillist(runscriptargs)\n"
+         puts $scriptfile \
+            "\"$infillist(runscript)\" $infillist(runscriptargs) >runscript.scr 2>&1 &"
          if {$queuesys == "slurm"} {
-            puts $scriptfile "\"$infillist(runscript)\" $infillist(runscriptargs) >runscript.scr 2>&1 &"
             puts $scriptfile "slurm_step_pids+=(\"\$!\")"
-         } else {
-            puts $scriptfile "\"$infillist(runscript)\" $infillist(runscriptargs) >runscript.scr 2>&1 &"
          }
       } else {
          puts $scriptfile "\n# Start $infillist(flowexename)\n"
          puts $scriptfile "export LD_LIBRARY_PATH=$libdir:\$LD_LIBRARY_PATH"
          if {$queuesys == "slurm"} {
-            puts $scriptfile "$slurmSerialRun \"$flowexe\" $infillist(flowargs) >$infillist(flowexename).scr 2>&1 &"
+            puts $scriptfile "$slurmSerialRun \"$flowexe\" $infillist(flowargs)\
+               >$infillist(flowexename).scr 2>&1 &"
             puts $scriptfile "slurm_step_pids+=(\"\$!\")"
          } else {
             puts $scriptfile "\"$flowexe\" $infillist(flowargs) >$infillist(flowexename).scr 2>&1 &"
@@ -2211,7 +2257,8 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       #
       set rootconddir [file nativename [file join $rootdir $condition] ]
       puts $scriptfile "@ echo off"
-      puts $scriptfile "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $scriptfile \
+         "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $scriptfile "\nrem Set some environment parameters\n"
       if { $infillist(localrun) } {
          set worksubdir $idstring
@@ -2235,11 +2282,13 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       }
       if { $infillist(dimrexedir) != " " } {
          puts $scriptfile "\nrem Start $infillist(dimrexename)\n"
-         puts $scriptfile "\"$dimrexe\" --forceExit $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1"
+         puts $scriptfile "\"$dimrexe\" --forceExit $infillist(dimrargs)\
+            >$infillist(dimrexename).scr 2>&1"
       } else {
          puts $scriptfile "\nrem Start $infillist(flowexename)\n"
          puts $scriptfile "set PATH=$exedir;$sharedir;%PATH%"
-         puts $scriptfile "start /b [spaceSafe $flowexe] $infillist(flowargs) >$infillist(flowexename).scr 2>&1"
+         puts $scriptfile "start /b [spaceSafe $flowexe] $infillist(flowargs)\
+            >$infillist(flowexename).scr 2>&1"
          if { $waveonline } {
             puts $scriptfile "\nrem Start wave\n"
             puts $scriptfile "set PATH=$swanbatdir;$swanexedir;$waveexedir;$sharedir;%PATH%"
@@ -2275,15 +2324,18 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
    set shellscriptfile [open "$shellfilname" "w"]
    if {$queuesys == "slurm"} {
       puts $shellscriptfile "#!/bin/bash"
-      puts $shellscriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
-      puts $shellscriptfile "\n# Run condition launcher in the allocation; MPI ranks are started by srun inside it\n"
+      puts $shellscriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\n# Run condition launcher in the allocation; MPI ranks are started by srun inside it\n"
       puts $shellscriptfile "\"$sfilname\"\n"
    } elseif {$platform == "linux"} {
       puts $shellscriptfile "#!/bin/bash"
       puts $shellscriptfile "#\$ -V"
       puts $shellscriptfile "#\$ -j yes"
       puts $shellscriptfile "#\$ -cwd"
-      puts $shellscriptfile "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\n# This script file is automatically generated by mormerge.tcl, version $version\n"
       if {$localhost} {
           puts $shellscriptfile "\"$sfilname\" &\n"
       } else {
@@ -2292,7 +2344,8 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
    } else {
       # win32
       puts $shellscriptfile "@ echo off"
-      puts $shellscriptfile "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
+      puts $shellscriptfile \
+         "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $shellscriptfile "start /b [spaceSafe $sfilname]\n"
       puts $shellscriptfile "\nexit\n"
    }
@@ -2571,13 +2624,16 @@ if { $infillist(flowexename) in {delftflow deltares_hydro d_hydro} } {
 #
 if { $infillist(runscript) != " " } {
    putsDebug "Runid set to singledomain for runscript ..."
-   getRunids $infillist(flowargs) $infillist(dimrargs) $infillist(runscript) $inputdir numdomains runids
+   getRunids $infillist(flowargs) $infillist(dimrargs) $infillist(runscript) \
+      $inputdir numdomains runids
 } elseif { $infillist(dimrexedir) != " " } {
    putsDebug "Runid set to singledomain for dimr ..."
-   getRunids $infillist(flowargs) $infillist(dimrargs) $infillist(runscript) $inputdir numdomains runids
+   getRunids $infillist(flowargs) $infillist(dimrargs) $infillist(runscript) \
+      $inputdir numdomains runids
 } elseif { $infillist(flowexename) == "trisim" } {
    putsDebug "Scanning commandline arguments for trisim ..."
-   getRunids $infillist(flowargs) $infillist(dimrargs)  $infillist(runscript) $inputdir numdomains runids
+   getRunids $infillist(flowargs) $infillist(dimrargs) $infillist(runscript) \
+      $inputdir numdomains runids
 } elseif { $infillist(flowexename) == "delftflow" } {
    set d3dfilnam [file nativename [file join $rootdir "input" [lindex $infillist(flowargs) 0] ] ]
    putsDebug "Scanning input file $d3dfilnam ..."
@@ -2592,7 +2648,8 @@ if { $infillist(runscript) != " " } {
    putsDebug "Scanning input file $d3dfilnam ..."
    set d3dinfile [open "$d3dfilnam" "r"]
    while {[gets $d3dinfile aline] >= 0} {
-      if { [string match -nocase "*mdffile*" $aline] || [string match -nocase "*ddbfile*" $aline] } break
+      if { [string match -nocase "*mdffile*" $aline] ||
+           [string match -nocase "*ddbfile*" $aline] } break
    }
    close $d3dinfile
    getRunids $aline $infillist(dimrargs) $infillist(runscript) $inputdir numdomains runids
@@ -2703,12 +2760,15 @@ if { $queuesys == "slurm" } {
    }
    putsDebug "slurmNodesPerCondition   : $infillist(slurmnodespercondition)"
    putsDebug "slurmTasksPerCondition   : $infillist(slurmtaskspercondition)"
-   putsDebug "slurmConditionStepsPerAllocationNode : $infillist(slurmconditionstepsperallocationnode)"
+   putsDebug "slurmConditionStepsPerAllocationNode :\
+      $infillist(slurmconditionstepsperallocationnode)"
    putsDebug "slurmAllocationTasksPerNode : $infillist(slurmallocationtaskspernode)"
    putsDebug "slurmAllocationCpusPerNode  : $infillist(slurmallocationcpuspernode)"
-   if { $infillist(dimrexedir) == " " && $infillist(runscript) == " " && $infillist(slurmtaskspercondition) > 1 } {
+   if { $infillist(dimrexedir) == " " && $infillist(runscript) == " " &&
+        $infillist(slurmtaskspercondition) > 1 } {
       puts "WARNING: Direct FLOW execution uses one Slurm task per condition."
-      puts "         Use dimrexedir for multi-rank DIMR runs, or use a site-owned MPI launcher in runscript."
+      puts "         Use dimrexedir for multi-rank DIMR runs,\
+         or use a site-owned MPI launcher in runscript."
    }
    if { $infillist(runscript) != " " && $infillist(slurmtaskspercondition) > 1 } {
       puts "INFO: runscript owns its MPI launcher and is not wrapped in srun by mormerge.tcl."
@@ -2736,7 +2796,8 @@ if {$platform == "linux"} {
       }
    } elseif { $infillist(flowexedir) != " " } {
       if { $infillist(flowexename) in $flowNames } {
-          set flowexe   [file nativename [file join $infillist(flowexedir) $infillist(flowexename)] ]
+          set flowexe   [file nativename \
+             [file join $infillist(flowexedir) $infillist(flowexename)] ]
       }
    }
 } else {
@@ -2746,7 +2807,8 @@ if {$platform == "linux"} {
       set dimrexe      [file nativename [file join $infillist(dimrexedir) "run_dimr.bat"] ]
    } elseif { $infillist(flowexedir) != " " } {
       if { $infillist(flowexename) in $flowNames } {
-          set flowexe   [file nativename [file join $infillist(flowexedir) $infillist(flowexename).exe] ]
+          set flowexe   [file nativename \
+             [file join $infillist(flowexedir) $infillist(flowexename).exe] ]
       }
    }
 }
@@ -2812,7 +2874,8 @@ set filelist [glob -nocomplain *]
 foreach item $filelist {
    if { [file isfile $item] } {
       if { [catch {file delete $item} errmsg] } {
-         putsDebug "\nWARNING : Unable to delete file [file nativename [file join $syncdir $item] ]:"
+         putsDebug \
+            "\nWARNING : Unable to delete file [file nativename [file join $syncdir $item] ]:"
          putsDebug   "          $errmsg"
       }
    }
@@ -2851,7 +2914,8 @@ after 1000
 
 set inode -1
 foreach condition $infillist(conditions) {
-   putsDebug "Starting flow for condition $condition after [expr $processStarttime / 1000] seconds ..."
+   putsDebug "Starting flow for condition $condition\
+      after [expr $processStarttime / 1000] seconds ..."
    after $processStarttime
    if { $queuesys == "slurm" } {
       set node "local"
