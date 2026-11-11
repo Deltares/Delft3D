@@ -1281,13 +1281,66 @@
                     "value_type": "intenum",
                     "description": "Solver type.",
                     "enum_values": {
-                        "1": "sobekGS_OMP",
-                        "2": "sobekGS_OMPthreadsafe",
-                        "3": "sobekGS",
-                        "4": "sobekGS + Saad-ILUD (default sequential)",
-                        "5": "parallel/global Saad",
-                        "6": "PETSc (default parallel)",
-                        "7": "CG+MILU (parallel)"
+                        "1": "Sobek Guus Stelling solver with OpenMP parallelization",
+                        "2": "Thread-safe Sobek Guus Stelling solver with OpenMP parallelization",
+                        "3": {
+                            "description": "Sobek Guus Stelling solver without OpenMP",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Sobek Guus Stelling solver without OpenMP is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "4": "Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)",
+                        "5": {
+                            "description": "parallel/global Saad",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Global Saad solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "6": "PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)",
+                        "7": {
+                            "description": "Conjugate Gradient + MILU (parallel)",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Windows MPI solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "8": {
+                            "description": "pARMS",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "pARMS solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "9": {
+                            "description": "Robin-Robin MPI test solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Experimental Robin-Robin MPI solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "10": {
+                            "description": "OpenMP Jacobi solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Experimental OpenMP Jacobi solver is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        },
+                        "44": {
+                            "description": "Non-thread-safe Saad/milud solver",
+                            "status": {
+                                "value": "obsolete",
+                                "comment": "Non-thread-safe variant of solver 4 (Saad/milud) is no longer supported.",
+                                "since_release": 2027.02
+                            }
+                        }
                     }
                 },
                 {
@@ -3095,6 +3148,24 @@
                     "value_type": "float",
                     "description": "Limit for salinity to min value.",
                     "unit": "ppt"
+                },
+                {
+                    "key": "tracerConcentrationMax",
+                    "default_value": 1.0E+300,
+                    "value_type": "float",
+                    "description": "Upper limit of cell centre tracer concentration after transport timestep.",
+                    "status": {
+                        "value": "research"
+                    }
+                },
+                {
+                    "key": "tracerConcentrationMin",
+                    "default_value": -1.0E+300,
+                    "value_type": "float",
+                    "description": "Lower limit of cell centre tracer concentration after transport timestep.",
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "heat_eachStep",
@@ -6008,9 +6079,9 @@
                     "description": "Theta value for vertical transport of water quality substances.",
                     "unit": "-",
                     "status": {
-                        "value": "deprecated",
+                        "value": "obsolete",
                         "comment": "Use `[numerics] verticalAdvectionType` instead.",
-                        "date": "2025-10-01"
+                        "since_release": 2027.02
                     }
                 },
                 {
@@ -6350,6 +6421,138 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Write snow temperature to his-file."
+                }
+            ]
+        },
+        {
+            "name": "meteo",
+            "is_unique": true,
+            "description": "This section contains settings for the atmospheric stability module.",
+            "ini_properties": [
+                {
+                    "key": "airSeaInteractionModel",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Air-sea interaction model to be used in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No air-sea interaction model.",
+                        "most": "Monin-Obukhov similarity theory."
+                    }
+                },
+                {
+                    "key": "stabilityFunction",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Atmospheric stability function to be used in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No atmospheric stability function.",
+                        "ecmwf": "ECMWF atmospheric stability function."
+                    }
+                },
+                {
+                    "key": "freeConvection",
+                    "default_value": "off",
+                    "value_type": "enum",
+                    "description": "Free convection setting in the atmospheric stability module.",
+                    "enum_values": {
+                        "off": "Free convection is off.",
+                        "on": "Free convection is on."
+                    }
+                },
+                {
+                    "key": "salinityDependentEvaporationMethod",
+                    "default_value": "none",
+                    "value_type": "enum",
+                    "description": "Salinity dependent evaporation method setting in the atmospheric stability module.",
+                    "enum_values": {
+                        "none": "No salinity dependent evaporation method.",
+                        "constant": "Constant salinity dependent evaporation method.",
+                        "linear": "Salinity dependent evaporation is a linear function of local salinity."
+                    }
+                },
+                {
+                    "key": "QsatFactor",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Salinity reduction factor for saturation humidity in bulk formula. Only relevant if salinityDependentEvaporationMethod keyword is set to 'constant'.",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "rainTemperature",
+                    "default_value": "airTemperature",
+                    "value_type": "enum",
+                    "description": "Temperature to use in rain temperature calculations.",
+                    "enum_values": {
+                        "airTemperature": "Use air temperature as rain temperature.",
+                        "wetBulbTemperature": "Use wet-bulb temperature as rain temperature."
+                    }
+                },
+                {
+                    "key": "windForcingHeight",
+                    "default_value": 10.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed wind velocity.",
+                    "unit": "m"
+                },
+                {
+                    "key": "airTemperatureForcingHeight",
+                    "default_value": 2.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed air temperature.",
+                    "unit": "m"
+                },
+                {
+                    "key": "humidityForcingHeight",
+                    "default_value": 2.0,
+                    "value_type": "float",
+                    "description": "Sensor height of prescribed humidity.",
+                    "unit": "m"
+                },
+                {
+                    "key": "charnockCoefficient",
+                    "default_value": 0.018,
+                    "value_type": "float",
+                    "description": "Charnock coefficient for surface roughness in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "airViscousMomentumCoefficient",
+                    "default_value": 0.11,
+                    "value_type": "float",
+                    "description": "Air viscous momentum coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "airViscousHeatCoefficient",
+                    "default_value": 0.40,
+                    "value_type": "float",
+                    "description": "Air viscous heat coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "airViscousMoistureCoefficient",
+                    "default_value": 0.62,
+                    "value_type": "float",
+                    "description": "Air viscous moisture coefficient in the atmospheric stability module.",
+                    "unit": "-"
+                },
+                {
+                    "key": "longwaveEmissivity",
+                    "default_value": 0.985,
+                    "value_type": "float",
+                    "description": "Longwave emissivity of water surface.",
+                    "unit": "-",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
                 }
             ]
         }
