@@ -2019,7 +2019,7 @@ contains
    subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, name="get_compound_field")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_compound_field
       ! Return a pointer to the compound's field variable
-      use iso_c_binding, only: c_double, c_char, c_loc
+      use iso_c_binding, only: c_double, c_char, c_loc, c_null_ptr
       use iso_c_utils
       use fm_external_forcings_data
       use m_source_sink, only: source_sink_all_discharges
@@ -2033,6 +2033,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
+      use m_structure_bmi, only: is_structure_output_field, get_structure_output
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use string_module, only: str_tolower
