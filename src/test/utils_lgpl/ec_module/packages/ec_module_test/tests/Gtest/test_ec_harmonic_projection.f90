@@ -152,16 +152,16 @@ contains
       do i = 1, size(IDS, 2)
          call prepare_projections(frame, IDS(1, i), IDS(2, i), IDS(3, i), proj)
          call f90_expect_eq(size(frame%projections), i, 'different source, target or converter IDs must create separate entries')
-         call f90_expect_false(allocated(proj%cos), 'new projections must not be marked as computed')
-         proj%cos = [real(i, dp)]
-         proj%sin = [-real(i, dp)]
+         call f90_expect_false(allocated(proj%cos_weight), 'new projections must not be marked as computed')
+         proj%cos_weight = [real(i, dp)]
+         proj%sin_weight = [-real(i, dp)]
          proj%mask = [i]
       end do
       do i = 1, size(IDS, 2)
          call prepare_projections(frame, IDS(1, i), IDS(2, i), IDS(3, i), proj)
          call f90_expect_eq(size(frame%projections), 4, 'matching source, target and converter IDs must reuse entries')
-         call f90_expect_near(proj%cos(1), real(i, dp), 1.0e-12_dp, 'growth must preserve cosine coefficients')
-         call f90_expect_near(proj%sin(1), -real(i, dp), 1.0e-12_dp, 'growth must preserve sine coefficients')
+         call f90_expect_near(proj%cos_weight(1), real(i, dp), 1.0e-12_dp, 'growth must preserve cosine coefficients')
+         call f90_expect_near(proj%sin_weight(1), -real(i, dp), 1.0e-12_dp, 'growth must preserve sine coefficients')
          call f90_expect_eq(proj%mask(1), i, 'growth must preserve masks')
       end do
    end subroutine prepare_distinct_projections
@@ -179,8 +179,8 @@ contains
          return
       end if
       ! Bilinear weights follow corners 1, 2, 4, 3, not flattened array order.
-      call f90_expect_near(proj%cos(1), -2.2_dp, 1.0e-12_dp, 'dense cosine must use bilinear corner order')
-      call f90_expect_near(proj%sin(1), -1.6_dp, 1.0e-12_dp, 'dense sine must use bilinear corner order')
+      call f90_expect_near(proj%cos_weight(1), -2.2_dp, 1.0e-12_dp, 'dense cosine must use bilinear corner order')
+      call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'dense sine must use bilinear corner order')
       call f90_expect_true(all(proj%mask == [1, 0]), 'outside grid targets must be masked out')
       call cleanup(f)
    end subroutine dense_coefficients
@@ -197,8 +197,8 @@ contains
          call cleanup(f)
          return
       end if
-      call f90_expect_near(proj%cos(1), -2.2_dp, 1.0e-12_dp, 'sparse cosine must use full-grid phase indices')
-      call f90_expect_near(proj%sin(1), -1.6_dp, 1.0e-12_dp, 'sparse sine must use full-grid phase indices')
+      call f90_expect_near(proj%cos_weight(1), -2.2_dp, 1.0e-12_dp, 'sparse cosine must use full-grid phase indices')
+      call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'sparse sine must use full-grid phase indices')
       call f90_expect_true(all(proj%mask == [1, 0]), 'outside sparse targets must be masked out')
       call cleanup(f)
    end subroutine sparse_coefficients
@@ -215,9 +215,9 @@ contains
          call cleanup(f)
          return
       end if
-      call f90_expect_near(proj%cos(1), -1.4_dp, 1.0e-12_dp, 'station cosine must use station weights')
-      call f90_expect_near(proj%sin(1), -4.0_dp, 1.0e-12_dp, 'station sine must use station weights')
-      call f90_expect_near(proj%sin(2), -8.0_dp, 1.0e-12_dp, 'a single station must support nearest-neighbour mapping')
+      call f90_expect_near(proj%cos_weight(1), -1.4_dp, 1.0e-12_dp, 'station cosine must use station weights')
+      call f90_expect_near(proj%sin_weight(1), -4.0_dp, 1.0e-12_dp, 'station sine must use station weights')
+      call f90_expect_near(proj%sin_weight(2), -8.0_dp, 1.0e-12_dp, 'a single station must support nearest-neighbour mapping')
       call f90_expect_true(all(proj%mask == 1), 'valid stations must be active')
       call cleanup(f)
    end subroutine station_coefficients
@@ -249,7 +249,7 @@ contains
             if (success) then
                call f90_expect_eq(proj%mask(1), 0, 'missing amplitude or phase must invalidate the target')
             else
-               call f90_expect_false(allocated(proj%cos), 'failure must not publish incomplete coefficients')
+               call f90_expect_false(allocated(proj%cos_weight), 'failure must not publish incomplete coefficients')
             end if
             f%amplitudes%arr1d(1) = 2.0_dp
             f%frame%phases(phase_col, phase_row) = 0.0_dp
@@ -319,8 +319,8 @@ contains
          return
       end if
       call f90_expect_true(all(proj%mask == [1, 0, 0]), 'only the complete grid cell must be active')
-      call f90_expect_near(proj%cos(1), 2.0_dp, 1.0e-12_dp, 'donor coefficients must be projected')
-      call f90_expect_near(proj%sin(1), 0.0_dp, 1.0e-12_dp, 'zero phases must have zero sine coefficient')
+      call f90_expect_near(proj%cos_weight(1), 2.0_dp, 1.0e-12_dp, 'donor coefficients must be projected')
+      call f90_expect_near(proj%sin_weight(1), 0.0_dp, 1.0e-12_dp, 'zero phases must have zero sine coefficient')
       call f90_expect_eq(f%weights%substndx(2), 1, 'missing cell must use the valid target as donor')
       call f90_expect_eq(f%weights%substndx(3), 0, 'outside targets must not acquire donors')
       call cleanup(f)
