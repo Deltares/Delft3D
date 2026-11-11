@@ -1193,7 +1193,7 @@ contains
       integer :: istat !< allocation status
       logical :: status !< status of undefined values check
       integer :: i, j !< loop counters
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
       integer :: maxlay !< maximum number of layers (3D)
       integer :: from, thru !< contiguous range of indices in the target array
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
@@ -1203,7 +1203,7 @@ contains
       success = .false.
       valuesT0 => null()
       valuesT1 => null()
-      targetField => null()
+      target_field => null()
 
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
@@ -1315,7 +1315,7 @@ contains
             ! Write all values to one target Item or each value to its own target Item.
             if (connection%nTargetItems == 1) then ! All in one target item
 
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+               target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
                targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
 
                do j = jmin, jmax
@@ -1334,23 +1334,23 @@ contains
                      valuesT = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
                   end if
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), status)
 
                   if (.not. status) then
                      return
                   end if
 
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
 
                end do
 
-               targetField%timesteps = timesteps
+               target_field%timesteps = timesteps
 
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
 
                do i = 1, connection%nTargetItems
 
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+                  target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
                   targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
 
                   do j = jmin, jmax
@@ -1361,17 +1361,17 @@ contains
                         end if
                      end if
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [target_field%arr1dPtr(j)], status)
 
                      if (.not. status) then
                         return
                      end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), valuesT(i))
+                     call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(j), valuesT(i))
 
                   end do
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                end do
 
@@ -1389,14 +1389,14 @@ contains
                return
             end if
 
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
             ! NOTE: No targetMask is checked here
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
+            target_field%timesteps = timesteps
 
          case (EC_OPERAND_ADD_ELEMENT)
 
@@ -1405,14 +1405,14 @@ contains
                return
             end if
 
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
             ! NOTE: No targetMask is checked here
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
+            target_field%timesteps = timesteps
 
          case default
 
@@ -1433,18 +1433,18 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             from = (connection%converterPtr%targetIndex - 1) * (maxlay * n_data) + 1
             thru = connection%converterPtr%targetIndex * (maxlay * n_data)
             ! NOTE: No target mask is checked here
-            targetField%arr1dPtr(from:thru) = valuesT
+            target_field%arr1dPtr(from:thru) = valuesT
 
             ! NOTE: AvD: call site now should account for n_data in the offset already, and I changed the above line to that as well.
             !            But: can we expect from user/call site that it also accounts for maxlay? (at the moment we have no 3D target
             !            element sets which *also* have n_data > 1, so may not be a problem yet)
-            ! targetField%arr1dPtr((connection%converterPtr%targetIndex-1)*maxlay*n_data + 1 : connection%converterPtr%targetIndex*maxlay*n_data) = valuesT
+            ! target_field%arr1dPtr((connection%converterPtr%targetIndex-1)*maxlay*n_data + 1 : connection%converterPtr%targetIndex*maxlay*n_data) = valuesT
             ! NOTE: RL: Currently this most definitely not the case: targetindex is not set correctly upon init.
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          case default
 
@@ -1490,10 +1490,10 @@ contains
       real(dp) :: windXT !< wind x-component value at time t
       real(dp) :: windYT !< wind y-component value at time t
       real(dp) :: magnitude !< wind magnitude at time t
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
 
       success = .false.
-      targetField => null()
+      target_field => null()
 
       ! ===== interpolation =====
 
@@ -1508,7 +1508,7 @@ contains
 
          call time_weight_factors(a0, a1, timesteps, t0, t1)
 
-         targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+         target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
          windXT0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
          windXT1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(1)
          windYT0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(2)
@@ -1528,15 +1528,15 @@ contains
                return
             end if
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), status)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:targetnCoordinates), status)
 
             if (.not. status) then
                return
             end if
 
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), magnitude)
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:targetnCoordinates), magnitude)
 
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          case (EC_OPERAND_REPLACE_ELEMENT)
 
@@ -1545,8 +1545,8 @@ contains
                return
             end if
 
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(connection%converterPtr%targetIndex), magnitude)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(connection%converterPtr%targetIndex), magnitude)
+            target_field%timesteps = timesteps
 
          case default
 
@@ -2130,7 +2130,7 @@ contains
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       real(dp) :: sourceMissing !< Source side missing value
-      type(tEcField), pointer :: targetField !< helper pointer
+      type(tEcField), pointer :: target_field !< helper pointer
       type(tEcIndexWeight), pointer :: indexWeight !< helper pointer, saved index weights
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       real(dp), dimension(:), pointer :: targetValues
@@ -2149,7 +2149,7 @@ contains
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
-      targetField => null()
+      target_field => null()
       indexWeight => null()
       sourceElementSet => null()
 
@@ -2180,8 +2180,8 @@ contains
             sourceT0Field => connection%sourceItemsPtr(j)%ptr%sourceT0FieldPtr
             sourceT1Field => connection%sourceItemsPtr(j)%ptr%sourceT1FieldPtr
             sourceMissing = connection%sourceItemsPtr(j)%ptr%quantityPtr%fillvalue
-            targetField => connection%targetItemsPtr(j)%ptr%targetFieldPtr
-            targetValues => targetField%arr1dPtr
+            target_field => connection%targetItemsPtr(j)%ptr%targetFieldPtr
+            targetValues => target_field%arr1dPtr
 
             s2D_T0(1:n_cols, 1:n_rows) => sourceT0Field%arr1d
             s2D_T1(1:n_cols, 1:n_rows) => sourceT1Field%arr1d
@@ -2237,7 +2237,7 @@ contains
                end if
             end do
 
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          end do
 
@@ -3282,7 +3282,7 @@ contains
       type(tEcHarmonicsFrame), pointer :: frame
       type(tEcIndexWeight), pointer :: weights
       type(tEcHarmonicProjection), pointer :: proj
-      real(dp), dimension(:), pointer :: targetfield
+      real(dp), dimension(:), pointer :: target_field
       integer :: j
       real(dp) :: angle
 
@@ -3291,7 +3291,7 @@ contains
       target_item => connection%targetItemsPtr(item_index)%ptr
       converter => connection%converterPtr
       frame => source_item%hframe
-      targetfield => target_item%targetFieldPtr%arr1dPtr
+      target_field => target_item%targetFieldPtr%arr1dPtr
       weights => converter%indexWeight
       if (frame%ec_period <= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
@@ -3311,7 +3311,7 @@ contains
 
       ! Step 3: evaluate the harmonic at time t and apply the operand.
       angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
-      success = apply_harmonics(proj%cos_weight, proj%sin_weight, proj%mask, angle, converter%operandType, targetfield(1:size(proj%mask)))
+      success = apply_harmonics(proj%cos_weight, proj%sin_weight, proj%mask, angle, converter%operandType, target_field(1:size(proj%mask)))
       if (.not. success) then
          return
       end if
@@ -3319,7 +3319,7 @@ contains
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
             if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
-               targetfield(j) = targetfield(weights%substndx(j))
+               target_field(j) = target_field(weights%substndx(j))
             end if
          end do
          converter%extrapolated = .true.
@@ -3354,7 +3354,7 @@ contains
       real(dp) :: sourceValueT0 !< source value at t0
       real(dp) :: sourceValueT1 !< source value at t1
       real(dp) :: weight_factor !< weight factors: ([1,2,3,4]:nCoordinates)
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
       real(dp) :: targetMissing !< Target side missing value
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
@@ -3425,7 +3425,7 @@ contains
 
       PI = atan(1.0_dp) * 4.0_dp
       success = .false.
-      targetField => null()
+      target_field => null()
       sourceT0Field => null()
       sourceT1Field => null()
       indexWeight => null()
@@ -3601,9 +3601,9 @@ contains
             indexWeight => connection%converterPtr%indexWeight
 
             targetItem => connection%targetItemsPtr(i)%ptr
-            targetField => targetItem%targetFieldPtr
-            targetValues => targetField%arr1dPtr
-            targetMissing = targetField%MISSINGVALUE
+            target_field => targetItem%targetFieldPtr
+            targetValues => target_field%arr1dPtr
+            targetMissing = target_field%MISSINGVALUE
             targetElementSet => targetItem%elementSetPtr
 
             if (associated(targetElementSet%z)) then
@@ -4099,7 +4099,7 @@ contains
          do i = 1, connection%nSourceItems
             t0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%timesteps
             t1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%timesteps
-            targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
 
             if (t0 > t1) then
 
@@ -4127,16 +4127,16 @@ contains
 
                   n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
 
                   if (.not. status) then
                      return
                   end if
 
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), &
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
                                      connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets))
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                case default
 
@@ -4171,7 +4171,7 @@ contains
 
                   n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
 
                   if (.not. status) then
                      return
@@ -4179,9 +4179,9 @@ contains
 
                   source_values = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets) * a0 &
                                   + connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(1:n_targets) * a1
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:n_targets), source_values)
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), source_values)
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                case default
 
@@ -4622,11 +4622,11 @@ contains
       integer :: first_value, last_value
       integer :: values_per_coordinate
       integer :: n_coordinates
-      type(tEcField), pointer :: targetField
+      type(tEcField), pointer :: target_field
       integer, dimension(:), pointer :: targetMask
 
       success = .false.
-      targetField => null()
+      target_field => null()
       targetMask => null()
 
       if (target_item_index < 1 .or. target_item_index > connection%nTargetItems) then
@@ -4634,14 +4634,14 @@ contains
          return
       end if
 
-      targetField => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
+      target_field => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
       targetMask => connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%mask
       n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
-      if (n_coordinates <= 0 .or. modulo(size(targetField%arr1dPtr), n_coordinates) /= 0) then
+      if (n_coordinates <= 0 .or. modulo(size(target_field%arr1dPtr), n_coordinates) /= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
          return
       end if
-      values_per_coordinate = size(targetField%arr1dPtr) / n_coordinates
+      values_per_coordinate = size(target_field%arr1dPtr) / n_coordinates
 
       if (connection%converterPtr%targetIndex /= ec_undef_int) then
          if (connection%converterPtr%targetIndex < 1 .or. connection%converterPtr%targetIndex > n_coordinates) then
@@ -4663,14 +4663,14 @@ contains
          end if
          first_value = (coordinate_index - 1) * values_per_coordinate + 1
          last_value = coordinate_index * values_per_coordinate
-         call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(first_value:last_value), success)
+         call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(first_value:last_value), success)
          if (.not. success) then
             return
          end if
          call apply_operand(connection%converterPtr%operandType, &
-                            targetField%arr1dPtr(first_value:last_value), scalar_value)
+                            target_field%arr1dPtr(first_value:last_value), scalar_value)
       end do
-      targetField%timesteps = timesteps
+      target_field%timesteps = timesteps
       success = .true.
    end function ecConverterApplyScalarToTargetItem
 
@@ -4685,17 +4685,17 @@ contains
       real(dp) :: data_value !< the scalar source value
       integer :: i, j
       integer :: jmin, jmax
-      type(tEcField), pointer :: targetField
+      type(tEcField), pointer :: target_field
       integer, dimension(:), pointer :: targetMask
       logical :: status
 
       success = .false.
-      targetField => null()
+      target_field => null()
       targetMask => null()
 
       data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
       do i = 1, connection%nTargetItems
-         targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
          targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
          if (connection%converterPtr%targetIndex /= ec_undef_int) then
             jmin = connection%converterPtr%targetIndex
@@ -4706,25 +4706,25 @@ contains
          end if
 
          if (associated(targetMask)) then
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
             if (.not. status) then
                return
             end if
             do j = jmin, jmax
                if (targetMask(j) /= 0) then
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), data_value)
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(j), data_value)
                end if
             end do
          else
             ! Directly use `jmin:jmax` slice of `arr1dPtr`.
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), status)
             if (.not. status) then
                return
             end if
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), data_value)
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), data_value)
          end if
 
-         targetField%timesteps = timesteps
+         target_field%timesteps = timesteps
       end do
       success = .true.
    end function ecConverterDataValue
