@@ -129,6 +129,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
     real(fp)                                  :: utot2
     real(fp)                                  :: umean_at_v
     real(fp)                                  :: vmean_at_u
+    real(fp)                                  :: morfac_correction
     integer                         , pointer :: bdfrlxtype
     integer                         , pointer :: itmor
     logical                         , pointer :: lfbdfmor
@@ -193,14 +194,16 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
     ! environment the morphological time scale should be used.
     !
     if (lfbdfmor) then 
-        hdtb = hdt*morfac
+        morfac_correction = morfac
         if ( (comparereal(morfac,0.0_fp) == 0) .or. (nst <= itmor)) then
             ! no update of bedforms necessary
             return
         endif
     else
-       hdtb = hdt
+      morfac_correction = 1.0_fp
     endif  
+    ! 
+    hdtb = hdt*morfac_correction
     !
     ! Calculate EQUILIBRIUM bedform heights/lengths
     !
@@ -328,7 +331,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
     select case (bdfrlxtype)
        case(1)
           ! TH = given
-          T_relax          = max(bedformT_H,hdtb)
+          T_relax          = max(bedformT_H/morfac_correction,hdtb)
           do nm = 1, nmmax
              if (kfs(nm)>0) then
                 sour(nm) = duneheightequi(nm)/T_relax
@@ -341,7 +344,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
           do nm = 1, nmmax
              if (kfs(nm)>0) then
                 if ( abs(ubedform(nm)) > 1e-20_fp ) then
-                   T_relax  = max(bedformL_H/ubedform(nm),hdtb)
+                   T_relax  = max(bedformL_H/ubedform(nm)/morfac_correction,hdtb)
                    sour(nm) = duneheightequi(nm)/T_relax
                    sink(nm) = 1.0_fp/T_relax
                 endif
@@ -354,7 +357,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
              if (kfs(nm)>0) then
                 bedformL_H = bdfL_Hc*dunelength(nm)
                 if ( abs(ubedform(nm)) > 1e-20_fp ) then
-                   T_relax  = max(bedformL_H/ubedform(nm),hdtb)
+                   T_relax  = max(bedformL_H/ubedform(nm)/morfac_correction,hdtb)
                    sour(nm) = duneheightequi(nm)/T_relax
                    sink(nm) = 1.0_fp/T_relax
                 endif
@@ -369,7 +372,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
                 phi   = max(min((bdfHmax/depth)**bdfL_Hp,bdfPmax),1.0_fp)
                 bedformL_H = phi*dunelength(nm)
                 if ( abs(ubedform(nm)) > 1e-20_fp ) then
-                   T_relax  = max(bedformL_H/ubedform(nm),hdtb)
+                   T_relax  = max(bedformL_H/ubedform(nm)/morfac_correction,hdtb)
                    sour(nm) = duneheightequi(nm)/T_relax
                    sink(nm) = 1.0_fp/T_relax
                 endif
