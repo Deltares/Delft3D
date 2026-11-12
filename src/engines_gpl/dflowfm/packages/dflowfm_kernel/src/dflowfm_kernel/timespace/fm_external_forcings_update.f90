@@ -305,7 +305,7 @@ contains
 
       if (bfm_included .and. .not. initialization) then
          if (bfmpar%lfbedfrm) then
-            call fm_calbf() ! JRE+BJ to check: see with which timestep we update this?
+            call fm_calbf() 
          end if
       end if
 
