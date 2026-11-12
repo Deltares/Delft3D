@@ -1120,6 +1120,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
 
       call prop_get(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
+      call prop_get(md_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses)
+      if (max_preconditioner_reuses < 0) then
+         call mess(LEVEL_ERROR, '[numerics] PetscPreconditionerReuse must be nonnegative.')
+      end if
       call prop_get(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
       call prop_get(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
       if (sdu_update_s1 < 0 .or. sdu_update_s1 > 1) then
@@ -1911,7 +1915,7 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
       if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
@@ -2525,10 +2529,13 @@ contains
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
-
+      call prop_get(md_ptr, 'processes', 'sedimentationTransportCoupling', waq_sediment_transport_coupling)
+      perform_waq_sediment_transport_coupling = waq_sediment_transport_coupling == 1
       call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
-      ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .false.
+         ti_waqproc = md_dt_waqproc
          if (dt_user > 0.0_dp .and. md_dt_waqproc > 0.0_dp) then
             if (md_dt_waqproc < dt_user .or. modulo(md_dt_waqproc, dt_user) /= 0.0_dp) then
                ti_waqproc = max(1, floor(md_dt_waqproc / dt_user)) * dt_user
@@ -2538,6 +2545,9 @@ contains
             end if
          end if
       else if (md_dt_waqproc < 0.0_dp) then
+         wq_processes_active = .true.
+         dt_processes_dynamic = .true.
+         ti_waqproc = 1.0_dp
          ! DtProcesses is negative
          call mess(LEVEL_INFO, 'DtProcesses is negative. Water quality processes are calculated with every hydrodynamic time step.')
       end if
@@ -3175,6 +3185,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: Sobek Guus Stelling OMP, 2: Sobek Guus Stelling OMP (thread-safe), 4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)')
+      call prop_set(prop_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses, 'Number of PETSc solves reusing a preconditioner after a rebuild (default 10; 0: rebuild every solve).')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
@@ -3469,8 +3480,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
-      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep. Default: no limit)')
-      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep. Default: no limit)')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep; default: no limit.')
+      call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep; default: no limit.')
 
       call prop_set(prop_ptr, 'physics', 'Smagorinsky', Smagorinsky, 'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
       call prop_set(prop_ptr, 'physics', 'Elder', Elder, 'Elder factor in horizontal turbulence')
@@ -4134,6 +4145,7 @@ contains
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
+      call prop_set(prop_ptr, 'processes', 'sedimentationTransportCoupling', waq_sediment_transport_coupling, 'Sedimentation is applied during the processes calculation (0, default) or the transport calculation (1) for water quality substances.')
 
       call datum(rundat)
       write (mout, '(a,a)') '# Generated on ', trim(rundat)

@@ -1,5 +1,5 @@
 ARG PYTHON_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-python
-ARG PYTHON_IMAGE_TAG=alma8-python3.12
+ARG PYTHON_IMAGE_TAG=alma8-python3.14
 
 FROM ${PYTHON_IMAGE_URL}:${PYTHON_IMAGE_TAG} AS python
 
@@ -29,6 +29,7 @@ RUN dnf update --assumeyes --refresh && \
 ADD wanda/bin/* /opt/dimrset/bin/
 ADD wanda/lib/* /opt/dimrset/lib/
 
+COPY --from=python /usr/bin/uv /usr/bin/uv
 COPY --from=python /opt/uv/ /opt/uv/
 COPY --from=python /opt/testbench-venv/ /opt/testbench-venv/
 
