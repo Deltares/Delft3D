@@ -3606,7 +3606,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
       call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
       call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
-      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
       call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, '[-] Air viscous momentum coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, '[-] Air viscous heat coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, '[-] Air viscous moisture coefficient')
