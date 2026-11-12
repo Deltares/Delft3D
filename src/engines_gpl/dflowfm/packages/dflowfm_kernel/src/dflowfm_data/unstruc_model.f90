@@ -2176,7 +2176,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', map_write_settings%taucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', map_write_settings%z0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', map_write_settings%sal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)      
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', map_write_settings%chezy_links, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links_1d_sections', map_write_settings%chezy_links_1d_sections, success)
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', map_write_settings%chezy_input, success)

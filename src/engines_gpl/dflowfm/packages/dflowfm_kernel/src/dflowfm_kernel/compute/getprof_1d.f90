@@ -98,8 +98,6 @@ contains
 
          if (japerim == 1 .and. calcConv == 1 .and. map_write_settings%au_1d_sections == 1) then
             au_main(L) = area
-            au_floodplain1(L) = 0.0_dp
-            au_floodplain2(L) = 0.0_dp
          end if
 
          ! Use the water level at the inner point of the boundary link
@@ -141,8 +139,6 @@ contains
             frcu_mor(L) = cz
             u_to_umain(L) = 1.0_dp
             q1_main(L) = q1(L)
-            q1_floodplain1(L) = 0.0_dp
-            q1_floodplain2(L) = 0.0_dp
             wu(L) = width
 
             if (hydrad > 0.0_dp .and. cz > 0.0_dp) then
@@ -181,8 +177,6 @@ contains
                   au_floodplain1(L) = af_sub(2)
                   au_floodplain2(L) = af_sub(3)
                end if
-               q1_floodplain1(L) = 0.0_dp
-               q1_floodplain2(L) = 0.0_dp
                u1L = u1(LL)
                q1L = q1(LL)
                dpt = hu(L)
@@ -339,8 +333,6 @@ contains
          end if
          if (map_write_settings%au_1d_sections == 1) then
             flow_width_main(L) = width
-            flow_width_floodplain1(L) = 0.0_dp
-            flow_width_floodplain2(L) = 0.0_dp
          end if
 
          if (map_write_settings%au == 1 .or. map_write_settings%au_1d_sections == 1) then
@@ -354,8 +346,6 @@ contains
 
          if (map_write_settings%au_1d_sections == 1) then
             au_main(L) = area
-            au_floodplain1(L) = 0.0_dp
-            au_floodplain2(L) = 0.0_dp
          end if
 
          if (abs(itp) == 101) then ! 1D conveyance
@@ -383,10 +373,7 @@ contains
          end if
 
          if (map_write_settings%chezy_links_1d_sections == 1) then
-            czu_floodplain1(L) = 0.0_dp
-            czu_floodplain2(L) = 0.0_dp
             ! Without subsections, use the same conversion as the link Chezy map output.
-            czu_main(L) = 0.0_dp
             if (frcu(L) > 0.0_dp) then
                czu_main(L) = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
             end if
