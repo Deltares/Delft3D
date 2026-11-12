@@ -53,8 +53,7 @@
 !> Interface module to METIS's native error codes.
 module m_metis
 
-! the parameters and enumerators are taken from
-!   ../third_party_open/metis-<version>/include/metis.h
+! The parameters and enumerators are taken from the Conan METIS header, metis.h.
    use precision, only: dp
    integer, parameter :: METIS_NOPTIONS = 40
 

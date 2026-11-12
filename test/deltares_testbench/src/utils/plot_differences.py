@@ -1,23 +1,20 @@
 # coding: utf-8
 
 import logging
-
-import pandas
-from pandas.plotting import register_matplotlib_converters
-
-register_matplotlib_converters()
-import matplotlib
-
-matplotlib.use("Agg")
 import os
 
-import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.dates
 import numpy
 from matplotlib.font_manager import FontProperties
 
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
 
 def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, parameter, location, file_type) -> None:
-    """Plot Time series with matplotlib and pandas.
+    """Plot time series with matplotlib using NumPy arrays.
 
     Parameters
     ----------
@@ -41,14 +38,9 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     location = location.strip()
     file_type = file_type.strip()
 
-    diff = []
-    for i in range(0, len(yval1)):
-        diff.append(yval2[i] - yval1[i])
-
-    df = pandas.DataFrame({"X": date_time, "Reference": yval1, "Test": yval2, "Diff": diff})
-    df.Reference = df.Reference.astype(float)
-    df.Test = df.Test.astype(float)
-    df.Diff = df.Diff.astype(float)
+    reference = numpy.ma.asarray(yval1, dtype=float)
+    test = numpy.ma.asarray(yval2, dtype=float)
+    diff = test - reference
 
     fontP = FontProperties()
     fontP.set_size(7)
@@ -60,14 +52,8 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     fig, axes = plt.subplots(2, 1, figsize=(13, 5.5))
 
     # plot in the two axes
-    for name in ["Test", "Reference"]:
-        y = df[name]
-        style = ":"
-        if name == "Test":
-            style = "r-"
-        if name == "Reference":
-            style = "b--"
-        axes[0].plot(df["X"], df[name], style, label=name)
+    for name, values, style in [("Test", test, "r-"), ("Reference", reference, "b--")]:
+        axes[0].plot(date_time, values, style, label=name)
     title = "Test and Reference Results: {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[0].set_title(title, fontsize=7)
     # axes[0].ticklabel_format(useOffset=False)
@@ -79,7 +65,7 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     axes[0].yaxis.set_major_formatter(y_formatter)
     axes[0].yaxis.set_tick_params(labelsize=7)
 
-    axes[1].plot(df["X"], df["Diff"], "b-", label="Test - Reference")
+    axes[1].plot(date_time, diff, "b-", label="Test - Reference")
     title = "Difference (Test-Ref): {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[1].set_title(title, fontsize=7)
     # axes[1].ticklabel_format(useOffset=False)

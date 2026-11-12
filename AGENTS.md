@@ -26,7 +26,7 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
 ### Windows
 - Git
 - Powershell
-- Python: 3.12
+- Python: 3.14
 
 ### Linux (devcontainer)
 - Git: `git` and `gh` (GitHub CLI tool)
@@ -36,6 +36,6 @@ This repo hosts the _Delft3D Flexible Mesh_ and _Delft3D 4_ simulation engines /
   - XML: `xmllint`, `xmlstarlet`
   - JSON: `jq`
   - PDF: `markitdown` (only with the 'pdf' optional dependency)
-- Python: `uv` with Python 3.12 installed
+- Python: `uv` with Python 3.14 installed
 - CI: `teamcity` (TeamCity CLI tool)
 - Debugger: `gdb-oneapi` (GDB like interface, but used for `ifx` compiled Fortran binaries)
