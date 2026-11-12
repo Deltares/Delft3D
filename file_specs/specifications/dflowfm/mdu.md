@@ -218,6 +218,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `pure1D` | Purely 1D advection. | `0` | <ul><li>**`0`**: original advection using velocity vector</li><li>**`1`**: pure 1D using flow volume vol1_f</li><li>**`2`**: pure 1D using volume vol1</li></ul> |  |  |
 | `junction1D` | Advection at 1D junctions. | `0` | <ul><li>**`0`**: original 1D advection using velocity vector</li><li>**`1`**: same as along 1D channels using `pure1D`=1</li></ul> |  |  |
 | `icgSolver` | Solver type. | `4` | <ul><li>**`1`**: Sobek Guus Stelling solver with OpenMP parallelization</li><li>**`2`**: Thread-safe Sobek Guus Stelling solver with OpenMP parallelization</li><li>**`4`**: Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)</li><li>**`6`**: PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)</li></ul> |  |  |
+| `petscPreconditionerReuse` 🔬 | Maximum number of times the PETSc preconditioner may be reused. | `10` | `≥0` |  |  |
 | `logSolverConvergence` | Print time step, number of solver iterations and solver residual to diagnostic output. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `maxDegree` | Maximum degree in Gauss elimination. | `6` |  |  |  |
 | `fixedWeirScheme` | Fixed weir scheme. | `9` | <ul><li>**`0`**: none</li><li>**`1`**: TODO</li><li>**`2`**: TODO</li><li>**`3`**: TODO</li><li>**`4`**: TODO</li><li>**`5`**: TODO</li><li>**`6`**: semi-subgrid scheme</li><li>**`7`**: TODO</li><li>**`8`**: Tabellenboek</li><li>**`9`**: Villemonte</li></ul> |  |  |
@@ -1011,6 +1012,7 @@ The keyword and options listed below are available for research purposes.
 | `[numerics] nlevel` |  |
 | `[numerics] noDerivedTypes` |  |
 | `[numerics] numlimdt_baorg` |  |
+| `[numerics] petscPreconditionerReuse` |  |
 | `[numerics] pillarFarFieldVelocity` |  |
 | `[numerics] rhoInterfaces` |  |
 | `[numerics] structureLayersActive` |  |

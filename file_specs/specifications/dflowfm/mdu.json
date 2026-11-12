@@ -1344,6 +1344,20 @@
                     }
                 },
                 {
+                    "key": "petscPreconditionerReuse",
+                    "default_value": 10,
+                    "value_type": "int",
+                    "description": "Maximum number of times the PETSc preconditioner may be reused.",
+                    "status": {
+                        "value": "research"
+                    },
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0
+                        }
+                    }
+                },
+                {
                     "key": "logSolverConvergence",
                     "default_value": 0,
                     "value_type": "intbool",

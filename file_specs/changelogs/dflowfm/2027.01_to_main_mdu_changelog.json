@@ -128,6 +128,14 @@
       "type": "added",
       "target": {
         "section": "numerics",
+        "property": "petscPreconditionerReuse",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
         "property": "icgSolver",
         "enum_value": "10"
       }
