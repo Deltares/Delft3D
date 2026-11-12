@@ -26,6 +26,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("swan_omp/41.51.10")
         self.requires("inja/3.5.0")
         self.requires("pugixml/1.15")
+        self.requires("fortran-stdlib/0.8.1")
 
     def generate(self):
         save(

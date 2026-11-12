@@ -53,6 +53,8 @@ module bmi
    use m_land_change_callback, only: land_change_callback
    use m_inidat, only: inidat
    use m_getstructureindex, only: getstructureindex
+   use m_structure_bmi, only: structure_output_field_count, structure_output_field_name, &
+                             is_structure_output_field, get_structure_output
    use m_getlateralindex, only: getlateralindex
    use m_flow_run_single_timestep, only: flow_run_single_timestep
    use m_flow_init_single_timestep, only: flow_init_single_timestep
@@ -1031,26 +1033,28 @@ contains
          ! Compounds:
       case ("pumps")
          shape(1) = npumpsg
-         shape(2) = 1
+         shape(2) = 1 + structure_output_field_count("pumps")
          return
       case ("weirs")
          shape(1) = nweirgen + network%sts%numWeirs
-         shape(2) = 2
+         shape(2) = 2 + structure_output_field_count("weirs")
          return
       case ("orifices")
          shape(1) = network%sts%numOrifices
-         shape(2) = 2
+         shape(2) = 2 + structure_output_field_count("orifices")
          return
       case ("gates")
          shape(1) = ngategen
-         shape(2) = 5
+         shape(2) = 5 + structure_output_field_count("gates")
          return
       case ("generalstructures")
          shape(1) = ngenstru
-         shape(2) = 5
+         shape(2) = 5 + structure_output_field_count("generalstructures")
+         return
       case ("culverts")
          shape(1) = network%sts%numCulverts
-         shape(2) = 1
+         shape(2) = 1 + structure_output_field_count("culverts")
+         return
       case ("sourcesinks")
          shape(1) = source_sinks%num_total
          shape(2) = 3
@@ -2015,7 +2019,7 @@ contains
    subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, name="get_compound_field")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_compound_field
       ! Return a pointer to the compound's field variable
-      use iso_c_binding, only: c_double, c_char, c_loc
+      use iso_c_binding, only: c_double, c_char, c_loc, c_null_ptr
       use iso_c_utils
       use fm_external_forcings_data
       use m_source_sink, only: source_sink_all_discharges
@@ -2029,6 +2033,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
+      use m_structure_bmi, only: is_structure_output_field, get_structure_output
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use string_module, only: str_tolower
@@ -2054,6 +2059,13 @@ contains
       item_name = char_array_to_string(c_item_name)
       field_name_original = char_array_to_string(c_field_name)
       field_name = str_tolower(field_name_original)
+
+      if (is_structure_output_field(var_name, field_name)) then
+         x = c_null_ptr
+         call getStructureIndex(var_name, item_name, item_index, is_in_network)
+         x = get_structure_output(var_name, item_index, is_in_network, field_name)
+         return
+      end if
 
       select case (var_name)
          ! PUMPS
@@ -2563,7 +2575,7 @@ contains
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use m_source_sink, only: source_sink_all_discharges
-      use string_module, only: str_token
+      use string_module, only: str_token, str_tolower
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2592,6 +2604,11 @@ contains
       var_name = char_array_to_string(c_var_name)
       item_name = char_array_to_string(c_item_name)
       field_name = char_array_to_string(c_field_name)
+      if (is_structure_output_field(str_tolower(var_name), str_tolower(field_name))) then
+         call mess(LEVEL_ERROR, 'set_compound_field: structure output '''//trim(var_name)//'/'//trim(item_name)//'/'// &
+                   trim(field_name)//''' is read-only.')
+         return
+      end if
       ! Debugging printing only: guess that it's a scalar double value, for now.
       call c_f_pointer(xptr, x_0d_double_ptr)
       write (msgbuf, '(6a,f20.6,a)', iostat=iostat) 'set_compound_field for ', trim(var_name), '(', trim(item_name), ')::', trim(field_name), ', will be set to value = ', x_0d_double_ptr, '.'
@@ -2868,6 +2885,7 @@ contains
       var_name = char_array_to_string(c_var_name)
 
       field_index = c_field_index
+      field_name = ''
 
       select case (var_name)
          ! PUMPS
@@ -2875,6 +2893,8 @@ contains
          select case (field_index)
          case (1)
             field_name = "capacity"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 1)
          end select
          ! WEIRS
       case ("weirs")
@@ -2883,6 +2903,8 @@ contains
             field_name = "crestLevel"
          case (2)
             field_name = "lat_contr_coeff"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 2)
          end select
          ! ORIFICES
       case ("orifices")
@@ -2891,6 +2913,8 @@ contains
             field_name = "gateLowerEdgeLevel"
          case (2)
             field_name = "CrestLevel"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 2)
          end select
          ! GATES
       case ("gates")
@@ -2905,6 +2929,8 @@ contains
             field_name = "GateOpeningWidth"
          case (5)
             field_name = "GateOpeningHorizontalDirection"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 5)
          end select
 
          ! GENERALSTUCTURES
@@ -2920,6 +2946,8 @@ contains
             field_name = "gateOpeningWidth"
          case (5)
             field_name = "gateOpeningHorizontalDirection"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 5)
          end select
 
          ! CULVERTS
@@ -2927,6 +2955,8 @@ contains
          select case (field_index)
          case (1)
             field_name = "valveOpeningHeight"
+         case default
+            field_name = structure_output_field_name(var_name, field_index - 1)
          end select
          ! SOURCE-SINKS
       case ("sourcesinks")
