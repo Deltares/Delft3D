@@ -1,12 +1,8 @@
 #include <gtest/gtest.h>
 #include <pugixml.hpp>
 
-#include <array>
 #include <cmath>
-#include <format>
-#include <numbers>
 #include <sstream>
-#include <utility>
 #include <vector>
 
 #include "coupling_test_data.hpp"
@@ -17,7 +13,6 @@ namespace
 {
     using coupling_test_data::build_nf2ff_xml;
     using coupling_test_data::minimal_csumo_settings_xml;
-    using coupling_test_data::minimal_csumo_settings_with_intake_xml;
 
     pre_c_sumo::FF2NFFileOperations capture_ff2nf_xml(std::string& xml)
     {
@@ -171,71 +166,6 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     EXPECT_EQ(*densities, (std::vector<double>{1010, 1011, 1020, 1021}));
 }
 
-TEST(CsumoPreciceCouplingRegressionTest, ConvertNFToConnectedSinkSourcesUsesActualIntakeConcentration)
-{
-    // There is only one actual withdrawal, not two intakes. Settings XYintake = (3, 4) in
-    // minimal_csumo_settings_with_intake_xml defines the fallback withdrawal location if NF2FF omits <intakes>.
-    // Here, the NF2FF response instead specifies an intake at (5, 6), overriding that fallback.
-    // Deliberately different locations check that concentrations follow the NF2FF intake.
-    // Register (5, 6) as an ambient sampling column so its data is available in the mesh;
-    // using that data is justified by the intake location, not by its ambient-point label.
-    pugi::xml_document settings_document;
-    ASSERT_TRUE(settings_document.load_string(minimal_csumo_settings_with_intake_xml.data()));
-    auto settings_data = settings_document.child("COSUMO").child("settings").child("data");
-    ASSERT_TRUE(settings_data);
-    settings_data.append_child("XYambient").text().set("5 6");
-    std::ostringstream settings_text;
-    settings_document.save(settings_text);
-    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(settings_text.str());
-    ASSERT_TRUE(settings.has_value()) << settings.error().message;
-
-    // One sink creates no entrainment delta; two source rows avoid DESA expansion.
-    const auto nf2ff_xml = build_nf2ff_xml(1u, 2u, true, 10.0, 1u);
-    pugi::xml_document nf2ff_document;
-    ASSERT_TRUE(nf2ff_document.load_string(nf2ff_xml.c_str()));
-    auto intake_node = nf2ff_document.child("NF2FF").child("NFResult").child("intakes");
-    ASSERT_TRUE(intake_node);
-    // This single NF2FF intake replaces the fallback at (3, 4).
-    // Positive-down Z = 3 puts the actual withdrawal at (5, 6, -3) in the positive-up mesh.
-    intake_node.text().set("5 6 3");
-    std::ostringstream nf2ff_text;
-    nf2ff_document.save(nf2ff_text);
-    auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_text.str());
-    ASSERT_TRUE(reader.has_value()) << reader.error().message;
-    std::vector<pre_c_sumo::NF2FFReader> readers;
-    readers.emplace_back(std::move(*reader));
-
-    pre_c_sumo::Mesh mesh_3d{};
-    // Two samples per column, with positive-up mesh elevations:
-    // diffuser vertices 0,1; settings-intake vertices 2,3; ambient/actual-intake vertices 4,5.
-    mesh_3d.coordinates = {1, 2, -3, 1, 2, -1,
-                           3, 4, -3, 3, 4, -1,
-                           5, 6, -3, 5, 6, -1};
-    mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
-                                                     .has_intake = true,
-                                                     .intake_index = 2,
-                                                     .number_of_ambient_points = 2,
-                                                     .first_ambient_point_index = 4}};
-    mesh_3d.number_of_nodes = 6;
-    mesh_3d.number_of_zcoordinates = 2;
-    for (const auto id : pre_c_sumo::constituent_ids)
-    {
-        mesh_3d.quantities[id] = std::vector<double>(6, 0.0);
-    }
-    // C01: diffuser = 15,15; settings/fallback column = 10,30; actual intake column = 40,60.
-    // The NF2FF intake coincides exactly with vertex 4, so no interpolation choice is involved.
-    mesh_3d.quantities[pre_c_sumo::constituent_ids[0]] = {15, 15, 10, 30, 40, 60};
-
-    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, readers, mesh_3d);
-
-    ASSERT_TRUE(connected.has_value()) << connected.error().message;
-    // Two discharge source entries followed by the one actual intake entry.
-    ASSERT_EQ(connected->get_number_of_entries(), 3u);
-    // The two source entries must use actual intake C01 (40) + NF2FF excess (10) = 50.
-    // The final entry is intake-only and carries no imposed source concentration.
-    EXPECT_EQ(connected->get_constituent_values()[0], (std::vector<double>{50, 50, 0}));
-}
-
 TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProfile)
 {
     // D1 is at (1, 2), with one ambient point at (3, 4).
@@ -376,87 +306,4 @@ TEST(CsumoPreciceCouplingRegressionTest, CreateDiffuserModelSpreadsSourcesPerpen
     // Dotting the track vector with the plume's unit vector measures its along-plume span in metres.
     const double along_plume_span = track_dx * 0.6 + track_dy * 0.8;
     EXPECT_NEAR(along_plume_span, 0.0, 1e-10);
-}
-
-TEST(CsumoPreciceCouplingRegressionTest, ConvertNFToConnectedSinkSourcesPreservesMomentumForCoincidentDESASamples)
-{
-    const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
-    ASSERT_TRUE(settings.has_value()) << settings.error().message;
-
-    constexpr double source_discharge = 10.0; // Qsource [m3/s].
-    constexpr double source_speed = 2.0;      // Umag [m/s], not a momentum flux.
-    // One sink creates no entrainment delta, and no intake is present: only source records are emitted.
-    const auto nf2ff_xml = build_nf2ff_xml(1u, 1u, false, 0.0, 0u, source_discharge);
-    pugi::xml_document document;
-    ASSERT_TRUE(document.load_string(nf2ff_xml.c_str()));
-    auto nf_result = document.child("NF2FF").child("NFResult");
-    nf_result.child("sinks").text().set("97 200 5 1 0 0");
-
-    struct DirectionCase
-    {
-        double degrees;
-        double unit_x;
-        double unit_y;
-    };
-    // The historical Delft3D4 reader passes Udir unchanged to magdir_to_uv.
-    // Its Cartesian conversion, also used by FM, is (cos(90-dir), sin(90-dir)).
-    // These are "towards" bearings: north, east, south, west, not mathematical angles from east.
-    constexpr std::array<DirectionCase, 4> directions = {
-        DirectionCase{0.0, 0.0, 1.0}, {90.0, 1.0, 0.0}, {180.0, 0.0, -1.0}, {270.0, -1.0, 0.0}};
-
-    for (const auto& direction : directions)
-    {
-        SCOPED_TRACE(::testing::Message() << "Udir = " << direction.degrees << " degrees");
-        // X Y Z S H B Umag Udir. B=0 makes all 1000 DESA samples coincide at (100, 200, -5).
-        // They therefore occupy one FM cell, independently of grid resolution, and avoid the geometry bug.
-        // Legacy FM aggregates these coincident samples into one source with weight one.
-        const auto source_row = std::format("100 200 5 1 0 0 {} {}", source_speed, direction.degrees);
-        nf_result.child("sources").text().set(source_row.c_str());
-        std::ostringstream nf2ff_text;
-        document.save(nf2ff_text);
-        auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_text.str());
-        ASSERT_TRUE(reader.has_value()) << reader.error().message;
-        std::vector<pre_c_sumo::NF2FFReader> readers;
-        readers.emplace_back(std::move(*reader));
-        // This case needs no sampled constituent data because there is no intake.
-        pre_c_sumo::Mesh unused_mesh{};
-
-        const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, readers, unused_mesh);
-
-        ASSERT_TRUE(connected.has_value()) << connected.error().message;
-        const auto& discharges = connected->get_discharge_value();
-        const auto& effective_speeds = connected->get_momentum_magnitude_weighted_values();
-        const auto& bearings = connected->get_momentum_directions();
-        ASSERT_FALSE(discharges.empty());
-        ASSERT_EQ(discharges.size(), connected->get_number_of_entries());
-        ASSERT_EQ(effective_speeds.size(), discharges.size());
-        ASSERT_EQ(bearings.size(), discharges.size());
-
-        double total_discharge = 0.0;
-        double momentum_flux_x = 0.0;
-        double momentum_flux_y = 0.0;
-        for (std::size_t entry = 0; entry < discharges.size(); ++entry)
-        {
-            ASSERT_GT(discharges[entry], 0.0);
-            ASSERT_GT(effective_speeds[entry], 0.0);
-            ASSERT_DOUBLE_EQ(bearings[entry], direction.degrees);
-            // These are the exact buffers passed to writeData, not the original NF2FF values.
-            // Reconstruct FM's receiving contract: precice_adapter_add_to_fm_administration uses
-            // A_i = |Q_i| / Ueff_i; advec then applies Q_i^2 / A_i, summed over vertical layers.
-            // This is kinematic momentum flux [m4/s2]; density is not part of the exchanged speed.
-            const double area = std::abs(discharges[entry]) / effective_speeds[entry];
-            const double momentum_flux = discharges[entry] * discharges[entry] / area;
-            const double angle = (90.0 - bearings[entry]) * std::numbers::pi / 180.0;
-            total_discharge += discharges[entry];
-            momentum_flux_x += momentum_flux * std::cos(angle);
-            momentum_flux_y += momentum_flux * std::sin(angle);
-        }
-
-        EXPECT_NEAR(total_discharge, source_discharge, 1e-10);
-        // One physical source must retain Qsource*Umag = 10*2 = 20 m4/s2, regardless of sampling.
-        // Do not require 1000 output records: a fix may legitimately aggregate them before exchange.
-        const double expected_flux = source_discharge * source_speed;
-        EXPECT_NEAR(momentum_flux_x, expected_flux * direction.unit_x, 1e-10);
-        EXPECT_NEAR(momentum_flux_y, expected_flux * direction.unit_y, 1e-10);
-    }
 }

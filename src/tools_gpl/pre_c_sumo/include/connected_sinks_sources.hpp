@@ -6,7 +6,6 @@
 #include <string>
 #include <expected>
 #include <array>
-#include <span>
 #include <string_view>
 
 namespace pre_c_sumo
@@ -89,16 +88,7 @@ namespace pre_c_sumo
          * @brief Returns the discharge values in read-only form.
          * @return Vector of discharge values used by unit tests and diagnostics.
          */
-        const std::vector<double>& get_discharge_value() const;
-
-        /// Read-only effective source speeds [m/s], in preCICE entry order.
-        const std::vector<double>& get_momentum_magnitude_weighted_values() const;
-
-        /// Read-only source directions [degrees clockwise from north, pointing towards].
-        const std::vector<double>& get_momentum_directions() const;
-
-        /// Read-only constituent values in preCICE slot and entry order.
-        std::span<const std::vector<double>, constituent_ids.size()> get_constituent_values() const;
+        const std::vector<double>& get_discharge_value() const { return discharge_vector; }
 
     private:
         // attributes

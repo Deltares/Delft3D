@@ -59,23 +59,6 @@ namespace pre_c_sumo
 
     std::size_t ConnectedSinkSources::get_number_of_entries() const { return sink_x_vector.size(); }
 
-    const std::vector<double>& ConnectedSinkSources::get_discharge_value() const { return discharge_vector; }
-
-    const std::vector<double>& ConnectedSinkSources::get_momentum_magnitude_weighted_values() const
-    {
-        return momentum_magnitude_weighted_vector;
-    }
-
-    const std::vector<double>& ConnectedSinkSources::get_momentum_directions() const
-    {
-        return momentum_direction_vector;
-    }
-
-    std::span<const std::vector<double>, constituent_ids.size()> ConnectedSinkSources::get_constituent_values() const
-    {
-        return constituents_vectors;
-    }
-
     std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> ConnectedSinkSources::write_to_precice(
         precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids)
     {
