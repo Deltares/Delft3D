@@ -4,6 +4,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace dflowfm_io
@@ -33,88 +34,27 @@ namespace dflowfm_io
     class IssueReport
     {
     public:
-        /// @brief Adds an error issue without a line number.
+        /// @brief Adds an issue without a line number.
+        /// @tparam Level Severity level of the issue.
         /// @tparam Args Types of the format arguments.
         /// @param fmt A std::format-compatible format string.
         /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddError(std::format_string<Args...> fmt, Args&&... args)
+        template <Severity Level, typename... Args>
+        void Add(std::format_string<Args...> fmt, Args&&... args)
         {
-            AddIssue(Severity::Error, std::nullopt, std::format(fmt, std::forward<Args>(args)...));
+            AddIssue(Level, std::nullopt, std::format(fmt, std::forward<Args>(args)...));
         }
 
-        /// @brief Adds a warning issue without a line number.
-        /// @tparam Args Types of the format arguments.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddWarning(std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Warning, std::nullopt, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds an informational issue without a line number.
-        /// @tparam Args Types of the format arguments.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddInfo(std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Info, std::nullopt, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds an debug issue without a line number.
-        /// @tparam Args Types of the format arguments.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddDebug(std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Debug, std::nullopt, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds an error issue associated with a specific source line.
+        /// @brief Adds an issue associated with a specific source line.
+        /// @tparam Level Severity level of the issue.
         /// @tparam Args Types of the format arguments.
         /// @param lineNumber 1-based line number in the source file.
         /// @param fmt A std::format-compatible format string.
         /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddError(int lineNumber, std::format_string<Args...> fmt, Args&&... args)
+        template <Severity Level, typename... Args>
+        void Add(int lineNumber, std::format_string<Args...> fmt, Args&&... args)
         {
-            AddIssue(Severity::Error, lineNumber, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds a warning issue associated with a specific source line.
-        /// @tparam Args Types of the format arguments.
-        /// @param lineNumber 1-based line number in the source file.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddWarning(int lineNumber, std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Warning, lineNumber, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds an informational issue associated with a specific source line.
-        /// @tparam Args Types of the format arguments.
-        /// @param lineNumber 1-based line number in the source file.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddInfo(int lineNumber, std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Info, lineNumber, std::format(fmt, std::forward<Args>(args)...));
-        }
-
-        /// @brief Adds an debug issue associated with a specific source line.
-        /// @tparam Args Types of the format arguments.
-        /// @param lineNumber 1-based line number in the source file.
-        /// @param fmt A std::format-compatible format string.
-        /// @param args Arguments to substitute into the format string.
-        template <typename... Args>
-        void AddDebug(int lineNumber, std::format_string<Args...> fmt, Args&&... args)
-        {
-            AddIssue(Severity::Debug, lineNumber, std::format(fmt, std::forward<Args>(args)...));
+            AddIssue(Level, lineNumber, std::format(fmt, std::forward<Args>(args)...));
         }
 
         /// @brief Formats all issues into a human-readable multi-line string.

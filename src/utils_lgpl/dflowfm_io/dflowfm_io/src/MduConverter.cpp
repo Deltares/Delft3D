@@ -165,7 +165,7 @@ namespace dflowfm_io
                 catch (const std::exception&)
                 {
                     const std::string expected = GetExpectedValueDescription(propertySchema);
-                    report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\". {}.",
+                    report.Add<Severity::Error>(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\". {}.",
                                     sectionSchema.name, propertySchema.key, iniProperty->GetValue(), expected);
                 }
             }

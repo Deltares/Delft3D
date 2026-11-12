@@ -25,14 +25,14 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // AddError (no line number)
+    // Add<Severity::Error> (no line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddError_AddsOneIssue)
     {
         IssueReport report;
 
-        report.AddError("An error occurred");
+        report.Add<Severity::Error>("An error occurred");
 
         EXPECT_EQ(report.GetIssues().size(), 1);
     }
@@ -41,7 +41,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError("An error occurred");
+        report.Add<Severity::Error>("An error occurred");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
     }
@@ -50,7 +50,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError("An error occurred");
+        report.Add<Severity::Error>("An error occurred");
 
         EXPECT_EQ(report.GetIssues()[0].message, "An error occurred");
     }
@@ -59,7 +59,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError("An error occurred");
+        report.Add<Severity::Error>("An error occurred");
 
         EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
@@ -68,20 +68,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError("Error code: {}", 42);
+        report.Add<Severity::Error>("Error code: {}", 42);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
     }
 
     // -------------------------------------------------------------------------
-    // AddWarning (no line number)
+    // Add<Severity::Warning> (no line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddWarning_AddsOneIssue)
     {
         IssueReport report;
 
-        report.AddWarning("A warning occurred");
+        report.Add<Severity::Warning>("A warning occurred");
 
         EXPECT_EQ(report.GetIssues().size(), 1);
     }
@@ -90,7 +90,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning("A warning occurred");
+        report.Add<Severity::Warning>("A warning occurred");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
     }
@@ -99,7 +99,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning("A warning occurred");
+        report.Add<Severity::Warning>("A warning occurred");
 
         EXPECT_EQ(report.GetIssues()[0].message, "A warning occurred");
     }
@@ -108,7 +108,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning("A warning occurred");
+        report.Add<Severity::Warning>("A warning occurred");
 
         EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
@@ -117,20 +117,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning("Warning on field: {}", "fieldName");
+        report.Add<Severity::Warning>("Warning on field: {}", "fieldName");
 
         EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
     }
 
     // -------------------------------------------------------------------------
-    // AddInfo (no line number)
+    // Add<Severity::Info> (no line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddInfo_AddsOneIssue)
     {
         IssueReport report;
 
-        report.AddInfo("An info message");
+        report.Add<Severity::Info>("An info message");
 
         EXPECT_EQ(report.GetIssues().size(), 1);
     }
@@ -139,7 +139,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo("An info message");
+        report.Add<Severity::Info>("An info message");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
     }
@@ -148,7 +148,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo("An info message");
+        report.Add<Severity::Info>("An info message");
 
         EXPECT_EQ(report.GetIssues()[0].message, "An info message");
     }
@@ -157,7 +157,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo("An info message");
+        report.Add<Severity::Info>("An info message");
 
         EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
@@ -166,20 +166,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo("Processed {} items", 5);
+        report.Add<Severity::Info>("Processed {} items", 5);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
     }
 
     // -------------------------------------------------------------------------
-    // AddDebug (no line number)
+    // Add<Severity::Debug> (no line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddDebug_AddsOneIssue)
     {
         IssueReport report;
 
-        report.AddDebug("A debug message");
+        report.Add<Severity::Debug>("A debug message");
 
         EXPECT_EQ(report.GetIssues().size(), 1);
     }
@@ -188,7 +188,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug("A debug message");
+        report.Add<Severity::Debug>("A debug message");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
     }
@@ -197,7 +197,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug("A debug message");
+        report.Add<Severity::Debug>("A debug message");
 
         EXPECT_EQ(report.GetIssues()[0].message, "A debug message");
     }
@@ -206,7 +206,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug("A debug message");
+        report.Add<Severity::Debug>("A debug message");
 
         EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
     }
@@ -215,20 +215,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug("Debug value: {}", 7);
+        report.Add<Severity::Debug>("Debug value: {}", 7);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
     }
 
     // -------------------------------------------------------------------------
-    // AddError (with line number)
+    // Add<Severity::Error> (with line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddError_WithLineNumber_IssueHasLineNumber)
     {
         IssueReport report;
 
-        report.AddError(10, "An error occurred");
+        report.Add<Severity::Error>(10, "An error occurred");
 
         ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
         EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
@@ -238,7 +238,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError(10, "An error occurred");
+        report.Add<Severity::Error>(10, "An error occurred");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Error);
     }
@@ -247,20 +247,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError(10, "Error code: {}", 42);
+        report.Add<Severity::Error>(10, "Error code: {}", 42);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Error code: 42");
     }
 
     // -------------------------------------------------------------------------
-    // AddWarning (with line number)
+    // Add<Severity::Warning> (with line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddWarning_WithLineNumber_IssueHasLineNumber)
     {
         IssueReport report;
 
-        report.AddWarning(20, "A warning occurred");
+        report.Add<Severity::Warning>(20, "A warning occurred");
 
         ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
         EXPECT_EQ(*report.GetIssues()[0].lineNumber, 20);
@@ -270,7 +270,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning(20, "A warning occurred");
+        report.Add<Severity::Warning>(20, "A warning occurred");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Warning);
     }
@@ -279,20 +279,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddWarning(20, "Warning on field: {}", "fieldName");
+        report.Add<Severity::Warning>(20, "Warning on field: {}", "fieldName");
 
         EXPECT_EQ(report.GetIssues()[0].message, "Warning on field: fieldName");
     }
 
     // -------------------------------------------------------------------------
-    // AddInfo (with line number)
+    // Add<Severity::Info> (with line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddInfo_WithLineNumber_IssueHasLineNumber)
     {
         IssueReport report;
 
-        report.AddInfo(30, "An info message");
+        report.Add<Severity::Info>(30, "An info message");
 
         ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
         EXPECT_EQ(*report.GetIssues()[0].lineNumber, 30);
@@ -302,7 +302,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo(30, "An info message");
+        report.Add<Severity::Info>(30, "An info message");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Info);
     }
@@ -311,20 +311,20 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddInfo(30, "Processed {} items", 5);
+        report.Add<Severity::Info>(30, "Processed {} items", 5);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Processed 5 items");
     }
 
     // -------------------------------------------------------------------------
-    // AddDebug (with line number)
+    // Add<Severity::Debug> (with line number)
     // -------------------------------------------------------------------------
 
     TEST(IssueReportTest, AddDebug_WithLineNumber_IssueHasLineNumber)
     {
         IssueReport report;
 
-        report.AddDebug(40, "A debug message");
+        report.Add<Severity::Debug>(40, "A debug message");
 
         ASSERT_TRUE(report.GetIssues()[0].lineNumber.has_value());
         EXPECT_EQ(*report.GetIssues()[0].lineNumber, 40);
@@ -334,7 +334,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug(40, "A debug message");
+        report.Add<Severity::Debug>(40, "A debug message");
 
         EXPECT_EQ(report.GetIssues()[0].severity, Severity::Debug);
     }
@@ -343,7 +343,7 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddDebug(40, "Debug value: {}", 7);
+        report.Add<Severity::Debug>(40, "Debug value: {}", 7);
 
         EXPECT_EQ(report.GetIssues()[0].message, "Debug value: 7");
     }
@@ -356,9 +356,9 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError(30, "Error at 30");
-        report.AddWarning(10, "Warning at 10");
-        report.AddInfo(20, "Info at 20");
+        report.Add<Severity::Error>(30, "Error at 30");
+        report.Add<Severity::Warning>(10, "Warning at 10");
+        report.Add<Severity::Info>(20, "Info at 20");
 
         ASSERT_EQ(report.GetIssues().size(), 3);
         EXPECT_EQ(*report.GetIssues()[0].lineNumber, 10);
@@ -370,8 +370,8 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError(5, "Error at 5");
-        report.AddWarning("Warning without line");
+        report.Add<Severity::Error>(5, "Error at 5");
+        report.Add<Severity::Warning>("Warning without line");
 
         ASSERT_EQ(report.GetIssues().size(), 2);
         EXPECT_FALSE(report.GetIssues()[0].lineNumber.has_value());
@@ -382,9 +382,9 @@ namespace dflowfm_io::test
     {
         IssueReport report;
 
-        report.AddError("First error");
-        report.AddWarning("Second warning");
-        report.AddInfo("Third info");
+        report.Add<Severity::Error>("First error");
+        report.Add<Severity::Warning>("Second warning");
+        report.Add<Severity::Info>("Third info");
 
         ASSERT_EQ(report.GetIssues().size(), 3);
         EXPECT_EQ(report.GetIssues()[0].message, "First error");
@@ -399,7 +399,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleErrorWithoutLineNumber_ReturnsFormattedString)
     {
         IssueReport report;
-        report.AddError("Something went wrong");
+        report.Add<Severity::Error>("Something went wrong");
 
         const std::string result = report.Format();
 
@@ -409,7 +409,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleWarningWithoutLineNumber_ReturnsFormattedString)
     {
         IssueReport report;
-        report.AddWarning("Something is suspicious");
+        report.Add<Severity::Warning>("Something is suspicious");
 
         const std::string result = report.Format();
 
@@ -419,7 +419,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleInfoWithoutLineNumber_ReturnsFormattedString)
     {
         IssueReport report;
-        report.AddInfo("Something happened");
+        report.Add<Severity::Info>("Something happened");
 
         const std::string result = report.Format();
 
@@ -429,7 +429,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleDebugWithoutLineNumber_ReturnsFormattedString)
     {
         IssueReport report;
-        report.AddDebug("Some detail");
+        report.Add<Severity::Debug>("Some detail");
 
         const std::string result = report.Format();
 
@@ -439,7 +439,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleErrorWithLineNumber_ReturnsFormattedStringWithLineNumber)
     {
         IssueReport report;
-        report.AddError(42, "Something went wrong");
+        report.Add<Severity::Error>(42, "Something went wrong");
 
         const std::string result = report.Format();
 
@@ -449,7 +449,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleWarningWithLineNumber_ReturnsFormattedStringWithLineNumber)
     {
         IssueReport report;
-        report.AddWarning(25, "Something is suspicious");
+        report.Add<Severity::Warning>(25, "Something is suspicious");
 
         const std::string result = report.Format();
 
@@ -459,7 +459,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleInfoWithLineNumber_ReturnsFormattedStringWithLineNumber)
     {
         IssueReport report;
-        report.AddInfo(30, "Something happened");
+        report.Add<Severity::Info>(30, "Something happened");
 
         const std::string result = report.Format();
 
@@ -469,7 +469,7 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_SingleDebugWithLineNumber_ReturnsFormattedStringWithLineNumber)
     {
         IssueReport report;
-        report.AddDebug(15, "Some detail");
+        report.Add<Severity::Debug>(15, "Some detail");
 
         const std::string result = report.Format();
 
@@ -479,8 +479,8 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MultipleIssues_ReturnsAllFormattedLines)
     {
         IssueReport report;
-        report.AddError("An error");
-        report.AddWarning(5, "A warning");
+        report.Add<Severity::Error>("An error");
+        report.Add<Severity::Warning>(5, "A warning");
 
         const std::string result = report.Format();
 
@@ -494,10 +494,10 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MinSeverityDebug_IncludesAllIssues)
     {
         IssueReport report;
-        report.AddDebug("A debug");
-        report.AddInfo("An info");
-        report.AddWarning("A warning");
-        report.AddError("An error");
+        report.Add<Severity::Debug>("A debug");
+        report.Add<Severity::Info>("An info");
+        report.Add<Severity::Warning>("A warning");
+        report.Add<Severity::Error>("An error");
 
         const std::string result = report.Format(Severity::Debug);
 
@@ -511,10 +511,10 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MinSeverityInfo_ExcludesDebug)
     {
         IssueReport report;
-        report.AddDebug("A debug");
-        report.AddInfo("An info");
-        report.AddWarning("A warning");
-        report.AddError("An error");
+        report.Add<Severity::Debug>("A debug");
+        report.Add<Severity::Info>("An info");
+        report.Add<Severity::Warning>("A warning");
+        report.Add<Severity::Error>("An error");
 
         const std::string result = report.Format(Severity::Info);
 
@@ -527,10 +527,10 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MinSeverityWarning_ExcludesDebugAndInfo)
     {
         IssueReport report;
-        report.AddDebug("A debug");
-        report.AddInfo("An info");
-        report.AddWarning("A warning");
-        report.AddError("An error");
+        report.Add<Severity::Debug>("A debug");
+        report.Add<Severity::Info>("An info");
+        report.Add<Severity::Warning>("A warning");
+        report.Add<Severity::Error>("An error");
 
         const std::string result = report.Format(Severity::Warning);
 
@@ -542,10 +542,10 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MinSeverityError_IncludesOnlyErrors)
     {
         IssueReport report;
-        report.AddDebug("A debug");
-        report.AddInfo("An info");
-        report.AddWarning("A warning");
-        report.AddError("An error");
+        report.Add<Severity::Debug>("A debug");
+        report.Add<Severity::Info>("An info");
+        report.Add<Severity::Warning>("A warning");
+        report.Add<Severity::Error>("An error");
 
         const std::string result = report.Format(Severity::Error);
 
@@ -555,8 +555,8 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, Format_MinSeverityExcludesAll_ReturnsEmptyString)
     {
         IssueReport report;
-        report.AddDebug("A debug");
-        report.AddInfo("An info");
+        report.Add<Severity::Debug>("A debug");
+        report.Add<Severity::Info>("An info");
 
         const std::string result = report.Format(Severity::Warning);
 
@@ -566,9 +566,9 @@ namespace dflowfm_io::test
     TEST(IssueReportTest, GetIssues_ReturnsRecordedIssues)
     {
         IssueReport report;
-        report.AddError("Error");
-        report.AddWarning("Warning");
-        report.AddInfo("Info");
+        report.Add<Severity::Error>("Error");
+        report.Add<Severity::Warning>("Warning");
+        report.Add<Severity::Info>("Info");
 
         const auto issues = report.GetIssues();
 
