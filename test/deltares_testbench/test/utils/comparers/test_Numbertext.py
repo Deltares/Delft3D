@@ -7,12 +7,12 @@ import os
 
 import pytest
 
-from src.config.file_check import FileCheck
-from src.config.parameter import Parameter
-from src.config.types.file_type import FileType
-from src.utils.comparers.end_result import EndResult
-from src.utils.comparers.number_text_comparer import NumberTextComparer
 from test.utils.test_logger import TestLogger
+from testbench.config.file_check import FileCheck
+from testbench.config.parameter import Parameter
+from testbench.config.types.file_type import FileType
+from testbench.utils.comparers.end_result import EndResult
+from testbench.utils.comparers.number_text_comparer import NumberTextComparer
 
 
 def is_nan(number: float) -> bool:

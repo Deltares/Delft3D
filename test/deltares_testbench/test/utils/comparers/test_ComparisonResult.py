@@ -1,7 +1,7 @@
 import pytest
 
-from src.utils.comparers.comparison_result import ComparisonResult
-from src.utils.comparers.end_result import EndResult
+from testbench.utils.comparers.comparison_result import ComparisonResult
+from testbench.utils.comparers.end_result import EndResult
 
 
 @pytest.mark.parametrize(("error", "expected_result"), [(True, EndResult.ERROR), (False, EndResult.NOK)])

@@ -1,6 +1,6 @@
 import pytest
 
-from src.utils.paths import Paths
+from testbench.utils.paths import Paths
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,87 @@
+import os
+import shutil
+from datetime import datetime
+from typing import List
+
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.suite.run_data import RunData
+from testbench.suite.test_case_result import TestCaseResult
+from testbench.suite.test_set_runner import TestSetRunner
+from testbench.utils.logging.i_logger import ILogger
+from testbench.utils.logging.test_loggers.i_test_logger import ITestLogger
+
+
+class ReferenceRunner(TestSetRunner):
+    def post_process(
+        self,
+        test_case_config: TestCaseConfig,
+        logger: ITestLogger,
+        run_data: RunData,
+    ) -> TestCaseResult:
+        # Get the reference networkPath of the testcase
+
+        logger.debug("Overwrite (local) reference")
+        if not os.path.exists(os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run")):
+            raise OSError(
+                -1,
+                "Could not locate _tb3_char.run",
+                test_case_config.absolute_test_case_path,
+            )
+        if not os.path.exists(test_case_config.absolute_test_case_reference_path):
+            os.makedirs(test_case_config.absolute_test_case_reference_path)
+        files = self.__findCharacteristicsChangedFiles__(
+            os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run")
+        )
+        for f in files:
+            fl = os.path.join(test_case_config.absolute_test_case_path, f)
+            fr = os.path.join(test_case_config.absolute_test_case_reference_path, f)
+            if os.path.isfile(fl):
+                shutil.copyfile(fl, fr)
+            if os.path.isdir(fl):
+                shutil.copytree(fl, fr, dirs_exist_ok=True)
+        shutil.copyfile(
+            os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run"),
+            os.path.join(test_case_config.absolute_test_case_reference_path, "_tb3_char.run"),
+        )
+
+        run_data.end_time = datetime.now()
+
+        return TestCaseResult(test_case_config, run_data)
+
+    def show_summary(self, results: List[TestCaseResult], logger: ILogger) -> None:
+        logger.info("SUMMARY of the reference run")
+        logger.info("%-40s (%7s %7s) %-6s" % ("Test case name", "Runtime", "Ratio", "Result"))
+        configs = [r.config for r in results]
+        for test_case_config in configs:
+            if len(test_case_config.errors) > 0:
+                result = "ERROR"
+            else:
+                result = "OK"
+
+            logger.info(
+                "%-40s (%7.2f %7.2f) %-6s"
+                % (
+                    test_case_config.name[:40],
+                    test_case_config.run_time,
+                    test_case_config.run_time / test_case_config.ref_run_time,
+                    result,
+                )
+            )
+
+    # retrieve changed and added files from _tb3_char.run file
+    # input: path to _tb3_char.run
+    # output: changed and added file names
+    def __findCharacteristicsChangedFiles__(self, filename):
+        with open(filename) as f:
+            lines = []
+            for line in f:
+                if "Output_" in line:
+                    _, value = line.split(":")
+                    lines.append(value.strip())
+            return lines
+
+    def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
+        # the result of a reference run is only determined by whether an error was detected or not.
+        # This is reflected in the testCaseConfig (not to be confused with testCase, which also tracks errors).
+        test_case_config.errors = [""]
+        return TestCaseResult(test_case_config, run_data)

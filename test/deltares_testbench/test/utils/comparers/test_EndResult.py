@@ -1,6 +1,6 @@
 import pytest
 
-from src.utils.comparers.end_result import EndResult
+from testbench.utils.comparers.end_result import EndResult
 
 
 def test_end_result_enum_values() -> None:

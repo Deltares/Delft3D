@@ -4,15 +4,15 @@ from typing import Optional
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.location import Location
-from src.config.test_case_config import TestCaseConfig
-from src.config.test_case_path import TestCasePath
-from src.config.types.path_type import PathType
-from src.suite.reference_runner import ReferenceRunner
-from src.suite.run_data import RunData
-from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.logging.file_logger import FileLogger
-from src.utils.logging.i_main_logger import IMainLogger
+from testbench.config.location import Location
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.config.test_case_path import TestCasePath
+from testbench.config.types.path_type import PathType
+from testbench.suite.reference_runner import ReferenceRunner
+from testbench.suite.run_data import RunData
+from testbench.suite.test_bench_settings import TestBenchSettings
+from testbench.utils.logging.file_logger import FileLogger
+from testbench.utils.logging.i_main_logger import IMainLogger
 
 
 class TestReferenceRunner:
@@ -25,7 +25,7 @@ class TestReferenceRunner:
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.test_set_runner.HandlerFactory")
+        mocker.patch("testbench.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
 
         # Act
@@ -45,7 +45,7 @@ class TestReferenceRunner:
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.test_set_runner.HandlerFactory")
+        mocker.patch("testbench.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
         TestReferenceRunner.simulate_run(test_name, fs, location=f"reference/{platform}")
 
@@ -67,7 +67,7 @@ class TestReferenceRunner:
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.test_set_runner.HandlerFactory")
+        mocker.patch("testbench.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
         TestReferenceRunner.simulate_run(test_name, fs, location=f"reference/{platform}")
 

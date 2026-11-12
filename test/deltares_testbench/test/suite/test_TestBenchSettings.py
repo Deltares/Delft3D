@@ -2,14 +2,14 @@ from unittest.mock import MagicMock, Mock
 
 from pytest_mock import MockerFixture
 
-from src.config.local_paths import LocalPaths
-from src.config.program_config import ProgramConfig
-from src.config.test_case_config import TestCaseConfig
-from src.config.types.path_type import PathType
-from src.suite.command_line_settings import CommandLineSettings
-from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.logging.i_logger import ILogger
-from src.utils.xml_config_parser import XmlConfig
+from testbench.config.local_paths import LocalPaths
+from testbench.config.program_config import ProgramConfig
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.config.types.path_type import PathType
+from testbench.suite.command_line_settings import CommandLineSettings
+from testbench.suite.test_bench_settings import TestBenchSettings
+from testbench.utils.logging.i_logger import ILogger
+from testbench.utils.xml_config_parser import XmlConfig
 
 
 class TestTestBenchSettings:
@@ -41,7 +41,7 @@ class TestTestBenchSettings:
 
         mock_logger = Mock(spec=ILogger)
 
-        mock_filter_configs = mocker.patch("src.utils.xml_config_parser.XmlConfigParser.filter_configs")
+        mock_filter_configs = mocker.patch("testbench.utils.xml_config_parser.XmlConfigParser.filter_configs")
         mock_filter_configs.return_value = mock_filtered_configs
 
         # Act
@@ -80,7 +80,7 @@ class TestTestBenchSettings:
         mock_logger = Mock(spec=ILogger)
 
         expected_filtered_configs = [config1, config3]  # Only configs with "example" in name
-        mock_filter_configs = mocker.patch("src.utils.xml_config_parser.XmlConfigParser.filter_configs")
+        mock_filter_configs = mocker.patch("testbench.utils.xml_config_parser.XmlConfigParser.filter_configs")
         mock_filter_configs.return_value = expected_filtered_configs
 
         # Act

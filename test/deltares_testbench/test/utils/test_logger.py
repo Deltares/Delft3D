@@ -1,5 +1,5 @@
-from src.utils.logging.i_logger import ILogger
-from src.utils.logging.log_level import LogLevel
+from testbench.utils.logging.i_logger import ILogger
+from testbench.utils.logging.log_level import LogLevel
 
 
 class TestLogger(ILogger):

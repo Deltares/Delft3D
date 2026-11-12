@@ -4,16 +4,16 @@ from os.path import abspath, dirname, join
 
 import pytest
 
-from src.config.credentials import Credentials
-from src.config.parameter import Parameter
-from src.suite.command_line_settings import CommandLineSettings
-from src.utils.comparers.d_series_comparer import DSeriesComparer
-from src.utils.comparers.end_result import EndResult
-from src.utils.comparers.tree_comparer import TreeComparer
-from src.utils.logging.console_logger import ConsoleLogger
-from src.utils.logging.log_level import LogLevel
-from src.utils.xml_config_parser import XmlConfigParser
 from test.utils.test_logger import TestLogger
+from testbench.config.credentials import Credentials
+from testbench.config.parameter import Parameter
+from testbench.suite.command_line_settings import CommandLineSettings
+from testbench.utils.comparers.d_series_comparer import DSeriesComparer
+from testbench.utils.comparers.end_result import EndResult
+from testbench.utils.comparers.tree_comparer import TreeComparer
+from testbench.utils.logging.console_logger import ConsoleLogger
+from testbench.utils.logging.log_level import LogLevel
+from testbench.utils.xml_config_parser import XmlConfigParser
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
 

@@ -4,8 +4,8 @@ import io
 import textwrap
 from typing import Optional
 
-from src.config.dependency import Dependency
-from src.config.test_case_path import TestCasePath
+from testbench.config.dependency import Dependency
+from testbench.config.test_case_path import TestCasePath
 
 
 def make_test_case_config_xml(

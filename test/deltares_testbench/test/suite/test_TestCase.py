@@ -4,10 +4,10 @@ from typing import List, Optional
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.test_case_config import TestCaseConfig
-from src.suite.program import Program
-from src.suite.test_case import TestCase
-from src.utils.logging.file_logger import FileLogger
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.suite.program import Program
+from testbench.suite.test_case import TestCase
+from testbench.utils.logging.file_logger import FileLogger
 
 
 class TestTestCase:
@@ -23,7 +23,7 @@ class TestTestCase:
         mocked_program.run.side_effect = self.create_file_side_effect(f"{config.absolute_test_case_path}/out1.out")
         mocked_program.name.return_value = "program_1"
         test_case._TestCase__programs = [[0, mocked_program]]
-        mocker.patch("src.suite.test_case.TestCase.__initializeProgramList__")
+        mocker.patch("testbench.suite.test_case.TestCase.__initializeProgramList__")
 
         # Act
         test_case.run([])

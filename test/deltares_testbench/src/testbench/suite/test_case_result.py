@@ -1,0 +1,42 @@
+"""Result for test case run.
+
+Copyright (C)  Stichting Deltares, 2026
+"""
+
+from typing import List, Tuple
+
+from testbench.config.file_check import FileCheck
+from testbench.config.parameter import Parameter
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.suite.run_data import RunData
+from testbench.utils.comparers.comparison_result import ComparisonResult
+
+
+class TestCaseResult:
+    """Contains the result for a TestCaseConfig."""
+
+    __test__ = False
+
+    def __init__(self, config: TestCaseConfig, run_data: RunData) -> None:
+        self.__config: TestCaseConfig = config
+        self.__run_data: RunData = run_data
+        self.__results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]] = []
+
+    @property
+    def results(self) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
+        """Result list for all file checks."""
+        return self.__results
+
+    @results.setter
+    def results(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
+        self.__results = results
+
+    @property
+    def config(self) -> TestCaseConfig:
+        """Config that this result belongs to."""
+        return self.__config
+
+    @property
+    def run_data(self) -> RunData:
+        """Data related to the test run."""
+        return self.__run_data

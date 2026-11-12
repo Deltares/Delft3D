@@ -13,13 +13,13 @@ import numpy as np
 import pytest
 from pytest_mock import MockerFixture
 
-import src.utils.comparers.netcdf_comparer as nccmp
-from src.config.file_check import FileCheck
-from src.config.parameter import Parameter
-from src.config.types.file_type import FileType
-from src.utils.comparers.comparison_result import ComparisonResult
-from src.utils.comparers.end_result import EndResult
-from src.utils.logging.i_logger import ILogger
+import testbench.utils.comparers.netcdf_comparer as nccmp
+from testbench.config.file_check import FileCheck
+from testbench.config.parameter import Parameter
+from testbench.config.types.file_type import FileType
+from testbench.utils.comparers.comparison_result import ComparisonResult
+from testbench.utils.comparers.end_result import EndResult
+from testbench.utils.logging.i_logger import ILogger
 
 
 @pytest.fixture
@@ -122,7 +122,7 @@ class TestNetcdfComparer:
         left = self.make_string_dataset("pump_name", same_strings, row_name="pump", col_name="name_len")
         right = self.make_string_dataset("pump_name", same_strings, row_name="pump", col_name="name_len")
 
-        dataset_constructor = mocker.patch("src.utils.comparers.netcdf_comparer.nc.Dataset")
+        dataset_constructor = mocker.patch("testbench.utils.comparers.netcdf_comparer.nc.Dataset")
         dataset_constructor.side_effect = [left, right]
 
         fc = self.create_netcdf_file_check("pump_name")
@@ -141,7 +141,7 @@ class TestNetcdfComparer:
         left = self.make_string_dataset("pump_name", ["foo", "bar"], row_name="pump", col_name="name_len")
         right = self.make_string_dataset("pump_name", ["bar", "baz"], row_name="pump", col_name="name_len")
 
-        dataset_constructor = mocker.patch("src.utils.comparers.netcdf_comparer.nc.Dataset")
+        dataset_constructor = mocker.patch("testbench.utils.comparers.netcdf_comparer.nc.Dataset")
         dataset_constructor.side_effect = [left, right]
 
         fc = self.create_netcdf_file_check("pump_name")

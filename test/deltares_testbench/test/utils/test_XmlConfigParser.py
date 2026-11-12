@@ -7,15 +7,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 from lxml import etree
 
-from src.config.credentials import Credentials
-from src.config.dependency import Dependency
-from src.config.test_case_path import TestCasePath
-from src.suite.command_line_settings import CommandLineSettings
-from src.utils.logging.console_logger import ConsoleLogger
-from src.utils.logging.log_level import LogLevel
-from src.utils.logging.test_loggers.test_result_type import TestResultType
-from src.utils.xml_config_parser import XmlConfigParser
 from test.helpers.xml_config_helper import make_test_case_config_xml
+from testbench.config.credentials import Credentials
+from testbench.config.dependency import Dependency
+from testbench.config.test_case_path import TestCasePath
+from testbench.suite.command_line_settings import CommandLineSettings
+from testbench.utils.logging.console_logger import ConsoleLogger
+from testbench.utils.logging.log_level import LogLevel
+from testbench.utils.logging.test_loggers.test_result_type import TestResultType
+from testbench.utils.xml_config_parser import XmlConfigParser
 
 
 @pytest.fixture()
@@ -181,7 +181,9 @@ class TestXmlConfigParser:
         logger.create_test_case_logger.return_value = testcase_logger
 
         # Act
-        with patch("src.utils.logging.test_loggers.file_test_logger.FileTestLogger", return_value=testcase_logger):
+        with patch(
+            "testbench.utils.logging.test_loggers.file_test_logger.FileTestLogger", return_value=testcase_logger
+        ):
             with pytest.raises(Exception) as excinfo:
                 _ = parser.load(settings, logger)
 

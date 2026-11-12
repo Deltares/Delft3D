@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.test_bench_parameter_parser import TestBenchParameterParser
+from testbench.utils.test_bench_parameter_parser import TestBenchParameterParser
 
 
 class TestTestBenchParameterParser:

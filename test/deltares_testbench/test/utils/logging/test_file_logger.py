@@ -1,13 +1,30 @@
 import os
 import uuid
+from pathlib import Path
 
+import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-from src.utils.logging.file_logger import FileLogger
-from src.utils.logging.log_level import LogLevel
+from testbench.utils.common import get_default_logging_folder_path
+from testbench.utils.logging.file_logger import FileLogger
+from testbench.utils.logging.log_level import LogLevel
 
 
 class TestFileLogger:
+    def test_default_logs_are_written_in_working_directory(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        log_path = os.path.join(get_default_logging_folder_path(), "file.log")
+
+        logger = FileLogger(LogLevel.INFO, "working_directory_logger", log_path)
+        try:
+            logger.info("installed package log")
+        finally:
+            logger.close()
+
+        assert "installed package log" in (tmp_path / "logs" / "file.log").read_text(encoding="utf-8")
+
     def test_init_logger_should_create_1_log_file(self, fs: FakeFilesystem) -> None:
         # Arrange
         random_hash = str(uuid.uuid4())

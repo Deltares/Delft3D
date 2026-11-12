@@ -10,11 +10,11 @@ from typing import Iterator
 import pytest
 from pytest_mock import MockerFixture
 
-from src.config.program_config import ProgramConfig
-from src.suite.program import Program
-from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.logging.i_logger import ILogger
-from src.utils.logging.log_level import LogLevel
+from testbench.config.program_config import ProgramConfig
+from testbench.suite.program import Program
+from testbench.suite.test_bench_settings import TestBenchSettings
+from testbench.utils.logging.i_logger import ILogger
+from testbench.utils.logging.log_level import LogLevel
 
 
 @pytest.fixture()
@@ -95,7 +95,7 @@ class TestProgram:
         settings.command_line_settings.log_level = LogLevel.DEBUG
         program = Program(config, settings)
         logger = mocker.Mock(spec=ILogger)
-        log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")
+        log_folder = mocker.patch("testbench.suite.program.get_default_logging_folder_path")
         log_folder.return_value = str(tmp_dir.absolute())
 
         # Act
@@ -131,7 +131,7 @@ class TestProgram:
         settings.command_line_settings.log_level = LogLevel.DEBUG
         program = Program(config, settings)
         logger = mocker.Mock(spec=ILogger)
-        log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")
+        log_folder = mocker.patch("testbench.suite.program.get_default_logging_folder_path")
         log_folder.return_value = str(tmp_dir.absolute())
 
         # Act

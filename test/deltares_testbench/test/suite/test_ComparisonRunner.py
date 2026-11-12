@@ -9,23 +9,23 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.dependency import Dependency
-from src.config.local_paths import LocalPaths
-from src.config.location import Location
-from src.config.program_config import ProgramConfig
-from src.config.test_case_config import TestCaseConfig
-from src.config.test_case_path import TestCasePath
-from src.config.types.path_type import PathType
-from src.suite.comparison_runner import ComparisonRunner
-from src.suite.run_data import RunData
-from src.suite.test_bench_settings import TestBenchSettings
-from src.suite.test_case_result import TestCaseResult
-from src.utils.common import get_default_logging_folder_path
-from src.utils.comparers.end_result import EndResult
-from src.utils.logging.console_logger import ConsoleLogger
-from src.utils.logging.log_level import LogLevel
-from src.utils.paths import Paths
-from src.utils.xml_config_parser import XmlConfigParser
+from testbench.config.dependency import Dependency
+from testbench.config.local_paths import LocalPaths
+from testbench.config.location import Location
+from testbench.config.program_config import ProgramConfig
+from testbench.config.test_case_config import TestCaseConfig
+from testbench.config.test_case_path import TestCasePath
+from testbench.config.types.path_type import PathType
+from testbench.suite.comparison_runner import ComparisonRunner
+from testbench.suite.run_data import RunData
+from testbench.suite.test_bench_settings import TestBenchSettings
+from testbench.suite.test_case_result import TestCaseResult
+from testbench.utils.common import get_default_logging_folder_path
+from testbench.utils.comparers.end_result import EndResult
+from testbench.utils.logging.console_logger import ConsoleLogger
+from testbench.utils.logging.log_level import LogLevel
+from testbench.utils.paths import Paths
+from testbench.utils.xml_config_parser import XmlConfigParser
 
 
 class FakeDownloadMode(Enum):
@@ -66,7 +66,7 @@ def patch_fake_download(mocker: MockerFixture, fs: FakeFilesystem, mode: FakeDow
                     fs.makedirs(to_path, exist_ok=True)
                     fs.create_file(f"{to_path}/file.txt", contents="new")
 
-    return mocker.patch("src.suite.test_set_runner.HandlerFactory.download", side_effect=_fake_download)
+    return mocker.patch("testbench.suite.test_set_runner.HandlerFactory.download", side_effect=_fake_download)
 
 
 class TestComparisonRunner:
@@ -135,7 +135,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
-        run_mock = mocker.patch("src.suite.test_case.TestCase.run")
+        run_mock = mocker.patch("testbench.suite.test_case.TestCase.run")
         runner = ComparisonRunner(settings, logger)
 
         # Act
@@ -170,7 +170,7 @@ class TestComparisonRunner:
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         mocker.patch.object(ComparisonRunner, "show_summary")
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls = mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         runner = ComparisonRunner(settings, logger)
 
@@ -320,13 +320,13 @@ class TestComparisonRunner:
         runner.prepare_test_case(succeeding_config, logger)
 
         # Patch program execution behavior
-        mocker.patch("src.suite.test_case.Program.run")
-        return_code_mock = mocker.patch("src.suite.test_case.Program.last_return_code", new_callable=PropertyMock)
+        mocker.patch("testbench.suite.test_case.Program.run")
+        return_code_mock = mocker.patch("testbench.suite.test_case.Program.last_return_code", new_callable=PropertyMock)
         return_code_mock.side_effect = [1, 0]  # First test fails, second succeeds
 
         # Make `getError` first return an error, then no error
         return_values = iter([RuntimeError("Failed to frobnicate"), None])
-        mocker.patch("src.suite.test_case.Program.getError", side_effect=lambda: next(return_values))
+        mocker.patch("testbench.suite.test_case.Program.getError", side_effect=lambda: next(return_values))
 
         # Patch post_process to return empty results
         mocker.patch.object(
@@ -692,7 +692,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls = mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         # Act — non-DVC config means __prepare_dvc_test_cases should not create handler
         runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
@@ -718,7 +718,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls = mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         # Act
         runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
@@ -744,7 +744,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls = mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         # Act
         runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
@@ -770,7 +770,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mock_dvc_handler_cls = mocker.patch("testbench.suite.test_set_runner.DvcHandler")
         mock_dvc_handler_cls.return_value.download_batch.side_effect = RuntimeError("network error")
         cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
 
@@ -796,7 +796,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         # Act
         runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
@@ -872,7 +872,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch("testbench.suite.test_set_runner.DvcHandler")
         mocker.patch.object(
             runner,
             "_TestSetRunner__validate_location",
@@ -899,7 +899,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch("testbench.suite.test_set_runner.DvcHandler")
         mocker.patch.object(
             runner,
             "_TestSetRunner__set_absolute_paths",
@@ -939,7 +939,7 @@ class TestComparisonRunner:
         logger = MagicMock(spec=ConsoleLogger)
         runner = ComparisonRunner(settings, logger)
 
-        mocker.patch("src.suite.test_set_runner.DvcHandler")
+        mocker.patch("testbench.suite.test_set_runner.DvcHandler")
 
         # Act
         runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]

@@ -4,7 +4,7 @@ from os.path import abspath, dirname, join
 
 import pytest
 
-from src.utils.comparers.d_series_comparer import DSeriesComparer
+from testbench.utils.comparers.d_series_comparer import DSeriesComparer
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
 

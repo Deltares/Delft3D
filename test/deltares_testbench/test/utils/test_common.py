@@ -4,12 +4,12 @@ from unittest.mock import Mock, call, patch
 import numpy as np
 import pytest
 
-from src.utils.common import escape_teamcity, log_header, log_separator, log_table
-from src.utils.logging.log_level import LogLevel
+from testbench.utils.common import escape_teamcity, log_header, log_separator, log_table
+from testbench.utils.logging.log_level import LogLevel
 
 
 class TestCommon:
-    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    @patch("testbench.utils.logging.console_logger.ConsoleLogger")
     def test_log_header(self, mock_logger) -> None:
         logger_instance = Mock()
 
@@ -28,7 +28,7 @@ class TestCommon:
 
         logger_instance.log.assert_has_calls(expected_calls)
 
-    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    @patch("testbench.utils.logging.console_logger.ConsoleLogger")
     def test_log_separator(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()
@@ -40,7 +40,7 @@ class TestCommon:
         # Assert
         logger_instance.log.assert_called_with("vvv", LogLevel.INFO)
 
-    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    @patch("testbench.utils.logging.console_logger.ConsoleLogger")
     def test_log_table(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()
@@ -67,7 +67,7 @@ class TestCommon:
 
         logger_instance.log.assert_has_calls(expected_calls)
 
-    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    @patch("testbench.utils.logging.console_logger.ConsoleLogger")
     def test_convert_numpy_float_to_python_float(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()

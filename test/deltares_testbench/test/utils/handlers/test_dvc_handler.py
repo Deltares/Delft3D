@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
-from src.config.credentials import Credentials
-from src.utils.handlers.dvc_handler import DvcHandler
-from src.utils.logging.i_logger import ILogger
+from testbench.config.credentials import Credentials
+from testbench.utils.handlers.dvc_handler import DvcHandler
+from testbench.utils.logging.i_logger import ILogger
 
 
 def _make_credentials(username: str = "ak", password: str = "sk") -> Credentials:

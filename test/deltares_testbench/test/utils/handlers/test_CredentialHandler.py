@@ -6,9 +6,9 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.credentials import Credentials
-from src.utils.handlers.credential_handler import CredentialHandler, CredentialStatus
-from src.utils.logging.console_logger import ConsoleLogger
+from testbench.config.credentials import Credentials
+from testbench.utils.handlers.credential_handler import CredentialHandler, CredentialStatus
+from testbench.utils.logging.console_logger import ConsoleLogger
 
 
 class TestCredentialHandler:

@@ -96,12 +96,34 @@ uv sync --locked              # Only the dependencies needed to run the testbenc
   [in this section](#why-separate-the-dependencies-from-development-dependencies).
 
 Use `uv run` to run something in this environment without activating it first, for instance
-`uv run python TestBench.py --help`.
+`uv run testbench --help` or `uv run python -m testbench --help`.
 
 If you cannot use `uv`, activate the virtual environment and use `pip`. This does *not* use the pinned versions
 in `uv.lock`: `pip` resolves the version constraints from `pyproject.toml` itself.
 ```bash
 pip install -e ".[dev]"
+```
+
+### Package layout and command-line usage
+The distribution is named `deltares-testbench`, and its Python package is `testbench`.
+All package source code lives under `src/testbench/`; internal imports use `testbench.*`.
+An editable install is required when developing from a source checkout so that these imports
+resolve without adding source directories to `PYTHONPATH`.
+
+After installation, run `testbench ...` or `python -m testbench ...` from your working directory.
+The source checkout also retains `python TestBench.py ...` as a compatibility launcher for CI
+and existing scripts. All three commands run the same implementation.
+
+The package includes a `py.typed` marker so type checkers can use its inline annotations.
+
+Logs are written to `logs/` in the current working directory, not inside the installed package.
+Configuration files, test case data, and third-party tools remain external to the Python package;
+supply them through the existing command-line options and configuration files.
+
+To run the unit tests or build a source distribution and wheel, use:
+```bash
+uv run pytest
+uv build
 ```
 
 ### Updating the pinned dependencies
