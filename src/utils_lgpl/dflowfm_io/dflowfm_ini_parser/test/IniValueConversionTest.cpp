@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "ini/IniValueConverter.h"
+#include "ini/IniValueConversion.h"
 
 namespace ini::test
 {
@@ -14,22 +14,22 @@ namespace ini::test
 
     template <typename... Args>
     concept CanParseTimePoint = requires(Args... args) {
-        IniValueConverter::TimePointFromString(args...);
+        conversion::TimePointFromString(args...);
     };
 
     template <typename... Args>
     concept CanFormatTimePoint = requires(Args... args) {
-        IniValueConverter::TimePointToString(args...);
+        conversion::TimePointToString(args...);
     };
 
     template <typename... Args>
     concept CanParseTimePointList = requires(Args... args) {
-        IniValueConverter::TimePointListFromString(args...);
+        conversion::TimePointListFromString(args...);
     };
 
     template <typename... Args>
     concept CanFormatTimePointList = requires(Args... args) {
-        IniValueConverter::TimePointListToString(args...);
+        conversion::TimePointListToString(args...);
     };
 
     static_assert(!CanParseTimePoint<const std::string&>);
@@ -40,106 +40,106 @@ namespace ini::test
     static_assert(CanParseTimePointList<const std::string&, TimePointFormat>);
     static_assert(!CanFormatTimePointList<const std::vector<time_point>&>);
     static_assert(CanFormatTimePointList<const std::vector<time_point>&, TimePointFormat>);
-    static_assert(std::same_as<decltype(IniValueConverter::IntegerFromString("")), int>);
-    static_assert(std::same_as<decltype(&IniValueConverter::IntegerToString), std::string (*)(int)>);
-    static_assert(std::same_as<decltype(IniValueConverter::IntegerListFromString("")), std::vector<int>>);
-    static_assert(std::same_as<decltype(IniValueConverter::FloatingPointFromString("")), double>);
-    static_assert(std::same_as<decltype(IniValueConverter::FloatingPointListFromString("")), std::vector<double>>);
-    static_assert(std::same_as<decltype(&IniValueConverter::FloatingPointToString),
+    static_assert(std::same_as<decltype(conversion::IntegerFromString("")), int>);
+    static_assert(std::same_as<decltype(&conversion::IntegerToString), std::string (*)(int)>);
+    static_assert(std::same_as<decltype(conversion::IntegerListFromString("")), std::vector<int>>);
+    static_assert(std::same_as<decltype(conversion::FloatingPointFromString("")), double>);
+    static_assert(std::same_as<decltype(conversion::FloatingPointListFromString("")), std::vector<double>>);
+    static_assert(std::same_as<decltype(&conversion::FloatingPointToString),
                                std::string (*)(double, FloatFormat)>);
-    static_assert(std::same_as<decltype(&IniValueConverter::FloatingPointListToString),
+    static_assert(std::same_as<decltype(&conversion::FloatingPointListToString),
                                std::string (*)(const std::vector<double>&, FloatFormat, char)>);
 
-    TEST(IniValueConverterTest, NamedIntegerConverters_RoundTripScalarAndListValues)
+    TEST(IniValueConversionTest, NamedIntegerConverters_RoundTripScalarAndListValues)
     {
         const int value = 42;
-        EXPECT_EQ(IniValueConverter::IntegerFromString(IniValueConverter::IntegerToString(value)), value);
+        EXPECT_EQ(conversion::IntegerFromString(conversion::IntegerToString(value)), value);
         const std::vector<int> values{1, value};
-        EXPECT_EQ(IniValueConverter::IntegerListFromString(
-                      IniValueConverter::IntegerListToString(values, ';'), ';'), values);
-        EXPECT_EQ(IniValueConverter::IntegerFromString(" 42 \r\n"), value);
-        EXPECT_THROW(IniValueConverter::IntegerFromString("42x"), std::invalid_argument);
+        EXPECT_EQ(conversion::IntegerListFromString(
+                      conversion::IntegerListToString(values, ';'), ';'), values);
+        EXPECT_EQ(conversion::IntegerFromString(" 42 \r\n"), value);
+        EXPECT_THROW(conversion::IntegerFromString("42x"), std::invalid_argument);
     }
 
-    TEST(IniValueConverterTest, IntegerFromString_IntLimits_ReturnsValues)
+    TEST(IniValueConversionTest, IntegerFromString_IntLimits_ReturnsValues)
     {
         for (const int value : {std::numeric_limits<int>::min(), std::numeric_limits<int>::max()})
         {
-            EXPECT_EQ(IniValueConverter::IntegerFromString(std::to_string(value)), value);
+            EXPECT_EQ(conversion::IntegerFromString(std::to_string(value)), value);
         }
     }
 
-    TEST(IniValueConverterTest, IntegerListToString_IntLimitsAndCustomSeparator_ReturnsFormattedValues)
+    TEST(IniValueConversionTest, IntegerListToString_IntLimitsAndCustomSeparator_ReturnsFormattedValues)
     {
         const int min = std::numeric_limits<int>::min();
         const int max = std::numeric_limits<int>::max();
 
-        EXPECT_EQ(IniValueConverter::IntegerListToString({min, 0, max}, ';'),
+        EXPECT_EQ(conversion::IntegerListToString({min, 0, max}, ';'),
                   std::to_string(min) + ";0;" + std::to_string(max));
     }
 
-    TEST(IniValueConverterTest, IntegerFromString_OutsideIntRange_ThrowsInvalidArgument)
+    TEST(IniValueConversionTest, IntegerFromString_OutsideIntRange_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::IntegerFromString(std::to_string(std::numeric_limits<int>::max()) + "0"),
+        EXPECT_THROW(conversion::IntegerFromString(std::to_string(std::numeric_limits<int>::max()) + "0"),
                      std::invalid_argument);
-        EXPECT_THROW(IniValueConverter::IntegerFromString(std::to_string(std::numeric_limits<int>::min()) + "0"),
+        EXPECT_THROW(conversion::IntegerFromString(std::to_string(std::numeric_limits<int>::min()) + "0"),
                      std::invalid_argument);
     }
 
-    TEST(IniValueConverterTest, NamedDoubleConverters_RoundTripValuesAndParseFortranNotation)
+    TEST(IniValueConversionTest, NamedDoubleConverters_RoundTripValuesAndParseFortranNotation)
     {
         const double value = 1.5;
-        EXPECT_EQ(IniValueConverter::FloatingPointFromString(
-                      IniValueConverter::FloatingPointToString(value)), value);
-        EXPECT_EQ(IniValueConverter::FloatingPointFromString(" 1.5D+0 \r\n"), value);
+        EXPECT_EQ(conversion::FloatingPointFromString(
+                      conversion::FloatingPointToString(value)), value);
+        EXPECT_EQ(conversion::FloatingPointFromString(" 1.5D+0 \r\n"), value);
         const std::vector<double> values{value, 2.5};
-        EXPECT_EQ(IniValueConverter::FloatingPointListFromString(
-                      IniValueConverter::FloatingPointListToString(values, FloatFormat::Scientific, ';'), ';'), values);
-        EXPECT_THROW(IniValueConverter::FloatingPointFromString("1.5x"), std::invalid_argument);
+        EXPECT_EQ(conversion::FloatingPointListFromString(
+                      conversion::FloatingPointListToString(values, FloatFormat::Scientific, ';'), ';'), values);
+        EXPECT_THROW(conversion::FloatingPointFromString("1.5x"), std::invalid_argument);
     }
 
-    TEST(IniValueConverterTest, FloatingPointFromString_PreservesDoublePrecision)
+    TEST(IniValueConversionTest, FloatingPointFromString_PreservesDoublePrecision)
     {
-        EXPECT_DOUBLE_EQ(IniValueConverter::FloatingPointFromString("1.23456789012345"), 1.23456789012345);
-        EXPECT_EQ(IniValueConverter::FloatingPointListFromString(" 1.23456789012345;;2.5\r\n; ", ';'),
+        EXPECT_DOUBLE_EQ(conversion::FloatingPointFromString("1.23456789012345"), 1.23456789012345);
+        EXPECT_EQ(conversion::FloatingPointListFromString(" 1.23456789012345;;2.5\r\n; ", ';'),
                   (std::vector<double>{1.23456789012345, 2.5}));
     }
 
-    TEST(IniValueConverterTest, BoolListToString_ExplicitFormatAndDelimiter_ReturnsFormattedValues)
+    TEST(IniValueConversionTest, BoolListToString_ExplicitFormatAndDelimiter_ReturnsFormattedValues)
     {
-        EXPECT_EQ(IniValueConverter::BoolListToString({true, false}, BoolFormat::YesNo, ';'), "yes;no");
+        EXPECT_EQ(conversion::BoolListToString({true, false}, BoolFormat::YesNo, ';'), "yes;no");
     }
 
     // -------------------------------------------------------------------------
     // ToString - bool
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, ToString_TrueValue_ReturnsFormattedString)
+    TEST(IniValueConversionTest, ToString_TrueValue_ReturnsFormattedString)
     {
-        EXPECT_EQ(IniValueConverter::BoolToString(true), "True");
+        EXPECT_EQ(conversion::BoolToString(true), "True");
     }
 
-    TEST(IniValueConverterTest, ToString_FalseValue_ReturnsFormattedString)
+    TEST(IniValueConversionTest, ToString_FalseValue_ReturnsFormattedString)
     {
-        EXPECT_EQ(IniValueConverter::BoolToString(false), "False");
+        EXPECT_EQ(conversion::BoolToString(false), "False");
     }
 
     // -------------------------------------------------------------------------
     // ToString - bool with BoolFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringBoolExplicitFormatTest
+    class IniValueConversionToStringBoolExplicitFormatTest
         : public ::testing::TestWithParam<std::tuple<bool, BoolFormat, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringBoolExplicitFormatTest, ToString_BoolValue_ExplicitFormat_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringBoolExplicitFormatTest, ToString_BoolValue_ExplicitFormat_ReturnsFormattedString)
     {
         auto [value, format, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::BoolToString(value, format), expected);
+        EXPECT_EQ(conversion::BoolToString(value, format), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringBoolExplicitFormatTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringBoolExplicitFormatTest,
                              ::testing::Values(std::make_tuple(true, BoolFormat::ZeroOne, "1"),
                                                std::make_tuple(false, BoolFormat::ZeroOne, "0"),
                                                std::make_tuple(true, BoolFormat::YesNo, "yes"),
@@ -151,17 +151,17 @@ namespace ini::test
     // ToString - int
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringIntTest : public ::testing::TestWithParam<std::pair<int, std::string>>
+    class IniValueConversionToStringIntTest : public ::testing::TestWithParam<std::pair<int, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringIntTest, ToString_IntValue_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringIntTest, ToString_IntValue_ReturnsFormattedString)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::IntegerToString(value), expected);
+        EXPECT_EQ(conversion::IntegerToString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringIntTest,
                              ::testing::Values(std::make_pair(0, "0"),
                                                std::make_pair(42, "42"),
                                                std::make_pair(-100, "-100")));
@@ -170,17 +170,17 @@ namespace ini::test
     // ToString - double
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringDoubleTest : public ::testing::TestWithParam<std::pair<double, std::string>>
+    class IniValueConversionToStringDoubleTest : public ::testing::TestWithParam<std::pair<double, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringDoubleTest, ToString_DoubleValue_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringDoubleTest, ToString_DoubleValue_ReturnsFormattedString)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::FloatingPointToString(value), expected);
+        EXPECT_EQ(conversion::FloatingPointToString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringDoubleTest,
                              ::testing::Values(std::make_pair(0.0, "0.0"),
                                                std::make_pair(2.718281828, "2.718282"),
                                                std::make_pair(-12345.6789, "-12345.68")));
@@ -189,18 +189,18 @@ namespace ini::test
     // ToString - double with FloatFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringDoubleExplicitFormatTest
+    class IniValueConversionToStringDoubleExplicitFormatTest
         : public ::testing::TestWithParam<std::pair<FloatFormat, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringDoubleExplicitFormatTest, ToString_DoubleValue_ExplicitFormat_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringDoubleExplicitFormatTest, ToString_DoubleValue_ExplicitFormat_ReturnsFormattedString)
     {
         auto [format, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::FloatingPointToString(3.14, format), expected);
+        EXPECT_EQ(conversion::FloatingPointToString(3.14, format), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringDoubleExplicitFormatTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringDoubleExplicitFormatTest,
                              ::testing::Values(std::make_pair(FloatFormat::Fixed, "3.140000"),
                                                std::make_pair(FloatFormat::Scientific, "3.140000e+00"),
                                                std::make_pair(FloatFormat::General, "3.14")));
@@ -209,14 +209,14 @@ namespace ini::test
     // ToString - time_point
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringTimePointTest : public ::testing::TestWithParam<std::pair<time_point, std::string>>
+    class IniValueConversionToStringTimePointTest : public ::testing::TestWithParam<std::pair<time_point, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringTimePointTest, ToString_TimePointValue_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringTimePointTest, ToString_TimePointValue_ReturnsFormattedString)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::TimePointToString(value, TimePointFormat::CompactDateTime), expected);
+        EXPECT_EQ(conversion::TimePointToString(value, TimePointFormat::CompactDateTime), expected);
     }
 
     static time_point MakeTimePoint(int year, int month, int day, int hour, int min, int sec)
@@ -226,7 +226,7 @@ namespace ini::test
                minutes(min) + seconds(sec);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringTimePointTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringTimePointTest,
                              ::testing::Values(std::make_pair(MakeTimePoint(2023, 8, 14, 15, 30, 0), "20230814153000"),
                                                std::make_pair(MakeTimePoint(2000, 1, 1, 0, 0, 0), "20000101000000")));
 
@@ -234,19 +234,19 @@ namespace ini::test
     // ToString - time_point with TimePointFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringTimePointExplicitFormatTest
+    class IniValueConversionToStringTimePointExplicitFormatTest
         : public ::testing::TestWithParam<std::pair<TimePointFormat, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringTimePointExplicitFormatTest,
+    TEST_P(IniValueConversionToStringTimePointExplicitFormatTest,
            ToString_TimePointValue_ExplicitFormat_ReturnsFormattedString)
     {
         auto [format, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::TimePointToString(MakeTimePoint(2023, 8, 14, 15, 30, 0), format), expected);
+        EXPECT_EQ(conversion::TimePointToString(MakeTimePoint(2023, 8, 14, 15, 30, 0), format), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringTimePointExplicitFormatTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringTimePointExplicitFormatTest,
                              ::testing::Values(std::make_pair(TimePointFormat::CompactDateOnly, "20230814"),
                                                std::make_pair(TimePointFormat::CompactDateTime, "20230814153000"),
                                                std::make_pair(TimePointFormat::IsoDate, "2023-08-14"),
@@ -258,18 +258,18 @@ namespace ini::test
     // ToString - path
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToStringPathTest
+    class IniValueConversionToStringPathTest
         : public ::testing::TestWithParam<std::pair<std::filesystem::path, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToStringPathTest, ToString_PathValue_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringPathTest, ToString_PathValue_ReturnsFormattedString)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::PathToString(value), expected);
+        EXPECT_EQ(conversion::PathToString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringPathTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringPathTest,
                              ::testing::Values(std::make_pair(std::filesystem::path("foo/bar.txt"), "foo/bar.txt"),
                                                std::make_pair(std::filesystem::path("C:\\some\\path"), "C:\\some\\path"),
                                                std::make_pair(std::filesystem::path("relative"), "relative"),
@@ -279,53 +279,53 @@ namespace ini::test
     // ToString - string
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, ToString_EmptyStringValue_ReturnsEmptyString)
+    TEST(IniValueConversionTest, ToString_EmptyStringValue_ReturnsEmptyString)
     {
-        EXPECT_EQ(IniValueConverter::StringToString(std::string("")), "");
+        EXPECT_EQ(conversion::StringToString(std::string("")), "");
     }
 
-    TEST(IniValueConverterTest, ToString_WhitespaceStringValue_ReturnsWhitespaceString)
+    TEST(IniValueConversionTest, ToString_WhitespaceStringValue_ReturnsWhitespaceString)
     {
-        EXPECT_EQ(IniValueConverter::StringToString(std::string(" ")), " ");
+        EXPECT_EQ(conversion::StringToString(std::string(" ")), " ");
     }
 
-    TEST(IniValueConverterTest, ToString_NonEmptyStringValue_ReturnsFormattedString)
+    TEST(IniValueConversionTest, ToString_NonEmptyStringValue_ReturnsFormattedString)
     {
-        EXPECT_EQ(IniValueConverter::StringToString(std::string("Hello, World!")), "Hello, World!");
+        EXPECT_EQ(conversion::StringToString(std::string("Hello, World!")), "Hello, World!");
     }
 
     // -------------------------------------------------------------------------
     // FromString - bool
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromString_EmptyBooleanString_ThrowsInvalidArgument)
+    TEST(IniValueConversionTest, FromString_EmptyBooleanString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::BoolFromString(""), std::invalid_argument);
+        EXPECT_THROW(conversion::BoolFromString(""), std::invalid_argument);
     }
 
-    class IniValueConverterFromStringInvalidBoolTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromStringInvalidBoolTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromStringInvalidBoolTest, FromString_InvalidBooleanFormattedString_ThrowsInvalidArgument)
+    TEST_P(IniValueConversionFromStringInvalidBoolTest, FromString_InvalidBooleanFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::BoolFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::BoolFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidBoolTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidBoolTest,
                              ::testing::Values("tue", "fals", "fals e", "#true", "invalid"));
 
-    class IniValueConverterFromStringBoolTest : public ::testing::TestWithParam<std::pair<std::string, bool>>
+    class IniValueConversionFromStringBoolTest : public ::testing::TestWithParam<std::pair<std::string, bool>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringBoolTest, FromString_BooleanFormattedString_ReturnsBooleanValue)
+    TEST_P(IniValueConversionFromStringBoolTest, FromString_BooleanFormattedString_ReturnsBooleanValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::BoolFromString(value), expected);
+        EXPECT_EQ(conversion::BoolFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringBoolTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringBoolTest,
                              ::testing::Values(std::make_pair("True", true), std::make_pair(" True", true),
                                                std::make_pair("TRUE", true), std::make_pair("false", false),
                                                std::make_pair("false  ", false), std::make_pair("YES", true),
@@ -337,20 +337,20 @@ namespace ini::test
     // FromString - time_point with TimePointFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterFromStringTimePointExplicitFormatTest
+    class IniValueConversionFromStringTimePointExplicitFormatTest
         : public ::testing::TestWithParam<std::tuple<std::string, TimePointFormat, time_point>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringTimePointExplicitFormatTest,
+    TEST_P(IniValueConversionFromStringTimePointExplicitFormatTest,
            FromString_TimePointValue_ExplicitFormat_ReturnsTimePointValue)
     {
         auto [value, format, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::TimePointFromString(value, format), expected);
+        EXPECT_EQ(conversion::TimePointFromString(value, format), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromStringTimePointExplicitFormatTest,
+        IniValueConversionTest, IniValueConversionFromStringTimePointExplicitFormatTest,
         ::testing::Values(std::make_tuple("2023-08-14 12:10:01", TimePointFormat::IsoDateTime,
                                           MakeTimePoint(2023, 8, 14, 12, 10, 1)),
                           std::make_tuple("2022-12-31", TimePointFormat::IsoDate,
@@ -370,20 +370,20 @@ namespace ini::test
                           std::make_tuple(" 2022-12-31 \r\n", TimePointFormat::IsoDate,
                                           MakeTimePoint(2022, 12, 31, 0, 0, 0))));
 
-    class IniValueConverterFromStringTimePointMismatchedFormatTest
+    class IniValueConversionFromStringTimePointMismatchedFormatTest
         : public ::testing::TestWithParam<std::pair<std::string, TimePointFormat>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringTimePointMismatchedFormatTest,
+    TEST_P(IniValueConversionFromStringTimePointMismatchedFormatTest,
            FromString_TimePointValue_MismatchedExplicitFormat_ThrowsInvalidArgument)
     {
         auto [value, format] = GetParam();
-        EXPECT_THROW(IniValueConverter::TimePointFromString(value, format), std::invalid_argument);
+        EXPECT_THROW(conversion::TimePointFromString(value, format), std::invalid_argument);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromStringTimePointMismatchedFormatTest,
+        IniValueConversionTest, IniValueConversionFromStringTimePointMismatchedFormatTest,
         ::testing::Values(std::make_pair("20200130120000", TimePointFormat::CompactDateOnly),
                           std::make_pair("2022-12-31", TimePointFormat::IsoDateTime),
                           std::make_pair("2022-12-31", TimePointFormat::SlashDate),
@@ -393,43 +393,43 @@ namespace ini::test
                           std::make_pair("2020/01/01 12:00:00", TimePointFormat::CompactDateTime),
                           std::make_pair("not-a-date", TimePointFormat::IsoDateTime)));
 
-    TEST(IniValueConverterTest, FromString_EmptyTimePointValue_ExplicitFormat_ThrowsInvalidArgument)
+    TEST(IniValueConversionTest, FromString_EmptyTimePointValue_ExplicitFormat_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::TimePointFromString("", TimePointFormat::IsoDateTime), std::invalid_argument);
+        EXPECT_THROW(conversion::TimePointFromString("", TimePointFormat::IsoDateTime), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
     // FromString - int
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromString_EmptyIntegerString_ThrowsInvalidArgument)
+    TEST(IniValueConversionTest, FromString_EmptyIntegerString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::IntegerFromString(""), std::invalid_argument);
+        EXPECT_THROW(conversion::IntegerFromString(""), std::invalid_argument);
     }
 
-    class IniValueConverterFromStringInvalidIntTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromStringInvalidIntTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromStringInvalidIntTest, FromString_InvalidIntegerFormattedString_ThrowsInvalidArgument)
+    TEST_P(IniValueConversionFromStringInvalidIntTest, FromString_InvalidIntegerFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::IntegerFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::IntegerFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidIntTest,
                              ::testing::Values(".1", "1.", "1.0", "1x", "2-1", "true", "invalid"));
 
-    class IniValueConverterFromStringIntTest : public ::testing::TestWithParam<std::pair<std::string, int>>
+    class IniValueConversionFromStringIntTest : public ::testing::TestWithParam<std::pair<std::string, int>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringIntTest, FromString_IntegerFormattedString_ReturnsIntegerValue)
+    TEST_P(IniValueConversionFromStringIntTest, FromString_IntegerFormattedString_ReturnsIntegerValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::IntegerFromString(value), expected);
+        EXPECT_EQ(conversion::IntegerFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringIntTest,
                              ::testing::Values(std::make_pair("42", 42), std::make_pair("3 ", 3),
                                                std::make_pair("-999", -999), std::make_pair(" -1", -1),
                                                std::make_pair("0", 0), std::make_pair(" +100", 100),
@@ -439,34 +439,34 @@ namespace ini::test
     // FromString - double
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromString_EmptyDoubleString_ThrowsInvalidArgument)
+    TEST(IniValueConversionTest, FromString_EmptyDoubleString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::FloatingPointFromString(""), std::invalid_argument);
+        EXPECT_THROW(conversion::FloatingPointFromString(""), std::invalid_argument);
     }
 
-    class IniValueConverterFromStringInvalidDoubleTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromStringInvalidDoubleTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromStringInvalidDoubleTest, FromString_InvalidDoubleFormattedString_ThrowsInvalidArgument)
+    TEST_P(IniValueConversionFromStringInvalidDoubleTest, FromString_InvalidDoubleFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::FloatingPointFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::FloatingPointFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidDoubleTest,
                              ::testing::Values("invalid", "true", "123abc", "12.34.56"));
 
-    class IniValueConverterFromStringDoubleTest : public ::testing::TestWithParam<std::pair<std::string, double>>
+    class IniValueConversionFromStringDoubleTest : public ::testing::TestWithParam<std::pair<std::string, double>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringDoubleTest, FromString_DoubleFormattedString_ReturnsDoubleValue)
+    TEST_P(IniValueConversionFromStringDoubleTest, FromString_DoubleFormattedString_ReturnsDoubleValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_DOUBLE_EQ(IniValueConverter::FloatingPointFromString(value), expected);
+        EXPECT_DOUBLE_EQ(conversion::FloatingPointFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringDoubleTest,
                              ::testing::Values(std::make_pair("0", 0.0),
                                                std::make_pair("3.34343e+00", 3.34343),
                                                std::make_pair("1.23", 1.23),
@@ -476,17 +476,17 @@ namespace ini::test
                                                std::make_pair("1234.567890", 1234.56789),
                                                std::make_pair("-1.2e+02", -120.0)));
 
-    class IniValueConverterFromStringFortranDoubleTest : public ::testing::TestWithParam<std::pair<std::string, double>>
+    class IniValueConversionFromStringFortranDoubleTest : public ::testing::TestWithParam<std::pair<std::string, double>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringFortranDoubleTest, FromString_FortranFormattedDoubleString_ReturnsDoubleValue)
+    TEST_P(IniValueConversionFromStringFortranDoubleTest, FromString_FortranFormattedDoubleString_ReturnsDoubleValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_DOUBLE_EQ(IniValueConverter::FloatingPointFromString(value), expected);
+        EXPECT_DOUBLE_EQ(conversion::FloatingPointFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringFortranDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringFortranDoubleTest,
                              ::testing::Values(std::make_pair("1.234D+05", 1.234e5),
                                                std::make_pair("1.234d+05", 1.234e5),
                                                std::make_pair("1.234D-05", 1.234e-5),
@@ -498,36 +498,36 @@ namespace ini::test
                                                std::make_pair("1.5d2", 1.5e2),
                                                std::make_pair("-3.25D-01", -3.25e-1)));
 
-    class IniValueConverterFromStringInvalidFortranDoubleTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromStringInvalidFortranDoubleTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromStringInvalidFortranDoubleTest,
+    TEST_P(IniValueConversionFromStringInvalidFortranDoubleTest,
            FromString_InvalidFortranFormattedDoubleString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::FloatingPointFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::FloatingPointFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidFortranDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidFortranDoubleTest,
                              ::testing::Values("1.234D+05D", "1.5D2D", "DD", "1.2.3D5"));
 
     // -------------------------------------------------------------------------
     // FromString - time_point
     // -------------------------------------------------------------------------
 
-    class IniValueConverterFromStringInvalidTimePointTest
+    class IniValueConversionFromStringInvalidTimePointTest
         : public ::testing::TestWithParam<std::pair<std::string, TimePointFormat>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringInvalidTimePointTest,
+    TEST_P(IniValueConversionFromStringInvalidTimePointTest,
            FromString_InvalidTimePointFormattedString_ThrowsInvalidArgument)
     {
         auto [value, format] = GetParam();
-        EXPECT_THROW(IniValueConverter::TimePointFromString(value, format), std::invalid_argument);
+        EXPECT_THROW(conversion::TimePointFromString(value, format), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidTimePointTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidTimePointTest,
                              ::testing::Values(
                                  std::make_pair("abcdefgh", TimePointFormat::IsoDate),
                                  std::make_pair("23.0", TimePointFormat::CompactDateOnly),
@@ -542,18 +542,18 @@ namespace ini::test
     // FromString - path
     // -------------------------------------------------------------------------
 
-    class IniValueConverterFromStringPathTest
+    class IniValueConversionFromStringPathTest
         : public ::testing::TestWithParam<std::pair<std::string, std::filesystem::path>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringPathTest, FromString_PathFormattedString_ReturnsPathValue)
+    TEST_P(IniValueConversionFromStringPathTest, FromString_PathFormattedString_ReturnsPathValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::PathFromString(value), expected);
+        EXPECT_EQ(conversion::PathFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringPathTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringPathTest,
                              ::testing::Values(std::make_pair("foo/bar.txt", std::filesystem::path("foo/bar.txt")),
                                                std::make_pair("C:\\some\\path", std::filesystem::path("C:\\some\\path")),
                                                std::make_pair("relative", std::filesystem::path("relative")),
@@ -563,17 +563,17 @@ namespace ini::test
     // FromString - string
     // -------------------------------------------------------------------------
 
-    class IniValueConverterFromStringStringTest : public ::testing::TestWithParam<std::pair<std::string, std::string>>
+    class IniValueConversionFromStringStringTest : public ::testing::TestWithParam<std::pair<std::string, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterFromStringStringTest, FromString_StringValue_ReturnsStringValue)
+    TEST_P(IniValueConversionFromStringStringTest, FromString_StringValue_ReturnsStringValue)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::StringFromString(value), expected);
+        EXPECT_EQ(conversion::StringFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringStringTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringStringTest,
                              ::testing::Values(std::make_pair("", ""), 
                                                std::make_pair("   ", ""),
                                                std::make_pair("Hello, World!", "Hello, World!"),
@@ -583,18 +583,18 @@ namespace ini::test
     // ToMultiValueString - bool
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringBoolTest
+    class IniValueConversionToMultiValueStringBoolTest
         : public ::testing::TestWithParam<std::pair<std::vector<bool>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringBoolTest, ToMultiValueString_BooleanValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringBoolTest, ToMultiValueString_BooleanValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::BoolListToString(values), expected);
+        EXPECT_EQ(conversion::BoolListToString(values), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToMultiValueStringBoolTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringBoolTest,
                              ::testing::Values(std::make_pair(std::vector<bool>{true, false, true}, "True False True"),
                                                std::make_pair(std::vector<bool>{false, false}, "False False"),
                                                std::make_pair(std::vector<bool>{true}, "True")));
@@ -603,18 +603,18 @@ namespace ini::test
     // ToMultiValueString - int
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringIntTest
+    class IniValueConversionToMultiValueStringIntTest
         : public ::testing::TestWithParam<std::pair<std::vector<int>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringIntTest, ToMultiValueString_IntegerValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringIntTest, ToMultiValueString_IntegerValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::IntegerListToString(values), expected);
+        EXPECT_EQ(conversion::IntegerListToString(values), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToMultiValueStringIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringIntTest,
                              ::testing::Values(std::make_pair(std::vector<int>{10, 30, -3}, "10 30 -3"),
                                                std::make_pair(std::vector<int>{0, 100, -100}, "0 100 -100"),
                                                std::make_pair(std::vector<int>{42}, "42")));
@@ -623,18 +623,18 @@ namespace ini::test
     // ToMultiValueString - double
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringDoubleTest
+    class IniValueConversionToMultiValueStringDoubleTest
         : public ::testing::TestWithParam<std::pair<std::vector<double>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringDoubleTest, ToMultiValueString_DoubleValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringDoubleTest, ToMultiValueString_DoubleValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::FloatingPointListToString(values), expected);
+        EXPECT_EQ(conversion::FloatingPointListToString(values), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToMultiValueStringDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringDoubleTest,
         ::testing::Values(std::make_pair(std::vector<double>{1.218281, 2.22358, -7.7412}, "1.218281 2.22358 -7.7412"),
                           std::make_pair(std::vector<double>{0.0, 3.14, 2.71828}, "0.0 3.14 2.71828"),
                           std::make_pair(std::vector<double>{42.0}, "42.0")));
@@ -643,20 +643,20 @@ namespace ini::test
     // ToMultiValueString - double with FloatFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringDoubleExplicitFormatTest
+    class IniValueConversionToMultiValueStringDoubleExplicitFormatTest
         : public ::testing::TestWithParam<std::tuple<FloatFormat, char, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringDoubleExplicitFormatTest,
+    TEST_P(IniValueConversionToMultiValueStringDoubleExplicitFormatTest,
            ToMultiValueString_DoubleValues_ExplicitFormat_ReturnsFormattedString)
     {
         auto [format, separator, expected] = GetParam();
         std::vector<double> values = {3.14, -1.5};
-        EXPECT_EQ(IniValueConverter::FloatingPointListToString(values, format, separator), expected);
+        EXPECT_EQ(conversion::FloatingPointListToString(values, format, separator), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToMultiValueStringDoubleExplicitFormatTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringDoubleExplicitFormatTest,
                              ::testing::Values(std::make_tuple(FloatFormat::General, ' ', "3.14 -1.5"),
                                                std::make_tuple(FloatFormat::Fixed, ';', "3.140000;-1.500000"),
                                                std::make_tuple(FloatFormat::Scientific, ' ', "3.140000e+00 -1.500000e+00"),
@@ -666,20 +666,20 @@ namespace ini::test
     // ToMultiValueString - time_point
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringTimePointTest
+    class IniValueConversionToMultiValueStringTimePointTest
         : public ::testing::TestWithParam<std::pair<std::vector<time_point>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringTimePointTest,
+    TEST_P(IniValueConversionToMultiValueStringTimePointTest,
            ToMultiValueString_MultipleTimePointValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::TimePointListToString(values, TimePointFormat::CompactDateTime), expected);
+        EXPECT_EQ(conversion::TimePointListToString(values, TimePointFormat::CompactDateTime), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterToMultiValueStringTimePointTest,
+        IniValueConversionTest, IniValueConversionToMultiValueStringTimePointTest,
         ::testing::Values(
             std::make_pair(std::vector<time_point>{
                                 MakeTimePoint(2020, 1, 1, 0, 0, 0)}, "20200101000000"),
@@ -696,21 +696,21 @@ namespace ini::test
     // ToMultiValueString - time_point with TimePointFormat
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringTimePointExplicitFormatTest
+    class IniValueConversionToMultiValueStringTimePointExplicitFormatTest
         : public ::testing::TestWithParam<std::tuple<TimePointFormat, char, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringTimePointExplicitFormatTest,
+    TEST_P(IniValueConversionToMultiValueStringTimePointExplicitFormatTest,
            ToMultiValueString_TimePointValues_ExplicitFormat_ReturnsFormattedString)
     {
         auto [format, separator, expected] = GetParam();
         std::vector<time_point> values = {MakeTimePoint(2020, 1, 1, 0, 0, 0), MakeTimePoint(2021, 1, 4, 18, 0, 0)};
-        EXPECT_EQ(IniValueConverter::TimePointListToString(values, format, separator), expected);
+        EXPECT_EQ(conversion::TimePointListToString(values, format, separator), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterToMultiValueStringTimePointExplicitFormatTest,
+        IniValueConversionTest, IniValueConversionToMultiValueStringTimePointExplicitFormatTest,
         ::testing::Values(std::make_tuple(TimePointFormat::CompactDateOnly, ' ', "20200101 20210104"),
                           std::make_tuple(TimePointFormat::CompactDateTime, ';', "20200101000000;20210104180000")));
 
@@ -718,19 +718,19 @@ namespace ini::test
     // ToMultiValueString - path
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringPathTest
+    class IniValueConversionToMultiValueStringPathTest
         : public ::testing::TestWithParam<std::pair<std::vector<std::filesystem::path>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringPathTest, ToMultiValueString_PathValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringPathTest, ToMultiValueString_PathValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::PathListToString(values), expected);
+        EXPECT_EQ(conversion::PathListToString(values), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterToMultiValueStringPathTest,
+        IniValueConversionTest, IniValueConversionToMultiValueStringPathTest,
         ::testing::Values(std::make_pair(std::vector<std::filesystem::path>{"foo/bar.txt"}, "foo/bar.txt"),
                           std::make_pair(std::vector<std::filesystem::path>{"foo/bar.txt", "baz/qux.txt"},
                                          "foo/bar.txt baz/qux.txt")));
@@ -739,19 +739,19 @@ namespace ini::test
     // ToMultiValueString - string
     // -------------------------------------------------------------------------
 
-    class IniValueConverterToMultiValueStringStringTest
+    class IniValueConversionToMultiValueStringStringTest
         : public ::testing::TestWithParam<std::pair<std::vector<std::string>, std::string>>
     {
     };
 
-    TEST_P(IniValueConverterToMultiValueStringStringTest, ToMultiValueString_StringValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringStringTest, ToMultiValueString_StringValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::StringListToString(values), expected);
+        EXPECT_EQ(conversion::StringListToString(values), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterToMultiValueStringStringTest,
+        IniValueConversionTest, IniValueConversionToMultiValueStringStringTest,
         ::testing::Values(std::make_pair(std::vector<std::string>{""}, ""),
                           std::make_pair(std::vector<std::string>{" "}, " "),
                           std::make_pair(std::vector<std::string>{"Hello", "World!"}, "Hello World!"),
@@ -762,48 +762,48 @@ namespace ini::test
     // ToMultiValueString - custom separator
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, ToMultiValueString_CustomSeparator_ReturnsFormattedString)
+    TEST(IniValueConversionTest, ToMultiValueString_CustomSeparator_ReturnsFormattedString)
     {
         std::vector<int> values = {1, 2, 3};
-        EXPECT_EQ(IniValueConverter::IntegerListToString(values, ';'), "1;2;3");
+        EXPECT_EQ(conversion::IntegerListToString(values, ';'), "1;2;3");
     }
 
     // -------------------------------------------------------------------------
     // FromMultiValueString - bool
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyBooleanString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyBooleanString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::BoolListFromString(""), std::vector<bool>{});
+        EXPECT_EQ(conversion::BoolListFromString(""), std::vector<bool>{});
     }
 
-    class IniValueConverterFromMultiValueStringInvalidBoolTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromMultiValueStringInvalidBoolTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringInvalidBoolTest,
+    TEST_P(IniValueConversionFromMultiValueStringInvalidBoolTest,
            FromMultiValueString_InvalidBooleanFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::BoolListFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::BoolListFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringInvalidBoolTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidBoolTest,
                              ::testing::Values("truetrue", "true true treu", "#true false", "true false invalid"));
 
-    class IniValueConverterFromMultiValueStringBoolTest
+    class IniValueConversionFromMultiValueStringBoolTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<bool>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringBoolTest,
+    TEST_P(IniValueConversionFromMultiValueStringBoolTest,
            FromMultiValueString_BooleanFormattedString_ReturnsBooleanValues)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::BoolListFromString(value), expected);
+        EXPECT_EQ(conversion::BoolListFromString(value), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringBoolTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringBoolTest,
         ::testing::Values(std::make_pair(" True", std::vector<bool>{true}),
                           std::make_pair("True \n True \n True", std::vector<bool>{true, true, true}),
                           std::make_pair("True Yes 1", std::vector<bool>{true, true, true}),
@@ -816,37 +816,37 @@ namespace ini::test
     // FromMultiValueString - int
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyIntegerString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyIntegerString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::IntegerListFromString(""), std::vector<int>{});
+        EXPECT_EQ(conversion::IntegerListFromString(""), std::vector<int>{});
     }
 
-    class IniValueConverterFromMultiValueStringInvalidIntTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromMultiValueStringInvalidIntTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringInvalidIntTest,
+    TEST_P(IniValueConversionFromMultiValueStringInvalidIntTest,
            FromMultiValueString_InvalidIntegerFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::IntegerListFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::IntegerListFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringInvalidIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidIntTest,
                              ::testing::Values(".1", "1.", "1.0", "1x", "2 1 x", "1 2 3.0", "true", "invalid"));
 
-    class IniValueConverterFromMultiValueStringIntTest
+    class IniValueConversionFromMultiValueStringIntTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<int>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringIntTest,
+    TEST_P(IniValueConversionFromMultiValueStringIntTest,
            FromMultiValueString_IntegerFormattedString_ReturnsIntegerValues)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::IntegerListFromString(value), expected);
+        EXPECT_EQ(conversion::IntegerListFromString(value), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringIntTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringIntTest,
                              ::testing::Values(std::make_pair("42 3", std::vector<int>{42, 3}),
                                                std::make_pair("3 \r\n 4 \r\n 5", std::vector<int>{3, 4, 5}),
                                                std::make_pair(" 0 1 -1 ", std::vector<int>{0, 1, -1}),
@@ -861,37 +861,37 @@ namespace ini::test
     // FromMultiValueString - double
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyDoubleString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyDoubleString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::FloatingPointListFromString(""), std::vector<double>{});
+        EXPECT_EQ(conversion::FloatingPointListFromString(""), std::vector<double>{});
     }
 
-    class IniValueConverterFromMultiValueStringInvalidDoubleTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromMultiValueStringInvalidDoubleTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringInvalidDoubleTest,
+    TEST_P(IniValueConversionFromMultiValueStringInvalidDoubleTest,
            FromMultiValueString_InvalidDoubleFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::FloatingPointListFromString(GetParam()), std::invalid_argument);
+        EXPECT_THROW(conversion::FloatingPointListFromString(GetParam()), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringInvalidDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidDoubleTest,
                              ::testing::Values("true", "invalid", "123abc", "12.34.56", "1.6 2.12 x",
                                                "invalid float", "1.0 2.0 invalid", "true false", "3.14 invalid 2.71",
                                                "  invalid  ", "3.0 -4.5 text", "float NaN",
                                                "2.5 3.5 4.5 invalid text"));
 
-    class IniValueConverterFromMultiValueStringDoubleTest
+    class IniValueConversionFromMultiValueStringDoubleTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<double>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringDoubleTest,
+    TEST_P(IniValueConversionFromMultiValueStringDoubleTest,
            FromMultiValueString_DoubleFormattedString_ReturnsDoubleValues)
     {
         auto [value, expected] = GetParam();
-        const std::vector<double> result = IniValueConverter::FloatingPointListFromString(value);
+        const std::vector<double> result = conversion::FloatingPointListFromString(value);
         ASSERT_EQ(result.size(), expected.size());
         for (std::size_t i = 0; i < result.size(); ++i)
         {
@@ -900,7 +900,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringDoubleTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringDoubleTest,
         ::testing::Values(std::make_pair("3.0", std::vector<double>{3.0}),
                           std::make_pair("2.718\r\n3.14159", std::vector<double>{2.718, 3.14159}),
                           std::make_pair("1.0 2.0 -3.5", std::vector<double>{1.0, 2.0, -3.5}),
@@ -910,16 +910,16 @@ namespace ini::test
                           std::make_pair("3.14 \n 2.71 \n 1.62", std::vector<double>{3.14, 2.71, 1.62}),
                           std::make_pair("0.1 0.2 0.3", std::vector<double>{0.1, 0.2, 0.3})));
 
-    class IniValueConverterFromMultiValueStringFortranDoubleTest
+    class IniValueConversionFromMultiValueStringFortranDoubleTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<double>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringFortranDoubleTest,
+    TEST_P(IniValueConversionFromMultiValueStringFortranDoubleTest,
            FromMultiValueString_FortranFormattedDoubleString_ReturnsDoubleValues)
     {
         auto [value, expected] = GetParam();
-        const std::vector<double> result = IniValueConverter::FloatingPointListFromString(value);
+        const std::vector<double> result = conversion::FloatingPointListFromString(value);
         ASSERT_EQ(result.size(), expected.size());
         for (std::size_t i = 0; i < result.size(); ++i)
         {
@@ -928,7 +928,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringFortranDoubleTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringFortranDoubleTest,
         ::testing::Values(std::make_pair("1.234D+05 5.678D-02", std::vector<double>{1.234e5, 5.678e-2}),
                           std::make_pair("1.234d+05\r\n5.678d-02", std::vector<double>{1.234e5, 5.678e-2}),
                           std::make_pair("-1.234D+05 5D3 -3.25d-01", std::vector<double>{-1.234e5, 5e3, -3.25e-1}),
@@ -938,23 +938,23 @@ namespace ini::test
     // FromMultiValueString - time_point
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyTimePointString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyTimePointString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::TimePointListFromString("", TimePointFormat::IsoDate), std::vector<time_point>{});
+        EXPECT_EQ(conversion::TimePointListFromString("", TimePointFormat::IsoDate), std::vector<time_point>{});
     }
 
-    class IniValueConverterFromMultiValueStringInvalidTimePointTest : public ::testing::TestWithParam<std::string>
+    class IniValueConversionFromMultiValueStringInvalidTimePointTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringInvalidTimePointTest,
+    TEST_P(IniValueConversionFromMultiValueStringInvalidTimePointTest,
            FromMultiValueString_InvalidTimePointFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniValueConverter::TimePointListFromString(GetParam(), TimePointFormat::IsoDate),
+        EXPECT_THROW(conversion::TimePointListFromString(GetParam(), TimePointFormat::IsoDate),
                      std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringInvalidTimePointTest,
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidTimePointTest,
                              ::testing::Values("invalid", "2023-08-14 invalid", "true false",
                                                "12/31/2020 2020/01/01 12:00:00 invalid",
                                                "2023-08-14 12:00:00 invalid 2022-01-01",
@@ -963,16 +963,16 @@ namespace ini::test
                                                "2023/08/14 15:30:00 invalid format",
                                                "2021-01-01 2020/12/31"));
 
-    class IniValueConverterFromMultiValueStringTimePointTest
+    class IniValueConversionFromMultiValueStringTimePointTest
         : public ::testing::TestWithParam<std::tuple<std::string, TimePointFormat, std::vector<time_point>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringTimePointTest,
+    TEST_P(IniValueConversionFromMultiValueStringTimePointTest,
            FromMultiValueString_TimePointFormattedString_ReturnsTimePointValues)
     {
         auto [value, format, expected] = GetParam();
-        const auto result = IniValueConverter::TimePointListFromString(value, format);
+        const auto result = conversion::TimePointListFromString(value, format);
 
         ASSERT_EQ(result.size(), expected.size());
         for (std::size_t i = 0; i < result.size(); ++i)
@@ -982,7 +982,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringTimePointTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringTimePointTest,
         ::testing::Values(
             std::make_tuple("2023-08-14", TimePointFormat::IsoDate, std::vector<time_point>{
                                 MakeTimePoint(2023, 8, 14, 0, 0, 0)}),
@@ -991,43 +991,43 @@ namespace ini::test
             std::make_tuple("2021/01/01 2020/12/31", TimePointFormat::SlashDate, std::vector<time_point>{
                                 MakeTimePoint(2021, 1, 1, 0, 0, 0), MakeTimePoint(2020, 12, 31, 0, 0, 0)})));
 
-    TEST(IniValueConverterTest, FromMultiValueString_TimePointsWithCustomDelimiter_ReturnsTimePointValues)
+    TEST(IniValueConversionTest, FromMultiValueString_TimePointsWithCustomDelimiter_ReturnsTimePointValues)
     {
-        const auto result = IniValueConverter::TimePointListFromString(
+        const auto result = conversion::TimePointListFromString(
             " ; 2023-08-14 12:10:01;;\r\n2020-01-01 00:00:00; ", TimePointFormat::IsoDateTime, ';');
 
         EXPECT_EQ(result, (std::vector<time_point>{
                               MakeTimePoint(2023, 8, 14, 12, 10, 1), MakeTimePoint(2020, 1, 1, 0, 0, 0)}));
     }
 
-    TEST(IniValueConverterTest, FromMultiValueString_WhitespaceTimePointString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_WhitespaceTimePointString_ReturnsEmptyVector)
     {
-        EXPECT_TRUE(IniValueConverter::TimePointListFromString(" ;\r\n; ", TimePointFormat::IsoDate, ';').empty());
+        EXPECT_TRUE(conversion::TimePointListFromString(" ;\r\n; ", TimePointFormat::IsoDate, ';').empty());
     }
 
     // -------------------------------------------------------------------------
     // FromMultiValueString - path
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyPathString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyPathString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::PathListFromString(""),
+        EXPECT_EQ(conversion::PathListFromString(""),
                   std::vector<std::filesystem::path>{});
     }
 
-    class IniValueConverterFromMultiValueStringPathTest
+    class IniValueConversionFromMultiValueStringPathTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<std::filesystem::path>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringPathTest, FromMultiValueString_PathFormattedString_ReturnsPathValues)
+    TEST_P(IniValueConversionFromMultiValueStringPathTest, FromMultiValueString_PathFormattedString_ReturnsPathValues)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::PathListFromString(value), expected);
+        EXPECT_EQ(conversion::PathListFromString(value), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringPathTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringPathTest,
         ::testing::Values(std::make_pair("foo/bar.txt", std::vector<std::filesystem::path>{"foo/bar.txt"}),
                           std::make_pair("foo/bar.txt\r\nbaz/qux.txt",
                                          std::vector<std::filesystem::path>{"foo/bar.txt", "baz/qux.txt"})));
@@ -1036,24 +1036,24 @@ namespace ini::test
     // FromMultiValueString - string
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_EmptyString_ReturnsEmptyVector)
+    TEST(IniValueConversionTest, FromMultiValueString_EmptyString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(IniValueConverter::StringListFromString(""), std::vector<std::string>{});
+        EXPECT_EQ(conversion::StringListFromString(""), std::vector<std::string>{});
     }
 
-    class IniValueConverterFromMultiValueStringStringTest
+    class IniValueConversionFromMultiValueStringStringTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<std::string>>>
     {
     };
 
-    TEST_P(IniValueConverterFromMultiValueStringStringTest, FromMultiValueString_StringValue_ReturnsStringValues)
+    TEST_P(IniValueConversionFromMultiValueStringStringTest, FromMultiValueString_StringValue_ReturnsStringValues)
     {
         auto [value, expected] = GetParam();
-        EXPECT_EQ(IniValueConverter::StringListFromString(value), expected);
+        EXPECT_EQ(conversion::StringListFromString(value), expected);
     }
 
     INSTANTIATE_TEST_SUITE_P(
-        IniValueConverterTest, IniValueConverterFromMultiValueStringStringTest,
+        IniValueConversionTest, IniValueConversionFromMultiValueStringStringTest,
         ::testing::Values(std::make_pair("Hello, World!", std::vector<std::string>{"Hello,", "World!"}),
                           std::make_pair(" XYZ ", std::vector<std::string>{"XYZ"}),
                           std::make_pair("Sample\r\nString", std::vector<std::string>{"Sample", "String"}),
@@ -1063,9 +1063,9 @@ namespace ini::test
     // FromMultiValueString - custom delimiter
     // -------------------------------------------------------------------------
 
-    TEST(IniValueConverterTest, FromMultiValueString_CustomDelimiter_ReturnsValues)
+    TEST(IniValueConversionTest, FromMultiValueString_CustomDelimiter_ReturnsValues)
     {
-        const std::vector<int> result = IniValueConverter::IntegerListFromString("1;2;3", ';');
+        const std::vector<int> result = conversion::IntegerListFromString("1;2;3", ';');
         EXPECT_EQ(result, (std::vector<int>{1, 2, 3}));
     }
 

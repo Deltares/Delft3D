@@ -9,7 +9,7 @@ add_library(dflowfm_ini_parser STATIC
     include/ini/IniProperty.h
     include/ini/IniScheme.h
     include/ini/IniSection.h
-    include/ini/IniValueConverter.h
+    include/ini/IniValueConversion.h
     include/ini/StringUtils.h
 
     src/IniData.cpp
@@ -18,7 +18,7 @@ add_library(dflowfm_ini_parser STATIC
     src/IniParser.cpp
     src/IniProperty.cpp
     src/IniSection.cpp
-    src/IniValueConverter.cpp
+    src/IniValueConversion.cpp
 )
 
 target_include_directories(dflowfm_ini_parser

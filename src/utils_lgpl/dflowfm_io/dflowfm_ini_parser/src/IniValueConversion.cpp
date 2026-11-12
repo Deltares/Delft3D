@@ -1,4 +1,4 @@
-#include "ini/IniValueConverter.h"
+#include "ini/IniValueConversion.h"
 #include "ini/StringUtils.h"
 
 #include <algorithm>
@@ -8,14 +8,11 @@
 #include <stdexcept>
 #include <unordered_map>
 
-namespace ini
+namespace ini::conversion
 {
 
     namespace
     {
-        using time_point = IniValueConverter::time_point;
-        using path = IniValueConverter::path;
-
         const char* GetTimePointFormatString(TimePointFormat format)
         {
             switch (format)
@@ -100,7 +97,7 @@ namespace ini
         }
     } // namespace
 
-    std::string IniValueConverter::BoolToString(bool value, BoolFormat format)
+    std::string BoolToString(bool value, BoolFormat format)
     {
         switch (format)
         {
@@ -114,14 +111,14 @@ namespace ini
         }
     }
 
-    std::string IniValueConverter::IntegerToString(int value)
+    std::string IntegerToString(int value)
     {
         std::ostringstream oss;
         oss << value;
         return oss.str();
     }
 
-    std::string IniValueConverter::FloatingPointToString(double value, FloatFormat format)
+    std::string FloatingPointToString(double value, FloatFormat format)
     {
         switch (format)
         {
@@ -144,18 +141,50 @@ namespace ini
         }
     }
 
-    std::string IniValueConverter::TimePointToString(time_point value, TimePointFormat format)
+    std::string TimePointToString(time_point value, TimePointFormat format)
     {
         auto truncated = std::chrono::floor<std::chrono::seconds>(value);
         return std::vformat("{:" + std::string(GetTimePointFormatString(format)) + "}",
                             std::make_format_args(truncated));
     }
 
-    std::string IniValueConverter::PathToString(const path& value) { return value.string(); }
+    std::string PathToString(const path& value) { return value.string(); }
 
-    std::string IniValueConverter::StringToString(const std::string& value) { return value; }
+    std::string StringToString(const std::string& value) { return value; }
 
-    bool IniValueConverter::BoolFromString(const std::string& value)
+    std::string BoolListToString(const std::vector<bool>& values, BoolFormat format, char separator)
+    {
+        return JoinValues(values, separator, [format](bool value) { return BoolToString(value, format); });
+    }
+
+    std::string IntegerListToString(const std::vector<int>& values, char separator)
+    {
+        return JoinValues(values, separator, [](int value) { return IntegerToString(value); });
+    }
+
+    std::string FloatingPointListToString(const std::vector<double>& values, FloatFormat format,
+                                                           char separator)
+    {
+        return JoinValues(values, separator, [format](double value) { return FloatingPointToString(value, format); });
+    }
+
+    std::string TimePointListToString(const std::vector<time_point>& values, TimePointFormat format,
+                                                       char separator)
+    {
+        return JoinValues(values, separator, [format](time_point value) { return TimePointToString(value, format); });
+    }
+
+    std::string PathListToString(const std::vector<path>& values, char separator)
+    {
+        return JoinValues(values, separator, [](const path& value) { return PathToString(value); });
+    }
+
+    std::string StringListToString(const std::vector<std::string>& values, char separator)
+    {
+        return JoinValues(values, separator, [](const std::string& value) { return StringToString(value); });
+    }
+
+    bool BoolFromString(const std::string& value)
     {
         static const std::unordered_map<std::string, bool> mappings = {
             {"true", true}, {"false", false}, {"yes", true}, {"no", false}, {"1", true}, {"0", false},
@@ -173,12 +202,12 @@ namespace ini
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid boolean.");
     }
 
-    int IniValueConverter::IntegerFromString(const std::string& value)
+    int IntegerFromString(const std::string& value)
     {
         return ParseNumber<int>(trim(value));
     }
 
-    double IniValueConverter::FloatingPointFromString(const std::string& value)
+    double FloatingPointFromString(const std::string& value)
     {
         std::string normalized = trim(value);
         const std::size_t pos = normalized.find_first_of("dD");
@@ -190,7 +219,7 @@ namespace ini
         return ParseNumber<double>(normalized);
     }
 
-    time_point IniValueConverter::TimePointFromString(const std::string& value, TimePointFormat format)
+    time_point TimePointFromString(const std::string& value, TimePointFormat format)
     {
         time_point result;
         std::istringstream iss(trim(value));
@@ -207,60 +236,28 @@ namespace ini
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
     }
 
-    path IniValueConverter::PathFromString(const std::string& value) { return path(trim(value)); }
+    path PathFromString(const std::string& value) { return path(trim(value)); }
 
-    std::string IniValueConverter::StringFromString(const std::string& value) { return trim(value); }
+    std::string StringFromString(const std::string& value) { return trim(value); }
 
-    std::string IniValueConverter::BoolListToString(const std::vector<bool>& values, BoolFormat format, char separator)
-    {
-        return JoinValues(values, separator, [format](bool value) { return BoolToString(value, format); });
-    }
-
-    std::string IniValueConverter::IntegerListToString(const std::vector<int>& values, char separator)
-    {
-        return JoinValues(values, separator, [](int value) { return IntegerToString(value); });
-    }
-
-    std::string IniValueConverter::FloatingPointListToString(const std::vector<double>& values, FloatFormat format,
-                                                           char separator)
-    {
-        return JoinValues(values, separator, [format](double value) { return FloatingPointToString(value, format); });
-    }
-
-    std::string IniValueConverter::TimePointListToString(const std::vector<time_point>& values, TimePointFormat format,
-                                                       char separator)
-    {
-        return JoinValues(values, separator, [format](time_point value) { return TimePointToString(value, format); });
-    }
-
-    std::string IniValueConverter::PathListToString(const std::vector<path>& values, char separator)
-    {
-        return JoinValues(values, separator, [](const path& value) { return PathToString(value); });
-    }
-
-    std::string IniValueConverter::StringListToString(const std::vector<std::string>& values, char separator)
-    {
-        return JoinValues(values, separator, [](const std::string& value) { return StringToString(value); });
-    }
-
-    std::vector<bool> IniValueConverter::BoolListFromString(const std::string& value, char delimiter)
+    std::vector<bool> BoolListFromString(const std::string& value, char delimiter)
     {
         return SplitValues<bool>(value, delimiter, [](const std::string& item) { return BoolFromString(item); });
     }
 
-    std::vector<int> IniValueConverter::IntegerListFromString(const std::string& value, char delimiter)
+    std::vector<int> IntegerListFromString(const std::string& value, char delimiter)
     {
         return SplitValues<int>(value, delimiter, [](const std::string& item) { return IntegerFromString(item); });
     }
 
-    std::vector<double> IniValueConverter::FloatingPointListFromString(const std::string& value, char delimiter)
+    std::vector<double> FloatingPointListFromString(const std::string& value, char delimiter)
     {
         return SplitValues<double>(value, delimiter, [](const std::string& item) {
             return FloatingPointFromString(item);
         });
     }
 
-    std::vector<time_point> IniValueConverter::TimePointListFromString(const std::string& value, TimePointFormat format,
+    std::vector<time_point> TimePointListFromString(const std::string& value, TimePointFormat format,
                                                                    char delimiter)
     {
         return SplitValues<time_point>(value, delimiter, [format](const std::string& item) {
@@ -268,16 +265,16 @@ namespace ini
         });
     }
 
-    std::vector<path> IniValueConverter::PathListFromString(const std::string& value, char delimiter)
+    std::vector<path> PathListFromString(const std::string& value, char delimiter)
     {
         return SplitValues<path>(value, delimiter, [](const std::string& item) { return PathFromString(item); });
     }
 
-    std::vector<std::string> IniValueConverter::StringListFromString(const std::string& value, char delimiter)
+    std::vector<std::string> StringListFromString(const std::string& value, char delimiter)
     {
         return SplitValues<std::string>(value, delimiter, [](const std::string& item) {
             return StringFromString(item);
         });
     }
 
-} // namespace ini
+} // namespace ini::conversion

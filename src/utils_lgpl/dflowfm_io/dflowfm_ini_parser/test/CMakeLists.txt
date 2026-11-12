@@ -13,7 +13,7 @@ enable_testing()
 
 add_executable(dflowfm_ini_parser_tests
     IniParserTest.cpp
-    IniValueConverterTest.cpp
+    IniValueConversionTest.cpp
     IniDataTest.cpp
     IniFormatterTest.cpp
     IniSectionTest.cpp
