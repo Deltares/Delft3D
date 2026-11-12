@@ -48,13 +48,17 @@ program waves_main
 !
 ! Local variables
 !
+   integer                                      :: arg
    integer                                      :: i
    integer                                      :: ierr
    integer                                      :: mode_in
+   integer                                      :: online_in
    integer                                      :: mtdim
    integer                                      :: retval
    real(hp)                                     :: stepsize
-   character(20)                                :: tmpchar
+   logical                                      :: mode_read
+   logical                                      :: mdw_file_read
+   character(256)                               :: tmpchar
    character(256)                               :: mdw_file     ! filename mdw file
 
    !
@@ -77,14 +81,50 @@ program waves_main
    ! INIT
    ! ====================================================================================
    !
-   mode_in = 0
+   mode_in = stand_alone
+   online_in = ONLINE_NONE
    select case(COMMAND_ARGUMENT_COUNT())
    case (1)
-      call getarg(1,mdw_file)
+       call getarg(1,mdw_file)
    case (2)
-      call getarg(1,mdw_file)
-      call getarg(2,tmpchar)
-      read(tmpchar,*,iostat=ierr) mode_in
+       mode_read     = .false.
+       mdw_file_read = .false.
+       do arg=1,2
+           call getarg(arg,tmpchar)
+           if (.not. mode_read) then
+               if (trim(tmpchar)(1:9) == '--online=') then
+                   select case (trim(tmpchar)(10:))
+                   case ('none')
+                       mode_in   = stand_alone
+                       online_in = ONLINE_NONE
+                   case ('delftio')
+                       mode_in   = flow_online
+                       online_in = ONLINE_DELFTIO
+                   case ('dimr')
+                       mode_in   = flow_online
+                       online_in = ONLINE_DIMR
+                   case ('precice')
+                       online_in = ONLINE_PRECICE
+                   case default
+                       call wavestop(1, "Invalid command line argument: " // trim(tmpchar))
+                   end select
+                   mode_read = .true.
+               else
+                   read(tmpchar,*,iostat=ierr) mode_in
+                   if (ierr /= 0) then
+                       mdw_file = trim(tmpchar)
+                       mdw_file_read = .true.
+                   else
+                       mode_read = .true.
+                   end if
+               end if
+           else
+               if (mdw_file_read) then
+                   call wavestop(1, "Invalid command line argument: either '" // trim(tmpchar) // "' or '" // trim(mdw_file) // "' must be a mode specification")
+               end if
+               mdw_file = tmpchar
+           end if
+       end do
    case default
       call usage()
       call wavestop(1, "Wrong number of command line arguments")
@@ -95,7 +135,7 @@ program waves_main
       if (ichar(mdw_file(i:i)) == 0) mdw_file(i:i) = ' '
    enddo
    !
-   retval = wave_main_init(mode_in, mdw_file)
+   retval = wave_main_init(mode_in, online_in, mdw_file)
    !
    ! ====================================================================================
    ! RUN

@@ -41,6 +41,17 @@ integer, parameter :: stand_alone     = 0
 integer, parameter :: flow_online     = 1
 integer, parameter :: flow_mud_online = 2
 !
+! Online options:
+integer, parameter :: ONLINE_NONE     = 0
+integer, parameter :: ONLINE_DELFTIO  = 1
+integer, parameter :: ONLINE_DIMR     = 2
+integer, parameter :: ONLINE_PRECICE  = 3
+!
+! COM-file options:
+integer, parameter :: COM_NONE     = 0
+integer, parameter :: COM_NEFIS    = 1
+integer, parameter :: COM_NETCDF   = 2
+!
 ! FlowVelocityType options:
 integer, parameter :: FVT_SURFACE_LAYER  = 1
 integer, parameter :: FVT_DEPTH_AVERAGED = 2
@@ -80,10 +91,29 @@ type wave_output_type
    logical  :: write_wavm         ! [y/n]      True when writing to wavm file
 end type wave_output_type
 !
+!> D-Wave can operate in different modes for connecting to a flow module.
+!! If it is connected online (online_type/=none), the "com_file_type" can be set based on the value of "online_type".
+!! If "online_type=none", a com-file can optionally be specified in the mdw-file and the com_file_type can be set based on the extension.
+!! wave_flow_mode_type replaces the old "mode" parameter
+!! Conversions:
+!! mode=stand_alone                                  : online=ONLINE_NONE   , com_file=COM_NONE/COM_NEFIS/COM_NETCDF (based on extension of com-file)
+!! mode=flow_online and sr%flowgridfile = <empty>    : online=ONLINE_DELFTIO, com_file=COM_NEFIS
+!! mode=flow_online and sr%flowgridfile = <non-empty>: online=ONLINE_DIMR   , com_file=COM_NETCDF
+!! mode=flow_mud_online                              : online=ONLINE_DELFTIO, com_file=COM_NEFIS
+!! Commandline argument --online=none           NEW  : online=ONLINE_NONE   , com_file=COM_NONE/COM_NEFIS/COM_NETCDF (based on extension of com-file)
+!! Commandline argument --online=delftio        NEW  : online=ONLINE_DELFTIO, com_file=COM_NEFIS
+!! Commandline argument --online=dimr           NEW  : online=ONLINE_DIMR   , com_file=COM_NETCDF
+!! Commandline argument --online=precice        NEW  : online=ONLINE_PRECICE, com_file=COM_NONE
+type wave_flow_mode_type
+    integer :: online             ! [-]        0: stand-alone, 1: DelftIO, 2: DIMR, 3: Precice
+    integer :: com_file           ! [-]        0: no com-file, 1: NEFIS com-file, 2: NetCDF com-file
+end type wave_flow_mode_type
+!
 type wave_data_type
-   integer                :: mode
-   type(wave_time_type)   :: time
-   type(wave_output_type) :: output
+   integer                   :: mode
+   type(wave_flow_mode_type) :: wave_flow_mode
+   type(wave_time_type)      :: time
+   type(wave_output_type)    :: output
 end type wave_data_type
 !
 contains
@@ -95,6 +125,8 @@ subroutine initialize_wavedata(wavedata)
    type(wave_data_type) :: wavedata
 
    wavedata%mode                      =  0
+   wavedata%wave_flow_mode%online     =  ONLINE_NONE
+   wavedata%wave_flow_mode%com_file   =  COM_NONE
    wavedata%time%refdate              =  0
    wavedata%time%timtscale            =  0
    wavedata%time%calctimtscale        =  0
@@ -120,6 +152,24 @@ subroutine setmode(wavedata, mode_in)
 
    wavedata%mode = mode_in
 end subroutine setmode
+!
+!
+!===============================================================================
+subroutine setonline(wavedata, online_in)
+   integer :: online_in
+   type(wave_data_type) :: wavedata
+
+   wavedata%wave_flow_mode%online = online_in
+end subroutine setonline
+!
+!
+!===============================================================================
+subroutine setcom(wavedata, com_in)
+   integer :: com_in
+   type(wave_data_type) :: wavedata
+
+   wavedata%wave_flow_mode%com_file = com_in
+end subroutine setcom
 !
 !
 !===============================================================================
