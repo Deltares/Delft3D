@@ -4,9 +4,7 @@
 #include <ini/IniFile.h>
 #include <ini/IniParserOptions.h>
 
-#include <iostream>
 #include <format>
-#include <fstream>
 #include <stdexcept>
 
 namespace dflowfm_io
@@ -29,13 +27,10 @@ namespace dflowfm_io
     MduDocument::MduDocument(const MduSchema& schema)
         : schema(schema), mduData(schema.CreateDefaultValues()) {}
 
-    IssueReport MduDocument::Load(std::istream& in)
+    IssueReport MduDocument::LoadString(const std::string& text)
     {
-        if (in.fail())
-            throw std::ios_base::failure("Stream is not in a readable state.");
-
         ini::IniFile iniFile{mduIniOptions};
-        iniFile.Load(in);
+        iniFile.LoadString(text);
         ini::IniData& iniData = iniFile.GetData();
 
         std::pair<MduData, IssueReport> result = MduConverter::Convert(iniData, schema);
@@ -45,38 +40,28 @@ namespace dflowfm_io
 
     IssueReport MduDocument::Load(const std::filesystem::path& path)
     {
-        if (path.empty())
-            throw std::invalid_argument("Path must not be empty.");
+        ini::IniFile iniFile{mduIniOptions};
+        iniFile.Load(path);
 
-        std::ifstream stream(path);
-        if (!stream.is_open())
-            throw std::ios_base::failure("Failed to open file for reading: " + path.string());
-
-        return Load(stream);
+        std::pair<MduData, IssueReport> result = MduConverter::Convert(iniFile.GetData(), schema);
+        mduData = std::move(result.first);
+        return std::move(result.second);
     }
 
-    void MduDocument::Save(std::ostream& out) const
+    std::string MduDocument::ToString() const
     {
-        if (out.fail())
-            throw std::ios_base::failure("Stream is not in a writable state.");
-
         ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
         ini::IniFile iniFile{mduIniOptions};
         iniFile.SetData(iniData);
-        iniFile.Save(out);
+        return iniFile.ToString();
     }
 
     void MduDocument::Save(const std::filesystem::path& path) const
     {
-        if (path.empty())
-            throw std::invalid_argument("Path must not be empty.");
-
-        std::ofstream stream(path);
-        if (!stream.is_open())
-            throw std::ios_base::failure("Failed to open file for writing: " + path.string());
-
-        Save(stream);
+        ini::IniFile iniFile{mduIniOptions};
+        iniFile.SetData(MduConverter::Convert(mduData, schema));
+        iniFile.Save(path);
     }
 
     void MduDocument::EnsureKeyInSchema(const std::string& key) const

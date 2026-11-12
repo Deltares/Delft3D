@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <filesystem>
-#include <sstream>
+#include <ios>
 #include <stdexcept>
 
 #include "ini/IniFile.h"
@@ -10,44 +11,32 @@ namespace ini::tests
 {
 
     // ============================================================
-    // Load (stream)
+    // LoadString
     // ============================================================
 
-    TEST(IniFileTest, Load_FailedStream_ThrowsFailure)
+    TEST(IniFileTest, LoadString_EmptyString_ReturnsEmptyData)
     {
-        std::istringstream stream;
-        stream.setstate(std::ios::failbit);
         IniFile file;
 
-        EXPECT_THROW(file.Load(stream), std::ios_base::failure);
-    }
-
-    TEST(IniFileTest, Load_EmptyStream_ReturnsEmptyData)
-    {
-        std::istringstream stream("");
-        IniFile file;
-
-        file.Load(stream);
+        file.LoadString("");
 
         EXPECT_TRUE(file.GetData().GetSections().empty());
     }
 
-    TEST(IniFileTest, Load_ValidStream_PopulatesSection)
+    TEST(IniFileTest, LoadString_ValidString_PopulatesSection)
     {
-        std::istringstream stream("[general]\n");
         IniFile file;
 
-        file.Load(stream);
+        file.LoadString("[general]\n");
 
         EXPECT_TRUE(file.GetData().HasSection("general"));
     }
 
-    TEST(IniFileTest, Load_ValidStream_PopulatesProperty)
+    TEST(IniFileTest, LoadString_ValidString_PopulatesProperty)
     {
-        std::istringstream stream("[general]\nkey=value\n");
         IniFile file;
 
-        file.Load(stream);
+        file.LoadString("[general]\nkey=value\n");
 
         const IniSection& section = file.GetData().GetSection("general");
 
@@ -55,12 +44,11 @@ namespace ini::tests
         EXPECT_EQ(section.GetProperty("key").GetValue(), "value");
     }
 
-    TEST(IniFileTest, Load_MultipleSections_PopulatesAllSections)
+    TEST(IniFileTest, LoadString_MultipleSections_PopulatesAllSections)
     {
-        std::istringstream stream("[general]\n[physics]\n[numerics]\n");
         IniFile file;
 
-        file.Load(stream);
+        file.LoadString("[general]\n[physics]\n[numerics]\n");
 
         const IniData& data = file.GetData();
 
@@ -69,14 +57,11 @@ namespace ini::tests
         EXPECT_TRUE(data.HasSection("numerics"));
     }
 
-    TEST(IniFileTest, Load_CalledTwice_ReplacesData)
+    TEST(IniFileTest, LoadString_CalledTwice_ReplacesData)
     {
         IniFile file;
-        std::istringstream first("[general]\n");
-        file.Load(first);
-
-        std::istringstream second("[physics]\n");
-        file.Load(second);
+        file.LoadString("[general]\n");
+        file.LoadString("[physics]\n");
 
         const IniData& data = file.GetData();
 
@@ -84,16 +69,14 @@ namespace ini::tests
         EXPECT_TRUE(data.HasSection("physics"));
     }
 
-    TEST(IniFileTest, Load_DuplicateSectionsNotAllowed_ThrowsFailure)
+    TEST(IniFileTest, LoadString_DuplicateSectionsNotAllowed_ThrowsFailure)
     {
-        std::istringstream stream("[general]\n[general]\n");
-
         IniFileOptions options;
         options.parserOptions.allowDuplicateSections = false;
 
         IniFile file(options);
 
-        EXPECT_THROW(file.Load(stream), std::runtime_error);
+        EXPECT_THROW(file.LoadString("[general]\n[general]\n"), std::runtime_error);
     }
 
     // ============================================================
@@ -115,39 +98,31 @@ namespace ini::tests
     }
 
     // ============================================================
-    // Save (stream)
+    // ToString
     // ============================================================
 
-    TEST(IniFileTest, Save_FailedStream_ThrowsFailure)
+    TEST(IniFileTest, ToString_EmptyData_ReturnsEmptyString)
     {
-        std::ostringstream stream;
-        stream.setstate(std::ios::failbit);
         IniFile file;
 
-        EXPECT_THROW(file.Save(stream), std::ios_base::failure);
+        EXPECT_TRUE(file.ToString().empty());
     }
 
-    TEST(IniFileTest, Save_WithSection_WritesSection)
+    TEST(IniFileTest, ToString_WithSection_WritesSection)
     {
-        std::ostringstream stream;
         IniFile file;
         file.GetData().AddSection("general");
 
-        file.Save(stream);
-
-        EXPECT_NE(stream.str().find("[general]"), std::string::npos);
+        EXPECT_NE(file.ToString().find("[general]"), std::string::npos);
     }
 
-    TEST(IniFileTest, Save_WithSectionAndProperty_WritesSectionAndProperty)
+    TEST(IniFileTest, ToString_WithSectionAndProperty_WritesSectionAndProperty)
     {
-        std::ostringstream stream;
         IniFile file;
         auto& section = file.GetData().AddSection("general");
         section.AddProperty("key", "value");
 
-        file.Save(stream);
-
-        const std::string content = stream.str();
+        const std::string content = file.ToString();
 
         EXPECT_NE(content.find("[general]"), std::string::npos);
         EXPECT_NE(content.find("key"), std::string::npos);
@@ -176,41 +151,35 @@ namespace ini::tests
     // Round-trip
     // ============================================================
 
-    TEST(IniFileTest, SaveThenLoad_EmptyData_RoundTrips)
+    TEST(IniFileTest, ToStringThenLoadString_EmptyData_RoundTrips)
     {
-        std::stringstream stream;
         IniFile writer;
-        writer.Save(stream);
 
         IniFile reader;
-        reader.Load(stream);
+        reader.LoadString(writer.ToString());
 
         EXPECT_TRUE(reader.GetData().GetSections().empty());
     }
 
-    TEST(IniFileTest, SaveThenLoad_SingleSection_RoundTrips)
+    TEST(IniFileTest, ToStringThenLoadString_SingleSection_RoundTrips)
     {
-        std::stringstream stream;
         IniFile writer;
         writer.GetData().AddSection("general");
-        writer.Save(stream);
 
         IniFile reader;
-        reader.Load(stream);
+        reader.LoadString(writer.ToString());
 
         EXPECT_TRUE(reader.GetData().HasSection("general"));
     }
 
-    TEST(IniFileTest, SaveThenLoad_SectionWithProperty_RoundTrips)
+    TEST(IniFileTest, ToStringThenLoadString_SectionWithProperty_RoundTrips)
     {
-        std::stringstream stream;
         IniFile writer;
         auto& section = writer.GetData().AddSection("general");
         section.AddProperty("key", "value");
-        writer.Save(stream);
 
         IniFile reader;
-        reader.Load(stream);
+        reader.LoadString(writer.ToString());
 
         const IniData& data = reader.GetData();
 

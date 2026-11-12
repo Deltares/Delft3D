@@ -5,15 +5,13 @@
 #include <dflowfm_io/IssueReport.h>
 
 #include <filesystem>
-#include <istream>
-#include <ostream>
 #include <string>
 
 namespace dflowfm_io
 {
     /// @brief Represents a D-Flow FM Model Definition Unstructured (MDU) file.
     ///
-    /// Supports loading from and saving to file or stream. Property values are
+    /// Supports loading from and saving to files or strings. Property values are
     /// validated against the @ref MduSchema on load; any issues are accessible via
     /// the returned @ref IssueReport.
     ///
@@ -34,10 +32,10 @@ namespace dflowfm_io
         /// @param schema The schema to validate and convert against. Defaults to the global MDU schema.
         explicit MduDocument(const MduSchema& schema = MDU_SCHEMA);
 
-        /// @brief Loads and validates an MDU file from a stream.
-        /// @param in Input stream positioned at the start of the MDU content.
+        /// @brief Loads and validates MDU content from a string.
+        /// @param text The MDU-formatted text to parse.
         /// @return Issues found during loading.
-        IssueReport Load(std::istream& in);
+        IssueReport LoadString(const std::string& text);
 
         /// @brief Loads and validates an MDU file from a file path.
         /// @param path Path to the MDU file to load.
@@ -46,9 +44,9 @@ namespace dflowfm_io
         /// @return Issues found during loading.
         IssueReport Load(const std::filesystem::path& path);
 
-        /// @brief Writes the current MDU data to a stream.
-        /// @param out Output stream to write to.
-        void Save(std::ostream& out) const;
+        /// @brief Formats the current MDU data as a string.
+        /// @return The formatted MDU text.
+        std::string ToString() const;
 
         /// @brief Writes the current MDU data to a file.
         /// @param path Path of the file to write. The file is created or overwritten.

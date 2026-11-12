@@ -12,15 +12,9 @@ namespace ini
 
     IniFile::IniFile(IniFileOptions options) : options(std::move(options)) {}
 
-    void IniFile::Load(std::istream& in)
+    void IniFile::LoadString(const std::string& text)
     {
-        if (in.fail())
-        {
-            throw std::ios_base::failure("Stream is not in a readable state.");
-        }
-
-        const std::string ini{std::istreambuf_iterator<char>{in}, std::istreambuf_iterator<char>{}};
-        data = Parse(ini, options.scheme, options.parserOptions);
+        data = Parse(text, options.scheme, options.parserOptions);
     }
 
     void IniFile::Load(const std::filesystem::path& path)
@@ -36,17 +30,14 @@ namespace ini
             throw std::ios_base::failure("Failed to open file for reading: " + path.string());
         }
 
-        Load(stream);
+        stream.exceptions(std::ios::badbit | std::ios::failbit);
+        const std::string text{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+        LoadString(text);
     }
 
-    void IniFile::Save(std::ostream& out) const
+    std::string IniFile::ToString() const
     {
-        if (out.fail())
-        {
-            throw std::ios_base::failure("Stream is not in a writable state.");
-        }
-
-        out << Format(data, options.scheme, options.formatterOptions);
+        return Format(data, options.scheme, options.formatterOptions);
     }
 
     void IniFile::Save(const std::filesystem::path& path) const
@@ -62,7 +53,9 @@ namespace ini
             throw std::ios_base::failure("Failed to open file for writing: " + path.string());
         }
 
-        Save(stream);
+        stream.exceptions(std::ios::badbit | std::ios::failbit);
+        stream << ToString();
+        stream.close();
     }
 
 } // namespace ini

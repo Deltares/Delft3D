@@ -6,7 +6,6 @@
 #include <exception>
 #include <filesystem>
 #include <functional>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -142,8 +141,7 @@ dflowfm_io_result_t mdu_load_from_string(mdu_handle_t* handle, const char* data,
 
     return exceptionToResult([&]()
     {
-        std::istringstream stream(std::string(data, size));
-        handle->lastIssueReport = handle->mduDocument.Load(stream);
+        handle->lastIssueReport = handle->mduDocument.LoadString(std::string(data, size));
     });
 }
 
@@ -165,9 +163,7 @@ dflowfm_io_result_t mdu_save_to_string(mdu_handle_t* handle, const char** data_o
 
     return exceptionToResult([&]()
     {
-        std::ostringstream stream;
-        handle->mduDocument.Save(stream);
-        *data_out = handle->stringStorage.clearAndStore(stream.str());
+        *data_out = handle->stringStorage.clearAndStore(handle->mduDocument.ToString());
     });
 }
 

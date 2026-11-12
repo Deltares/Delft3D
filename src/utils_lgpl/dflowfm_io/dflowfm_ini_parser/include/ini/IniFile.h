@@ -4,8 +4,7 @@
 #include "ini/IniFileOptions.h"
 
 #include <filesystem>
-#include <istream>
-#include <ostream>
+#include <string>
 
 namespace ini
 {
@@ -23,11 +22,10 @@ namespace ini
     /// const IniSection& general = file.GetData().GetSection("general");
     /// @endcode
     ///
-    /// @par Example - Loading from a stream
+    /// @par Example - Loading from a string
     /// @code{.cpp}
-    /// std::stringstream ss("[general]\nkey=value\n");
     /// IniFile file;
-    /// file.Load(ss);
+    /// file.LoadString("[general]\nkey=value\n");
     /// @endcode
     ///
     /// @par Example - Saving to a file
@@ -45,10 +43,9 @@ namespace ini
         /// @param options The options controlling reading and writing behavior.
         explicit IniFile(IniFileOptions options = {});
 
-        /// @brief Loads and parses from the specified stream into the @ref IniData.
-        /// @param in The stream to read from.
-        /// @throws std::ios_base::failure When the stream cannot be read.
-        void Load(std::istream& in);
+        /// @brief Loads and parses the specified INI-formatted string into the @ref IniData.
+        /// @param text The INI-formatted text to parse.
+        void LoadString(const std::string& text);
 
         /// @brief Loads and parses the file at the specified path into the @ref IniData.
         /// @param path The path of the INI file.
@@ -56,10 +53,9 @@ namespace ini
         /// @throws std::ios_base::failure When the file cannot be read.
         void Load(const std::filesystem::path& path);
 
-        /// @brief Formats and writes the @ref IniData to the specified stream.
-        /// @param out The stream to write to.
-        /// @throws std::ios_base::failure When the stream cannot be written.
-        void Save(std::ostream& out) const;
+        /// @brief Formats the @ref IniData as an INI-formatted string.
+        /// @return The formatted INI text.
+        std::string ToString() const;
 
         /// @brief Formats and saves the @ref IniData to the file at the specified path.
         /// @param path The path of the INI file.

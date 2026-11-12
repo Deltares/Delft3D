@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <variant>
 
@@ -109,11 +108,9 @@ int main(int argc, char* argv[])
             cout << "\n";
         });
 
-        std::ostringstream stream;
-        document.Save(stream);
-
-        cout << "\nSuccessfully saved to stream:\n\n";
-        cout << stream.str(); 
+        const std::string text = document.ToString();
+        cout << "\nSuccessfully formatted as text:\n\n";
+        cout << text;
 
         return 0;
     }
