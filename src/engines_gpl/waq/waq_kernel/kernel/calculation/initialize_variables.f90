@@ -33,7 +33,7 @@ contains
 
     !> Initialisation of Variables structure
     subroutine initialize_variables(lurep, num_constants, num_spatial_parameters, num_time_functions, &
-            num_spatial_time_fuctions, num_substances_transported, num_substances_total, num_dispersion_arrays, &
+            num_spatial_time_functions, num_substances_transported, num_substances_total, num_dispersion_arrays, &
             num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
             num_local_vars_exchange, num_fluxes, nopred, num_vars, num_grids, vgrset)
 
@@ -41,7 +41,7 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants
         integer(kind = int_wp), intent(in) :: num_spatial_parameters
         integer(kind = int_wp), intent(in) :: num_time_functions
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions
         integer(kind = int_wp), intent(in) :: num_substances_transported
         integer(kind = int_wp), intent(in) :: num_substances_total
         integer(kind = int_wp), intent(in) :: num_dispersion_arrays                !< Number of user-dispersions
@@ -78,7 +78,7 @@ contains
             do i = 1, num_time_functions                                   ! functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, num_spatial_time_fuctions                                  ! segment functions
+            do i = 1, num_spatial_time_functions                                  ! segment functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
             do i = 1, num_substances_total                                   ! concentrations

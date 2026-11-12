@@ -54,7 +54,6 @@
       <path>bin/run_dimr.sh</path>
       <environments>
         <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
       </environments>
     </program>
     <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -73,13 +72,6 @@
         <!-- just the first part of the directory structure, wil be file by TeamCity -->
       </location>
       <path>bin/run_dimr.sh</path>
-      <environments>
-        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-      </environments>
-      <arguments>
-        <argument>-m dimr_config.xml</argument>
-      </arguments>
     </program>
     <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
       <location ref="reference_engines" type="reference">
@@ -92,7 +84,6 @@
       <path>bin/run_dimr.sh</path>
       <environments>
         <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
       </environments>
     </program>
     <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">

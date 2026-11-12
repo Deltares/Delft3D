@@ -24,7 +24,8 @@ module m_primpro
     use m_waq_precision
     use m_string_utils
     use m_error_status
-
+    use precision_basics, only: comparereal
+   
     implicit none
 
 contains
@@ -32,8 +33,7 @@ contains
 
     subroutine primpro (procesdef, num_substances_total, syname, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
             ioffx, num_substances_transported, dsto, vsto, num_dispersion_arrays_new, &
-            idpnw, num_velocity_arrays_new, ivpnw, num_exchanges_z_dir, &
-            status)
+            idpnw, num_velocity_arrays_new, ivpnw, num_exchanges_z_dir, status, mergedispersions, mergevelocities)
         !>\file
         !>       detect and activate primary processes (which act directly on substances)
 
@@ -61,6 +61,8 @@ contains
         integer(kind = int_wp) :: num_exchanges_z_dir            ! number of exhcanges in third direction
 
         type(error_status), intent(inout) :: status !< current error status
+        logical, optional, intent(out) :: mergedispersions !< flags indicating if dispersions must be merged
+        logical, optional, intent(out) :: mergevelocities !< flags indicating if velocities must be merged
 
         ! local decalarations
 
@@ -79,6 +81,8 @@ contains
         integer(kind = int_wp) :: iivelx          ! velocity pointer in waq data space
         character(len = 20) :: gen             ! generic name
         character(len = 100) :: line            ! line buffer for output
+        integer(kind = int_wp) :: nfallvelstochiometries ! number of non-zero fall velocity stochiometries
+        
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("primpro", ithndl)
 
@@ -312,6 +316,40 @@ contains
                 endif
             enddo
         enddo
+
+        ! Report if dispersions must be merged.
+        if(present(mergedispersions)) then
+           mergedispersions = .false.
+           do isys = 1, num_substances_transported
+              nfallvelstochiometries = count(abs(dsto(isys,1:num_dispersion_arrays_extra)) > 1.0e-20)
+              if (nfallvelstochiometries > 1) then
+                 mergedispersions = .true.
+                 exit
+   	        else if (nfallvelstochiometries == 1) then
+   	           if (.not. (comparereal(maxval(dsto(isys,1:num_dispersion_arrays_extra)), 1.0) == 0)) then
+                    mergedispersions = .true.
+                    exit
+                 endif
+              endif
+           enddo
+        endif
+        
+        ! Report if velocities must be merged.
+        if(present(mergevelocities)) then
+           mergevelocities = .false.
+           do isys = 1, num_substances_transported
+              nfallvelstochiometries = count(abs(vsto(isys,1:num_velocity_arrays_extra)) > 1.0e-20)
+              if (nfallvelstochiometries > 1) then
+                 mergevelocities = .true.
+                 exit
+   	        else if (nfallvelstochiometries == 1) then
+   	           if (.not. (comparereal(maxval(vsto(isys,1:num_velocity_arrays_extra)), 1.0) == 0)) then
+                    mergevelocities = .true.
+                    exit
+                 endif
+              endif
+           enddo
+        endif  
 
         if (timon) call timstop(ithndl)
         return

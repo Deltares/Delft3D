@@ -29,7 +29,7 @@ object LinuxPython : BuildType({
 
     params {
         param("almalinux_base_version", "8")
-        param("python_version", "3.12")
+        param("python_version", "3.14")
         param("base_image", "containers.deltares.nl/docker-proxy/almalinux/%almalinux_base_version%-base:latest")
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-python")
 

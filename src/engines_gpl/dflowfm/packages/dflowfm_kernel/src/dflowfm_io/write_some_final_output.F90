@@ -54,6 +54,7 @@ contains
       use m_observations_data, only: mxls
       use unstruc_files, only: defaultFilename
       use m_sediment, only: stm_included
+      use m_fm_wq_processes, only: wq_processes_active
       use m_transport, only: maserrsed, tracer_limiter_mass_error, ITRA1, ITRAN, const_names
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
@@ -212,7 +213,7 @@ contains
       if (jatimer == 1) then
          write (msgbuf, '(a,F25.10)') 'time transport         (s)  :', gettimer(1, ITRANSPORT)
          call msg_flush()
-         if (ti_waqproc /= 0) then
+         if (wq_processes_active) then
             write (msgbuf, '(a,F25.10)') 'time processes         (s)  :', gettimer(1, IFMWAQ)
             call msg_flush()
          end if

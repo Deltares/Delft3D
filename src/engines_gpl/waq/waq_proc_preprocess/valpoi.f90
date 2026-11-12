@@ -38,7 +38,7 @@ module m_valpoi
 
 contains
 
-   subroutine valpoi(num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+   subroutine valpoi(num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                      num_time_functions, constants, paname, funame, sfname, &
                      valnam, ivalip, line)
       !     Function            : sets pointers for process parametrs
@@ -48,7 +48,7 @@ contains
 
       integer(kind=int_wp), intent(in) :: num_substances_total !< Total number of substances
       integer(kind=int_wp), intent(in) :: num_spatial_parameters !< Number of parameters
-      integer(kind=int_wp), intent(in) :: num_spatial_time_fuctions !< Number of segment functions
+      integer(kind=int_wp), intent(in) :: num_spatial_time_functions !< Number of segment functions
       integer(kind=int_wp), intent(in) :: num_constants !< Number of constants used
       integer(kind=int_wp), intent(in) :: num_time_functions !< Number of functions ( user )
       integer(kind=int_wp), intent(out) :: ivalip !< Pointer in SSA.
@@ -59,7 +59,7 @@ contains
       character(len=*), intent(in) :: syname(num_substances_total) !< Constant names
       character(len=*), intent(in) :: paname(num_spatial_parameters) !< Parameter names
       character(len=*), intent(in) :: funame(num_time_functions) !< Function names
-      character(len=*), intent(in) :: sfname(num_spatial_time_fuctions) !< Segment function names
+      character(len=*), intent(in) :: sfname(num_spatial_time_functions) !< Segment function names
 
       type(t_waq_item), intent(in) :: constants !< delwaq constants list
       !
@@ -107,7 +107,7 @@ contains
       isys = index_in_array(valnam(:nzoek), syname)
       if (isys > 0) then
          write (line, '(A,I3)') '       Using substance nr ', isys
-         ivalip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + isys
+         ivalip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + isys
          goto 800
       end if
       !
