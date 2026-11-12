@@ -14226,7 +14226,7 @@ contains
       end if
 
       ! --- Build geometry object ---
-      if (flowgeom1d%mesh1D%numNode <= 0 .or. flowgeom1d%mesh1D%numEdge <= 0) then
+      if (flowgeom1d%mesh1D%numNode == -1 .or. flowgeom1d%mesh1D%numEdge == -1) then
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
