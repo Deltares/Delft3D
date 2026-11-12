@@ -1,0 +1,179 @@
+999 80 ';'
+;DELWAQ_VERSION_4.910                        		; Delwaq version number
+;PRINT_OUTPUT_OPTION_2                       		; Debug level
+
+; TEMPLATE FILE FOR WQ MODEL LINKED TO D-EMISSION DRIVEN BY WFLOW
+; First input block
+'Demo WQ Model linked to WFLOW and D-Emissions '
+' '
+' '
+INCLUDE '..\config\B1_timestamp.inc'
+
+1    0    ; Nr of active and inactive substances
+;Nr      Name        
+ 1       NO3
+
+#1;
+
+;###############################################################################
+; Second input block
+  86400  'DDHHMMSS' 'DDHHMMSS'  ; system clock
+
+    15.73                      ; integration option 
+   BAL_NOLUMPPROCESSES
+   BAL_NOLUMPLOADS
+   BAL_LUMPTRANSPORT
+   BAL_NOSUPPRESSSPACE
+   BAL_NOSUPPRESSTIME
+
+
+INCLUDE '..\config\B2_timers_only.inc'    ; this include file omits the time step so that the user can set it here
+; dddhhmmss format for timestep
+      60000 ; timestep
+
+
+ 1                                                 	; Monitoring areas in this file
+
+INCLUDE '..\config\B2_nrofmon.inc'
+INCLUDE '..\config\B2_monareas.inc'
+INCLUDE '..\config\B2_stations.inc'
+
+ 2                                                 	; No monitoring cross areas
+
+INCLUDE '..\config\B2_outputtimes.inc'
+
+#2;
+;###############################################################################
+; Third input block
+
+; Name of coordinates file - conforming to UGRID conventions
+; UGRID '..\config\B3_waqgeom.nc' ; SIBREN this caused problems
+
+INCLUDE '..\config\B3_nrofseg.inc'
+
+
+      2                     ; grid layout not used
+      
+      0                     ; constant property arrays
+      0                     ; time varying property arrays
+ 
+      -2                     ; volumes in external file
+'..\dynamicdata\volume.dat'
+
+#3;
+;###############################################################################
+; Fourth input block
+; 
+INCLUDE '..\config\B4_nrofexch.inc'
+
+      0                     ; # of dispersion arrays
+      0                     ; # of velocity arrays
+      
+      1                     ; first form is used for input
+      1                     ; exchange pointers in this file
+INCLUDE '..\config\B4_pointer.inc'
+
+ 
+      1                     ; dispersions in this file
+     1.0      1.0     1.0   ; scale factors in 3 directions
+     0.0      0.0     0.0   ; values in 3 directions
+     
+      1                     ; areas in this file
+      2                     ; constant, defaults
+     1.0      1.0           ; scale and value
+      0                     ; nr of overrides
+
+     -2                     ; flows in binary file
+'..\dynamicdata\flow.dat'      
+     
+      0                     ; constant length
+     1.0                    ; scale factor
+     1.0      1.0     1.0   ; values in 3 directions
+
+
+#4;
+;###############################################################################
+; Fifth input block, water quality calculation
+
+INCLUDE '..\config\B5_boundlist.inc'
+
+0                     					; no Tatcher-Harleman time lags
+
+#5;
+;###############################################################################
+; Sixth input block, Dry Waste Loads block
+; Number of loads (dummy value)
+0							; Number of loads
+
+#6;
+;###############################################################################
+; Seventh input block
+
+CONSTANTS Nothreads          DATA  0                  ; Multicore
+CONSTANTS Only_Active        DATA  1
+CONSTANTS MaxIter            DATA  100000
+CONSTANTS Tolerance          DATA  1E-12
+CONSTANTS Dry_THresh         DATA  0.0
+CONSTANTS 'iteration report' DATA  0.0
+
+; geometry =====================================================================
+
+PARAMETERS Surf ALL BINARY_FILE '..\staticdata\surface.dat'
+
+; Hydraulics ===================================================================
+
+CONSTANTS Active_WFLOW_Hydr  DATA 1 ; some hydraulics
+
+CONSTANTS Chezy              DATA       60.000    ;  Chezy coefficient                                      (m^0.5/s)
+PARAMETERS RiverLen          ALL BINARY_FILE '..\staticdata\length.dat'
+
+; coupling to EM ===============================================================
+
+CONSTANTS Active_EM_TNI  DATA 1 ; picks up data from EM and copies to WAQ memory
+SEG_FUNCTIONS EmisWTNI ALL BLOCK BINARY_FILE ..\..\EM\run\outdata_em.bin
+
+CONSTANTS TNItoNO3       DATA  1.00000     ; USEFOR constant                                        (-)                 
+
+; meteo ========================================================================
+
+INCLUDE ..\config\B7_climate.inc
+ALL BINARY_FILE ..\dynamicdata\climate.dat
+
+; coupling to SED ==============================================================
+
+CONSTANTS Active_SedimLink  DATA 1 ; picks up data from SED and discharges as IMx 
+
+INCLUDE ..\config\B7_sediment.inc
+ALL BINARY_FILE ..\dynamicdata\sediment.dat
+
+; ADD WQ processes =================================================================
+
+
+#7
+;###############################################################################
+; Eighth input block
+
+INITIALS NO3 DEFAULTS 0.0
+
+ 
+#8
+;###############################################################################
+; Ninth input block
+ 1                                           		; Conditions follow in this file
+ 1                                           		; Monitor-file
+ 1                                           		; Grid-file
+ 1                                                      ; His
+ 1                                                      ; Map 
+         
+ 
+ ; formats of History/Map
+ 1                                           		; switch on  binary History file
+ 1                                           		; switch on  binary Map     file
+ 0                                           		; not used 
+ 0                                           		; switch off NetCDF Map     file
+#9
+;###############################################################################
+; Tenth input block
+
+
+#10
