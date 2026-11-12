@@ -39,7 +39,7 @@ contains
 
     !> Sets values of horizontal surface array.
     subroutine set_horizontal_surface_area(num_cells, num_spatial_parameters, paname, param, &
-            num_spatial_time_fuctions, sfname, segfun, surface, file_unit_list)
+            num_spatial_time_functions, sfname, segfun, surface, file_unit_list)
 
         use timers
         implicit none
@@ -48,9 +48,9 @@ contains
         integer(kind = int_wp), intent(in) :: num_spatial_parameters    !< Number of parameters
         character(20), intent(in) :: paname(num_spatial_parameters)     !< Names of the parameters
         real(kind = real_wp), intent(in) :: param (num_spatial_parameters, num_cells)   !< Parameter values
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions  !< Number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)   !< Names of the segment functions
-        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_fuctions) !< Segment function values
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions  !< Number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)   !< Names of the segment functions
+        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_functions) !< Segment function values
         real(kind = real_wp), intent(inout) :: surface(num_cells)        !< Horizontal surface
         integer(kind = int_wp), intent(in) :: file_unit_list             !< Logical unit number monitoring file
 

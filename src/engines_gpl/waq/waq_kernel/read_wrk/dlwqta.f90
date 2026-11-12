@@ -29,7 +29,7 @@ contains
 
 
     subroutine dlwqta(file_unit_list, lch, lunrep, num_cells, num_constants, &
-            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, const, param, &
+            num_spatial_parameters, num_time_functions, num_spatial_time_functions, const, param, &
             funcs, sfuncs, isflag, ifflag, itime, &
             GridPs, dlwqd, ierr)
 
@@ -51,11 +51,11 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants               !< number of constants
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                 !< number of parameters
         integer(kind = int_wp), intent(in) :: num_time_functions                !< number of functions
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions               !< number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions               !< number of segment functions
         real(kind = real_wp), intent(out) :: const(num_constants)        !< constants array
         real(kind = real_wp), intent(out) :: param(num_spatial_parameters, num_cells)    !< parameters array
         real(kind = real_wp), intent(out) :: funcs(num_time_functions)         !< functions array
-        real(kind = real_wp), intent(out) :: sfuncs(num_cells, num_spatial_time_fuctions) !< segment functions array
+        real(kind = real_wp), intent(out) :: sfuncs(num_cells, num_spatial_time_functions) !< segment functions array
         integer(kind = int_wp), intent(in) :: isflag               !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(in) :: ifflag               !< = 1 then first invocation
         integer(kind = int_wp), intent(in) :: itime                !< system timer
@@ -82,7 +82,7 @@ contains
 
         ! read the data from file
 
-        ntotal = num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions
+        ntotal = num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions
         if (ntotal > 0) then
             if (ifflag == 1) then
                 call open_waq_files (file_unit_list, lch, 16, 2, ierr2)
@@ -184,7 +184,7 @@ contains
                         call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_SEGFUNC) then
-                    ierr2 = proc_par%evaluate(GridPs, itime, num_cells, num_spatial_time_fuctions, sfuncs)
+                    ierr2 = proc_par%evaluate(GridPs, itime, num_cells, num_spatial_time_functions, sfuncs)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
                         call stop_with_error()

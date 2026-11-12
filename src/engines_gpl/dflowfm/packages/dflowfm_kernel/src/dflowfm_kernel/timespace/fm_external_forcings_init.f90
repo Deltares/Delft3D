@@ -62,7 +62,7 @@ contains
       use m_spatial_field, only: deallocate_time_dependent_spatial_quantities
       use m_unstruc_model_data, only: extfile_new_list
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use processes_input, only: num_time_functions, num_spatial_time_fuctions, nosfunext
+      use processes_input, only: num_time_functions, num_spatial_time_functions, nosfunext
       use properties, only: MAX_PROP_LENGTH, prop_get
       use string_module, only: str_tolower
       use system_utils, only: split_filename
@@ -155,7 +155,7 @@ contains
          end do
       end do
       call realloc(item_waqfun, num_time_functions, keepExisting=.false., fill=ec_undef_int)
-      nosfunext = num_spatial_time_fuctions
+      nosfunext = num_spatial_time_functions
       call realloc(item_waqsfun, nosfunext, keepExisting=.false., fill=ec_undef_int)
 
       ! Second loop, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.

@@ -47,7 +47,7 @@ contains
 
 
     subroutine delpar00 (outmon, mdpfile, num_cells, num_exchanges, dwqvol, dwqflo, &
-            num_spatial_time_fuctions, sfname, segfun)
+            num_spatial_time_functions, sfname, segfun)
 
     use m_logger_helper, only : stop_with_error
     use partmem      ! for PARTicle tracking
@@ -71,9 +71,9 @@ contains
     integer  (kind = int_wp), intent(in) :: num_exchanges                     !< delwaq num_exchanges
     real     (kind = real_wp), intent(in) :: dwqvol (num_cells)          !< delwaq volumes
     real     (kind = real_wp), intent(in) :: dwqflo (num_exchanges)            !< delwaq flows
-    integer  (kind = int_wp), intent(in) :: num_spatial_time_fuctions                  !< number of segment functions
-    character(20), intent(in) :: sfname (num_spatial_time_fuctions)         !< names of segment functions
-    real(kind = real_wp), intent(in) :: segfun (num_cells, num_spatial_time_fuctions)   !< segment function values
+    integer  (kind = int_wp), intent(in) :: num_spatial_time_functions                  !< number of segment functions
+    character(20), intent(in) :: sfname (num_spatial_time_functions)         !< names of segment functions
+    real(kind = real_wp), intent(in) :: segfun (num_cells, num_spatial_time_functions)   !< segment function values
 
     integer(kind = int_wp), save :: iniday               ! release of initial condition, not used here
 
