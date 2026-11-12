@@ -5,7 +5,7 @@
 
 #include "ini/IniData.h"
 #include "ini/IniParser.h"
-#include "ini/IniParserOptions.h"
+#include "ini/IniOptions.h"
 #include "ini/IniProperty.h"
 #include "ini/IniScheme.h"
 #include "ini/IniSection.h"

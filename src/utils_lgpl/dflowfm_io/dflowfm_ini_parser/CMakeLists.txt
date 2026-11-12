@@ -1,11 +1,9 @@
 add_library(dflowfm_ini_parser STATIC
     include/ini/IniData.h
     include/ini/IniFileIO.h
-    include/ini/IniFileIOOptions.h
+    include/ini/IniOptions.h
     include/ini/IniFormatter.h
-    include/ini/IniFormatterOptions.h
     include/ini/IniParser.h
-    include/ini/IniParserOptions.h
     include/ini/IniProperty.h
     include/ini/IniScheme.h
     include/ini/IniSection.h

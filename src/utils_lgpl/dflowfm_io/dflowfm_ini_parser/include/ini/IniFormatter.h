@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ini/IniData.h"
-#include "ini/IniFormatterOptions.h"
+#include "ini/IniOptions.h"
 #include "ini/IniScheme.h"
 
 #include <string>

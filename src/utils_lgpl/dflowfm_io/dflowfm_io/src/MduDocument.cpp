@@ -2,7 +2,7 @@
 #include <dflowfm_io/MduDocument.h>
 
 #include <ini/IniFileIO.h>
-#include <ini/IniParserOptions.h>
+#include <ini/IniOptions.h>
 
 #include <format>
 #include <stdexcept>

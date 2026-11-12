@@ -3,7 +3,7 @@
 
 #include "ini/IniData.h"
 #include "ini/IniFormatter.h"
-#include "ini/IniFormatterOptions.h"
+#include "ini/IniOptions.h"
 #include "ini/IniProperty.h"
 #include "ini/IniScheme.h"
 #include "ini/IniSection.h"
