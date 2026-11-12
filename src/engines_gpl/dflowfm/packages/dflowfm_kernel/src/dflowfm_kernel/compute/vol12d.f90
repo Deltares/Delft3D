@@ -76,45 +76,6 @@ contains
       sl1 = slotw1D
       sl2 = slotw2D
 
-      if (japerim == 1) then
-         ! Dry links are skipped by the profile calculation below.
-         if (map_write_settings%au == 1 .and. allocated(flow_width)) then
-            flow_width = 0.0_dp
-         end if
-         if (map_write_settings%au_1d_sections == 1 .and. allocated(flow_width_main)) then
-            flow_width_main = 0.0_dp
-            flow_width_floodplain1 = 0.0_dp
-            flow_width_floodplain2 = 0.0_dp
-         end if
-         if (map_write_settings%au == 1 .and. allocated(hydraulic_radius)) then
-            hydraulic_radius = 0.0_dp
-         end if
-         if (map_write_settings%au_1d_sections == 1 .and. allocated(hydraulic_radius_main)) then
-            hydraulic_radius_main = 0.0_dp
-            hydraulic_radius_floodplain1 = 0.0_dp
-            hydraulic_radius_floodplain2 = 0.0_dp
-         end if
-         ! Dry links are not visited by the conveyance calculation.
-         if (allocated(czu_main)) then
-            czu_main = 0.0_dp
-            czu_floodplain1 = 0.0_dp
-            czu_floodplain2 = 0.0_dp
-         end if
-         ! Clear split areas before visiting wet links, including links that have become dry.
-         if (allocated(au_main)) then
-            au_main = 0.0_dp
-            au_floodplain1 = 0.0_dp
-            au_floodplain2 = 0.0_dp
-         end if
-         ! Dry links are skipped below, so clear their previous floodplain discharges too.
-         if (allocated(q1_floodplain1)) then
-            q1_floodplain1 = 0.0_dp
-         end if
-         if (allocated(q1_floodplain2)) then
-            q1_floodplain2 = 0.0_dp
-         end if
-      end if
-
       if (japerim == 1 .or. nonlin > 0) then
 
          if (japerim == 0 .and. useVolumeTables) then
