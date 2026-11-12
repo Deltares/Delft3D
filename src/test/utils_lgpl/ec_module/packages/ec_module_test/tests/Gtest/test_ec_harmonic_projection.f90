@@ -4,6 +4,7 @@ module test_ec_harmonic_projection
    use m_ec_typedefs
    use m_ec_parameters
    use m_ec_converter, only: prepare_projections, ecConverterHarmonicCoefficients, apply_harmonics, ecConverterPerformConversions
+   use m_ec_converter, only: compute_source_harmonic_coefficients, interpolate_harmonic_coefficients, find_harmonic_extrapolation_donors
    use m_mathconstants, only: PI
    use time_class, only: c_time
    use, intrinsic :: ieee_arithmetic, only: ieee_value, ieee_quiet_nan
@@ -11,59 +12,57 @@ module test_ec_harmonic_projection
    implicit none(type, external)
    private
 
-   type coefficient_fixture
-      type(tEcItem) :: source, target
+   real(dp), dimension(4), parameter :: SOURCE_COS = [2.0_dp, 0.0_dp, -6.0_dp, 0.0_dp]
+   real(dp), dimension(4), parameter :: SOURCE_SIN = [0.0_dp, 4.0_dp, 0.0_dp, -8.0_dp]
+
+   type source_fixture
+      type(tEcItem) :: source
       type(tEcField) :: amplitudes
       type(tEcQuantity) :: quantity
-      type(tEcElementSet) :: source_set, target_set
+      type(tEcElementSet) :: source_set
       type(tEcHarmonicsFrame) :: frame
+   end type source_fixture
+
+   type, extends(source_fixture) :: coefficient_fixture
+      type(tEcItem) :: target
+      type(tEcElementSet) :: target_set
       type(tEcConverter) :: converter
       type(tEcIndexWeight) :: weights
    end type coefficient_fixture
 
 contains
 
-   subroutine setup_coefficients(f)
-      type(coefficient_fixture), target, intent(inout) :: f
+   subroutine setup_source(f)
+      class(source_fixture), target, intent(inout) :: f !< Source data and pointers to initialize.
 
       f%source%sourceT1FieldPtr => f%amplitudes
       f%source%quantityPtr => f%quantity
       f%source%elementSetPtr => f%source_set
       f%source%hframe => f%frame
-      f%target%elementSetPtr => f%target_set
-      f%converter%indexWeight => f%weights
-      f%converter%interpolationType = interpolate_spacetimeSaveWeightFactors
       f%quantity%name = 'air_pressure'
       f%quantity%fillvalue = -999.0_dp
-      f%target_set%ofType = elmSetType_cartesian
-      f%target_set%nCoordinates = 2
       f%amplitudes%arr1d = [2.0_dp, 4.0_dp, 6.0_dp, 8.0_dp]
-   end subroutine setup_coefficients
-
-   !> Both amplitudes and phases cover every grid point.
-   subroutine setup_dense(f)
-      type(coefficient_fixture), target, intent(inout) :: f
-
-      call setup_coefficients(f)
       f%source_set%ofType = elmSetType_cartesian
       f%source_set%n_cols = 2
       f%source_set%n_rows = 2
       f%amplitudes%bbox = [1, 1, 2, 2]
+   end subroutine setup_source
+
+   !> Both amplitudes and phases cover every grid point.
+   subroutine setup_dense(f)
+      class(source_fixture), target, intent(inout) :: f !< Dense source data to initialize.
+
+      call setup_source(f)
       allocate (f%frame%phases(2, 2))
       f%frame%phases(:, 1) = [0.0_dp, 90.0_dp]
       f%frame%phases(:, 2) = [180.0_dp, 270.0_dp]
-      allocate (f%weights%indices(2, 2), f%weights%weightFactors(4, 2))
-      f%weights%indices(:, 1) = [1, 1]
-      f%weights%indices(:, 2) = 0
-      f%weights%weightFactors(:, 1) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
-      f%weights%weightFactors(:, 2) = 0.0_dp
    end subroutine setup_dense
 
    !> Only selected grid points have amplitudes, indexed by ia/ja; phases still cover the full grid.
    subroutine setup_sparse(f)
-      type(coefficient_fixture), target, intent(inout) :: f
+      class(source_fixture), target, intent(inout) :: f !< Sparse source data to initialize.
 
-      call setup_coefficients(f)
+      call setup_source(f)
       f%source_set%ofType = elmSetType_cartesian
       f%source_set%n_cols = 4
       f%source_set%n_rows = 3
@@ -74,36 +73,27 @@ contains
       f%frame%phases = -999.0_dp
       f%frame%phases(2:3, 2) = [0.0_dp, 90.0_dp]
       f%frame%phases(2:3, 3) = [180.0_dp, 270.0_dp]
-      allocate (f%weights%indices(2, 2), f%weights%weightFactors(4, 2))
-      f%weights%indices(:, 1) = [1, 3]
-      f%weights%indices(:, 2) = 0
-      f%weights%weightFactors(:, 1) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
-      f%weights%weightFactors(:, 2) = 0.0_dp
    end subroutine setup_sparse
 
    !> Source indices identify individual stations rather than corners of a grid cell.
    subroutine setup_stations(f)
-      type(coefficient_fixture), target, intent(inout) :: f
+      class(source_fixture), target, intent(inout) :: f !< Station source data to initialize.
 
-      call setup_coefficients(f)
+      call setup_source(f)
       f%source_set%ofType = elmSetType_samples
       f%source_set%n_cols = 4
       f%source_set%n_rows = 1
       allocate (f%frame%phases(4, 1))
       f%frame%phases(:, 1) = [0.0_dp, 90.0_dp, 180.0_dp, 270.0_dp]
-      allocate (f%weights%indices(3, 2), f%weights%weightFactors(3, 2))
-      f%weights%indices(:, 1) = [1, 3, 4]
-      f%weights%indices(:, 2) = [4, 0, 0]
-      f%weights%weightFactors(:, 1) = [0.2_dp, 0.3_dp, 0.5_dp]
-      f%weights%weightFactors(:, 2) = [1.0_dp, 0.0_dp, 0.0_dp]
    end subroutine setup_stations
 
    !> One target has valid data, one needs a donor, and one lies outside the grid.
    subroutine setup_extrapolation(f)
-      type(coefficient_fixture), target, intent(inout) :: f
+      type(coefficient_fixture), target, intent(inout) :: f !< Source/target pair with a missing grid cell and an outside target.
 
-      call setup_coefficients(f)
-      f%source_set%ofType = elmSetType_cartesian
+      call setup_source(f)
+      f%target%elementSetPtr => f%target_set
+      f%converter%indexWeight => f%weights
       f%source_set%n_cols = 3
       f%source_set%n_rows = 2
       f%amplitudes%bbox = [1, 1, 3, 2]
@@ -111,6 +101,7 @@ contains
       allocate (f%frame%phases(3, 2))
       f%frame%phases = 0.0_dp
       f%converter%interpolationType = extrapolate_spacetimeSaveWeightFactors
+      f%target_set%ofType = elmSetType_cartesian
       f%target_set%nCoordinates = 3
       allocate (f%weights%indices(2, 3), f%weights%weightFactors(4, 3), f%weights%substndx(3))
       f%weights%indices(:, 1) = [1, 1]
@@ -123,20 +114,11 @@ contains
       f%target_set%y = 0.5_dp
    end subroutine setup_extrapolation
 
-   subroutine cleanup(f)
-      type(coefficient_fixture), intent(inout) :: f
+   subroutine cleanup_extrapolation(f)
+      type(coefficient_fixture), intent(inout) :: f !< Extrapolation fixture whose pointer-owned arrays are released.
 
-      deallocate (f%weights%indices, f%weights%weightFactors)
-      if (associated(f%weights%substndx)) then
-         deallocate (f%weights%substndx)
-      end if
-      if (f%amplitudes%issparse == 1) then
-         deallocate (f%amplitudes%ia, f%amplitudes%ja)
-      end if
-      if (associated(f%target_set%x)) then
-         deallocate (f%target_set%x, f%target_set%y)
-      end if
-   end subroutine cleanup
+      deallocate (f%weights%indices, f%weights%weightFactors, f%weights%substndx, f%target_set%x, f%target_set%y)
+   end subroutine cleanup_extrapolation
 
    !$gtest
    subroutine test_multiple_projections() bind(C)
@@ -166,126 +148,137 @@ contains
       end do
    end subroutine test_multiple_projections
 
-   !$gtest
-   subroutine test_initialize_dense_projection() bind(C)
-      type(coefficient_fixture), target :: f
-      type(tEcHarmonicProjection) :: proj
-      logical :: success
-
-      call setup_dense(f)
-      success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-      if (.not. f90_assert_true(success, 'dense projection must succeed')) then
-         call cleanup(f)
-         return
-      end if
-      ! Bilinear weights follow corners 1, 2, 4, 3, not flattened array order.
-      call f90_expect_near(proj%cos_weight(1), -2.2_dp, 1.0e-12_dp, 'dense cosine must use bilinear corner order')
-      call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'dense sine must use bilinear corner order')
-      call f90_expect_true(all(proj%mask == [1, 0]), 'outside grid targets must be masked out')
-      call cleanup(f)
-   end subroutine test_initialize_dense_projection
-
-   !$gtest
-   subroutine test_initialize_sparse_projection() bind(C)
-      type(coefficient_fixture), target :: f
-      type(tEcHarmonicProjection) :: proj
-      logical :: success
-
-      call setup_sparse(f)
-      success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-      if (.not. f90_assert_true(success, 'sparse projection must succeed')) then
-         call cleanup(f)
-         return
-      end if
-      call f90_expect_near(proj%cos_weight(1), -2.2_dp, 1.0e-12_dp, 'sparse cosine must use full-grid phase indices')
-      call f90_expect_near(proj%sin_weight(1), -1.6_dp, 1.0e-12_dp, 'sparse sine must use full-grid phase indices')
-      call f90_expect_true(all(proj%mask == [1, 0]), 'outside sparse targets must be masked out')
-      call cleanup(f)
-   end subroutine test_initialize_sparse_projection
-
-   !$gtest
-   subroutine test_initialize_station_projection() bind(C)
-      type(coefficient_fixture), target :: f
-      type(tEcHarmonicProjection) :: proj
-      logical :: success
-
-      call setup_stations(f)
-      success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-      if (.not. f90_assert_true(success, 'station projection must succeed')) then
-         call cleanup(f)
-         return
-      end if
-      call f90_expect_near(proj%cos_weight(1), -1.4_dp, 1.0e-12_dp, 'station cosine must use station weights')
-      call f90_expect_near(proj%sin_weight(1), -4.0_dp, 1.0e-12_dp, 'station sine must use station weights')
-      call f90_expect_near(proj%sin_weight(2), -8.0_dp, 1.0e-12_dp, 'a single station must support nearest-neighbour mapping')
-      call f90_expect_true(all(proj%mask == 1), 'valid stations must be active')
-      call cleanup(f)
-   end subroutine test_initialize_station_projection
-
-   subroutine test_missing_sources(f, phase_col, phase_row, expect_success)
-      type(coefficient_fixture), target, intent(inout) :: f
-      integer, intent(in) :: phase_col, phase_row
-      logical, intent(in) :: expect_success
+   subroutine check_source_coefficients(f, phase_col, phase_row)
+      type(source_fixture), intent(inout) :: f !< Source layout whose coefficients and missing-value handling are checked.
+      integer, intent(in) :: phase_col, phase_row !< Phase indices corresponding to the first amplitude.
+      real(dp), dimension(:), allocatable :: source_cos, source_sin
+      logical, dimension(:), allocatable :: source_valid
       real(dp) :: missing_value
       integer :: missing_kind
-      logical :: success
 
+      call compute_source_harmonic_coefficients(f%source, source_cos, source_sin, source_valid)
+      call f90_expect_near(source_cos, SOURCE_COS, 1.0e-12_dp, 'source cosine must follow amplitude order')
+      call f90_expect_near(source_sin, SOURCE_SIN, 1.0e-12_dp, 'source sine must follow amplitude order')
+      call f90_expect_true(all(source_valid), 'complete source data must be valid')
       ! Test a missing amplitude and a missing phase, with both a numeric fill value and NaN.
       do missing_kind = 1, 4
-         block
-            type(tEcHarmonicProjection) :: proj
-            missing_value = -999.0_dp
-            if (missing_kind > 2) then
-               missing_value = ieee_value(0.0_dp, ieee_quiet_nan)
-            end if
-            f%quantity%fillvalue = missing_value
-            if (mod(missing_kind, 2) == 1) then
-               f%amplitudes%arr1d(1) = missing_value
-            else
-               f%frame%phases(phase_col, phase_row) = missing_value
-            end if
-            success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-            call f90_expect_true(success .eqv. expect_success, 'grid missings must be masked; station missings must fail')
-            if (success) then
-               call f90_expect_eq(proj%mask(1), 0, 'missing amplitude or phase must invalidate the target')
-            else
-               call f90_expect_false(allocated(proj%cos_weight), 'failure must not publish incomplete coefficients')
-            end if
-            f%amplitudes%arr1d(1) = 2.0_dp
-            f%frame%phases(phase_col, phase_row) = 0.0_dp
-         end block
+         missing_value = -999.0_dp
+         if (missing_kind > 2) then
+            missing_value = ieee_value(0.0_dp, ieee_quiet_nan)
+         end if
+         f%quantity%fillvalue = missing_value
+         if (mod(missing_kind, 2) == 1) then
+            f%amplitudes%arr1d(1) = missing_value
+         else
+            f%frame%phases(phase_col, phase_row) = missing_value
+         end if
+         call compute_source_harmonic_coefficients(f%source, source_cos, source_sin, source_valid)
+         call f90_expect_false(source_valid(1), 'missing amplitude or phase must invalidate the source')
+         call f90_expect_true(all(source_valid(2:)), 'other source points must remain valid')
+         f%amplitudes%arr1d(1) = 2.0_dp
+         f%frame%phases(phase_col, phase_row) = 0.0_dp
       end do
-   end subroutine test_missing_sources
+   end subroutine check_source_coefficients
 
    !$gtest
-   subroutine test_dense_missing_sources() bind(C)
-      type(coefficient_fixture), target :: f
+   subroutine test_dense_source_coefficients() bind(C)
+      type(source_fixture), target :: f
       call setup_dense(f)
-      call test_missing_sources(f, 1, 1, .true.)
-      call cleanup(f)
-   end subroutine test_dense_missing_sources
+      call check_source_coefficients(f, 1, 1)
+   end subroutine test_dense_source_coefficients
 
    !$gtest
-   subroutine test_sparse_missing_sources() bind(C)
-      type(coefficient_fixture), target :: f
+   subroutine test_sparse_source_coefficients() bind(C)
+      type(source_fixture), target :: f
       call setup_sparse(f)
-      call test_missing_sources(f, 2, 2, .true.)
-      call cleanup(f)
-   end subroutine test_sparse_missing_sources
+      call check_source_coefficients(f, 2, 2)
+      deallocate (f%amplitudes%ia, f%amplitudes%ja)
+   end subroutine test_sparse_source_coefficients
 
    !$gtest
-   subroutine test_station_missing_sources() bind(C)
-      type(coefficient_fixture), target :: f
+   subroutine test_station_source_coefficients() bind(C)
+      type(source_fixture), target :: f
       call setup_stations(f)
-      call test_missing_sources(f, 1, 1, .false.)
-      call cleanup(f)
-   end subroutine test_station_missing_sources
+      call check_source_coefficients(f, 1, 1)
+   end subroutine test_station_source_coefficients
+
+   !$gtest
+   subroutine test_interpolate_grid_coefficients() bind(C)
+      type(source_fixture), target :: f
+      type(tEcElementSet) :: target_set
+      type(tEcIndexWeight) :: weights
+      type(tEcHarmonicProjection) :: proj
+      integer, dimension(2, 2), target :: indices
+      real(dp), dimension(4, 2), target :: factors
+      integer :: sparse
+      logical :: success
+
+      call setup_source(f)
+      target_set%nCoordinates = 2
+      weights%indices => indices
+      weights%weightFactors => factors
+      indices = 0
+      factors(:, 1) = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
+      factors(:, 2) = 0.0_dp
+      do sparse = 0, 1
+         f%amplitudes%issparse = sparse
+         indices(:, 1) = [1, 1 + 2 * sparse]
+         success = interpolate_harmonic_coefficients(f%source, target_set, weights, SOURCE_COS, SOURCE_SIN, &
+                                                    [.true., .true., .true., .true.], proj)
+         if (.not. f90_assert_true(success, 'dense and sparse grid interpolation must succeed')) then
+            return
+         end if
+         ! Bilinear weights follow corners 1, 2, 4, 3, not flattened array order.
+         call f90_expect_near(proj%cos_weight, [-2.2_dp, 0.0_dp], 1.0e-12_dp, 'cosine must use bilinear corner order')
+         call f90_expect_near(proj%sin_weight, [-1.6_dp, 0.0_dp], 1.0e-12_dp, 'sine must use bilinear corner order')
+         call f90_expect_true(all(proj%mask == [1, 0]), 'outside targets must be masked out')
+
+         success = interpolate_harmonic_coefficients(f%source, target_set, weights, SOURCE_COS, SOURCE_SIN, &
+                                                    [.false., .true., .true., .true.], proj)
+         call f90_expect_true(success, 'missing grid sources must not fail interpolation')
+         call f90_expect_true(all(proj%mask == 0), 'a missing grid source must invalidate its target')
+      end do
+   end subroutine test_interpolate_grid_coefficients
+
+   !$gtest
+   subroutine test_interpolate_station_coefficients() bind(C)
+      type(source_fixture), target :: f
+      type(tEcElementSet) :: target_set
+      type(tEcIndexWeight) :: weights
+      type(tEcHarmonicProjection) :: proj
+      integer, dimension(3, 2), target :: indices
+      real(dp), dimension(3, 2), target :: factors
+      logical :: success
+
+      call setup_source(f)
+      f%source_set%ofType = elmSetType_samples
+      f%source_set%n_cols = 4
+      target_set%nCoordinates = 2
+      weights%indices => indices
+      weights%weightFactors => factors
+      indices(:, 1) = [1, 3, 4]
+      indices(:, 2) = [4, 0, 5]
+      factors(:, 1) = [0.2_dp, 0.3_dp, 0.5_dp]
+      factors(:, 2) = [1.0_dp, 0.0_dp, 0.0_dp]
+      success = interpolate_harmonic_coefficients(f%source, target_set, weights, SOURCE_COS, SOURCE_SIN, &
+                                                 [.true., .true., .true., .true.], proj)
+      if (.not. f90_assert_true(success, 'station interpolation must succeed')) then
+         return
+      end if
+      call f90_expect_near(proj%cos_weight, [-1.4_dp, 0.0_dp], 1.0e-12_dp, 'station cosine must use station weights')
+      call f90_expect_near(proj%sin_weight, [-4.0_dp, -8.0_dp], 1.0e-12_dp, 'single-station mapping must skip invalid indices')
+      call f90_expect_true(all(proj%mask == 1), 'valid stations must be active')
+
+      success = interpolate_harmonic_coefficients(f%source, target_set, weights, SOURCE_COS, SOURCE_SIN, &
+                                                 [.false., .true., .true., .true.], proj)
+      call f90_expect_false(success, 'missing station sources must fail interpolation')
+   end subroutine test_interpolate_station_coefficients
 
    !$gtest
    subroutine test_zero_overlap() bind(C)
-      type(coefficient_fixture), target :: f
-      type(tEcHarmonicProjection) :: proj
-      logical :: success
+      type(source_fixture), target :: f
+      real(dp), dimension(:), allocatable :: source_cos, source_sin
+      logical, dimension(:), allocatable :: source_valid
 
       call setup_dense(f)
       ! The reader allocates (-3)*(-3) entries for a 4x4 grid with no overlap.
@@ -296,35 +289,66 @@ contains
       deallocate (f%frame%phases)
       allocate (f%frame%phases(4, 4))
       f%frame%phases = 0.0_dp
-      f%weights%indices = 0
-      success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-      if (.not. f90_assert_true(success, 'an empty bounding box must not access phases out of bounds')) then
-         call cleanup(f)
-         return
-      end if
-      call f90_expect_true(all(proj%mask == 0), 'zero overlap must produce an inactive projection')
-      call cleanup(f)
+      call compute_source_harmonic_coefficients(f%source, source_cos, source_sin, source_valid)
+      call f90_expect_eq(size(source_cos), 9, 'empty bounding box storage must be handled without reading phases out of bounds')
+      call f90_expect_false(any(source_valid), 'zero overlap must have no valid sources')
    end subroutine test_zero_overlap
 
    !$gtest
-   subroutine test_initialize_extrapolation() bind(C)
-      type(coefficient_fixture), target :: f
-      type(tEcHarmonicProjection) :: proj
+   subroutine test_find_harmonic_donors() bind(C)
+      type(tEcElementSet) :: target_set
+      type(tEcIndexWeight) :: weights
+      real(dp), dimension(4), target :: x, y
+      integer, dimension(2, 4), target :: indices
+      integer, dimension(4), target :: donors
       logical :: success
 
-      call setup_extrapolation(f)
+      x = [0.5_dp, 1.5_dp, 1.6_dp, 100.0_dp]
+      y = 0.5_dp
+      target_set%x => x
+      target_set%y => y
+      weights%indices => indices
+      weights%substndx => donors
+      indices = 1
+      indices(:, 4) = 0
+      donors = 0
+      success = find_harmonic_extrapolation_donors(target_set, weights, [1, 0, 0, 0])
+      call f90_expect_true(success, 'missing targets inside the grid must find donors')
+      call f90_expect_true(all(donors == [0, 1, 1, 0]), 'missing targets must not donate to each other; outside targets must be skipped')
+   end subroutine test_find_harmonic_donors
+
+   !$gtest
+   subroutine test_failed_projection_is_not_published() bind(C)
+      type(coefficient_fixture), target :: f
+      type(tEcHarmonicProjection) :: proj
+      integer, dimension(1, 1), target :: indices
+      real(dp), dimension(1, 1), target :: factors
+      logical :: success
+
+      call setup_stations(f)
+      f%target%elementSetPtr => f%target_set
+      f%target_set%nCoordinates = 1
+      f%converter%indexWeight => f%weights
+      f%weights%indices => indices
+      f%weights%weightFactors => factors
+      indices = 1
+      factors = 1.0_dp
+      f%frame%phases(1, 1) = f%quantity%fillvalue
       success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
-      if (.not. f90_assert_true(success, 'projection must find a donor for a missing grid cell')) then
-         call cleanup(f)
-         return
-      end if
-      call f90_expect_true(all(proj%mask == [1, 0, 0]), 'only the complete grid cell must be active')
-      call f90_expect_near(proj%cos_weight(1), 2.0_dp, 1.0e-12_dp, 'donor coefficients must be projected')
-      call f90_expect_near(proj%sin_weight(1), 0.0_dp, 1.0e-12_dp, 'zero phases must have zero sine coefficient')
-      call f90_expect_eq(f%weights%substndx(2), 1, 'missing cell must use the valid target as donor')
-      call f90_expect_eq(f%weights%substndx(3), 0, 'outside targets must not acquire donors')
-      call cleanup(f)
-   end subroutine test_initialize_extrapolation
+      call f90_expect_false(success, 'missing station phases must fail projection initialization')
+      call f90_expect_false(allocated(proj%cos_weight), 'failure must not publish cosine coefficients')
+      call f90_expect_false(allocated(proj%sin_weight), 'failure must not publish sine coefficients')
+      call f90_expect_false(allocated(proj%mask), 'failure must not publish a mask')
+
+      proj%cos_weight = [11.0_dp]
+      proj%sin_weight = [12.0_dp]
+      proj%mask = [1]
+      success = ecConverterHarmonicCoefficients(proj, f%source, f%target, f%converter)
+      call f90_expect_false(success, 'reinitialization with missing station phases must fail')
+      call f90_expect_near(proj%cos_weight(1), 11.0_dp, 1.0e-12_dp, 'failure must preserve existing cosine coefficients')
+      call f90_expect_near(proj%sin_weight(1), 12.0_dp, 1.0e-12_dp, 'failure must preserve existing sine coefficients')
+      call f90_expect_eq(proj%mask(1), 1, 'failure must preserve the existing mask')
+   end subroutine test_failed_projection_is_not_published
 
    !$gtest
    subroutine test_known_angles() bind(C)
@@ -429,7 +453,7 @@ contains
          success = ecConverterPerformConversions(connection, time)
          if (.not. f90_assert_true(success, 'conversion dispatch must evaluate the harmonic')) then
             deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
-            call cleanup(f)
+            call cleanup_extrapolation(f)
             return
          end if
          call f90_expect_near(values(1), 10.0_dp + 2.0_dp * (-1.0_dp)**step, 1.0e-12_dp, 'time must advance the harmonic')
@@ -440,7 +464,7 @@ contains
          call f90_expect_near(target_field%timesteps, time%mjd(), 1.0e-12_dp, 'conversion must update the timestamp')
          if (.not. f90_assert_true(allocated(f%frame%projections), 'dispatch must create the projection')) then
             deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
-            call cleanup(f)
+            call cleanup_extrapolation(f)
             return
          end if
          call f90_expect_eq(size(f%frame%projections), 1, 'subsequent calls must reuse the projection')
@@ -451,7 +475,7 @@ contains
       success = ecConverterPerformConversions(connection, time)
       call f90_expect_false(success, 'conversion must reject a zero harmonic period')
       deallocate (connection%sourceItemsPtr, connection%targetItemsPtr)
-      call cleanup(f)
+      call cleanup_extrapolation(f)
    end subroutine test_conversion_reuses_projection
 
 end module test_ec_harmonic_projection

@@ -63,6 +63,9 @@ module m_ec_converter
    public :: ecConverterGetBbox
    public :: prepare_projections
    public :: ecConverterHarmonicCoefficients
+   public :: compute_source_harmonic_coefficients
+   public :: interpolate_harmonic_coefficients
+   public :: find_harmonic_extrapolation_donors
    public :: apply_harmonics
 contains
 
