@@ -15,17 +15,12 @@ module test_ec_harmonic_projection
    real(dp), dimension(4), parameter :: SOURCE_COS = [2.0_dp, 0.0_dp, -6.0_dp, 0.0_dp]
    real(dp), dimension(4), parameter :: SOURCE_SIN = [0.0_dp, 4.0_dp, 0.0_dp, -8.0_dp]
 
-   type source_fixture
-      type(tEcItem) :: source
+   type coefficient_fixture
+      type(tEcItem) :: source, target
       type(tEcField) :: amplitudes
       type(tEcQuantity) :: quantity
-      type(tEcElementSet) :: source_set
+      type(tEcElementSet) :: source_set, target_set
       type(tEcHarmonicsFrame) :: frame
-   end type source_fixture
-
-   type, extends(source_fixture) :: coefficient_fixture
-      type(tEcItem) :: target
-      type(tEcElementSet) :: target_set
       type(tEcConverter) :: converter
       type(tEcIndexWeight) :: weights
    end type coefficient_fixture
@@ -33,7 +28,7 @@ module test_ec_harmonic_projection
 contains
 
    subroutine setup_source(f)
-      class(source_fixture), target, intent(inout) :: f !< Source data and pointers to initialize.
+      type(coefficient_fixture), target, intent(inout) :: f !< Source data and pointers to initialize.
 
       f%source%sourceT1FieldPtr => f%amplitudes
       f%source%quantityPtr => f%quantity
@@ -50,7 +45,7 @@ contains
 
    !> Both amplitudes and phases cover every grid point.
    subroutine setup_dense(f)
-      class(source_fixture), target, intent(inout) :: f !< Dense source data to initialize.
+      type(coefficient_fixture), target, intent(inout) :: f !< Dense source data to initialize.
 
       call setup_source(f)
       allocate (f%frame%phases(2, 2))
@@ -60,7 +55,7 @@ contains
 
    !> Only selected grid points have amplitudes, indexed by ia/ja; phases still cover the full grid.
    subroutine setup_sparse(f)
-      class(source_fixture), target, intent(inout) :: f !< Sparse source data to initialize.
+      type(coefficient_fixture), target, intent(inout) :: f !< Sparse source data to initialize.
 
       call setup_source(f)
       f%source_set%ofType = elmSetType_cartesian
@@ -77,7 +72,7 @@ contains
 
    !> Source indices identify individual stations rather than corners of a grid cell.
    subroutine setup_stations(f)
-      class(source_fixture), target, intent(inout) :: f !< Station source data to initialize.
+      type(coefficient_fixture), target, intent(inout) :: f !< Station source data to initialize.
 
       call setup_source(f)
       f%source_set%ofType = elmSetType_samples
@@ -149,7 +144,7 @@ contains
    end subroutine test_multiple_projections
 
    subroutine check_source_coefficients(f, phase_col, phase_row)
-      type(source_fixture), intent(inout) :: f !< Source layout whose coefficients and missing-value handling are checked.
+      type(coefficient_fixture), intent(inout) :: f !< Source layout whose coefficients and missing-value handling are checked.
       integer, intent(in) :: phase_col, phase_row !< Phase indices corresponding to the first amplitude.
       real(dp), dimension(:), allocatable :: source_cos, source_sin
       logical, dimension(:), allocatable :: source_valid
@@ -182,14 +177,14 @@ contains
 
    !$gtest
    subroutine test_dense_source_coefficients() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       call setup_dense(f)
       call check_source_coefficients(f, 1, 1)
    end subroutine test_dense_source_coefficients
 
    !$gtest
    subroutine test_sparse_source_coefficients() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       call setup_sparse(f)
       call check_source_coefficients(f, 2, 2)
       deallocate (f%amplitudes%ia, f%amplitudes%ja)
@@ -197,14 +192,14 @@ contains
 
    !$gtest
    subroutine test_station_source_coefficients() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       call setup_stations(f)
       call check_source_coefficients(f, 1, 1)
    end subroutine test_station_source_coefficients
 
    !$gtest
    subroutine test_interpolate_grid_coefficients() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       type(tEcElementSet) :: target_set
       type(tEcIndexWeight) :: weights
       type(tEcHarmonicProjection) :: proj
@@ -242,7 +237,7 @@ contains
 
    !$gtest
    subroutine test_interpolate_station_coefficients() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       type(tEcElementSet) :: target_set
       type(tEcIndexWeight) :: weights
       type(tEcHarmonicProjection) :: proj
@@ -276,7 +271,7 @@ contains
 
    !$gtest
    subroutine test_zero_overlap() bind(C)
-      type(source_fixture), target :: f
+      type(coefficient_fixture), target :: f
       real(dp), dimension(:), allocatable :: source_cos, source_sin
       logical, dimension(:), allocatable :: source_valid
 
