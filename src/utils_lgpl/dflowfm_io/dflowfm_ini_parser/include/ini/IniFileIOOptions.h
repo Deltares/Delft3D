@@ -10,8 +10,8 @@ namespace ini
     /// @brief Represents the options for reading and writing INI files.
     ///
     /// @details This struct combines the scheme, parser options and formatter options
-    ///          into a single configuration object that can be passed to @ref IniFile.
-    struct IniFileOptions
+    ///          into a single configuration object that can be passed to @ref ini::file_io functions.
+    struct IniFileIOOptions
     {
         /// @brief The scheme defining the format of the INI file.
         IniScheme scheme;

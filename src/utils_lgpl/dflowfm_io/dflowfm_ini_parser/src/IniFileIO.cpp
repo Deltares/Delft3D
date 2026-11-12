@@ -1,4 +1,4 @@
-#include "ini/IniFile.h"
+#include "ini/IniFileIO.h"
 #include "ini/IniFormatter.h"
 #include "ini/IniParser.h"
 
@@ -7,17 +7,14 @@
 #include <stdexcept>
 #include <string>
 
-namespace ini
+namespace ini::file_io
 {
-
-    IniFile::IniFile(IniFileOptions options) : options(std::move(options)) {}
-
-    void IniFile::LoadString(const std::string& text)
+    IniData LoadString(const std::string& text, const IniFileIOOptions& options)
     {
-        data = Parse(text, options.scheme, options.parserOptions);
+        return Parse(text, options.scheme, options.parserOptions);
     }
 
-    void IniFile::Load(const std::filesystem::path& path)
+    IniData Load(const std::filesystem::path& path, const IniFileIOOptions& options)
     {
         if (path.empty())
         {
@@ -32,15 +29,15 @@ namespace ini
 
         stream.exceptions(std::ios::badbit | std::ios::failbit);
         const std::string text{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
-        LoadString(text);
+        return LoadString(text, options);
     }
 
-    std::string IniFile::ToString() const
+    std::string ToString(const IniData& data, const IniFileIOOptions& options)
     {
         return Format(data, options.scheme, options.formatterOptions);
     }
 
-    void IniFile::Save(const std::filesystem::path& path) const
+    void Save(const std::filesystem::path& path, const IniData& data, const IniFileIOOptions& options)
     {
         if (path.empty())
         {
@@ -54,8 +51,8 @@ namespace ini
         }
 
         stream.exceptions(std::ios::badbit | std::ios::failbit);
-        stream << ToString();
+        stream << ToString(data, options);
         stream.close();
     }
 
-} // namespace ini
+} // namespace ini::file_io

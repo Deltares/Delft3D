@@ -18,7 +18,7 @@ add_executable(dflowfm_ini_parser_tests
     IniFormatterTest.cpp
     IniSectionTest.cpp
     IniPropertyTest.cpp
-    IniFileTest.cpp
+    IniFileIOTest.cpp
 )
 
 if(MSVC)

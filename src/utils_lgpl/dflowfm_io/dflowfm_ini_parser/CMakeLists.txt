@@ -1,7 +1,7 @@
 add_library(dflowfm_ini_parser STATIC
     include/ini/IniData.h
-    include/ini/IniFile.h
-    include/ini/IniFileOptions.h
+    include/ini/IniFileIO.h
+    include/ini/IniFileIOOptions.h
     include/ini/IniFormatter.h
     include/ini/IniFormatterOptions.h
     include/ini/IniParser.h
@@ -13,7 +13,7 @@ add_library(dflowfm_ini_parser STATIC
     include/ini/StringUtils.h
 
     src/IniData.cpp
-    src/IniFile.cpp
+    src/IniFileIO.cpp
     src/IniFormatter.cpp
     src/IniParser.cpp
     src/IniProperty.cpp
