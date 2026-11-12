@@ -1282,8 +1282,8 @@ contains
                             vw_net     = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
                             ! drag on the difference vector: cd * (wind - flow)
                             if ( vw_net > 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
-                                xnew = xnew  + (cdrag*(vxw-vxr) + leeway_modifier * sin(wdirr_lee)) * itdelt    ! This modifier may need to be adjusted to the angle
-                                ynew = ynew  + (cdrag*(vyw-vyr) + leeway_modifier * cos(wdirr_lee)) * itdelt    !
+                                xnew = xnew  + (cdrag*(vxw-vxr) + leeway_modifier * sin(wdirr_lee)) / dxp * itdelt    ! This modifier may need to be adjusted to the angle
+                                ynew = ynew  + (cdrag*(vyw-vyr) + leeway_modifier * cos(wdirr_lee)) / dyp * itdelt    !
                             endif
                         end if
                     end if
