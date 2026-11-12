@@ -3585,16 +3585,16 @@ contains
       end if
 
       call convert_air_sea_interaction_model_integer_to_string(air_sea_interaction_model, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
+      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', trim(tmpstr), 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
 
       call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', tmpstr, 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
 
       call convert_free_convection_integer_to_string(free_convection, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'freeConvection', tmpstr, 'Free convection switch (options: ''off'', ''on'').')
+      call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
 
       call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
 
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
