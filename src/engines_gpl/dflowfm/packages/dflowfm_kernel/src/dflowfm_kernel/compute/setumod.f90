@@ -358,14 +358,14 @@ contains
       !updvertp
 
       ihorvic = 0
-      if (vicouv > 0 .or. javiusp == 1 .or. Smagorinsky > 0 .or. Elder > 0 .or. kmx > 0) then
+      if (uniform_horizontal_eddy_viscosity > 0 .or. javiusp == 1 .or. smagorinsky_coefficient > 0 .or. elder_coefficient > 0 .or. kmx > 0) then
          ihorvic = 1
       end if
       if (ihorvic > 0 .or. jaconveyance2D >= 3 .or. ndraw(29) == 37) then
          call setcornervelocities() ! must be called after ucx, ucy have been set
          call prefetch_corner_velocities(ucnx, ucny)
       end if
-      if (vicouv < 0.0_dp) then
+      if (uniform_horizontal_eddy_viscosity < 0.0_dp) then
          ihorvic = 0
       end if
 
@@ -377,7 +377,7 @@ contains
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
-               call compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+               call compute_viscosity_and_stress_vectorized(smagorinsky_coefficient, elder_coefficient, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
             else
                !$OMP PARALLEL DO                                  &
                !$OMP PRIVATE(L,k1,k2)
@@ -407,7 +407,7 @@ contains
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
                   else
-                     vicc = vicouv
+                     vicc = uniform_horizontal_eddy_viscosity
                   end if
                   do L = Lb, Lt
                      vicL = 0.0_dp
@@ -426,7 +426,7 @@ contains
                         duxdt = (ucnx(k4) - ucnx(k3)) * wui(LL)
                         duydt = (ucny(k4) - ucny(k3)) * wui(LL)
                      end if
-                     if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
+                     if (smagorinsky_coefficient > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky coefficient
                         dundn = cs * duxdn + sn * duydn
                         dutdn = -sn * duxdn + cs * duydn
                         dundt = cs * duxdt + sn * duydt
@@ -434,9 +434,9 @@ contains
                         if (NDRAW(29) == 37 .and. L - Lb + 1 == kplot) then ! plot curl
                            plotlin(LL) = (dutdn - dundt)
                         end if
-                        if (Smagorinsky > 0) then
+                        if (smagorinsky_coefficient > 0) then
                            shearvar = 2.0_dp * (dundn * dundn + dutdt * dutdt + dundt * dutdn) + dundt * dundt + dutdn * dutdn
-                           vicL = vicL + Smagorinsky * Smagorinsky * sqrt(shearvar) / (dxi(LL) * wui(LL))
+                           vicL = vicL + smagorinsky_coefficient * smagorinsky_coefficient * sqrt(shearvar) / (dxi(LL) * wui(LL))
                         end if
                      end if
                      vicL = vicL + vicc
@@ -625,7 +625,7 @@ contains
                if (javiusp == 1) then
                   vicl = viusp(L)
                else
-                  vicl = vicouv
+                  vicl = uniform_horizontal_eddy_viscosity
                end if
 
                delty = ba(k1) / wuw ! cell area / wall width is distance between internal point and mirror point
@@ -694,10 +694,10 @@ contains
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
-   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+   subroutine compute_viscosity_and_stress_vectorized(smagorinsky_coefficient, elder_coefficient, uniform_horizontal_eddy_viscosity, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
-      use m_physcoef, only: vonkar, sag
+      use m_physcoef, only: VON_KARMAN, sag
       use m_flow, only: vol1, hu, u1, v, frcu, ifrcutp, vicushp, viclu, viu, viusp, dvxc, dvyc
       use m_get_chezy, only: get_chezy
       use m_prefetch, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner_1, uycorner_1, uxcorner_2, uycorner_2
@@ -707,7 +707,7 @@ contains
       use m_flowtimes, only: dti
       use m_alloc, only: realloc
 
-      real(dp), intent(in) :: Smagorinsky, Elder, vicouv, vicuship, nuhfac, rhomean
+      real(dp), intent(in) :: smagorinsky_coefficient, elder_coefficient, uniform_horizontal_eddy_viscosity, vicuship, nuhfac, rhomean
       integer, intent(in) :: javiusp, nshiptxy, ja_timestep_auto_visc
       integer, intent(in) :: jawave, swave, roller, jsferic, jasfer3D
 
@@ -729,7 +729,7 @@ contains
 
       L1 = lnx1D + 1
       L2 = lnx
-      vksag6 = vonkar * sag / 6.0_dp
+      vksag6 = VON_KARMAN * sag / 6.0_dp
 
       call realloc(dvx1,lnx)
       call realloc(dvy1,lnx)
@@ -752,9 +752,9 @@ contains
             drl(L) = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
          end do
       end if
-      if (Elder > 0.0_dp) then !  add Elder
+      if (elder_coefficient > 0.0_dp) then !  add elder viscosity contribution
          chezy_elder = get_chezy(hu, frcu, u1, v, ifrcutp)
-         chezy_elder = Elder * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
+         chezy_elder = elder_coefficient * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
       end if
 
       !$OMP SIMD
@@ -764,7 +764,7 @@ contains
          wuL = 1.0_dp / wuiL
          dxL = dx(L)
          dxiL = 1.0_dp / dxL
-         if (Elder > 0.0_dp) then !  add Elder
+         if (elder_coefficient > 0.0_dp) then !  add Elder viscosity contribution
             vicL = vicL + chezy_elder(L)
          end if
 
@@ -796,14 +796,14 @@ contains
          duxdt = (ucnx_link_2 - ucnx_link_1) * wuiL
          duydt = (ucny_link_2 - ucny_link_1) * wuiL
 
-         if (Smagorinsky > 0) then
+         if (smagorinsky_coefficient > 0) then
             dundn = +csu(L) * duxdn + snu(L) * duydn
             dutdn = -snu(L) * duxdn + csu(L) * duydn
             dundt = +csu(L) * duxdt + snu(L) * duydt
             dutdt = -snu(L) * duxdt + csu(L) * duydt
 
             shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-            vicL = vicL + merge(Smagorinsky**2 * sqrt(shearvar) * dxL * wuL, 0.0_dp, shearvar > 1.0e-15_dp)
+            vicL = vicL + merge(smagorinsky_coefficient**2 * sqrt(shearvar) * dxL * wuL, 0.0_dp, shearvar > 1.0e-15_dp)
          end if
 
          if (nshiptxy > 0 .and. vicuship /= 0.0_dp) then
@@ -819,7 +819,7 @@ contains
          if (javiusp == 1) then
             vicc = vicc + viusp(L)
          else
-            vicc = vicc + vicouv
+            vicc = vicc + uniform_horizontal_eddy_viscosity
          end if
          vicL = vicL + vicc
 

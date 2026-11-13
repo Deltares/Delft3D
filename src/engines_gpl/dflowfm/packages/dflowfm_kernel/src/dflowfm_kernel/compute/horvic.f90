@@ -39,7 +39,7 @@ contains
    !> compute viscous flux balance of cell ln (n12,L) in coordinate frame of L
    real(kind=dp) function horvic(n12, L) ! horizontal viscosity term
       use precision, only: dp
-      use m_flow, only: ucx, ucy, javiusp, viusp, vicouv, istresstyp, au, hs
+      use m_flow, only: ucx, ucy, javiusp, viusp, uniform_horizontal_eddy_viscosity, istresstyp, au, hs
       use m_flowgeom, only: csu, snu, ln, nd, lncn, dxi, ucnx, wui, ucny, wu, bai
       use m_sferic, only: jasfer3d
       use m_cor2linx, only: cor2linx
@@ -120,7 +120,7 @@ contains
             if (javiusp == 1) then
                vicl = viusp(LLLL)
             else
-               vicl = vicouv
+               vicl = uniform_horizontal_eddy_viscosity
             end if
 
             txx_k12 = lin2nodx(LLLL, ik1, txx, tyy)

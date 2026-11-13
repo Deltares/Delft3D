@@ -40,9 +40,9 @@ contains
       use precision, only: dp, comparereal, fp
       use m_relative_wind, only: compute_wind_relative_to_surface_scalar
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
-                            soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
-                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, minimum_depth_for_heat_and_evaporation_fluxes, stanton, secchi_depth, &
+                            soil_heat_buffer_thickness, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surface_temperature_smoothing_factor, &
+                            only_positive_evaporation_fluxes, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             POOLE_ATKINS_PARAMETER
       use m_heatfluxes, only: longwave_emissivity, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav, &
@@ -111,14 +111,14 @@ contains
       call getkbotktop(n, k_bot, k_top)
 
       water_temperature_in_cell = constituents(itemp, k_top)
-      if (surftempsmofac > 0.0_dp) then
+      if (surface_temperature_smoothing_factor > 0.0_dp) then
          cell_area = ba(n)
          water_temperature_in_cell = water_temperature_in_cell * cell_area
          do ll = 1, nd(n)%lnx
             l = abs(nd(n)%ln(ll))
             k2 = ln(1, l) + ln(2, l) - n
-            if (hs(k2) > epshstem) then
-               bak2 = surftempsmofac * ba(k2)
+            if (hs(k2) > minimum_depth_for_heat_and_evaporation_fluxes) then
+               bak2 = surface_temperature_smoothing_factor * ba(k2)
                water_temperature_in_cell = water_temperature_in_cell + constituents(itemp, ktop(k2)) * bak2
                cell_area = cell_area + bak2
             end if
@@ -202,7 +202,7 @@ contains
          end if
 
          vapor_pressure_difference = specific_humidity_surface_saturation - specific_humidity_air_surface
-         if (jadelvappos == 1) then
+         if (only_positive_evaporation_fluxes == 1) then
             vapor_pressure_difference = max(0.0_dp, vapor_pressure_difference)
          end if
 
@@ -333,17 +333,17 @@ contains
             end if
          end if
 
-         if (soiltempthick > 0.0_dp) then
+         if (soil_heat_buffer_thickness > 0.0_dp) then
             if (solar_radiation_flux > 0.0_dp) then
                solar_radiation_soil_heat_flux = net_solar_radiation_in_cell * explo * ice_free_area_fraction
             else
                solar_radiation_soil_heat_flux = 0.0_dp
             end if
-            soil_water_heat_transfer_coefficient = 1.0_dp / (0.5_dp * soiltempthick)
+            soil_water_heat_transfer_coefficient = 1.0_dp / (0.5_dp * soil_heat_buffer_thickness)
             bottom_water_temperature = constituents(itemp, k_bot)
             soil_to_water_heat_flux = soil_water_heat_transfer_coefficient * (bottom_water_temperature - tbed(n))
             heatsrc0(k_bot) = heatsrc0(k_bot) - heat_capacity_water_cell_area * soil_to_water_heat_flux
-            rdtsdz = rcpi * dts / soiltempthick
+            rdtsdz = rcpi * dts / soil_heat_buffer_thickness
             tbed(n) = (tbed(n) + rdtsdz * (solar_radiation_soil_heat_flux + soil_water_heat_transfer_coefficient * bottom_water_temperature)) / (1.0_dp + soil_water_heat_transfer_coefficient * rdtsdz)
          end if
       end subroutine compute_shortwave_radiation
@@ -410,7 +410,7 @@ contains
          weighted_sums(1) = time_in_hours / 24.0_dp
          weighted_sums(2) = weighted_sums(2) + cell_area_weight * air_temperature_in_cell
          weighted_sums(3) = weighted_sums(3) + cell_area_weight * constituents(itemp, k_top)
-         if (soiltempthick > 0.0_dp) then
+         if (soil_heat_buffer_thickness > 0.0_dp) then
             weighted_sums(4) = weighted_sums(4) + cell_area_weight * tbed(n)
          end if
          weighted_sums(5) = weighted_sums(5) + cell_area_weight * (net_solar_radiation_in_cell + total_heat_flux)

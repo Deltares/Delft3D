@@ -39,22 +39,22 @@ contains
 
    subroutine update_dynveg()
       use precision, only: dp
-      use m_physcoef, only: dynroughveg, dstem, droot, frcu_no_vegetation
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled, dynamic_vegetation_stem_height, dynamic_vegetation_root_depth, manning_friction_no_vegetation
       use m_sediment, only: cumes
       use m_flow, only: dynveg, frcu, frcu0
 
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          if (.not. allocated(cumes)) then
             ! when sedimentation is not allocated, it's zero and frcu stays equal to frcu0
             return
          end if
          where ((dynveg) .and. (cumes > 0.0_dp)) ! linear function due to deposition ( cumes > 0 )
-            frcu = frcu_no_vegetation + max((dstem - cumes) / dstem, 0.0_dp) * (frcu0 - frcu_no_vegetation)
-         elsewhere((dynveg) .and. (cumes < -droot)) ! erosion larger than root then always minimum ( cumes < -droot )
-            frcu = frcu_no_vegetation
+            frcu = manning_friction_no_vegetation + max((dynamic_vegetation_stem_height - cumes) / dynamic_vegetation_stem_height, 0.0_dp) * (frcu0 - manning_friction_no_vegetation)
+         elsewhere((dynveg) .and. (cumes < -dynamic_vegetation_root_depth)) ! erosion larger than root then always minimum ( cumes < -dynamic_vegetation_root_depth )
+            frcu = manning_friction_no_vegetation
             dynveg = .false.
-         elsewhere(dynveg) ! linear function due to deposition ( -droot < cumes < 0 )
-            frcu = frcu_no_vegetation + min(max((droot + cumes) / droot, 0.0_dp), 1.0_dp) * (frcu0 - frcu_no_vegetation)
+         elsewhere(dynveg) ! linear function due to deposition ( -dynamic_vegetation_root_depth < cumes < 0 )
+            frcu = manning_friction_no_vegetation + min(max((dynamic_vegetation_root_depth + cumes) / dynamic_vegetation_root_depth, 0.0_dp), 1.0_dp) * (frcu0 - manning_friction_no_vegetation)
          elsewhere ! don't change frcu if dynveg is false
             ! frcu = frcu
          end where

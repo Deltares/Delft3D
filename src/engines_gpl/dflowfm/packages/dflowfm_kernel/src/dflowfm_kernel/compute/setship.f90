@@ -150,7 +150,7 @@ contains
          call getshipcontrol() ! arrows + 5 = first ship  qawsd = second ship
       end if
 
-      viusp = vicouv ! 0d0
+      viusp = uniform_horizontal_eddy_viscosity ! 0d0
 
       do n = 1, nshiptxy
 
@@ -765,7 +765,7 @@ contains
                   if (jafric > 0 .and. (zsp(k1) /= 0.0_dp .and. zsp(k2) /= 0.0_dp) .and. abs(shu(n)) > 1.0e-3_dp) then ! add hull friction
 
                      xx = max(1.0e-2_dp, shL(n) - sxr) ! local coordinate, 0 at bow, L at stern   F.M. White 1999 Turbulent boundary layer
-                     vnu = abs(shu(n)) * 1.0e6_dp ! velocity divided bij viskin
+                     vnu = abs(shu(n)) * 1.0e6_dp ! velocity divided bij VISKIN
                      Rex = vnu * xx ! local Reynolds nr
                      if (zsp(k1) /= 0.0_dp .and. zsp(k2) /= 0.0_dp) then ! under ship
                         if (Rex > Returb) then
