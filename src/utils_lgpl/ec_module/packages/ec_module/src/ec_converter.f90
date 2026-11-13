@@ -334,7 +334,7 @@ contains
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       type(tEcElementSet), pointer :: targetElementSet !< target ElementSet
-      integer, dimension(:), pointer :: targetMask
+      integer, dimension(:), pointer :: targetMask !< local pointer to pass to nearest_neighbour and triinterp2
       real(dp) :: wx, wy
       integer :: i, j !< loop counter
       integer :: ii, jj, ierr

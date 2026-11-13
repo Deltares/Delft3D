@@ -3333,7 +3333,7 @@ contains
    end subroutine test_gridded_meteo_netcdf_matrix
 
    !$gtest
-   subroutine test_spatial_blocks_preserve_connection_target_masks() bind(C)
+   subroutine test_single_quantity_multiple_target_masks() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
       use m_ec_module, only: ecSetConnectionTargetMask
@@ -3407,13 +3407,13 @@ contains
       call f90_expect_true(all(abs(air_pressure - 5.0_dp) < 1.0e-6_dp), 'all-zero masks must leave every target untouched')
 
       success = ecSetConnectionTargetMask(ecInstancePtr, target_item%connectionsPtr(2)%ptr%id, [1, 1, 1, 1])
-      call f90_expect_true(success, 'unrestricted connection mask should be accepted')
-      call f90_expect_false(allocated(target_item%connectionsPtr(2)%ptr%targetMask), 'unrestricted mask must not consume storage')
+      call f90_expect_true(success, 'trivial mask should be accepted')
+      call f90_expect_false(allocated(target_item%connectionsPtr(2)%ptr%targetMask), 'trivial mask must not be allocated')
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
       call f90_expect_true(success, 'unrestricted contribution should update')
       call f90_expect_true(all(abs(air_pressure - 21.0_dp) < 1.0e-6_dp), 'absent mask must allow every target to update')
       call teardown_minimal_grid()
-   end subroutine test_spatial_blocks_preserve_connection_target_masks
+   end subroutine test_single_quantity_multiple_target_masks
 
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user

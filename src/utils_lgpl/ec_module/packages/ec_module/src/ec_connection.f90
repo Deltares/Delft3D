@@ -168,11 +168,11 @@ contains
       end if
    end function ecConnectionSetConverter
 
-   !> Store an independent target selection mask; leave unrestricted connections unallocated.
+   !> Assign the target mask to the connection, unless it consists of only non-zero values.
    function ecConnectionSetTargetMask(instancePtr, connectionId, mask) result(success)
       type(tEcInstance), pointer, intent(in) :: instancePtr !< EC instance owning the connection.
       integer, intent(in) :: connectionId !< Connection to configure.
-      integer, dimension(:), intent(in) :: mask !< Target selection; zero means no update.
+      integer, dimension(:), intent(in) :: mask !< Mask to assign to the connection.
       logical :: success
       type(tEcConnection), pointer :: connectionPtr
       integer :: istat
@@ -180,25 +180,18 @@ contains
       success = .false.
       connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
       if (.not. associated(connectionPtr)) then
-         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Cannot find the supplied connection.")
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: connection does not exist.")
          return
       end if
-      if (allocated(connectionPtr%targetMask)) then
-         deallocate (connectionPtr%targetMask, stat=istat)
-         if (istat /= 0) then
-            call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Unable to deallocate target mask.")
-            return
-         end if
+      if (allocated(connectionPtr%targetMask)) then !> A connection should receive a target mask exactly once, so error if it is already allocated.
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target mask is already allocated.")
+         return
       end if
       if (all(mask /= 0)) then
          success = .true.
          return
       end if
       allocate (connectionPtr%targetMask(size(mask)), stat=istat)
-      if (istat /= 0) then
-         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Unable to allocate target mask.")
-         return
-      end if
       connectionPtr%targetMask = mask
       success = .true.
    end function ecConnectionSetTargetMask
