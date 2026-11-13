@@ -59,22 +59,22 @@ module m_source_sink
 
       ! Source/sink name, x,y,z coordinates, and indices.
       character(len=255), dimension(:), allocatable :: name !< [-] Name of the source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: x !< [m] x-coordinates of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: y !< [m] y-coordinates of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: z_top !< [m] z-level of top source/sink.
-      integer, dimension(:,:), allocatable :: indices !< [-] Indices of source and sink side.
-                                                      !< (1) flowcell sink, (2) bottom layer index sink, (3) top layer index sink,
-                                                      !< (4) flowcell source, (5) bottom layer index source, (6) top layer index source.
+      real(kind=dp), dimension(:, :), allocatable :: x !< [m] x-coordinates of source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: y !< [m] y-coordinates of source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: z_top !< [m] z-level of top source/sink.
+      integer, dimension(:, :), allocatable :: indices !< [-] Indices of source and sink side.
+      !< (1) flowcell sink, (2) bottom layer index sink, (3) top layer index sink,
+      !< (4) flowcell source, (5) bottom layer index source, (6) top layer index source.
 
       ! Source/sink momentum transport variables.
       real(kind=dp), dimension(:), allocatable :: area !< [m2] area of source/sink. If zero, source/sink transport no momentum.
-      real(kind=dp), dimension(:,:), allocatable :: discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2).
-      real(kind=dp), dimension(:,:), allocatable :: discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2).
+      real(kind=dp), dimension(:, :), allocatable :: discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2).
+      real(kind=dp), dimension(:, :), allocatable :: discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2).
 
       ! Source/sink discharge variables.
       real(kind=dp), dimension(:), allocatable :: discharge !< [m3/s] Water discharge of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
+      real(kind=dp), dimension(:, :), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
 
       ! Source/sink miscellaneous variables.
       integer, dimension(:), allocatable :: max_xy_points !< [-] Maximum number of points per source/sink in x, y. Used for array dimensions.
@@ -118,8 +118,8 @@ module m_source_sink
    type(SourceSinks), target :: source_sinks
 
    ! Global source/sink arrays used for EC module and partitioned models.
-   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(numconst+1,source_sinks%num_total)}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),source_sinks%num_total)}   
+   real(kind=dp), dimension(:, :), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(numconst+1,source_sinks%num_total)}
+   real(kind=dp), dimension(:, :), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),source_sinks%num_total)}
 
 contains
 
@@ -133,8 +133,8 @@ contains
       integer, intent(in) :: size
 
       ! Allocate and intialize global source/sink arrays.
-      allocate (source_sink_all_discharges(numconst+1, size))
-      allocate (source_sink_reduction(2*(numconst+1), size))
+      allocate (source_sink_all_discharges(numconst + 1, size))
+      allocate (source_sink_reduction(2 * (numconst + 1), size))
 
       source_sink_all_discharges = 0.0_dp
       source_sink_reduction = 0.0_dp
@@ -143,6 +143,8 @@ contains
       allocate (self%name(size))
       allocate (self%x(size, self%max_polyline_points))
       allocate (self%y(size, self%max_polyline_points))
+      self%x = dmiss
+      self%y = dmiss
       allocate (self%z_bottom(size, 2))
       allocate (self%z_top(size, 2))
       allocate (self%indices(size, 6))
@@ -196,7 +198,7 @@ contains
       ! Parameters
       class(SourceSinks), intent(inout) :: self
 
-      select type(self)
+      select type (self)
       type is (SourceSinks)
          self = SourceSinks()
       end select
@@ -218,8 +220,8 @@ contains
 
       if (new_size > size(self%name)) then
          ! Reallocate global source/sink arrays.
-         call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_all_discharges, [numconst + 1, new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_reduction, [2 * (numconst + 1), new_size], keepExisting=.true., fill=0.0_dp)
 
          ! Reallocate all source/sink arrays.
          call realloc(self%name, new_size, keepExisting=.true., fill='')
@@ -393,7 +395,7 @@ contains
 
       ! Increment source/sink counter.
       self%num_total = self%num_total + 1
-      
+
       ! If the number of source/sinks exceeds the current array size, double the array size.
       if (self%num_total > size(self%name)) then
          call self%realloc((self%num_total - 1) * 2)
@@ -419,7 +421,7 @@ contains
       dummy_flowcell_index(1) = 0
       if (self%x(self%num_total, num_points) /= dmiss) then
          call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), &
-                     dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
+                                     dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
          source_flowcell_index = dummy_flowcell_index(1)
       end if
 
@@ -439,7 +441,7 @@ contains
          dummy_flowcell_index(1) = 0
          if (self%x(self%num_total, 1) /= dmiss) then
             call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), &
-                        dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
+                                        dummy_flowcell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
             sink_flowcell_index = dummy_flowcell_index(1)
          end if
 
@@ -479,7 +481,7 @@ contains
                self%x(self%num_total, 1), &
                self%y(self%num_total, 1), &
                jsferic, jasfer3D, dxymis &
-            )
+               )
          end if
 
          do source_sink_index = 1, self%num_total - 1
@@ -498,7 +500,7 @@ contains
          if (z_source(2) /= dmiss) then
             self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
-         
+
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
             call normalin( &
@@ -511,7 +513,7 @@ contains
                self%x(self%num_total, num_points), &
                self%y(self%num_total, num_points), &
                jsferic, jasfer3D, dxymis &
-            )
+               )
          end if
       end if
 

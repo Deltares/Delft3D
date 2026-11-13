@@ -402,17 +402,12 @@ contains
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search      
 
       success = .false.
       vmax = 1
 
-      !first check with the quantity name directly
-      do ivar = 1, ncptr%nVars
-         if (strcmpi(ncptr%variable_names(ivar), quantity)) then
-            exit
-         end if
-      end do 
+      ! First check with the quantity name directly.
+      ivar = find_candidates_in_targets(ncptr%variable_names, [quantity])
 
       if (ivar < 0) then
          ! get candidate names for the quantity
@@ -434,7 +429,7 @@ contains
          ivar = find_candidates_in_targets(ncptr%variable_names, ncvarnames)
       end if
 
-     if (ivar <= ncptr%nVars) then
+      if (ivar > 0 .and. ivar <= ncptr%nVars) then
          q_id(1) = ivar
          if (allocated(ncptr%vector_definitions(ivar)%s)) then
             call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
