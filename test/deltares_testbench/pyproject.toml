@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "deltares-testbench"
-version = "4.0.0"
+version = "4.0.0rc2"
 description = """\
     The Testbench is aimed at supporting quality assurance of the Deltares \
     software products, by giving an accessible means of structured, repeatable \
@@ -43,6 +43,7 @@ dev = [
 [project.scripts]
 testbench = "testbench.cli:main"
 
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["testbench*"]
@@ -50,6 +51,13 @@ namespaces = false
 
 [tool.setuptools.package-data]
 testbench = ["py.typed"]
+
+# Install the testbench and it's dependencies through Deltares' pypi proxy repository.
+[[tool.uv.index]]
+name = "delft3d"
+url = "https://internal-artifacts.deltares.nl/repository/python-internal/simple/"
+publish-url = "https://internal-artifacts.deltares.nl/repository/delft3d-python-dev/"
+default = true
 
 # Ruff settings (linting and formatting).
 # https://docs.astral.sh/ruff/settings/
