@@ -4,8 +4,7 @@ Copyright (C)  Stichting Deltares, 2025
 """
 
 import os
-from contextlib import contextmanager
-from typing import Iterator, Optional
+from typing import Optional
 
 from dvc.repo import Repo
 from dvc.scm import NoSCM
@@ -13,25 +12,6 @@ from dvc.scm import NoSCM
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
 from src.utils.logging.i_logger import ILogger
-
-_AWS_KEYS = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-
-
-@contextmanager
-def _aws_credentials(credentials: Credentials) -> Iterator[None]:
-    """Temporarily inject S3/MinIO credentials as env vars, restoring afterwards."""
-    prev_env = {k: os.environ.get(k) for k in _AWS_KEYS}
-    if credentials and credentials.username:
-        os.environ[_AWS_KEYS[0]] = credentials.username
-        os.environ[_AWS_KEYS[1]] = credentials.password
-    try:
-        yield
-    finally:
-        for key, val in prev_env.items():
-            if val is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = val
 
 
 class DvcHandler(IHandler):
@@ -65,11 +45,9 @@ class DvcHandler(IHandler):
         logger : ILogger
             The logger that logs to a file.
         """
-        self.__download_with_dvc_pull(from_path, credentials, logger)
+        self.__download_with_dvc_pull(from_path, logger)
 
-    def download_batch(
-        self, dvc_files: list[str], credentials: Credentials, logger: ILogger, jobs: Optional[int] = None
-    ) -> None:
+    def download_batch(self, dvc_files: list[str], logger: ILogger, jobs: Optional[int] = None) -> None:
         """Download multiple .dvc files in a single fetch + checkout operation.
 
         Parameters
@@ -87,30 +65,25 @@ class DvcHandler(IHandler):
         if not dvc_files:
             return
 
-        with _aws_credentials(credentials):
-            all_targets = self.__resolve_dvc_targets(dvc_files, logger)
-            self.__fetch_and_checkout(all_targets, logger, jobs)
-            self.__verify_output_dirs(dvc_files, logger)
-            logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
+        all_targets = self.__resolve_dvc_targets(dvc_files, logger)
+        self.__fetch_and_checkout(all_targets, logger, jobs)
+        self.__verify_output_dirs(dvc_files, logger)
+        logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
 
-    def __download_with_dvc_pull(self, dvc_file: str, credentials: Credentials, logger: ILogger) -> None:
+    def __download_with_dvc_pull(self, dvc_file: str, logger: ILogger) -> None:
         """Download using DVC by reading the .dvc file and fetching from remote.
 
         Parameters
         ----------
         dvc_file : str
             Path to the .dvc file (e.g., "data/cases/e02_f002_c100.dvc").
-        credentials : Credentials
-            Credentials whose username maps to the S3 access key ID and
-            password maps to the S3 secret access key.
         logger : ILogger
             Logger instance.
         """
-        with _aws_credentials(credentials):
-            targets = self.__resolve_dvc_targets([dvc_file], logger)
-            self.__fetch_and_checkout(targets, logger)
-            self.__verify_output_dirs([dvc_file], logger)
-            logger.info(f"Downloading DVC directory complete: {dvc_file}")
+        targets = self.__resolve_dvc_targets([dvc_file], logger)
+        self.__fetch_and_checkout(targets, logger)
+        self.__verify_output_dirs([dvc_file], logger)
+        logger.info(f"Downloading DVC directory complete: {dvc_file}")
 
     def __resolve_dvc_targets(self, dvc_files: list[str], logger: ILogger) -> list[str]:
         """Resolve .dvc file paths to absolute paths, validating each exists."""
@@ -152,7 +125,8 @@ class DvcHandler(IHandler):
                 f"DVC checkout did not produce {len(missing)} expected directories. First missing: {missing[0]}"
             )
 
-    def __find_dvc_root(self, path: str) -> str:
+    @staticmethod
+    def __find_dvc_root(path: str) -> str:
         """Find the DVC repository root by looking for .dvc directory.
 
         Parameters

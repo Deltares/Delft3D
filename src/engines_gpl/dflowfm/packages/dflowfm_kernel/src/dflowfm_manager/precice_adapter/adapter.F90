@@ -231,7 +231,8 @@ contains
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
                          precicef_is_coupling_ongoing, precicef_is_time_window_complete, &
-                         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, precicef_set_vertices
+                         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, &
+                         precicef_set_vertices
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
@@ -275,6 +276,7 @@ contains
       else
          write (*, *) "Not advancing preCICE yet, summed_time_progress = ", self%summed_time_progress, " max_timestep = ", max_timestep
       end if
+
    end subroutine precice_adapter_update
 
 
@@ -580,6 +582,7 @@ contains
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       
+      call source_sinks%realloc(source_sinks%num_total + self%mesh_sources_sinks_size)
       do i = 1, self%mesh_sources_sinks_size
          sink_cell = netcell_cache%find_netcell(self%sinks_x(i), self%sinks_y(i))
          source_cell = netcell_cache%find_netcell(self%sources_x(i), self%sources_y(i))
@@ -589,7 +592,7 @@ contains
          !    D-Flow FM will handle it correctly
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
-         call source_sinks%realloc(source_sinks%num_total)
+
          write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
 
          source_sinks%indices(source_sinks%num_total, FLOWCELL_SINK) = sink_cell

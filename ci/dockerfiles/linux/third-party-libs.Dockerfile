@@ -77,53 +77,6 @@ make install
 popd
 EOF-uuid
 
-FROM base AS metis
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=metis-${CACHE_ID_SUFFIX} <<"EOF-metis"
-source /etc/bashrc
-set -eo pipefail
-
-GKLIB_COMMIT_ID='6e7951358fd896e2abed7887196b6871aac9f2f8'
-METIS_COMMIT_ID='a6e6a2cfa92f93a3ee2971ebc9ddfc3b0b581ab2'
-for BASEDIR_URL in \
-    "METIS-${METIS_COMMIT_ID},https://github.com/KarypisLab/METIS/archive/${METIS_COMMIT_ID}.tar.gz" \
-    "GKlib-${GKLIB_COMMIT_ID},https://github.com/KarypisLab/GKlib/archive/${GKLIB_COMMIT_ID}.tar.gz"
-do
-    BASEDIR="${BASEDIR_URL%%,*}"
-    URL="${BASEDIR_URL#*,}"
-    if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-        echo "CACHED ${BASEDIR}"
-    else
-        echo "Fetching ${URL}..."
-        wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-    fi
-done
-
-pushd "/var/cache/src/GKlib-${GKLIB_COMMIT_ID}"
-if [[ $DEBUG = "0" ]]; then
-    make config prefix=/usr/local cc=icx
-else
-    make config prefix=/usr/local cc=icx debug=1 gdb=1
-fi
-make --jobs=$(nproc)
-make install
-
-popd
-
-pushd "/var/cache/src/METIS-${METIS_COMMIT_ID}"
-if [[ $DEBUG = "0" ]]; then
-    make config prefix=/usr/local cc=icx shared=1
-else
-    make config prefix=/usr/local cc=icx shared=1 debug=1 gdb=1
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-metis
-
 FROM base AS xerces-c
 
 ARG DEBUG
@@ -347,6 +300,5 @@ export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH
 EOT
 
 COPY --from=uuid --link /usr/local /usr/local/
-COPY --from=metis --link /usr/local /usr/local/
 COPY --from=xerces-c --link /usr/local /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
