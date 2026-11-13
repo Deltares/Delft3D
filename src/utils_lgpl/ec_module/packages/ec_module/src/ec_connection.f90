@@ -48,6 +48,7 @@ module m_ec_connection
    public :: ecConnectionAddSourceItem
    public :: ecConnectionAddTargetItem
    public :: ecConnectionSetIndexWeights
+   public :: ecConnectionSetTargetMask
 
 contains
 
@@ -92,6 +93,13 @@ contains
       !
       success = .true.
       !
+      if (associated(connection%targetMask)) then
+         deallocate (connection%targetMask, stat=istat)
+         if (istat /= 0) then
+            call set_ec_message("ERROR: ec_connection::ecConnectionFree: Unable to deallocate target mask.")
+            success = .false.
+         end if
+      end if
       ! A connection does not own the tEcConverters, the tEcInstance does, so nullify rather then ecConverterFree().
       connection%converterPtr => null()
       ! A connection does not own the tEcItems, the tEcInstance does, so nullify rather then ecItemFree().
@@ -166,6 +174,41 @@ contains
          call set_ec_message("ERROR: ec_connection::ecConnectionSetConverter: Cannot find a Connection or Converter with the supplied id.")
       end if
    end function ecConnectionSetConverter
+
+   !> Store an independent target selection mask; leave unrestricted connections unallocated.
+   function ecConnectionSetTargetMask(instancePtr, connectionId, mask) result(success)
+      type(tEcInstance), pointer, intent(in) :: instancePtr !< EC instance owning the connection.
+      integer, intent(in) :: connectionId !< Connection to configure.
+      integer, dimension(:), intent(in) :: mask !< Target selection; zero means no update.
+      logical :: success
+      type(tEcConnection), pointer :: connectionPtr
+      integer :: istat
+
+      success = .false.
+      connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
+      if (.not. associated(connectionPtr)) then
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Cannot find the supplied connection.")
+         return
+      end if
+      if (associated(connectionPtr%targetMask)) then
+         deallocate (connectionPtr%targetMask, stat=istat)
+         if (istat /= 0) then
+            call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Unable to deallocate target mask.")
+            return
+         end if
+      end if
+      if (all(mask /= 0)) then
+         success = .true.
+         return
+      end if
+      allocate (connectionPtr%targetMask(size(mask)), stat=istat)
+      if (istat /= 0) then
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Unable to allocate target mask.")
+         return
+      end if
+      connectionPtr%targetMask = mask
+      success = .true.
+   end function ecConnectionSetTargetMask
 
    ! =======================================================================
 

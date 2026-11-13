@@ -334,6 +334,7 @@ contains
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       type(tEcElementSet), pointer :: targetElementSet !< target ElementSet
+      integer, dimension(:), pointer :: targetMask
       real(dp) :: wx, wy
       integer :: i, j !< loop counter
       integer :: ii, jj, ierr
@@ -379,6 +380,7 @@ contains
       sourceElementSet => null()
       sourceElementSet => connection%sourceItemsPtr(1)%ptr%elementSetPtr
       targetElementSet => connection%targetItemsPtr(1)%ptr%elementSetPtr
+      targetMask => connection%targetMask
       !
       ! Safety check while interpolate_spacetimeSaveWeightFactors is still liberally used.
       if (.not. (connection%converterPtr%ofType == convType_curvi .or. &
@@ -447,7 +449,7 @@ contains
                allocate (weight%weightFactors(1, n_points))
                weight%indices = ec_undef_int
                weight%weightFactors = 1.0_dp
-               call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, targetElementSet%mask, &
+               call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, targetMask, &
                                       weight%indices(1, :), ec_undef_hp, &
                                       sourceElementSet%x, sourceElementSet%y, sourceElementSet%n_cols, jsferic, 0)
             else
@@ -742,9 +744,9 @@ contains
             end if
          end if
          ! Final step for gridded providers: when not masked, reset indices to undefined.
-         if (associated(targetElementSet%mask)) then
+         if (associated(targetMask)) then
             do i = 1, n_points
-               if (targetElementSet%mask(i) == 0) then
+               if (targetMask(i) == 0) then
                   weight%indices(:, i) = ec_undef_int
                end if
             end do
@@ -1319,7 +1321,7 @@ contains
             if (connection%nTargetItems == 1) then ! All in one target item
 
                target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
+               targetMask => connection%targetMask
 
                do j = jmin, jmax
 
@@ -1354,7 +1356,7 @@ contains
                do i = 1, connection%nTargetItems
 
                   target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+                  targetMask => connection%targetMask
 
                   do j = jmin, jmax
 
@@ -4681,7 +4683,7 @@ contains
       end if
 
       target_field => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
-      targetMask => connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%mask
+      targetMask => connection%targetMask
       n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
       if (n_coordinates <= 0 .or. modulo(size(target_field%arr1dPtr), n_coordinates) /= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
@@ -4742,7 +4744,7 @@ contains
       data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
       do i = 1, connection%nTargetItems
          target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-         targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+         targetMask => connection%targetMask
          if (connection%converterPtr%targetIndex /= ec_undef_int) then
             jmin = connection%converterPtr%targetIndex
             jmax = connection%converterPtr%targetIndex

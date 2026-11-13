@@ -220,6 +220,7 @@ module m_ec_typedefs
       integer :: nSourceItems !< Number of source Items <= size(sourceItemsPtr)
       type(tEcItemPtr), dimension(:), pointer :: targetItemsPtr => null() !< target items, stored in tEcInstance%ecItemsPtr
       integer :: nTargetItems !< Number of target Items <= size(targetItemsPtr)
+      integer, dimension(:), pointer :: targetMask => null() !< Connection-owned target selection; absent means unrestricted, zero means no update.
    end type tEcConnection
 
    type tEcConnectionPtr
