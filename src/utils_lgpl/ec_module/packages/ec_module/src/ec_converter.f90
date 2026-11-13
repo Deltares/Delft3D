@@ -329,7 +329,7 @@ contains
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(inout)
-      type(tEcConnection), target, intent(inout) :: connection !< access to Converter and Items
+      type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       !
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
