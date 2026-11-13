@@ -3804,7 +3804,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
-      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
+      use m_source_sink, only: source_sinks
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
       use m_unstruc_netcdf_data, only: flowgeom_map
@@ -3850,7 +3850,6 @@ contains
       integer :: Ltx, nlaybL, nrlayLx
       integer :: iLocS ! Either UNC_LOC_S or UNC_LOC_S3D, depending on whether layers are present.
       integer :: iLocU ! Either UNC_LOC_U or UNC_LOC_U3D, depending on whether layers are present.
-      integer :: isrc, kbot_, ktop_, nk, nkbot, nktop
       real(kind=dp), dimension(:), allocatable :: windx, windy, toutput, rks, wa
       real(kind=dp) :: zwu0
       character(len=4) :: str
@@ -6577,46 +6576,7 @@ contains
       !
       if (map_write_settings%near_field == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
-            !
-            ! Sinks
-            n = source_sinks%indices(isrc, FLOWCELL_SINK)
-            if (n /= 0) then
-               call getkbotktop(n, kbot_, ktop_)
-               nkbot = kbot_
-               nktop = ktop_
-               do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, SINK_SIDE)) then
-                     nkbot = nk
-                  end if
-                  if (zws(nk) < source_sinks%z_top(isrc, SINK_SIDE)) then
-                     nktop = nk
-                  end if
-               end do
-               do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) - source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
-               end do
-            end if
-            !
-            ! Sources
-            n = source_sinks%indices(isrc, FLOWCELL_SOURCE)
-            if (n /= 0) then
-               call getkbotktop(n, kbot_, ktop_)
-               nkbot = kbot_
-               nktop = ktop_
-               do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, SOURCE_SIDE)) then
-                     nkbot = nk
-                  end if
-                  if (zws(nk) < source_sinks%z_top(isrc, SOURCE_SIDE)) then
-                     nktop = nk
-                  end if
-               end do
-               do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) + source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
-               end do
-            end if
-         end do
+         call source_sinks%get_nearfield_discharge(work1d)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nrfld, UNC_LOC_S3D, work1d, jabndnd=jabndnd_)
       end if
       if (timon) then
