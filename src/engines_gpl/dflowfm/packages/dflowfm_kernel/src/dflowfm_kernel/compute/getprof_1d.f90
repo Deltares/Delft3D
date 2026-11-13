@@ -214,9 +214,9 @@ contains
                   q1_floodplain2(L) = q_sub(3)
 
                   if (map_write_settings%chezy_links_1d_sections == 1) then
-                     czu_main(L) = get_chezy(hu(LL), cz_sub(1), u1(LL), v(LL), ifrcutp(LL))
-                     czu_floodplain1(L) = get_chezy(hu(LL), cz_sub(2), u1(LL), v(LL), ifrcutp(LL))
-                     czu_floodplain2(L) = get_chezy(hu(LL), cz_sub(3), u1(LL), v(LL), ifrcutp(LL))
+                     czu_main(L) = cz_sub(1)
+                     czu_floodplain1(L) = cz_sub(2)
+                     czu_floodplain2(L) = cz_sub(3)
                   end if
 
                else
