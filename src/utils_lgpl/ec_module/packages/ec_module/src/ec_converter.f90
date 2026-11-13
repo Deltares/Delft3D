@@ -379,7 +379,6 @@ contains
       sourceElementSet => null()
       sourceElementSet => connection%sourceItemsPtr(1)%ptr%elementSetPtr
       targetElementSet => connection%targetItemsPtr(1)%ptr%elementSetPtr
-
       !
       ! Safety check while interpolate_spacetimeSaveWeightFactors is still liberally used.
       if (.not. (connection%converterPtr%ofType == convType_curvi .or. &
