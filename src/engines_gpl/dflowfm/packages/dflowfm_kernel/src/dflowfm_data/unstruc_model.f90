@@ -1124,6 +1124,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
 
       call prop_get(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
+      call prop_get(md_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses)
+      if (max_preconditioner_reuses < 0) then
+         call mess(LEVEL_ERROR, '[numerics] PetscPreconditionerReuse must be nonnegative.')
+      end if
       call prop_get(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
       call prop_get(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
       if (sdu_update_s1 < 0 .or. sdu_update_s1 > 1) then
@@ -3256,6 +3260,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Icgsolver', Icgsolver, 'Solver type (1: Sobek Guus Stelling OMP, 2: Sobek Guus Stelling OMP (thread-safe), 4: Sobek Guus Stelling + Saadilud, 6: parallel/Petsc)')
+      call prop_set(prop_ptr, 'numerics', 'PetscPreconditionerReuse', max_preconditioner_reuses, 'Number of PETSc solves reusing a preconditioner after a rebuild (default 10; 0: rebuild every solve).')
       call prop_set(prop_ptr, 'numerics', 'LogSolverConvergence', JaLogSolverConvergence, '1: Log time step, number of solver iterations and solver residual.')
       if (writeall .or. Maxdge /= 6) then
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
@@ -3655,16 +3660,16 @@ contains
       end if
 
       call convert_air_sea_interaction_model_integer_to_string(air_sea_interaction_model, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', tmpstr, 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
+      call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', trim(tmpstr), 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
 
       call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', tmpstr, 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
 
       call convert_free_convection_integer_to_string(free_convection, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'freeConvection', tmpstr, 'Free convection switch (options: ''off'', ''on'').')
+      call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
 
       call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', tmpstr, 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
 
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
@@ -3676,7 +3681,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'windForcingHeight', sensor_height_wind_velocity, '[m] Sensor height of prescribed wind velocity')
       call prop_set(prop_ptr, 'meteo', 'airTemperatureForcingHeight', sensor_height_air_temperature, '[m] Sensor height of prescribed air temperature')
       call prop_set(prop_ptr, 'meteo', 'humidityForcingHeight', sensor_height_humidity, '[m] Sensor height of prescribed humidity variable')
-      call prop_set(prop_ptr, 'meteo', 'charnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
+      call prop_set(prop_ptr, 'meteo', 'CharnockCoefficient', wcharnock%scalar, '[-] Charnock coefficient (may be overridden by space-varying input)')
       call prop_set(prop_ptr, 'meteo', 'airViscousMomentumCoefficient', air_viscous_momentum_coeff, '[-] Air viscous momentum coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousHeatCoefficient', air_viscous_heat_coeff, '[-] Air viscous heat coefficient')
       call prop_set(prop_ptr, 'meteo', 'airViscousMoistureCoefficient', air_viscous_moisture_coeff, '[-] Air viscous moisture coefficient')

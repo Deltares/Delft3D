@@ -61,6 +61,12 @@ module m_ec_converter
    public :: ecConverterSetInterpolation
    public :: ecConverterSetMask
    public :: ecConverterGetBbox
+   public :: prepare_projections
+   public :: ecConverterHarmonicCoefficients
+   public :: compute_source_harmonic_coefficients
+   public :: interpolate_harmonic_coefficients
+   public :: find_harmonic_extrapolation_donors
+   public :: apply_harmonics
 contains
 
    ! =======================================================================
@@ -1190,7 +1196,7 @@ contains
       integer :: istat !< allocation status
       logical :: status !< status of undefined values check
       integer :: i, j !< loop counters
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
       integer :: maxlay !< maximum number of layers (3D)
       integer :: from, thru !< contiguous range of indices in the target array
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
@@ -1200,7 +1206,7 @@ contains
       success = .false.
       valuesT0 => null()
       valuesT1 => null()
-      targetField => null()
+      target_field => null()
 
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
@@ -1312,7 +1318,7 @@ contains
             ! Write all values to one target Item or each value to its own target Item.
             if (connection%nTargetItems == 1) then ! All in one target item
 
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+               target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
                targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
 
                do j = jmin, jmax
@@ -1331,23 +1337,23 @@ contains
                      valuesT = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
                   end if
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), status)
 
                   if (.not. status) then
                      return
                   end if
 
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
 
                end do
 
-               targetField%timesteps = timesteps
+               target_field%timesteps = timesteps
 
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
 
                do i = 1, connection%nTargetItems
 
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+                  target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
                   targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
 
                   do j = jmin, jmax
@@ -1358,17 +1364,17 @@ contains
                         end if
                      end if
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [target_field%arr1dPtr(j)], status)
 
                      if (.not. status) then
                         return
                      end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), valuesT(i))
+                     call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(j), valuesT(i))
 
                   end do
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                end do
 
@@ -1386,14 +1392,14 @@ contains
                return
             end if
 
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
             ! NOTE: No targetMask is checked here
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
+            target_field%timesteps = timesteps
 
          case (EC_OPERAND_ADD_ELEMENT)
 
@@ -1402,14 +1408,14 @@ contains
                return
             end if
 
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
             ! NOTE: No targetMask is checked here
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
+            target_field%timesteps = timesteps
 
          case default
 
@@ -1430,18 +1436,18 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             from = (connection%converterPtr%targetIndex - 1) * (maxlay * n_data) + 1
             thru = connection%converterPtr%targetIndex * (maxlay * n_data)
             ! NOTE: No target mask is checked here
-            targetField%arr1dPtr(from:thru) = valuesT
+            target_field%arr1dPtr(from:thru) = valuesT
 
             ! NOTE: AvD: call site now should account for n_data in the offset already, and I changed the above line to that as well.
             !            But: can we expect from user/call site that it also accounts for maxlay? (at the moment we have no 3D target
             !            element sets which *also* have n_data > 1, so may not be a problem yet)
-            ! targetField%arr1dPtr((connection%converterPtr%targetIndex-1)*maxlay*n_data + 1 : connection%converterPtr%targetIndex*maxlay*n_data) = valuesT
+            ! target_field%arr1dPtr((connection%converterPtr%targetIndex-1)*maxlay*n_data + 1 : connection%converterPtr%targetIndex*maxlay*n_data) = valuesT
             ! NOTE: RL: Currently this most definitely not the case: targetindex is not set correctly upon init.
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          case default
 
@@ -1487,10 +1493,10 @@ contains
       real(dp) :: windXT !< wind x-component value at time t
       real(dp) :: windYT !< wind y-component value at time t
       real(dp) :: magnitude !< wind magnitude at time t
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
 
       success = .false.
-      targetField => null()
+      target_field => null()
 
       ! ===== interpolation =====
 
@@ -1505,7 +1511,7 @@ contains
 
          call time_weight_factors(a0, a1, timesteps, t0, t1)
 
-         targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+         target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
          windXT0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
          windXT1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(1)
          windYT0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(2)
@@ -1525,15 +1531,15 @@ contains
                return
             end if
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), status)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:targetnCoordinates), status)
 
             if (.not. status) then
                return
             end if
 
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), magnitude)
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:targetnCoordinates), magnitude)
 
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          case (EC_OPERAND_REPLACE_ELEMENT)
 
@@ -1542,8 +1548,8 @@ contains
                return
             end if
 
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(connection%converterPtr%targetIndex), magnitude)
-            targetField%timesteps = timesteps
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(connection%converterPtr%targetIndex), magnitude)
+            target_field%timesteps = timesteps
 
          case default
 
@@ -2127,7 +2133,7 @@ contains
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       real(dp) :: sourceMissing !< Source side missing value
-      type(tEcField), pointer :: targetField !< helper pointer
+      type(tEcField), pointer :: target_field !< helper pointer
       type(tEcIndexWeight), pointer :: indexWeight !< helper pointer, saved index weights
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       real(dp), dimension(:), pointer :: targetValues
@@ -2146,7 +2152,7 @@ contains
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
-      targetField => null()
+      target_field => null()
       indexWeight => null()
       sourceElementSet => null()
 
@@ -2177,8 +2183,8 @@ contains
             sourceT0Field => connection%sourceItemsPtr(j)%ptr%sourceT0FieldPtr
             sourceT1Field => connection%sourceItemsPtr(j)%ptr%sourceT1FieldPtr
             sourceMissing = connection%sourceItemsPtr(j)%ptr%quantityPtr%fillvalue
-            targetField => connection%targetItemsPtr(j)%ptr%targetFieldPtr
-            targetValues => targetField%arr1dPtr
+            target_field => connection%targetItemsPtr(j)%ptr%targetFieldPtr
+            targetValues => target_field%arr1dPtr
 
             s2D_T0(1:n_cols, 1:n_rows) => sourceT0Field%arr1d
             s2D_T1(1:n_cols, 1:n_rows) => sourceT1Field%arr1d
@@ -2234,7 +2240,7 @@ contains
                end if
             end do
 
-            targetField%timesteps = timesteps
+            target_field%timesteps = timesteps
 
          end do
 
@@ -2799,7 +2805,7 @@ contains
       logical :: utm_success
 
       success = .false.
-      fa = pi / 180.0_dp
+      fa = degrad_hp
       fi = 180.0_dp / pi
       earthrad = 6378137.0_dp
       n_rows = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
@@ -3038,10 +3044,337 @@ contains
 
    end function ecConverterSpiderweb
 
+   !> Compute the cached harmonic coefficients of one source/target pair.
+   !! Only called once per pair, the first time the pair is evaluated.
+   !!
+   !! Steps:
+   !!   1. Per source point i: a(i) = amplitude(i) * cos(phase(i)), b(i) = amplitude(i) * sin(phase(i)).
+   !!      Only the phase lookup depends on the source layout (samples, sparse grid or dense grid).
+   !!   2. Per target point j, using the existing spatial mapping:
+   !!      cos(j) = sum_i weight(j, i) * a(i), sin(j) = sum_i weight(j, i) * b(i),
+   !!      mask(j) = 1 when all source points have a valid amplitude and phase.
+   !!   3. With extrapolation: find a donor target for each unmasked target inside the source grid.
+   function ecConverterHarmonicCoefficients(proj, source_item, target_item, converter) result(success)
+      type(tEcHarmonicProjection), intent(inout) :: proj !< Projection receiving the cos/sin coefficients and mask.
+      type(tEcItem), pointer, intent(in) :: source_item !< Source item with amplitudes and harmonics frame.
+      type(tEcItem), pointer, intent(in) :: target_item !< Target item defining the target points.
+      type(tEcConverter), pointer, intent(in) :: converter !< Converter with the spatial mapping; extrapolation donors are stored in it.
+      logical :: success !< Whether the coefficients were computed.
+
+      type(tEcHarmonicProjection) :: temp_proj !< temporary projection, to prevent overwriting the original if an error occurs.
+      real(dp), dimension(:), allocatable :: source_cos, source_sin
+      logical, dimension(:), allocatable :: source_valid
+
+      success = .false.
+      call compute_source_harmonic_coefficients(source_item, source_cos, source_sin, source_valid)
+      success = interpolate_harmonic_coefficients(source_item, target_item%elementSetPtr, converter%indexWeight, source_cos, source_sin, source_valid, temp_proj)
+      if (.not. success) then
+         return
+      end if
+      if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+         success = find_harmonic_extrapolation_donors(target_item%elementSetPtr, converter%indexWeight, temp_proj%mask)
+         if (.not. success) then
+            return
+         end if
+      end if
+
+      call move_alloc(temp_proj%cos_weight, proj%cos_weight)
+      call move_alloc(temp_proj%sin_weight, proj%sin_weight)
+      call move_alloc(temp_proj%mask, proj%mask)
+      success = .true.
+   end function ecConverterHarmonicCoefficients
+
+   !> Resolve source phases and compute harmonic coefficients and validity for each source point.
+   pure subroutine compute_source_harmonic_coefficients(source_item, source_cos, source_sin, source_valid)
+      use m_mathconstants, only: PI
+      type(tEcItem), intent(in) :: source_item !< Source item containing amplitudes, phases and source layout.
+      real(dp), dimension(:), allocatable, intent(out) :: source_cos !< Amplitude times cosine of phase at each source point.
+      real(dp), dimension(:), allocatable, intent(out) :: source_sin !< Amplitude times sine of phase at each source point.
+      logical, dimension(:), allocatable, intent(out) :: source_valid !< Whether each source point has both amplitude and phase.
+
+      real(dp), dimension(:), allocatable :: source_phase
+      integer :: point, row, n_source, n_cols
+      real(dp) :: amplitude, source_missing
+
+      associate (frame => source_item%hframe, sourcefield => source_item%sourceT1FieldPtr, sourceset => source_item%elementSetPtr)
+      source_missing = source_item%quantityPtr%fillvalue
+      n_source = size(sourcefield%arr1d)
+      n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
+
+      allocate (source_phase(n_source))
+      source_phase = source_missing
+      
+      ! collect the phases, depending on the source layout (samples, sparse grid or dense grid).
+      if (sourceset%ofType == elmSetType_samples) then
+         do point = 1, n_source
+            source_phase(point) = frame%phases(point, 1)
+         end do
+      else if (sourcefield%issparse == 1) then
+         do row = 1, sourceset%n_rows
+            do point = sourcefield%ia(row), sourcefield%ia(row + 1) - 1
+               source_phase(point) = frame%phases(sourcefield%ja(point), row)
+            end do
+         end do
+      else if (n_cols > 0) then ! dense grid
+         do point = 1, n_source
+            source_phase(point) = frame%phases(mod(point - 1, n_cols) + 1, (point - 1) / n_cols + 1)
+         end do
+      end if
+      allocate (source_cos(n_source), source_sin(n_source), source_valid(n_source))
+      
+      ! using the previously retreived phases, compute the cos/sin coefficients and validity for each source point.
+      do point = 1, n_source
+         amplitude = sourcefield%arr1d(point)
+         source_valid(point) = comparereal(amplitude, source_missing, .true.) /= 0 .and. comparereal(source_phase(point), source_missing, .true.) /= 0
+         source_cos(point) = amplitude * cos(source_phase(point) * degrad_hp)
+         source_sin(point) = amplitude * sin(source_phase(point) * degrad_hp)
+      end do
+      end associate
+   end subroutine compute_source_harmonic_coefficients
+
+   !> Apply the spatial mapping to source harmonic coefficients and mark valid targets.
+   function interpolate_harmonic_coefficients(source_item, targetset, weights, source_cos, source_sin, source_valid, proj) result(success)
+      type(tEcItem), intent(in) :: source_item !< Source item defining the sample, sparse grid or dense grid layout.
+      type(tEcElementSet), intent(in) :: targetset !< Element set defining the target points.
+      type(tEcIndexWeight), intent(in) :: weights !< Source indices and spatial interpolation weights for each target.
+      real(dp), dimension(:), intent(in) :: source_cos !< Cosine harmonic coefficients at the source points.
+      real(dp), dimension(:), intent(in) :: source_sin !< Sine harmonic coefficients at the source points.
+      logical, dimension(:), intent(in) :: source_valid !< Whether each source point has both amplitude and phase.
+      type(tEcHarmonicProjection), intent(out) :: proj !< Interpolated harmonic coefficients and target validity mask.
+      logical :: success !< Whether interpolation completed without unsupported missing station data.
+
+      integer, dimension(:), allocatable :: points
+      integer :: j, k, row, col, point, n_points, n_cols
+      logical :: valid, samples
+
+      success = .false.
+      associate (sourcefield => source_item%sourceT1FieldPtr, sourceset => source_item%elementSetPtr)
+      samples = sourceset%ofType == elmSetType_samples
+      n_cols = sourcefield%bbox(3) - sourcefield%bbox(1) + 1
+      allocate (proj%cos_weight(targetset%nCoordinates), proj%sin_weight(targetset%nCoordinates), proj%mask(targetset%nCoordinates))
+      proj%cos_weight = 0.0_dp
+      proj%sin_weight = 0.0_dp
+      proj%mask = 0
+      allocate (points(max(4, size(weights%indices, 1))))
+      ! for each target point, find the source points that contribute to the interpolated value.
+      do j = 1, targetset%nCoordinates
+         if (samples) then
+            n_points = size(weights%indices, 1)
+            points(1:n_points) = weights%indices(:, j)
+         else
+            row = weights%indices(1, j)
+            col = weights%indices(2, j)
+            if (row <= 0 .or. col <= 0) then
+               cycle
+            end if
+            n_points = 4
+            if (sourcefield%issparse == 1) then
+               points(1:4) = [row, row + 1, col + 1, col]
+            else
+               points(1:4) = [(row - 1) * n_cols + col, (row - 1) * n_cols + col + 1, &
+                              row * n_cols + col + 1, row * n_cols + col]
+            end if
+         end if
+         valid = .true.
+         ! accumulate the weighted sums of source cos/sin coefficients for this target point.
+         do k = 1, n_points
+            point = points(k)
+            if (samples .and. (point <= 0 .or. point > sourceset%n_cols)) then
+               cycle
+            end if
+            if (.not. source_valid(point)) then
+               if (samples) then
+                  call set_ec_message("ec_converter::ecConverterHarmonicCoefficients: missing amplitude or phase at a station in harmonic forcing, missing values are only supported for gridded data.")
+                  return
+               end if
+               valid = .false.
+               exit
+            end if
+            proj%cos_weight(j) = proj%cos_weight(j) + weights%weightFactors(k, j) * source_cos(point)
+            proj%sin_weight(j) = proj%sin_weight(j) + weights%weightFactors(k, j) * source_sin(point)
+         end do
+         if (valid) then
+            proj%mask(j) = 1
+         end if
+      end do
+      success = .true.
+      end associate
+   end function interpolate_harmonic_coefficients
+
+   !> Using kd-tree search, find a target donor for each unmasked target inside the source grid.
+   function find_harmonic_extrapolation_donors(targetset, weights, mask) result(success)
+      use kdtree2Factory
+      type(tEcElementSet), intent(in) :: targetset !< Target coordinates used to search for target donors.
+      type(tEcIndexWeight), intent(inout) :: weights !< Set of weights to update as to include the donor target index for each unmasked target.
+      integer, dimension(:), intent(in) :: mask !< Target validity mask: zero denotes missing harmonic coefficients.
+      logical :: success !< Whether donor discovery completed successfully.
+
+      type(kdtree_instance) :: tree
+      real(dp), dimension(:), allocatable :: donor_candidate_x
+      integer :: j, istat
+
+      success = .false.
+      donor_candidate_x = targetset%x
+      
+      do j = 1, size(mask)
+         if (mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
+            donor_candidate_x(j) = ec_undef_hp ! exclude targets that need donors and lie inside the grid from being donors themselves.
+         end if
+      end do
+      do j = 1, size(mask)
+         if (mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
+            cycle
+         end if
+         if (weights%substndx(j) == 0) then
+            if (tree%itreestat /= ITREE_OK) then
+               call build_kdtree(tree, size(donor_candidate_x), donor_candidate_x, targetset%y, istat, 0, ec_undef_hp)
+               if (istat /= 0 .or. tree%itreestat /= ITREE_OK) then
+                  call delete_kdtree2(tree)
+                  call set_ec_message("ERROR: ec_converter::ecConverterHarmonicCoefficients: Unable to find harmonic extrapolation donors.")
+                  return
+               end if
+            end if
+            call make_queryvector_kdtree(tree, targetset%x(j), targetset%y(j), 0)
+            call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
+            weights%substndx(j) = tree%results(1)%idx
+         end if
+      end do
+      call delete_kdtree2(tree)
+      success = .true.
+   end function find_harmonic_extrapolation_donors
+
+   !> Find the projection for a source/target/converter key, appending an empty entry if absent.
+   !! Growing the collection invalidates pointers to previously returned entries.
+   subroutine prepare_projections(frame, source_id, target_id, converter_id, proj)
+      type(tEcHarmonicsFrame), target, intent(inout) :: frame !< Frame owning the projections.
+      integer, intent(in) :: source_id !< Source item id.
+      integer, intent(in) :: target_id !< Target item id.
+      integer, intent(in) :: converter_id !< Converter id.
+      type(tEcHarmonicProjection), pointer, intent(out) :: proj !< Selected projection, possibly not yet computed.
+
+      integer :: k, projection_index, n_projections
+      type(tEcHarmonicProjection), dimension(:), allocatable :: projections
+
+      n_projections = 0
+      if (allocated(frame%projections)) then
+         n_projections = size(frame%projections)
+      end if
+      do projection_index = 1, n_projections
+         proj => frame%projections(projection_index)
+         if (proj%sourceItemId == source_id .and. proj%targetItemId == target_id .and. &
+             proj%converterId == converter_id) then
+            exit
+         end if
+      end do
+      if (projection_index > n_projections) then ! not found, append a new projection
+         allocate (projections(n_projections + 1))
+         do k = 1, n_projections
+            proj => frame%projections(k)
+            projections(k)%sourceItemId = proj%sourceItemId
+            projections(k)%targetItemId = proj%targetItemId
+            projections(k)%converterId = proj%converterId
+            call move_alloc(proj%cos_weight, projections(k)%cos_weight)
+            call move_alloc(proj%sin_weight, projections(k)%sin_weight)
+            call move_alloc(proj%mask, projections(k)%mask)
+         end do
+         call move_alloc(projections, frame%projections)
+      end if
+      proj => frame%projections(projection_index)
+      proj%sourceItemId = source_id
+      proj%targetItemId = target_id
+      proj%converterId = converter_id
+   end subroutine prepare_projections
+
+   !> Evaluate prepared harmonic coefficients and apply the operand at masked target points.
+   function apply_harmonics(cos_coefficients, sin_coefficients, mask, angle, operand, target_values) result(success)
+      real(dp), dimension(:), intent(in) :: cos_coefficients !< Projected amplitude times cosine of phase.
+      real(dp), dimension(:), intent(in) :: sin_coefficients !< Projected amplitude times sine of phase.
+      integer, dimension(:), intent(in) :: mask !< Nonzero at target points receiving harmonic values.
+      real(dp), intent(in) :: angle !< Harmonic angle in radians at the requested time.
+      integer, intent(in) :: operand !< Operation to apply to the target values.
+      real(dp), dimension(:), intent(inout) :: target_values !< Target values matching the coefficients and mask.
+      logical :: success !< Whether target validation and operand application succeeded.
+
+      real(dp) :: cos_time, sin_time
+      real(dp), dimension(:), allocatable :: values !< Allocatable to keep the work array off the stack.
+
+      call check_undefined_values_for_operand(operand, target_values, success, mask)
+      if (.not. success) then
+         return
+      end if
+      cos_time = cos(angle)
+      sin_time = sin(angle)
+      values = cos_coefficients * cos_time + sin_coefficients * sin_time
+      call apply_operand_masked(operand, target_values, values, mask)
+   end function apply_harmonics
+
+   !> Prepare and evaluate the harmonic forcing for one source/target pair.
+   !! Source data, spatial mapping, operand and interpolation method remain fixed during a model run.
+   !!
+   !! Steps:
+   !!   1. Find or append the projection using prepare_projections.
+   !!   2. First call only: build coefficients, mask and donors using ecConverterHarmonicCoefficients.
+   !!   3. Every call: evaluate the prepared coefficients and apply the operand using apply_harmonics.
+   !!   4. With extrapolation: copy donor values after applying operands, then update the target time.
+   function ecConverterHarmonic(connection, item_index, timesteps) result(success)
+      use m_mathconstants, only: PI
+      type(tEcConnection), intent(inout) :: connection !< Connection supplying the source, target and spatial mapping.
+      integer, intent(in) :: item_index !< Source/target pair to evaluate.
+      real(dp), intent(in) :: timesteps !< Requested time in modified Julian days.
+      logical :: success !< Whether projection and operand application succeeded.
+
+      type(tEcItem), pointer :: source_item, target_item
+      type(tEcConverter), pointer :: converter
+      type(tEcHarmonicsFrame), pointer :: frame
+      type(tEcIndexWeight), pointer :: weights
+      type(tEcHarmonicProjection), pointer :: proj
+      real(dp), dimension(:), pointer :: target_field
+      integer :: j
+      real(dp) :: angle
+
+      success = .false.
+      source_item => connection%sourceItemsPtr(item_index)%ptr
+      target_item => connection%targetItemsPtr(item_index)%ptr
+      converter => connection%converterPtr
+      frame => source_item%hframe
+      target_field => target_item%targetFieldPtr%arr1dPtr
+      weights => converter%indexWeight
+      if (frame%ec_period <= 0) then
+         call set_ec_message("ERROR: ec_converter::ecConverterHarmonic: Harmonic period must be positive.")
+         return
+      end if
+
+      ! Step 1: select the projection of this source/target pair.
+      call prepare_projections(frame, source_item%id, target_item%id, converter%id, proj)
+
+      ! Step 2: first call only, compute the cached coefficients.
+      if (.not. allocated(proj%cos_weight)) then
+         success = ecConverterHarmonicCoefficients(proj, source_item, target_item, converter)
+         if (.not. success) then
+            return
+         end if
+      end if
+
+      ! Step 3: evaluate the harmonic at time t and apply the operand.
+      angle = (2.0_dp * pi / real(frame%ec_period, dp)) * ((timesteps - source_item%tframe%ec_refdate) * 86400.0_dp)
+      success = apply_harmonics(proj%cos_weight, proj%sin_weight, proj%mask, angle, converter%operandType, target_field(1:size(proj%mask)))
+      if (.not. success) then
+         return
+      end if
+      ! Step 4: copy donor values to unmasked targets.
+      if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+         do j = 1, size(proj%mask)
+            if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
+               target_field(j) = target_field(weights%substndx(j))
+            end if
+         end do
+         converter%extrapolated = .true.
+      end if
+      target_item%targetFieldPtr%timesteps = timesteps
+   end function ecConverterHarmonic
+
    !> Perform the configured conversion, if supported, for a NetCDF FileReader.
-   !! Supports linear interpolation in time, no interpolation in space and no weights.
-   !! Supports overwriting .
-   !! Converts source(i) to target(i).
+   !! Converts connection source(i) to target(i).
    function ecConverterNetcdf(connection, timesteps) result(success)
       use m_alloc
       use kdtree2Factory
@@ -3067,7 +3400,7 @@ contains
       real(dp) :: sourceValueT0 !< source value at t0
       real(dp) :: sourceValueT1 !< source value at t1
       real(dp) :: weight_factor !< weight factors: ([1,2,3,4]:nCoordinates)
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
+      type(tEcField), pointer :: target_field !< Converter's result goes in here
       real(dp) :: targetMissing !< Target side missing value
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
@@ -3086,11 +3419,14 @@ contains
       type(tEcItem), pointer :: wavedirPtr ! pointer to item for wave direction
       type(tEcItem), pointer :: wavehgtPtr ! pointer to item for wave height
       logical :: has_x_wind, has_y_wind
+      logical :: has_rotated_wind
       logical :: has_wave_direction
       logical :: all_scalar_sources
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       logical :: status !< Status of undefined values check
       real(dp) :: sourceValue !< Source value at t0 or t1, depending on the time interpolation
+      real(dp), dimension(:), allocatable :: source_values !< Time-interpolated source values; allocatable to keep it off the stack.
+      integer :: n_targets !< Number of target points
       real(dp), dimension(:), pointer :: targetValues
       real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
@@ -3135,7 +3471,7 @@ contains
 
       PI = atan(1.0_dp) * 4.0_dp
       success = .false.
-      targetField => null()
+      target_field => null()
       sourceT0Field => null()
       sourceT1Field => null()
       indexWeight => null()
@@ -3148,6 +3484,7 @@ contains
       windyPtr => null()
       has_x_wind = .false.
       has_y_wind = .false.
+      has_rotated_wind = .false.
       wavedirPtr => null()
       wavehgtPtr => null()
       waveheightT0 => null()
@@ -3281,8 +3618,9 @@ contains
          ! This should only be performed if the standard_name for the x-component was x_wind or grid_eastward_wind (and similar for the y-component)
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
          if (associated(windxPtr%elementsetPtr%dir)) then
+            has_rotated_wind = .true.
             do ipt = 1, windxPtr%elementsetPtr%ncoordinates
-               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.0_dp
+               phi = windxPtr%elementsetPtr%dir(ipt) * degrad_hp
                xtmp = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * sin(phi)
                windyPtr%SourceT0fieldptr%arr1dptr(ipt) = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * (-sin(phi)) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi)
                windxPtr%SourceT0fieldptr%arr1dptr(ipt) = xtmp
@@ -3309,9 +3647,9 @@ contains
             indexWeight => connection%converterPtr%indexWeight
 
             targetItem => connection%targetItemsPtr(i)%ptr
-            targetField => targetItem%targetFieldPtr
-            targetValues => targetField%arr1dPtr
-            targetMissing = targetField%MISSINGVALUE
+            target_field => targetItem%targetFieldPtr
+            targetValues => target_field%arr1dPtr
+            targetMissing = target_field%MISSINGVALUE
             targetElementSet => targetItem%elementSetPtr
 
             if (associated(targetElementSet%z)) then
@@ -3319,6 +3657,14 @@ contains
                   call set_ec_message('ERROR: ec_converter::ecConverterNetcdf: A layered target requires at least two NetCDF source vertical coordinates.')
                   return
                end if
+            end if
+
+            if (has_harmonics .and. .not. has_rotated_wind .and. sourceElementSet%n_layers == 0 .and. &
+                sourceItem%quantityPtr%name /= 'sea_surface_wave_from_direction') then
+               if (.not. ecConverterHarmonic(connection, i, timesteps)) then
+                  return
+               end if
+               cycle
             end if
 
             if (sourceElementSet%ofType == elmSetType_samples) then
@@ -3350,7 +3696,7 @@ contains
                          comparereal(phase0, sourceMissing, .true.) == 0) then
                         sourceT0Field%arr1d(ipt) = sourceMissing
                      else
-                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                      end if
                   end do
                else
@@ -3433,7 +3779,7 @@ contains
                                   comparereal(phase0, sourceMissing, .true.) == 0) then
                                  sourceT0Field%arr1d(ipt) = sourceMissing
                               else
-                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                               end if
                            end do
                         end if
@@ -3452,7 +3798,7 @@ contains
                                      comparereal(phase0, sourceMissing, .true.) == 0) then
                                     sourceT0Field%arr1d(ipt) = sourceMissing
                                  else
-                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * degrad_hp)
                                  end if
                               end do
                            end do
@@ -3799,7 +4145,7 @@ contains
          do i = 1, connection%nSourceItems
             t0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%timesteps
             t1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%timesteps
-            targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+            target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
 
             if (t0 > t1) then
 
@@ -3825,22 +4171,18 @@ contains
                      return
                   end if
 
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
+                  n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
 
-                     if (.not. status) then
-                        return
-                     end if
+                  if (.not. status) then
+                     return
+                  end if
 
-                     call apply_operand( &
-                        connection%converterPtr%operandType, &
-                        targetField%arr1dPtr(j), &
-                        connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j) &
-                        )
-                  end do
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
+                                     connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets))
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                case default
 
@@ -3873,21 +4215,19 @@ contains
                      return
                   end if
 
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     sourceValueT0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
-                     sourceValueT1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(j)
-                     sourceValue = sourceValueT0 * a0 + sourceValueT1 * a1
+                  n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
 
-                     if (.not. status) then
-                        return
-                     end if
+                  if (.not. status) then
+                     return
+                  end if
 
-                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), sourceValue)
-                  end do
+                  source_values = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets) * a0 &
+                                  + connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(1:n_targets) * a1
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), source_values)
 
-                  targetField%timesteps = timesteps
+                  target_field%timesteps = timesteps
 
                case default
 
@@ -4328,11 +4668,11 @@ contains
       integer :: first_value, last_value
       integer :: values_per_coordinate
       integer :: n_coordinates
-      type(tEcField), pointer :: targetField
+      type(tEcField), pointer :: target_field
       integer, dimension(:), pointer :: targetMask
 
       success = .false.
-      targetField => null()
+      target_field => null()
       targetMask => null()
 
       if (target_item_index < 1 .or. target_item_index > connection%nTargetItems) then
@@ -4340,14 +4680,14 @@ contains
          return
       end if
 
-      targetField => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
+      target_field => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
       targetMask => connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%mask
       n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
-      if (n_coordinates <= 0 .or. modulo(size(targetField%arr1dPtr), n_coordinates) /= 0) then
+      if (n_coordinates <= 0 .or. modulo(size(target_field%arr1dPtr), n_coordinates) /= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
          return
       end if
-      values_per_coordinate = size(targetField%arr1dPtr) / n_coordinates
+      values_per_coordinate = size(target_field%arr1dPtr) / n_coordinates
 
       if (connection%converterPtr%targetIndex /= ec_undef_int) then
          if (connection%converterPtr%targetIndex < 1 .or. connection%converterPtr%targetIndex > n_coordinates) then
@@ -4369,14 +4709,14 @@ contains
          end if
          first_value = (coordinate_index - 1) * values_per_coordinate + 1
          last_value = coordinate_index * values_per_coordinate
-         call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(first_value:last_value), success)
+         call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(first_value:last_value), success)
          if (.not. success) then
             return
          end if
          call apply_operand(connection%converterPtr%operandType, &
-                            targetField%arr1dPtr(first_value:last_value), scalar_value)
+                            target_field%arr1dPtr(first_value:last_value), scalar_value)
       end do
-      targetField%timesteps = timesteps
+      target_field%timesteps = timesteps
       success = .true.
    end function ecConverterApplyScalarToTargetItem
 
@@ -4391,17 +4731,17 @@ contains
       real(dp) :: data_value !< the scalar source value
       integer :: i, j
       integer :: jmin, jmax
-      type(tEcField), pointer :: targetField
+      type(tEcField), pointer :: target_field
       integer, dimension(:), pointer :: targetMask
       logical :: status
 
       success = .false.
-      targetField => null()
+      target_field => null()
       targetMask => null()
 
       data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
       do i = 1, connection%nTargetItems
-         targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
          targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
          if (connection%converterPtr%targetIndex /= ec_undef_int) then
             jmin = connection%converterPtr%targetIndex
@@ -4412,25 +4752,25 @@ contains
          end if
 
          if (associated(targetMask)) then
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
             if (.not. status) then
                return
             end if
             do j = jmin, jmax
                if (targetMask(j) /= 0) then
-                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), data_value)
+                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(j), data_value)
                end if
             end do
          else
             ! Directly use `jmin:jmax` slice of `arr1dPtr`.
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), status)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), status)
             if (.not. status) then
                return
             end if
-            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(jmin:jmax), data_value)
+            call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), data_value)
          end if
 
-         targetField%timesteps = timesteps
+         target_field%timesteps = timesteps
       end do
       success = .true.
    end function ecConverterDataValue
@@ -4477,6 +4817,43 @@ contains
       end select
 
    end subroutine apply_operand
+
+   !> Applies the specified operand to the target values where mask /= 0.
+   !! Selects the operand once for the whole array, so each case is a single vectorizable masked assignment.
+   subroutine apply_operand_masked(operand, target_values, provided_values, mask)
+      integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, ...)
+      real(dp), dimension(:), intent(inout) :: target_values !< target values to apply the operand to
+      real(dp), dimension(:), intent(in) :: provided_values !< values to apply with the operand, same size as target_values
+      integer, dimension(:), intent(in) :: mask !< only target values with mask /= 0 are updated, same size as target_values
+
+      select case (operand)
+      case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
+         where (mask /= 0)
+            target_values = provided_values
+         end where
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+         where (mask /= 0 .and. target_values == ec_undef_hp)
+            target_values = provided_values
+         end where
+      case (EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT)
+         where (mask /= 0)
+            target_values = target_values + provided_values
+         end where
+      case (EC_OPERAND_MULTIPLY)
+         where (mask /= 0)
+            target_values = target_values * provided_values
+         end where
+      case (EC_OPERAND_MINIMUM)
+         where (mask /= 0)
+            target_values = min(target_values, provided_values)
+         end where
+      case (EC_OPERAND_MAXIMUM)
+         where (mask /= 0)
+            target_values = max(target_values, provided_values)
+         end where
+      end select
+
+   end subroutine apply_operand_masked
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
    subroutine check_undefined_values_for_operand(operand, target_values, istat, target_mask)
