@@ -101,7 +101,7 @@ contains
       character(20) :: ylocstring
 
       integer :: k, n, jamiss, ios
-      integer, dimension(:), pointer :: kcc
+      integer, dimension(:), allocatable :: kcc
       integer, dimension(:), allocatable :: Mn
 
       !
@@ -261,7 +261,7 @@ contains
       character(20) :: ylocstring
 
       integer :: k, n, jamiss
-      integer, dimension(:), pointer :: kcc
+      integer, dimension(:), allocatable :: kcc
       integer, dimension(:), allocatable :: Mn
       integer :: ios
       !

@@ -334,7 +334,6 @@ contains
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       type(tEcElementSet), pointer :: targetElementSet !< target ElementSet
-      integer, dimension(:), pointer :: targetMask !< local pointer to pass to nearest_neighbour and triinterp2
       real(dp) :: wx, wy
       integer :: i, j !< loop counter
       integer :: ii, jj, ierr
@@ -380,10 +379,7 @@ contains
       sourceElementSet => null()
       sourceElementSet => connection%sourceItemsPtr(1)%ptr%elementSetPtr
       targetElementSet => connection%targetItemsPtr(1)%ptr%elementSetPtr
-      targetMask => null()
-      if (allocated(connection%targetMask)) then
-         targetMask => connection%targetMask
-      end if
+
       !
       ! Safety check while interpolate_spacetimeSaveWeightFactors is still liberally used.
       if (.not. (connection%converterPtr%ofType == convType_curvi .or. &
@@ -452,7 +448,7 @@ contains
                allocate (weight%weightFactors(1, n_points))
                weight%indices = ec_undef_int
                weight%weightFactors = 1.0_dp
-               call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, targetMask, &
+               call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, connection%targetMask, &
                                       weight%indices(1, :), ec_undef_hp, &
                                       sourceElementSet%x, sourceElementSet%y, sourceElementSet%n_cols, jsferic, 0)
             else
