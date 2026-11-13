@@ -131,12 +131,8 @@ endif()
 
 # metis
 
-if(NOT TARGET metis)
-    add_subdirectory(${checkout_src_root}/${metis_module} metis)
-endif()
-
 if(NOT TARGET metisoptions)
-    add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
+    add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions)
 endif()
 
 # libsigwatch
