@@ -362,6 +362,17 @@ module m_output_config
    integer, public :: IDX_MAP_LIMTSTEP_CUM
    integer, public :: IDX_MAP_COURANT
    integer, public :: IDX_MAP_AU
+   integer, public :: IDX_MAP_AU_MAIN !< Output configuration index for main channel flow area
+   integer, public :: IDX_MAP_AU_FLOODPLAIN1 !< Output configuration index for first floodplain flow area
+   integer, public :: IDX_MAP_AU_FLOODPLAIN2 !< Output configuration index for second floodplain flow area
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS !< Output configuration index for total hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_MAIN !< Output configuration index for main channel hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1 !< Output configuration index for first floodplain hydraulic radius
+   integer, public :: IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2 !< Output configuration index for second floodplain hydraulic radius
+   integer, public :: IDX_MAP_FLOW_WIDTH !< Output configuration index for total water-surface flow width
+   integer, public :: IDX_MAP_FLOW_WIDTH_MAIN !< Output configuration index for main channel flow width
+   integer, public :: IDX_MAP_FLOW_WIDTH_FLOODPLAIN1 !< Output configuration index for first floodplain flow width
+   integer, public :: IDX_MAP_FLOW_WIDTH_FLOODPLAIN2 !< Output configuration index for second floodplain flow width
    integer, public :: IDX_MAP_U1
    integer, public :: IDX_MAP_U0
    integer, public :: IDX_MAP_UCXQ_EULERIAN
@@ -378,6 +389,8 @@ module m_output_config
    integer, public :: IDX_MAP_DIU
    integer, public :: IDX_MAP_Q1
    integer, public :: IDX_MAP_Q1_MAIN
+   integer, public :: IDX_MAP_Q1_FLOODPLAIN1
+   integer, public :: IDX_MAP_Q1_FLOODPLAIN2
    integer, public :: IDX_MAP_FIXED_WEIR_ENERGY_LOSS
    integer, public :: IDX_MAP_SPIRCRV
    integer, public :: IDX_MAP_SPIRINT
@@ -391,6 +404,9 @@ module m_output_config
    integer, public :: IDX_MAP_SA1
    integer, public :: IDX_MAP_CZS
    integer, public :: IDX_MAP_CZU
+   integer, public :: IDX_MAP_CZU_MAIN !< Output configuration index for main channel Chezy
+   integer, public :: IDX_MAP_CZU_FLOODPLAIN1 !< Output configuration index for first floodplain Chezy
+   integer, public :: IDX_MAP_CZU_FLOODPLAIN2 !< Output configuration index for second floodplain Chezy
    integer, public :: IDX_MAP_CFU
    integer, public :: IDX_MAP_CFUTYP
    integer, public :: IDX_MAP_TEM1

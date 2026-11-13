@@ -53,6 +53,11 @@ contains
       use m_flowgeom, only: ndx2d, ndx, lnx1d, kcu, wetlink2d, onlywetlinks, lnxi, lnx, wetlinkbnd, ja1d2dinternallinktype
       use unstruc_channel_flow, only: usevolumetables, network, get_volume, get_surface
       use m_flow, only: nonlin1d, nonlin2d, slotw1d, slotw2d, nonlin, vol1, s1, a1, s1m, a1m, nshiptxy, japressurehull, v1ship
+      use m_flow, only: q1_floodplain1, q1_floodplain2
+      use m_flow, only: au_main, au_floodplain1, au_floodplain2, map_write_settings
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
+      use m_flow, only: flow_width, flow_width_main, flow_width_floodplain1, flow_width_floodplain2
       use m_VolumeTables, only: vltb
       use m_storage, only: t_storage
       use network_data, only: LINK_1D_BOUNDARY, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
