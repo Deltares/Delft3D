@@ -1383,7 +1383,7 @@ contains
 
       call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, success)
       if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness)
+         call prop_get(md_ptr, 'physics', 'Soiltempthick', soil_heat_buffer_thickness)
       end if
       if (soil_heat_buffer_thickness > 0.0_dp) then
          jaheat_eachstep = 1
