@@ -93,13 +93,6 @@ contains
       !
       success = .true.
       !
-      if (associated(connection%targetMask)) then
-         deallocate (connection%targetMask, stat=istat)
-         if (istat /= 0) then
-            call set_ec_message("ERROR: ec_connection::ecConnectionFree: Unable to deallocate target mask.")
-            success = .false.
-         end if
-      end if
       ! A connection does not own the tEcConverters, the tEcInstance does, so nullify rather then ecConverterFree().
       connection%converterPtr => null()
       ! A connection does not own the tEcItems, the tEcInstance does, so nullify rather then ecItemFree().
@@ -190,7 +183,7 @@ contains
          call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Cannot find the supplied connection.")
          return
       end if
-      if (associated(connectionPtr%targetMask)) then
+      if (allocated(connectionPtr%targetMask)) then
          deallocate (connectionPtr%targetMask, stat=istat)
          if (istat /= 0) then
             call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: Unable to deallocate target mask.")

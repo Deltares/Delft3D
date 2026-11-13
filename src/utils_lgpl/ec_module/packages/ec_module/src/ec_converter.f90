@@ -329,7 +329,7 @@ contains
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(inout)
-      type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
+      type(tEcConnection), target, intent(inout) :: connection !< access to Converter and Items
       !
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
@@ -380,7 +380,10 @@ contains
       sourceElementSet => null()
       sourceElementSet => connection%sourceItemsPtr(1)%ptr%elementSetPtr
       targetElementSet => connection%targetItemsPtr(1)%ptr%elementSetPtr
-      targetMask => connection%targetMask
+      targetMask => null()
+      if (allocated(connection%targetMask)) then
+         targetMask => connection%targetMask
+      end if
       !
       ! Safety check while interpolate_spacetimeSaveWeightFactors is still liberally used.
       if (.not. (connection%converterPtr%ofType == convType_curvi .or. &
@@ -744,9 +747,9 @@ contains
             end if
          end if
          ! Final step for gridded providers: when not masked, reset indices to undefined.
-         if (associated(targetMask)) then
+         if (allocated(connection%targetMask)) then
             do i = 1, n_points
-               if (targetMask(i) == 0) then
+               if (connection%targetMask(i) == 0) then
                   weight%indices(:, i) = ec_undef_int
                end if
             end do
@@ -1204,7 +1207,6 @@ contains
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
       character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: error_message
       !
-      integer, dimension(:), pointer :: targetMask
       success = .false.
       valuesT0 => null()
       valuesT1 => null()
@@ -1321,12 +1323,11 @@ contains
             if (connection%nTargetItems == 1) then ! All in one target item
 
                target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetMask
 
                do j = jmin, jmax
 
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
+                  if (allocated(connection%targetMask)) then
+                     if (connection%targetMask(j) == 0) then
                         cycle
                      end if
                   end if
@@ -1356,12 +1357,11 @@ contains
                do i = 1, connection%nTargetItems
 
                   target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetMask
 
                   do j = jmin, jmax
 
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
+                     if (allocated(connection%targetMask)) then
+                        if (connection%targetMask(j) == 0) then
                            cycle
                         end if
                      end if
@@ -4671,11 +4671,9 @@ contains
       integer :: values_per_coordinate
       integer :: n_coordinates
       type(tEcField), pointer :: target_field
-      integer, dimension(:), pointer :: targetMask
 
       success = .false.
       target_field => null()
-      targetMask => null()
 
       if (target_item_index < 1 .or. target_item_index > connection%nTargetItems) then
          call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target item index out of range.")
@@ -4683,7 +4681,6 @@ contains
       end if
 
       target_field => connection%targetItemsPtr(target_item_index)%ptr%targetFieldPtr
-      targetMask => connection%targetMask
       n_coordinates = connection%targetItemsPtr(target_item_index)%ptr%elementSetPtr%nCoordinates
       if (n_coordinates <= 0 .or. modulo(size(target_field%arr1dPtr), n_coordinates) /= 0) then
          call set_ec_message("ERROR: ec_converter::ecConverterApplyScalarToTargetItem: Target Field size is inconsistent with its coordinates.")
@@ -4704,8 +4701,8 @@ contains
       end if
 
       do coordinate_index = first_coordinate, last_coordinate
-         if (associated(targetMask)) then
-            if (targetMask(coordinate_index) == 0) then
+         if (allocated(connection%targetMask)) then
+            if (connection%targetMask(coordinate_index) == 0) then
                cycle
             end if
          end if
@@ -4734,17 +4731,14 @@ contains
       integer :: i, j
       integer :: jmin, jmax
       type(tEcField), pointer :: target_field
-      integer, dimension(:), pointer :: targetMask
       logical :: status
 
       success = .false.
       target_field => null()
-      targetMask => null()
 
       data_value = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
       do i = 1, connection%nTargetItems
          target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-         targetMask => connection%targetMask
          if (connection%converterPtr%targetIndex /= ec_undef_int) then
             jmin = connection%converterPtr%targetIndex
             jmax = connection%converterPtr%targetIndex
@@ -4753,13 +4747,14 @@ contains
             jmax = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
          end if
 
-         if (associated(targetMask)) then
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(jmin:jmax), status, targetMask(jmin:jmax))
+         if (allocated(connection%targetMask)) then
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, &
+                                                    target_field%arr1dPtr(jmin:jmax), status, connection%targetMask(jmin:jmax))
             if (.not. status) then
                return
             end if
             do j = jmin, jmax
-               if (targetMask(j) /= 0) then
+               if (connection%targetMask(j) /= 0) then
                   call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(j), data_value)
                end if
             end do

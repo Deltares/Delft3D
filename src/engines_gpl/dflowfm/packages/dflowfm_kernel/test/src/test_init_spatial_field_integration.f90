@@ -3399,7 +3399,7 @@ contains
       do i = 1, target_item%nConnections
          success = ecSetConnectionTargetMask(ecInstancePtr, target_item%connectionsPtr(i)%ptr%id, [0, 0, 0, 0])
          call f90_expect_true(success, 'all-zero connection mask should be accepted')
-         call f90_expect_true(associated(target_item%connectionsPtr(i)%ptr%targetMask), 'all-zero mask must remain allocated')
+         call f90_expect_true(allocated(target_item%connectionsPtr(i)%ptr%targetMask), 'all-zero mask must remain allocated')
       end do
       air_pressure = 5.0_dp
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
@@ -3408,7 +3408,7 @@ contains
 
       success = ecSetConnectionTargetMask(ecInstancePtr, target_item%connectionsPtr(2)%ptr%id, [1, 1, 1, 1])
       call f90_expect_true(success, 'unrestricted connection mask should be accepted')
-      call f90_expect_false(associated(target_item%connectionsPtr(2)%ptr%targetMask), 'unrestricted mask must not consume storage')
+      call f90_expect_false(allocated(target_item%connectionsPtr(2)%ptr%targetMask), 'unrestricted mask must not consume storage')
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
       call f90_expect_true(success, 'unrestricted contribution should update')
       call f90_expect_true(all(abs(air_pressure - 21.0_dp) < 1.0e-6_dp), 'absent mask must allow every target to update')
