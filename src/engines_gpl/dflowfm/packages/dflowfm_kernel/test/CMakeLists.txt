@@ -48,7 +48,8 @@ add_fortran_gtest(${test_target}
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
         src/test_cross_section_geometry.f90
-    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
+        src/test_dflowfm_io.f90
+    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff dflowfm_io_fortran
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 add_subdirectory(helpers)

@@ -1,0 +1,43 @@
+if(NOT TARGET GTest::gtest_main)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG v1.14.0
+    )
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+endif()
+
+enable_testing()
+
+add_executable(dflowfm_io_tests
+    MduTestData.h
+
+    IssueReportTest.cpp
+    MduConverterTest.cpp
+    MduDataTest.cpp
+    MduDocumentTest.cpp
+    MduSchemaTest.cpp
+    MduValidatorTest.cpp
+    StringUtilsTest.cpp
+)
+
+if(MSVC)
+    target_compile_options(dflowfm_io_tests PRIVATE /bigobj)
+endif()
+
+target_link_libraries(dflowfm_io_tests PRIVATE dflowfm_io dflowfm_ini_parser GTest::gtest_main)
+
+if(WIN32)
+    add_custom_command(TARGET dflowfm_io_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm_io_tests> $<TARGET_RUNTIME_DLLS:dflowfm_io_tests>
+        COMMAND_EXPAND_LISTS
+        VERBATIM
+    )
+endif()
+
+include(GoogleTest)
+gtest_discover_tests(dflowfm_io_tests
+    DISCOVERY_MODE PRE_TEST
+)
