@@ -3336,15 +3336,11 @@ contains
    subroutine test_single_quantity_multiple_target_masks() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
-      use m_ec_module, only: ecSetConnectionTargetMask
-      use m_ec_support, only: ecSupportFindItem
-      use m_ec_typedefs, only: tEcItem
 
       character(len=*), parameter :: EXT_FILE = 'test_connection_masks.ext'
       character(len=*), parameter :: BC_A = 'test_connection_mask_a.bc', BC_B = 'test_connection_mask_b.bc'
       character(len=*), parameter :: POL_A = 'test_connection_mask_a.pol', POL_B = 'test_connection_mask_b.pol'
       type(tree_data), pointer :: bnd_ptr, block_ptr
-      type(tEcItem), pointer :: target_item
       logical :: success
       integer :: i
       real(dp), dimension(4) :: expected
@@ -3395,25 +3391,41 @@ contains
          call f90_expect_near(air_pressure(i), expected(i), 1.0e-6_dp, 'connection masks must survive subsequent updates')
       end do
 
-      target_item => ecSupportFindItem(ecInstancePtr, item_airpressure)
-      do i = 1, target_item%nConnections
-         success = ecSetConnectionTargetMask(ecInstancePtr, target_item%connectionsPtr(i)%ptr%id, [0, 0, 0, 0])
-         call f90_expect_true(success, 'all-zero connection mask should be accepted')
-         call f90_expect_true(allocated(target_item%connectionsPtr(i)%ptr%targetMask), 'all-zero mask must remain allocated')
-      end do
-      air_pressure = 5.0_dp
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
-      call f90_expect_true(success, 'all-zero masks should permit an update without modifying targets')
-      call f90_expect_true(all(abs(air_pressure - 5.0_dp) < 1.0e-6_dp), 'all-zero masks must leave every target untouched')
-
-      success = ecSetConnectionTargetMask(ecInstancePtr, target_item%connectionsPtr(2)%ptr%id, [1, 1, 1, 1])
-      call f90_expect_true(success, 'trivial mask should be accepted')
-      call f90_expect_false(allocated(target_item%connectionsPtr(2)%ptr%targetMask), 'trivial mask must not be allocated')
-      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
-      call f90_expect_true(success, 'unrestricted contribution should update')
-      call f90_expect_true(all(abs(air_pressure - 21.0_dp) < 1.0e-6_dp), 'absent mask must allow every target to update')
       call teardown_minimal_grid()
    end subroutine test_single_quantity_multiple_target_masks
+
+   !$gtest
+   subroutine test_connection_target_mask_initialization() bind(C)
+      use m_meteo, only: ecInstancePtr
+      use m_ec_module, only: ecCreateConnection, ecSetConnectionTargetMask
+      use m_ec_support, only: ecSupportFindConnection
+      use m_ec_typedefs, only: tEcConnection
+
+      type(tEcConnection), pointer :: connection
+      integer :: connection_id
+      logical :: success
+
+      call initialize_ec_module()
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [0, 0, 0, 0])
+      call f90_expect_true(success, 'all-zero mask should be accepted on a fresh connection')
+      call f90_expect_true(allocated(connection%targetMask), 'all-zero mask must remain allocated')
+      if (.not. allocated(connection%targetMask)) then
+         return
+      end if
+      call f90_expect_true(all(connection%targetMask == 0), 'all-zero mask must retain its selection')
+
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1, 1])
+      call f90_expect_false(success, 'a second mask assignment must be rejected')
+      call f90_expect_true(all(connection%targetMask == 0), 'rejected assignment must preserve the original mask')
+
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1, 1])
+      call f90_expect_true(success, 'trivial mask should be accepted on a fresh connection')
+      call f90_expect_false(allocated(connection%targetMask), 'trivial mask must not be allocated')
+   end subroutine test_connection_target_mask_initialization
 
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
