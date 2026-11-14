@@ -6,11 +6,14 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
+import Delft3D.linux.*
 import Delft3D.template.*
 import Delft3D.step.*
 
 import Trigger
 import CsvProcessor
+
+private const val TESTBENCH_ENGINES_DIR = "test/deltares_testbench/data/engines/teamcity_artifacts/lnx64"
 
 object LinuxTest : BuildType({
 
@@ -50,18 +53,7 @@ object LinuxTest : BuildType({
     }
 
     params {
-        select(
-            name = "distribution",
-            label = "Distribution",
-            value = "alma10",
-            display = ParameterDisplay.PROMPT,
-            options = listOf(
-                "AlmaLinux 8" to "alma8",
-                "AlmaLinux 9" to "alma9",
-                "AlmaLinux 10" to "alma10"
-            )
-        )
-        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/testbench:4.0.0")
         select("configfile", processor.activeConfigs.joinToString(","),
             label = "Testbench XML",
             allowMultiple = true,
@@ -86,42 +78,38 @@ object LinuxTest : BuildType({
     }
 
     steps {
-        // script is necessary to dynamically set the copy-failed-cases depending on the paramter 
         script {
-        name = "Run TestBench.py"
-        id = "RUNNER_testbench"
-        workingDir = "test/deltares_testbench/"
-        scriptContent = """
-            #!/bin/bash
-            
-            ARGS="--username "%dvc_testbench_accesskey%" \
-                --password "%dvc_testbench_secret%" \
-                --compare \
-                --config "configs/%configfile%" \
-                --filter "testcase=%case_filter%" \
-                --log-level DEBUG \
-                --parallel \
-                --teamcity \
-                --override-paths from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
-            
-            # Add flag only if copy_failed_cases is true
-            if [[ "%copy_failed_cases%" == "true" ]]; then
-                ARGS="${'$'}ARGS --copy-failed-cases"
-            fi
-            
-            python3 TestBench.py ${'$'}ARGS
-        """.trimIndent()
-        dockerImage = "%testbench_container_image%"
-        dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-        dockerPull = true
-        dockerRunParameters = """
-            --rm
-            --pull always
-            --shm-size 8G
-            --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
-        """.trimIndent()
+            name = "Run testbench"
+            id = "RUNNER_testbench"
+            workingDir = "test/deltares_testbench/"
+            scriptContent = """
+                #!/bin/bash
+                
+                ARGS="--username "%dvc_testbench_accesskey%" \
+                    --password "%dvc_testbench_secret%" \
+                    --compare \
+                    --config "configs/%configfile%" \
+                    --filter "testcase=%case_filter%" \
+                    --log-level DEBUG \
+                    --parallel \
+                    --teamcity
+                
+                # Add flag only if copy_failed_cases is true
+                if [[ "%copy_failed_cases%" == "true" ]]; then
+                    ARGS="${'$'}ARGS --copy-failed-cases"
+                fi
+                
+                testbench ${'$'}ARGS
+            """.trimIndent()
+            dockerImage = "%testbench_container_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --rm
+                --shm-size 8G
+                --mount type=bind,source=/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
+            """.trimIndent()
         }
-        
         dockerCommand {
             name = "Remove container"
             executionMode = BuildStep.ExecutionMode.ALWAYS
@@ -163,10 +151,17 @@ object LinuxTest : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-        dependency(LinuxRuntimeContainers) {
+        dependency(LinuxCollect) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                artifactRules = """
+                    dimrset_lnx64_*.tar.gz!lnx64/bin/** => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/bin
+                    dimrset_lnx64_*.tar.gz!lnx64/lib/** => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/lib
+                    ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/share
+                """.trimIndent()
             }
         }
     }
@@ -181,5 +176,4 @@ object LinuxTest : BuildType({
             reverse = false
         }
     }
-
 })

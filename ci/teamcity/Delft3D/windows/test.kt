@@ -74,50 +74,12 @@ object WindowsTest : BuildType({
     }
 
     steps {
-        step {
-            name = "Download artifact from Nexus"
-            type = "RawDownloadNexusWindows2"
-            executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
-            param("nexus_repo", "/delft3d-dev")
-            param("nexus_username", "%nexus_username%")
-            param("download_to", "/downloads")
-            param("nexus_password", "%nexus_password%")
-            enabled = false
-        }
-        powerShell {
-            name = "Extract artifact"
-            enabled = false
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-
-                    ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
-
-                    Write-Host "Extracting %file_path% ..."
-
-                    Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
-
-                    robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
-                """.trimIndent()
-            }
-        }
-        // script is necessary to dynamically set the copy-failed-cases depending on the paramter
         script {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
             scriptContent = """
                 @echo off
-
-                rem Python writes a lot of '.pyc' bytecode files in '__pycache__' directories. This build 
-                rem step runs in a clean container with a clean build directory bind-mounted in every time,
-                rem so the bytecode files are never reused. We've run into -1073741819 (0xC0000005) exit codes
-                rem while python was generating these '*.pyc' files. That's why we've decided to turn off the
-                rem bytecode file writing. In case we still get a crash, we set PYTHONFAULTHANDLER. This should
-                rem produce a stacktrace when python crashes.
-                set PYTHONDONTWRITEBYTECODE=1
-                set PYTHONFAULTHANDLER=1
 
                 set argsList=--username %dvc_testbench_accesskey% ^
                 --password %dvc_testbench_secret% ^
@@ -132,30 +94,14 @@ object WindowsTest : BuildType({
                     set argsList=%%argsList%% --copy-failed-cases
                 )
 
-                rem Create the venv on the container filesystem (C:\venv), NOT the bind-mounted work dir,
-                rem to avoid os error 32 file-lock failures on the mount during install.
-                rem Wheels come from the mounted uv cache volume.
-                set UV_PROJECT_ENVIRONMENT=C:\venv
-                rem --locked installs the versions pinned in uv.lock and fails if uv.lock is out of date with pyproject.toml.
-                uv sync --locked
-                if %%ERRORLEVEL%% NEQ 0 exit /b 1
-                call C:\venv\Scripts\activate.bat
-
-                rem Wait for five seconds. Kludge to get rid of the "-1073741819" exit codes we've 
-                rem been dealing with during the module import phase of "Python TestBench.py"
-                ping -n 5 -w 1000 localhost > nul
-
-                python TestBench.py %%argsList%%
+                testbench %%argsList%%
             """.trimIndent()
-
-            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/testbench-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = """
                 --memory %teamcity.agent.hardware.memorySizeMb%m
                 --cpus %teamcity.agent.hardware.cpuCount%
-                --env UV_LINK_MODE=copy
-                --volume test-environment-uv-cache:C:\uv\cache
                 --mount type=bind,source=C:/dvc-cache/delft3d,target=%teamcity.build.checkoutDir%/.dvc/cache
             """.trimIndent()
         }

@@ -1,4 +1,4 @@
-FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025 AS base
 
 # Set powershell as shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
@@ -22,3 +22,26 @@ RUN $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); \
 # Install Python; --default also creates the 'python' and 'python3' executables
 RUN $env:Path = 'C:\uv;C:\uv\bin;' + $env:Path; \
     uv python install 3.14 --default; exit $LASTEXITCODE
+
+ENV UV_TOOL_DIR="C:\\uv\\tools"
+ENV UV_TOOL_BIN_DIR="C:\\uv\\bin"
+
+# Perform testbench installation in new build stage.
+# This extra stage prevents UV_INDEX_DELTARES_USERNAME and UV_INDEX_DELTARES_PASSWORD from leaking into the final image.
+# Unfortunately, secret mounts are not supported when building these windows images.
+# In addition, this prevents the uv image cache from ending up in the final image. 
+FROM base AS testbench-install
+
+ARG UV_INDEX_DELTARES_USERNAME
+ARG UV_INDEX_DELTARES_PASSWORD
+ARG DELTARES_TESTBENCH_VERSION=4.0.0rc2
+ARG PYPI_INDEX_URL=https://internal-artifacts.deltares.nl/repository/python-internal/simple/
+
+RUN uv tool install "deltares-testbench==$env:DELTARES_TESTBENCH_VERSION" --index "deltares=$env:PYPI_INDEX_URL"
+
+FROM base AS final
+
+COPY --from=testbench-install C:/uv/tools/ C:/uv/tools/
+COPY --from=testbench-install C:/uv/bin/testbench.exe C:/uv/bin/testbench.exe
+
+ENTRYPOINT [ "testbench" ]

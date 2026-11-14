@@ -39,6 +39,23 @@ object LinuxPython : BuildType({
         param("env.JIRA_ISSUE_ID", "")
     }
 
+    triggers {
+        // Schedule a rebuild every week, to update the base image and update the OS packages.
+        schedule {
+            schedulingPolicy = weekly {
+                dayOfWeek = ScheduleTrigger.DAY.Sunday
+                hour = 10
+                minute = 0
+            }
+            branchFilter = "+:<default>"
+            triggerBuild = always()
+            withPendingChangesOnly = false
+            buildParams {
+                param("trigger.type", "schedule")
+            }
+        }
+    }
+
     steps {
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
