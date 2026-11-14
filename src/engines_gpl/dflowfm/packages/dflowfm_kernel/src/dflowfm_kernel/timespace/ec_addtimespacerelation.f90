@@ -308,9 +308,6 @@ contains
          success = ecSetElementSetYArray(ecInstancePtr, elementSetId, y)
       end if
       if (success) then
-         success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
-      end if
-      if (success) then
          success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, elementSetId, size(x))
       end if
       if (present(xyen)) then
@@ -341,15 +338,6 @@ contains
             ! ERROR .. TODO: LR
          end if
 
-         ! add 3D settings if needed
-         if (ec_filetype == provFile_poly_tim .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. strcmpi(target_name, 'tracerbnd') .or. strcmpi(target_name, 'sedfracbnd'))) then ! TODO JRE sediment
-            if (success) then
-               success = ecSetElementSetMaskArray(ecInstancePtr, elementSetId, mask)
-            end if
-            if (success) then
-               success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, elementSetId, size(x))
-            end if
-         end if
       end if
 
       if (.not. success) then
@@ -675,6 +663,10 @@ contains
       ! Construct a new Connection, and connect source and target Items.
       ! ================================================================
       connectionId = ecCreateConnection(ecInstancePtr)
+
+      if (.not. ecSetConnectionTargetMask(ecInstancePtr, connectionId, mask)) then
+         goto 1234
+      end if
 
       if (.not. ecSetConnectionConverter(ecInstancePtr, connectionId, converterId)) then
          goto 1234

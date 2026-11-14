@@ -365,6 +365,10 @@ module m_ec_module
    interface ecSetConnectionIndexWeights
       module procedure ecConnectionSetIndexWeights
    end interface ecSetConnectionIndexWeights
+
+   interface ecSetConnectionTargetMask
+      module procedure ecConnectionSetTargetMask
+   end interface ecSetConnectionTargetMask
    
    ! FileReader
    interface ecAddItemToFileReader
@@ -516,9 +520,6 @@ module m_ec_module
    
          if (.not.ecElementSetSetXArray(instancePtr, elementSetId, x)) return
          if (.not.ecElementSetSetYArray(instancePtr, elementSetId, y)) return
-         if (present(mask)) then
-            if(.not.ecElementSetSetMaskArray(instancePtr, elementSetId, mask))return
-         endif
          if (.not.ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, size(x))) return
          if (present(xyen)) then
             if (.not.ecElementSetSetXyen(instancePtr, elementSetId, xyen)) return
@@ -583,7 +584,6 @@ module m_ec_module
          
          if (.not.ecSetElementSetXArray(instancePtr, elementSetId, x)) return
          if (.not.ecSetElementSetYArray(instancePtr, elementSetId, y)) return
-!        if (.not.ecSetElementSetMaskArray(instancePtr, elementSetId, mask)) return
          if (.not.ecSetElementSetNumberOfCoordinates(instancePtr, elementSetId, size(x))) return
 
          if (present(xyen)) then
@@ -602,12 +602,6 @@ module m_ec_module
                ! ERROR .. TODO: LR
             end if
          
-            ! add 3D settings if needed
-            if (filetype == provFile_poly_tim) then 
-!            .and. (target_name == 'salinitybnd' .or. target_name == 'temperaturebnd' .or. target_name == 'tracerbnd')) then   ! TODO JRE sediment    
-               if (.not.ecSetElementSetMaskArray(instancePtr, elementSetId, mask)) return
-               if (.not.ecSetElementSetNumberOfCoordinates(instancePtr, elementSetId, size(x))) return
-            end if
          end if
          
          do itgt = 1,size(itemIDs)
@@ -629,6 +623,11 @@ module m_ec_module
          if (.not.ecConverterSetInterpolation(instancePtr, converterId, method)) return
          
          connectionId = ecCreateConnection(instancePtr)
+         if (present(mask)) then
+            if (.not. ecSetConnectionTargetMask(instancePtr, connectionId, mask)) then
+               return
+            end if
+         end if
          if (.not. ecSetConnectionConverter(instancePtr, connectionId, converterId)) return
 
          ! Connect the source items to the connector

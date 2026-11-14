@@ -3332,6 +3332,68 @@ contains
       call cleanup_scalar_meteo_state()
    end subroutine test_gridded_meteo_netcdf_matrix
 
+   !$gtest
+   subroutine test_single_quantity_multiple_target_masks() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
+
+      character(len=*), parameter :: EXT_FILE = 'test_connection_masks.ext'
+      character(len=*), parameter :: BC_A = 'test_connection_mask_a.bc', BC_B = 'test_connection_mask_b.bc'
+      character(len=*), parameter :: POL_A = 'test_connection_mask_a.pol', POL_B = 'test_connection_mask_b.pol'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: i
+      real(dp), dimension(4) :: expected
+
+      call setup_minimal_grid_with_points(4)
+      xz = [0.0_dp, 1.0_dp, 2.0_dp, 3.0_dp]
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      call create_scalar_meteo_bc(BC_A, 'airpressure', 10.0_dp)
+      call create_scalar_meteo_bc(BC_B, 'airpressure', 20.0_dp)
+      call create_file(POL_A, ['mask_a', '5 2', '-0.5 -1.0', '1.5 -1.0', '1.5 1.0', '-0.5 1.0', '-0.5 -1.0'])
+      call create_file(POL_B, ['mask_b', '5 2', '0.5 -1.0', '2.5 -1.0', '2.5 1.0', '0.5 1.0', '0.5 -1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       'quantity = airpressure', &
+                       'forcingFile = '//BC_A, &
+                       'forcingFileType = bcascii', &
+                       'targetMaskFile = '//POL_A, &
+                       'operand = override', &
+                       '[Spatial]', &
+                       'quantity = airpressure', &
+                       'forcingFile = '//BC_B, &
+                       'forcingFileType = bcascii', &
+                       'targetMaskFile = '//POL_B, &
+                       'operand = override'])
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      do i = 1, 2
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call f90_expect_true(success, 'masked spatial block should initialize')
+      end do
+      call tree_destroy(bnd_ptr)
+
+      air_pressure = 0.0_dp
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'masked contributions should update at t=0')
+      expected = [10.0_dp, 20.0_dp, 20.0_dp, 0.0_dp]
+      do i = 1, 4
+         call f90_expect_near(air_pressure(i), expected(i), 1.0e-6_dp, 'each block must retain its own target mask')
+      end do
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'masked contributions should update at t=50')
+      expected = [11.0_dp, 21.0_dp, 21.0_dp, 0.0_dp]
+      do i = 1, 4
+         call f90_expect_near(air_pressure(i), expected(i), 1.0e-6_dp, 'connection masks must survive subsequent updates')
+      end do
+
+      call teardown_minimal_grid()
+   end subroutine test_single_quantity_multiple_target_masks
+
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, initialize_ec_module
