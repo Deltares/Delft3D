@@ -13,8 +13,6 @@ import Delft3D.step.*
 import Trigger
 import CsvProcessor
 
-private const val TESTBENCH_ENGINES_DIR = "test/deltares_testbench/data/engines/teamcity_artifacts/lnx64"
-
 object LinuxTest : BuildType({
 
     description = "Run TestBench in the test container."
@@ -163,14 +161,13 @@ object LinuxTest : BuildType({
                     ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/share
                 """.trimIndent()
             }
-            artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
-                cleanDestination = true
-                buildRule = build("939")
-                artifactRules = """
-                    build.zip!/lib/*.so => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/lib
-                    build.zip!/lib/Wandadef.dat => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/bin/Wandadef.dat
-                """.trimIndent()
-            }
+        }
+        artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
+            buildRule = build("939")
+            artifactRules = """
+                build.zip!/lib/*.so => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/lib
+                build.zip!/lib/Wandadef.dat => test/deltares_testbench/data/engines/teamcity_artifacts/lnx64/bin/Wandadef.dat
+            """.trimIndent()
         }
     }
 
