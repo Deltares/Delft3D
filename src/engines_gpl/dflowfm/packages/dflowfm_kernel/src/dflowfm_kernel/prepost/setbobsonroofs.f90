@@ -223,7 +223,7 @@ contains
                   bob0(:, L) = bob(:, L)
                   bl(n1) = zc
                   bl(n2) = zc
-                  frcuroofs(L) = frcuniroof
+                  frcuroofs(L) = UNIFORM_FRICTION_COEFFICIENT_ROOF
                   if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
                      infiltcaproofs(n1) = 0.0_dp
                      infiltcaproofs(n2) = 0.0_dp
@@ -351,7 +351,7 @@ contains
             bob0(:, L) = bob(:, L)
             if (ip1 > 0 .or. ip2 > 0) then
                dx(L) = max(dx(L), dxminroofgutterpipe)
-               frcuroofs(L) = frcuniroofgutterpipe
+               frcuroofs(L) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
             end if
          end if
       end do

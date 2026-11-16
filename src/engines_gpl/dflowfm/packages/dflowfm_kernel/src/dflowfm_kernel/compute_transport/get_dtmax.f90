@@ -45,7 +45,7 @@ contains
       use m_flowparameters, only: EPS10, cflmx, jadiusp
       use m_turbulence, only: sigdifi
       use m_flowtimes, only: time1
-      use m_physcoef, only: dicouv
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity
       use m_timer, only: jatimer, starttimer, impireduce, stoptimer
       use m_transport, only: dtmin_transp, kk_dtmin, jalimitdtdiff, sumdifflim, numconst, difsedu, dxiau, dtmax, ised1, time_dtmax
       use m_partitioninfo, only: jampi, idomain, my_rank, update_ghosts, itype_sall, reduce_double_min
@@ -88,7 +88,7 @@ contains
             if (jadiusp == 1) then
                diuspL = diusp(LL)
             else
-               diuspL = dicouv
+               diuspL = uniform_horizontal_eddy_diffusivity
             end if
 
             Lb = Lbot(LL)
@@ -103,7 +103,7 @@ contains
 !              compute maximum diffusion coefficient
                do j = 1, NUMCONST
 !                 compute diffusion coefficient (copied from "comp_fluxhor3D")
-                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky, viu is 0 ,
+                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky_coefficient, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
                end do
