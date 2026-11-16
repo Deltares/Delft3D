@@ -908,6 +908,8 @@ contains
             ustb(LL) = 0.0_dp
             if (hu(LL) > 0.0_dp) then
                Lb = Lbot(LL)
+               Lt = Ltop(LL)
+
                call get_ustb_cfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
 
                if (hu(LL) < trsh_u1Lb) then
@@ -1058,8 +1060,8 @@ contains
                         end if
 
                         volki = 1.0_dp / (dzws(k) * arLL)
-                        dk(k) = dk(k) + sum_q_times_turbulent_kinetic_energy_ws(k) * volki
-                        bk(k) = bk(k) + sum_inflowing_discharges_ws(k) * volki
+                        dk(k) = dk(k) + sum_q_times_turbulent_kinetic_energy_ws(L) * volki
+                        bk(k) = bk(k) + sum_inflowing_discharges_ws(L) * volki
                      end do
                   end if
                end if
@@ -1156,8 +1158,8 @@ contains
                      end if
 
                      volki = 1.0_dp / (dzws(k) * arLL)
-                     dk(k) = dk(k) + sum_q_times_turbulent_dissipation_ws(k) * volki
-                     bk(k) = bk(k) + sum_inflowing_discharges_ws(k) * volki
+                     dk(k) = dk(k) + sum_q_times_turbulent_dissipation_ws(L) * volki
+                     bk(k) = bk(k) + sum_inflowing_discharges_ws(L) * volki
                   end do
                end if
 
