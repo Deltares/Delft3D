@@ -47,13 +47,17 @@ contains
       use m_getustbcfuhi, only: get_ustb_cfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, &
-                        a1, vicwwu, VON_KARMAN, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, tqcu, eqcu, sqcu, q1, THETA_KEPS_DIFFUSION, &
-                        EPS4, trsh_u1lb, ustw, turkin0, zws, tureps0, ak, bk, ck, dk, &
+                        a1, vicwwu, VON_KARMAN, c2e, ndkx, turbulent_advection_scheme, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, &
+                        turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_kinetic_energy_wu_old, &
+                        turbulent_dissipation_wu, turbulent_dissipation_wu_old, sum_q_times_turbulent_kinetic_energy_ws, ktop, kbot, &
+                        sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
+                        EPS4, trsh_u1lb, ustw, zws, ak, bk, ck, dk, hs, epshu, ucx, ucy, qw, kmxn, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, C9OF1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, minimum_vertical_eddy_viscosity_for_production, dijdij, v, eddyviscositysurfacmax, use_density, &
-                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
+                        rhomean, minimum_vertical_eddy_viscosity_for_production, dijdij, v, eddyviscositysurfacmax, use_density, &
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, &
+                        TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS, minimum_vertical_eddy_viscosity_for_production
       use m_source_sink, only: source_sinks
       use m_flowgeom, only: ndx, lnx, acl, ln, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -63,7 +67,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: CMUKEP, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE, SIGMA_TURBULENT_DISSIPATION_INVERSE, cde, &
-                  c3t_stable, c3t_unstable
+                  c3t_stable, c3t_unstable, ustbs, ustws
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -368,7 +372,7 @@ contains
                      else ! Weighted average
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
-                     buoflu(k) = max(vicwwu(L), minimum_vertical_eddy_viscosity_for_production) * bruva(k)
+                     buoyancy_flux = max(vicwwu(L), minimum_vertical_eddy_viscosity_for_production) * bruva(k)
 
                      ! Production, dissipation, and buoyancy term in TKE equation;
                      ! dissipation and positive buoyancy are split by Newton linearization:
@@ -970,7 +974,7 @@ contains
                   if (use_density()) then
 
                      bruva(k) = brunt_vaisala_coefficient * drhodz(L) ! N.B., bruva = N**2 / sigrho
-                     buoyancy_flux = max(vicwws(L), vicwminb) * bruva(k)
+                     buoyancy_flux = max(vicwws(L), minimum_vertical_eddy_viscosity_for_production) * bruva(k)
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
@@ -1002,7 +1006,7 @@ contains
                      richs(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
-                  sourtu = max(vicwws(L), vicwminb) * dijdij(k)
+                  sourtu = max(vicwws(L), minimum_vertical_eddy_viscosity_for_production) * dijdij(k)
                   sinktu = turbulent_dissipation_ws_old(L) / turbulent_kinetic_energy_ws_old(L)
                   bk(k) = bk(k) + sinktu * 2.0_dp
                   dk(k) = dk(k) + sinktu * turbulent_kinetic_energy_ws_old(L) + sourtu ! m2/s3

@@ -89,7 +89,7 @@ contains
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
       use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total, SIGRHO, turbulent_kinetic_energy_wu, turbulent_dissipation_wu
-      use m_physcoef, only: vicoww
+      use m_physcoef, only: background_vertical_eddy_viscosity
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness, relativewind
