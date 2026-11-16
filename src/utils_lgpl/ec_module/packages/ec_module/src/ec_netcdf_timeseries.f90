@@ -35,7 +35,7 @@ module m_ec_netcdf_timeseries
    use netcdf
    use m_alloc
    use multi_file_io
-   use string_module
+   use string_module, only: find_candidates_in_targets, strcmpi, strsplit
    use io_ugrid
    use netcdf_utils, only: ncu_get_att
    implicit none
