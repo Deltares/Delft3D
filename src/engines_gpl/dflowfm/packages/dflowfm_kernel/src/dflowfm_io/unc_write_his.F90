@@ -326,7 +326,7 @@ contains
          if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
             ! Define geometry related variables
             nNodeTot = 0
-            do i = 1, source_sinks%num_normal
+            do i = 1, source_sinks%num_total
                if (source_sinks%is_normal(i)) then
                   nNodes = 0
                   k1 = source_sinks%indices(i, FLOWCELL_SINK)
