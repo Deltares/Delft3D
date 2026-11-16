@@ -36,11 +36,6 @@ namespace dflowfm_io
         ///         messages produced during validation. The report is empty if the data
         ///         fully conforms to the schema.
         static IssueReport Validate(const ini::IniData& iniData, const MduSchema& schema);
-
-    private:
-        static void ValidateRequired(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
-        static void ValidateUnsupported(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
-        static void ValidateStatus(const ini::IniData& iniData, const MduSchema& schema, IssueReport& report);
     };
 
 } // namespace dflowfm_io
