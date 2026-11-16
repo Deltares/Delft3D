@@ -27,6 +27,11 @@ For a developer-oriented overview without opening the implementation, read the d
 The coupling between D-Flow FM and C-SUMO is handled using preCICE. The D-FlowFM has an adapter implementation which does the conversion between FM mesh/data to and from preCICE. 
 The preC-SUMO executable is a wrapper that interacts with preCICE, writes FF2NF files that are consumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
 
+Initialize the FM-to-preC-SUMO exchanges, not the exchanges sent by preC-SUMO.
+preC-SUMO rejects configurations requiring it to write initial coupling data because NF2FF responses
+may depend on incoming FM values, especially for conversion of excess constituents to absolute values.
+These FM values are available only after preCICE initialization.
+
 \dotfile coupled_solvers_fm_csumo.dot "FM and preC-SUMO coupling overview"
 
 \section architecture Architecture Overview
@@ -38,7 +43,33 @@ preCICE offers tools like config-visualizer which can be used to view the in use
 \section runtime_workflow Runtime Workflow
 The system overview above shows the participating components. The runtime workflow below gives a high-level view of the preC-SUMO processing sequence and interaction points.
 
+FM reads and installs source/sink data at relative time zero immediately after preCICE initialization,
+before computing its first interval. This supports partners providing initial forcing without
+partner-specific logic. With preC-SUMO return exchanges not initialized, default zero discharge
+means no initial coupled water or constituent transfer.
+
+At subsequent coupling boundaries, FM redefines its 3D mesh when permitted, writes its fields,
+and advances preCICE before reading and installing the response for the next FM interval.
+The response read refreshes the received source/sink mesh size and vertex IDs to account for remeshing.
+Reading and installing before the exchange would apply the previous response for an extra interval.
+
+With parallel-explicit coupling, preC-SUMO still computes its response using previously exchanged
+FM fields. The ordering above avoids an additional application delay; it does not provide
+same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is tracked in
+<a href="https://github.com/precice/precice/issues/2177">precice/precice#2177</a>.
+
 \dotfile preC_SUMO_Core_Workflow.dot "preC-SUMO core workflow overview"
+
+For the preCICE calls alone, including mesh registration and conditional source/sink mesh resets,
+see the adapter-only mermaid diagram. File exchange and near-field processing are intentionally omitted.
+
+`docs/include/preC_SUMO_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.
+
+For a joint FM/preC-SUMO exchange overview, see
+`docs/include/FM_preC_SUMO_Exchange_Overview.mmd`.
+preC-SUMO has no independent internal timestep or subcycling: each iteration uses
+`getMaxTimeStepSize()` and advances by the full available preCICE window.
+FM, in contrast, accumulates its user timesteps until the exchange boundary.
 
 For the detailed per-step swimlane view, see \ref pre_c_sumo::run in the API reference.
 
@@ -63,5 +94,3 @@ See the Doxygen setup in \ref pre_c_sumo_readme and the editor setup notes in \r
 Diagrams are maintained in docs/include as .dot and .drawio source files.
 Use the dotfile command for .dot diagrams in Doxygen and the image command for embedded SVG assets.
 */
-
-

@@ -1,8 +1,8 @@
+import configparser
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-
-from minio.credentials.providers import AWSConfigProvider
 
 from src.config.credentials import Credentials
 from src.utils.logging.console_logger import ConsoleLogger
@@ -38,6 +38,8 @@ class CredentialHandler:
 
         if status == CredentialStatus.BOTH:
             self.logger.warning("Using commandline credentials!")
+            os.environ["AWS_ACCESS_KEY_ID"] = self.credentials.username  # type: ignore[union-attr]
+            os.environ["AWS_SECRET_ACCESS_KEY"] = self.credentials.password  # type: ignore[union-attr]
             if self.cred_path.exists():
                 return
             if is_interactive:
@@ -51,8 +53,6 @@ class CredentialHandler:
                 )
                 if make_file.lower() in ["yes", "y"]:
                     self.setup_file()
-                    return
-            self.credentials_instruction()
             return
 
         if status == CredentialStatus.PASSWORD or status == CredentialStatus.USERNAME:
@@ -70,16 +70,16 @@ class CredentialHandler:
             self.credentials_instruction()
             return
 
-        self.get_credentials()
+        self._set_credentials_from_aws_credentials_file()
 
-    def get_credentials(self) -> AWSConfigProvider:
+    def _set_credentials_from_aws_credentials_file(self) -> None:
         """Get credentials from file."""
-        provider = AWSConfigProvider(filename=str(self.cred_path), profile=self.profile)
-        if self.credentials is not None:
-            credentials = provider.retrieve()
-            self.credentials.username = credentials.access_key
-            self.credentials.password = credentials.secret_key
-        return provider
+        profile = self.profile or "default"
+        parser = configparser.ConfigParser()
+        success = parser.read(self.cred_path)
+        if self.credentials is not None and success:
+            self.credentials.username = str(parser[profile]["aws_access_key_id"])
+            self.credentials.password = str(parser[profile]["aws_secret_access_key"])
 
     def credential_file_exists(self) -> bool:
         """Find credential file in home directory and return if exist."""

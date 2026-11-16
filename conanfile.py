@@ -26,6 +26,8 @@ class Delft3DRecipe(ConanFile):
         self.requires("swan_omp/41.51.10")
         self.requires("inja/3.5.0")
         self.requires("pugixml/1.15")
+        self.requires("metis/5.1.1")
+        self.requires("gklib/5.1.1")
 
     def generate(self):
         save(
@@ -115,3 +117,6 @@ class Delft3DRecipe(ConanFile):
         self.options["boost"].without_wave = True
         self.options["gtest"].shared = True
         self.options["pugixml"].shared = True
+        self.options["metis"].shared = True
+        # GKlib does not support shared libraries with MSVC.
+        self.options["gklib"].shared = self.settings.os != "Windows"

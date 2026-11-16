@@ -1,0 +1,64 @@
+sequenceDiagram
+    autonumber
+    participant FM as FM Adapter
+    participant P as preCICE
+    participant S as preC-SUMO Adapter
+
+    rect rgba(56, 139, 253, 0.12)
+        Note over FM,S: INITIALIZATION - parallel-explicit coupling
+        FM->>P: Register FM 2D and 3D meshes
+        FM->>P: Set access bounding box for shared source/sink mesh
+        S->>P: Register sampling meshes and source/sink mesh
+        FM->>P: writeData(initial FM fields)
+        Note over S: Initial outgoing data is disabled
+        par FM initialization
+            FM->>P: initialize()
+        and preC-SUMO initialization
+            S->>P: initialize()
+        end
+        FM->>P: Read received source/sink mesh and readData(relative time = 0)
+        Note over FM: Install initial response, received mesh may be empty
+    end
+
+    rect rgba(63, 185, 80, 0.12)
+        loop Each preCICE window from tn to tn+1
+            Note over FM,S: par = participants run concurrently
+            par FM progresses through the window
+                Note over FM: Use installed forcing during FM timesteps
+                FM->>P: getMaxTimeStepSize()
+                Note over FM: Accumulate FM user timesteps until the coupling boundary
+                FM->>P: isTimeWindowComplete()
+                alt isTimeWindowComplete() returns true
+                    FM->>P: resetMesh(fm_flow_cells_3d)
+                    FM->>P: setVertices(updated FM3D coordinates)
+                else Returns false
+                    Note over FM: Keep registered mesh and continue exchange
+                end
+                FM->>P: writeData(FM fields at tn+1)
+            and preC-SUMO prepares one response for the window
+                S->>P: windowDt = getMaxTimeStepSize()
+                Note over S: Full window dt, no internal timestep or subcycling
+                S->>P: readData(FM fields, relative time = windowDt)
+                Note over S: First read follows initialize and uses initialized FM fields
+                Note over S: Prepare connected source/sink data using the FM fields just read
+                S->>P: isTimeWindowComplete()
+                alt isTimeWindowComplete() returns true
+                    S->>P: resetMesh(sources_sinks_nodes)
+                    S->>P: setMeshVertices(updated source/sink mesh)
+                else Returns false
+                    Note over S: Keep registered mesh and continue exchange
+                end
+                S->>P: writeData(connected source/sink dataset)
+            end
+
+            par FM completes the coupling window
+                FM->>P: advance(accumulated window duration)
+            and preC-SUMO completes the coupling window
+                S->>P: advance(windowDt)
+            end
+            Note over FM,S: Both advances synchronize the exchange
+            FM->>P: Refresh received source/sink mesh IDs and readData(relative time = 0)
+            Note over FM: Install response for the next FM interval
+            Note over S: Newly exchanged FM fields are used in the next iteration
+        end
+    end

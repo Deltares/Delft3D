@@ -182,7 +182,7 @@ contains
             10          continue
 
             ! Determine the volumes and areas that ran dry at start of time step
-            call set_horizontal_surface_area(nosss, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_fuctions, &
+            call set_horizontal_surface_area(nosss, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_functions, &
                     c(isfna), a(isfun:), surface, file_unit_list(19))
             call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), &
                     num_exchanges_u_dir + num_exchanges_v_dir, &
@@ -197,7 +197,7 @@ contains
                     c(ipnam:), ilflag)
 
             ! set the variables grid-setting for the DELWAQ variables
-            call initialize_variables(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            call initialize_variables(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                     num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                     num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                     nopred, num_vars, num_grids, j(ivset:))
@@ -206,7 +206,7 @@ contains
             ! and do particle tracking of this step (will be back-coupled next call)
             call delpar01(itime, num_cells, num_layers, num_exchanges, num_substances_transported, &
                     num_substances_total, a(ivol:), surface, a(iflow:), c(isnam), &
-                    num_spatial_time_fuctions, c(isfna), a(isfun:), a(imass:), a(iconc:), &
+                    num_spatial_time_functions, c(isfna), a(isfun:), a(imass:), a(iconc:), &
                     iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
                     a(imas2:))
 
@@ -247,7 +247,7 @@ contains
             end if
 
             ! Call OUTPUT system
-            call write_output(num_substances_total, nosss, num_spatial_parameters, num_spatial_time_fuctions, itime, &
+            call write_output(num_substances_total, nosss, num_spatial_parameters, num_spatial_time_functions, itime, &
                     c(imnam), c(isnam), c(idnam), j(idump:), num_monitoring_points, &
                     a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
                     a(ivol:), num_constants, num_time_functions, idt, num_output_files, &
@@ -330,7 +330,7 @@ contains
                     iaflag, c(isnam), a(iconc:), a(ivol:), a(ivol2:), &
                     a(iflow:), j(ixpnt:), c(iwsid), c(iwnam), c(iwtyp), &
                     j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                    iknmkv, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_fuctions, &
+                    iknmkv, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_functions, &
                     c(isfna), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
                     a(iwdmp:), 1, num_substances_total)
 
