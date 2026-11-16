@@ -75,6 +75,7 @@ contains
       use m_alloc, only: aerr
       use m_waveconst
 
+      ! Local variables
       real(kind=dp) :: theta_complement
       real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above.
       real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
@@ -103,6 +104,9 @@ contains
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
       integer :: kk, kb, kb0, kt
+
+      ! Initialization
+      bruva = 0.0_dp
 
       if (iturbulencemodel <= TURBULENCE_MODEL_NONE .or. kmx == 0) then
          return
