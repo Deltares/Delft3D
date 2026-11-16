@@ -133,7 +133,7 @@ contains
         ! Determine local maximum
         nrvarm = min(max_int_size, max_char_size) / num_output_files
         allocate (sysid (num_substances_total), coname(num_constants), paname(num_spatial_parameters))
-        allocate (funame(num_time_functions), sfname(num_spatial_time_fuctions), diname(num_dispersion_arrays))
+        allocate (funame(num_time_functions), sfname(num_spatial_time_functions), diname(num_dispersion_arrays))
         allocate (vename(num_velocity_arrays))
 
         ! Set default action
@@ -186,7 +186,7 @@ contains
                 call read_working_file_4(file_unit_list(2), file_unit, modid, sysid, num_substances_total, &
                         num_monitoring_points, num_substances_transported, num_boundary_conditions, num_waste_loads, num_constants, &
                         num_spatial_parameters, num_cells, num_cells_bottom, coname, paname, &
-                        funame, num_time_functions, sfname, num_spatial_time_fuctions, num_dispersion_arrays, &
+                        funame, num_time_functions, sfname, num_spatial_time_functions, num_dispersion_arrays, &
                         num_velocity_arrays, diname, vename, int_array, int_array, &
                         ndmpar, ntdmpq, ntdmps, noqtt, num_transects, &
                         num_transect_exchanges, num_boundary_types, num_waste_load_types, num_grids, int_array, &
@@ -195,7 +195,7 @@ contains
 
                 ! Get output pointers
                 call get_output_pointers(num_output_files, nrvar, nrvarm, char_arr, int_array, nmis, num_substances_total, sysid, num_constants, &
-                        coname, num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, file_unit)
+                        coname, num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, sfname, file_unit)
 
                 ! If not all vars found, set error
                 if (nmis > 0) then

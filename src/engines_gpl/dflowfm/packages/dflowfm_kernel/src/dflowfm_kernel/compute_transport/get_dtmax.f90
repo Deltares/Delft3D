@@ -45,13 +45,14 @@ contains
       use m_flowparameters, only: EPS10, cflmx, jadiusp
       use m_turbulence, only: sigdifi
       use m_flowtimes, only: time1
-      use m_physcoef, only: dicouv
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity
       use m_timer, only: jatimer, starttimer, impireduce, stoptimer
       use m_transport, only: dtmin_transp, kk_dtmin, jalimitdtdiff, sumdifflim, numconst, difsedu, dxiau, dtmax, ised1, time_dtmax
       use m_partitioninfo, only: jampi, idomain, my_rank, update_ghosts, itype_sall, reduce_double_min
       use timers, only: timon, timstrt, timstop
       use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: mtd, stm_included
+      use m_fm_wq_processes, only: nfallvelocity_waq, fall_velocity_waq
 
       implicit none
 
@@ -63,8 +64,9 @@ contains
       integer :: k1, k2
       integer :: j
       integer :: ierror
+      logical :: use_fall_velocity_stm, use_fall_velocity_waq
 
-      real(kind=dp) :: sqtot, bak
+      real(kind=dp) :: sqtot, bak, max_fall_velocity
 
       real(kind=dp), parameter :: dtmax_default = 1.0e4_dp
 
@@ -76,6 +78,8 @@ contains
 
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
+      use_fall_velocity_stm = stm_included .and. ised1 > 0
+      use_fall_velocity_waq = nfallvelocity_waq > 0
 
       if (jalimitdtdiff == 1) then
 !        determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
@@ -84,7 +88,7 @@ contains
             if (jadiusp == 1) then
                diuspL = diusp(LL)
             else
-               diuspL = dicouv
+               diuspL = uniform_horizontal_eddy_diffusivity
             end if
 
             Lb = Lbot(LL)
@@ -99,7 +103,7 @@ contains
 !              compute maximum diffusion coefficient
                do j = 1, NUMCONST
 !                 compute diffusion coefficient (copied from "comp_fluxhor3D")
-                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky, viu is 0 ,
+                  difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky_coefficient, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
                end do
@@ -147,10 +151,17 @@ contains
             if (s1(kk) - bl(kk) > epshu) then
                call getkbotktop(kk, kb, kt)
                if (jalimitdtdiff == 0) then
-                  if (stm_included .and. ISED1 > 0 .and. jaimplicitfallvelocity == 0) then
+                  if ((use_fall_velocity_stm .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
+                        max_fall_velocity = 0.0_dp
+                        if (use_fall_velocity_stm) then
+                           max_fall_velocity = maxval(mtd%ws(k, :))
+                        end if
+                        if (use_fall_velocity_waq) then
+                           max_fall_velocity = max(max_fall_velocity, maxval(fall_velocity_waq(k, :)))
+                        end if
+                        sqtot = sqi(k) + max_fall_velocity * bak
                         if (squ(k) > EPS10 .or. sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
                         end if
@@ -163,10 +174,17 @@ contains
                      end do
                   end if
                else
-                  if (stm_included .and. ISED1 > 0 .and. jaimplicitfallvelocity == 0) then
+                  if ((use_fall_velocity_stm .or. use_fall_velocity_waq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
+                        max_fall_velocity = 0.0_dp
+                        if (use_fall_velocity_stm) then
+                           max_fall_velocity = maxval(mtd%ws(k, :))
+                        end if
+                        if (use_fall_velocity_waq) then
+                           max_fall_velocity = max(max_fall_velocity, maxval(fall_velocity_waq(k, :)))
+                        end if
+                        sqtot = sqi(k) + sumdifflim(k) + max_fall_velocity * bak
                         if (sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
                         end if

@@ -1556,23 +1556,23 @@ contains
                     'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                     nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WSTAR, &
-                    'Wrihis_bulk_exchange_coefficients', 'w_star', 'Free convective velocity scale', '', &
+                    'wriHis_BulkExchangeCoefficients', 'w_star', 'Free convective velocity scale', '', &
               'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
-                    'Wrihis_bulk_exchange_coefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
+                    'wriHis_BulkExchangeCoefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_bulk_exchange_coefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
@@ -2378,7 +2378,7 @@ contains
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_sferic, only: jsferic
       use m_wind, only: air_pressure_available, jawind, jarain, ja_airdensity, ja_computed_airdensity, cloudiness, relative_humidity
       use m_dambreak_breach, only: n_db_signals
@@ -2845,7 +2845,7 @@ contains
             end if
          end if
          
-         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WSTAR), valobs(:, IPNT_wstar))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBUKHOV_LENGTH), valobs(:, IPNT_obukhov_length))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_MOMENTUM), valobs(:, IPNT_TRANSFER_COEFF_MOMENTUM))
@@ -2868,7 +2868,7 @@ contains
 
          ! Write heat flux model statistical output
          if (his_write_settings%heatflux > 0) then
-            if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))

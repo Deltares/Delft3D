@@ -185,14 +185,11 @@ namespace pre_c_sumo
         participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
-            auto write_result = initial_connected_sink_sources.write_to_precice(participant, "sources_sinks_nodes",
-                                                                                sources_sinks.precice_ids);
-            if (!write_result.has_value())
-            {
-                std::println(stderr, "Error: Unable to write initial sources/sinks data: {}",
-                             write_result.error().message);
-                return -1;
-            }
+            std::println(
+                stderr,
+                "Error: preC-SUMO cannot provide initial coupling data."
+                "Remove initialize=\"true\" from all exchanges sent by preC-SUMO in the preCICE configuration.");
+            return -1;
         }
 
         participant.initialize();

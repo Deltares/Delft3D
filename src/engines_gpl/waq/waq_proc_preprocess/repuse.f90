@@ -33,7 +33,7 @@ contains
 
 
     subroutine repuse (procesdef, num_constants, coname, num_spatial_parameters, paname, &
-            num_time_functions, funame, num_spatial_time_fuctions, sfname, noinfo)
+            num_time_functions, funame, num_spatial_time_functions, sfname, noinfo)
 
         ! report on the use of the delwaq input
 
@@ -53,7 +53,7 @@ contains
         character(len = *) :: paname(*)       ! parameter names
         integer(kind = int_wp) :: num_time_functions           ! number of functions
         character(len = *) :: funame(*)       ! function names
-        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_functions          ! number of segment functions
         character(len = *) :: sfname(*)       ! segment function names
         integer(kind = int_wp) :: noinfo          ! number of informative messages
 
@@ -216,7 +216,7 @@ contains
 
         ! loop over the segment functions
 
-        do isfun = 1, num_spatial_time_fuctions
+        do isfun = 1, num_spatial_time_functions
 
             variable_is_used = .false.
             ipsfun = nopred + num_constants + num_spatial_parameters + num_time_functions + isfun

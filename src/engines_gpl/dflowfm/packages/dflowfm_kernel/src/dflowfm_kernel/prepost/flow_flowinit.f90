@@ -102,7 +102,7 @@ contains
       use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
-      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries
+      use fm_external_forcings, only: flow_initexternalforcings, set_external_forcings, set_external_forcings_boundaries, validate_most_input_providers
       use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
@@ -119,12 +119,12 @@ contains
       use m_solve_guus, only: reducept
       use m_upotukinueaa, only: upotukinueaa
       use m_density_formulas, only: DENSITY_OPTION_UNIFORM
-      use m_atmospheric_stability, only: initialize_atmospheric_stability
+      use m_atmospheric_stability, only: atmospheric_stability
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, &
                                   sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
-                                  air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST, &
+                                  air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, &
                                   temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
                                   pillar_method, PILLAR_NONE
 
@@ -204,17 +204,22 @@ contains
       end if
       call mess(LEVEL_INFO, 'Done initializing external forcings.')
 
-      call initialize_atmospheric_stability( &
+      call atmospheric_stability%initialize_atmospheric_stability( &
          atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
          free_convection == FREE_CONVECTION_ON, &
          sensor_height_wind_velocity, sensor_height_air_temperature, sensor_height_humidity, &
          air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff)
 
-      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST .and. &
-          .not. any(temperature_model == [TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE])) then
-         call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST is only supported with temperature model = 0 or 5.')
-         error = DFM_WRONGINPUT
-         return
+      if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
+         if ( .not. any(temperature_model == [TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE])) then
+            call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST is only supported with temperature model = 0 or 5.')
+            error = DFM_WRONGINPUT
+            return
+         end if
+         call validate_most_input_providers(error)
+         if (is_error_at_any_processor(error)) then
+             return
+         end if
       end if
 
       ! it has to be called after EC module initialization
@@ -575,12 +580,12 @@ contains
 !> Set ihorvic related to horizontal viscosity
    subroutine set_ihorvic_related_to_horizontal_viscosity()
       use m_flowparameters, only: ihorvic, javiusp
-      use m_physcoef, only: vicouv, Smagorinsky, Elder
+      use m_physcoef, only: uniform_horizontal_eddy_viscosity, smagorinsky_coefficient, elder_coefficient
 
       implicit none
 
       ihorvic = OFF
-      if (vicouv > OFF .or. javiusp == ON .or. Smagorinsky > OFF .or. Elder > OFF) then
+      if (uniform_horizontal_eddy_viscosity > OFF .or. javiusp == ON .or. smagorinsky_coefficient > OFF .or. elder_coefficient > OFF) then
          ihorvic = ON
       end if
 
@@ -700,7 +705,7 @@ contains
    subroutine set_friction_coefficient_by_initial_fields(error)
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
-      use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
+      use m_physcoef, only: uniform_friction_coefficient_1D, uniform_friction_coefficient_1D2D, UNIFORM_FRICTION_COEFFICIENT_STREET_INLET, UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE, uniform_friction_coefficient_2D, maximum_friction_coefficient, uniform_friction_type
       use m_missing, only: dmiss, imiss
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
@@ -715,27 +720,25 @@ contains
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
                if (kcu(link) == LINK_1D2D_INTERNAL) then
-                  frcu(link) = frcuni1d2d
+                  frcu(link) = uniform_friction_coefficient_1D2D
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
-                  ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
-                  frcu(link) = frcunistreetinlet
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_STREET_INLET
                   ifrcutp(link) = MANNING
                else if (kcu(link) == LINK_1D2D_ROOF) then
-                  ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
-                  frcu(link) = frcuniroofgutterpipe
+                  frcu(link) = UNIFORM_FRICTION_COEFFICIENT_ROOF_GUTTER_PIPE
                   ifrcutp(link) = MANNING
                else
-                  frcu(link) = frcuni1d
+                  frcu(link) = uniform_friction_coefficient_1D
                end if
             else
-               frcu(link) = frcuni
+               frcu(link) = uniform_friction_coefficient_2D
             end if
          end if
          if (ifrcutp(link) == imiss) then
-            ifrcutp(link) = ifrctypuni
+            ifrcutp(link) = uniform_friction_type
          end if
-         if (frcu(link) > frcmax) then
-            frcmax = frcu(link)
+         if (frcu(link) > maximum_friction_coefficient) then
+            maximum_friction_coefficient = frcu(link)
          end if
       end do
       
@@ -744,13 +747,13 @@ contains
    end subroutine set_friction_coefficient_by_initial_fields
 
 !> initialize dynamic vegetation roughness   
-!! All links with friction coefficient larger than frcu_no_vegetation are considered dynamic vegetation roughness
+!! All links with friction coefficient larger than manning_friction_no_vegetation are considered dynamic vegetation roughness
 !! This assumption is not valid for Chezy roughness, hence the limitation to Manning friction coefficient only.
    subroutine init_dynamic_vegetation_roughness(error)
       use dfm_error, only: DFM_WRONGINPUT
       use m_flowgeom, only: lnx
       use m_flow, only: frcu, frcu0, dynveg
-      use m_physcoef, only: frcu_no_vegetation, dynroughveg
+      use m_physcoef, only: manning_friction_no_vegetation, dynamic_vegetation_roughness_enabled
       use m_alloc
       use unstruc_model, only: md_dynvegpol
       use timespace_parameters, only: LOCTP_POLYGON_FILE
@@ -769,7 +772,7 @@ contains
 
       integer, dimension(:), allocatable :: kp
    
-      if (dynroughveg == 0) then
+      if (dynamic_vegetation_roughness_enabled == 0) then
          return
       end if
    
@@ -777,7 +780,7 @@ contains
       dynveg(:) = .false.
       if (md_dynvegpol == ' ') then
          do link = 1, lnx
-            if (frcu(link) > frcu_no_vegetation) then
+            if (frcu(link) > manning_friction_no_vegetation) then
                dynveg(link) = .true.
             end if
          end do
@@ -799,7 +802,7 @@ contains
          dynveg(:) = .false.
          do k = 1, pointscount
             link = kp(k)
-            if (frcu(link) > frcu_no_vegetation) then
+            if (frcu(link) > manning_friction_no_vegetation) then
                dynveg(link) = .true.
             end if
          end do
@@ -812,7 +815,7 @@ contains
       use m_flowparameters, only: jafrculin
       use m_flowgeom, only: lnx
       use m_flow, only: frculin
-      use m_physcoef, only: frcunilin
+      use m_physcoef, only: uniform_friction_coefficient_linear
       use m_missing, only: dmiss
 
       implicit none
@@ -824,7 +827,7 @@ contains
       if (jafrculin == USE_LINEAR_FRICTION) then
          do link = 1, lnx
             if (frculin(link) == dmiss) then
-               frculin(link) = frcunilin
+               frculin(link) = uniform_friction_coefficient_linear
             end if
          end do
       end if
@@ -2378,7 +2381,7 @@ contains
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
             hu(LL) = 5.0_dp
-            frcu(LL) = frcuni
+            frcu(LL) = uniform_friction_coefficient_2D
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
             ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
@@ -2386,7 +2389,7 @@ contains
             Lt = Ltop(LL)
             do L = Lb, Lt
                zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
-               u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
+               u1(L) = cs * ustb(LL) * log(C9OF1 + zz / z00) / VON_KARMAN
             end do
          end do
 

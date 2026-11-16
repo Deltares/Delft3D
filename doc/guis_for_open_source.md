@@ -13,8 +13,7 @@ Back to [main page](../README.md).
 - Open the installation directory.
   It contains two subdirectories: `bin` and `plugins`.
   Look for the subdirectory `plugins\DeltaShell.Dimr`.
-  Initially, it will only contain a `DeltaShell.Dimr.dll`.
-  Create a new folder named `kernels` with subdirectory `x64` next to this dll-file, such that the folder `plugins\DeltaShell.Dimr\kernels\x64` exists.
+  Ensure that the folder `plugins\DeltaShell.Dimr\kernels\x64` exists. If it does not exist, create the folder.
 - Build the kernels from the source code in this repository.
   Build the Release configuration for either `fm-suite` or `all` (see [this page](compiling_Windows.md) for detailed Windows compilation instructions).
 - Copy the contents (`bin` and `share` directories) of the `install_fm-suite` (or `install_all`) folder from your development environment into the `plugins\DeltaShell.Dimr\kernels\x64` folder created above.

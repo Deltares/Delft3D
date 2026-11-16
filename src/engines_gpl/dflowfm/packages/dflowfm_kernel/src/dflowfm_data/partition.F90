@@ -53,8 +53,7 @@
 !> Interface module to METIS's native error codes.
 module m_metis
 
-! the parameters and enumerators are taken from
-!   ../third_party_open/metis-<version>/include/metis.h
+! The parameters and enumerators are taken from the Conan METIS header, metis.h.
    use precision, only: dp
    integer, parameter :: METIS_NOPTIONS = 40
 
@@ -5532,14 +5531,14 @@ contains
                   call realloc(geomYCrs, nNodesCrs, keepExisting=.true.)
                   call realloc(maskBndAll, nNodesCrs, keepExisting=.true.)
                end if
+            end if
 
-               is = ie + 1
-               ie = is + nNodes - 1
-               geomXCrs(is:ie) = geomX(1:nNodes)
-               geomYCrs(is:ie) = geomY(1:nNodes)
-               if (jampi > 0) then
-                  maskBndAll(is:ie) = maskBnd(1:nNodes)
-               end if
+            is = ie + 1
+            ie = is + nNodes - 1
+            geomXCrs(is:ie) = geomX(1:nNodes)
+            geomYCrs(is:ie) = geomY(1:nNodes)
+            if (jampi > 0) then
+               maskBndAll(is:ie) = maskBnd(1:nNodes)
             end if
          end if
       end do

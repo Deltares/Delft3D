@@ -46,14 +46,14 @@ contains
       use messagehandling, only: LEVEL_ERROR, mess
       use unstruc_model, only: md_cldfile, md_cllfile
       use m_flowgeom, only: lnx, lnx1d
-      use m_flow, only: ifrcutp, ifrctypuni
+      use m_flow, only: ifrcutp, uniform_friction_type
       !
       integer :: LF
       logical :: error
 
       ! Skip 1d friction types. For now the ifrcutp is always equal to 1, while FRCU contains the actual (calculated) Chezy value
       do LF = lnx1D + 1, lnx
-         if (ifrcutp(LF) /= ifrctypuni) then
+         if (ifrcutp(LF) /= uniform_friction_type) then
             error = .true.
             call mess(LEVEL_ERROR, 'Only uniform background roughness definition supported in combination with [calibration]DefinitionFile')
          end if

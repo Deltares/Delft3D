@@ -1,8 +1,5 @@
-f90twtest(test_morphology
-    CFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_morphology.cpp
-    F90FILES ${CMAKE_CURRENT_SOURCE_DIR}/test_morphology.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_morphology.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+add_fortran_gtest(test_morphology
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/test_morphology.f90
     LIBRARIES  morphology_io
                morphology_kernel
                deltares_common_mpi
