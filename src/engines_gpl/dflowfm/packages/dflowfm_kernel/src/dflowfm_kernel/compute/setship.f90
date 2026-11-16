@@ -150,7 +150,7 @@ contains
          call getshipcontrol() ! arrows + 5 = first ship  qawsd = second ship
       end if
 
-      viusp = vicouv ! 0d0
+      viusp = uniform_horizontal_eddy_viscosity ! 0d0
 
       do n = 1, nshiptxy
 

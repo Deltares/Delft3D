@@ -198,9 +198,9 @@ contains
          !
          ! Skip 1d friction types. For now the ifrcutp is always equal to 1, while FRCU contains the actual (calculated) Chezy value
          do LF = lnx1D + 1, lnx
-            if (ifrcutp(LF) /= ifrctypuni) then
+            if (ifrcutp(LF) /= uniform_friction_type) then
                error = .true.
-               write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Local roughness type (', ifrcutp(LF), ') must match the global UnifFrictType (', ifrctypuni, ') when used in combination with Trachytopes. (Flow link=', LF, ').'
+               write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Local roughness type (', ifrcutp(LF), ') must match the global uniformFrictionType (', uniform_friction_type, ') when used in combination with Trachytopes. (Flow link=', LF, ').'
                call err_flush()
             end if
          end do

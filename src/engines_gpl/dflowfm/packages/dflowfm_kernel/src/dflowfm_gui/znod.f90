@@ -218,7 +218,7 @@ contains
 
       else if (nodval == 37) then
 
-         if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
+         if (soil_heat_buffer_thickness > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
          end if
 

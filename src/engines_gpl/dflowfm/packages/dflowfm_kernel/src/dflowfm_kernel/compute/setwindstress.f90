@@ -46,7 +46,7 @@ contains
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: map_write_settings, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-                        viskinair, ag, VON_KARMAN_WIND, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v, &
+                        VISKINAIR, ag, VON_KARMAN_WIND, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw, ltop, u1, v, &
                         w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, &
                         wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density, relative_humidity
@@ -102,7 +102,7 @@ contains
                   if (tau > 0) then
                      ust2 = tau / rhoair
                      ust = sqrt(ust2)
-                     z0w = cdb(2) * viskinair / ust + cdb(1) * ust2 / ag
+                     z0w = cdb(2) * VISKINAIR / ust + cdb(1) * ust2 / ag
                      uwi = log(10.0_dp / (z0w)) * ust / VON_KARMAN_WIND
                      wx(L) = uwi * wdsu_x(L) / tau
                      wy(L) = uwi * wdsu_y(L) / tau

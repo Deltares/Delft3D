@@ -50,11 +50,11 @@ contains
       h0 = max(h1, epshu)
       if (friction_type == 0) then ! Chezy type
          cz = frcn
-         ! z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1) !
+         ! z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - C9OF1) !
          z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else if (friction_type == 1) then ! Manning type
          cz = (h0**sixth) / frcn
-         !z0  = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         !z0  = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - C9OF1)
          z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else if (friction_type == 2) then ! White Colebrook Delft3D
          z0 = min(frcn / 30.0_dp, h0 * 0.3_dp)
@@ -63,11 +63,11 @@ contains
       else if (friction_type == 3) then ! White Colebrook WAQUA
          hurou = max(0.5_dp, h0 / frcn)
          cz = 18.0_dp * log10(12.0_dp * hurou)
-         !z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         !z0   = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - C9OF1)
          z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       else
          cz = 60.0_dp ! dummies for hydraulically smooth
-         !z0 = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - c9of1)
+         !z0 = h0 / ( exp (VON_KARMAN*cz/sag + 1d0) - C9OF1)
          z0 = h0 * exp(-1.0_dp - VON_KARMAN * cz / sag)
       end if
    end subroutine getczz0

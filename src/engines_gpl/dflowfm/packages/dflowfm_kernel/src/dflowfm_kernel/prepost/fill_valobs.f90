@@ -175,7 +175,7 @@ contains
          do LL = 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb - 1, Lt
-               vicwwu_total(L) = VISKIN + vicwwu(L) + vicoww%get(LL)
+               vicwwu_total(L) = VISKIN + vicwwu(L) + background_vertical_eddy_viscosity%get(LL)
             end do
          end do
          call links_to_centers(vicwws_total, vicwwu_total)
