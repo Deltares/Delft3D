@@ -2,7 +2,6 @@
 
 #include "ini/IniData.h"
 #include "ini/IniOptions.h"
-#include "ini/IniScheme.h"
 
 #include <string>
 
