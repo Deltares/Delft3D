@@ -2915,7 +2915,10 @@ contains
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
 
          ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
-         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_dp .and. dlon == 0.0_dp)) then
+         if (dlat == 0.0_dp .and. dlon == 0.0_dp) then
+            uintp = 0.0_dp
+            vintp = 0.0_dp
+         elseif (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows) then
             uintp = 0.0_dp
             vintp = 0.0_dp
             pintp = 0.0_dp
