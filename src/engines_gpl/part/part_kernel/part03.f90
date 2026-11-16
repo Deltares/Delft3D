@@ -173,21 +173,33 @@ contains
                         i03d = i0 + (ilay - 1) * num_rows * num_columns
 
                         !                 magnitude of the velocities
-                        vy = flow(i03d) / volume(i03d) * dy(i0)
-                        vx = flow(i03d + mnmaxk) / volume(i03d) * dx(i0)
-
+                        if ( volume(i03d) /= 0.0 ) then
+                            vy = flow(i03d) / volume(i03d) * dy(i0)
+                            vx = flow(i03d + mnmaxk) / volume(i03d) * dx(i0)
+                        else
+                            vy = 0.0
+                            vx = 0.0
+                        endif
                         !                 calculate sum; value >= 0
                         sum = vx**2 + vy**2
                         i3 = lgrid2(i1 - 1, i2)
                         i33d = i3 + (ilay - 1) * num_rows * num_columns
                         if (i3  >  0) then
-                            vy = flow(i33d) / volume(i03d) * dy(i0)
+                            if ( volume(i03d) /= 0.0 ) then
+                                vy = flow(i33d) / volume(i03d) * dy(i0)
+                            else
+                                vy = 0.0
+                            endif
                             sum = sum + vy**2
                         endif
                         i4 = lgrid2(i1, i2 - 1)
                         i43d = i4 + (ilay - 1) * num_rows * num_columns
                         if (i4  >  0) then
-                            vx = flow(i43d + mnmaxk) / volume(i03d) * dx(i0)
+                            if ( volume(i03d) /= 0.0 ) then
+                                vx = flow(i43d + mnmaxk) / volume(i03d) * dx(i0)
+                            else
+                                vy = 0.0
+                            endif
                             sum = sum + vx**2
                         endif
                         velo(i03d) = sqrt(sum / 2.0)
