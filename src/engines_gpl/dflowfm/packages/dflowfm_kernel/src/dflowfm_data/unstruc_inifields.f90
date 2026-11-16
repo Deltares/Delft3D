@@ -651,7 +651,7 @@ contains
 
       use precision_basics, only: dp
       use fm_external_forcings_data, only: operand, transformcoef
-      use m_flow, only: ifrctypuni, ifrcutp, frcu
+      use m_flow, only: uniform_friction_type, ifrcutp, frcu
       use m_flowgeom, only: lnx
       use m_missing, only: dmiss
       use timespace_parameters, only: OPERAND_OVERRIDE
@@ -660,7 +660,7 @@ contains
 
       integer :: link
 
-      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
+      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= uniform_friction_type .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ! type array only must be used if different from uni
@@ -674,14 +674,14 @@ contains
 !> Set friction type (ifrcutp) values from explicit arguments.
    !! Used by the new init_spatial_fields path.
    function set_friction_type_values_explicit(block_ptr, operand) result(res)
-      use m_flow, only: ifrctypuni, ifrcutp, frcu
+      use m_flow, only: uniform_friction_type, ifrcutp, frcu
       use m_flowgeom, only: lnx
       use m_missing, only: dmiss
       use timespace_parameters, only: OPERAND_OVERRIDE
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use m_roughness, only: frictionTypeStringToInteger
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use timespace_parameters, only: OPERAND_OVERRIDE
       implicit none
 
@@ -696,7 +696,7 @@ contains
       friction_type_str = ''
       call prop_get(block_ptr, '', 'frictionType', friction_type_str, res)
       call frictionTypeStringToInteger(friction_type_str, friction_type_int)
-      if (res .and. friction_type_int /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
+      if (res .and. friction_type_int /= uniform_friction_type .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ifrcutp(link) = friction_type_int
@@ -1146,7 +1146,7 @@ contains
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_nudge, only: nudge_time, nudge_rate
-      use m_physcoef, only: dicoww, vicoww
+      use m_physcoef, only: background_vertical_eddy_diffusivity, background_vertical_eddy_viscosity
       use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVE_INPUT_SIGNIFICANT_HEIGHT, WAVE_INPUT_PERIOD, WAVE_INPUT_DIRECTION, &
@@ -1253,13 +1253,13 @@ contains
 
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww%values, ndx, keepExisting=.true., fill=dicoww%scalar, stat=ierr)
-         target_array => dicoww%values
+         call realloc(background_vertical_eddy_diffusivity%values, ndx, keepExisting=.true., fill=background_vertical_eddy_diffusivity%scalar, stat=ierr)
+         target_array => background_vertical_eddy_diffusivity%values
 
       case ('backgroundverticaleddyviscositycoefficient')
          target_location_type = UNC_LOC_U
-         call realloc(vicoww%values, lnx, keepExisting=.true., fill=vicoww%scalar, stat=ierr)
-         target_array => vicoww%values
+         call realloc(background_vertical_eddy_viscosity%values, lnx, keepExisting=.true., fill=background_vertical_eddy_viscosity%scalar, stat=ierr)
+         target_array => background_vertical_eddy_viscosity%values
 
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
