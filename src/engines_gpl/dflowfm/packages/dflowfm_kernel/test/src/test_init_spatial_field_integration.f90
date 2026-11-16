@@ -3333,6 +3333,121 @@ contains
    end subroutine test_gridded_meteo_netcdf_matrix
 
    !$gtest
+   subroutine test_construct_mask_boundary_domain() bind(C)
+      use m_flowgeom_mask, only: construct_mask
+      use m_flowgeom, only: ln, lnx, lnx1d, ndx2d, prof1d
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+
+      integer, dimension(3), parameter :: SPATIAL_TYPES = [SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL]
+      integer, dimension(2), parameter :: LOCATION_TYPES = [UNC_LOC_S, UNC_LOC_S3D]
+      integer, dimension(4, 3), parameter :: EXPECTED = reshape([0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1], [4, 3])
+      integer, dimension(:), allocatable :: mask
+      integer :: i, j, ierr
+
+      call setup_minimal_grid_with_points(4)
+      ndxi = 2
+      ndx2d = 1
+      lnx1d = 1
+      lnx = 2
+      call realloc(ln, [2, lnx], keepExisting=.false., fill=0)
+      ln(:, 1) = [2, 3]
+      ln(:, 2) = [1, 4]
+      call realloc(prof1d, [3, lnx1d], keepExisting=.false., fill=0.0_dp)
+      prof1d(1, 1) = -1.0_dp
+
+      do i = 1, size(LOCATION_TYPES)
+         do j = 1, size(SPATIAL_TYPES)
+            call construct_mask(mask, LOCATION_TYPES(i), SPATIAL_TYPES(j))
+            if (.not. f90_assert_eq(size(mask), ndx, 'the default mask must include boundary cells')) then
+               return
+            end if
+            call f90_expect_true(all(mask == EXPECTED(:, j)), 'full-domain spatial selection must be preserved')
+            call construct_mask(mask, LOCATION_TYPES(i), SPATIAL_TYPES(j), exclude_boundary_nodes=.true.)
+            if (.not. f90_assert_eq(size(mask), ndxi, 'an internal mask must exclude boundary cells')) then
+               return
+            end if
+            call f90_expect_true(all(mask == EXPECTED(1:ndxi, j)), 'link connectivity must not select excluded boundary cells')
+         end do
+      end do
+
+      call construct_mask(mask, UNC_LOC_S, SPATIAL_LOCATION_1D, exclude_boundary_nodes=.false.)
+      call f90_expect_eq(size(mask), ndx, 'explicit false must retain the full cell domain')
+      call construct_mask(mask, UNC_LOC_U, SPATIAL_LOCATION_ALL, exclude_boundary_nodes=.true.)
+      call f90_expect_eq(size(mask), lnx, 'boundary-cell exclusion must not change link masks')
+      call f90_expect_true(all(mask == 1), 'link selection must be unchanged')
+
+      kcs = [0, 1, 1, 1]
+      lnx = 0
+      lnx1d = 0
+      call construct_mask(mask, UNC_LOC_S, SPATIAL_LOCATION_ALL, target_mask_file='', ierr=ierr, exclude_boundary_nodes=.true.)
+      call f90_expect_eq(ierr, 0, 'empty polygon selection should succeed')
+      call f90_expect_true(all(mask == [0, 1]), 'default cell activation must respect the internal domain')
+      call teardown_minimal_grid()
+   end subroutine test_construct_mask_boundary_domain
+
+   !$gtest
+   subroutine test_static_vegetation_masks_exclude_boundary_cells() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_vegetation, only: stemdiam, stemdens, stemheight
+      use m_polygon, only: m_polygon_destructor
+
+      character(len=*), parameter :: EXT_FILE = 'test_static_vegetation_masks.ext'
+      character(len=*), parameter :: POL_FILE = 'test_static_vegetation_masks.pol'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: i, ierr
+
+      call setup_minimal_grid_with_points(4)
+      ndxi = 2
+      xz = [0.0_dp, 2.0_dp, 0.0_dp, 2.0_dp]
+      call realloc(stemdiam, ndx, keepExisting=.false., fill=7.0_dp)
+      call realloc(stemdens, ndx, keepExisting=.false., fill=7.0_dp)
+      call realloc(stemheight, ndx, keepExisting=.false., fill=7.0_dp)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      call create_file(POL_FILE, ['vegetation', '5 2', '-1.0 -1.0', '1.0 -1.0', '1.0 1.0', '-1.0 1.0', '-1.0 -1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       'quantity = stemdiameter', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 0.0035', &
+                       '[Spatial]', &
+                       'quantity = stemdensity', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 11.11', &
+                       '[Spatial]', &
+                       'quantity = stemheight', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 0.36'])
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      do i = 1, 3
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call f90_expect_true(success, 'static vegetation masks must match the internal target coordinates')
+      end do
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_near(stemdiam(1), 0.0035_dp, 1.0e-12_dp, 'selected internal cell should receive its stem diameter')
+      call f90_expect_near(stemdens(1), 11.11_dp, 1.0e-12_dp, 'selected internal cell should receive its stem density')
+      call f90_expect_near(stemheight(1), 0.36_dp, 1.0e-12_dp, 'selected internal cell should receive its stem height')
+      call f90_expect_true(all(stemdiam(2:ndx) == 7.0_dp), 'unselected and boundary stem diameters must remain untouched')
+      call f90_expect_true(all(stemdens(2:ndx) == 7.0_dp), 'unselected and boundary stem densities must remain untouched')
+      call f90_expect_true(all(stemheight(2:ndx) == 7.0_dp), 'unselected and boundary stem heights must remain untouched')
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_static_vegetation_masks_exclude_boundary_cells
+
+   !$gtest
    subroutine test_single_quantity_multiple_target_masks() bind(C)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
@@ -3346,6 +3461,7 @@ contains
       real(dp), dimension(4) :: expected
 
       call setup_minimal_grid_with_points(4)
+      ndxi = 2
       xz = [0.0_dp, 1.0_dp, 2.0_dp, 3.0_dp]
       irefdate = 20000101
       tzone = 0.0_dp

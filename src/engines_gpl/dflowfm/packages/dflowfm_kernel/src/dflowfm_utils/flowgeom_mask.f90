@@ -44,8 +44,8 @@ contains
 
    !> Construct a spatial mask array for flow geometry; either based on the location type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
    !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
-   subroutine construct_mask(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
-      use m_flowgeom, only: lnx, ndx
+   subroutine construct_mask(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr, exclude_boundary_nodes)
+      use m_flowgeom, only: lnx, ndx, ndxi
       use network_data, only: numk
       use m_alloc, only: realloc
 
@@ -56,6 +56,7 @@ contains
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
+      logical, intent(in), optional :: exclude_boundary_nodes !< Exclude boundary nodes from node-based unc-locs.
 
       ! Local variables
       integer :: num_elements !< The number of elements in the mask array, based on the location type.
@@ -66,6 +67,11 @@ contains
          num_elements = numk
       case (UNC_LOC_3DV, UNC_LOC_S, UNC_LOC_S3D)
          num_elements = ndx
+         if (present(exclude_boundary_nodes)) then
+            if (exclude_boundary_nodes) then
+               num_elements = ndxi
+            end if
+         end if
       case (UNC_LOC_U)
          num_elements = lnx
       case (UNC_LOC_GLOBAL)
@@ -116,11 +122,11 @@ contains
 
             do L = 1, lnx1D
                n1 = ln(1, L)
-               if (n1 > ndx2d) then
+               if (n1 > ndx2d .and. n1 <= size(mask)) then
                   mask(n1) = 1
                end if
                n2 = ln(2, L)
-               if (n2 > ndx2d) then
+               if (n2 > ndx2d .and. n2 <= size(mask)) then
                   mask(n2) = 1
                end if
             end do
@@ -144,9 +150,13 @@ contains
 
             do L = lnx1D + 1, lnx
                n1 = ln(1, L)
-               mask(n1) = 1
+               if (n1 <= size(mask)) then
+                  mask(n1) = 1
+               end if
                n2 = ln(2, L)
-               mask(n2) = 1
+               if (n2 <= size(mask)) then
+                  mask(n2) = 1
+               end if
             end do
 
          case (UNC_LOC_U)
@@ -168,18 +178,26 @@ contains
                ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
                if (prof1D(1, L) < 0 .or. (abs(prof1D(3, L)) /= 1 .and. prof1D(3, L) > 0)) then
                   n1 = ln(1, L)
-                  mask(n1) = 1
+                  if (n1 <= size(mask)) then
+                     mask(n1) = 1
+                  end if
                   n2 = ln(2, L)
-                  mask(n2) = 1
+                  if (n2 <= size(mask)) then
+                     mask(n2) = 1
+                  end if
                else
                   continue
                end if
             end do
             do L = lnx1D + 1, lnx
                n1 = ln(1, L)
-               mask(n1) = 1
+               if (n1 <= size(mask)) then
+                  mask(n1) = 1
+               end if
                n2 = ln(2, L)
-               mask(n2) = 1
+               if (n2 <= size(mask)) then
+                  mask(n2) = 1
+               end if
             end do
 
          case (UNC_LOC_U)
@@ -213,7 +231,7 @@ contains
    !! the existing values of the input mask are respected: existing 0's remain 0's
    !! and existing 1's will only remain 1 if they lie inside the polygon mask too.
    subroutine apply_polygon_mask(mask, location_type, target_mask_file, ierr)
-      use m_flowgeom, only: xz, yz, kcs, ndx, lnx
+      use m_flowgeom, only: xz, yz, kcs, lnx
       use timespace_parameters, only: LOCTP_POLYGON_FILE
       use timespace, only: selectelset_internal_nodes, selectelset_internal_links
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT, DFM_NOTIMPLEMENTED
@@ -249,7 +267,7 @@ contains
          case (UNC_LOC_S)
 
             ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, &
+            call selectelset_internal_nodes(xz, yz, kcs, size(mask), selected_points, number_of_selected_points, &
                LOCTP_POLYGON_FILE, target_mask_file)
 
          case (UNC_LOC_U)
@@ -283,7 +301,7 @@ contains
          if (.not. spatial_mask_applied) then
             if (location_type == UNC_LOC_S) then
                ! 100% masking: accept all flow locations that were already active in their own mask array.
-               where (kcs /= 0)
+               where (kcs(1:size(mask)) /= 0)
                   mask = 1
                end where
             else
