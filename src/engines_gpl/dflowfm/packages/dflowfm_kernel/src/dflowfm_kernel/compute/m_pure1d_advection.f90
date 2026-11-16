@@ -35,6 +35,11 @@
 !! advect_pure1d_sobek evaluates the advection term per link.
 module m_pure1d_advection
 
+   ! Comparison reference: M. Borsboom, "Junction advection", 2017-12-29,
+   ! junctionadvection.tex SVN 65523. Equation numbers below refer to that memo.
+   ! The junction scheme discussed there corresponds to jaPure1D >= 3;
+   ! the uc1D/u1Du path for options 1 and 2 is a separate FM formulation.
+
    implicit none
 
    private
@@ -316,7 +321,6 @@ contains
       qu_out = 0.0_dp
       qu2_in = 0.0_dp
       qu2_out = 0.0_dp
-
       dzw_dt = q_net_in / surface_area
       do LL = 1, nd(n)%lnx ! loop over all links connected to the node
          L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
@@ -461,6 +465,11 @@ contains
          am = 0.0_dp
       end select
 
+      ! Eq. (16) mixes Q/V and averaged velocity/dx as transport rates.
+      ! Here both parts use Q/max(1e-5,volu1d), mixing reconstructed velocities
+      ! instead. Eqs. (20) and (22) print Q/V for those velocities; Q/A is used
+      ! here, consistent with velocity units and the memo's "flow speed" text.
+      ! The same formulation is applied at both link ends.
       if (q1d1 > 0.0_dp) then
          qv = q1d1 / max(1.0e-5_dp, volu1d)
          u_mom = alpha_mom1 * q1d1 / au1d1
