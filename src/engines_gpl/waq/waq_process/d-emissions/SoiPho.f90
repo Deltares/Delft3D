@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -55,25 +55,30 @@ contains
       integer(kind=int_wp) :: iseg
 
       ! PMSA admin
-      integer(kind=int_wp), parameter :: lins = 5
+      integer(kind=int_wp), parameter :: lins = 6
       integer(kind=int_wp), parameter :: louts = 2
       integer(kind=int_wp) :: ipnt(lins + louts) ! Local work array for the pointering
 
-      ! pointers to concrete items
-      integer(kind=int_wp), parameter :: ip_ptot = 1
-      integer(kind=int_wp), parameter :: ip_plab = 2
-      integer(kind=int_wp), parameter :: ip_thick = 3
-      integer(kind=int_wp), parameter :: ip_poros = 4
-      integer(kind=int_wp), parameter :: ip_dmden = 5
-      integer(kind=int_wp), parameter :: ip_qtot = 6
-      integer(kind=int_wp), parameter :: ip_flab = 7
+      ! index of pointers to concrete items
+      integer(kind=int_wp), parameter :: i_ptot = 1
+      integer(kind=int_wp), parameter :: i_plab = 2
+      integer(kind=int_wp), parameter :: i_thick = 3
+      integer(kind=int_wp), parameter :: i_poros = 4
+      integer(kind=int_wp), parameter :: i_dmden = 5
+      integer(kind=int_wp), parameter :: i_cbakr = 6
+      integer(kind=int_wp), parameter :: i_qtot = 7
+      integer(kind=int_wp), parameter :: i_cbak = 8
 
       ! input and output items
-      real(kind=real_wp) :: ptot, plab
+      real(kind=real_wp) :: ptot
+      real(kind=real_wp) :: plab
+      real(kind=real_wp) :: cbakr
       real(kind=real_wp) :: thick
       real(kind=real_wp) :: poros
       real(kind=real_wp) :: dmden
-      real(kind=real_wp) :: qtot, flab, qlab
+      real(kind=real_wp) :: qtot
+      real(kind=real_wp) :: qlab
+      real(kind=real_wp) :: cbak
 
       logical first
       data first/.true./
@@ -85,20 +90,21 @@ contains
       ipnt = ipoint(1:lins + louts)
 
       do iseg = 1, noseg
-         ptot = max(pmsa(ipnt(ip_ptot)), 0.0)
-         plab = max(pmsa(ipnt(ip_plab)), 0.0)
-         thick = pmsa(ipnt(ip_thick))
-         poros = min(pmsa(ipnt(ip_poros)), 0.99)
+         ptot = max(pmsa(ipnt(i_ptot)), 0.0)
+         plab = max(pmsa(ipnt(i_plab)), 0.0)
+         thick = pmsa(ipnt(i_thick))
+         poros = min(pmsa(ipnt(i_poros)), 0.99)
          call check_fraction(poros, "SoilPoros", iseg)
-         dmden = max(pmsa(ipnt(ip_dmden)), 100.)
+         dmden = max(pmsa(ipnt(i_dmden)), 100.)
+         cbakr = pmsa(ipnt(i_cbakr))
 
          ! mg/kg        g/m2      m              kg/m3
          qtot = 1000.*ptot / (thick * (1.-poros) * dmden)
          qlab = 1000.*plab / (thick * (1.-poros) * dmden)
-         flab = max(min(qlab / qtot, 1.0), 0.0)
+         cbak = cbakr * qlab
 
-         pmsa(ipnt(ip_qtot)) = qtot
-         pmsa(ipnt(ip_flab)) = flab
+         pmsa(ipnt(i_qtot)) = qtot
+         pmsa(ipnt(i_cbak)) = cbak
 
          ipnt = ipnt + increm(1:lins + louts)
       end do

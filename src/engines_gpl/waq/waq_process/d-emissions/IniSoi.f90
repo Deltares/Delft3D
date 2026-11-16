@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -58,18 +58,18 @@ contains
       integer(kind=int_wp), parameter :: louts = 1
       integer(kind=int_wp) :: ipnt(lins + louts) ! Local work array for the pointering
 
-      ! pointers to concrete items
-      integer(kind=int_wp), parameter :: ip_delt = 1
-      integer(kind=int_wp), parameter :: ip_fUnpaved = 2
-      integer(kind=int_wp), parameter :: ip_Thickness = 3
-      integer(kind=int_wp), parameter :: ip_Poros = 4
-      integer(kind=int_wp), parameter :: ip_RhoDM = 5
-      integer(kind=int_wp), parameter :: ip_QTopSoil = 6
-      integer(kind=int_wp), parameter :: ip_Area = 7
-      integer(kind=int_wp), parameter :: ip_FrPas = 8
-      integer(kind=int_wp), parameter :: ip_Soi = 9
-      integer(kind=int_wp), parameter :: ip_Sop = 10
-      integer(kind=int_wp), parameter :: ip_QSim = 11
+      ! index of pointers to concrete items
+      integer(kind=int_wp), parameter :: i_delt = 1
+      integer(kind=int_wp), parameter :: i_fUnpaved = 2
+      integer(kind=int_wp), parameter :: i_Thickness = 3
+      integer(kind=int_wp), parameter :: i_Poros = 4
+      integer(kind=int_wp), parameter :: i_RhoDM = 5
+      integer(kind=int_wp), parameter :: i_QTopSoil = 6
+      integer(kind=int_wp), parameter :: i_Area = 7
+      integer(kind=int_wp), parameter :: i_FrPas = 8
+      integer(kind=int_wp), parameter :: i_Soi = 9
+      integer(kind=int_wp), parameter :: i_Sop = 10
+      integer(kind=int_wp), parameter :: i_QSim = 11
 
       ! input and output items
       real(kind=real_wp) :: Delt
@@ -89,7 +89,7 @@ contains
       data first/.true./
 
       save
-      delt = pmsa(ipoint(ip_delt))
+      delt = pmsa(ipoint(i_delt))
 
       ! loop for processing
       ipnt = ipoint(1:lins + louts)
@@ -100,20 +100,20 @@ contains
          call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
          if (iatt1 > 0) then
 
-            fUnpaved = pmsa(ipnt(ip_fUnpaved))
+            fUnpaved = pmsa(ipnt(i_fUnpaved))
             call check_fraction(fUnpaved, "fUnpaved", iseg)
-            Thicknessmm = pmsa(ipnt(ip_Thickness))
+            Thicknessmm = pmsa(ipnt(i_Thickness))
             call warn_below_minimum(Thicknessmm, 100.0, "SoilThick", iseg)
             Thickness = Thicknessmm / 1000. ! from mm to m
-            Poros = pmsa(ipnt(ip_Poros))
+            Poros = pmsa(ipnt(i_Poros))
             call check_fraction(Poros, "SoilPoros", iseg)
-            RhoDM = pmsa(ipnt(ip_RhoDM))
-            QTopSoil = pmsa(ipnt(ip_QTopSoil))
-            Area = pmsa(ipnt(ip_Area))
-            FrPas = pmsa(ipnt(ip_FrPas))
+            RhoDM = pmsa(ipnt(i_RhoDM))
+            QTopSoil = pmsa(ipnt(i_QTopSoil))
+            Area = pmsa(ipnt(i_Area))
+            FrPas = pmsa(ipnt(i_FrPas))
             call check_fraction(FrPas, "FracPass", iseg)
-            Soi = pmsa(ipnt(ip_Soi))
-            Sop = pmsa(ipnt(ip_Sop))
+            Soi = pmsa(ipnt(i_Soi))
+            Sop = pmsa(ipnt(i_Sop))
 
             ! kg      m2   -        m          -      kg/m3
             soildm = Area * fUnpaved * Thickness * (1.-Poros) * RhoDM
@@ -123,7 +123,7 @@ contains
             else
                QSim = 0.0
             end if
-            pmsa(ipnt(ip_QSim)) = QSim
+            pmsa(ipnt(i_QSim)) = QSim
 
             if (first) then
                !  g        mg/kg     g/mg       kg
