@@ -1937,8 +1937,7 @@ contains
                              '', 'm2', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS, &
                              'Wrimap_flowarea_au', 'hydraulic_radius', 'Total hydraulic radius at 1D flow link', &
-                             '', 'm', UNC_LOC_U, &
-                             description='Write total 1D flow area / wet perimeter; dry=0, unavailable=missing')
+                             '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_MAIN, &
                              'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
                              '', 'm', UNC_LOC_U)
@@ -1950,8 +1949,7 @@ contains
                              'Second floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH, &
                              'Wrimap_flowarea_au', 'flow_width', 'Total water-surface flow width at 1D flow link', &
-                             '', 'm', UNC_LOC_U, &
-                             description='Write total 1D water-surface flow widths; dry links=0')
+                             '', 'm', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_MAIN, &
                              'Wrimap_flowarea_au_1d_sections', 'flow_width_main', 'Main channel water-surface flow width at 1D flow link', &
                              '', 'm', UNC_LOC_U)
@@ -2070,7 +2068,7 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CZU_MAIN, &
                              'Wrimap_chezy_on_flow_links_1d_sections', 'czu_main', 'Main channel Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U, &
-                             description='Write 1D subsection Chezy coefficients, not additive parts of link Chezy, to map file')
+                             description='Write 1D main channel and floodplains Chezy coefficients, not additive parts of link Chezy, to map file')
       call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN1, &
                              'Wrimap_chezy_on_flow_links_1d_sections', 'czu_floodplain1', 'First floodplain Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U)
