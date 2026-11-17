@@ -1856,13 +1856,15 @@ contains
    !> Create subproviders, which create source Items and their contained types.
       !! meteo1.f90: read1polylin
    function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname_in) result(success)
+      ! Arguments
       use string_module, only: istarts_with
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
       character(len=*), intent(in) :: bctfilename !< in case of bct-data, we neeed the explicit filename
       character(len=*), intent(in) :: quantityname_in !< in case of bct-data, we neeed the explicit quantityname
-      !
+
+      ! Local variables
       real(dp), dimension(:), allocatable :: xs !< x-coordinates of support points
       real(dp), dimension(:), allocatable :: ys !< y-coordinates of support points
       integer, dimension(:), allocatable :: mask !< support point mask array (for polytime ElementSet)
@@ -1890,12 +1892,15 @@ contains
       integer :: lblstart
       integer :: bctfiletype
       logical :: file_exists
-      !
+      character(len=256), dimension(:), allocatable :: standard_names
+      character(len=256), dimension(:), allocatable :: variable_names
+      character(len=256), dimension(:), allocatable :: fallback_names
+
       integer :: zTargetItemId
       integer :: zFileReaderId
       type(tEcFileReader), pointer :: zFileReaderPtr
 
-!        initialization
+      ! initialization
       zTargetItemId = 0
       zFileReaderId = 0
       quantityname = quantityname_in
@@ -1906,7 +1911,7 @@ contains
       zFileReaderPtr => null()
       maxlay = 0
       vectormax = 1
-      !
+      
       ! Skip the lead comment lines plus one additional line.
       do
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
@@ -1916,32 +1921,47 @@ contains
          end if
          if (rec(1:1) /= '*') exit
       end do
+
       ! Read the polyline name from the first line of a tekal-block
       polyline_name = trim(adjustl(rec))
+
       ! Read the number of support points.
       read (fileReaderPtr%fileHandle, *, iostat=istat) n_points
       if (istat /= 0) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Unable to read the number of points.")
          return
       end if
+
       ! Sanity check
       if (n_points < 2) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Less then two support points found.")
          return
       end if
+
       ! Read the support point coordinate pairs.
       allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), &
       plipointlbls(n_points), stat=istat)
       if (istat /= 0) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
       end if
+
       mask = 1
       itemIDList = ec_undef_int
       do i = 1, n_points
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
-         if (index(rec, '!') > 0) rec = rec(1:index(rec, '!') - 1) ! trim commented  (!)
-         if (index(rec, '#') > 0) rec = rec(1:index(rec, '#') - 1) ! trim commented  (#)
-         if (len(trim(rec)) == 0) cycle ! skip empty lines     (or commented-out coordinate pairs)
+
+         if (index(rec, '!') > 0) then
+            rec = rec(1:index(rec, '!') - 1) ! trim commented  (!)
+         end if
+         
+         if (index(rec, '#') > 0) then
+            rec = rec(1:index(rec, '#') - 1) ! trim commented  (#)
+         end if
+
+         if (len(trim(rec)) == 0) then
+            cycle ! skip empty lines     (or commented-out coordinate pairs)
+         end if
+
          istat = 0
          read (rec, *, iostat=istat) xs(i), ys(i) ! see if we can at least read a coordinate pair
          if (istat /= 0) then
@@ -1958,53 +1978,73 @@ contains
 
       ! Construct the poly_tim Item
       quantityId = ecInstanceCreateQuantity(instancePtr)
-      if (.not. (ecQuantitySet(instancePtr, quantityId, name='polytim_item'))) return
+      if (.not. (ecQuantitySet(instancePtr, quantityId, name='polytim_item'))) then
+         return
+      end if
 
       elementSetId = ecInstanceCreateElementSet(instancePtr)
-      if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_cartesian)) return
-      if (.not. ecElementSetSetXArray(instancePtr, elementSetId, xs)) return
-      if (.not. ecElementSetSetYArray(instancePtr, elementSetId, ys)) return
-      if (.not. ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, n_points)) return
+      if (.not. ecElementSetSetType(instancePtr, elementSetId, elmSetType_cartesian)) then
+         return
+      end if
+      if (.not. ecElementSetSetXArray(instancePtr, elementSetId, xs)) then
+         return
+      end if
+      if (.not. ecElementSetSetYArray(instancePtr, elementSetId, ys)) then
+         return
+      end if
+      if (.not. ecElementSetSetNumberOfCoordinates(instancePtr, elementSetId, n_points)) then
+         return
+      end if
 
       fieldId = ecInstanceCreateField(instancePtr)
       itemId = ecInstanceCreateItem(instancePtr)
-      if (.not. ecItemSetRole(instancePtr, itemId, itemType_target)) return
-      if (.not. ecItemSetType(instancePtr, itemId, accessType_fileReader)) return
-      if (.not. ecItemSetQuantity(instancePtr, itemId, quantityId)) return
-      if (.not. ecItemSetElementSet(instancePtr, itemId, elementSetId)) return
-      if (.not. ecItemSetTargetField(instancePtr, itemId, fieldId)) return
+      if (.not. ecItemSetRole(instancePtr, itemId, itemType_target)) then
+         return
+      end if
+      if (.not. ecItemSetType(instancePtr, itemId, accessType_fileReader)) then
+         return
+      end if
+      if (.not. ecItemSetQuantity(instancePtr, itemId, quantityId)) then
+         return
+      end if
+      if (.not. ecItemSetElementSet(instancePtr, itemId, elementSetId)) then
+         return
+      end if
+      if (.not. ecItemSetTargetField(instancePtr, itemId, fieldId)) then
+         return
+      end if
 
       itemPT => ecSupportFindItem(instancePtr, itemId)
 
       inquire (FILE=bctfilename, EXIST=file_exists)
+
       if (.not. file_exists) then
          call set_ec_message("Forcing file ("//trim(bctfilename)//") not found.")
          return
       end if
+
       if (index(trim(bctfilename)//'|', '.bc|') > 0) then ! ASCII: bc-format  : detection is extension-based
          bctfiletype = BC_FTYPE_ASCII
       else if (index(trim(bctfilename)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          bctfiletype = BC_FTYPE_NETCDF
          ! ToDo, more generic approach to determine veriabel name from type of boundary
          call str_lower(quantityname)
+
+         call ecSupportNetcdfGetQuantityCandidateNames(quantityname, standard_names, variable_names, fallback_names)
+
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
             if (istarts_with(quantityname, 'tracerbnd')) then
                quantityname = quantityname(10:len(quantityname))
             end if
-            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
-            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
-            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
-            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+
+            if (allocated(standard_names)) then
+               quantityname = standard_names(1)
+            end if
          else
-            ! Old existing nc files 
-            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'
-            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'so'
-            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'thetao'
-            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'ux'
-            ! Old existing nc files (temporary fix for Tom, durban)
-            ! if (strcmpi(quantityname,'so'                      )) quantityname = 'salinity'
-            ! if (strcmpi(quantityname,'thetao'                  )) quantityname = 'temperature'
+            if (allocated(variable_names)) then
+               quantityname = variable_names(1)
+            end if
          end if
       else
          call set_ec_message("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
