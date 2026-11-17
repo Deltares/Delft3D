@@ -154,6 +154,8 @@ namespace ini::conversion
 
     std::string ToString(const std::string& value) { return value; }
 
+    std::string ToString(const char* value) { return value; }
+
     std::string ToMultiValueString(const std::vector<bool>& values, BoolFormat format, char separator)
     {
         return JoinValues(values, separator, [format](bool value) { return ToString(value, format); });
@@ -167,6 +169,11 @@ namespace ini::conversion
     std::string ToMultiValueString(const std::vector<double>& values, FloatFormat format, char separator)
     {
         return JoinValues(values, separator, [format](double value) { return ToString(value, format); });
+    }
+
+    std::string ToMultiValueString(const std::vector<float>& values, FloatFormat format, char separator)
+    {
+        return JoinValues(values, separator, [format](float value) { return ToString(value, format); });
     }
 
     std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format,
@@ -223,6 +230,19 @@ namespace ini::conversion
         return ParseNumber<double>(normalized);
     }
 
+    template <>
+    float FromString<float>(const std::string& value)
+    {
+        std::string normalized = trim(value);
+        const std::size_t pos = normalized.find_first_of("dD");
+        if (pos != std::string::npos)
+        {
+            normalized[pos] = 'e';
+        }
+
+        return ParseNumber<float>(normalized);
+    }
+
     time_point FromString(const std::string& value, TimePointFormat format)
     {
         time_point result;
@@ -269,6 +289,14 @@ namespace ini::conversion
     {
         return SplitValues<double>(value, delimiter, [](const std::string& item) {
             return FromString<double>(item);
+        });
+    }
+
+    template <>
+    std::vector<float> FromMultiValueString<float>(const std::string& value, char delimiter)
+    {
+        return SplitValues<float>(value, delimiter, [](const std::string& item) {
+            return FromString<float>(item);
         });
     }
 

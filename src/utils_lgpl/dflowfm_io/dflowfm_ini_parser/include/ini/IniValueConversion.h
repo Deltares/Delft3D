@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -63,6 +64,27 @@ namespace ini
         /// @brief Returns a string unchanged for writing to an INI file.
         std::string ToString(const std::string& value);
 
+        /// @brief Creates a string from a null-terminated character sequence.
+        std::string ToString(const char* value);
+
+        /// @brief Formats values as a delimited string using their default string representations.
+        template <typename T>
+            requires requires(const T& value) { ToString(value); }
+        std::string ToMultiValueString(const std::vector<T>& values, char separator = ' ')
+        {
+            std::ostringstream oss;
+            for (std::size_t i = 0; i < values.size(); ++i)
+            {
+                if (i > 0)
+                {
+                    oss << separator;
+                }
+                oss << ToString(values[i]);
+            }
+
+            return oss.str();
+        }
+
         /// @brief Formats booleans as a delimited string.
         std::string ToMultiValueString(const std::vector<bool>& values,
                                        BoolFormat format = BoolFormat::TrueFalse, char separator = ' ');
@@ -72,6 +94,10 @@ namespace ini
 
         /// @brief Formats double values as a delimited string.
         std::string ToMultiValueString(const std::vector<double>& values,
+                                       FloatFormat format = FloatFormat::General, char separator = ' ');
+
+        /// @brief Formats float values as a delimited string.
+        std::string ToMultiValueString(const std::vector<float>& values,
                                        FloatFormat format = FloatFormat::General, char separator = ' ');
 
         /// @brief Formats time points as a delimited string using the required date/time format.
@@ -102,6 +128,10 @@ namespace ini
         template <>
         double FromString<double>(const std::string& value);
 
+        /// @brief Parses a float, including Fortran D/d exponents.
+        template <>
+        float FromString<float>(const std::string& value);
+
         /// @brief Parses a time point using the required date/time format.
         time_point FromString(const std::string& value, TimePointFormat format);
 
@@ -128,6 +158,10 @@ namespace ini
         /// @brief Parses a delimited list of double values.
         template <>
         std::vector<double> FromMultiValueString<double>(const std::string& value, char delimiter);
+
+        /// @brief Parses a delimited list of float values.
+        template <>
+        std::vector<float> FromMultiValueString<float>(const std::string& value, char delimiter);
 
         /// @brief Parses a delimited list of time points using the required date/time format.
         /// @remarks Use a non-space delimiter when the date/time format itself contains spaces.

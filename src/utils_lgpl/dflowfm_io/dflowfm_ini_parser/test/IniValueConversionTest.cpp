@@ -771,6 +771,19 @@ namespace ini::test
         EXPECT_EQ(conversion::ToMultiValueString(values, ';'), "1;2;3");
     }
 
+    TEST(IniValueConversionTest, ToMultiValueString_BoolValuesAndCustomSeparator_UsesDefaultFormat)
+    {
+        const std::vector<bool> values{true, false};
+
+        EXPECT_EQ(conversion::ToMultiValueString(values, ';'), "True;False");
+    }
+
+    TEST(IniValueConversionTest, ToMultiValueString_FloatingPointValuesAndCustomSeparator_UsesDefaultFormat)
+    {
+        EXPECT_EQ(conversion::ToMultiValueString(std::vector<float>{1.5f, 2.5f}, ';'), "1.5;2.5");
+        EXPECT_EQ(conversion::ToMultiValueString(std::vector<double>{1.5, 2.5}, ';'), "1.5;2.5");
+    }
+
     // -------------------------------------------------------------------------
     // FromMultiValueString - bool
     // -------------------------------------------------------------------------
