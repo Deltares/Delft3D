@@ -128,7 +128,7 @@ contains
 
          tex = 'Teta    =            , Manlin =            , Umod =            '
          write (TEX(10:18), '(F9.5)') teta0
-         write (TEX(32:40), '(F9.5)') frcuni
+         write (TEX(32:40), '(F9.5)') uniform_friction_coefficient_2D
          write (TEX(52:60), '(F9.5)') umodlin
          call ICTEXT(trim(TEX), 6, 36, 221)
 
@@ -328,10 +328,10 @@ contains
       g = ag
       h = abs(zkuni)
 
-      if (frcuni == 0.0_dp) then
+      if (uniform_friction_coefficient_2D == 0.0_dp) then
          fr = 0
       else
-         czf = h**0.1666666 / frcuni
+         czf = h**0.1666666 / uniform_friction_coefficient_2D
          fr = ag * umodlin / (czf * czf * h)
       end if
 
@@ -774,7 +774,7 @@ contains
          bedslope = -0.0e-5_dp ! SPvdP: now old mdu-files still work
       end if
 
-      hev = vicouv ! horizontal eddy viscosity
+      hev = uniform_horizontal_eddy_viscosity ! horizontal eddy viscosity
 
       c0 = -0.5_dp * ag * bedslope ! g*i/2
       c2 = 0.0
@@ -788,8 +788,8 @@ contains
       yw = b / 2 - hdy
 
       if (irov == 1) then ! uniform mesh assumed, with cell size near wall dy (see above)
-         aa = vonkar / log(c9of1 + hdy / wall_z0)
-         !aa  = vonkar/log(1d0   + hdy/wall_z0)
+         aa = VON_KARMAN / log(C9OF1 + hdy / wall_z0)
+         !aa  = VON_KARMAN/log(1d0   + hdy/wall_z0)
 
          ust = sqrt(abs(c0 * b))
 

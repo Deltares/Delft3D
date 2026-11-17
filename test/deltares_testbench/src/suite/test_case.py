@@ -78,7 +78,7 @@ class TestCase:
         with open(self.__config.run_file_name, "w") as runfile:
             runfile.write("Start_size:" + str(size) + "\n")
             runfile.write("Runtime:" + str(elapsed_time) + "\n")
-            for allfile in os.listdir(self.__config.absolute_test_case_path):
+            for allfile in sorted(os.listdir(self.__config.absolute_test_case_path)):
                 # collect all added and changed files in the working directory (after running, compare to initial list)
                 if allfile not in {}.fromkeys(input_files, 0):
                     runfile.write("Output_added:" + str(allfile) + "\n")
