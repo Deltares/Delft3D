@@ -1322,13 +1322,13 @@ contains
       use m_flow, only: ndkx
       use processes_input, only: painp, paname, num_spatial_parameters, &
                                  funinp, funame, num_time_functions, &
-                                 sfuninp, sfunname, num_spatial_time_fuctions
+                                 sfuninp, sfunname, num_spatial_time_functions
       use unstruc_inifields, only: register_waq_target
 
       ndkx = 2
       num_spatial_parameters = 0
       num_time_functions = 0
-      num_spatial_time_fuctions = 0
+      num_spatial_time_functions = 0
       if (allocated(paname)) deallocate (paname)
       if (allocated(painp)) deallocate (painp)
       if (allocated(funame)) deallocate (funame)
@@ -1365,7 +1365,7 @@ contains
       end if
       call f90_expect_streq(cstr(funame(1)), cstr("Function"), cstr("the WAQ function suffix should be retained"))
       call f90_expect_eq(size(funinp, 2), 1, "WAQ function storage should contain one global value")
-      if (.not. f90_assert_eq(num_spatial_time_fuctions, 1, "one WAQ segment function should be registered")) then
+      if (.not. f90_assert_eq(num_spatial_time_functions, 1, "one WAQ segment function should be registered")) then
          call cleanup()
          return
       end if
@@ -1384,7 +1384,7 @@ contains
       subroutine cleanup()
          num_spatial_parameters = 0
          num_time_functions = 0
-         num_spatial_time_fuctions = 0
+         num_spatial_time_functions = 0
          if (allocated(paname)) then
             deallocate (paname)
          end if
@@ -2592,7 +2592,7 @@ contains
    subroutine test_frictioncoefficient_with_explicit_frictiontype() bind(C)
       use m_flow, only: frcu, ifrcutp
       use m_flowgeom, only: lnx, xu, yu
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use m_Roughness, only: frictionTypeStringToInteger
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
@@ -2615,9 +2615,9 @@ contains
                        "    interpolationMethod = triangulation", &
                        "    frictionType        = Manning"])
 
-      ! ARRANGE: get expected integer for Manning and force ifrctypuni /= it
+      ! ARRANGE: get expected integer for Manning and force uniform_friction_type /= it
       call frictionTypeStringToInteger('Manning', expected_friction_type)
-      ifrctypuni = 0
+      uniform_friction_type = 0
 
       call setup_minimal_grid()
       lnx = 1
