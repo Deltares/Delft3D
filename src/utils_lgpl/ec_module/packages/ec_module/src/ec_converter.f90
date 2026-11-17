@@ -2914,10 +2914,15 @@ contains
          mf = floor(spwphihat / spwdphi) + 1 ! find orientation in windrose
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
 
-         ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
+         ! If outside spiderweb set windspeed and pressure drop to zero. In eye set windspeed to zero. 
+         ! Else find weightfactors and interpolate for wind and pressure drop.
          if (dlat == 0.0_dp .and. dlon == 0.0_dp) then
             uintp = 0.0_dp
             vintp = 0.0_dp
+            if (twp > 0) then ! To not have a pressure jump at the eye, we interpolate the pressure from the two nearest points in time.
+                pintp = connection%sourceItemsPtr(swp)%ptr%sourceT0FieldPtr%arr1dPtr(1) * a0 + &
+                connection%sourceItemsPtr(swp)%ptr%sourceT1FieldPtr%arr1dPtr(1) * a1
+			end if
          elseif (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows) then
             uintp = 0.0_dp
             vintp = 0.0_dp
