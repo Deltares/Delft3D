@@ -63,7 +63,7 @@ contains
 
 !
 ! ====================================================================================
-function wave_main_init(mode_in, mdw_file) result(retval)
+function wave_main_init(mode_in, online_in, mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -80,8 +80,9 @@ function wave_main_init(mode_in, mdw_file) result(retval)
 !
 ! Global variables
 !
-   integer      :: mode_in
-   character(*) :: mdw_file     ! filename mdw file
+   integer     , intent(in) :: mode_in
+   integer     , intent(in) :: online_in
+   character(*), intent(in) :: mdw_file     ! filename mdw file
 !
 ! Local variables
 !
@@ -122,13 +123,13 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    !
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
-   retval = wave_init(mode_in, mdw_file)
+   retval = wave_init(mode_in, online_in, mdw_file)
 end function wave_main_init
 
 
 !
 ! ====================================================================================
-function wave_init(mode_in, mdw_file) result(retval)
+function wave_init(mode_in, online_in, mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -144,8 +145,9 @@ function wave_init(mode_in, mdw_file) result(retval)
 !
 ! Global variables
 !
-   integer      :: mode_in
-   character(*) :: mdw_file     ! filename mdw file
+   integer     , intent(in) :: mode_in
+   integer     , intent(in) :: online_in
+   character(*), intent(in) :: mdw_file     ! filename mdw file
 !
 ! Local variables
 !
@@ -173,6 +175,7 @@ function wave_init(mode_in, mdw_file) result(retval)
 !
    retval = 0
    call setmode(wavedata, mode_in)
+   call setonline(wavedata, online_in)
    !
    ! Read mdw file
    !

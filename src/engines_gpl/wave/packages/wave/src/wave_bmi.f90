@@ -74,7 +74,7 @@ integer(c_int) function initialize(c_mdw_file) result(c_iresult) bind(C, name="i
   !
   ! Body
   mdw_file   = char_array_to_string(c_mdw_file, strlen(c_mdw_file))
-  retval     = wave_main_init(wave_mode, mdw_file)
+  retval     = wave_main_init(wave_mode, ONLINE_DIMR, mdw_file)
   c_iresult  = retval
 end function initialize
 !
