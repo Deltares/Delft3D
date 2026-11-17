@@ -385,7 +385,7 @@ contains
       call realloc(funame, num_time_functions)
 
       num_spatial_time_functions = 0
-      call realloc(sfunname, num_time_functions)
+      call realloc(sfunname, num_spatial_time_functions)
 
       call dfm_waq_initexternalforcings(ierr)
       if (ierr /= 0) then
