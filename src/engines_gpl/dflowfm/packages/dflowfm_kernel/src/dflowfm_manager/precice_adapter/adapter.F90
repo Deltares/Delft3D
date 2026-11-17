@@ -43,7 +43,7 @@ module precice_adapter
       type(quantity_t) :: flow_velocity_3d = quantity_t(standard_name="flow_velocity_3d", is_active=.true.)
       ! Constituents (reading and writing)
       type(quantity_t), dimension(NUM_COUPLED_CONSTITUENTS) :: constituents
-      ! Reading
+      ! Reading (sources/sinks)
       type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
       type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
       type(quantity_t) :: sinks_z_min = quantity_t(standard_name="sinks_z_min", is_active=.false.)
@@ -55,6 +55,21 @@ module precice_adapter
       type(quantity_t) :: sources_sinks_discharge = quantity_t(standard_name="sources_sinks_discharge", is_active=.false.)
       type(quantity_t) :: sources_momentum_magnitude_weighted = quantity_t(standard_name="sources_momentum_magnitude_weighted", is_active=.false.)
       type(quantity_t) :: sources_momentum_direction = quantity_t(standard_name="sources_momentum_direction", is_active=.false.)
+      ! Reading from 2d mesh
+      type(quantity_t) :: sea_surface_wave_significant_height = quantity_t(standard_name="sea_surface_wave_significant_height", is_active=.false.)
+      type(quantity_t) :: sea_surface_wave_period = quantity_t(standard_name="sea_surface_wave_period", is_active=.false.)
+      type(quantity_t) :: sea_surface_wave_from_direction = quantity_t(standard_name="sea_surface_wave_from_direction", is_active=.false.)
+      type(quantity_t) :: eastward_wave_force = quantity_t(standard_name="eastward_wave_force", is_active=.false.)
+      type(quantity_t) :: northward_wave_force = quantity_t(standard_name="northward_wave_force", is_active=.false.)
+      ! sbxwav/sbywav (vector, no STD name)
+      type(quantity_t) :: wave_forcing_term_in_water_body = quantity_t(standard_name="wave_forcing_term_in_water_body", is_active=.false.)
+      ! mxwav/myway (vector, no STD name)
+      type(quantity_t) :: wave_mass_flux = quantity_t(standard_name="wave_mass_flux", is_active=.false.)
+      ! uorbwav (no STD name)
+      type(quantity_t) :: wave_orbital_velocity = quantity_t(standard_name="wave_orbital_velocity", is_active=.false.)
+      ! dsurf (dissipation due to breaking at the free surface) and dwcap (dissipation due to white capping)
+      type(quantity_t) :: wave_dissipation_surface_breaking = quantity_t(standard_name="wave_dissipation_surface_breaking", is_active=.false.)
+      type(quantity_t) :: wave_dissipation_whitecapping = quantity_t(standard_name="wave_dissipation_whitecapping", is_active=.false.)
    end type quantities_t
 
    !> Concrete preCICE adapter implementation.
@@ -270,6 +285,7 @@ contains
          call precicef_advance(max_timestep)
          ! Read after the exchange so the next FM interval uses the newly received data.
          call precice_adapter_read_data(self, 0.0_dp)
+         call precice_adapter_read_wave_data(self, 0.0_dp)
          call precice_adapter_add_to_fm_administration(self)
          ! Reset summed_time_progress after advancing
          self%summed_time_progress = 0.0_dp
@@ -553,7 +569,98 @@ contains
       end do
    end subroutine precice_adapter_read_data
 
+    !===========================================================================
+    !> Read the wave quantities from preCICE on the 2D cell-center mesh and
+    !! store them in the m_waves arrays used by the FM wave forcing.
+    subroutine precice_adapter_read_wave_data(self, current_time_in_window)
+       use precice, only: precicef_read_data
+       use precision, only: dp
+       use m_waves, only: hwavcom, twavcom, phiwav, sxwav, sywav, uorbwav, sbxwav, sbywav, mxwav, mywav, dsurf, dwcap
 
+       implicit none(type, external)
+       class(precice_adapter_t), intent(inout) :: self
+       real(kind=dp), intent(in) :: current_time_in_window
+
+       real(kind=c_double), dimension(:), allocatable :: wave_buffer
+       real(kind=c_double), dimension(:), allocatable :: wave_vector_buffer
+
+       allocate (wave_buffer(self%mesh_size))
+       allocate (wave_vector_buffer(self%mesh_size*2))
+
+       if (self%quantities%sea_surface_wave_significant_height%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_significant_height%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_significant_height%standard_name)))
+          hwavcom(1:self%mesh_size) = wave_buffer
+       end if
+       ! same pattern for sea_surface_wave_period -> twavcom,
+       if (self%quantities%sea_surface_wave_period%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_period%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_period%standard_name)))
+          twavcom(1:self%mesh_size) = wave_buffer
+       end if
+       ! sea_surface_wave_from_direction -> phiwav,
+       if (self%quantities%sea_surface_wave_from_direction%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_from_direction%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_from_direction%standard_name)))
+          phiwav(1:self%mesh_size) = wave_buffer
+       end if
+       ! eastward_wave_force -> sxwav, northward_wave_force -> sywav
+       if (self%quantities%eastward_wave_force%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%eastward_wave_force%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%eastward_wave_force%standard_name)))
+          sxwav(1:self%mesh_size) = wave_buffer
+       end if
+       if (self%quantities%northward_wave_force%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%northward_wave_force%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%northward_wave_force%standard_name)))
+          sywav(1:self%mesh_size) = wave_buffer
+       end if
+       ! same pattern wave_orbital_velocity -> uorbwav
+       if (self%quantities%wave_orbital_velocity%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_orbital_velocity%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%wave_orbital_velocity%standard_name)))
+          uorbwav(1:self%mesh_size) = wave_buffer
+       end if
+
+       if (self%quantities%wave_dissipation_surface_breaking%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_dissipation_surface_breaking%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%wave_dissipation_surface_breaking%standard_name)))
+          dsurf(1:self%mesh_size) = wave_buffer
+       end if
+       if (self%quantities%wave_dissipation_whitecapping%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_dissipation_whitecapping%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%wave_dissipation_whitecapping%standard_name)))
+          dwcap(1:self%mesh_size) = wave_buffer
+       end if
+
+       ! vector quantities
+       if (self%quantities%wave_forcing_term_in_water_body%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_forcing_term_in_water_body%standard_name, &
+             size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_vector_buffer, &
+             len(self%cell_center_mesh_name), len(trim(self%quantities%wave_forcing_term_in_water_body%standard_name)))
+          sbxwav(1:self%mesh_size) = wave_vector_buffer(1::2)
+          sbywav(1:self%mesh_size) = wave_vector_buffer(2::2)
+       end if
+       ! same pattern for wave_mass_flux -> mxwav, mywav
+       if (self%quantities%wave_mass_flux%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_mass_flux%standard_name, &
+             size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_vector_buffer, &
+             len(self%cell_center_mesh_name), len(trim(self%quantities%wave_mass_flux%standard_name)))
+          mxwav(1:self%mesh_size) = wave_vector_buffer(1::2)
+          mywav(1:self%mesh_size) = wave_vector_buffer(2::2)
+       end if
+
+       deallocate (wave_buffer)
+       deallocate (wave_vector_buffer)
+    end subroutine precice_adapter_read_wave_data
 
    !===========================================================================
    !> Add the coupled sources and sinks read from preCICE to the FM administration
@@ -561,7 +668,6 @@ contains
    !! Assumption: a coupled_source_sink from preCICE is not completely empty
    !! No checks needed: invalid data will be zero and need to be zero in the FM administration
    !! TODO: When computing in parallel, checks might be needed for sources/sinks outside the local domain
-   !! TODO: Add constituents
    !! TODO, optionally: lump sources/sinks in the same cell
    !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
