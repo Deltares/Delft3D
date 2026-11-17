@@ -8,23 +8,29 @@
 #include "test_utilities.hpp"
 #include "coupling_test_data.hpp"
 #include "coupling_steps.hpp"
+#include "csumo_settings_reader.hpp"
+#include "csumo_to_precice.hpp"
+#include "csumo_diffuser.hpp"
+#include "precice_to_csumo.hpp"
+#include "precice_data.hpp"
+#include "NF2FF_reader.hpp"
 
 namespace
 {
     using coupling_test_data::build_nf2ff_xml;
-    using coupling_test_data::minimal_csumo_settings_xml;
     using coupling_test_data::minimal_csumo_settings_with_intake_xml;
+    using coupling_test_data::minimal_csumo_settings_xml;
 
     /**
-     * @brief Build a simple 3d Mesh
+     * @brief Build a simple 3d PreciceMesh
      *
-     * Test helper to build a simple Mesh instance for use in unittests.
+     * Test helper to build a simple PreciceMesh instance for use in unittests.
      *
-     * @return Valid 3d Mesh with 1 diffuser, 1 intake, 8 ambient points and 2 z-layers.
+     * @return Valid 3d PreciceMesh with 1 diffuser, 1 intake, 8 ambient points and 2 z-layers.
      */
-    pre_c_sumo::Mesh make_test_3d_mesh()
+    pre_c_sumo::PreciceMesh make_test_3d_mesh()
     {
-        pre_c_sumo::Mesh mesh = {
+        pre_c_sumo::PreciceMesh mesh = {
             .name = "test_mesh_3d",
             .coordinates =
                 {
@@ -78,10 +84,10 @@ namespace
         auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
         EXPECT_TRUE(reader.has_value());
 
-        std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+        std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).value();
+        pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
+        return pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh).value();
     }
 
     /**
@@ -101,10 +107,10 @@ namespace
         auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
         EXPECT_TRUE(reader.has_value());
 
-        std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+        std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
         nf2ff_readers.emplace_back(std::move(*reader));
-        pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
-        return pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).value();
+        pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
+        return pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh).value();
     }
 
 } // namespace
@@ -112,7 +118,7 @@ namespace
 // Test getIntakeConstituents
 TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
 {
-    pre_c_sumo::Mesh mesh_3d = make_test_3d_mesh();
+    pre_c_sumo::PreciceMesh mesh_3d = make_test_3d_mesh();
     ASSERT_EQ(mesh_3d.number_of_nodes, 12);
     ASSERT_TRUE(mesh_3d.forward_map[0].has_intake);
     const auto intake_index = mesh_3d.forward_map[0].intake_index;
@@ -123,7 +129,7 @@ TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
         mesh_3d.quantities[id][intake_index + 1] = static_cast<double>(index) + 5.0;
     }
     auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
-    EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_consituents);
+    EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_constituents);
     for (std::size_t index = 0; index < constituents.size(); ++index)
     {
         EXPECT_DOUBLE_EQ(constituents[index], static_cast<double>(index) + 3.0); // Average value over all layers
@@ -142,13 +148,13 @@ TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesPropagatesValidationErrorWith
 {
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
     ASSERT_TRUE(settings.has_value()) << settings.error().message;
-    pre_c_sumo::Mesh mesh_2d{};
+    pre_c_sumo::PreciceMesh mesh_2d{};
     mesh_2d.coordinates = {1.0, 2.0};
     mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{}};
     mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0.0}}, {pre_c_sumo::bed_levels_id, {1.0}}};
-    pre_c_sumo::Mesh mesh_3d{};
+    pre_c_sumo::PreciceMesh mesh_3d{};
     mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{}};
-    pre_c_sumo::FF2NFFileOperations file_operations;
+    pre_c_sumo::ExchangeFileOperations file_operations;
     file_operations.create_directories =
         [](const std::filesystem::path&) -> std::expected<void, pre_c_sumo::WriteError> {
         ADD_FAILURE() << "Directory creation must not be reached after a validation failure";
@@ -188,17 +194,17 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndOneSink)
   </NF2FF>)";
     const auto diffuser = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_TRUE(diffuser.has_value());
-    EXPECT_EQ(diffuser->sources().size(), 1);
-    EXPECT_EQ(diffuser->sinks().size(), 1);
+    EXPECT_EQ(diffuser->sources.size(), 1);
+    EXPECT_EQ(diffuser->sinks.size(), 1);
 
     const auto sources = pre_c_sumo::createDiffuserModel(diffuser.value());
     // Expect 1000 sources have been generated
     EXPECT_EQ(sources.size(), 1000);
     // Expect line to be in y-direction.
     EXPECT_DOUBLE_EQ(sources[0].x_coordinate, 1000.000);
-    EXPECT_DOUBLE_EQ(sources[0].y_coordinate, 320.000);
+    EXPECT_DOUBLE_EQ(sources[0].y_coordinate, 280.000);
     EXPECT_DOUBLE_EQ(sources[999].x_coordinate, 1000.000);
-    EXPECT_DOUBLE_EQ(sources[999].y_coordinate, 280.000);
+    EXPECT_DOUBLE_EQ(sources[999].y_coordinate, 320.000);
     EXPECT_DOUBLE_EQ(sources[0].weight, 0.001);
 }
 
@@ -225,8 +231,8 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndTwoSinks)
   </NF2FF>)";
     const auto diffuser = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_TRUE(diffuser.has_value());
-    EXPECT_EQ(diffuser->sources().size(), 1);
-    EXPECT_EQ(diffuser->sinks().size(), 2);
+    EXPECT_EQ(diffuser->sources.size(), 1);
+    EXPECT_EQ(diffuser->sinks.size(), 2);
 
     const auto sources = pre_c_sumo::createDiffuserModel(diffuser.value());
     // Expect 1000 sources have been generated
@@ -267,12 +273,12 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(diffuser.has_value());
 
-    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
-    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
+    pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
 
     const auto connected_sources_sinks =
-        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers, dummy_mesh);
+        pre_c_sumo::convertCSumoToPrecice(csumo_settings->diffusers, nf2ff_readers, dummy_mesh);
 
     EXPECT_TRUE(connected_sources_sinks.has_value());
     EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 2000u);
@@ -305,12 +311,12 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(diffuser.has_value());
 
-    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*diffuser));
-    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
+    pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
 
     const auto connected_sources_sinks =
-        pre_c_sumo::convertNFtoConnectedSinkSources(*csumo_settings, nf2ff_readers, dummy_mesh);
+        pre_c_sumo::convertCSumoToPrecice(csumo_settings->diffusers, nf2ff_readers, dummy_mesh);
 
     EXPECT_TRUE(connected_sources_sinks.has_value());
     EXPECT_EQ(connected_sources_sinks.value().get_number_of_entries(), 1000u);
@@ -399,14 +405,14 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
 
     auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_TRUE(reader.has_value());
-    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*reader));
 
-    EXPECT_NEAR(nf2ff_readers.front().intakeFlowRate(), 0.0, 1e-12);
-    EXPECT_TRUE(nf2ff_readers.front().intakes().empty());
+    EXPECT_NEAR(nf2ff_readers.front().intake_flow_rate, 0.0, 1e-12);
+    EXPECT_TRUE(nf2ff_readers.front().intakes.empty());
 
-    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
-    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
+    pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
+    const auto connected = pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh);
     ASSERT_TRUE(connected.has_value());
     ASSERT_EQ(connected.value().get_number_of_entries(), 2000u);
 
@@ -600,15 +606,15 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(reader.has_value());
 
-    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*reader));
 
     // Verify that the entrainment values are indeed decreasing
-    ASSERT_GT(nf2ff_readers[0].sinks()[0].entrainment, nf2ff_readers[0].sinks()[1].entrainment);
+    ASSERT_GT(nf2ff_readers[0].sinks[0].entrainment, nf2ff_readers[0].sinks[1].entrainment);
 
     // Verify that the error message contains the sink index and the negative delta_s value
-    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
-    auto result = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
+    pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
+    auto result = pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh);
     if (result.has_value())
     {
         FAIL() << "Expected pre_c_sumo::ConnectedSourceSourcesError to be returned";
@@ -625,7 +631,7 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     }
 
     // Verify (once more) that an error was returned.
-    EXPECT_FALSE(pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh).has_value());
+    EXPECT_FALSE(pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh).has_value());
 }
 
 TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExpectedCountsAndDischarges)
@@ -657,7 +663,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExp
     const auto settings =
         pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_two_diffusers_with_intake_xml);
     ASSERT_TRUE(settings.has_value());
-    ASSERT_EQ(settings->diffusers().size(), 2u);
+    ASSERT_EQ(settings->diffusers.size(), 2u);
 
     const auto xml_diffuser_1 = build_nf2ff_xml(2u, 1u, true, 6.0, 1u, 10.0);
     const auto xml_diffuser_2 = build_nf2ff_xml(3u, 3u, true, 14.0, 2u, 24.0);
@@ -667,11 +673,11 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExp
     ASSERT_TRUE(reader_1.has_value());
     ASSERT_TRUE(reader_2.has_value());
 
-    std::vector<pre_c_sumo::NF2FFReader> nf2ff_readers;
+    std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*reader_1));
     nf2ff_readers.emplace_back(std::move(*reader_2));
 
-    pre_c_sumo::Mesh dummy_mesh = make_test_3d_mesh();
+    pre_c_sumo::PreciceMesh dummy_mesh = make_test_3d_mesh();
     const auto second_diffuser_mesh = make_test_3d_mesh();
     dummy_mesh.coordinates.insert(dummy_mesh.coordinates.end(), second_diffuser_mesh.coordinates.begin(),
                                   second_diffuser_mesh.coordinates.end());
@@ -689,7 +695,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExp
     {
         values.resize(values.size() * 2);
     }
-    const auto connected = pre_c_sumo::convertNFtoConnectedSinkSources(*settings, nf2ff_readers, dummy_mesh);
+    const auto connected = pre_c_sumo::convertCSumoToPrecice(settings->diffusers, nf2ff_readers, dummy_mesh);
     ASSERT_TRUE(connected.has_value());
 
     ASSERT_EQ(connected->get_number_of_entries(), 2012u);

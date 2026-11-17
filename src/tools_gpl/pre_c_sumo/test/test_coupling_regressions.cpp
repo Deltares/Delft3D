@@ -7,6 +7,11 @@
 
 #include "coupling_test_data.hpp"
 #include "coupling_steps.hpp"
+#include "csumo_settings_reader.hpp"
+#include "csumo_to_precice.hpp"
+#include "csumo_diffuser.hpp"
+#include "precice_to_csumo.hpp"
+#include "NF2FF_reader.hpp"
 #include "parsing_utils.hpp"
 
 namespace
@@ -14,9 +19,9 @@ namespace
     using coupling_test_data::build_nf2ff_xml;
     using coupling_test_data::minimal_csumo_settings_xml;
 
-    pre_c_sumo::FF2NFFileOperations capture_ff2nf_xml(std::string& xml)
+    pre_c_sumo::ExchangeFileOperations capture_ff2nf_xml(std::string& xml)
     {
-        pre_c_sumo::FF2NFFileOperations file_operations;
+        pre_c_sumo::ExchangeFileOperations file_operations;
         file_operations.create_directories =
             [](const std::filesystem::path&) -> std::expected<void, pre_c_sumo::WriteError> { return {}; };
         file_operations.write_file = [&xml](const std::filesystem::path&,
@@ -34,19 +39,34 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     constexpr std::string_view settings_xml = R"(<COSUMO>
     <fileVersion>0.3</fileVersion>
     <settings>
-        <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
-        <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+        <general>
+            <ID>D1</ID>
+            <subGridModel/>
+            <farFieldModel/>
+        </general>
+        <comm>
+            <FF2NFdir>a</FF2NFdir>
+            <FFrundir>b</FFrundir>
+        </comm>
         <data>
-            <XYdiff>1 2</XYdiff><XYambient>3 4</XYambient>
-            <discharge><M3s>5</M3s><constituentsOperator>absolute</constituentsOperator><constituents>15</constituents></discharge>
-            <D0>1</D0><H0>1</H0><Theta0>0</Theta0><Sigma0>0</Sigma0>
+            <XYdiff>1 2</XYdiff>
+            <XYambient>3 4</XYambient>
+            <discharge>
+                <M3s>5</M3s>
+                <constituentsOperator>absolute</constituentsOperator>
+                <constituents>15</constituents>
+            </discharge>
+            <D0>1</D0>
+            <H0>1</H0>
+            <Theta0>0</Theta0>
+            <Sigma0>0</Sigma0>
         </data>
     </settings>
 </COSUMO>)";
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(settings_xml);
     ASSERT_TRUE(settings.has_value()) << settings.error().message;
 
-    pre_c_sumo::Mesh mesh_2d{};
+    pre_c_sumo::PreciceMesh mesh_2d{};
     // Flattened (x, y) pairs: vertex 0 is the diffuser at (1, 2), vertex 1 the ambient point at (3, 4).
     mesh_2d.coordinates = {1, 2, 3, 4};
     // Mapping fields: diffuser vertex = 0, no intake, unused intake vertex = 0,
@@ -60,7 +80,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     // Thus total water depth is surface elevation + bed depth = 0 + 10 = 10 m.
     mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0}},
                          {pre_c_sumo::bed_levels_id, {10, 10}}};
-    pre_c_sumo::Mesh mesh_3d{};
+    pre_c_sumo::PreciceMesh mesh_3d{};
     // Flattened (x, y, z) triples, with positive-up elevations: each point is sampled at z = -3 m.
     // Each sample is therefore 3 m below the zero-level surface and 7 m above the bed at z = -10 m.
     mesh_3d.coordinates = {1, 2, -3, 3, 4, -3};
@@ -115,7 +135,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(settings_text.str());
     ASSERT_TRUE(settings.has_value()) << settings.error().message;
 
-    pre_c_sumo::Mesh mesh_2d{};
+    pre_c_sumo::PreciceMesh mesh_2d{};
     // Horizontal vertices: diffuser = 0, ambient A = 1, ambient B = 2.
     mesh_2d.coordinates = {1, 2, 3, 4, 5, 6};
     mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
@@ -128,7 +148,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0}},
                          {pre_c_sumo::bed_levels_id, {10, 10, 10}}};
 
-    pre_c_sumo::Mesh mesh_3d{};
+    pre_c_sumo::PreciceMesh mesh_3d{};
     // Two samples per horizontal point, stored column by column:
     // diffuser vertices 0,1; ambient A vertices 2,3; ambient B vertices 4,5.
     mesh_3d.coordinates = {1, 2, -3, 1, 2, -1,
@@ -183,9 +203,9 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProf
     settings_document.save(settings_text);
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(settings_text.str());
     ASSERT_TRUE(settings.has_value()) << settings.error().message;
-    ASSERT_EQ(settings->diffusers().size(), 2u);
+    ASSERT_EQ(settings->diffusers.size(), 2u);
 
-    pre_c_sumo::Mesh mesh_2d{};
+    pre_c_sumo::PreciceMesh mesh_2d{};
     // Flattened (x, y) pairs: D1 = vertex 0, ambient A = 1, D2 = 2, ambient B = 3.
     mesh_2d.coordinates = {1, 2, 3, 4, 5, 6, 7, 8};
     // There are no intakes; intake_index is unused. Each diffuser has one ambient vertex.
@@ -208,7 +228,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProf
     mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0, 0}},
                          {pre_c_sumo::bed_levels_id, {10, 10, 20, 20}}};
 
-    pre_c_sumo::Mesh mesh_3d{};
+    pre_c_sumo::PreciceMesh mesh_3d{};
     // Two (x, y, z) samples per column, at positive-up elevations -3 m and -1 m:
     // D1 vertices 0,1; ambient A 2,3; D2 4,5; ambient B 6,7.
     mesh_3d.coordinates = {1, 2, -3, 1, 2, -1,
@@ -286,8 +306,8 @@ TEST(CsumoPreciceCouplingRegressionTest, CreateDiffuserModelSpreadsSourcesPerpen
     document.save(nf2ff_text);
     const auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_text.str());
     ASSERT_TRUE(diffuser.has_value()) << diffuser.error().message;
-    ASSERT_EQ(diffuser->sources().size(), 1u);
-    ASSERT_EQ(diffuser->sinks().size(), 1u);
+    ASSERT_EQ(diffuser->sources.size(), 1u);
+    ASSERT_EQ(diffuser->sinks.size(), 1u);
 
     const auto sources = pre_c_sumo::createDiffuserModel(*diffuser);
 

@@ -4,11 +4,9 @@
 #include <boost/algorithm/string.hpp>
 #include <cctype>
 #include <format>
-#include <fstream>
 #include <optional>
 #include <pugixml.hpp>
 #include <ranges>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -247,21 +245,7 @@ namespace
 
 namespace pre_c_sumo
 {
-    std::expected<CSumoSettingsReader, parsing_utils::ParseError> CSumoSettingsReader::fromFile(
-        const std::filesystem::path& csumo_config_file)
-    {
-        std::ifstream file(csumo_config_file);
-        if (!file)
-        {
-            return std::unexpected(
-                parsing_utils::ParseError{std::format("Cannot open file: {}", csumo_config_file.string())});
-        }
-        std::ostringstream buffer;
-        buffer << file.rdbuf();
-        return fromString(buffer.str());
-    }
-
-    std::expected<CSumoSettingsReader, parsing_utils::ParseError> CSumoSettingsReader::fromString(
+    std::expected<CSumoSettings, parsing_utils::ParseError> CSumoSettingsReader::fromString(
         const std::string_view xml)
     {
         pugi::xml_document doc;
@@ -274,56 +258,7 @@ namespace pre_c_sumo
         ASSIGN_OR_RETURN(const auto root, validateRoot(doc));
         ASSIGN_OR_RETURN(auto file_version, parseFileVersion(root));
         ASSIGN_OR_RETURN(auto diffusers, parseAllDiffusers(root));
-        return CSumoSettingsReader{std::move(file_version), std::move(diffusers), std::move(doc)};
+        return CSumoSettings{std::move(file_version), std::move(diffusers), std::move(doc)};
     }
-
-    CSumoSettingsReader::CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers,
-                                             pugi::xml_document document)
-        : file_version_{std::move(file_version)}, diffusers_{std::move(diffusers)}, document_{std::move(document)}
-    {
-    }
-
-    std::string_view CSumoSettingsReader::fileVersion() const { return file_version_; }
-
-    const std::vector<DiffuserSettings>& CSumoSettingsReader::diffusers() const { return diffusers_; }
-
-    const std::filesystem::path DiffuserSettings::ff2nfFilepath(int subgrid_model_nr, double current_time_seconds) const
-    {
-        const std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
-        return ff2nf_dir /
-               std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
-    }
-
-    const std::filesystem::path DiffuserSettings::nf2ffFilepath(int subgrid_model_nr, double current_time_seconds) const
-    {
-        const std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
-        const std::filesystem::path nf2ff_dir =
-            ff2nf_dir.has_parent_path() ? ff2nf_dir.parent_path() / "NF2FF" : "NF2FF";
-        return nf2ff_dir /
-               std::format("NF2FF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
-    }
-
-    const std::vector<std::filesystem::path> CSumoSettingsReader::ff2nfFilepaths(double current_time_seconds) const
-    {
-        std::vector<std::filesystem::path> ff2nf_filepaths{};
-        for (const auto& [index, diffuser] : diffusers_ | std::views::enumerate)
-        {
-            const int subgrid_model_nr = static_cast<int>(index + 1);
-            ff2nf_filepaths.emplace_back(diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds));
-        }
-        return ff2nf_filepaths;
-    };
-
-    const std::vector<std::filesystem::path> CSumoSettingsReader::nf2ffFilepaths(double current_time_seconds) const
-    {
-        std::vector<std::filesystem::path> nf2ff_filepaths{};
-        for (const auto& [index, diffuser] : diffusers_ | std::views::enumerate)
-        {
-            const int subgrid_model_nr = static_cast<int>(index + 1);
-            nf2ff_filepaths.emplace_back(diffuser.nf2ffFilepath(subgrid_model_nr, current_time_seconds));
-        }
-        return nf2ff_filepaths;
-    };
-    ;
 
 } // namespace pre_c_sumo

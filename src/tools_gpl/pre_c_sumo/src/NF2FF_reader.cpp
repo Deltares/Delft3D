@@ -4,9 +4,9 @@
 #include "parsing_types.hpp"
 
 #include <expected>
-#include <sstream>
+#include <cassert>
 #include <format>
-#include <fstream>
+#include <utility>
 #include <boost/algorithm/string.hpp>
 #include <ranges>
 
@@ -262,19 +262,7 @@ namespace
 
 namespace pre_c_sumo
 {
-    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromFile(const std::filesystem::path& file_path)
-    {
-        std::ifstream file(file_path);
-        if (!file)
-        {
-            return std::unexpected(parsing_utils::ParseError{std::format("Cannot open file: {}", file_path.string())});
-        }
-        std::ostringstream buffer;
-        buffer << file.rdbuf();
-        return fromString(buffer.str());
-    }
-
-    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
+    std::expected<NF2FFData, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;
         const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());
@@ -324,74 +312,8 @@ namespace pre_c_sumo
         // End NFResult
 
         // Compose result
-        return NF2FFReader{std::move(file_version), std::move(doc),        intake_flow_rate,
-                           source_flow_rate,        constituents_operator, std::move(constituents),
-                           std::move(intakes),      std::move(sources),    std::move(sinks)};
+        return NF2FFData{std::move(file_version), intake_flow_rate, source_flow_rate, constituents_operator,
+                         std::move(constituents), std::move(intakes), std::move(sources), std::move(sinks)};
     }
-
-    NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
-                             double source_flow_rate, ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<pre_c_sumo::IntakeData> intakes,
-                             std::vector<pre_c_sumo::SourceOrSinkData> sources,
-                             std::vector<pre_c_sumo::SourceOrSinkData> sinks)
-        : file_version_{std::move(file_version)},
-          document_{std::move(document)},
-          intake_flow_rate_{intake_flow_rate},
-          source_flow_rate_{source_flow_rate},
-          constituents_operator_{constituents_operator},
-          constituents_{constituents},
-          intakes_{intakes},
-          sources_{sources},
-          sinks_{sinks}
-    {
-    }
-
-    /**
-     * @brief Returns the file version that has been read.
-     * @return std::string_view
-     */
-    std::string_view NF2FFReader::fileVersion() const { return file_version_; }
-
-    /**
-     * @brief Returns the total intake flow rate (Qintake) that has been read.
-     * @return double
-     */
-    double NF2FFReader::intakeFlowRate() const { return intake_flow_rate_; }
-
-    /**
-     * @brief Returns the total source flow rate (Qsource) that has been read.
-     * @return double
-     */
-    double NF2FFReader::sourceFlowRate() const { return source_flow_rate_; }
-
-    /**
-     * @brief Returns the consituents operator (Absolute or Excess) that has been read.
-     * @return pre_c_sumo::ConstituentsOperator
-     */
-    ConstituentsOperator NF2FFReader::constituentsOperator() const { return constituents_operator_; };
-
-    /**
-     * @brief Returns the constituent values that have been read.
-     * @return std::vector<double>
-     */
-    std::vector<double> NF2FFReader::constituents() const { return constituents_; };
-
-    /**
-     * @brief Returns the intakes that have been read.
-     * @return std::vector<pre_c_sumo::IntakeData>
-     */
-    std::vector<pre_c_sumo::IntakeData> NF2FFReader::intakes() const { return intakes_; };
-
-    /**
-     * @brief Returns the sources that have been read.
-     * @return std::vector<std::vector<double>>
-     */
-    std::vector<pre_c_sumo::SourceOrSinkData> NF2FFReader::sources() const { return sources_; };
-
-    /**
-     * @brief Returns the sinks that have been read.
-     * @return std::vector<std::vector<double>>
-     */
-    std::vector<pre_c_sumo::SourceOrSinkData> NF2FFReader::sinks() const { return sinks_; };
 
 } // namespace pre_c_sumo

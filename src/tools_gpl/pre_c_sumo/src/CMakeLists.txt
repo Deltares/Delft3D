@@ -2,6 +2,13 @@ set(source_files
     pre_c_sumo_lib.cpp
     connected_sinks_sources.cpp
     coupling_steps.cpp
+    precice_to_csumo.cpp
+    csumo_to_precice.cpp
+    csumo_diffuser.cpp
+    csumo_file_paths.cpp
+    precice_data.cpp
+    precice_exchange.cpp
+    exchange_file_io.cpp
     csumo_settings_reader.cpp
     FF2NF_writer.cpp
     NF2FF_reader.cpp
@@ -12,6 +19,15 @@ set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
     ${include_dir}/connected_sinks_sources.hpp
     ${include_dir}/coupling_steps.hpp
+    ${include_dir}/precice_to_csumo.hpp
+    ${include_dir}/csumo_to_precice.hpp
+    ${include_dir}/csumo_diffuser.hpp
+    ${include_dir}/csumo_file_paths.hpp
+    ${include_dir}/csumo_data.hpp
+    ${include_dir}/precice_data.hpp
+    ${include_dir}/precice_exchange.hpp
+    ${include_dir}/exchange_file_io.hpp
+    ${include_dir}/exchange_file_types.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/monadic_utils.hpp
     ${include_dir}/FF2NF_writer.hpp

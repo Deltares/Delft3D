@@ -1,31 +1,10 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CONNECTED_SINKS_SOURCES_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_CONNECTED_SINKS_SOURCES_HPP
 
-#include <precice/precice.hpp>
-#include <vector>
-#include <string>
-#include <expected>
-#include <array>
-#include <string_view>
+#include "precice_data.hpp"
 
 namespace pre_c_sumo
 {
-    /* Maximum number of communicated constituents */
-    constexpr int max_number_of_consituents = 10;
-
-    /// Ordered constituent slots shared by the preCICE exchange and FF2NF output.
-    inline constexpr auto constituent_ids =
-        std::to_array<std::string_view>({"C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10"});
-    static_assert(constituent_ids.size() == max_number_of_consituents);
-
-    /**
-     * @brief Error returned when we entounted a runtime problem.
-     */
-    struct ConnectedSinkSourcesError
-    {
-        std::string message;
-    };
-
     /**
      * @brief Connected Sinks and Sources administration
      * This class collects the sinks and sources data that is sent through preCICE.
@@ -70,40 +49,15 @@ namespace pre_c_sumo
         std::size_t get_number_of_entries() const;
 
         /**
-         * @anchor pre_c_sumo_connected_sink_sources_write_to_precice
-         * @brief Writes all accrued data to preCICE for the specified participant and mesh.
-         *
-         * After writing the data, the stored values are cleared.
-         *
-         * @param participant preCICE participant used for the write operation.
-         * @param mesh_name Name of the mesh on which vertices are registered.
-         * @param precice_ids Vertex IDs registered on the provided mesh.
-         * @return std::expected containing void on success or pre_C_sumo::ConnectedSinkSourcesError on failure;
-         */
-        [[nodiscard]] std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> write_to_precice(
-            precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids);
-
-        /**
          * @anchor pre_c_sumo_connected_sink_sources_get_discharge_value
          * @brief Returns the discharge values in read-only form.
          * @return Vector of discharge values used by unit tests and diagnostics.
          */
-        const std::vector<double>& get_discharge_value() const { return discharge_vector; }
+        const std::vector<double>& get_discharge_value() const;
+        const ConnectedSinkSourcesData& data() const;
 
     private:
-        // attributes
-        std::vector<double> sink_x_vector;                                   ///< X coordinates of sinks.
-        std::vector<double> sink_y_vector;                                   ///< Y coordinates of sinks.
-        std::vector<double> sink_z_bottom_vector;                            ///< Lowest z-boundary of sink extents.
-        std::vector<double> sink_z_top_vector;                               ///< Highest z-boundary of sink extents.
-        std::vector<double> source_x_vector;                                 ///< X coordinates of sources.
-        std::vector<double> source_y_vector;                                 ///< Y coordinates of sources.
-        std::vector<double> source_z_bottom_vector;                          ///< Lowest z-boundary of source extents.
-        std::vector<double> source_z_top_vector;                             ///< Highest z-boundary of source extents.
-        std::vector<double> discharge_vector;                                ///< Discharges [m³/s].
-        std::vector<double> momentum_magnitude_weighted_vector;              ///< Effective source speeds [m/s].
-        std::vector<double> momentum_direction_vector;                       ///< Source bearings [degrees clockwise from north].
-        std::vector<double> constituents_vectors[max_number_of_consituents]; ///< Consituents
+        ConnectedSinkSourcesData data_;
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
 

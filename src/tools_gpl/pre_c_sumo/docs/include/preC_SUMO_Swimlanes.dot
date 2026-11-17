@@ -47,8 +47,8 @@ digraph preCSUMOSwimlanes {
     l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
     l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
     l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
-    l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertNFtoConnectedSinkSources", tooltip="Open convertNFtoConnectedSinkSources docs"];
-    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open write_to_precice docs"];
+    l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Open convertCSumoToPrecice docs"];
+    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open writeConnectedSinkSources docs"];
     l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
     lane_left [label="", shape=point, width=0.01, height=0.01, style=invis];
 

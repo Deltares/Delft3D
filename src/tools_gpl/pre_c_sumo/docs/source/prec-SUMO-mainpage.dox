@@ -81,8 +81,9 @@ Main implementation entry points:
 - \ref pre_c_sumo::writeFF2NFFiles in coupling_steps.hpp / coupling_steps.cpp
 - \ref pre_c_sumo::waitForNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
 - \ref pre_c_sumo::readNF2FFFiles in coupling_steps.hpp / coupling_steps.cpp
-- \ref pre_c_sumo::convertNFtoConnectedSinkSources in coupling_steps.hpp / coupling_steps.cpp
-- \ref pre_c_sumo::ConnectedSinkSources::write_to_precice in connected_sinks_sources.hpp / connected_sinks_sources.cpp
+- \ref pre_c_sumo::convertPreciceToCSumo in precice_to_csumo.hpp / precice_to_csumo.cpp
+- \ref pre_c_sumo::convertCSumoToPrecice in csumo_to_precice.hpp / csumo_to_precice.cpp
+- \ref pre_c_sumo::writeConnectedSinkSources in precice_exchange.hpp / precice_exchange.cpp
 
 \section coding_guidelines Coding Guidelines
 See the project development guidelines in \ref pre_c_sumo_development_guidelines.

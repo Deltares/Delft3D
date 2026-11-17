@@ -412,7 +412,7 @@ TEST(NF2FFReaderTest, ParsesFileVersion)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->fileVersion(), "0.3");
+    EXPECT_EQ(result->file_version, "0.3");
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingFileVersion)
@@ -450,7 +450,7 @@ TEST(NF2FFReaderTest, ParsesQintake)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& value = result.value().intakeFlowRate();
+    const auto& value = result.value().intake_flow_rate;
     EXPECT_DOUBLE_EQ(value, 10.0);
 }
 
@@ -486,14 +486,14 @@ TEST(NF2FFReaderTest, ParsesMissingQintakeAsZero)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml_no_intake_flow);
     ASSERT_TRUE(result.has_value());
-    EXPECT_DOUBLE_EQ(result->intakeFlowRate(), 0.0);
+    EXPECT_DOUBLE_EQ(result->intake_flow_rate, 0.0);
 }
 
 TEST(NF2FFReaderTest, ParsesQsource)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& value = result.value().sourceFlowRate();
+    const auto& value = result.value().source_flow_rate;
     EXPECT_DOUBLE_EQ(value, 10.0);
 }
 
@@ -529,7 +529,7 @@ TEST(NF2FFReaderTest, ParsesOperator)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& value = result.value().constituentsOperator();
+    const auto& value = result.value().constituents_operator;
     EXPECT_TRUE(value == pre_c_sumo::ConstituentsOperator::Excess);
 }
 
@@ -559,7 +559,7 @@ TEST(NF2FFReaderTest, ParsesConstituents)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& value = result.value().constituents();
+    const auto& value = result.value().constituents;
     ASSERT_EQ(value.size(), 2u);
     EXPECT_DOUBLE_EQ(value[0], 10.0);
     EXPECT_DOUBLE_EQ(value[1], 0.0);
@@ -597,7 +597,7 @@ TEST(NF2FFReaderTest, ParsesSources)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& sources = result.value().sources();
+    const auto& sources = result.value().sources;
     ASSERT_EQ(sources.size(), 5u);
     EXPECT_DOUBLE_EQ(sources[0].x_coordinate, 1050.000);
     EXPECT_DOUBLE_EQ(sources[0].y_coordinate, 350.365);
@@ -688,7 +688,7 @@ TEST(NF2FFReaderTest, ParsesSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& sinks = result.value().sinks();
+    const auto& sinks = result.value().sinks;
     ASSERT_EQ(sinks.size(), 2u);
     EXPECT_DOUBLE_EQ(sinks[0].x_coordinate, 250.000);
     EXPECT_DOUBLE_EQ(sinks[0].y_coordinate, 350.087);
@@ -712,7 +712,7 @@ TEST(NF2FFReaderTest, ParsesIntakes)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& intakes = result.value().intakes();
+    const auto& intakes = result.value().intakes;
     ASSERT_EQ(intakes.size(), 2u);
     EXPECT_DOUBLE_EQ(intakes[0].x_coordinate, 1550.000);
     EXPECT_DOUBLE_EQ(intakes[0].y_coordinate, 950.000);

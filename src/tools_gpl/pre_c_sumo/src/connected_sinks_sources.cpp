@@ -1,11 +1,5 @@
-
-#include <precice/precice.hpp>
 #include <connected_sinks_sources.hpp>
 
-#include <format>
-#include <print>
-#include <stdexcept>
-#include <ranges>
 
 namespace pre_c_sumo
 {
@@ -14,104 +8,55 @@ namespace pre_c_sumo
                                          double discharge, double momentum_magnitude_weighted,
                                          double momentum_direction, std::vector<double> constituents)
     {
-        sink_x_vector.push_back(sink_x);
-        sink_y_vector.push_back(sink_y);
-        sink_z_bottom_vector.push_back(sink_z_bottom);
-        sink_z_top_vector.push_back(sink_z_top);
-        source_x_vector.push_back(source_x);
-        source_y_vector.push_back(source_y);
-        source_z_bottom_vector.push_back(source_z_bottom);
-        source_z_top_vector.push_back(source_z_top);
-        discharge_vector.push_back(discharge);
-        momentum_magnitude_weighted_vector.push_back(momentum_magnitude_weighted);
-        momentum_direction_vector.push_back(momentum_direction);
-        for (std::size_t constituent_index = 0; constituent_index < max_number_of_consituents; constituent_index++)
+        data_.sink_x_vector.push_back(sink_x);
+        data_.sink_y_vector.push_back(sink_y);
+        data_.sink_z_bottom_vector.push_back(sink_z_bottom);
+        data_.sink_z_top_vector.push_back(sink_z_top);
+        data_.source_x_vector.push_back(source_x);
+        data_.source_y_vector.push_back(source_y);
+        data_.source_z_bottom_vector.push_back(source_z_bottom);
+        data_.source_z_top_vector.push_back(source_z_top);
+        data_.discharge_vector.push_back(discharge);
+        data_.momentum_magnitude_weighted_vector.push_back(momentum_magnitude_weighted);
+        data_.momentum_direction_vector.push_back(momentum_direction);
+        for (std::size_t constituent_index = 0; constituent_index < max_number_of_constituents; constituent_index++)
         {
             if (constituent_index < constituents.size())
             {
-                constituents_vectors[constituent_index].push_back(constituents[constituent_index]);
+                data_.constituents_vectors[constituent_index].push_back(constituents[constituent_index]);
             }
             else
             {
-                constituents_vectors[constituent_index].push_back(0.0);
+                data_.constituents_vectors[constituent_index].push_back(0.0);
             }
         }
     }
 
     void ConnectedSinkSources::clear()
     {
-        sink_x_vector.clear();
-        sink_y_vector.clear();
-        sink_z_bottom_vector.clear();
-        sink_z_top_vector.clear();
-        source_x_vector.clear();
-        source_y_vector.clear();
-        source_z_bottom_vector.clear();
-        source_z_top_vector.clear();
-        discharge_vector.clear();
-        momentum_magnitude_weighted_vector.clear();
-        momentum_direction_vector.clear();
-        for (int constituent_index = 0; constituent_index < max_number_of_consituents; constituent_index++)
+        data_.sink_x_vector.clear();
+        data_.sink_y_vector.clear();
+        data_.sink_z_bottom_vector.clear();
+        data_.sink_z_top_vector.clear();
+        data_.source_x_vector.clear();
+        data_.source_y_vector.clear();
+        data_.source_z_bottom_vector.clear();
+        data_.source_z_top_vector.clear();
+        data_.discharge_vector.clear();
+        data_.momentum_magnitude_weighted_vector.clear();
+        data_.momentum_direction_vector.clear();
+        for (int constituent_index = 0; constituent_index < max_number_of_constituents; constituent_index++)
         {
-            constituents_vectors[constituent_index].clear();
+            data_.constituents_vectors[constituent_index].clear();
         }
     }
 
-    std::size_t ConnectedSinkSources::get_number_of_entries() const { return sink_x_vector.size(); }
+    std::size_t ConnectedSinkSources::get_number_of_entries() const { return data_.sink_x_vector.size(); }
 
-    std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> ConnectedSinkSources::write_to_precice(
-        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids)
+    const std::vector<double>& ConnectedSinkSources::get_discharge_value() const
     {
-        const std::size_t registered_vertex_count = precice_ids.size();
-        const std::size_t entry_count = get_number_of_entries();
-
-        if (registered_vertex_count == 0)
-        {
-            return std::unexpected(
-                pre_c_sumo::ConnectedSinkSourcesError{"Cannot write sources/sinks to an empty preCICE mesh."});
-        }
-
-        if (entry_count != 0 && entry_count != registered_vertex_count)
-        {
-            return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
-                std::format("Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
-                            "Remeshing is not implemented.",
-                            registered_vertex_count, entry_count)});
-        }
-
-        const std::vector<double> zero_values(registered_vertex_count, 0.0);
-
-        // preCICE expects values for all registered vertices each step.
-        // When no entries are present, write explicit zeros with fixed mesh length.
-        auto write_or_zero = [&](std::string_view data_name, const std::vector<double>& values) {
-            if (values.empty())
-            {
-                participant.writeData(mesh_name, data_name, precice_ids, zero_values);
-                return;
-            }
-
-            participant.writeData(mesh_name, data_name, precice_ids, values);
-        };
-
-        write_or_zero("sinks_x", sink_x_vector);
-        write_or_zero("sinks_y", sink_y_vector);
-        write_or_zero("sinks_z_min", sink_z_bottom_vector);
-        write_or_zero("sinks_z_max", sink_z_top_vector);
-        write_or_zero("sources_x", source_x_vector);
-        write_or_zero("sources_y", source_y_vector);
-        write_or_zero("sources_z_min", source_z_bottom_vector);
-        write_or_zero("sources_z_max", source_z_top_vector);
-        write_or_zero("sources_sinks_discharge", discharge_vector);
-        write_or_zero("sources_momentum_magnitude_weighted", momentum_magnitude_weighted_vector);
-        write_or_zero("sources_momentum_direction", momentum_direction_vector);
-        for (const auto& [index, id] : constituent_ids | std::views::enumerate)
-        {
-            write_or_zero(id, constituents_vectors[index]);
-        }
-
-        // After the write, we can clear the list.
-        clear();
-        return {};
+        return data_.discharge_vector;
     }
 
+    const ConnectedSinkSourcesData& ConnectedSinkSources::data() const { return data_; }
 } // namespace pre_c_sumo

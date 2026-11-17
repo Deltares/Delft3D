@@ -1,17 +1,14 @@
 #include "FF2NF_writer.hpp"
 
 #include <algorithm>
-#include <cerrno>
 #include <expected>
 #include <format>
-#include <fstream>
 #include <iterator>
 #include <pugixml.hpp>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <system_error>
 #include <type_traits>
 
 #include "monadic_utils.hpp"
@@ -193,41 +190,6 @@ namespace
 
 namespace pre_c_sumo
 {
-    FF2NFFileOperations::FF2NFFileOperations()
-        : create_directories([](const std::filesystem::path& directory) -> std::expected<void, WriteError> {
-              std::error_code error;
-              std::filesystem::create_directories(directory, error);
-              if (error)
-              {
-                  return std::unexpected(WriteError{
-                      std::format("Failed to create directory '{}': {}", directory.string(), error.message())});
-              }
-              return {};
-          }),
-          write_file([](const std::filesystem::path& file_path,
-                        std::string_view xml) -> std::expected<void, WriteError> {
-              errno = 0;
-              std::ofstream output_file(file_path, std::ios::out | std::ios::noreplace);
-              if (!output_file)
-              {
-                  const auto error = std::error_code(errno == 0 ? EIO : errno, std::generic_category());
-                  return std::unexpected(WriteError{
-                      std::format("Failed to open file for writing '{}': {}", file_path.string(), error.message())});
-              }
-              errno = 0;
-              output_file << xml;
-              output_file.close();
-              if (!output_file)
-              {
-                  const auto error = std::error_code(errno == 0 ? EIO : errno, std::generic_category());
-                  return std::unexpected(
-                      WriteError{std::format("Failed to write to file '{}': {}", file_path.string(), error.message())});
-              }
-              return {};
-          })
-    {
-    }
-
     FF2NFWriter::FF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
 
     std::expected<std::string, WriteError> FF2NFWriter::generate() const
@@ -245,18 +207,6 @@ namespace pre_c_sumo
         std::ostringstream oss;
         document.save(oss, indent_chars);
         return oss.str();
-    }
-
-    std::expected<void, WriteError> FF2NFWriter::toFile(const std::filesystem::path& file_path,
-                                                        const FF2NFFileOperations& file_operations) const
-    {
-        ASSIGN_OR_RETURN(const auto xml, generate());
-        const auto directory = file_path.parent_path();
-        if (!directory.empty())
-        {
-            RETURN_IF_ERROR(file_operations.create_directories(directory));
-        }
-        return file_operations.write_file(file_path, xml);
     }
 
     std::expected<void, WriteError> FF2NFWriter::validate() const
@@ -336,7 +286,7 @@ namespace pre_c_sumo
     {
         // The settings_xml_node is an unowned handle into the caller's pugi::xml_document.
         // append_copy() performs a deep copy, so the source document can be released
-        // immediately after generate() / toFile() returns.
+        // immediately after generate() returns.
         if (config_.settings_xml_node)
         {
             root.append_copy(config_.settings_xml_node);
