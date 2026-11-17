@@ -261,42 +261,6 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddPropertyIf
-    // -------------------------------------------------------------------------
-
-    TEST(IniSectionTest, AddPropertyIf_EmptyKey_ThrowsInvalidArgument)
-    {
-        IniSection section("TestSection");
-
-        EXPECT_THROW(
-            section.AddPropertyIf("", "TestValue",
-                                  std::function<bool(const std::string&)>([](const std::string&) { return true; })),
-            std::invalid_argument);
-    }
-
-    TEST(IniSectionTest, AddPropertyIf_ConditionIsFalse_DoesNotAddProperty)
-    {
-        IniSection section("TestSection");
-
-        section.AddPropertyIf("TestKey", "TestValue",
-                              std::function<bool(const std::string&)>([](const std::string&) { return false; }));
-
-        EXPECT_TRUE(section.GetProperties().empty());
-    }
-
-    TEST(IniSectionTest, AddPropertyIf_ConditionIsTrue_AddsProperty)
-    {
-        IniSection section("TestSection");
-
-        section.AddPropertyIf("TestKey", "TestValue",
-                              std::function<bool(const std::string&)>([](const std::string&) { return true; }));
-
-        ASSERT_EQ(section.GetProperties().size(), 1);
-        EXPECT_EQ(section.GetProperties()[0].GetKey(), "TestKey");
-        EXPECT_EQ(section.GetProperties()[0].GetValue(), "TestValue");
-    }
-
-    // -------------------------------------------------------------------------
     // AddProperty - key/values
     // -------------------------------------------------------------------------
 

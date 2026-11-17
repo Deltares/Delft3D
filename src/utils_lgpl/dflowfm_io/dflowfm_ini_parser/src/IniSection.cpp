@@ -36,25 +36,6 @@ namespace ini
 
     IniProperty& IniSection::AddProperty(IniProperty property) { return properties.emplace_back(std::move(property)); }
 
-    void IniSection::AddPropertyIf(const std::string& key, const std::string& value,
-                                   const std::function<bool(const std::string&)>& predicate)
-    {
-        if (!predicate)
-        {
-            throw std::invalid_argument("predicate");
-        }
-
-        if (key.empty())
-        {
-            throw std::invalid_argument("Property key cannot be empty.");
-        }
-
-        if (predicate(value))
-        {
-            AddProperty(key, value);
-        }
-    }
-
     void IniSection::AddProperties(const std::vector<IniProperty>& propertiesToAdd)
     {
         properties.insert(properties.end(), propertiesToAdd.begin(), propertiesToAdd.end());

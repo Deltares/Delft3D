@@ -81,31 +81,6 @@ namespace ini
         /// @return A reference to the added property.
         IniProperty& AddProperty(IniProperty property);
 
-        /// @brief Adds a new property with the specified key and string value to the section if
-        ///        the specified condition is met.
-        /// @param key The key of the property.
-        /// @param value The value of the property.
-        /// @param predicate A predicate function; the property is added only if it returns @c true.
-        /// @throws std::invalid_argument When @p key is empty.
-        void AddPropertyIf(const std::string& key, const std::string& value,
-                           const std::function<bool(const std::string&)>& predicate);
-
-        /// @brief Adds a new property with the specified key and value to the section if
-        ///        the specified condition is met.
-        /// @tparam T The type of the value.
-        /// @param key The key of the property.
-        /// @param value The value of the property.
-        /// @param predicate A predicate function; the property is added only if it returns @c true.
-        /// @throws std::invalid_argument When @p key is empty.
-        template <typename T>
-        void AddPropertyIf(const std::string& key, const T& value, const std::function<bool(const T&)>& predicate)
-        {
-            if (predicate(value))
-            {
-                AddProperty(key, value);
-            }
-        }
-
         /// @brief Adds a new multi-value property with the specified key and values to the section.
         /// @tparam T The type of the values.
         /// @param key The key of the property.
