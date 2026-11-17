@@ -3365,10 +3365,10 @@ contains
       end if
 
       if (writeall .or. kmx > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel, 'Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon, 4: k-tau, 5: k-epsilon at cell centers)')
+         call prop_set(prop_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel, 'Turbulence model (0: none, 1: constant, 2: algebraic, 3: k-epsilon on flow links, 4: k-tau, 5: k-epsilon on cell centers [research])')
          call prop_set(prop_ptr, 'numerics', 'c1e', c1e, 'c1e coefficient in turbulence model')
-         call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e coefficient (for stable stratification) in k-eps turbulence model')
-         call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-eps turbulence model')
+         call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e coefficient (for stable stratification) in k-epsilon on flow links turbulence model')
+         call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-epsilon on flow links turbulence model')
       end if
 
       if (writeall .or. (turbulent_advection_scheme /= 3 .and. kmx > 0)) then
