@@ -13,7 +13,7 @@ namespace ini::test
         const IniProperty property("TestKey", " 42 ");
 
         EXPECT_EQ(property.GetValue(), " 42 ");
-        EXPECT_EQ(conversion::IntegerFromString(property.GetValue()), 42);
+        EXPECT_EQ(conversion::FromString<int>(property.GetValue()), 42);
     }
 
     TEST(IniPropertyTest, GetValue_InvalidValueIsPreservedAndNamedConverterThrows)
@@ -21,7 +21,7 @@ namespace ini::test
         const IniProperty property("TestKey", "not-a-number");
 
         EXPECT_EQ(property.GetValue(), "not-a-number");
-        EXPECT_THROW(conversion::FloatingPointFromString(property.GetValue()), std::invalid_argument);
+        EXPECT_THROW(conversion::FromString<double>(property.GetValue()), std::invalid_argument);
     }
 
     TEST(IniPropertyTest, SetValue_TimePointUsesExplicitNamedConverters)
@@ -29,11 +29,11 @@ namespace ini::test
         IniProperty property("TestKey");
         const auto date = std::chrono::sys_days{std::chrono::year{2023} / 8 / 14};
 
-        property.SetValue(conversion::TimePointToString(date, TimePointFormat::IsoDate));
+        property.SetValue(conversion::ToString(date, TimePointFormat::IsoDate));
 
         EXPECT_EQ(property.GetValue(), "2023-08-14");
-        EXPECT_EQ(conversion::TimePointFromString(property.GetValue(), TimePointFormat::IsoDate), date);
-        EXPECT_THROW(conversion::TimePointFromString(property.GetValue(), TimePointFormat::SlashDate),
+        EXPECT_EQ(conversion::FromString(property.GetValue(), TimePointFormat::IsoDate), date);
+        EXPECT_THROW(conversion::FromString(property.GetValue(), TimePointFormat::SlashDate),
                      std::invalid_argument);
     }
 
@@ -112,7 +112,7 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_ValidIntValue_CreatesProperty)
     {
-        IniProperty property = IniProperty("TestKey", conversion::IntegerToString(42));
+        IniProperty property = IniProperty("TestKey", conversion::ToString(42));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "42");
@@ -120,7 +120,7 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_ValidFloatValue_CreatesProperty)
     {
-        IniProperty property = IniProperty("TestKey", conversion::FloatingPointToString(1.01f));
+        IniProperty property = IniProperty("TestKey", conversion::ToString(1.01f));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "1.01");
@@ -128,7 +128,7 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_ValidDoubleValue_CreatesProperty)
     {
-        IniProperty property = IniProperty("TestKey", conversion::FloatingPointToString(2.71));
+        IniProperty property = IniProperty("TestKey", conversion::ToString(2.71));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "2.71");
@@ -148,12 +148,12 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_EmptyKeyAndEmptyValues_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniProperty("", conversion::StringListToString(std::vector<std::string>{})), std::invalid_argument);
+        EXPECT_THROW(IniProperty("", conversion::ToMultiValueString(std::vector<std::string>{})), std::invalid_argument);
     }
 
     TEST(IniPropertyTest, Create_EmptyValues_ThrowsInvalidArgument)
     {
-        IniProperty property = IniProperty("TestKey", conversion::StringListToString(std::vector<std::string>{}));
+        IniProperty property = IniProperty("TestKey", conversion::ToMultiValueString(std::vector<std::string>{}));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "");
@@ -161,7 +161,7 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_ValidValuesAndSpaceSeparator_CreatesProperty)
     {
-        IniProperty property = IniProperty("TestKey", conversion::IntegerListToString(std::vector<int>{8, 2, 3}, ' '));
+        IniProperty property = IniProperty("TestKey", conversion::ToMultiValueString(std::vector<int>{8, 2, 3}, ' '));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "8 2 3");
@@ -169,7 +169,7 @@ namespace ini::test
 
     TEST(IniPropertyTest, Create_ValidValuesAndSemicolonSeparator_CreatesProperty)
     {
-        IniProperty property = IniProperty("TestKey", conversion::IntegerListToString(std::vector<int>{8, 2, 3}, ';'));
+        IniProperty property = IniProperty("TestKey", conversion::ToMultiValueString(std::vector<int>{8, 2, 3}, ';'));
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "8;2;3");
@@ -228,7 +228,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::IntegerToString(11));
+        property.SetValue(conversion::ToString(11));
 
         EXPECT_EQ(property.GetValue(), "11");
     }
@@ -237,7 +237,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::FloatingPointToString(12.33f));
+        property.SetValue(conversion::ToString(12.33f));
 
         EXPECT_EQ(property.GetValue(), "12.33");
     }
@@ -246,7 +246,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::FloatingPointToString(0.123));
+        property.SetValue(conversion::ToString(0.123));
 
         EXPECT_EQ(property.GetValue(), "0.123");
     }
@@ -268,7 +268,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::IntegerListToString(std::vector<int>{}));
+        property.SetValue(conversion::ToMultiValueString(std::vector<int>{}));
 
         EXPECT_EQ(property.GetValue(), "");
     }
@@ -277,7 +277,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::IntegerListToString(std::vector<int>{5, 1, 8}, ' '));
+        property.SetValue(conversion::ToMultiValueString(std::vector<int>{5, 1, 8}, ' '));
 
         EXPECT_EQ(property.GetValue(), "5 1 8");
     }
@@ -286,7 +286,7 @@ namespace ini::test
     {
         IniProperty property("TestKey");
 
-        property.SetValue(conversion::IntegerListToString(std::vector<int>{5, 1, 8}, ';'));
+        property.SetValue(conversion::ToMultiValueString(std::vector<int>{5, 1, 8}, ';'));
 
         EXPECT_EQ(property.GetValue(), "5;1;8");
     }

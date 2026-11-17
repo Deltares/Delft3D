@@ -84,7 +84,7 @@ namespace dflowfm_io
                 return std::optional<std::chrono::system_clock::time_point>{};
             
             return std::optional<std::chrono::system_clock::time_point>{
-                ini::conversion::TimePointFromString(raw, GetTimePointFormat(schema))};
+                ini::conversion::FromString(raw, GetTimePointFormat(schema))};
         }
 
         [[noreturn]] void ThrowInvalidEnumValue(const PropertySchema& schema, const std::string& raw)
@@ -104,7 +104,7 @@ namespace dflowfm_io
         {
             for (const auto& ev : schema.enum_values)
                 if (iequals(ev.value, raw))
-                    return IntEnumValue{ini::conversion::IntegerFromString(ev.value)};
+                    return IntEnumValue{ini::conversion::FromString<int>(ev.value)};
             ThrowInvalidEnumValue(schema, raw);
         }
 
@@ -114,7 +114,7 @@ namespace dflowfm_io
             if (!dateTimeValue.has_value())
                 return std::string{};
 
-            return ini::conversion::TimePointToString(*dateTimeValue, GetTimePointFormat(schema));
+            return ini::conversion::ToString(*dateTimeValue, GetTimePointFormat(schema));
         }
 
         std::string StringEnumToString(const PropertySchema& schema, const Value& value)
@@ -128,7 +128,7 @@ namespace dflowfm_io
         std::string IntEnumToString(const PropertySchema& schema, const Value& value)
         {
             auto enumValue = std::get<IntEnumValue>(value);
-            auto valueStr = ini::conversion::IntegerToString(enumValue.value);
+            auto valueStr = ini::conversion::ToString(enumValue.value);
             for (const auto& ev : schema.enum_values)
                 if (ev.value == valueStr) return valueStr;
             ThrowInvalidEnumValue(schema, valueStr);
@@ -210,23 +210,23 @@ namespace dflowfm_io
         switch (schema.value_type)
         {
             case ValueType::String:
-                return ini::conversion::StringFromString(raw);
+                return ini::conversion::FromString<std::string>(raw);
             case ValueType::Int:
-                return ini::conversion::IntegerFromString(raw);
+                return ini::conversion::FromString<int>(raw);
             case ValueType::Float:
-                return ini::conversion::FloatingPointFromString(raw);
+                return ini::conversion::FromString<double>(raw);
             case ValueType::IntBool:
-                return ini::conversion::BoolFromString(raw);
+                return ini::conversion::FromString<bool>(raw);
             case ValueType::Path:
-                return ini::conversion::PathFromString(raw);
+                return ini::conversion::FromString<std::filesystem::path>(raw);
             case ValueType::DateTime:
                 return DateTimeFromString(schema, raw);
             case ValueType::StringList:
-                return ini::conversion::StringListFromString(raw);
+                return ini::conversion::FromMultiValueString<std::string>(raw);
             case ValueType::PathList:
-                return ini::conversion::PathListFromString(raw);
+                return ini::conversion::FromMultiValueString<std::filesystem::path>(raw);
             case ValueType::FloatList:
-                return ini::conversion::FloatingPointListFromString(raw);
+                return ini::conversion::FromMultiValueString<double>(raw);
             case ValueType::StringEnum:
                 return StringEnumFromString(schema, raw);
             case ValueType::IntEnum:
@@ -242,23 +242,23 @@ namespace dflowfm_io
         switch (schema.value_type)
         {
             case ValueType::String:
-                return ini::conversion::StringToString(std::get<std::string>(value));
+                return ini::conversion::ToString(std::get<std::string>(value));
             case ValueType::Int:
-                return ini::conversion::IntegerToString(std::get<int>(value));
+                return ini::conversion::ToString(std::get<int>(value));
             case ValueType::Float:
-                return ini::conversion::FloatingPointToString(std::get<double>(value), GetFloatFormat(schema));
+                return ini::conversion::ToString(std::get<double>(value), GetFloatFormat(schema));
             case ValueType::IntBool:
-                return ini::conversion::BoolToString(std::get<bool>(value), ini::BoolFormat::ZeroOne);
+                return ini::conversion::ToString(std::get<bool>(value), ini::BoolFormat::ZeroOne);
             case ValueType::Path:
-                return ini::conversion::PathToString(std::get<std::filesystem::path>(value));
+                return ini::conversion::ToString(std::get<std::filesystem::path>(value));
             case ValueType::DateTime:
                 return DateTimeToString(schema, value);
             case ValueType::StringList:
-                return ini::conversion::StringListToString(std::get<std::vector<std::string>>(value));
+                return ini::conversion::ToMultiValueString(std::get<std::vector<std::string>>(value));
             case ValueType::PathList:
-                return ini::conversion::PathListToString(std::get<std::vector<std::filesystem::path>>(value));
+                return ini::conversion::ToMultiValueString(std::get<std::vector<std::filesystem::path>>(value));
             case ValueType::FloatList:
-                return ini::conversion::FloatingPointListToString(std::get<std::vector<double>>(value), GetFloatFormat(schema));
+                return ini::conversion::ToMultiValueString(std::get<std::vector<double>>(value), GetFloatFormat(schema));
             case ValueType::StringEnum:
                 return StringEnumToString(schema, value);
             case ValueType::IntEnum:

@@ -67,8 +67,8 @@ namespace dflowfm_io::test
     {
         auto iniData = TestIniData();
         iniData.GetSection("general").SetPropertyValue("fileVersion", "overriden");
-        iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", ini::conversion::IntegerToString(-1212));
-        iniData.GetSection("geometry").SetPropertyValue("bedLevUni", ini::conversion::FloatingPointToString(32424.22));
+        iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", ini::conversion::ToString(-1212));
+        iniData.GetSection("geometry").SetPropertyValue("bedLevUni", ini::conversion::ToString(32424.22));
 
         doc.LoadString(ini::Format(iniData));
 

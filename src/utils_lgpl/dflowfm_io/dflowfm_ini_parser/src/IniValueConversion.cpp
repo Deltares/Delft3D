@@ -97,7 +97,7 @@ namespace ini::conversion
         }
     } // namespace
 
-    std::string BoolToString(bool value, BoolFormat format)
+    std::string ToString(bool value, BoolFormat format)
     {
         switch (format)
         {
@@ -111,14 +111,16 @@ namespace ini::conversion
         }
     }
 
-    std::string IntegerToString(int value)
+    std::string ToString(int value)
     {
         std::ostringstream oss;
         oss << value;
         return oss.str();
     }
 
-    std::string FloatingPointToString(double value, FloatFormat format)
+    std::string ToString(float value, FloatFormat format) { return ToString(static_cast<double>(value), format); }
+
+    std::string ToString(double value, FloatFormat format)
     {
         switch (format)
         {
@@ -141,50 +143,50 @@ namespace ini::conversion
         }
     }
 
-    std::string TimePointToString(time_point value, TimePointFormat format)
+    std::string ToString(time_point value, TimePointFormat format)
     {
         auto truncated = std::chrono::floor<std::chrono::seconds>(value);
         return std::vformat("{:" + std::string(GetTimePointFormatString(format)) + "}",
                             std::make_format_args(truncated));
     }
 
-    std::string PathToString(const path& value) { return value.string(); }
+    std::string ToString(const path& value) { return value.string(); }
 
-    std::string StringToString(const std::string& value) { return value; }
+    std::string ToString(const std::string& value) { return value; }
 
-    std::string BoolListToString(const std::vector<bool>& values, BoolFormat format, char separator)
+    std::string ToMultiValueString(const std::vector<bool>& values, BoolFormat format, char separator)
     {
-        return JoinValues(values, separator, [format](bool value) { return BoolToString(value, format); });
+        return JoinValues(values, separator, [format](bool value) { return ToString(value, format); });
     }
 
-    std::string IntegerListToString(const std::vector<int>& values, char separator)
+    std::string ToMultiValueString(const std::vector<int>& values, char separator)
     {
-        return JoinValues(values, separator, [](int value) { return IntegerToString(value); });
+        return JoinValues(values, separator, [](int value) { return ToString(value); });
     }
 
-    std::string FloatingPointListToString(const std::vector<double>& values, FloatFormat format,
-                                                           char separator)
+    std::string ToMultiValueString(const std::vector<double>& values, FloatFormat format, char separator)
     {
-        return JoinValues(values, separator, [format](double value) { return FloatingPointToString(value, format); });
+        return JoinValues(values, separator, [format](double value) { return ToString(value, format); });
     }
 
-    std::string TimePointListToString(const std::vector<time_point>& values, TimePointFormat format,
-                                                       char separator)
+    std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format,
+                                   char separator)
     {
-        return JoinValues(values, separator, [format](time_point value) { return TimePointToString(value, format); });
+        return JoinValues(values, separator, [format](time_point value) { return ToString(value, format); });
     }
 
-    std::string PathListToString(const std::vector<path>& values, char separator)
+    std::string ToMultiValueString(const std::vector<path>& values, char separator)
     {
-        return JoinValues(values, separator, [](const path& value) { return PathToString(value); });
+        return JoinValues(values, separator, [](const path& value) { return ToString(value); });
     }
 
-    std::string StringListToString(const std::vector<std::string>& values, char separator)
+    std::string ToMultiValueString(const std::vector<std::string>& values, char separator)
     {
-        return JoinValues(values, separator, [](const std::string& value) { return StringToString(value); });
+        return JoinValues(values, separator, [](const std::string& value) { return ToString(value); });
     }
 
-    bool BoolFromString(const std::string& value)
+    template <>
+    bool FromString<bool>(const std::string& value)
     {
         static const std::unordered_map<std::string, bool> mappings = {
             {"true", true}, {"false", false}, {"yes", true}, {"no", false}, {"1", true}, {"0", false},
@@ -202,12 +204,14 @@ namespace ini::conversion
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid boolean.");
     }
 
-    int IntegerFromString(const std::string& value)
+    template <>
+    int FromString<int>(const std::string& value)
     {
         return ParseNumber<int>(trim(value));
     }
 
-    double FloatingPointFromString(const std::string& value)
+    template <>
+    double FromString<double>(const std::string& value)
     {
         std::string normalized = trim(value);
         const std::size_t pos = normalized.find_first_of("dD");
@@ -219,7 +223,7 @@ namespace ini::conversion
         return ParseNumber<double>(normalized);
     }
 
-    time_point TimePointFromString(const std::string& value, TimePointFormat format)
+    time_point FromString(const std::string& value, TimePointFormat format)
     {
         time_point result;
         std::istringstream iss(trim(value));
@@ -236,44 +240,57 @@ namespace ini::conversion
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
     }
 
-    path PathFromString(const std::string& value) { return path(trim(value)); }
-
-    std::string StringFromString(const std::string& value) { return trim(value); }
-
-    std::vector<bool> BoolListFromString(const std::string& value, char delimiter)
+    template <>
+    path FromString<path>(const std::string& value)
     {
-        return SplitValues<bool>(value, delimiter, [](const std::string& item) { return BoolFromString(item); });
+        return path(trim(value));
     }
 
-    std::vector<int> IntegerListFromString(const std::string& value, char delimiter)
+    template <>
+    std::string FromString<std::string>(const std::string& value)
     {
-        return SplitValues<int>(value, delimiter, [](const std::string& item) { return IntegerFromString(item); });
+        return trim(value);
     }
 
-    std::vector<double> FloatingPointListFromString(const std::string& value, char delimiter)
+    template <>
+    std::vector<bool> FromMultiValueString<bool>(const std::string& value, char delimiter)
+    {
+        return SplitValues<bool>(value, delimiter, [](const std::string& item) { return FromString<bool>(item); });
+    }
+
+    template <>
+    std::vector<int> FromMultiValueString<int>(const std::string& value, char delimiter)
+    {
+        return SplitValues<int>(value, delimiter, [](const std::string& item) { return FromString<int>(item); });
+    }
+
+    template <>
+    std::vector<double> FromMultiValueString<double>(const std::string& value, char delimiter)
     {
         return SplitValues<double>(value, delimiter, [](const std::string& item) {
-            return FloatingPointFromString(item);
+            return FromString<double>(item);
         });
     }
 
-    std::vector<time_point> TimePointListFromString(const std::string& value, TimePointFormat format,
-                                                                   char delimiter)
+    std::vector<time_point> FromMultiValueString(const std::string& value, TimePointFormat format,
+                                                 char delimiter)
     {
         return SplitValues<time_point>(value, delimiter, [format](const std::string& item) {
-            return TimePointFromString(item, format);
+            return FromString(item, format);
         });
     }
 
-    std::vector<path> PathListFromString(const std::string& value, char delimiter)
+    template <>
+    std::vector<path> FromMultiValueString<path>(const std::string& value, char delimiter)
     {
-        return SplitValues<path>(value, delimiter, [](const std::string& item) { return PathFromString(item); });
+        return SplitValues<path>(value, delimiter, [](const std::string& item) { return FromString<path>(item); });
     }
 
-    std::vector<std::string> StringListFromString(const std::string& value, char delimiter)
+    template <>
+    std::vector<std::string> FromMultiValueString<std::string>(const std::string& value, char delimiter)
     {
         return SplitValues<std::string>(value, delimiter, [](const std::string& item) {
-            return StringFromString(item);
+            return FromString<std::string>(item);
         });
     }
 
