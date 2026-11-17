@@ -3,9 +3,9 @@
 #include <array>
 #include <limits>
 #include <ranges>
+#include <string>
 #include <utility>
 
-#include "test_utilities.hpp"
 #include "coupling_test_data.hpp"
 #include "coupling_steps.hpp"
 #include "csumo_settings_reader.hpp"
@@ -141,7 +141,7 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
 {
     auto result = pre_c_sumo::readCsumoSettingsFile("non_existent_file.xml");
     EXPECT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
+    EXPECT_TRUE(result.error().message.contains("Cannot open file: "));
 }
 
 TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesPropagatesValidationErrorWithoutIO)
@@ -623,11 +623,11 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     {
         const std::string error_message = result.error().message;
         // Verify that the error message contains "Negative entrainment factor"
-        EXPECT_PRED2(test_utilities::contains, error_message, "Negative entrainment factor");
+        EXPECT_TRUE(error_message.contains("Negative entrainment factor"));
         // Verify that the error message contains the sink index (should be 1, since delta from sink 0 to 1)
-        EXPECT_PRED2(test_utilities::contains, error_message, "1");
+        EXPECT_TRUE(error_message.contains("1"));
         // Verify that the error message contains the negative delta_s value
-        EXPECT_PRED2(test_utilities::contains, error_message, "-");
+        EXPECT_TRUE(error_message.contains("-"));
     }
 
     // Verify (once more) that an error was returned.

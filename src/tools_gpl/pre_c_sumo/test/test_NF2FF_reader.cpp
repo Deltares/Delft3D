@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <string>
 #include <string_view>
 
-#include "test_utilities.hpp"
 #include "NF2FF_reader.hpp"
 
 namespace
@@ -397,7 +397,7 @@ TEST(NF2FFReaderTest, ReturnsErrorOnInvalidXml)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString("not valid xml at all <<<");
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::starts_with, result.error().message, "Failed to parse XML: ");
+    EXPECT_TRUE(result.error().message.starts_with("Failed to parse XML: "));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongRootElement)
@@ -405,7 +405,7 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongRootElement)
     constexpr std::string_view xml = R"(<?xml version="1.0"?><notvalid><fileVersion>0.3</fileVersion></notvalid>)";
     const auto result = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Root element must be <NF2FF>, got: <notvalid>");
+    EXPECT_TRUE(result.error().message.contains("Root element must be <NF2FF>, got: <notvalid>"));
 }
 
 TEST(NF2FFReaderTest, ParsesFileVersion)
@@ -420,7 +420,7 @@ TEST(NF2FFReaderTest, ReturnsErrorOnMissingFileVersion)
     constexpr std::string_view xml = R"(<?xml version="1.0"?><NF2FF></NF2FF>)";
     const auto result = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <fileVersion> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <fileVersion> not found"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnEmptyFileVersion)
@@ -428,22 +428,22 @@ TEST(NF2FFReaderTest, ReturnsErrorOnEmptyFileVersion)
     constexpr std::string_view xml = R"(<?xml version="1.0"?><NF2FF><fileVersion></fileVersion></NF2FF>)";
     const auto result = pre_c_sumo::NF2FFReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <fileVersion> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <fileVersion> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongFileVersion)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_version);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "Element <fileVersion> should be 0.3, got: 0.1 instead");
+    EXPECT_TRUE(result.error().message.contains(
+                 "Element <fileVersion> should be 0.3, got: 0.1 instead"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingDischarge)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_discharge);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <discharge> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <discharge> not found"));
 }
 
 TEST(NF2FFReaderTest, ParsesQintake)
@@ -458,28 +458,28 @@ TEST(NF2FFReaderTest, ReturnsErrorEmptyQintake)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_intake_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <Qintake> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongQintake)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_intake_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qintake> contains invalid token: 'abcd'");
+    EXPECT_TRUE(result.error().message.contains("<Qintake> contains invalid token: 'abcd'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnSurplusQintake)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_surplus_intake_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qintake> must contain exactly one numeric value");
+    EXPECT_TRUE(result.error().message.contains("<Qintake> must contain exactly one numeric value"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnNegativeQintake)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_negative_intake_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qintake> should be a value >= 0.0");
+    EXPECT_TRUE(result.error().message.contains("Element <Qintake> should be a value >= 0.0"));
 }
 
 TEST(NF2FFReaderTest, ParsesMissingQintakeAsZero)
@@ -501,28 +501,28 @@ TEST(NF2FFReaderTest, ReturnsErrorEmptyQsource)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_source_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <Qsource> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <Qsource> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongQsource)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_source_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qsource> contains invalid token: 'abcd'");
+    EXPECT_TRUE(result.error().message.contains("<Qsource> contains invalid token: 'abcd'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnSurplusQsource)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_surplus_source_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<Qsource> must contain exactly one numeric value");
+    EXPECT_TRUE(result.error().message.contains("<Qsource> must contain exactly one numeric value"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingQsource)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_source_flow);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <Qsource> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <Qsource> not found"));
 }
 
 TEST(NF2FFReaderTest, ParsesOperator)
@@ -537,22 +537,22 @@ TEST(NF2FFReaderTest, ReturnsErrorOnEmptyOperator)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_operator);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <constituentsOperator> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <constituentsOperator> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongOperator)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_operator);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "<constituentsOperator> has unknown value: 'abcd'; expected 'absolute' or 'excess'");
+    EXPECT_TRUE(result.error().message.contains(
+                 "<constituentsOperator> has unknown value: 'abcd'; expected 'absolute' or 'excess'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingOperator)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_operator);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <constituentsOperator> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <constituentsOperator> not found"));
 }
 
 TEST(NF2FFReaderTest, ParsesConstituents)
@@ -569,28 +569,28 @@ TEST(NF2FFReaderTest, ReturnsErrorOnEmptyConstituents)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_constituents);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <constituents> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <constituents> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongConstituents)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_constituents);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<constituents> contains invalid token: 'abcd'");
+    EXPECT_TRUE(result.error().message.contains("<constituents> contains invalid token: 'abcd'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingConstituents)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_constituents);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <constituents> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <constituents> not found"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingNFResult)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_nfresult);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <NFResult> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <NFResult> not found"));
 }
 
 TEST(NF2FFReaderTest, ParsesSources)
@@ -651,37 +651,37 @@ TEST(NF2FFReaderTest, ReturnsErrorOnMissingSources)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_sources);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <sources> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <sources> not found"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnEmptySources)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_sources);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <sources> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <sources> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSources)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<sources> contains invalid token: 'abcd'");
+    EXPECT_TRUE(result.error().message.contains("<sources> contains invalid token: 'abcd'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooFewValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_few_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "Found line in <sources> with 5 values; expected 6 to 9 values");
+    EXPECT_TRUE(result.error().message.contains(
+                 "Found line in <sources> with 5 values; expected 6 to 9 values"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooManyValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_many_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "Found line in <sources> with 10 values; expected 6 to 9 values");
+    EXPECT_TRUE(result.error().message.contains(
+                 "Found line in <sources> with 10 values; expected 6 to 9 values"));
 }
 
 TEST(NF2FFReaderTest, ParsesSinks)
@@ -728,35 +728,35 @@ TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_sinks);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Required element <sinks> not found");
+    EXPECT_TRUE(result.error().message.contains("Required element <sinks> not found"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnEmptySinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_empty_sinks);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "Element <sinks> is empty");
+    EXPECT_TRUE(result.error().message.contains("Element <sinks> is empty"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sinks);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message, "<sinks> contains invalid token: 'abcd'");
+    EXPECT_TRUE(result.error().message.contains("<sinks> contains invalid token: 'abcd'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSinksTooFewValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sinks_too_few_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "Found line in <sinks> with 5 values; expected 6 to 6 values");
+    EXPECT_TRUE(result.error().message.contains(
+                 "Found line in <sinks> with 5 values; expected 6 to 6 values"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSinksTooManyValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sinks_too_many_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_PRED2(test_utilities::contains, result.error().message,
-                 "Found line in <sinks> with 7 values; expected 6 to 6 values");
+    EXPECT_TRUE(result.error().message.contains(
+                 "Found line in <sinks> with 7 values; expected 6 to 6 values"));
 }

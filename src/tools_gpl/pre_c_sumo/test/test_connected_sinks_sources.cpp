@@ -1,8 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <string_view>
-
-#include "test_utilities.hpp"
 #include "connected_sinks_sources.hpp"
 
 TEST(ConnectedSinkSourcesTest, CanInitializeAddItemAndClear)
