@@ -2039,11 +2039,11 @@ contains
             end if
 
             if (allocated(standard_names)) then
-               quantityname = standard_names(1)
+               quantityname = trim(standard_names(1))
             end if
          else
             if (allocated(variable_names)) then
-               quantityname = variable_names(1)
+               quantityname = trim(variable_names(1))
             end if
          end if
       else
