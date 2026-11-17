@@ -557,6 +557,30 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'waterlevel'
          ncstdnames(1) = 'sea_surface_height'
+      case ('salinitybnd')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'so'
+         ncstdnames(1) = 'salinity'
+         ncstdnames_fallback(1) = 'sea_water_salinity'
+      case ('temperaturebnd')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         allocate (ncstdnames_fallback(1))
+         ncvarnames(1) = 'thetao'
+         ncstdnames(1) = 'temperature'
+         ncstdnames_fallback(1) = 'sea_water_potential_temperature'
+      case ('uxuyadvectionvelocitybnd')
+         allocate (ncvarnames(2))
+         allocate (ncstdnames(2))
+         allocate (ncstdnames_fallback(2))
+         ncvarnames(1) = 'ux'
+         ncstdnames(1) = 'x_velocity'
+         ncstdnames_fallback(1) = 'eastward_sea_water_velocity'
+         ncvarnames(2) = 'uy'
+         ncstdnames(2) = 'y_velocity'
+         ncstdnames_fallback(2) = 'northward_sea_water_velocity'
       case ('wavesignificantheight')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))
