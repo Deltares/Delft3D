@@ -1219,11 +1219,7 @@ contains
       end if
 
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
-      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'uniformHorizontalEddyViscosity' is not found.
-         call prop_get(md_ptr, 'physics', 'Vicouv', uniform_horizontal_eddy_viscosity)
-      end if
+      call prop_get(md_ptr, 'physics', 'Vicouv', uniform_horizontal_eddy_viscosity)
 
       call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, success)
       if (.not. success) then
@@ -3507,7 +3503,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', manning_friction_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
       call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
 
-      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'vicouv', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyViscosity', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
