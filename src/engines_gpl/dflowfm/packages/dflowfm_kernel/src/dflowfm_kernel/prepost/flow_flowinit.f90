@@ -294,9 +294,7 @@ contains
       call initialize_temperature_3D()
       call initialize_sediment_3D()
 
-      ! hk: and, make sure this is done prior to fill constituents
       if (jarestart > OFF) then
-         call initialize_salinity_temperature_on_boundary()
          call restore_au_q1_3D_for_1st_history_record()
       end if
 
@@ -305,15 +303,6 @@ contains
          call qnerror('Error occurred when setting external forcings.', ' ', ' ')
          return
       end if
-
-      if (jasal > OFF) then
-         call fill_constituents_with_salinity()
-      end if
-      if (itemp > OFF) then
-         call fill_constituents_with_temperature()
-      end if
-
-      call initialise_density_at_cell_centres()
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -392,6 +381,16 @@ contains
          deallocate (weirdte_save)
       end if
       call temporary_fix_for_sepr_3D()
+
+      ! Apply prescribed boundary values once the active flow-link layers are known.
+      call initialize_salinity_temperature_on_boundary()
+      if (jasal > OFF) then
+         call fill_constituents_with_salinity()
+      end if
+      if (itemp > OFF) then
+         call fill_constituents_with_temperature()
+      end if
+      call initialise_density_at_cell_centres()
 
       call volsur()
       call a1vol1tot()
