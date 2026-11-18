@@ -302,8 +302,11 @@ namespace pre_c_sumo
         const pugi::xml_node intakes_node = parsing_utils::findChild(nfresult_node, "intakes");
         if (intakes_node)
         {
-            ASSIGN_OR_RETURN(const auto intakes_text, parsing_utils::requiredChildText(nfresult_node, "intakes"));
-            ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
+            const std::string_view intakes_text = intakes_node.child_value();
+            if (intakes_text.find_first_not_of(" \t\r\n") != std::string_view::npos)
+            {
+                ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
+            }
         }
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
         ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));
@@ -312,7 +315,7 @@ namespace pre_c_sumo
         // End NFResult
 
         // Compose result
-        return NF2FFData{std::move(file_version), intake_flow_rate, source_flow_rate, constituents_operator,
+        return NF2FFData{std::move(file_version), intake_flow_rate,   source_flow_rate,   constituents_operator,
                          std::move(constituents), std::move(intakes), std::move(sources), std::move(sinks)};
     }
 

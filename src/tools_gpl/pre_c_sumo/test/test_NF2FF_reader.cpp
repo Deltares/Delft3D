@@ -63,6 +63,26 @@ namespace
     </NFResult>
   </NF2FF>)";
 
+    constexpr std::string_view valid_xml_empty_intakes = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>0.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+        <intakes/>
+        <sinks>
+           250.000 350.087 9.700 1.000 0.000 0.000
+        </sinks>
+        <sources>
+           1050.000 350.365 5.000 5.000 5 15.000
+        </sources>
+     </NFResult>
+  </NF2FF>)";
+
     constexpr std::string_view invalid_xml_empty_intake_flow = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
@@ -435,8 +455,7 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongFileVersion)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_version);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains(
-                 "Element <fileVersion> should be 0.3, got: 0.1 instead"));
+    EXPECT_TRUE(result.error().message.contains("Element <fileVersion> should be 0.3, got: 0.1 instead"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingDischarge)
@@ -545,7 +564,7 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongOperator)
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_operator);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains(
-                 "<constituentsOperator> has unknown value: 'abcd'; expected 'absolute' or 'excess'"));
+        "<constituentsOperator> has unknown value: 'abcd'; expected 'absolute' or 'excess'"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingOperator)
@@ -672,16 +691,14 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooFewValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_few_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains(
-                 "Found line in <sources> with 5 values; expected 6 to 9 values"));
+    EXPECT_TRUE(result.error().message.contains("Found line in <sources> with 5 values; expected 6 to 9 values"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooManyValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_many_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains(
-                 "Found line in <sources> with 10 values; expected 6 to 9 values"));
+    EXPECT_TRUE(result.error().message.contains("Found line in <sources> with 10 values; expected 6 to 9 values"));
 }
 
 TEST(NF2FFReaderTest, ParsesSinks)
@@ -724,6 +741,28 @@ TEST(NF2FFReaderTest, ParsesIntakes)
     EXPECT_FALSE(intakes[1].has_weight);
 }
 
+TEST(NF2FFReaderTest, ParsesEmptyIntakesWhenIntakeDischargeIsZero)
+{
+    const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml_empty_intakes);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_DOUBLE_EQ(result->intake_flow_rate, 0.0);
+    EXPECT_TRUE(result->intakes.empty());
+}
+
+TEST(NF2FFReaderTest, ParsesEmptyIntakesWithNonzeroIntakeDischarge)
+{
+    std::string xml{valid_xml_empty_intakes};
+    constexpr std::string_view zero_intake_flow = "<Qintake>0.0</Qintake>";
+    const auto intake_flow_position = xml.find(zero_intake_flow);
+    ASSERT_NE(intake_flow_position, std::string::npos);
+    xml.replace(intake_flow_position, zero_intake_flow.size(), "<Qintake>10.0</Qintake>");
+
+    const auto result = pre_c_sumo::NF2FFReader::fromString(xml);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_DOUBLE_EQ(result->intake_flow_rate, 10.0);
+    EXPECT_TRUE(result->intakes.empty());
+}
+
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_no_sinks);
@@ -749,14 +788,12 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongSinksTooFewValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sinks_too_few_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains(
-                 "Found line in <sinks> with 5 values; expected 6 to 6 values"));
+    EXPECT_TRUE(result.error().message.contains("Found line in <sinks> with 5 values; expected 6 to 6 values"));
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnWrongSinksTooManyValues)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sinks_too_many_values);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains(
-                 "Found line in <sinks> with 7 values; expected 6 to 6 values"));
+    EXPECT_TRUE(result.error().message.contains("Found line in <sinks> with 7 values; expected 6 to 6 values"));
 }
