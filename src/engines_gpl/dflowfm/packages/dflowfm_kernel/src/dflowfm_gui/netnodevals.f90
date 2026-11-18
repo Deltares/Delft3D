@@ -86,7 +86,7 @@ contains
                !if (irov == 1) then         ! partial slip
                !   uar = walls(16,k)
                !else if (irov == 2) then    ! no slip
-               !   uar = 0.d0 ! walls(16,k)               ! *(1d0/walls(6,k) - 1d0/vonkar)
+               !   uar = 0.d0 ! walls(16,k)               ! *(1d0/walls(6,k) - 1d0/VON_KARMAN)
                !endif
                uar = walls(16, k)
                UAR = 0.5_dp * UAR * WALLS(9, K)
