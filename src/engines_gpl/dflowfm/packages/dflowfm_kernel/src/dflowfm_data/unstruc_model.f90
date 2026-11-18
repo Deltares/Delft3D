@@ -1185,11 +1185,7 @@ contains
       uniform_friction_coefficient_1D = uniform_friction_coefficient_2D
       uniform_friction_coefficient_1D2D = uniform_friction_coefficient_2D
 
-      call prop_get(md_ptr, 'physics', 'uniformFrictiontype', uniform_friction_type, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
-      end if
-
+      call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
 
@@ -3502,9 +3498,10 @@ contains
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
 
       ! Physics
-      call prop_set(prop_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on uniformFrictionType].')
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
-      call prop_set(prop_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on unifFrictType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on unifFrictType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on unifFrictType].')
       call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficientLinear', uniform_friction_coefficient_linear, 'Uniform linear friction coefficient.')
       if (writeall .or. uniform_friction_coefficient_groundlayer > 0) then
          call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficientGroundlayer', uniform_friction_coefficient_groundlayer, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
