@@ -1,15 +1,13 @@
 !> Tests for tridiagonal solves, input preservation and small-pivot handling.
 module test_tridag
-   use assertions_gtest, only: f90_expect_near, f90_expect_eq, f90_expect_true
-   use MessageHandling, only: SetMessageHandling, getLastMessage, thresholdLvl_log, LEVEL_ALL, LEVEL_INFO
+   use assertions_gtest, only: f90_expect_near
    use precision, only: dp
-   use m_tridag, only: tridag, tridag_two_rhs, reset_tridag_pivot_count, report_tridag_pivot_count
+   use m_tridag, only: tridag, tridag_two_rhs
 
    implicit none(type, external)
    private
    public :: test_single_rhs, test_varying_sizes, test_two_rhs, test_zero_rhs, test_zero_constant_rhs
    public :: test_first_pivot, test_eliminated_pivot
-   public :: test_pivot_count
 
    real(kind=dp), parameter :: tolerance = 1.0e-12_dp
 
@@ -191,52 +189,6 @@ contains
                               "Paired signed eliminated pivot solution")
       end do
    end subroutine test_eliminated_pivot
-
-   !$gtest
-   !> Count regularized pivots across both solvers and report the partition-local total.
-   subroutine test_pivot_count() bind(C)
-      integer, parameter :: num_solves = 128
-      real(kind=dp), dimension(2) :: lower, diagonal, upper, rhs, normalized_upper, solution, constant_solution
-      character(len=160) :: message
-      integer :: i, level, previous_threshold
-
-      previous_threshold = thresholdLvl_log
-      call SetMessageHandling(useLog=.true., thresholdLevel_log=LEVEL_ALL, reset_counters=.true.)
-      call reset_tridag_pivot_count()
-      lower = 0.0_dp
-      upper = 0.0_dp
-      diagonal = 1.0_dp
-      rhs = 1.0_dp
-      call tridag(lower, diagonal, upper, rhs, normalized_upper, solution, 2)
-      diagonal = 1.0e-15_dp
-      call tridag_two_rhs(lower, diagonal, upper, rhs, 1.0_dp, normalized_upper, solution, constant_solution, 2)
-      call report_tridag_pivot_count(3)
-      call getLastMessage(level, message)
-      call f90_expect_eq(level, LEVEL_INFO, "No regularized pivots")
-      call f90_expect_true(trim(message) == "Tridiagonal pivot floor applications on partition 3: 0", "Zero count")
-
-      diagonal = 0.0_dp
-      !$omp parallel do private(i, normalized_upper, solution, constant_solution)
-      do i = 1, num_solves
-         if (mod(i, 2) == 0) then
-            call tridag(lower, diagonal, upper, rhs, normalized_upper, solution, 2)
-         else
-            call tridag_two_rhs(lower, diagonal, upper, rhs, 1.0_dp, normalized_upper, solution, constant_solution, 2)
-         end if
-      end do
-      !$omp end parallel do
-      call report_tridag_pivot_count(3)
-      call getLastMessage(level, message)
-      call f90_expect_eq(level, LEVEL_INFO, "Regularized pivots reported as diagnostic")
-      call f90_expect_true(trim(message) == "Tridiagonal pivot floor applications on partition 3: 256", "Pivot count")
-
-      call reset_tridag_pivot_count()
-      call report_tridag_pivot_count(3)
-      call getLastMessage(level, message)
-      call f90_expect_eq(level, LEVEL_INFO, "Counter reset")
-      call f90_expect_true(trim(message) == "Tridiagonal pivot floor applications on partition 3: 0", "Reset count")
-      call SetMessageHandling(thresholdLevel_log=previous_threshold)
-   end subroutine test_pivot_count
 
    pure function matrix_vector_product(lower, diagonal, upper, vector) result(product)
       real(kind=dp), dimension(:), intent(in) :: lower, diagonal, upper, vector

@@ -60,7 +60,6 @@ contains
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
       use m_extract_constituents, only: print_extract_constituents_message
-      use m_tridag, only: report_tridag_pivot_count
 #ifdef _OPENMP
       use omp_lib
 #endif
@@ -77,11 +76,6 @@ contains
       real(kind=dp) :: totalcomp
       real(kind=dp) :: timeloop
 
-      if (jampi == 1) then
-         call report_tridag_pivot_count(my_rank)
-      else
-         call report_tridag_pivot_count(0)
-      end if
       if (ndx == 0) then
          write (msgbuf, '(a)') 'Empty model, no flow cells found. No statistics to report.'
          call msg_flush()

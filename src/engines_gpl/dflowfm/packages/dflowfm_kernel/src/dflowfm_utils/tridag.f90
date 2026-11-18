@@ -30,7 +30,6 @@
 !
 !
 module m_tridag
-   use, intrinsic :: iso_fortran_env, only: int64
    use precision, only: dp
 
    implicit none(type, external)
@@ -38,11 +37,8 @@ module m_tridag
    private
 
    public :: tridag, tridag_two_rhs
-   public :: reset_tridag_pivot_count, report_tridag_pivot_count
 
    real(kind=dp), parameter :: PIVOT_FLOOR = 1.0e-15_dp
-   ! Temporary partition-local diagnostic, reported at the end of the run.
-   integer(kind=int64) :: pivot_floor_count = 0_int64
 
 contains
 
@@ -58,15 +54,13 @@ contains
       real(kind=dp), dimension(n), intent(out) :: normalized_upper !< Normalized upper-diagonal scratch coefficients; entry 1 is zero.
       real(kind=dp), dimension(n), intent(out) :: solution !< Solution.
 
-      integer :: row, regularized_pivots
+      integer :: row
       real(kind=dp) :: pivot, inverse_pivot
 
-      regularized_pivots = 0
       normalized_upper(1) = 0.0_dp
       pivot = diagonal(1)
       if (abs(pivot) < PIVOT_FLOOR) then
          pivot = sign(PIVOT_FLOOR, pivot)
-         regularized_pivots = regularized_pivots + 1
       end if
       inverse_pivot = 1.0_dp / pivot
       solution(1) = rhs(1) * inverse_pivot
@@ -75,7 +69,6 @@ contains
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
          if (abs(pivot) < PIVOT_FLOOR) then
             pivot = sign(PIVOT_FLOOR, pivot)
-            regularized_pivots = regularized_pivots + 1
          end if
          inverse_pivot = 1.0_dp / pivot
          solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
@@ -84,10 +77,6 @@ contains
       do row = n - 1, 1, -1
          solution(row) = solution(row) - normalized_upper(row + 1) * solution(row + 1)
       end do
-      if (regularized_pivots > 0) then
-         !$omp atomic update
-         pivot_floor_count = pivot_floor_count + int(regularized_pivots, int64)
-      end if
    end subroutine tridag
 
    !> Solve two systems with the same tridiagonal matrix and a shared elimination.
@@ -105,15 +94,13 @@ contains
       real(kind=dp), dimension(n), intent(out) :: solution !< Solution for rhs.
       real(kind=dp), dimension(n), intent(out) :: constant_solution !< Solution for constant_rhs.
 
-      integer :: row, regularized_pivots
+      integer :: row
       real(kind=dp) :: pivot, inverse_pivot
 
-      regularized_pivots = 0
       normalized_upper(1) = 0.0_dp
       pivot = diagonal(1)
       if (abs(pivot) < PIVOT_FLOOR) then
          pivot = sign(PIVOT_FLOOR, pivot)
-         regularized_pivots = regularized_pivots + 1
       end if
       inverse_pivot = 1.0_dp / pivot
       solution(1) = rhs(1) * inverse_pivot
@@ -124,7 +111,6 @@ contains
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
          if (abs(pivot) < PIVOT_FLOOR) then
             pivot = sign(PIVOT_FLOOR, pivot)
-            regularized_pivots = regularized_pivots + 1
          end if
          inverse_pivot = 1.0_dp / pivot
          solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
@@ -135,26 +121,6 @@ contains
          solution(row) = solution(row) - normalized_upper(row + 1) * solution(row + 1)
          constant_solution(row) = constant_solution(row) - normalized_upper(row + 1) * constant_solution(row + 1)
       end do
-      if (regularized_pivots > 0) then
-         !$omp atomic update
-         pivot_floor_count = pivot_floor_count + int(regularized_pivots, int64)
-      end if
    end subroutine tridag_two_rhs
-
-   !> Reset the partition-local count before a run.
-   subroutine reset_tridag_pivot_count()
-      pivot_floor_count = 0_int64
-   end subroutine reset_tridag_pivot_count
-
-   !> Report the number of pivots regularized on this partition.
-   subroutine report_tridag_pivot_count(partition_rank)
-      use MessageHandling, only: mess, LEVEL_INFO
-
-      integer, intent(in) :: partition_rank !< MPI rank of the partition, or zero in a serial run.
-      character(len=160) :: message
-
-      write (message, '(a,i0,a,i0)') 'Tridiagonal pivot floor applications on partition ', partition_rank, ': ', pivot_floor_count
-      call mess(LEVEL_INFO, trim(message))
-   end subroutine report_tridag_pivot_count
 
 end module m_tridag

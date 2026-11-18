@@ -92,13 +92,11 @@ contains
       use m_prefetch, only: cleanup_prefetch_arrays
       use m_source_sink, only: source_sinks
       use m_unstruc_netcdf_data, only: default_unstruc_netcdf_data
-      use m_tridag, only: reset_tridag_pivot_count
 
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
       ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
-      call reset_tridag_pivot_count()
       call default_fm_deprecated_keywords()
 
       call default_unstruc_netcdf_data()
