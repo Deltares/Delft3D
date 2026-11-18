@@ -55,23 +55,21 @@ contains
       real(kind=dp), dimension(n), intent(out) :: solution !< Solution.
 
       integer :: row
-      real(kind=dp) :: pivot, inverse_pivot
+      real(kind=dp) :: pivot
 
       normalized_upper(1) = 0.0_dp
       pivot = diagonal(1)
       if (abs(pivot) < PIVOT_FLOOR) then
          pivot = sign(PIVOT_FLOOR, pivot)
       end if
-      inverse_pivot = 1.0_dp / pivot
-      solution(1) = rhs(1) * inverse_pivot
+      solution(1) = rhs(1) / pivot
       do row = 2, n
-         normalized_upper(row) = upper(row - 1) * inverse_pivot
+         normalized_upper(row) = upper(row - 1) / pivot
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
          if (abs(pivot) < PIVOT_FLOOR) then
             pivot = sign(PIVOT_FLOOR, pivot)
          end if
-         inverse_pivot = 1.0_dp / pivot
-         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) / pivot
       end do
 
       do row = n - 1, 1, -1
@@ -82,7 +80,6 @@ contains
    !> Solve two systems with the same tridiagonal matrix and a shared elimination.
    !! The second right-hand side has the same value in every row.
    !! Pivots are regularized consistently with tridag.
-   !! Reciprocal pivots may cause small rounding differences from separate tridag calls.
    subroutine tridag_two_rhs(lower, diagonal, upper, rhs, constant_rhs, normalized_upper, solution, constant_solution, n)
       integer, intent(in) :: n !< Number of rows; must be at least one.
       real(kind=dp), dimension(n), intent(in) :: lower !< Lower diagonal; lower(1) is unused.
@@ -95,26 +92,24 @@ contains
       real(kind=dp), dimension(n), intent(out) :: constant_solution !< Solution for constant_rhs.
 
       integer :: row
-      real(kind=dp) :: pivot, inverse_pivot
+      real(kind=dp) :: pivot
 
       normalized_upper(1) = 0.0_dp
       pivot = diagonal(1)
       if (abs(pivot) < PIVOT_FLOOR) then
          pivot = sign(PIVOT_FLOOR, pivot)
       end if
-      inverse_pivot = 1.0_dp / pivot
-      solution(1) = rhs(1) * inverse_pivot
-      constant_solution(1) = constant_rhs * inverse_pivot
+      solution(1) = rhs(1) / pivot
+      constant_solution(1) = constant_rhs / pivot
 
       do row = 2, n
-         normalized_upper(row) = upper(row - 1) * inverse_pivot
+         normalized_upper(row) = upper(row - 1) / pivot
          pivot = diagonal(row) - lower(row) * normalized_upper(row)
          if (abs(pivot) < PIVOT_FLOOR) then
             pivot = sign(PIVOT_FLOOR, pivot)
          end if
-         inverse_pivot = 1.0_dp / pivot
-         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) * inverse_pivot
-         constant_solution(row) = (constant_rhs - lower(row) * constant_solution(row - 1)) * inverse_pivot
+         solution(row) = (rhs(row) - lower(row) * solution(row - 1)) / pivot
+         constant_solution(row) = (constant_rhs - lower(row) * constant_solution(row - 1)) / pivot
       end do
 
       do row = n - 1, 1, -1
