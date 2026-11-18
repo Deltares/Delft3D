@@ -1727,7 +1727,12 @@ contains
             topodimTmp = 2 ! For old format, the mesh topology is 2d
          end if
          if (topodimTmp == 1) then
-            ! Renumber 1D nodes starting from 1.
+            ! Renumber 1D nodes starting from 1, skipping any masked holes.
+            ! This is necessary because the writing of merged (global) output for 1D directly uses
+            ! the node_c2g mapping, contrary to the 2D face writing. The latter uses so-called
+            ! concatenated numbering for its output, which by construction is correct even for
+            ! input with masked grid parts (see earlier how face_c2cc uses nfaceglob for constructing
+            ! the 2D output numbering.
             call realloc(node_global_to_output, size(node_g2c), keepExisting=.false., fill=-1)
             inodeglob = 0
             do ip = 1, size(node_g2c)
