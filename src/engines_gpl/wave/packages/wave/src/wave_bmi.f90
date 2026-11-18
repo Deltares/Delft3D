@@ -64,6 +64,7 @@ integer(c_int) function initialize(c_mdw_file) result(c_iresult) bind(C, name="i
   !DEC$ ATTRIBUTES DLLEXPORT :: initialize
   use iso_c_binding, only: c_char
   use wave_main, only: wave_main_init
+  use wave_data, only: ONLINE_NONE, ONLINE_DIMR, stand_alone, flow_online
   !
   ! Global
   character(kind=c_char),intent(in)    :: c_mdw_file(MAXSTRLEN)
@@ -71,10 +72,20 @@ integer(c_int) function initialize(c_mdw_file) result(c_iresult) bind(C, name="i
   ! Local
   character(len=strlen(c_mdw_file)) :: mdw_file
   integer                           :: retval
+  integer                           :: online_in
   !
   ! Body
+  select case (wave_mode)
+  case (stand_alone)
+      online_in = ONLINE_NONE
+  case (flow_online)
+      online_in = ONLINE_DIMR
+  case default
+      write(*,*) "ERROR: D-Waves BMI_initialize: wave_mode has not been set"
+      call wavestop(1, "ERROR: D-Waves BMI_initialize: wave_mode has not been set")
+  end select
   mdw_file   = char_array_to_string(c_mdw_file, strlen(c_mdw_file))
-  retval     = wave_main_init(wave_mode, ONLINE_DIMR, mdw_file)
+  retval     = wave_main_init(wave_mode, online_in, mdw_file)
   c_iresult  = retval
 end function initialize
 !

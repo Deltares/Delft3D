@@ -33,6 +33,7 @@ program waves_main
 ! NONE
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
+   use wave_data, only: stand_alone, flow_online, ONLINE_NONE, ONLINE_DELFTIO, ONLINE_DIMR, ONLINE_PRECICE
    use precision
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -91,9 +92,10 @@ program waves_main
        mdw_file_read = .false.
        do arg=1,2
            call getarg(arg,tmpchar)
+           tmpchar = trim(tmpchar)
            if (.not. mode_read) then
-               if (trim(tmpchar)(1:9) == '--online=') then
-                   select case (trim(tmpchar)(10:))
+               if (tmpchar(1:9) == '--online=') then
+                   select case (tmpchar(10:))
                    case ('none')
                        mode_in   = stand_alone
                        online_in = ONLINE_NONE
@@ -115,6 +117,14 @@ program waves_main
                        mdw_file = trim(tmpchar)
                        mdw_file_read = .true.
                    else
+                       select case (mode_in)
+                       case (stand_alone)
+                           online_in = ONLINE_NONE
+                       case (flow_online, flow_mud_online)
+                           online_in = ONLINE_DELFTIO
+                       case default
+                           call wavestop(1, "Invalid command line argument: " // trim(tmpchar))
+                       end select
                        mode_read = .true.
                    end if
                end if
