@@ -1259,10 +1259,7 @@ contains
          call prop_get(md_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient)
       end if
 
-      call prop_get(md_ptr, 'physics', 'ElderCoefficient', elder_coefficient, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Elder', elder_coefficient)
-      end if
+      call prop_get(md_ptr, 'physics', 'Elder', elder_coefficient)
 
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
@@ -3517,7 +3514,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep; default: no limit.')
 
       call prop_set(prop_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, '[-] Smagorinsky coefficient in horizontal turbulence, e.g. 0.15')
-      call prop_set(prop_ptr, 'physics', 'ElderCoefficient', elder_coefficient, '[m2/s] Elder viscosity contribution in horizontal turbulence.')
+      call prop_set(prop_ptr, 'physics', 'Elder', elder_coefficient, '[m2/s] Elder viscosity contribution in horizontal turbulence.')
       call prop_set(prop_ptr, 'physics', 'irov', irov, '0=free slip, 1 = partial slip using wall_ks')
       call prop_set(prop_ptr, 'physics', 'wall_ks', wall_ks, 'Wall roughness type (0: free slip, 1: partial slip using wall_ks)')
       call prop_set(prop_ptr, 'physics', 'Rhomean', rhomean, 'Average water density (kg/m3)')

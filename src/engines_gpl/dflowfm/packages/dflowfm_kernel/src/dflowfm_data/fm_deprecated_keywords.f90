@@ -45,7 +45,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
 
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Elder', DEPRECATED, 'Use ElderCoefficient instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Smagorinsky', DEPRECATED, 'Use SmagorinskyCoefficient instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Vicwminb', DEPRECATED, 'Use minimumVerticalEddyViscosityForProduction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'xlozmidov', DEPRECATED, 'Use ozmidovLengthScale instead.')
