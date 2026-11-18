@@ -53,7 +53,7 @@ contains
       !     support variables
       integer(kind=int_wp), parameter :: lins = 11
       integer(kind=int_wp), parameter :: line = 1
-      integer(kind=int_wp), parameter :: louts = 3
+      integer(kind=int_wp), parameter :: louts = 5
       integer(kind=int_wp), parameter :: loute = 0
       integer(kind=int_wp), parameter :: npmsa = lins + line + louts + loute
       integer :: ipnt(npmsa)
