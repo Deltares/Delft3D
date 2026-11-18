@@ -877,12 +877,12 @@ contains
          if (covalue_sub(icon) > 0.0) then
             fm_uitzicht = .true.
             if (.not. fm_vtrans) then
-                num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-                isffmktop = num_spatial_time_fuctions
-                call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkTop')
-                num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-                isffmkbot = num_spatial_time_fuctions
-                call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='FMkBot')
+                num_spatial_time_functions = num_spatial_time_functions + 1
+                isffmktop = num_spatial_time_functions
+                call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='FMkTop')
+                num_spatial_time_functions = num_spatial_time_functions + 1
+                isffmkbot = num_spatial_time_functions
+                call realloc(sfunname, num_spatial_time_functions, keepExisting=.true., fill='FMkBot')
             end if
             call mess(LEVEL_INFO, 'Found switch ''sw_uitz'' > 0, added ''FMkTop'' and ''FMkBot''')
          end if
