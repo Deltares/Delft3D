@@ -1222,12 +1222,7 @@ contains
       call prop_get(md_ptr, 'physics', 'vicouv', uniform_horizontal_eddy_viscosity)
       call prop_get(md_ptr, 'physics', 'dicouv', uniform_horizontal_eddy_diffusivity)
       call prop_get(md_ptr, 'physics', 'vicoww', background_vertical_eddy_viscosity%scalar)
-
-      call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'backgroundVerticalEddyDiffusivity' is not found.
-         call prop_get(md_ptr, 'physics', 'Dicoww', background_vertical_eddy_diffusivity%scalar)
-      end if
+      call prop_get(md_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar)
 
       call prop_get(md_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, success)
       if (.not. success) then
@@ -3497,7 +3492,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'dicouv', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'vicoww', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (minimum_vertical_eddy_viscosity_for_production > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
