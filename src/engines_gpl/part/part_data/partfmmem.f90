@@ -53,6 +53,11 @@ module m_part_flow
 
     ! flow arrays
 
+    ! boundary related, dim = nobndl
+    integer :: nobndl !< Nr. of boundaries
+    double precision, allocatable, target :: xbnd(:) !< [-] Boundary x coordinate {"shape": ["nobndl"]}
+    double precision, allocatable, target :: ybnd(:) !< [-] Boundary y coordinate {"shape": ["nobndl"]}
+
     ! node related, dim = ndx
     double precision, allocatable :: h0(:)       !< [m] layer thickness at start of timestep {"location": "face", "shape": ["ndx"]}
     double precision, allocatable :: h1(:)       !< [m] layer thickness at end   of timestep {"location": "face", "shape": ["ndx"]}

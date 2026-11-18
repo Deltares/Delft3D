@@ -48,13 +48,17 @@ contains
         use m_sferic, only: jsferic, jasfer3D
         use geometry_module, only: dbdistance, sphertocart3D, normaloutchk, comp_masscenter
         use io_ugrid, only: UG_EDGETYPE_INTERNAL, UG_EDGETYPE_BND
+        use precision_basics, only: comparereal
         use timers
 
         type(t_hydrodynamics), intent(in) :: hyd                    !< description of the hydrodynamics
         type(t_ug_meshgeom), intent(in) :: waqgeom                !< model geometry
         type(t_openbndsect_coll), intent(in) :: openbndsect_coll       ! collection of openbndsects
 
-        integer :: ierr, i, j, k, L, ln, N, num_rows
+        type(t_openbnd_section), pointer   :: openbndsect            ! single section
+        type(t_open_boundary_line),pointer :: openbndlin             ! single open boundary lin
+
+        integer :: ierr, i_sect, i_bnd, bnd_id, i, j, k, L, ln, N, num_rows
         real(8) :: bottomlevel
 
         integer(4) ithndl              ! handle to time this subroutine
@@ -66,6 +70,26 @@ contains
         else
             jsferic = 0
         endif
+        
+        nobndl = hyd%nobndl
+        call realloc(xbnd, nobndl, keepExisting = .false., fill = dmiss)
+        call realloc(ybnd, nobndl, keepExisting = .false., fill = dmiss)
+        
+        do i_sect = 1 , openbndsect_coll%current_size
+            openbndsect => openbndsect_coll%openbndsect_pnts(i_sect)
+            do i_bnd = 1 , openbndsect%openbndlin_coll%current_size
+               openbndlin => openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)
+               if (comparereal(openbndlin%x1, openbndlin%x2) /= 0 .or. comparereal(openbndlin%y1, openbndlin%y2) /= 0) then
+                  bnd_id = abs(openbndlin%ibnd)
+                  If (bnd_id > 0 .and. bnd_id <= nobndl) then
+                     xbnd(bnd_id) = (openbndlin%x1 + openbndlin%x2) / 2.0d0
+                     ybnd(bnd_id) = (openbndlin%y1 + openbndlin%y2) / 2.0d0
+                  else
+                     write(*,*) "Warning: openbndlin%ibnd is out of range: ", openbndlin%ibnd
+                  end if
+               end if
+            end do
+         end do
 
         numk = waqgeom%numnode
         call realloc(xk, numk, keepExisting = .false., fill = dmiss)
@@ -98,6 +122,17 @@ contains
             endif
             lne(1, L) = max(waqgeom%edge_faces(1, L), 0)
             lne(2, L) = max(waqgeom%edge_faces(2, L), 0)
+            if (hyd%edge_type(L) == UG_EDGETYPE_BND) then
+               do i_bnd = 1, nobndl
+                  if (comparereal(xbnd(i_bnd), waqgeom%edgex(L)) == 0 .and. comparereal(ybnd(i_bnd), waqgeom%edgey(L)) == 0) then
+                     lne(2, L) = -i_bnd
+                     exit
+                  end if
+               end do
+               if (lne(2, L) == 0) then
+                  write (*,*) 'Warning: no boundary id found for edge: ', L
+               end if
+            endif
         enddo
         call realloc(q0, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
         call realloc(q1, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
