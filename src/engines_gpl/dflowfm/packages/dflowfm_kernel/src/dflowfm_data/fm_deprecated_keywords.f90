@@ -45,7 +45,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
 
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'xlozmidov', DEPRECATED, 'Use ozmidovLengthScale instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
 
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
