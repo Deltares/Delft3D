@@ -289,7 +289,7 @@ contains
    !$gtest
    subroutine test_getprof_1d__network1d__friction() bind(C)
       use network_data, only: numl
-      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
+      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main, q1_floodplain1, q1_floodplain2
       use m_flowgeom, only: lnx
       use m_flow_geominit, only: flow_geominit
       use m_network, only: initialize_1dadmin, deallocnetwork
@@ -327,6 +327,8 @@ contains
       call realloc(frcu, lnx)
       call realloc(frcu_mor, lnx)
       call realloc(q1_main, lnx)
+      call realloc(q1_floodplain1, lnx)
+      call realloc(q1_floodplain2, lnx)
 
       call default_channel_flow()
       call initialize_1dadmin(network, network%numl, numl)
