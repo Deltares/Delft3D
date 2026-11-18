@@ -157,6 +157,8 @@ contains
             call dd_prepare (lunit(2), nmaxp, mmaxp, lgrid, nbmax, &
                     &                     ndoms, nbnds, nconn, doms, bnds, &
                     &                     conn)
+        else
+            allocate( conn(0) ) ! Keep the debugger happy
         endif
         write (lunit(2), '(//a,a)') '  Succesful reading of the active grid file: ', fname(3)(:len_trim(fname(3)))
         close (lunit(3))

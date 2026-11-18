@@ -552,7 +552,8 @@ module m_flowparameters
       integer :: hs = 1 !< Water depths to map file, 0: no, 1: yes
       integer :: hu = 0 !< Water depths on u point to map file, 0: no, 1: yes
       integer :: anc = 0 !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
-      integer :: au = 0 !< Normal flow areas au to map file, 0: no, 1: yes
+      integer :: au = 0 !< Total flow areas, 1D hydraulic radii and flow widths to map file, 0: no, 1: yes
+      integer :: au_1d_sections = 0 !< Main channel and floodplain flow areas, hydraulic radii and flow widths to map file, 0: no, 1: yes
       integer :: u1 = 1 !< velocities to map file, 0: no, 1: yes
       integer :: u0 = 1 !< previous step velocities to map file, 0: no, 1: yes
       integer :: ucvec = 1 !< velocity vectors to map file, 0: no, 1: yes
@@ -564,6 +565,7 @@ module m_flowparameters
       integer :: z0 = 0 !< roughness heights to map file, 0: no, 1: yes
       integer :: chezy_elements = 0 !< chezy roughness in flow elements to map file, 0: no, 1: yes
       integer :: chezy_links = 0 !< chezy roughness on flow links to map file, 0: no, 1: yes
+      integer :: chezy_links_1d_sections = 0 !< Main channel and both floodplain Chezy values on flow links to map file, 0: no, 1: yes
       integer :: chezy_input = 0 !< chezy input roughness on flow links to map file, 0: no, 1: yes
       integer :: tem = 1 !< temperature to map file, 0: no, 1: yes
       integer :: heatflux = 0 !< heatflux to map file, 0: no, 1: yes
@@ -582,7 +584,7 @@ module m_flowparameters
       integer :: diu = 1 !< horizontal diffusity to map file, 0: no, 1: yes
       integer :: rho = 1 !< flow density to map file, 0: no, 1: yes
       integer :: q1 = 1 !< flow flux to map file, 0: no, 1: yes
-      integer :: q1main = 0 !< main channel flow flux to map file, 0: no, 1: yes
+      integer :: q1_1d_sections = 0 !< Main channel and both floodplain flow fluxes to map file, 0: no, 1: yes
       integer :: fw = 0 !< fixed weir energy loss to map file, 0: no, 1: yes
       integer :: spir = 1 !< spiral flow to map file, 0: no, 1: yes
       integer :: tidep = 1 !< tidal potential to map file, 0: no, 1: yes
