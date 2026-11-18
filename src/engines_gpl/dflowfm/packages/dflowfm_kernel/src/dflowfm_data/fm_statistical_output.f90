@@ -1928,7 +1928,7 @@ contains
                              '', 'm2', UNC_LOC_U, description='Write total flow area, 1D hydraulic radius and flow width to map file')
       call add_output_config(config_set_map, IDX_MAP_AU_MAIN, &
                              'Wrimap_flowarea_au_1d_sections', 'au_main', 'Main channel flow area at flow link', &
-                             '', 'm2', UNC_LOC_U, description='Write main channel and floodplain flow areas, hydraulic radii and flow widths to map file')
+                             '', 'm2', UNC_LOC_U, description='Write main channel and floodplain flow area, hydraulic radius and flow width to map file')
       call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN1, &
                              'Wrimap_flowarea_au_1d_sections', 'au_floodplain1', 'First floodplain flow area at flow link', &
                              '', 'm2', UNC_LOC_U)
