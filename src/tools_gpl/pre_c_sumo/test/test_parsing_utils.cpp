@@ -16,8 +16,8 @@ TEST(ParsingUtilsTest, ParseDoubleVectorAcceptsWhitespaceAndScientificNotation)
 
 TEST(ParsingUtilsTest, ParseDoubleVectorRejectsPartiallyParsedTokens)
 {
-    constexpr std::array<std::string_view, 8> inputs = {
-        "1junk", "1.2.3", "1e", "1e+", "1e-", "1e2junk", "10 20x 30", "1.0, 2.0"};
+    constexpr std::array<std::string_view, 8> inputs = {"1junk", "1.2.3",   "1e",        "1e+",
+                                                        "1e-",   "1e2junk", "10 20x 30", "1.0, 2.0"};
 
     for (const auto text : inputs)
     {

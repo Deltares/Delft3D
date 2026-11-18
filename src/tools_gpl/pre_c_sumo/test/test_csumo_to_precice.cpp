@@ -8,12 +8,25 @@ TEST(CSumoToPreciceTest, ConvertsNearFieldRecordsWithoutAnXmlReaderOrParticipant
         .source_flow_rate = 10.0,
         .constituents_operator = pre_c_sumo::ConstituentsOperator::Absolute,
         .constituents = {15.0, 2.0},
-        .sources = {
-            {.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0,
-             .u_magnitude = 4.0, .u_direction = 90.0, .weight = 1.0, .has_u = true, .has_weight = true},
-            {.x_coordinate = 30.0, .y_coordinate = 40.0, .z_coordinate = 6.0,
-             .u_magnitude = 4.0, .u_direction = 180.0, .weight = 3.0, .has_u = true, .has_weight = true},
-        },
+        .sources =
+            {
+                {.x_coordinate = 10.0,
+                 .y_coordinate = 20.0,
+                 .z_coordinate = 5.0,
+                 .u_magnitude = 4.0,
+                 .u_direction = 90.0,
+                 .weight = 1.0,
+                 .has_u = true,
+                 .has_weight = true},
+                {.x_coordinate = 30.0,
+                 .y_coordinate = 40.0,
+                 .z_coordinate = 6.0,
+                 .u_magnitude = 4.0,
+                 .u_direction = 180.0,
+                 .weight = 3.0,
+                 .has_u = true,
+                 .has_weight = true},
+            },
     };
 
     const auto converted = pre_c_sumo::convertCSumoToPrecice({}, {result}, {});
@@ -40,8 +53,7 @@ TEST(CSumoToPreciceTest, AddsDepthAveragedIntakeValuesToExcessConstituents)
         .constituents_operator = pre_c_sumo::ConstituentsOperator::Excess,
         .constituents = {3.0},
         .intakes = {{.x_coordinate = 1.0, .y_coordinate = 2.0, .z_coordinate = 2.0}},
-        .sources = {{.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0,
-                     .half_plume_height = 1.0}},
+        .sources = {{.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0, .half_plume_height = 1.0}},
     };
     pre_c_sumo::PreciceMesh mesh{};
     mesh.number_of_zcoordinates = 2;

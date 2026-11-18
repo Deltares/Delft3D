@@ -10,7 +10,7 @@
 namespace pre_c_sumo
 {
     FarFieldPoint2D convertPreciceToCSumoPoint(const std::size_t index_2d, const std::size_t index_3d,
-                                            const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d)
+                                               const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d)
     {
         std::vector<FarFieldLayer> layers;
         for (std::size_t i = 0; i < mesh_3d.number_of_zcoordinates; ++i)
@@ -51,8 +51,8 @@ namespace pre_c_sumo
     }
 
     FF2NFConfig convertPreciceToCSumo(const DiffuserSettings& diffuser, std::size_t mapping_index,
-                                     const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d,
-                                     double current_time_seconds)
+                                      const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d,
+                                      double current_time_seconds)
     {
         const auto subgrid_model_nr = static_cast<int>(mapping_index + 1);
         const auto& mapping = mesh_2d.forward_map[mapping_index];
@@ -76,10 +76,9 @@ namespace pre_c_sumo
                                  std::views::transform([](const auto id) { return std::string(id); }) |
                                  std::ranges::to<std::vector>(),
             .diffuser = convertPreciceToCSumoPoint(mapping.diffuser_index, mapping_3d.diffuser_index, mesh_2d, mesh_3d),
-            .intake = mapping.has_intake
-                          ? std::optional{convertPreciceToCSumoPoint(mapping.intake_index, mapping_3d.intake_index,
-                                                                    mesh_2d, mesh_3d)}
-                          : std::nullopt,
+            .intake = mapping.has_intake ? std::optional{convertPreciceToCSumoPoint(
+                                               mapping.intake_index, mapping_3d.intake_index, mesh_2d, mesh_3d)}
+                                         : std::nullopt,
             .ambient_points = std::move(ambient_points),
             .settings_xml_node = diffuser.settings_xml_node,
         };

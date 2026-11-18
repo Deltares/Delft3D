@@ -6,7 +6,7 @@
 namespace pre_c_sumo
 {
     std::filesystem::path ff2nfFilepath(const DiffuserSettings& diffuser, int subgrid_model_nr,
-                                      double current_time_seconds)
+                                        double current_time_seconds)
     {
         const std::string run_id = "preC-SUMO";
         return diffuser.ff2nf_dir /
@@ -14,7 +14,7 @@ namespace pre_c_sumo
     }
 
     std::filesystem::path nf2ffFilepath(const DiffuserSettings& diffuser, int subgrid_model_nr,
-                                      double current_time_seconds)
+                                        double current_time_seconds)
     {
         const std::string run_id = "preC-SUMO";
         const std::filesystem::path nf2ff_dir =

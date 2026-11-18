@@ -245,8 +245,7 @@ namespace
 
 namespace pre_c_sumo
 {
-    std::expected<CSumoSettings, parsing_utils::ParseError> CSumoSettingsReader::fromString(
-        const std::string_view xml)
+    std::expected<CSumoSettings, parsing_utils::ParseError> CSumoSettingsReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;
         const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());

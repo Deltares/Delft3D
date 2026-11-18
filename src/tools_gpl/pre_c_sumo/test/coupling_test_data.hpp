@@ -48,9 +48,10 @@ namespace coupling_test_data
      * @param intake_count Number of intake entries to emit; defaults to derived behavior.
      * @return std::string XML document as a string.
      */
-    inline std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake, double qintake,
-                                     std::size_t intake_count = std::numeric_limits<std::size_t>::max(),
-                                     double qsource = 10.0)
+    inline std::string build_nf2ff_xml(std::size_t sink_count, std::size_t source_count, bool include_qintake,
+                                       double qintake,
+                                       std::size_t intake_count = std::numeric_limits<std::size_t>::max(),
+                                       double qsource = 10.0)
     {
         const std::size_t effective_intake_count =
             intake_count == std::numeric_limits<std::size_t>::max() ? (include_qintake ? 1u : 0u) : intake_count;
@@ -113,6 +114,6 @@ namespace coupling_test_data
 </NF2FF>)";
         return xml.str();
     }
-}
+} // namespace coupling_test_data
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_TEST_COUPLING_TEST_DATA_HPP

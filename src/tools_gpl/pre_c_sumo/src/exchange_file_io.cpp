@@ -44,8 +44,7 @@ namespace pre_c_sumo
     {
     }
 
-    std::expected<std::string, parsing_utils::ParseError> readExchangeFile(
-        const std::filesystem::path& file_path)
+    std::expected<std::string, parsing_utils::ParseError> readExchangeFile(const std::filesystem::path& file_path)
     {
         std::ifstream file(file_path);
         if (!file)
@@ -56,13 +55,14 @@ namespace pre_c_sumo
         buffer << file.rdbuf();
         if (file.bad() || buffer.bad())
         {
-            return std::unexpected(parsing_utils::ParseError{std::format("Failed to read file: {}", file_path.string())});
+            return std::unexpected(
+                parsing_utils::ParseError{std::format("Failed to read file: {}", file_path.string())});
         }
         return buffer.str();
     }
 
-    std::expected<void, WriteError> writeExchangeFile(const std::filesystem::path& file_path,
-                                                        std::string_view xml, const ExchangeFileOperations& file_operations)
+    std::expected<void, WriteError> writeExchangeFile(const std::filesystem::path& file_path, std::string_view xml,
+                                                      const ExchangeFileOperations& file_operations)
     {
         const auto directory = file_path.parent_path();
         if (!directory.empty())

@@ -41,7 +41,7 @@ namespace
         return diffuser_mapping;
     }
 
-}
+} // namespace
 
 namespace pre_c_sumo
 {
@@ -56,8 +56,8 @@ namespace pre_c_sumo
      *
      *
      */
-    PreciceMesh createPreciceMesh(const std::string_view csumo_mesh_name, const std::vector<DiffuserSettings>& diffusers,
-                     const ZSpecification& z_spec)
+    PreciceMesh createPreciceMesh(const std::string_view csumo_mesh_name,
+                                  const std::vector<DiffuserSettings>& diffusers, const ZSpecification& z_spec)
     {
         const std::size_t dimensions = z_spec.numberOfDimensions();
         PreciceMesh mesh = {};

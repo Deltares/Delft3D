@@ -31,7 +31,7 @@ namespace
         };
         return file_operations;
     }
-}
+} // namespace
 
 TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVerticalCoordinates)
 {
@@ -78,8 +78,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     // Zero water level isolates the sign convention from the choice of vertical reference.
     // Bed depth is positive down: 10 means bed elevation z = -10 at both points.
     // Thus total water depth is surface elevation + bed depth = 0 + 10 = 10 m.
-    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0}},
-                         {pre_c_sumo::bed_levels_id, {10, 10}}};
+    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0}}, {pre_c_sumo::bed_levels_id, {10, 10}}};
     pre_c_sumo::PreciceMesh mesh_3d{};
     // Flattened (x, y, z) triples, with positive-up elevations: each point is sampled at z = -3 m.
     // Each sample is therefore 3 m below the zero-level surface and 7 m above the bed at z = -10 m.
@@ -91,7 +90,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     // Two vertices need six velocity components (vx, vy, vz per vertex) and two density values.
     // These values and the constituent values below only provide complete profiles for the writer.
     mesh_3d.quantities = {{pre_c_sumo::flow_velocities_id, std::vector<double>(6, 0.0)},
-                         {pre_c_sumo::densities_id, {1000, 1000}}};
+                          {pre_c_sumo::densities_id, {1000, 1000}}};
     for (const auto id : pre_c_sumo::constituent_ids)
     {
         mesh_3d.quantities[id] = {15, 15};
@@ -139,32 +138,29 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     // Horizontal vertices: diffuser = 0, ambient A = 1, ambient B = 2.
     mesh_2d.coordinates = {1, 2, 3, 4, 5, 6};
     mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
-                                                     .has_intake = false,
-                                                     .intake_index = 0,
-                                                     .number_of_ambient_points = 2,
-                                                     .first_ambient_point_index = 1}};
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 2,
+                                                       .first_ambient_point_index = 1}};
     mesh_2d.number_of_nodes = 3;
     mesh_2d.number_of_zcoordinates = 1;
-    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0}},
-                         {pre_c_sumo::bed_levels_id, {10, 10, 10}}};
+    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0}}, {pre_c_sumo::bed_levels_id, {10, 10, 10}}};
 
     pre_c_sumo::PreciceMesh mesh_3d{};
     // Two samples per horizontal point, stored column by column:
     // diffuser vertices 0,1; ambient A vertices 2,3; ambient B vertices 4,5.
-    mesh_3d.coordinates = {1, 2, -3, 1, 2, -1,
-                           3, 4, -3, 3, 4, -1,
-                           5, 6, -3, 5, 6, -1};
+    mesh_3d.coordinates = {1, 2, -3, 1, 2, -1, 3, 4, -3, 3, 4, -1, 5, 6, -3, 5, 6, -1};
     // Four ambient vertices represent two columns, each with two vertical samples.
     mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
-                                                     .has_intake = false,
-                                                     .intake_index = 0,
-                                                     .number_of_ambient_points = 4,
-                                                     .first_ambient_point_index = 2}};
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 4,
+                                                       .first_ambient_point_index = 2}};
     mesh_3d.number_of_nodes = 6;
     mesh_3d.number_of_zcoordinates = 2;
     // Distinct density markers identify which column and sample each value came from.
     mesh_3d.quantities = {{pre_c_sumo::flow_velocities_id, std::vector<double>(18, 0.0)},
-                         {pre_c_sumo::densities_id, {1000, 1000, 1010, 1011, 1020, 1021}}};
+                          {pre_c_sumo::densities_id, {1000, 1000, 1010, 1011, 1020, 1021}}};
     for (const auto id : pre_c_sumo::constituent_ids)
     {
         mesh_3d.quantities[id] = std::vector<double>(6, 15.0);
@@ -210,50 +206,44 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProf
     mesh_2d.coordinates = {1, 2, 3, 4, 5, 6, 7, 8};
     // There are no intakes; intake_index is unused. Each diffuser has one ambient vertex.
     // diffuser_index identifies a mesh vertex, not the diffuser's position in the settings list.
-    mesh_2d.forward_map = {
-        pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
-                                   .has_intake = false,
-                                   .intake_index = 0,
-                                   .number_of_ambient_points = 1,
-                                   .first_ambient_point_index = 1},
-        pre_c_sumo::DiffuserMapping{.diffuser_index = 2,
-                                   .has_intake = false,
-                                   .intake_index = 0,
-                                   .number_of_ambient_points = 1,
-                                   .first_ambient_point_index = 3}};
+    mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 1,
+                                                       .first_ambient_point_index = 1},
+                           pre_c_sumo::DiffuserMapping{.diffuser_index = 2,
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 1,
+                                                       .first_ambient_point_index = 3}};
     mesh_2d.number_of_nodes = 4;
     mesh_2d.number_of_zcoordinates = 1;
     // Surface elevation is zero everywhere. Positive-down bed depths make the total water
     // depth 10 m at D1 and 20 m at D2, so the two diffusers' 2D data can be distinguished.
-    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0, 0}},
-                         {pre_c_sumo::bed_levels_id, {10, 10, 20, 20}}};
+    mesh_2d.quantities = {{pre_c_sumo::water_levels_id, {0, 0, 0, 0}}, {pre_c_sumo::bed_levels_id, {10, 10, 20, 20}}};
 
     pre_c_sumo::PreciceMesh mesh_3d{};
     // Two (x, y, z) samples per column, at positive-up elevations -3 m and -1 m:
     // D1 vertices 0,1; ambient A 2,3; D2 4,5; ambient B 6,7.
-    mesh_3d.coordinates = {1, 2, -3, 1, 2, -1,
-                           3, 4, -3, 3, 4, -1,
-                           5, 6, -3, 5, 6, -1,
-                           7, 8, -3, 7, 8, -1};
+    mesh_3d.coordinates = {1, 2, -3, 1, 2, -1, 3, 4, -3, 3, 4, -1, 5, 6, -3, 5, 6, -1, 7, 8, -3, 7, 8, -1};
     // In 3D, diffuser_index is the first sample vertex of the diffuser's column.
     // Each ambient column occupies two vertices, hence the different counts and offsets.
-    mesh_3d.forward_map = {
-        pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
-                                   .has_intake = false,
-                                   .intake_index = 0,
-                                   .number_of_ambient_points = 2,
-                                   .first_ambient_point_index = 2},
-        pre_c_sumo::DiffuserMapping{.diffuser_index = 4,
-                                   .has_intake = false,
-                                   .intake_index = 0,
-                                   .number_of_ambient_points = 2,
-                                   .first_ambient_point_index = 6}};
+    mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 2,
+                                                       .first_ambient_point_index = 2},
+                           pre_c_sumo::DiffuserMapping{.diffuser_index = 4,
+                                                       .has_intake = false,
+                                                       .intake_index = 0,
+                                                       .number_of_ambient_points = 2,
+                                                       .first_ambient_point_index = 6}};
     mesh_3d.number_of_nodes = 8;
     mesh_3d.number_of_zcoordinates = 2;
     // Density markers distinguish every column and sample. D2 must use vertices 4,5.
     // Eight vertices require 24 velocity components; velocity and constituents are filler.
     mesh_3d.quantities = {{pre_c_sumo::flow_velocities_id, std::vector<double>(24, 0.0)},
-                         {pre_c_sumo::densities_id, {1000, 1001, 1010, 1011, 1020, 1021, 1030, 1031}}};
+                          {pre_c_sumo::densities_id, {1000, 1001, 1010, 1011, 1020, 1021, 1030, 1031}}};
     for (const auto id : pre_c_sumo::constituent_ids)
     {
         mesh_3d.quantities[id] = std::vector<double>(8, 15.0);

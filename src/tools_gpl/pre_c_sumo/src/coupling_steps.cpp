@@ -34,14 +34,14 @@ namespace pre_c_sumo
         return settings;
     }
 
-    std::expected<void, WriteError> writeFF2NFFiles(
-        const CSumoSettings& csumo_settings, const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d,
-        double current_time_seconds, const ExchangeFileOperations& file_operations)
+    std::expected<void, WriteError> writeFF2NFFiles(const CSumoSettings& csumo_settings, const PreciceMesh& mesh_2d,
+                                                    const PreciceMesh& mesh_3d, double current_time_seconds,
+                                                    const ExchangeFileOperations& file_operations)
     {
         for (std::size_t index = 0; index < csumo_settings.diffusers.size(); ++index)
         {
-            auto input = convertPreciceToCSumo(csumo_settings.diffusers[index], index, mesh_2d, mesh_3d,
-                                              current_time_seconds);
+            auto input =
+                convertPreciceToCSumo(csumo_settings.diffusers[index], index, mesh_2d, mesh_3d, current_time_seconds);
             const auto filename = std::filesystem::path(input.ff2nf_filename);
             ASSIGN_OR_RETURN(const auto xml, FF2NFWriter(std::move(input)).generate());
             RETURN_IF_ERROR(writeExchangeFile(filename, xml, file_operations));
@@ -82,8 +82,8 @@ namespace pre_c_sumo
         return total_delay_in_ms < timeout_in_ms;
     }
 
-    std::expected<std::vector<NF2FFData>, parsing_utils::ParseError> readNF2FFFiles(
-        const CSumoSettings& csumo_settings, double current_time_seconds)
+    std::expected<std::vector<NF2FFData>, parsing_utils::ParseError> readNF2FFFiles(const CSumoSettings& csumo_settings,
+                                                                                    double current_time_seconds)
     {
         std::vector<NF2FFData> results;
         for (const auto& path : nf2ffFilepaths(csumo_settings, current_time_seconds))

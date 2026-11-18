@@ -49,8 +49,8 @@ namespace pre_c_sumo
     }
 
     void SourcesSinks::addData(double new_sink_x, double new_sink_y, double new_sink_z_min, double new_sink_z_max,
-                              double new_source_x, double new_source_y, double new_source_z_min,
-                              double new_source_z_max, double new_discharge)
+                               double new_source_x, double new_source_y, double new_source_z_min,
+                               double new_source_z_max, double new_discharge)
     {
         sinks_x.push_back(new_sink_x);
         sinks_y.push_back(new_sink_y);

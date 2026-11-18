@@ -22,7 +22,8 @@ namespace pre_c_sumo
     }
 
     std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> writeConnectedSinkSources(
-        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids, ConnectedSinkSources& sources)
+        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids,
+        ConnectedSinkSources& sources)
     {
         const auto& data = sources.data();
         const std::size_t registered_vertex_count = precice_ids.size();

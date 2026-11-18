@@ -34,7 +34,8 @@ namespace pre_c_sumo
         }
 
         // Construct 2d mesh
-        PreciceMesh csumo_2d_mesh = createPreciceMesh("csumo_2d_nodes", csumo_settings->diffusers, ZSpecification{true, 0, 0, 0});
+        PreciceMesh csumo_2d_mesh =
+            createPreciceMesh("csumo_2d_nodes", csumo_settings->diffusers, ZSpecification{true, 0, 0, 0});
         participant.setMeshVertices(csumo_2d_mesh.name, csumo_2d_mesh.coordinates, csumo_2d_mesh.vertex_ids);
         // Add preCICE quantity data buffers.
         csumo_2d_mesh.quantities[water_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
@@ -66,8 +67,7 @@ namespace pre_c_sumo
             std::println(stderr, "Error: Unable to read initial NF2FF data: {}", initial_nf2ff_readers.error().message);
             return -1;
         }
-        auto initial_result =
-            convertCSumoToPrecice(csumo_settings->diffusers, *initial_nf2ff_readers, csumo_3d_mesh);
+        auto initial_result = convertCSumoToPrecice(csumo_settings->diffusers, *initial_nf2ff_readers, csumo_3d_mesh);
 
         if (!initial_result.has_value())
         {
@@ -120,8 +120,7 @@ namespace pre_c_sumo
                 std::println(stderr, "Error: Unable to read NF2FF data: {}", nf2ff_readers.error().message);
                 return -1;
             }
-            auto conversion_result =
-                convertCSumoToPrecice(csumo_settings->diffusers, *nf2ff_readers, csumo_3d_mesh);
+            auto conversion_result = convertCSumoToPrecice(csumo_settings->diffusers, *nf2ff_readers, csumo_3d_mesh);
             if (!conversion_result.has_value())
             {
                 std::println(stderr, "Unable to convert NF to ConnectedSinkSources: {}",
@@ -144,8 +143,8 @@ namespace pre_c_sumo
                              connected_sink_sources.get_number_of_entries(), sources_sinks.precice_ids.size());
             }
 
-            auto write_result =
-                writeConnectedSinkSources(participant, "sources_sinks_nodes", sources_sinks.precice_ids, connected_sink_sources);
+            auto write_result = writeConnectedSinkSources(participant, "sources_sinks_nodes", sources_sinks.precice_ids,
+                                                          connected_sink_sources);
 
             if (!write_result.has_value())
             {

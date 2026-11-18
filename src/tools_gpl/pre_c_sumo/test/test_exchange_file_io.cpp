@@ -32,7 +32,7 @@ namespace
         std::expected<void, pre_c_sumo::WriteError> directory_result;
         std::expected<void, pre_c_sumo::WriteError> write_result;
     };
-}
+} // namespace
 
 TEST_F(ExchangeFileTest, WritesSuppliedContentUnchangedAfterCreatingParentDirectories)
 {
@@ -58,8 +58,8 @@ TEST_F(ExchangeFileTest, BareFilenameSkipsDirectoryCreation)
 TEST_F(ExchangeFileTest, DirectoryFailureIsPropagatedWithoutWriting)
 {
     directory_result = std::unexpected(pre_c_sumo::WriteError{"directory creation failed"});
-    const auto result = pre_c_sumo::writeExchangeFile(
-        std::filesystem::path("output") / "FF2NF.xml", "<COSUMO/>", operations);
+    const auto result =
+        pre_c_sumo::writeExchangeFile(std::filesystem::path("output") / "FF2NF.xml", "<COSUMO/>", operations);
     ASSERT_FALSE(result.has_value());
     EXPECT_EQ(result.error().message, "directory creation failed");
     EXPECT_EQ(calls, (std::vector<std::string>{"create_directories"}));
@@ -68,8 +68,8 @@ TEST_F(ExchangeFileTest, DirectoryFailureIsPropagatedWithoutWriting)
 TEST_F(ExchangeFileTest, FileFailureIsPropagated)
 {
     write_result = std::unexpected(pre_c_sumo::WriteError{"file writing failed"});
-    const auto result = pre_c_sumo::writeExchangeFile(
-        std::filesystem::path("output") / "FF2NF.xml", "<COSUMO/>", operations);
+    const auto result =
+        pre_c_sumo::writeExchangeFile(std::filesystem::path("output") / "FF2NF.xml", "<COSUMO/>", operations);
     ASSERT_FALSE(result.has_value());
     EXPECT_EQ(result.error().message, "file writing failed");
     EXPECT_EQ(calls, (std::vector<std::string>{"create_directories", "write_file"}));
