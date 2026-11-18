@@ -166,8 +166,8 @@ contains
       profiles1D(1)%frccf = friction_value_
       profiles1D(1)%zmin = 0.0_dp
 
-      call realloc(frcu, lnx, fill=DMISS)
-      call realloc(ifrcutp, lnx, fill=0)
+      call realloc(frcu, lnx, fill=DMISS, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=0, keepExisting=.false.)
    end subroutine setup_prof1d_rectangular_cross_section_with_profile
 
    subroutine setup_prof1d_rectangular_cross_section_without_profile(width, height, friction_type, friction_value)
@@ -209,8 +209,8 @@ contains
       prof1D(3, 1) = -2.0_dp ! Profile type: -2 = closed rectangular
       ! Negative means "closed" profile
 
-      call realloc(frcu, lnx, fill=friction_value_)
-      call realloc(ifrcutp, lnx, fill=friction_type_)
+      call realloc(frcu, lnx, fill=friction_value_, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=friction_type_, keepExisting=.false.)
    end subroutine setup_prof1d_rectangular_cross_section_without_profile
 
    subroutine place_2d2d_link(p, q, new_link, error_code)
@@ -493,10 +493,10 @@ contains
          width=2.0_dp, height=1.5_dp, friction_type=R_MANNING, friction_value=0.013_dp)
       network%loaded = .false. ! Skip the channel_flow branch
 
-      call realloc(u1, lnx, fill=1.0_dp)
-      call realloc(v, lnx, fill=1.0_dp)
-      call realloc(frcu, lnx, fill=0.013_dp)
-      call realloc(ifrcutp, lnx, fill=R_MANNING)
+      call realloc(u1, lnx, fill=1.0_dp, keepExisting=.false.)
+      call realloc(v, lnx, fill=1.0_dp, keepExisting=.false.)
+      call realloc(frcu, lnx, fill=0.013_dp, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=R_MANNING, keepExisting=.false.)
       call realloc(cfuhi, lnx)
 
       ! Act

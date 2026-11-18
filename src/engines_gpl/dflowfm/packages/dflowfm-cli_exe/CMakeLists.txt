@@ -75,6 +75,14 @@ install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 
 if(WIN32)
+    add_custom_command(TARGET dflowfm-cli POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm-cli> $<TARGET_RUNTIME_DLLS:dflowfm-cli>
+        COMMAND_EXPAND_LISTS
+    )
+endif()
+add_subdirectory(test)
+
+if(WIN32)
    if(WITH_INTERACTER)
       add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../interacter install_interacter)
    endif()

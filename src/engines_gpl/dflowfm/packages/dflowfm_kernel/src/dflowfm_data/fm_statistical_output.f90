@@ -41,6 +41,15 @@ module fm_statistical_output
 contains
 
    subroutine close_fm_statistical_output()
+      call dealloc(out_variable_set_his)
+      call dealloc(out_variable_set_map)
+      call dealloc(out_variable_set_clm)
+      out_variable_set_his%count = 0
+      out_variable_set_map%count = 0
+      out_variable_set_clm%count = 0
+      out_variable_set_his%capacity = 0
+      out_variable_set_map%capacity = 0
+      out_variable_set_clm%capacity = 0
       if (allocated(obscrs_data)) then
          deallocate (obscrs_data)
       end if
@@ -76,6 +85,24 @@ contains
       end if
       if (allocated(qplat_data)) then
          deallocate (qplat_data)
+      end if
+      if (allocated(source_sink_discharge_out)) then
+         deallocate (source_sink_discharge_out)
+      end if
+      if (allocated(source_sink_discharge2_out)) then
+         deallocate (source_sink_discharge2_out)
+      end if
+      if (allocated(source_sink_discharge3_out)) then
+         deallocate (source_sink_discharge3_out)
+      end if
+      if (allocated(source_sink_cumulative_volume_out)) then
+         deallocate (source_sink_cumulative_volume_out)
+      end if
+      if (allocated(source_sink_water_discharge_out)) then
+         deallocate (source_sink_water_discharge_out)
+      end if
+      if (allocated(source_sink_average_discharge_previous_out)) then
+         deallocate (source_sink_average_discharge_previous_out)
       end if
    end subroutine close_fm_statistical_output
 

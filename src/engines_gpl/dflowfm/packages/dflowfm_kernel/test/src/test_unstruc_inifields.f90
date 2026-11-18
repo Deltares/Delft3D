@@ -1,4 +1,5 @@
 module test_unstruc_inifields
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use m_file_helpers, only: create_file
    use MessageHandling, only: GetMessageCount, GetMessage_MH, LEVEL_WARN, SetMessageHandling
@@ -100,6 +101,9 @@ module test_unstruc_inifields
 
 !$gtest
    subroutine test_read_unknown_operand() bind(C)
+      use messagehandling, only: LEVEL_FATAL
+
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: inifield_ptr => null()
       type(tree_data), pointer :: node_ptr => null()
 
@@ -128,6 +132,7 @@ module test_unstruc_inifields
 
       node_ptr => inifield_ptr%child_nodes(2)%node_ptr
       groupname = trim(tree_get_name(node_ptr))
+      call abort_threshold%set(LEVEL_FATAL)
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
       input = read_spatial_field_block(node_ptr)
       success = validate_spatial_field_input(input, INI_FILENAME, groupname, '')

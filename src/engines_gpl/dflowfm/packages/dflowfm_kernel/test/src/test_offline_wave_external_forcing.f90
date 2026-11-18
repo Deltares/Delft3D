@@ -1,4 +1,5 @@
 module test_offline_wave_external_forcing
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use precision, only: dp
 
@@ -170,16 +171,16 @@ contains
       use m_waveconst, only: WAVE_INPUT_DIRECTION, WAVE_INPUT_FORCE_X, WAVE_INPUT_FORCE_Y, WAVE_INPUT_PERIOD, &
                              WAVE_INPUT_SIGNIFICANT_HEIGHT, wave_input_is_required
       use m_waves, only: offline_wave_input_providers, offline_wave_input_requirements, sxwav, sywav
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: iresult
       logical :: success
 
       call create_scalar_bc_file(FORCE_X_BC_FILE, 'xwaveforce', 'N/m2', 1.0_dp, 3.0_dp)
       call create_scalar_bc_file(FORCE_Y_BC_FILE, 'ywaveforce', 'N/m2', -2.0_dp, 2.0_dp)
       call create_offline_wave_ext_file(POSITIVE_EXT_FILE, include_y_force=.true.)
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_offline_radiation_stress_case(POSITIVE_EXT_FILE)
 
       iresult = DFM_NOERR
@@ -216,16 +217,16 @@ contains
       use fm_external_forcings, only: finalize_offline_wave_input_requirements, init_new
       use m_waveconst, only: WAVE_INPUT_PERIOD, wave_input_is_required
       use m_waves, only: offline_wave_input_providers, offline_wave_input_requirements
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: iresult
 
       call create_scalar_bc_file(PERIOD_BC_FILE, 'waveperiod', 's', 4.0_dp, 6.0_dp)
       call create_scalar_bc_file(FORCE_X_BC_FILE, 'xwaveforce', 'N/m2', 1.0_dp, 3.0_dp)
       call create_scalar_bc_file(FORCE_Y_BC_FILE, 'ywaveforce', 'N/m2', -2.0_dp, 2.0_dp)
       call create_offline_wave_ext_file_with_period(OPTIONAL_PERIOD_EXT_FILE)
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_offline_radiation_stress_case(OPTIONAL_PERIOD_EXT_FILE)
 
       iresult = DFM_NOERR
@@ -249,14 +250,14 @@ contains
       use fm_external_forcings, only: init_new
       use m_waveconst, only: WAVE_INPUT_FORCE_Y, wave_input_is_required
       use m_waves, only: offline_wave_input_providers, offline_wave_input_requirements
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: iresult
 
       call create_scalar_bc_file(FORCE_X_BC_FILE, 'xwaveforce', 'N/m2', 1.0_dp, 3.0_dp)
       call create_offline_wave_ext_file(NEGATIVE_EXT_FILE, include_y_force=.false.)
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_offline_radiation_stress_case(NEGATIVE_EXT_FILE)
 
       iresult = DFM_NOERR

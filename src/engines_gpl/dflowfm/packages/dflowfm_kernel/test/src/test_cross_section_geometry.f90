@@ -2,7 +2,7 @@ module test_cross_section_geometry
    use assertions_gtest, only: f90_expect_eq, f90_expect_near
    use precision, only: dp
    use m_partitioninfo, only: fill_geometry_arrays_crs, jampi
-   use m_monitoring_crosssections, only: crs, ncrs, n_nodes_crs => nNodesCrs, &
+   use m_monitoring_crosssections, only: crs, ncrs, allocCrossSections, n_nodes_crs => nNodesCrs, &
                                         node_count_crs => nodeCountCrs, geom_x_crs => geomXCrs, geom_y_crs => geomYCrs
 
    implicit none(type, external)
@@ -18,7 +18,7 @@ contains
       original_jampi = jampi
       jampi = 0
       ncrs = 1
-      allocate (crs(ncrs))
+      call allocCrossSections(crs, ncrs)
       call set_path(1, reshape([1.0_dp, 2.0_dp], [2, 1]))
 
       call fill_geometry_arrays_crs()
@@ -44,7 +44,7 @@ contains
       original_jampi = jampi
       jampi = 0
       ncrs = 5
-      allocate (crs(ncrs))
+      call allocCrossSections(crs, ncrs)
       call set_path(1, reshape([1.0_dp, 2.0_dp], [2, 1]))
       crs(2)%path%lnx = 0
       call set_path(3, reshape([3.0_dp, 4.0_dp, 4.0_dp, 5.0_dp], [2, 2]))

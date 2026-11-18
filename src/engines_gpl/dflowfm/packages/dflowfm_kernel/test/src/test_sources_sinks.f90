@@ -3,8 +3,8 @@ module test_sources_sinks
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create, tree_create_node, tree_destroy
    use properties, only: prop_set
-   use MessageHandling, only: getLastMessage, LEVEL_ERROR, resetMessageCount_MH, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
-   use unstruc_messages, only: threshold_abort
+   use MessageHandling, only: getLastMessage, LEVEL_ERROR, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
+   use m_message_helpers, only: t_abort_threshold_guard
    use precision_basics, only: dp
    use m_missing, only: dmiss
    use m_file_helpers, only: create_file
@@ -34,7 +34,6 @@ contains
       integer :: error_level
       character(len=256) :: error_message
 
-      threshold_abort = LEVEL_FATAL
       call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
 
       call tree_create("sourcesinks.ext", tree)
@@ -47,7 +46,13 @@ contains
       call prop_set(block_ptr, "", "discharge",    "left.bc")
       call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
@@ -93,8 +98,14 @@ contains
       call prop_set(block_ptr, "", "discharge",    "left.bc")
       call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      call resetMessageCount_MH()
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)

@@ -17,7 +17,7 @@ contains
     !! coordinates of the grid need to be specified.
     subroutine make_square_grid(self, bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
         use precision, only: dp
-        use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, LINK_2D
+        use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, LINK_2D, dxe, dxe0
         use m_cell_geometry, only: xz, yz, ndx
         use m_alloc, only: realloc
         use m_dimens, only: kmax, lmax
@@ -37,6 +37,12 @@ contains
         integer :: i, row, col, link_index, bottom_left_node_index, up_node_index, right_node_index, up_right_node_index
 
         array_size_margin_ = 0
+        if (allocated(dxe)) then
+            deallocate (dxe)
+        end if
+        if (allocated(dxe0)) then
+            deallocate (dxe0)
+        end if
         if (present(array_size_margin)) then
             array_size_margin_ = array_size_margin
         end if

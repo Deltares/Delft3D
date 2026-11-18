@@ -274,8 +274,9 @@ contains
             write (*, '(a)') trim(msgbuf)
             call getbranch_dflowfm(msgbuf)
             write (*, '(a)') 'Source: '//trim(msgbuf)
-#ifdef __INTEL_COMPILER
-            write (*, '(a,f5.2)') "Compiled with Intel ifort, version ", (0.01 * __INTEL_COMPILER)
+#ifdef __INTEL_LLVM_COMPILER
+            write (*, '(a,i0,a,i0,a,i0)') "Compiled with Intel ifx, version ", &
+               __INTEL_LLVM_COMPILER / 10000, ".", mod(__INTEL_LLVM_COMPILER / 100, 100), ".", mod(__INTEL_LLVM_COMPILER, 100)
 #endif
             write (*, '(a)') 'Compiled with support for:'
             if (jaGUI == 1) then

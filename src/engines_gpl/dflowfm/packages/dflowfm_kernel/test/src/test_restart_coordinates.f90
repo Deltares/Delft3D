@@ -77,17 +77,20 @@ contains
       use m_flowgeom, only: xu, yu
       use m_sferic, only: jsferic, jasfer3D
       use m_partitioninfo, only: jampi
-      use messagehandling, only: SetMessageHandling, GetMessage_MH, GetMessageCount, LEVEL_ERROR
+      use messagehandling, only: SetMessageHandling, GetMessage_MH, GetMessageCount, LEVEL_ERROR, LEVEL_FATAL
+      use m_message_helpers, only: t_abort_threshold_guard
 
       integer, intent(in) :: spherical, spherical_3d, expected_error
       real(kind=dp), dimension(:), intent(in) :: x, y, x_restart, y_restart
       real(kind=dp), dimension(:), allocatable :: saved_xzw, saved_yzw, saved_xu, saved_yu
       integer :: saved_spherical, saved_spherical_3d, saved_parallel, location, ierr, level
       character(len=512) :: message
+      type(t_abort_threshold_guard) :: abort_threshold
 
       saved_spherical = jsferic
       saved_spherical_3d = jasfer3D
       saved_parallel = jampi
+      call abort_threshold%set(LEVEL_FATAL)
       call move_alloc(xzw, saved_xzw)
       call move_alloc(yzw, saved_yzw)
       call move_alloc(xu, saved_xu)

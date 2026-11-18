@@ -1,11 +1,11 @@
 module test_init_spatial_field
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input, is_static_spatial_input
    use fm_location_types, only: TARGET_LAYER_ALL_3D, TARGET_LAYER_UNIFORM
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
                                   WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE, METHOD_BILINEAR
-   use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
    use precision_basics, only: dp
@@ -84,6 +84,7 @@ contains
       use m_flow, only: sa1, tem1, kmx, ndkx
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_TRANSPORT, initem2D
 
+      type(t_abort_threshold_guard) :: abort_threshold
       real(dp), dimension(:), pointer :: target_row
       real(dp), dimension(:, :), pointer :: constituent_target
       integer :: location, first_index, saved_kmx, saved_ndkx
@@ -100,7 +101,7 @@ contains
       jasal = 1
       temperature_model = TEMPERATURE_MODEL_TRANSPORT
       initem2D = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call realloc(sa1, ndkx, fill=42.0_dp, keepExisting=.false.)
       call realloc(tem1, ndkx, fill=42.0_dp, keepExisting=.false.)
 
@@ -201,43 +202,44 @@ contains
    !! This branch is never exercised by integration tests because they always use
    !! valid file types with known method strings.
    subroutine test_validate_rejects_unknown_interpolation_method_string() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
       logical :: success
       call make_test_input(input, interpolation_method='this_method_does_not_exist')
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
    end subroutine test_validate_rejects_unknown_interpolation_method_string
 
    !$gtest
    subroutine test_validate_rejects_constant_method_for_sample_file() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.xyz', forcing_file_type='sample', interpolation_method='constant')
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             'sample files should reject constant interpolation')
    end subroutine test_validate_rejects_constant_method_for_sample_file
 
    !$gtest
    subroutine test_validate_rejects_averaging_method_for_bcascii() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='averaging')
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             'bcascii files should reject averaging interpolation')
    end subroutine test_validate_rejects_averaging_method_for_bcascii
 
    !$gtest
    subroutine test_validate_rejects_triangulation_method_for_bcascii() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.bc', forcing_file_type='bcascii', interpolation_method='triangulation')
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             'bcascii files should reject triangulation interpolation')
    end subroutine test_validate_rejects_triangulation_method_for_bcascii
@@ -269,11 +271,11 @@ contains
 
    !$gtest
    subroutine test_validate_spiderweb_rejects_constant_method() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
       call make_test_input(input, forcing_file='dummy.spw', forcing_file_type='spiderweb', interpolation_method='constant')
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             'spiderweb should reject constant interpolation because its default is weightfactors')
    end subroutine test_validate_spiderweb_rejects_constant_method
@@ -331,13 +333,14 @@ contains
 
    !$gtest
    subroutine test_validate_file_type_extension_mismatch() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
       integer :: log_level
       character(len=512) :: message
 
       call make_test_input(input, forcing_file_type='bcascii')
       input%interpolation_method = ' ' ! no explicit method either
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
@@ -379,8 +382,10 @@ contains
 
    !$gtest
    subroutine test_validate_unknown_file_extension() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
+      call abort_threshold%set(LEVEL_FATAL)
       call make_test_input(input, forcing_file='dummy.unsupported')
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail for an extension unsupported by forcingFileType")
@@ -391,7 +396,9 @@ contains
    !! The inquire() branch inside validate_spatial_field_input is never reached
    !! in integration tests because they either omit the mask or supply a real file.
    subroutine test_validate_nonexistent_target_mask_file() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
+      call abort_threshold%set(LEVEL_FATAL)
       call make_test_input(input, target_mask_file='this_mask_does_not_exist.pol')
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when targetMaskFile does not exist on disk")
@@ -447,8 +454,10 @@ contains
 
    !$gtest
    subroutine test_validate_data_value_with_file_type_fails() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
 
+      call abort_threshold%set(LEVEL_FATAL)
       call make_test_input(input, data_value=0.875_dp, forcing_file_type="not_a_file_type", forcing_file="")
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
@@ -457,12 +466,13 @@ contains
 
    !$gtest
    subroutine test_validate_unknown_file_type_message() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
       integer :: log_level
       character(len=512) :: message
 
       call make_test_input(input, forcing_file_type="not_a_file_type")
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
 
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
@@ -481,10 +491,12 @@ contains
       use unstruc_inifields, only: resolve_parameter_target
       use fm_location_types, only: UNC_LOC_S
 
+      type(t_abort_threshold_guard) :: abort_threshold
       real(dp), dimension(:), pointer :: target_array
       integer :: target_location_type
       logical :: success
       integer :: kx
+      call abort_threshold%set(LEVEL_FATAL)
       kx = 1
       target_array => null()
       target_location_type = UNC_LOC_S ! must be overwritten to sentinel 0
@@ -610,12 +622,14 @@ contains
       use m_flowparameters, only: jawave
       use m_waveconst, only: WAVE_NC_OFFLINE
 
+      type(t_abort_threshold_guard) :: abort_threshold
       real(dp), dimension(:), pointer :: target_array
       integer :: target_location_type
       logical :: success
       integer :: kx
 
       ! ARRANGE: wave model not configured
+      call abort_threshold%set(LEVEL_FATAL)
       jawave = 0
       target_array => null()
       target_location_type = 0
@@ -673,6 +687,7 @@ contains
    !> Legacy single-character operand values remain supported for backward
    !! compatibility, but they must produce a deprecation warning.
    subroutine test_validate_legacy_operand_warns_but_succeeds() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
       logical :: success
       integer :: log_level
@@ -680,7 +695,7 @@ contains
 
       call make_test_input(input, operand_string='+')
 
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
 
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
@@ -696,12 +711,13 @@ contains
 
    !$gtest
    subroutine test_validate_nonlegacy_operand_does_not_warn() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(t_spatial_field_input) :: input
       logical :: success
 
       call make_test_input(input, operand_string='add')
 
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
 
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)

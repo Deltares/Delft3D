@@ -1,5 +1,6 @@
 !> GeoTIFF raster loading, interpolation, and initial-field integration tests.
 module test_bilinear_geotiff
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use precision, only: dp
    use iso_c_binding, only: c_float, c_double, c_null_char, c_null_ptr
@@ -226,9 +227,9 @@ contains
       use m_alloc, only: realloc
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_destroy
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=24), dimension(2), parameter :: raster_files = &
                                                   [character(len=24) :: 'test_init_bilinear.asc', 'test_init_bilinear.tif']
       character(len=8), dimension(2), parameter :: file_types = [character(len=8) :: 'arcinfo', 'geotiff']
@@ -258,7 +259,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       status = m_polygon_destructor()
       expected = [8.0_dp, 10.0_dp, dmiss, dmiss]

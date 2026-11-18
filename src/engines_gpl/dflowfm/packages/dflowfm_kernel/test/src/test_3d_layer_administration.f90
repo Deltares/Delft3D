@@ -25,18 +25,18 @@ contains
       real(kind=dp), parameter :: bottom_area = 1.0_dp
 
       ! Test set-up
-      call realloc(zws, number_of_boundary_points * (number_of_layers + 1), fill=0.0_dp)
-      call realloc(s0, number_of_boundary_points, fill=0.0_dp)
-      call realloc(kbndz, [6, number_of_boundary_points], fill=0)
-      call realloc(bl, number_of_boundary_points, fill=0.0_dp)
-      call realloc(hs, number_of_boundary_points, fill=0.0_dp)
-      call realloc(zbndz, number_of_boundary_points, fill=0.0_dp)
-      call realloc(vol1, number_of_boundary_points * (number_of_layers + 1), fill=0.0_dp)
-      call realloc(kbot, number_of_boundary_points, fill=0)
-      call realloc(ktop, number_of_boundary_points, fill=0)
-      call realloc(kmxn, number_of_boundary_points, fill=0)
-      call realloc(zslay, [number_of_boundary_points, 1], fill=0.0_dp)
-      call realloc(ba, number_of_boundary_points, fill=0.0_dp)
+      call realloc(zws, number_of_boundary_points * (number_of_layers + 1), fill=0.0_dp, keepExisting=.false.)
+      call realloc(s0, number_of_boundary_points, fill=0.0_dp, keepExisting=.false.)
+      call realloc(kbndz, [6, number_of_boundary_points], fill=0, keepExisting=.false.)
+      call realloc(bl, number_of_boundary_points, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hs, number_of_boundary_points, fill=0.0_dp, keepExisting=.false.)
+      call realloc(zbndz, number_of_boundary_points, fill=0.0_dp, keepExisting=.false.)
+      call realloc(vol1, number_of_boundary_points * (number_of_layers + 1), fill=0.0_dp, keepExisting=.false.)
+      call realloc(kbot, number_of_boundary_points, fill=0, keepExisting=.false.)
+      call realloc(ktop, number_of_boundary_points, fill=0, keepExisting=.false.)
+      call realloc(kmxn, number_of_boundary_points, fill=0, keepExisting=.false.)
+      call realloc(zslay, [number_of_boundary_points, 1], fill=0.0_dp, keepExisting=.false.)
+      call realloc(ba, number_of_boundary_points, fill=0.0_dp, keepExisting=.false.)
       kmx = number_of_layers
       kmxn(1) = number_of_layers
       layertype = LAYTP_SIGMA
@@ -62,6 +62,7 @@ contains
                            [(bottom_area*normalized_layer_thickness*new_water_level, integer :: i=1, number_of_boundary_points * (number_of_layers + 1))], &
                            tolerance, "cell volume is not consistent with water level")
       call f90_expect_near(zws(2), s0(1), tolerance, "top layer interface is not consistent with water level")
+      nullify(ice_apply_pressure)
 
    end subroutine test_layer_height_water_level_consistency
 end module test_3d_layer_administration

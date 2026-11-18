@@ -1,4 +1,4 @@
-   !modules from modules.f90
+!modules from modules.f90
 module m_dimens
    implicit none
    integer :: MMAX_old = 3, NMAX_old = 3
@@ -55,7 +55,7 @@ contains
       integer :: ierr
 
       if (N < MAXLAN) return
-      MAXLAN = max(50000, int(1.2d0 * N))
+      MAXLAN = max(50000, int(1.2d0*N))
 
       call realloc(xlan, MAXLAN, stat=ierr, fill=dxymis)
       !CALL AERR('xlan(maxlan)', IERR, maxlan)
@@ -144,28 +144,37 @@ module m_polygon
 
 contains
    !> Increase size of global polyline array.
-      !! Specify new size and whether existing points need to be maintained.
+   !! A zero-point request still initializes unallocated coordinate arrays.
    subroutine increasepol(N, jaKeepExisting)
       use m_missing
-      use m_alloc
+      use m_alloc, only: allocSize, realloc
       implicit none
       integer :: n !< Desired new minimum size
       integer :: jaKeepExisting !< Whether or not (1/0) to keep existing points.
       logical :: jakeep
-      integer :: maxpolcur
+      logical :: needs_growth
+      integer, dimension(3) :: coordinate_sizes
       integer :: ierr
 
-      maxpolcur = size(xpl)
-      if (N <= maxpolcur) then
+      coordinate_sizes = [allocSize(xpl), allocSize(ypl), allocSize(zpl)]
+      needs_growth = n > minval(coordinate_sizes)
+      if (needs_growth) then
+         maxpol = max(100000, 5 * n)
+         coordinate_sizes = maxpol
+         jakeep = jaKeepExisting == 1
+      else if (allocated(xpl) .and. allocated(ypl) .and. allocated(zpl)) then
+         return
+      else
+         ! With no points requested, initialize missing arrays without clearing existing ones.
+         jakeep = .true.
+      end if
+
+      call realloc(xpl, coordinate_sizes(1), keepExisting=jakeep, fill=dxymis, stat=ierr)
+      call realloc(ypl, coordinate_sizes(2), keepExisting=jakeep, fill=dxymis, stat=ierr)
+      call realloc(zpl, coordinate_sizes(3), keepExisting=jakeep, fill=dxymis, stat=ierr)
+      if (.not. needs_growth) then
          return
       end if
-      MAXPOL = max(100000, int(5d0 * N))
-
-      jakeep = jaKeepExisting == 1
-
-      call realloc(xpl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
-      call realloc(ypl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
-      call realloc(zpl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
 
       if (jakol45 == 1) then
          call realloc(dzl, maxpol, keepExisting=jakeep, fill=dxymis, stat=ierr)
@@ -224,7 +233,7 @@ contains
          XPL(1:NPH) = XPH(1:NPH)
          YPL(1:NPH) = YPH(1:NPH)
          ZPL(1:NPH) = ZPH(1:NPH)
-         deallocate(XPH, YPH, ZPH)
+         deallocate (XPH, YPH, ZPH)
       end if
       MP = MPS
       NPL = NPH
@@ -248,8 +257,6 @@ contains
 
       if (allocated(YPH) .and. ierr == 0) deallocate (YPH, stat=ierr)
       if (allocated(ZPH) .and. ierr == 0) deallocate (ZPH, stat=ierr)
-      if (allocated(ZPH) .and. ierr == 0) deallocate (ZPH, stat=ierr)
-
       if (allocated(DZL) .and. ierr == 0) deallocate (DZL, stat=ierr)
       if (allocated(DZR) .and. ierr == 0) deallocate (DZR, stat=ierr)
       if (allocated(DCREST) .and. ierr == 0) deallocate (DCREST, stat=ierr)
@@ -267,6 +274,7 @@ contains
       if (allocated(iistart) .and. ierr == 0) deallocate (iistart, stat=ierr)
       if (allocated(iiend) .and. ierr == 0) deallocate (iiend, stat=ierr)
       if (allocated(ipsection) .and. ierr == 0) deallocate (ipsection, stat=ierr)
+      if (allocated(nampli) .and. ierr == 0) deallocate (nampli, stat=ierr)
 
       jakol45 = 0
       dxuni = 40d0
@@ -367,7 +375,7 @@ contains
 
       integer :: ierr
       if (N < NSMAX) return
-      NSMAX = max(10000, int(1.2d0 * N))
+      NSMAX = max(10000, int(1.2d0*N))
 
       call realloc(xs, NSMAX, keepExisting=.true., fill=dmiss, stat=ierr)
       !CALL AERR ('XS(NSMAX)',IERR,NSMAX)
@@ -456,7 +464,7 @@ contains
       nsmaxloc = size(XS3)
 
       if (N < nsmaxloc) return
-      nsmaxloc = max(10000, int(1.2d0 * N))
+      nsmaxloc = max(10000, int(1.2d0*N))
 
       call realloc(xs3, nsmaxloc, keepExisting=.true., fill=dmiss, stat=ierr)
       call realloc(ys3, nsmaxloc, keepExisting=.true., fill=dmiss, stat=ierr)

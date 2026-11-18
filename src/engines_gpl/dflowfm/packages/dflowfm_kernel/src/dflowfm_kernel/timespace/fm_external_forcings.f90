@@ -1375,12 +1375,7 @@ contains
       if (allocated(air_pressure)) then
          deallocate (air_pressure)
       end if
-      if (allocated(kbndz)) then
-         deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
-      end if
-      if (allocated(zkbndz)) then
-         deallocate (zkbndz)
-      end if
+      call deallocate_water_level_boundary_data()
       id_first_wind = huge(id_first_wind)
       id_last_wind = -huge(id_last_wind)
 
@@ -1390,9 +1385,6 @@ contains
          allocate (xbndz(nbndz), ybndz(nbndz), xy2bndz(2, nbndz), zbndz(nbndz), kbndz(N4, nbndz), zbndz0(nbndz), kdz(nbndz), stat=ierr)
          call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(N4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz * 10)
          if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-            if (allocated(zkbndz)) then
-               deallocate (zkbndz, kbanz)
-            end if
             allocate (zkbndz(2, nbndz), stat=ierr)
             call aerr('zkbndz(2,nbndz)', ierr, 2 * nbndz)
             allocate (kbanz(2, nbndz), stat=ierr)
