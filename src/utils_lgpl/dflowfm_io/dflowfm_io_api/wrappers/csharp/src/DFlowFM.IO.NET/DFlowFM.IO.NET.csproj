@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>DFlowFM.IO</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>DFlowFM.IO.NET</PackageId>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Description>.NET library for reading, writing, validating and migrating D-Flow FM model files.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <Target Name="ValidateNativeLibrary" BeforeTargets="Build;Pack">
+    <Message Text="DFlowFM_IO_NativeLibrary: $(DFlowFM_IO_NativeLibrary)"/>
+    <Error Condition="'$(DFlowFM_IO_NativeLibrary)' == '' or !Exists('$(DFlowFM_IO_NativeLibrary)')"
+           Text="Native library not found. Build dflowfm_io_api with CMake first, or pass -p:DFlowFM_IO_NativeLibrary=&lt;path&gt;."/>
+  </Target>
+
+  <ItemGroup>
+    <None Include="..\..\nuget\README.md" Visible="false">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\nuget\DFlowFM.IO.NET.targets" Visible="false">
+      <Pack>true</Pack>
+      <PackagePath>build\</PackagePath>
+    </None>
+    <None Include="$(DFlowFM_IO_NativeLibrary)" Visible="false">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\native\%(Filename)%(Extension)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>win-x64\native\%(Filename)%(Extension)</TargetPath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\..\..\..\json\mdu.json" Visible="false"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DFlowFM.IO.NET.Generators\DFlowFM.IO.NET.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DFlowFM.IO.NET.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
