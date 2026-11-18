@@ -24,3 +24,10 @@ install(TARGETS dflowfm_io_api
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+include(CheckLanguage)
+check_language(Fortran)
+if(CMAKE_Fortran_COMPILER)
+    enable_language(Fortran)
+    add_subdirectory(wrappers/fortran)
+endif()
