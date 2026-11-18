@@ -175,7 +175,9 @@ contains
       write (*, '(a,i0,a)') 'Info: mapmerge: discovered ', count, ' partition map files from `'//mdufile//'''.'
    end subroutine dfm_mapfiles_from_mdu
 
-!> Merge partition-indexed inputs; empty slots represent partitions outside the output selection.
+!> Merge a set of partition map files into a single map file.
+!! Input is a list of map files names, its length equal to the total number of partitions of the parallel model run.
+!! The map filename list may contain empty values, if some partitions were fully masked out by the MapOutputPolygonFile MDU setting.
    function dfm_merge_partitioned_mapfiles(infiles, nfiles, outfile, force) result(ierr)
       use m_alloc
       use string_module
