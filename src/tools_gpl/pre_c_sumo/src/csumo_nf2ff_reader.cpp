@@ -258,8 +258,16 @@ namespace pre_c_sumo
         }
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
         ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));
-        ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
-        ASSIGN_OR_RETURN(auto sinks, parseSourceOrSinkVector(sinks_text, "sinks"));
+        if (sources.empty())
+        {
+            return std::unexpected(parsing_utils::ParseError{"Element <sources> must contain at least one data row"});
+        }
+        const pugi::xml_node sinks_node = parsing_utils::findChild(nfresult_node, "sinks");
+        if (!sinks_node)
+        {
+            return std::unexpected(parsing_utils::ParseError{"Required element <sinks> not found"});
+        }
+        ASSIGN_OR_RETURN(auto sinks, parseSourceOrSinkVector(parsing_utils::nodeText(sinks_node), "sinks"));
         // End NFResult
 
         // Compose result

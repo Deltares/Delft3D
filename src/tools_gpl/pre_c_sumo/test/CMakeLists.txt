@@ -11,6 +11,7 @@ configure_file(
 set(source_files
     test_pre_c_sumo_lib.cpp
     test_connected_sinks_sources.cpp
+    test_precice_data.cpp
     test_coupling_steps.cpp
     test_precice_to_csumo.cpp
     test_csumo_to_precice.cpp

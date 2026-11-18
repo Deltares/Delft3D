@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <charconv>
+#include <cmath>
 #include <expected>
 #include <filesystem>
 #include <format>
@@ -67,6 +68,11 @@ namespace parsing_utils
             {
                 return std::unexpected(
                     ParseError{std::format("<{}> contains invalid token: '{}'", element_name, token)});
+            }
+            if (!std::isfinite(value))
+            {
+                return std::unexpected(
+                    ParseError{std::format("<{}> contains non-finite value: '{}'", element_name, token)});
             }
             return value;
         };
@@ -161,6 +167,12 @@ namespace parsing_utils
     std::filesystem::path normalizePath(std::string path)
     {
         std::replace(path.begin(), path.end(), '\\', '/');
+        const std::filesystem::path normalized_path(path);
+        const auto root_path = normalized_path.root_path();
+        if (!root_path.empty() && normalized_path.lexically_normal() == root_path)
+        {
+            return root_path;
+        }
         path.erase(std::find_if_not(path.rbegin(), path.rend(), [](const char c) { return c == '/'; }).base(),
                    path.end());
         return std::filesystem::path(std::move(path));

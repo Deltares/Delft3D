@@ -42,10 +42,12 @@ namespace pre_c_sumo
         discharges.clear();
     }
 
-    void SourcesSinks::setCoordinatesDimension(std::size_t dimension)
+    void SourcesSinks::setVertexCount(std::size_t vertex_count)
     {
-        coordinates.resize(dimension * 2, 0.0);
-        precice_ids.resize(dimension, 0);
+        // Keep one placeholder so the preCICE mesh can be registered when there are no entries.
+        const auto registered_vertex_count = vertex_count == 0 ? 1 : vertex_count;
+        coordinates.resize(registered_vertex_count * 2, 0.0);
+        precice_ids.resize(registered_vertex_count, 0);
     }
 
     void SourcesSinks::addData(double new_sink_x, double new_sink_y, double new_sink_z_min, double new_sink_z_max,

@@ -70,7 +70,7 @@ namespace pre_c_sumo
 
         void clear();
         void clearData();
-        void setCoordinatesDimension(std::size_t dimension);
+        void setVertexCount(std::size_t vertex_count);
         void addData(double new_sink_x, double new_sink_y, double new_sink_z_min, double new_sink_z_max,
                      double new_source_x, double new_source_y, double new_source_z_min, double new_source_z_max,
                      double new_discharge);

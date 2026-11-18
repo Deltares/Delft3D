@@ -129,6 +129,23 @@ TEST(CSumoSettingsReaderTest, ParsesAmbientPositions)
     EXPECT_DOUBLE_EQ(ambient_positions[2].y_coordinate, 509.2);
 }
 
+TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidAmbientPosition)
+{
+    std::string xml{pre_c_sumo::test::full_settings_xml};
+    constexpr std::string_view open_tag = "<XYambient>";
+    constexpr std::string_view close_tag = "</XYambient>";
+    const auto tag_start = xml.find(open_tag);
+    ASSERT_NE(tag_start, std::string::npos);
+    const auto content_start = tag_start + open_tag.size();
+    const auto content_end = xml.find(close_tag, content_start);
+    ASSERT_NE(content_end, std::string::npos);
+    xml.replace(content_start, content_end - content_start, "invalid");
+
+    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_TRUE(result.error().message.contains("XYambient"));
+}
+
 TEST(CSumoSettingsReaderTest, ParsesIntakePosition)
 {
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
@@ -137,6 +154,23 @@ TEST(CSumoSettingsReaderTest, ParsesIntakePosition)
     ASSERT_TRUE(intake.has_value());
     EXPECT_DOUBLE_EQ(intake->x_coordinate, 567.0);
     EXPECT_DOUBLE_EQ(intake->y_coordinate, 350.0);
+}
+
+TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidIntakePosition)
+{
+    std::string xml{pre_c_sumo::test::full_settings_xml};
+    constexpr std::string_view open_tag = "<XYintake>";
+    constexpr std::string_view close_tag = "</XYintake>";
+    const auto tag_start = xml.find(open_tag);
+    ASSERT_NE(tag_start, std::string::npos);
+    const auto content_start = tag_start + open_tag.size();
+    const auto content_end = xml.find(close_tag, content_start);
+    ASSERT_NE(content_end, std::string::npos);
+    xml.replace(content_start, content_end - content_start, "invalid");
+
+    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_TRUE(result.error().message.contains("XYintake"));
 }
 
 TEST(CSumoSettingsReaderTest, ParsesDischarge)

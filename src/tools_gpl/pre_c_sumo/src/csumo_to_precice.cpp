@@ -216,6 +216,12 @@ namespace pre_c_sumo
                     // Update constituents from diffuser with weighted intake constituents if operator is excess.
                     if (diffuser.constituents_operator == ConstituentsOperator::Excess)
                     {
+                        if (diffuser_index >= csumo_3d_mesh.forward_map.size() ||
+                            !csumo_3d_mesh.forward_map[diffuser_index].has_intake)
+                        {
+                            return std::unexpected(ConnectedSinkSourcesError{
+                                "NF2FF intake constituents require an intake sample in the preCICE mesh."});
+                        }
                         std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh, diffuser_index);
                         for (const auto& intake : intakes)
                         {

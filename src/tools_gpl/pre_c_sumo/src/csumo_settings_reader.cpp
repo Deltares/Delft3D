@@ -49,16 +49,21 @@ namespace
     // Section parsers
     // -------------------------------------------------------------------------
 
-    std::vector<parsing_utils::Point2D> parseAmbientPoints(const pugi::xml_node data_node)
+    std::expected<std::vector<parsing_utils::Point2D>, parsing_utils::ParseError> parseAmbientPoints(
+        const pugi::xml_node data_node)
     {
-        auto is_ambient = [](const pugi::xml_node child) { return boost::iequals(child.name(), "xyambient"); };
-        auto to_expected_point2d = [](const pugi::xml_node child) {
-            return parsing_utils::parsePoint2D(parsing_utils::nodeText(child), "XYambient");
-        };
-
-        return data_node.children() | std::views::filter(is_ambient) | std::views::transform(to_expected_point2d) |
-               std::views::filter(monadic_utils::is_valid) | std::views::transform(monadic_utils::unwrap) |
-               std::ranges::to<std::vector>();
+        std::vector<parsing_utils::Point2D> ambient_positions;
+        for (const auto child : data_node.children())
+        {
+            if (!boost::iequals(child.name(), "xyambient"))
+            {
+                continue;
+            }
+            ASSIGN_OR_RETURN(const auto position,
+                             parsing_utils::parsePoint2D(parsing_utils::nodeText(child), "XYambient"));
+            ambient_positions.push_back(position);
+        }
+        return ambient_positions;
     }
 
     std::expected<pre_c_sumo::Discharge, parsing_utils::ParseError> parseDischarge(const pugi::xml_node data_node)
@@ -100,7 +105,14 @@ namespace
             return std::unexpected(parsing_utils::ParseError{"Required element <data> not found in <settings>"});
         }
         ASSIGN_OR_RETURN(const auto position, parsing_utils::requiredChildPoint2D(data_node, "XYdiff"));
-        const auto intake_point = parsing_utils::optionalChildPoint2D(data_node, "XYintake");
+        std::optional<parsing_utils::Point2D> intake_point;
+        if (const auto intake_node = parsing_utils::findChild(data_node, "XYintake"))
+        {
+            ASSIGN_OR_RETURN(const auto point,
+                             parsing_utils::parsePoint2D(parsing_utils::nodeText(intake_node), "XYintake"));
+            intake_point = point;
+        }
+        ASSIGN_OR_RETURN(auto ambient_positions, parseAmbientPoints(data_node));
         ASSIGN_OR_RETURN(auto discharge, parseDischarge(data_node));
         ASSIGN_OR_RETURN(const auto nozzle_diameter, parsing_utils::requiredChildDouble(data_node, "D0"));
         ASSIGN_OR_RETURN(const auto nozzle_elevation, parsing_utils::requiredChildDouble(data_node, "H0"));
@@ -109,7 +121,7 @@ namespace
 
         return DataSection{
             .position = position,
-            .ambient_positions = parseAmbientPoints(data_node),
+            .ambient_positions = std::move(ambient_positions),
             .intake = intake_point,
             .discharge = std::move(discharge),
             .nozzle_diameter = nozzle_diameter,

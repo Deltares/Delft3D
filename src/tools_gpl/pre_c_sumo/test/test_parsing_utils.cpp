@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <filesystem>
 #include <string_view>
 #include <vector>
 
@@ -99,4 +100,24 @@ TEST(ParsingUtilsTest, ParseDoubleVectorRejectsPartiallyParsedTokens)
         const auto values = parsing_utils::parseDoubleVector(text, "values");
         EXPECT_FALSE(values.has_value());
     }
+}
+
+TEST(ParsingUtilsTest, ParseDoubleVectorRejectsNonFiniteValues)
+{
+    for (const auto text : {std::string_view{"nan"}, std::string_view{"inf"}, std::string_view{"-inf"}})
+    {
+        SCOPED_TRACE(text);
+        const auto values = parsing_utils::parseDoubleVector(text, "values");
+        ASSERT_FALSE(values.has_value());
+        EXPECT_TRUE(values.error().message.contains("non-finite"));
+    }
+}
+
+TEST(ParsingUtilsTest, NormalizePathPreservesFilesystemRoots)
+{
+    const auto root_path = std::filesystem::current_path().root_path();
+
+    ASSERT_FALSE(root_path.empty());
+    EXPECT_EQ(parsing_utils::normalizePath(root_path.string()), root_path);
+    EXPECT_EQ(parsing_utils::normalizePath("folder\\nested\\"), std::filesystem::path("folder/nested"));
 }

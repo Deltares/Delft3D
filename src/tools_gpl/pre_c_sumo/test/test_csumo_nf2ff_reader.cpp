@@ -329,7 +329,7 @@ namespace
      </NFResult>
   </NF2FF>)";
 
-    constexpr std::string_view invalid_xml_empty_sinks = R"(<?xml version="1.0" encoding="utf-8"?>
+    constexpr std::string_view valid_xml_empty_sinks = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
      <discharge>
@@ -770,11 +770,45 @@ TEST(CSumoNF2FFReaderTest, ReturnsErrorOnMissingSinks)
     EXPECT_TRUE(result.error().message.contains("Required element <sinks> not found"));
 }
 
-TEST(CSumoNF2FFReaderTest, ReturnsErrorOnEmptySinks)
+TEST(CSumoNF2FFReaderTest, ParsesEmptySinks)
 {
-    const auto result = pre_c_sumo::CSumoNF2FFReader::fromString(invalid_xml_empty_sinks);
+    const auto result = pre_c_sumo::CSumoNF2FFReader::fromString(valid_xml_empty_sinks);
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_TRUE(result->sinks.empty());
+}
+
+TEST(CSumoNF2FFReaderTest, RejectsWhitespaceOnlySources)
+{
+    std::string xml{valid_xml};
+    constexpr std::string_view open_tag = "<sources>";
+    constexpr std::string_view close_tag = "</sources>";
+    const auto tag_start = xml.find(open_tag);
+    ASSERT_NE(tag_start, std::string::npos);
+    const auto content_start = tag_start + open_tag.size();
+    const auto content_end = xml.find(close_tag, content_start);
+    ASSERT_NE(content_end, std::string::npos);
+    xml.replace(content_start, content_end - content_start, " \n\t ");
+
+    const auto result = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error().message.contains("Element <sinks> is empty"));
+    EXPECT_EQ(result.error().message, "Element <sources> is empty");
+}
+
+TEST(CSumoNF2FFReaderTest, RejectsSourceBlockWithNoParsedRows)
+{
+    std::string xml{valid_xml};
+    constexpr std::string_view open_tag = "<sources>";
+    constexpr std::string_view close_tag = "</sources>";
+    const auto tag_start = xml.find(open_tag);
+    ASSERT_NE(tag_start, std::string::npos);
+    const auto content_start = tag_start + open_tag.size();
+    const auto content_end = xml.find(close_tag, content_start);
+    ASSERT_NE(content_end, std::string::npos);
+    xml.replace(content_start, content_end - content_start, "<![CDATA[ \n\t ]]>");
+
+    const auto result = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "Element <sources> must contain at least one data row");
 }
 
 TEST(CSumoNF2FFReaderTest, ReturnsErrorOnWrongSinks)

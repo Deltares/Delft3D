@@ -80,10 +80,7 @@ namespace pre_c_sumo
         // Set sources_sinks mesh
         constexpr std::string_view sources_sinks_mesh = "sources_sinks_nodes";
         SourcesSinks sources_sinks;
-        const std::size_t initial_sources_sinks_size = initial_connected_sink_sources.get_number_of_entries() == 0
-                                                           ? 1
-                                                           : initial_connected_sink_sources.get_number_of_entries();
-        sources_sinks.setCoordinatesDimension(initial_sources_sinks_size);
+        sources_sinks.setVertexCount(initial_connected_sink_sources.get_number_of_entries());
         participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
@@ -132,7 +129,7 @@ namespace pre_c_sumo
             if (participant.isTimeWindowComplete())
             {
                 participant.resetMesh(sources_sinks_mesh);
-                sources_sinks.setCoordinatesDimension(connected_sink_sources.get_number_of_entries());
+                sources_sinks.setVertexCount(connected_sink_sources.get_number_of_entries());
                 participant.setMeshVertices(sources_sinks_mesh, sources_sinks.coordinates, sources_sinks.precice_ids);
                 std::println("Reset Sources_Sinks. PreciceMesh set to {} vertices.",
                              connected_sink_sources.get_number_of_entries());

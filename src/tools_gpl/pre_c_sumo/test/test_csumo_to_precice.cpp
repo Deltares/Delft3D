@@ -74,3 +74,22 @@ TEST(CSumoToPreciceTest, AddsDepthAveragedIntakeValuesToExcessConstituents)
     EXPECT_DOUBLE_EQ(data.sink_z_bottom_vector[1], -2.0);
     EXPECT_DOUBLE_EQ(data.sink_z_top_vector[1], -2.0);
 }
+
+TEST(CSumoToPreciceTest, RejectsIntakeConstituentsWithoutAnIntakeSample)
+{
+    const pre_c_sumo::NF2FFData result{
+        .intake_flow_rate = 2.0,
+        .constituents_operator = pre_c_sumo::ConstituentsOperator::Excess,
+        .constituents = {3.0},
+        .intakes = {{.x_coordinate = 1.0, .y_coordinate = 2.0, .z_coordinate = 2.0}},
+        .sources = {{.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0}},
+    };
+    pre_c_sumo::PreciceMesh mesh{};
+    mesh.forward_map = {{.has_intake = false}};
+
+    const auto converted = pre_c_sumo::convertCSumoToPrecice({}, {result}, mesh);
+
+    ASSERT_FALSE(converted.has_value());
+    EXPECT_EQ(converted.error().message,
+              "NF2FF intake constituents require an intake sample in the preCICE mesh.");
+}
