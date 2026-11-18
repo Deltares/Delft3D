@@ -20,7 +20,7 @@
 
 namespace
 {
-    std::string last_error;
+    thread_local std::string last_error;
 
     dflowfm_io_result_t exceptionToResult(const std::function<void()>& func)
     {
