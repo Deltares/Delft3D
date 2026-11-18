@@ -278,6 +278,7 @@ contains
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
       use m_flow_modelinit, only: flow_modelinit
+      use m_tridag, only: reset_tridag_pivot_count
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
 
       integer :: timerHandle, inner_timerhandle
@@ -285,6 +286,7 @@ contains
 
       !call inidia('api')
 
+      call reset_tridag_pivot_count()
       timerHandle = 0
       call timstrt('Initialise flow', timerHandle)
       iresult = DFM_NOERR
