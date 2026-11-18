@@ -10,7 +10,6 @@ AutoStart         = 0
 
 [geometry]
 NetFile           = FlowFM_net.nc
-BathymetryFile    =
 DryPointsFile     =
 GridEnclosureFile =
 WaterLevIniFile   =
@@ -25,7 +24,6 @@ RoofsFile         =
 LeveeBreachFile   =
 ProfdefxyzFile    =
 Uniformwidth1D    = 2
-ManholeFile       =
 WaterLevIni       = -5
 Bedlevuni         = -5
 Bedslope          = 0
@@ -146,7 +144,7 @@ UpdateRoughnessInterval = 60
 
 [restart]
 RestartFile       =
-RestartDateTime   = 20190313
+RestartDateTime   = 20190313000000
 
 [external forcing]
 ExtForceFile      = test.ext
@@ -179,7 +177,6 @@ XLSInterval       =
 MapFile           =
 MapInterval       = 60
 RstInterval       = 86400
-S1incinterval     =
 MapFormat         = 4
 Wrihis_balance    = 1
 Wrihis_structure_gen= 1
