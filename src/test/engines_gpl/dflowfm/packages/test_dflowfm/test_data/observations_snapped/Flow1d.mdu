@@ -73,7 +73,7 @@ unifFrictCoef1D                   = 50                  # Uniform friction coeff
 UnifFrictCoef1D2D                 = 50                  # Uniform friction coefficient in 1D links (0: no friction)
 unifFrictCoefLin                  = 0.                  # Uniform linear friction coefficient for ocean models (m/s) (0: no friction)
 vicouv                            = 1.                  # Uniform horizontal eddy viscosity (m2/s)
-uniformHorizontalEddyDiffusivity                            = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
+dicouv                            = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
 SmagorinskyCoefficient            = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
 ElderCoefficient                  = 0.                  # Elder factor in horizontal turbulence
 irov                              = 0                   # 0=free slip, 1 = partial slip using wall_ks
