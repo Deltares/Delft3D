@@ -2361,7 +2361,7 @@ contains
          end if
 
          ! 1D tmp array: take largest of all topological position counts:
-         maxitems = max(max_face_globalnr, max_node_globalnr, sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
+         maxitems = max(sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
          call realloc(tmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D_tmp, maxitems, keepExisting=.false.)
