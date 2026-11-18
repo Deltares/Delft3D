@@ -40,7 +40,6 @@ namespace pre_c_sumo
         // Add preCICE quantity data buffers.
         csumo_2d_mesh.quantities[water_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
         csumo_2d_mesh.quantities[bed_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
-        csumo_2d_mesh.quantities[water_depth_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
 
         // Construct 3d mesh
         PreciceMesh csumo_3d_mesh =

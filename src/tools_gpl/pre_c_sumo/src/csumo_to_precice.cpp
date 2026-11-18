@@ -1,13 +1,30 @@
 #include "csumo_to_precice.hpp"
 #include "csumo_diffuser.hpp"
-#include "precice_to_csumo.hpp"
 
 #include <algorithm>
+#include <functional>
+#include <ranges>
+#include <span>
 #include <string>
+#include <vector>
 
 namespace
 {
     using namespace pre_c_sumo;
+
+    std::vector<double> getDepthAveragedIntakeConstituents(const PreciceMesh& mesh_3d,
+                                                           const std::size_t diffuser_index)
+    {
+        const auto intake_index = mesh_3d.forward_map[diffuser_index].intake_index;
+        const auto number_of_layers = mesh_3d.number_of_zcoordinates;
+        const auto compute_depth_average = [&mesh_3d, intake_index, number_of_layers](const auto id) {
+            const std::span<const double> values(mesh_3d.quantities.at(id));
+            const auto intake_layers = values.subspan(intake_index, number_of_layers);
+            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
+        };
+        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
+    }
+
     /**
      * @details Construct forward mapping from settings to data node indices.
      * 3D data of all subgrid models (each subgrid model is related to one diffuser) is stored in a 1D vector:
@@ -29,14 +46,12 @@ namespace
     {
         const bool has_intake = diffuser_setting.intake.has_value();
         const std::size_t intake_index = has_intake ? diffuser_index + number_of_zcoordinates : 0;
-        const std::size_t number_of_ambient_points = diffuser_setting.ambient_positions.size() * number_of_zcoordinates;
         const std::size_t first_ambient_point_index =
             has_intake ? diffuser_index + 2 * number_of_zcoordinates : diffuser_index + number_of_zcoordinates;
 
         const DiffuserMapping diffuser_mapping = {.diffuser_index = diffuser_index,
                                                   .has_intake = has_intake,
                                                   .intake_index = intake_index,
-                                                  .number_of_ambient_points = number_of_ambient_points,
                                                   .first_ambient_point_index = first_ambient_point_index};
         return diffuser_mapping;
     }
@@ -222,7 +237,8 @@ namespace pre_c_sumo
                             return std::unexpected(ConnectedSinkSourcesError{
                                 "NF2FF intake constituents require an intake sample in the preCICE mesh."});
                         }
-                        std::vector<double> intake_constituents = getIntakeConstituents(csumo_3d_mesh, diffuser_index);
+                        std::vector<double> intake_constituents =
+                            getDepthAveragedIntakeConstituents(csumo_3d_mesh, diffuser_index);
                         for (const auto& intake : intakes)
                         {
                             for (std::size_t constituent_index = 0; constituent_index < constituents.size();

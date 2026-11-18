@@ -1,9 +1,9 @@
 #include "precice_to_csumo.hpp"
 #include "csumo_file_paths.hpp"
 
-#include <functional>
+#include <optional>
 #include <ranges>
-#include <span>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -39,30 +39,18 @@ namespace pre_c_sumo
         };
     }
 
-    std::vector<double> getIntakeConstituents(const PreciceMesh& mesh_3d, std::size_t diffuser_index)
-    {
-        const auto index_3d = mesh_3d.forward_map[diffuser_index].intake_index;
-        const auto number_of_layers = mesh_3d.number_of_zcoordinates;
-        const auto compute_depth_average = [&mesh_3d, index_3d, number_of_layers](const auto id) {
-            const std::span<const double> values(mesh_3d.quantities.at(id));
-            const auto intake_layers = values.subspan(index_3d, number_of_layers);
-            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
-        };
-        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
-    }
-
     FF2NFConfig convertPreciceToCSumo(const DiffuserSettings& diffuser, std::size_t mapping_index,
                                       const PreciceMesh& mesh_2d, const PreciceMesh& mesh_3d,
                                       double current_time_seconds)
     {
         const auto subgrid_model_nr = static_cast<int>(mapping_index + 1);
-        const auto& mapping = mesh_2d.forward_map[mapping_index];
+        const auto& mapping_2d = mesh_2d.forward_map[mapping_index];
         const auto& mapping_3d = mesh_3d.forward_map[mapping_index];
         std::vector<FarFieldPoint2D> ambient_points;
         for (std::size_t index = 0; index < diffuser.ambient_positions.size(); ++index)
         {
             ambient_points.emplace_back(convertPreciceToCSumoPoint(
-                mapping.first_ambient_point_index + index,
+                mapping_2d.first_ambient_point_index + index,
                 mapping_3d.first_ambient_point_index + index * mesh_3d.number_of_zcoordinates, mesh_2d, mesh_3d));
         }
         return FF2NFConfig{
@@ -76,10 +64,11 @@ namespace pre_c_sumo
             .constituent_names = constituent_ids |
                                  std::views::transform([](const auto id) { return std::string(id); }) |
                                  std::ranges::to<std::vector>(),
-            .diffuser = convertPreciceToCSumoPoint(mapping.diffuser_index, mapping_3d.diffuser_index, mesh_2d, mesh_3d),
-            .intake = mapping.has_intake ? std::optional{convertPreciceToCSumoPoint(
-                                               mapping.intake_index, mapping_3d.intake_index, mesh_2d, mesh_3d)}
-                                         : std::nullopt,
+            .diffuser =
+                convertPreciceToCSumoPoint(mapping_2d.diffuser_index, mapping_3d.diffuser_index, mesh_2d, mesh_3d),
+            .intake = mapping_2d.has_intake ? std::optional{convertPreciceToCSumoPoint(
+                                                  mapping_2d.intake_index, mapping_3d.intake_index, mesh_2d, mesh_3d)}
+                                            : std::nullopt,
             .ambient_points = std::move(ambient_points),
             .settings_xml_node = diffuser.settings_xml_node,
         };

@@ -14,9 +14,6 @@ namespace pre_c_sumo
     [[nodiscard]] FF2NFConfig convertPreciceToCSumo(
         const DiffuserSettings& diffuser, std::size_t mapping_index, const PreciceMesh& mesh_2d,
         const PreciceMesh& mesh_3d, double current_time_seconds);
-
-    /// Return depth-averaged preCICE constituent values at a diffuser's intake.
-    [[nodiscard]] std::vector<double> getIntakeConstituents(const PreciceMesh& mesh_3d, std::size_t diffuser_index);
 } // namespace pre_c_sumo
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_TO_CSUMO_HPP

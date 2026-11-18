@@ -2,7 +2,6 @@
 
 #include <array>
 #include <limits>
-#include <ranges>
 #include <string>
 #include <utility>
 
@@ -11,7 +10,6 @@
 #include "csumo_settings_reader.hpp"
 #include "csumo_to_precice.hpp"
 #include "csumo_diffuser.hpp"
-#include "precice_to_csumo.hpp"
 #include "precice_data.hpp"
 #include "csumo_nf2ff_reader.hpp"
 
@@ -43,7 +41,6 @@ namespace
             .forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
                                                         .has_intake = true,
                                                         .intake_index = 2,
-                                                        .number_of_ambient_points = 8,
                                                         .first_ambient_point_index = 4}},
             .number_of_nodes = 12,
             .number_of_zcoordinates = 2,
@@ -114,27 +111,6 @@ namespace
     }
 
 } // namespace
-
-// Test getIntakeConstituents
-TEST(CsumoPreciceCouplingStepsTest, GetIntakeConstituentValues)
-{
-    pre_c_sumo::PreciceMesh mesh_3d = make_test_3d_mesh();
-    ASSERT_EQ(mesh_3d.number_of_nodes, 12);
-    ASSERT_TRUE(mesh_3d.forward_map[0].has_intake);
-    const auto intake_index = mesh_3d.forward_map[0].intake_index;
-    for (const auto& [index, id] : pre_c_sumo::constituent_ids | std::views::enumerate)
-    {
-        // The test 3d mesh has two z layers, write different concentrations in each layer
-        mesh_3d.quantities[id][intake_index] = static_cast<double>(index) + 1.0;
-        mesh_3d.quantities[id][intake_index + 1] = static_cast<double>(index) + 5.0;
-    }
-    auto constituents = pre_c_sumo::getIntakeConstituents(mesh_3d, 0);
-    EXPECT_EQ(constituents.size(), pre_c_sumo::max_number_of_constituents);
-    for (std::size_t index = 0; index < constituents.size(); ++index)
-    {
-        EXPECT_DOUBLE_EQ(constituents[index], static_cast<double>(index) + 3.0); // Average value over all layers
-    }
-}
 
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
 TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
@@ -688,7 +664,6 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExp
     dummy_mesh.forward_map.push_back(pre_c_sumo::DiffuserMapping{.diffuser_index = 12,
                                                                  .has_intake = true,
                                                                  .intake_index = 14,
-                                                                 .number_of_ambient_points = 8,
                                                                  .first_ambient_point_index = 16});
     dummy_mesh.number_of_nodes = 24;
     for (auto& [quantity_id, values] : dummy_mesh.quantities)

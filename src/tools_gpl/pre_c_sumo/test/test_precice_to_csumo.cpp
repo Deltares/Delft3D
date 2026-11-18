@@ -54,14 +54,14 @@ TEST(PreciceToCSumoTest, AssemblesDiffuserIntakeAndAmbientProfilesUsingTheirMapp
 {
     pre_c_sumo::PreciceMesh mesh_2d{};
     mesh_2d.coordinates = {0.0, 0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0};
-    mesh_2d.forward_map = {{0, false, 0, 0, 1}, {1, true, 2, 2, 3}};
+    mesh_2d.forward_map = {{0, false, 0, 1}, {1, true, 2, 3}};
     mesh_2d.quantities = {
         {pre_c_sumo::water_levels_id, std::vector<double>(5, 1.0)},
         {pre_c_sumo::bed_levels_id, std::vector<double>(5, 9.0)},
     };
     pre_c_sumo::PreciceMesh mesh_3d{};
     mesh_3d.number_of_zcoordinates = 2;
-    mesh_3d.forward_map = {{0, false, 0, 0, 2}, {2, true, 4, 4, 6}};
+    mesh_3d.forward_map = {{0, false, 0, 2}, {2, true, 4, 6}};
     for (std::size_t index = 0; index < 10; ++index)
     {
         const auto horizontal_index = index / 2;

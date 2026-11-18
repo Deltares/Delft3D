@@ -69,9 +69,9 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     pre_c_sumo::PreciceMesh mesh_2d{};
     // Flattened (x, y) pairs: vertex 0 is the diffuser at (1, 2), vertex 1 the ambient point at (3, 4).
     mesh_2d.coordinates = {1, 2, 3, 4};
-    // Mapping fields: diffuser vertex = 0, no intake, unused intake vertex = 0,
-    // ambient vertex count = 1, first ambient vertex = 1. Indices count vertices, not coordinate values.
-    mesh_2d.forward_map = {{0, false, 0, 1, 1}};
+    // Mapping fields: diffuser vertex = 0, no intake, unused intake vertex = 0, first ambient vertex = 1.
+    // Indices count vertices, not coordinate values.
+    mesh_2d.forward_map = {{0, false, 0, 1}};
     mesh_2d.number_of_nodes = 2;
     // A 2D point occupies one vertex; there is no vertical sampling in this mesh.
     mesh_2d.number_of_zcoordinates = 1;
@@ -84,7 +84,7 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesPositiveDownVertical
     // Each sample is therefore 3 m below the zero-level surface and 7 m above the bed at z = -10 m.
     mesh_3d.coordinates = {1, 2, -3, 3, 4, -3};
     // With just one vertical sample per horizontal point, the 3D vertex indices match the 2D indices.
-    mesh_3d.forward_map = {{0, false, 0, 1, 1}};
+    mesh_3d.forward_map = {{0, false, 0, 1}};
     mesh_3d.number_of_nodes = 2;
     mesh_3d.number_of_zcoordinates = 1;
     // Two vertices need six velocity components (vx, vy, vz per vertex) and two density values.
@@ -140,7 +140,6 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 2,
                                                        .first_ambient_point_index = 1}};
     mesh_2d.number_of_nodes = 3;
     mesh_2d.number_of_zcoordinates = 1;
@@ -154,7 +153,6 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesKeepsAmbientProfilesInTh
     mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 4,
                                                        .first_ambient_point_index = 2}};
     mesh_3d.number_of_nodes = 6;
     mesh_3d.number_of_zcoordinates = 2;
@@ -209,12 +207,10 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProf
     mesh_2d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 1,
                                                        .first_ambient_point_index = 1},
                            pre_c_sumo::DiffuserMapping{.diffuser_index = 2,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 1,
                                                        .first_ambient_point_index = 3}};
     mesh_2d.number_of_nodes = 4;
     mesh_2d.number_of_zcoordinates = 1;
@@ -231,12 +227,10 @@ TEST(CsumoPreciceCouplingRegressionTest, WriteFF2NFFilesUsesEachDiffusersOwnProf
     mesh_3d.forward_map = {pre_c_sumo::DiffuserMapping{.diffuser_index = 0,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 2,
                                                        .first_ambient_point_index = 2},
                            pre_c_sumo::DiffuserMapping{.diffuser_index = 4,
                                                        .has_intake = false,
                                                        .intake_index = 0,
-                                                       .number_of_ambient_points = 2,
                                                        .first_ambient_point_index = 6}};
     mesh_3d.number_of_nodes = 8;
     mesh_3d.number_of_zcoordinates = 2;

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <vector>
+
 #include "csumo_to_precice.hpp"
 
 TEST(CSumoToPreciceTest, ConvertsNearFieldRecordsWithoutAnXmlReaderOrParticipant)
@@ -51,16 +53,17 @@ TEST(CSumoToPreciceTest, AddsDepthAveragedIntakeValuesToExcessConstituents)
         .intake_flow_rate = 2.0,
         .source_flow_rate = 10.0,
         .constituents_operator = pre_c_sumo::ConstituentsOperator::Excess,
-        .constituents = {3.0},
+        .constituents = std::vector<double>(pre_c_sumo::constituent_ids.size(), 3.0),
         .intakes = {{.x_coordinate = 1.0, .y_coordinate = 2.0, .z_coordinate = 2.0}},
         .sources = {{.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0, .half_plume_height = 1.0}},
     };
     pre_c_sumo::PreciceMesh mesh{};
     mesh.number_of_zcoordinates = 2;
     mesh.forward_map = {{.has_intake = true, .intake_index = 2}};
-    for (const auto id : pre_c_sumo::constituent_ids)
+    for (std::size_t index = 0; index < pre_c_sumo::constituent_ids.size(); ++index)
     {
-        mesh.quantities[id] = {0.0, 0.0, 10.0, 14.0};
+        mesh.quantities[pre_c_sumo::constituent_ids[index]] = {
+            0.0, 0.0, static_cast<double>(index) + 1.0, static_cast<double>(index) + 5.0};
     }
 
     const auto converted = pre_c_sumo::convertCSumoToPrecice({}, {result}, mesh);
@@ -68,7 +71,10 @@ TEST(CSumoToPreciceTest, AddsDepthAveragedIntakeValuesToExcessConstituents)
     ASSERT_EQ(converted->get_number_of_entries(), 2u);
     const auto& data = converted->data();
     EXPECT_EQ(data.discharge_vector, (std::vector<double>{10.0, 2.0}));
-    EXPECT_EQ(data.constituents_vectors[0], (std::vector<double>{15.0, 0.0}));
+    for (std::size_t index = 0; index < pre_c_sumo::constituent_ids.size(); ++index)
+    {
+        EXPECT_DOUBLE_EQ(data.constituents_vectors[index][0], static_cast<double>(index) + 6.0);
+    }
     EXPECT_DOUBLE_EQ(data.source_z_bottom_vector[0], -6.0);
     EXPECT_DOUBLE_EQ(data.source_z_top_vector[0], -4.0);
     EXPECT_DOUBLE_EQ(data.sink_z_bottom_vector[1], -2.0);

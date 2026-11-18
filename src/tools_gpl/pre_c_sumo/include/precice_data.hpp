@@ -12,7 +12,6 @@ namespace pre_c_sumo
 {
     inline constexpr std::string_view water_levels_id = "sea_surface_height";
     inline constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
-    inline constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
     inline constexpr std::string_view densities_id = "sea_water_potential_density";
     inline constexpr std::string_view flow_velocities_id = "flow_velocity_3d";
     inline constexpr int max_number_of_constituents = 10;
@@ -25,7 +24,6 @@ namespace pre_c_sumo
         std::size_t diffuser_index{};
         bool has_intake{};
         std::size_t intake_index{};
-        std::size_t number_of_ambient_points{};
         std::size_t first_ambient_point_index{};
     };
 
