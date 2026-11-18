@@ -1223,11 +1223,7 @@ contains
       call prop_get(md_ptr, 'physics', 'dicouv', uniform_horizontal_eddy_diffusivity)
       call prop_get(md_ptr, 'physics', 'vicoww', background_vertical_eddy_viscosity%scalar)
       call prop_get(md_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar)
-
-      call prop_get(md_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
-      end if
+      call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
 
       call prop_get(md_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, success)
       if (.not. success) then
@@ -3488,7 +3484,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (minimum_vertical_eddy_viscosity_for_production > 0.0_dp)) then
-            call prop_set(prop_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
+            call prop_set(prop_ptr, 'physics', 'vicwminb', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
          call prop_set(prop_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
          if (writeall .or. (comparereal(tke_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
