@@ -28,7 +28,7 @@ contains
       print *, "Ignoring error in test: ", trim(message)
    end subroutine ignore_error
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_create_and_destroy, test_create_and_destroy,
+   !$gtest
    subroutine test_create_and_destroy() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -43,9 +43,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(model%has_valid_handle(), .false.)
    end subroutine test_create_and_destroy
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_create_and_go_out_of_scope, test_create_and_go_out_of_scope,
+   !$gtest
    subroutine test_create_and_go_out_of_scope() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -57,9 +56,8 @@ contains
 
       ! Object goes out of scope, finalizer should be called automatically
    end subroutine test_create_and_go_out_of_scope
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_load_from_string, test_load_from_string,
+   !$gtest
    subroutine test_load_from_string() bind(C)
       type(MduModel) :: model
       integer :: value
@@ -72,9 +70,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(value, 0)
    end subroutine test_load_from_string
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_save_and_load_from_file, test_save_and_load_from_file,
+   !$gtest
    subroutine test_save_and_load_from_file() bind(C)
       character(len=*), parameter :: filename = "test_dflowfm_io_roundtrip.mdu"
       type(MduModel) :: source_model
@@ -101,9 +98,8 @@ contains
       call f90_expect_eq(io_status, 0)
       if (io_status == 0) close (unit, status="delete")
    end subroutine test_save_and_load_from_file
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_int, test_set_and_get_int,
+   !$gtest
    subroutine test_set_and_get_int() bind(C)
       type(MduModel) :: model
       integer :: value
@@ -118,9 +114,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(value, 5)
    end subroutine test_set_and_get_int
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_bool, test_set_and_get_bool,
+   !$gtest
    subroutine test_set_and_get_bool() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -135,9 +130,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(value, .false.)
    end subroutine test_set_and_get_bool
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_double, test_set_and_get_double,
+   !$gtest
    subroutine test_set_and_get_double() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -152,9 +146,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_near(value, 0.9_real64, 1.0e-10_real64)
    end subroutine test_set_and_get_double
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_string, test_set_and_get_string,
+   !$gtest
    subroutine test_set_and_get_string() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -169,9 +162,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_streq(trim(value)//c_null_char, "My Program"//c_null_char)
    end subroutine test_set_and_get_string
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_path, test_set_and_get_path,
+   !$gtest
    subroutine test_set_and_get_path() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -186,9 +178,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_streq(trim(value)//c_null_char, "new_net.nc"//c_null_char)
    end subroutine test_set_and_get_path
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_int_enum, test_set_and_get_int_enum,
+   !$gtest
    subroutine test_set_and_get_int_enum() bind(C)
       type(MduModel) :: model
       integer :: value
@@ -203,9 +194,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(value, 1)
    end subroutine test_set_and_get_int_enum
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_string_enum, test_set_and_get_string_enum,
+   !$gtest
    subroutine test_set_and_get_string_enum() bind(C)
       type(MduModel) :: model
       character(len=:), allocatable :: value
@@ -220,9 +210,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_streq(trim(value)//c_null_char, "M"//c_null_char)
    end subroutine test_set_and_get_string_enum
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_datetime, test_set_and_get_datetime,
+   !$gtest
    subroutine test_set_and_get_datetime() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -239,11 +228,10 @@ contains
       call f90_expect_eq(has_value, .true.)
       call f90_expect_eq(int(epoch), 978307200)
    end subroutine test_set_and_get_datetime
-!$f90tw)
 
 ! The production MDU schema currently has no string-list property. Exercise
 ! both API functions with a known key of another type and verify their errors.
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_string_list_type_mismatch_fails, test_string_list_type_mismatch_fails,
+   !$gtest
    subroutine test_string_list_type_mismatch_fails() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -258,9 +246,8 @@ contains
       call f90_expect_eq(success, .false.)
       call f90_expect_eq(allocated(values), .false.)
    end subroutine test_string_list_type_mismatch_fails
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_set_and_get_double_list, test_set_and_get_double_list,
+   !$gtest
    subroutine test_set_and_get_double_list() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -280,9 +267,8 @@ contains
       call f90_expect_near(values(2), 0.005_real64, 1.0e-10_real64)
       call f90_expect_near(values(3), 0.01_real64, 1.0e-10_real64)
    end subroutine test_set_and_get_double_list
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_get_path_list, test_get_path_list,
+   !$gtest
    subroutine test_get_path_list() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -299,9 +285,8 @@ contains
       call f90_expect_streq(trim(values(1))//c_null_char, "pt1.pol"//c_null_char)
       call f90_expect_streq(trim(values(2))//c_null_char, "pt2.pol"//c_null_char)
    end subroutine test_get_path_list
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_save_to_string, test_save_to_string,
+   !$gtest
    subroutine test_save_to_string() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -314,9 +299,8 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(len(text) > 0, .true.)
    end subroutine test_save_to_string
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_get_unknown_key_fails, test_get_unknown_key_fails,
+   !$gtest
    subroutine test_get_unknown_key_fails() bind(C)
       type(MduModel) :: model
       integer :: value
@@ -331,9 +315,8 @@ contains
       call model%get_last_error(error)
       call f90_expect_eq(len(error) > 0, .true.)
    end subroutine test_get_unknown_key_fails
-!$f90tw)
 
-!$f90tw TESTCODE(TEST, test_dflowfm_io, test_get_issues, test_get_issues,
+   !$gtest
    subroutine test_get_issues() bind(C)
       type(MduModel) :: model
       logical :: success = .false.
@@ -346,6 +329,5 @@ contains
       call f90_expect_eq(success, .true.)
       call f90_expect_eq(allocated(issues), .true.)
    end subroutine test_get_issues
-!$f90tw)
 
 end module test_dflowfm_io
