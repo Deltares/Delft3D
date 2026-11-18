@@ -24,3 +24,12 @@ install(TARGETS dflowfm_io_api
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+	add_subdirectory(wrappers/python)
+else()
+	message(STATUS "No Python 3 interpreter found. Skipping the Python wheel target.")
+endif()
+
+add_subdirectory(test)
