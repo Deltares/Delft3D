@@ -32,8 +32,9 @@ module m_fm_wq_processes_sub
 
    private
 
-   public :: default_fm_wq_processes, finalize_waq_spatial_fields, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, &
-             get_waqinputname
+   public :: default_fm_wq_processes, finalize_waq_spatial_fields, fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, &
+             fm_wq_processes_step, get_waqinputname
+   public :: WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER
 
    interface
 
@@ -53,16 +54,18 @@ module m_fm_wq_processes_sub
          implicit none
       end subroutine fm_wq_processes_ini_proc
 
-      module subroutine fm_wq_processes_step(dt, time)
+      module subroutine fm_wq_processes_step(dt, time, vol_wq_processes, process_selection)
          use precision, only: dp
          implicit none
          real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
          real(kind=dp), intent(in) :: time !< time     for waq in seconds
+         real(kind=dp), intent(in), dimension(:) :: vol_wq_processes !< [m3] total volume to be used by waq processes (vol0 or vol1)
+         integer, intent(in) :: process_selection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDTRA, WQ_RUNOTHER)
       end subroutine fm_wq_processes_step
 
       module subroutine get_waqinputname(qid, inputname, qidname)
          !> Convert qid (from .ext file) to waq input name (split in generic qidname and specific input name).
-    !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
+         !! If the input qid is not waq input name, then the same qid is returned (and no waq input name)
          implicit none
 
          character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'waqfunctionradsurf'.
@@ -72,4 +75,7 @@ module m_fm_wq_processes_sub
 
    end interface
 
+   integer, parameter :: WQ_RUNALL = 0 ! Run all processes
+   integer, parameter :: WQ_RUNADSSEDTRA = 1 ! Run only advection, sedimentation and sediment layer transport (resuspension, burial and digging) processes
+   integer, parameter :: WQ_RUNOTHER = 2 ! Run other processes
 end module m_fm_wq_processes_sub

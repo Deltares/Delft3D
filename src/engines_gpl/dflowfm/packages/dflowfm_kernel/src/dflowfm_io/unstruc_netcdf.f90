@@ -3804,7 +3804,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density, vicwws_total, difwws_total
-      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE, SINK_SIDE, SOURCE_SIDE
+      use m_source_sink, only: source_sinks
       use m_flowgeom_interpolate, only: link_to_node_vector
       use m_links_to_centers, only: links_to_centers
       use m_unstruc_netcdf_data, only: flowgeom_map
@@ -3850,7 +3850,6 @@ contains
       integer :: Ltx, nlaybL, nrlayLx
       integer :: iLocS ! Either UNC_LOC_S or UNC_LOC_S3D, depending on whether layers are present.
       integer :: iLocU ! Either UNC_LOC_U or UNC_LOC_U3D, depending on whether layers are present.
-      integer :: isrc, kbot_, ktop_, nk, nkbot, nktop
       real(kind=dp), dimension(:), allocatable :: windx, windy, toutput, rks, wa
       real(kind=dp) :: zwu0
       character(len=4) :: str
@@ -4445,7 +4444,7 @@ contains
                end if
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
-               if (soiltempthick > 0.0_dp) then
+               if (soil_heat_buffer_thickness > 0.0_dp) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, nc_precision, UNC_LOC_S, 'tbed', '', 'Temperature of the bed', 'degC', jabndnd=jabndnd_)
                end if
             end if
@@ -4933,13 +4932,13 @@ contains
          ! Trachytope roughnesses on NET links
          if (map_write_settings%trachy > 0 .and. jatrt == 1) then
 
-            if (ifrctypuni == 0) then
+            if (uniform_friction_type == 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Chezy roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm0.5s-1')
-            else if (ifrctypuni == 1) then
+            else if (uniform_friction_type == 1) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'Manning roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'sm-0.333')
-            else if ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+            else if ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cftrt, nc_precision, UNC_LOC_L, 'cftrt', '', 'White-Colebrook roughness from trachytopes', '', jabndnd=jabndnd_)
                ierr = unc_put_att(mapids%ncid, mapids%id_cftrt, 'non_si_units', 'm')
             else
@@ -5376,14 +5375,14 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks and layers add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks and layers add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             ! Values for inactive layers are set to missing in function unc_put_var_map.
             call realloc(work1d, lnkx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                call getLbotLtopmax(LL, Lb, Lt)
                do L = Lb, Lt
@@ -5400,13 +5399,13 @@ contains
          end if
 
          if (map_write_settings%diu > 0) then
-            ! For all flowlinks add user defined part (diusp(LL) or dicouv) to modeled part (viu(LL)/0.7).
+            ! For all flowlinks add user defined part (diusp(LL) or uniform_horizontal_eddy_diffusivity) to modeled part (viu(LL)/0.7).
             call realloc(work1d, lnx, keepExisting=.false.)
             do LL = 1, lnx
                if (jadiusp == 1) then ! If horizontal eddy diffusivity is spatially varying.
                   dicc = diusp(LL)
                else
-                  dicc = dicouv
+                  dicc = uniform_horizontal_eddy_diffusivity
                end if
                work1d(LL) = viu(LL) / 0.7 + dicc
             end do
@@ -5484,7 +5483,7 @@ contains
             do LL = 1, lnx
                call getLbotLtopmax(LL, Lb, Ltx)
                do L = Lb - 1, Ltx
-                  vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+                  vicwwu_total(L) = VISKIN + vicwwu(L) + background_vertical_eddy_viscosity%get(LL)
                end do
             end do
             call links_to_centers(vicwws_total, vicwwu_total)
@@ -6230,7 +6229,7 @@ contains
             end if
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
-            if (soiltempthick > 0.0_dp) then
+            if (soil_heat_buffer_thickness > 0.0_dp) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tbed, UNC_LOC_S, tbed, jabndnd=jabndnd_)
             end if
          end if
@@ -6662,46 +6661,7 @@ contains
       !
       if (map_write_settings%near_field == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
-            !
-            ! Sinks
-            n = source_sinks%indices(isrc, FLOWCELL_SINK)
-            if (n /= 0) then
-               call getkbotktop(n, kbot_, ktop_)
-               nkbot = kbot_
-               nktop = ktop_
-               do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, SINK_SIDE)) then
-                     nkbot = nk
-                  end if
-                  if (zws(nk) < source_sinks%z_top(isrc, SINK_SIDE)) then
-                     nktop = nk
-                  end if
-               end do
-               do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) - source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
-               end do
-            end if
-            !
-            ! Sources
-            n = source_sinks%indices(isrc, FLOWCELL_SOURCE)
-            if (n /= 0) then
-               call getkbotktop(n, kbot_, ktop_)
-               nkbot = kbot_
-               nktop = ktop_
-               do nk = kbot_, ktop_
-                  if (zws(nk) < source_sinks%z_bottom(isrc, SOURCE_SIDE)) then
-                     nkbot = nk
-                  end if
-                  if (zws(nk) < source_sinks%z_top(isrc, SOURCE_SIDE)) then
-                     nktop = nk
-                  end if
-               end do
-               do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) + source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
-               end do
-            end if
-         end do
+         call source_sinks%get_nearfield_discharge(work1d)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nrfld, UNC_LOC_S3D, work1d, jabndnd=jabndnd_)
       end if
       if (timon) then
@@ -6782,7 +6742,7 @@ contains
       use m_get_ucx_ucy_eul_mag
       use m_get_chezy, only: get_chezy
       use m_turbulence, only: in_situ_density, potential_density, vicwwu_total, vicwws_total, difwws_total
-      use m_physcoef, only: vicoww
+      use m_physcoef, only: background_vertical_eddy_viscosity
       use m_waves, only: uorb
 
       implicit none
@@ -6975,7 +6935,7 @@ contains
                   end if
 
                   call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  if (soiltempthick > 0.0_dp) then
+                  if (soil_heat_buffer_thickness > 0.0_dp) then
                      call definencvar(imapfile, id_tbed(iid), nf90_double, idims, 'tbed', 'Temperature of the bed', 'degC', 'FlowElem_xcc FlowElem_ycc')
                   end if
                end if
@@ -8051,13 +8011,13 @@ contains
             if (map_write_settings%trachy > 0 .and. jatrt == 1) then
                ! Roughness data on net-links
                ierr = nf90_def_var(imapfile, 'cftrt', nf90_double, [id_netlinkdim(iid), id_timedim(iid)], id_cftrt(iid))
-               if (ifrctypuni == 0) then
+               if (uniform_friction_type == 0) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Chezy roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm0.5s-1') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif (ifrctypuni == 1) then
+               elseif (uniform_friction_type == 1) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'Manning roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'sm-0.333') ! WO: does not follow standard ? (which accepts only integral powers?)
-               elseif ((ifrctypuni == 2) .or. (ifrctypuni == 3)) then
+               elseif ((uniform_friction_type == 2) .or. (uniform_friction_type == 3)) then
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'long_name', 'White-Colebrook roughness from trachytopes')
                   ierr = nf90_put_att(imapfile, id_cftrt(iid), 'units', 'm')
                else
@@ -8916,7 +8876,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   do L = Lb, Ltx
                      work1(L - Lb + nlaybL, LL) = viu(L) / 0.7 + dicc
@@ -9059,7 +9019,7 @@ contains
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
                   else
-                     vicc = vicouv
+                     vicc = uniform_horizontal_eddy_viscosity
                   end if
                   work1(1, LL) = viu(LL) + vicc
                end do
@@ -9072,7 +9032,7 @@ contains
                   if (jadiusp == 1) then
                      dicc = diusp(LL)
                   else
-                     dicc = dicouv
+                     dicc = uniform_horizontal_eddy_diffusivity
                   end if
                   work1(1, LL) = viu(LL) * 0.7 + dicc
                end do
@@ -9722,7 +9682,7 @@ contains
             end if
 
             ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
-            if (soiltempthick > 0.0_dp) then
+            if (soil_heat_buffer_thickness > 0.0_dp) then
                ierr = nf90_put_var(imapfile, id_tbed(iid), tbed, [1, itim], [ndxndxi, 1])
             end if
          end if
@@ -15774,7 +15734,7 @@ contains
       return
    end subroutine find_flownodesorlinks_merge
 
-!! check if the flownodes or flowlinks in the current model have the same numbering with in the rst file
+!> Checks restart node/link ordering, allowing up to 10 micrometres of coordinate roundoff.
    subroutine check_flownodesorlinks_numbering_rst(n, janode, x_rst, y_rst, ierror)
       use precision, only: dp
       use network_data, only: xzw, yzw
@@ -15792,44 +15752,49 @@ contains
 
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
       integer :: i
-      real(kind=dp) :: dist, dtol = 1.0e-8_dp
+      real(kind=dp) :: dist
+      real(kind=dp), parameter :: COORDINATE_TOLERANCE = 1.0e-5_dp
       character(len=128) :: message
+      character(len=128) :: model_message, restart_message, distance_message
+      character(len=*), parameter :: COORDINATE_FORMAT = '(A, F24.11, A, F24.11, A)'
 
       ierror = 0
 
       allocate (x_tmp(n))
       allocate (y_tmp(n))
       if (janode == 1) then
-         call mess(LEVEL_INFO, 'Check flownodes numbering when restart:')
+         call mess(LEVEL_INFO, 'Checking flow-node ordering and coordinates against the restart file.')
          x_tmp = xzw
          y_tmp = yzw
       else
-         call mess(LEVEL_INFO, 'Check flowlinks numbering when restart:')
+         call mess(LEVEL_INFO, 'Checking flow-link ordering and coordinates against the restart file.')
          x_tmp = xu
          y_tmp = yu
       end if
 
       do i = 1, n
          dist = dbdistance(x_tmp(i), y_tmp(i), x_rst(i), y_rst(i), jsferic, jasfer3D, dmiss)
-         if (dist > dtol) then
+         if (dist > COORDINATE_TOLERANCE) then
             ierror = 1
             if (janode == 1) then
                if (jampi > 0) then
-                  write (message, "('my_rank=', I0, ': flownode mismatches: node=', I0,'.')") my_rank, i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('MPI rank ', I0, ': Restart coordinate mismatch at flow node ', I0,'.')") my_rank, i
                else
-                  write (message, "('flownode mismatches: node=', I0,'.')") i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('Restart coordinate mismatch at flow node ', I0,'.')") i
                end if
             else
                if (jampi > 0) then
-                  write (message, "('my_rank=', I0, ': flowlink mismatches: link=', I0,'.')") my_rank, i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('MPI rank ', I0, ': Restart coordinate mismatch at flow link ', I0,'.')") my_rank, i
                else
-                  write (message, "('flowlink mismatches: link=', I0,'.')") i
-                  call mess(LEVEL_ERROR, trim(message))
+                  write (message, "('Restart coordinate mismatch at flow link ', I0,'.')") i
                end if
             end if
+            write (model_message, COORDINATE_FORMAT) 'NetFile (x, y):   (', x_tmp(i), ', ', y_tmp(i), ')'
+            write (restart_message, COORDINATE_FORMAT) 'RestartFile (x, y): (', x_rst(i), ', ', y_rst(i), ')'
+            write (distance_message, "('Distance: ', ES10.3, ' m; tolerance: ', ES10.3, ' m.')") &
+               dist, COORDINATE_TOLERANCE
+            call mess(LEVEL_ERROR, trim(message)//new_line('a')//trim(model_message)//new_line('a')// &
+                      trim(restart_message)//new_line('a')//trim(distance_message))
 
             exit
          end if

@@ -22,3 +22,11 @@ m_flowgeom  | This module contains numbering assumptions in our model state
 D-FlowFM Kernel can be run from command line which follows the path defined in \ref Unstruc
 
 The more appropriate way to run D-Flow FM is via the BMI interface, which can be found \ref BMI_Unstruc
+
+\section fm_precice_adapter preCICE adapter
+
+The Mermaid diagram shows the current adapter's preCICE calls, including initial reads,
+conditional FM3D mesh resets, and received source/sink mesh access after advancing.
+Internal solver operations are omitted.
+
+`docs/include/FM_preCICE_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.

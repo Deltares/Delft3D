@@ -40,7 +40,7 @@ contains
    subroutine heatu(time_in_hours)
       use precision, only: dp
       use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, his_write_settings, map_write_settings, &
-                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep, &
+                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, minimum_depth_for_heat_and_evaporation_fluxes, chktempdep, &
                         air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_flowgeom, only: ndxi, nd
       use m_sferic, only: anglon, anglat
@@ -84,7 +84,7 @@ contains
          if (nd(n)%lnx == 0) then
             cycle
          end if
-         if (hs(n) < epshstem) then
+         if (hs(n) < minimum_depth_for_heat_and_evaporation_fluxes) then
             cycle
          end if
          call heatun(n, time_in_hours, nominal_solar_radiation)

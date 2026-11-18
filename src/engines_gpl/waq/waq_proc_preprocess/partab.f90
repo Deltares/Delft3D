@@ -36,7 +36,7 @@ module partable
 contains
 
     subroutine partab (procesdef, num_substances_total, syname, num_constants, constants, &
-            &                    num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            &                    num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_functions, &
             &                    sfname, proref, num_input_ref, status, nothread, &
             &                    nopred, num_local_vars, num_defaults)
 
@@ -73,8 +73,8 @@ contains
         character(20), intent(in) :: paname(num_spatial_parameters)    ! parameter names
         integer(kind = int_wp), intent(in) :: num_time_functions           ! number of functions
         character(20), intent(in) :: funame(num_time_functions)   ! function names
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions          ! number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)  ! segment function names
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions          ! number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)  ! segment function names
         integer(kind = int_wp), pointer, intent(out) :: proref(:, :)     ! input items to be resolved for each process
         integer(kind = int_wp), intent(out) :: num_input_ref           ! maximum nr of references to be resolved
         integer(kind = int_wp), intent(inout) :: nothread        ! number of threads to be used
@@ -131,7 +131,7 @@ contains
                         if (proc2%active) then
                             do iin = 1, proc2%no_input
                                 if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                         &                                proc2%input_item(iin)%name, &
                                         &                                proc1%output_item(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -146,7 +146,7 @@ contains
                         if (proc2%active) then
                             do iin = 1, proc2%no_input
                                 if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                         &                                proc2%input_item(iin)%name, &
                                         &                                proc1%fluxoutput(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -178,7 +178,7 @@ contains
                                 if (needed(iproc2) == -1) cycle
                                 do iout = 1, proc2%no_output
                                     if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%output_item(iout)%name) > 0) then
                                         nitem = nitem + 1
@@ -186,7 +186,7 @@ contains
                                 enddo
                                 do iout = 1, proc2%no_fluxoutput
                                     if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%fluxoutput(iout)%name) > 0) then
                                         nitem = nitem + 1
@@ -309,7 +309,7 @@ contains
                         if (proc2%active) then
                             do iout = 1, proc2%no_output
                                 if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                         &                                proc1%input_item (iin)%name, &
                                         &                                proc2%output_item(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -318,7 +318,7 @@ contains
                             enddo
                             do iout = 1, proc2%no_fluxoutput
                                 if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                         &                                proc1%input_item(iin)%name, &
                                         &                                proc2%fluxoutput(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -333,7 +333,7 @@ contains
 
         !         update flux pointers to new order
 
-        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars + num_defaults
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_local_vars + num_defaults
         do iproc1 = 1, naproc
             proc1 => procesdef%procesprops(iproc1)
             if (proc1%active) then
@@ -345,7 +345,7 @@ contains
                             if (iproc2 /= iproc1) then
                                 do iout = 1, proc2%no_fluxoutput
                                     if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%fluxoutput(iout)%name) > 0) then
                                         proc1%input_item(iin)%ip_val = ioff + nfl + iout
@@ -364,7 +364,7 @@ contains
     end subroutine partab
 
     integer function isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
-            &                          paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
+            &                          paname, num_time_functions, funame, num_spatial_time_functions, sfname, &
             &                          valnam, input)
 
         use m_waq_data_structure
@@ -380,8 +380,8 @@ contains
         character(20), intent(in) :: paname(num_spatial_parameters)    ! parameter names
         integer(kind = int_wp), intent(in) :: num_time_functions           ! number of functions
         character(20), intent(in) :: funame(num_time_functions)   ! function names
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions          ! number of segment functions
-        character(20), intent(in) :: sfname(num_spatial_time_fuctions)  ! segment function names
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions          ! number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_functions)  ! segment function names
         !
         integer(kind = int_wp) :: status          ! value to be returned by function
         integer(kind = int_wp) :: ifound          ! result of search routine >0 if found
@@ -392,7 +392,7 @@ contains
         locnam = valnam
         status = -1
         do while (status == -1)
-            call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+            call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_functions, syname, num_constants, &
                     &                 num_time_functions, constants, paname, funame, sfname, &
                     &                 locnam, ivalip, line)
             if (ivalip /= -1) then

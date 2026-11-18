@@ -80,7 +80,7 @@ than `pip`.
 
 The dependencies are declared in `pyproject.toml`. The exact versions of all the dependencies (and
 sub-dependencies) that we test with are pinned in `uv.lock`, which is committed to source control. One `uv.lock`
-file covers Windows and Linux (x86-64) and python 3.11 and 3.12. Run the following command in this directory. It
+file covers Windows and Linux (x86-64). Run the following command in this directory. It
 creates the virtual environment `.venv` if it does not exist yet, and installs the pinned versions in it:
 
 ```bash

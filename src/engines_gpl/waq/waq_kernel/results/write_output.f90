@@ -45,7 +45,7 @@ contains
 
     !> Manages output: verifies which output is required for the current time,
     !! and calls the corresponding subroutines to generate that output.
-    subroutine write_output(num_substances_total, num_cells, num_spatial_parameters, num_spatial_time_fuctions, itime, &
+    subroutine write_output(num_substances_total, num_cells, num_spatial_parameters, num_spatial_time_functions, itime, &
             moname, syname, duname, idump, num_monitoring_points, &
             conc, cons, param, func, segfun, &
             volume, num_constants, num_time_functions, idt, num_output_files, &
@@ -81,7 +81,7 @@ contains
         integer(kind = int_wp), intent(in   ) :: num_substances_total                   !< Total number of substances
         integer(kind = int_wp), intent(in   ) :: num_cells                   !< Number of cells or segments
         integer(kind = int_wp), intent(in   ) :: num_spatial_parameters                    !< Number of parameters
-        integer(kind = int_wp), intent(in   ) :: num_spatial_time_fuctions                  !< Number of segment functions
+        integer(kind = int_wp), intent(in   ) :: num_spatial_time_functions                  !< Number of segment functions
         integer(kind = int_wp), intent(in   ) :: itime                   !< Time in system clock units
         integer(kind = int_wp), intent(in   ) :: num_monitoring_points                  !< Number of dump locations
         character(len=40)     , intent(in   ) :: moname(4)               !< Model and run names
@@ -92,7 +92,7 @@ contains
         real(kind = real_wp)  , intent(inout) :: cons(*)                 !< Model constants
         real(kind = real_wp)  , intent(inout) :: param(num_spatial_parameters,num_cells)       !< Model parameters
         real(kind = real_wp)  , intent(inout) :: func(*)                 !< Model functions at ITIME
-        real(kind = real_wp)  , intent(inout) :: segfun(num_cells,num_spatial_time_fuctions)    !< Segment functions at ITIME
+        real(kind = real_wp)  , intent(inout) :: segfun(num_cells,num_spatial_time_functions)    !< Segment functions at ITIME
         real(kind = real_wp)  , intent(in   ) :: volume(num_cells)           !< Segment volumes, volume(*)
         integer(kind = int_wp), intent(in   ) :: num_constants                  !< Number of constants used
         integer(kind = int_wp), intent(in   ) :: num_time_functions                   !< Number of functions ( user )
@@ -348,7 +348,7 @@ contains
 
             ! Set all local variables used active on base grid
             call update_base_grid_local_array (iopoin, nrvar, num_constants, num_spatial_parameters, num_time_functions, &
-                    num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, num_grids, &
+                    num_spatial_time_functions, num_substances_total, num_cells, num_local_vars, num_grids, &
                     num_vars, vararr, varidx, vartda, vardag, &
                     arrknd, arrpoi, arrdm1, arrdm2, vgrset, &
                     grdnos, grdseg, a)
@@ -372,7 +372,7 @@ contains
                 nrvar2 = nrvar / 2
                 ! For the dump area's
                 call fill_output_buffer_sub_grid(riobuf, iopoin(k1), nrvar2, num_constants, num_spatial_parameters, &
-                        num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
+                        num_time_functions, num_spatial_time_functions, num_substances_total, conc, segfun, &
                         func, param, cons, idt, itime, &
                         volume, num_cells, num_substances_transported, ndmpar, ipdmp, &
                         bound, num_local_vars, proloc, num_defaults, defaul, &
@@ -391,7 +391,7 @@ contains
             else
                 nrvar2 = nrvar
                 call fill_output_buffer_base_grid(riobuf, iopoin(k1), nrvar, num_constants, num_spatial_parameters, &
-                        num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
+                        num_time_functions, num_spatial_time_functions, num_substances_total, conc, segfun, &
                         func, param, cons, idt, itime, &
                         volume, num_cells, num_substances_transported, num_monitoring_points, idump, &
                         num_cells_u_dir, num_cells_v_dir, lgrid, igrdou, bound, &
@@ -640,7 +640,7 @@ contains
                 name = 'SURF'
                 lget = .true.
                 call exchange_values (name, num_cells, surf, num_constants, num_spatial_parameters, &
-                        num_time_functions, num_spatial_time_fuctions, cons, coname, param, &
+                        num_time_functions, num_spatial_time_functions, cons, coname, param, &
                         paname, func, funame, segfun, sfname, &
                         lget, ierr)
 

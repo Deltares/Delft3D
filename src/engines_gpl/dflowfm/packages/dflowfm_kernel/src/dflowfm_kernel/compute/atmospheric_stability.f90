@@ -19,7 +19,7 @@ module m_atmospheric_stability
 !!   - Charnock parameter
    use precision, only: dp
    use m_sferic, only: pi
-   use m_physcoef, only: vonkarw
+   use m_physcoef, only: VON_KARMAN_WIND
    use m_flowparameters, only: EPS8
    use MessageHandling, only: err
    use m_array_or_scalar, only: t_array_or_scalar
@@ -30,6 +30,10 @@ module m_atmospheric_stability
 
    public :: atmospheric_stability
    public :: t_atmospheric_stability
+
+   public :: compute_saturation_pressure
+   public :: compute_wet_bulb_temperature
+   public :: convert_dew_point_temperature_to_relative_humidity
 
    real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
@@ -197,9 +201,9 @@ contains
          surface_humidity = salt_saturation_humidity_reduction_factor * surface_humidity
 
          ! Convert temperature and specific humidity to equivalent values at wind sensor height using logarithmic profiles.
-         temperature_pfactor = 0.04_dp * log(sensor_height_wind_velocity / sensor_height_air_temperature) / vonkarw
+         temperature_pfactor = 0.04_dp * log(sensor_height_wind_velocity / sensor_height_air_temperature) / VON_KARMAN_WIND
          temperature_at_wind_height = (air_temperature - temperature_pfactor * surface_temperature) / (1.0_dp - temperature_pfactor)
-         humidity_pfactor = 0.04_dp * log(sensor_height_wind_velocity / sensor_height_humidity) / vonkarw
+         humidity_pfactor = 0.04_dp * log(sensor_height_wind_velocity / sensor_height_humidity) / VON_KARMAN_WIND
          humidity_at_wind_height = (air_humidity - humidity_pfactor * surface_humidity) / (1.0_dp - humidity_pfactor)
 
          if (options%include_free_convection) then
@@ -252,7 +256,7 @@ contains
                   heat_profile_correction = log(sensor_height_wind_velocity) - log(sensor_height_air_temperature) &
                                             - stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
                                             + stability_profile_heat_humidity((sensor_height_air_temperature + z0_momentum) * inverse_obukhov_length)
-                  temperature_at_wind_height = air_temperature + (t_star / vonkarw) * heat_profile_correction
+                  temperature_at_wind_height = air_temperature + (t_star / VON_KARMAN_WIND) * heat_profile_correction
                   delta_temperature = temperature_at_wind_height - surface_temperature
                end if
 
@@ -260,7 +264,7 @@ contains
                   humidity_profile_correction = log(sensor_height_wind_velocity) - log(sensor_height_humidity) &
                                                 - stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
                                                 + stability_profile_heat_humidity((sensor_height_humidity + z0_momentum) * inverse_obukhov_length)
-                  humidity_at_wind_height = air_humidity + (q_star / vonkarw) * humidity_profile_correction
+                  humidity_at_wind_height = air_humidity + (q_star / VON_KARMAN_WIND) * humidity_profile_correction
                   delta_specific_humidity = humidity_at_wind_height - surface_humidity
                end if
 
@@ -273,9 +277,9 @@ contains
                log_denominator_humidity = log(sensor_height_humidity + z0_momentum) - log(z0_humidity)
             end if
 
-            result%u_star = vonkarw * delta_wind_speed / safe_log_denominator(log_denominator_momentum)
-            result%t_star = vonkarw * delta_temperature / safe_log_denominator(log_denominator_heat)
-            result%q_star = vonkarw * delta_specific_humidity / safe_log_denominator(log_denominator_humidity)
+            result%u_star = VON_KARMAN_WIND * delta_wind_speed / safe_log_denominator(log_denominator_momentum)
+            result%t_star = VON_KARMAN_WIND * delta_temperature / safe_log_denominator(log_denominator_heat)
+            result%q_star = VON_KARMAN_WIND * delta_specific_humidity / safe_log_denominator(log_denominator_humidity)
 
             convergence_error = sqrt(((result%u_star - u_star) / max(abs(u_star), EPS8))**2 + &
                                      ((result%t_star - t_star) / max(abs(t_star), EPS8))**2 + &
@@ -312,9 +316,9 @@ contains
          log_denominator_heat = safe_log_denominator(log(sensor_height_air_temperature + z0_momentum) - log(z0_heat) - psi_diff_heat)
          log_denominator_humidity = safe_log_denominator(log(sensor_height_humidity + z0_momentum) - log(z0_humidity) - psi_diff_humidity)
          
-         result%c_d = vonkarw**2/log_denominator_momentum/log_denominator_momentum
-         result%c_h = vonkarw**2/log_denominator_momentum/log_denominator_heat
-         result%c_e = vonkarw**2/log_denominator_momentum/log_denominator_humidity
+         result%c_d = VON_KARMAN_WIND**2/log_denominator_momentum/log_denominator_momentum
+         result%c_h = VON_KARMAN_WIND**2/log_denominator_momentum/log_denominator_heat
+         result%c_e = VON_KARMAN_WIND**2/log_denominator_momentum/log_denominator_humidity
          
       end associate
    end function compute_scaling_parameters
@@ -727,7 +731,7 @@ contains
    !> Compute saturation-vapor-pressure from temperature (ECMWF_T2esat).
    !! It uses Tetens formula from IFS documentation, Part IV, Section 7.5.2 Relative Humidity.
    !! If input is dew-point temperature, it gives actual vapor-pressure.
-   pure function compute_saturation_pressure(temperature) result(vapor_pressure)
+   elemental function compute_saturation_pressure(temperature) result(vapor_pressure)
       real(kind=dp), intent(in) :: temperature !< Temperature [K].
       real(kind=dp) :: vapor_pressure !< Saturation pressure [Pa].
       real(kind=dp), parameter :: COEFF_A = 17.502_dp
@@ -903,5 +907,38 @@ contains
       buoyancy_flux = max(0.0_dp, -CONST_GRAVITY * friction_velocity * virtual_temperature_scale / max(air_temperature, 1.0e-8_dp))
       convective_velocity_scale = (buoyancy_flux * boundary_layer_height)**(1.0_dp / 3.0_dp)
    end function compute_convective_velocity_scale
+
+   !> Use the Stull (2011) approximation to compute the wet-bulb temperature from air temperature and relative humidity
+   elemental function compute_wet_bulb_temperature(air_temperature, relative_humidity) result(wet_bulb_temperature)
+      ! Arguments
+      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
+      real(kind=dp), intent(in) :: relative_humidity !< [%] Relative humidity.
+      real(kind=dp) :: wet_bulb_temperature !< [degC] Wet-bulb temperature.
+
+      wet_bulb_temperature = air_temperature * atan(0.151977_dp * sqrt(relative_humidity + 8.313659_dp)) &
+                             + atan(air_temperature + relative_humidity) &
+                             - atan(relative_humidity - 1.676331_dp) &
+                             + 0.00391838_dp * relative_humidity**1.5_dp * atan(0.023101_dp * relative_humidity) &
+                             - 4.686035_dp
+
+   end function compute_wet_bulb_temperature
+
+   elemental function convert_dew_point_temperature_to_relative_humidity(dew_point_temperature, air_temperature) result(relative_humidity)
+      use physicalconsts, only: celsius_to_kelvin
+
+      ! Arguments
+      real(kind=dp), intent(in) :: dew_point_temperature !< [degC] Dew point temperature.
+      real(kind=dp), intent(in) :: air_temperature !< [degC] Air temperature.
+      real(kind=dp) :: relative_humidity !< [%] Relative humidity.
+
+      ! Local variables
+      real(kind=dp) :: dew_point_vapor_pressure !< Vapor pressure at dew point temperature [Pa].
+      real(kind=dp) :: saturated_vapor_pressure !< Vapor pressure at air temperature [Pa].
+
+      dew_point_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(dew_point_temperature))
+      saturated_vapor_pressure = compute_saturation_pressure(celsius_to_kelvin(air_temperature))
+      relative_humidity = 100.0_dp * dew_point_vapor_pressure / saturated_vapor_pressure
+      
+   end function convert_dew_point_temperature_to_relative_humidity
 
 end module m_atmospheric_stability
