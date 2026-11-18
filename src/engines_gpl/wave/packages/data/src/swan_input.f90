@@ -353,11 +353,11 @@ module swan_input
       character(72) :: title3
       character(256) :: casl
       character(256) :: filnam
-      character(256) :: flowgridfile ! netcdf file containing flow grid
       character(256) :: scriptname
       character(256) :: specfile
       character(256) :: inputtemplatefile
       character(1024) :: comfile
+      character(1024) :: mudfile_deprecated
       character(15) :: usehottime = '00000000.000000' ! Time in the name of the hotfile that has to be used by SWAN
       character(15) :: writehottime = '00000000.000000' ! Time in the name of the hotfile that has to be written by SWAN
       character(15) :: keephottime = '00000000.000000' ! Time in the name of the hotfile that should not be deleted
@@ -662,7 +662,7 @@ contains
       sr%title2 = ''
       sr%title3 = ''
       sr%comfile = ''
-      sr%flowgridfile = ' '
+      sr%mudfile_deprecated = ' '
       sr%useflowdata = .false.
       sr%exemode = SWAN_MODE_EXE
       sr%swmor = .false.
@@ -916,23 +916,19 @@ contains
       parname = ''
       call prop_get(mdw_ptr, 'General', 'FlowFile', parname)
       if (parname /= ' ') then
-         call setmode(wavedata, flow_online)
-         parname = ''
-         call prop_get(mdw_ptr, 'General', 'FlowMudFile', parname)
-         if (parname /= ' ') then
-            call setmode(wavedata, flow_mud_online)
-         end if
-      else
-         call prop_get(mdw_ptr, 'General', 'ComFile', sr%comfile)
+         write (*, *) 'SWAN_INPUT: Keyword "FlowFile" is obsolete'
+         call handle_errors_mdw(sr)
       end if
-      select case (wavedata%mode)
-      case (stand_alone)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs stand alone'
-      case (flow_online)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with Delft3D-FLOW'
-      case (flow_mud_online)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with Delft3D-FLOW, including MUD'
-      end select
+      call prop_get(mdw_ptr, 'General', 'FlowMudFile', sr%mudfile_deprecated)
+      if (sr%mudfile_deprecated /= ' ') then
+         write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is deprecated'
+         if (wavedata%wave_flow_mode%online /= ONLINE_DELFTIO) then
+             write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is only supported for Delft3D-FLOW'
+             call handle_errors_mdw(sr)
+         end if
+         call setcom(wavedata, COM_NEFIS)
+      end if
+      call prop_get(mdw_ptr, 'General', 'ComFile', sr%comfile)
       !
       parname = ''
       call prop_get(mdw_ptr, 'General', 'DirConvention', parname)
@@ -1494,7 +1490,6 @@ contains
       sr%wavm_write_interval = 0.0
       sr%swwav = .false.
       sr%deltcom = 0.0
-      sr%flowgridfile = ' '
       sr%append_com = .false.
       sr%output_points = .false.
       sr%output_pnt_file = .false.
@@ -1516,12 +1511,15 @@ contains
       call prop_get(mdw_ptr, 'Output', 'WriteCOM', sr%swwav)
       call prop_get(mdw_ptr, 'Output', 'MassFluxToCOM', sr%swflux)
       call prop_get(mdw_ptr, 'Output', 'COMWriteInterval', sr%deltcom)
-      call prop_get(mdw_ptr, 'Output', 'FlowGridForCom', sr%flowgridfile)
-      if (sr%flowgridfile /= ' ') then
-         write (*, '(a)') "ERROR: No longer supported: stand alone WAVE computation using FLOW data in a com-file via keyword 'FlowGridForCom'"
-         call handle_errors_mdw(sr)
+      parname = ''
+      call prop_get(mdw_ptr, 'Output', 'COMFile', parname)
+      if (parname /= ' ') then
+         if (sr%comfile /= ' ') then
+             write (*, '(a)') "ERROR: COMFile in block '[General]' and in '[Output]' cannot be used together"
+             call handle_errors_mdw(sr)
+         end if
+         sr%comfile = parname
       end if
-      call prop_get(mdw_ptr, 'Output', 'COMFile', sr%flowgridfile)
       call prop_get(mdw_ptr, 'Output', 'AppendCOM', sr%append_com)
       call prop_get(mdw_ptr, 'Output', 'MapWriteNetCDF', sr%swmapwritenetcdf)
       call prop_get(mdw_ptr, 'Output', 'NetCDFSinglePrecision', sr%netcdf_sp)
@@ -1538,12 +1536,21 @@ contains
       !
       ! Check that the comfile is not a map file (not allowed. Was allowed in preliminary versions)
       !
-      if (sr%flowgridfile /= ' ') then
-         i = len_trim(sr%flowgridfile)
-         if (sr%flowgridfile(i - 5:i) /= "com.nc") then
-            write (*, '(3a)') "ERROR: The name of the COMFile (", trim(sr%flowgridfile), ") must end on 'com.nc'"
+      if (sr%comfile /= ' ') then
+         i = index(sr%comfile, ".", back=.true.)
+         if (sr%comfile(i - 3:i) /= "com") then
+            write (*, '(3a)') "ERROR: The base of the name of the COMFile (", trim(sr%comfile), ") must end on 'com'"
             call handle_errors_mdw(sr)
          end if
+         select case (sr%comfile(i:))
+         case (".nc")
+             call setcom(wavedata, COM_NETCDF)
+         case (".dat", ".def")
+             call setcom(wavedata, COM_NEFIS)
+         case default
+             write (*, '(3a)') "ERROR: The COMFile (", trim(sr%comfile), ") has an unknown file extension"
+             call handle_errors_mdw(sr)
+         end select
       end if
       !
       ! determine the number of location files
@@ -2581,7 +2588,7 @@ contains
       ! Backward slash does not work on Linux
       slash_ok = 47 ! /
       slash_er = 92 ! \
-      call replace_char(sr%flowgridfile, slash_er, slash_ok)
+      call replace_char(sr%comfile, slash_er, slash_ok)
       do i = 1, sr%nloc
          call replace_char(sr%pntfilnam(i), slash_er, slash_ok)
       end do

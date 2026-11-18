@@ -63,7 +63,7 @@ contains
 
 !
 ! ====================================================================================
-function wave_main_init(mode_in, online_in, mdw_file) result(retval)
+function wave_main_init(mode_in, online_in, com_file_type_in,mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -82,6 +82,7 @@ function wave_main_init(mode_in, online_in, mdw_file) result(retval)
 !
    integer     , intent(in) :: mode_in
    integer     , intent(in) :: online_in
+   integer     , intent(in) :: com_file_type_in
    character(*), intent(in) :: mdw_file     ! filename mdw file
 !
 ! Local variables
@@ -123,13 +124,13 @@ function wave_main_init(mode_in, online_in, mdw_file) result(retval)
    !
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
-   retval = wave_init(mode_in, online_in, mdw_file)
+   retval = wave_init(mode_in, online_in, com_file_type_in, mdw_file)
 end function wave_main_init
 
 
 !
 ! ====================================================================================
-function wave_init(mode_in, online_in, mdw_file) result(retval)
+function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -147,6 +148,7 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
 !
    integer     , intent(in) :: mode_in
    integer     , intent(in) :: online_in
+   integer     , intent(in) :: com_file_type_in
    character(*), intent(in) :: mdw_file     ! filename mdw file
 !
 ! Local variables
@@ -176,13 +178,28 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
    retval = 0
    call setmode(wavedata, mode_in)
    call setonline(wavedata, online_in)
+   call setcom(wavedata, com_file_type_in)
    !
    ! Read mdw file
    !
    call read_dwaves_mdw(mdw_file, swan_run, wavedata)
+   if (mode_in == flow_mud_online) then
+       swan_run%mudfile_deprecated = "read via DelftIO"
+   end if
+   !
+      select case (online_in)
+      case (ONLINE_NONE)
+         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs stand alone'
+      case (ONLINE_DELFTIO)
+         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with Delft3D4-FLOW'
+      case (ONLINE_DIMR)
+         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with D-Flow FM via DIMR'
+      case (ONLINE_PRECICE)
+          write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with D-Flow FM via PreCICE'
+      end select
    !
    n_swan_grids = swan_run%nnest
-   if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile/=' ') then
+   if (online_in/=ONLINE_NONE) then
       swan_run%nttide = 1
    endif
    !
@@ -192,9 +209,9 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
    !
    ! Initialisation from flow (write file runid(s))
    !
-   if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile==' ') then
+   if (online_in == ONLINE_DIMR) then
       it01flow = 0
-      call flow_init(wavedata%mode, it01flow, tscaleflow)
+      call flow_init(wavedata%wave_flow_mode, it01flow, tscaleflow)
       call settscale(wavedata%time, tscaleflow)
       if (wavedata%time%refdate == 0) then
          !
@@ -213,7 +230,7 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
             call wavestop(1, '*** ERROR: Reference date from FLOW differs from WAVE')
          endif
       endif
-   else
+   else if (online_in == ONLINE_DELFTIO .or. online_in == ONLINE_NONE) then
       !
       ! stand_alone, flow data may be used or written
       !
@@ -222,16 +239,30 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
          ! In this case, refdate and tscale are read from the com-file
          ! Only tscale must be set in wavedata%time
          !
-         call flow_init(wavedata%mode, it01flow, tscaleflow)
-         if (swan_run%flowgridfile == ' ') then
-            !
-            ! tscaleflow is only set when reading from com-file
-            ! not when reading from netcdf-file
-            !
-            call settscale (wavedata%time, tscaleflow)
-         endif
+         call flow_init(wavedata%wave_flow_mode, it01flow, tscaleflow)
+         call settscale (wavedata%time, tscaleflow)
       endif
    endif
+   ! TODO: online_in == ONLINE_PRECICE: check if tscale and refdate are set correctly
+   !
+   if (online_in == ONLINE_PRECICE) then
+       if (com_file_type_in /= COM_NONE .or. swan_run%comfile /= ' ') then
+           write(*,'(a)') '*** ERROR: PreCICE online mode does not use a COM file'
+           call wavestop(1, '*** ERROR: PreCICE online mode does not use a COM file')
+       end if
+   end if
+   if (online_in == ONLINE_DELFTIO) then
+       if (com_file_type_in /= COM_NEFIS .or. swan_run%comfile == ' ') then
+           write(*,'(a)') '*** ERROR: A NEFIS COM file must be provided for DELFT3D4 online mode'
+           call wavestop(1, '*** ERROR: A NEFIS COM file must be provided for DELFT3D4 online mode')
+       end if
+   end if
+   if (online_in == ONLINE_DIMR) then
+       if (com_file_type_in /= COM_NETCDF .or. swan_run%comfile == ' ') then
+           write(*,'(a)') '*** ERROR: A NETCDF COM file must be provided for DELFT3D FM online via DIMR mode'
+           call wavestop(1, '*** ERROR: A NETCDF COM file must be provided for DELFT3D FM online via DIMR mode')
+       end if
+   end if
    if (wavedata%time%refdate == 0) then
       write(*,'(a)') '*** ERROR: Reference date not set'
       write(*,'(a)') '           Use Delft3D-WAVE-GUI version 4.90.00 or higher to create the mdw-file.'
@@ -241,7 +272,7 @@ function wave_init(mode_in, online_in, mdw_file) result(retval)
    !
    ! Read wave grids and flow grids; make grid-maps
    !
-   call grids_and_gridmaps(n_swan_grids, n_flow_grids, swan_run, wavedata%mode)
+   call grids_and_gridmaps(n_swan_grids, n_flow_grids, swan_run, wavedata%wave_flow_mode)
    !
    ! Allocate swan output fields defined on flow grids; they have to be
    ! stored and updated over multiple nested swan runs
@@ -381,7 +412,7 @@ function wave_main_step(stepsize) result(retval)
 !
 ! Local variables
 !
-   integer                                      :: command
+   integer :: command
 !
 !! executable statements -----------------------------------------------
 !
@@ -431,13 +462,13 @@ function wave_master_step(stepsize) result(retval)
 !
    retval = 0
    !
-   if (wavedata%mode /= stand_alone) then
+   if (wavedata%wave_flow_mode%online /= ONLINE_NONE) then
       !
       ! In combination with flow, perform the swan computation (including mapping etc.)
       !
       command = flow_wave_comm_perform_step
       do while (command == flow_wave_comm_perform_step)
-         if (swan_run%flowgridfile == ' ') then
+         if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
             write(*,'(a)') 'Waiting for communication with Delft3D-FLOW ...'
             mud     = .false.
             success = wave_from_flow_command(command, mud, timtscale)
@@ -463,7 +494,7 @@ function wave_master_step(stepsize) result(retval)
          !
          ! Update wave and wind conditions
          !
-         if (swan_run%flowgridfile == ' ') then
+         if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
             call settimtscale(wavedata%time, timtscale, swan_run%modsim, swan_run%nonstat_interval)
          else
             call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,hp), swan_run%modsim, swan_run%nonstat_interval)
@@ -475,7 +506,7 @@ function wave_master_step(stepsize) result(retval)
          write(*,'(a)')'*  End of Delft3D-WAVE'
          write(*,'(a)')'*****************************************************************'
          !
-         if (swan_run%flowgridfile == ' ') then
+         if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
             mud = .false.
             call wave_to_flow_status(flow_wave_comm_result_ok, mud)
             if (wavedata%mode == flow_mud_online) then
@@ -489,7 +520,7 @@ function wave_master_step(stepsize) result(retval)
       !
       ! Standalone swan computation
       !
-      if (swan_run%flowgridfile == ' ') then
+      if (wavedata%wave_flow_mode%com_file == COM_NEFIS) then
          call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
       elseif (swan_run%timwav(1) < 0.0) then
          !
@@ -583,7 +614,7 @@ function wave_master_finish() result(retval)
 !
 ! local variables
 !
-   integer                                      :: i_swan       ! counter
+   integer :: i_swan       ! counter
 !
 !! executable statements -----------------------------------------------
 !

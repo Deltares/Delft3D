@@ -138,7 +138,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          dom => swan_run%dom(i_swan)
 
          write (*, '(a)') '  Allocate input fields'
-         call alloc_input_fields(swan_grids(i_swan), swan_input_fields, wavedata%mode, dom%ice)
+         call alloc_input_fields(swan_grids(i_swan), swan_input_fields, swan_run%mudfile_deprecated, dom%ice)
          call init_input_fields(swan_input_fields, swan_run, itide)
 
          if (dom%curvibot == 1) then
@@ -450,7 +450,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                & wavedata, swan_run%nautical_convention)
          end if
 
-         call dealloc_input_fields(swan_input_fields, wavedata%mode)
+         call dealloc_input_fields(swan_input_fields, swan_run%mudfile_deprecated)
          call dealloc_output_fields(swan_output_fields)
          !
          if (deletehotfile(wavedata)) then
@@ -486,7 +486,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          end if
 
          write (*, '(a)') '  Deallocate input fields'
-         call dealloc_input_fields(swan_input_fields, wavedata%mode, dom%ice)
+         call dealloc_input_fields(swan_input_fields, swan_run%mudfile_deprecated, dom%ice)
       end do ! nested swan grids
       !
       ! After all hotfiles are handled correctly for each i_swan:
@@ -498,7 +498,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       !
       if (swan_run%swwav) then
          do i_flow = 1, n_flow_grids
-            if (swan_run%flowgridfile == ' ') then
+            if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
                !
                ! Convert vector fields to curvilinear directions
                !
@@ -517,7 +517,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             itidewrite = itide
             if (swan_run%append_com) itidewrite = -1
             call put_wave_fields(flow_grids(i_flow), flow_output_fields(i_flow), itidewrite, &
-                                & wavedata, swan_run%swflux, swan_run%flowgridfile, &
+                                & wavedata, swan_run%swflux, swan_run%comfile, &
                                 & swan_run%netcdf_sp)
          end do
          ! Initially comcount = 0

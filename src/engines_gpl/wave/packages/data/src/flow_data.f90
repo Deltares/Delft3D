@@ -45,7 +45,7 @@ contains
 !
 !
 !===============================================================================
-subroutine flow_init (mode, it01, tscale)
+subroutine flow_init (wave_flow_mode, it01, tscale)
 !
 ! Initializes communication with flow computation
 ! Fills flow_data parameters
@@ -59,7 +59,7 @@ subroutine flow_init (mode, it01, tscale)
 !
 ! Global variables
 !
-   integer, intent(in) :: mode
+   type(wave_flow_mode_type), intent(in) :: wave_flow_mode
    integer             :: it01
    real(hp)            :: tscale
 !
@@ -76,23 +76,24 @@ subroutine flow_init (mode, it01, tscale)
 !
    mud          = .false.
    subdom_names = ' '
-   if (swan_run%flowgridfile/=' ') then
+   select case (wave_flow_mode%online)
+   case (ONLINE_DIMR)
       !
       ! Running in Delft3D FM mode
       ! mode may be stand_alone or not
       !
       if (swan_run%useflowdata .or. swan_run%swwav) then
-         num_subdomains = checkcomfiles(swan_run%flowgridfile)
+         num_subdomains = checkcomfiles(swan_run%comfile)
          if (num_subdomains == 1) then
-            write(*,'(3a)') '*** MESSAGE: Using data from NetCDF file "', trim(swan_run%flowgridfile), '".'
+            write(*,'(3a)') '*** MESSAGE: Using data from NetCDF file "', trim(swan_run%comfile), '".'
          else
             write(*,'(a,i0,a)') '*** MESSAGE: Using data from ', num_subdomains, ' NetCDF files'
-            write(*,'(2a)')     '             Base name: ', trim(swan_run%flowgridfile)
+            write(*,'(2a)')     '             Base name: ', trim(swan_run%comfile)
             write(*,'(a,i4.4)')  '             Partition range: 0000 - ', num_subdomains-1
          endif
          flow_data_initialized = .true.
       endif
-   elseif (mode==stand_alone) then
+   case (ONLINE_NONE)
       !
       ! Running in Delft3D 4 stand alone mode
       !
@@ -117,7 +118,7 @@ subroutine flow_init (mode, it01, tscale)
          call get_params(tscale, dummy, filnam)
          flow_data_initialized = .true.
       endif
-   else ! mode/=stand_alone .and. swan_run%flowgridfile==' '
+   case (ONLINE_DELFTIO)
       !
       ! Running in Delft3D 4 coupled mode
       !
@@ -136,7 +137,7 @@ subroutine flow_init (mode, it01, tscale)
       enddo
       call wave_to_flow_status(flow_wave_comm_result_ok, mud)
       !
-      if (mode == flow_mud_online) then
+      if (swan_run%mudfile_deprecated /= '') then
          mud          = .true.
          subdom_names = ' '
          write (*,'(a)') '  Waiting for initialisation from MUD layer'
@@ -163,9 +164,11 @@ subroutine flow_init (mode, it01, tscale)
             call wavestop(1, 'Number of mud domains is not equal to the number of water domains')
          endif
          call wave_to_flow_status(flow_wave_comm_result_ok, mud)
-      endif
-      flow_data_initialized = .true.
-   endif
+      end if   
+   case (ONLINE_PRECICE)
+      ! TODO: Implement preCICE initialization
+   end select
+   flow_data_initialized = .true.
 end subroutine flow_init
 !
 !

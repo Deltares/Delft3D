@@ -33,7 +33,9 @@ program waves_main
 ! NONE
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
-   use wave_data, only: stand_alone, flow_online, ONLINE_NONE, ONLINE_DELFTIO, ONLINE_DIMR, ONLINE_PRECICE
+   use wave_data, only: stand_alone, flow_online, flow_mud_online, &
+       ONLINE_NONE, ONLINE_DELFTIO, ONLINE_DIMR, ONLINE_PRECICE, &
+       COM_NONE, COM_NEFIS, COM_NETCDF
    use precision
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -54,6 +56,7 @@ program waves_main
    integer                                      :: ierr
    integer                                      :: mode_in
    integer                                      :: online_in
+   integer                                      :: com_file_type_in
    integer                                      :: mtdim
    integer                                      :: retval
    real(hp)                                     :: stepsize
@@ -84,6 +87,7 @@ program waves_main
    !
    mode_in = stand_alone
    online_in = ONLINE_NONE
+   com_file_type_in = COM_NONE
    select case(COMMAND_ARGUMENT_COUNT())
    case (1)
        call getarg(1,mdw_file)
@@ -99,14 +103,18 @@ program waves_main
                    case ('none')
                        mode_in   = stand_alone
                        online_in = ONLINE_NONE
+                       com_file_type_in = COM_NONE
                    case ('delftio')
                        mode_in   = flow_online
                        online_in = ONLINE_DELFTIO
+                       com_file_type_in = COM_NEFIS
                    case ('dimr')
                        mode_in   = flow_online
                        online_in = ONLINE_DIMR
+                       com_file_type_in = COM_NETCDF
                    case ('precice')
                        online_in = ONLINE_PRECICE
+                       com_file_type_in = COM_NONE
                    case default
                        call wavestop(1, "Invalid command line argument: " // trim(tmpchar))
                    end select
@@ -120,8 +128,10 @@ program waves_main
                        select case (mode_in)
                        case (stand_alone)
                            online_in = ONLINE_NONE
+                           com_file_type_in = COM_NONE
                        case (flow_online, flow_mud_online)
                            online_in = ONLINE_DELFTIO
+                           com_file_type_in = COM_NEFIS
                        case default
                            call wavestop(1, "Invalid command line argument: " // trim(tmpchar))
                        end select
@@ -145,7 +155,7 @@ program waves_main
       if (ichar(mdw_file(i:i)) == 0) mdw_file(i:i) = ' '
    enddo
    !
-   retval = wave_main_init(mode_in, online_in, mdw_file)
+   retval = wave_main_init(mode_in, online_in, com_file_type_in, mdw_file)
    !
    ! ====================================================================================
    ! RUN
