@@ -47,6 +47,7 @@ contains
         use m_part_mesh
         use m_sferic, only: jsferic, jasfer3D
         use geometry_module, only: dbdistance, sphertocart3D, normaloutchk, comp_masscenter
+        use io_ugrid, only: UG_EDGETYPE_INTERNAL, UG_EDGETYPE_BND
         use timers
 
         type(t_hydrodynamics), intent(in) :: hyd                    !< description of the hydrodynamics
@@ -87,7 +88,7 @@ contains
         do L = 1, numl
             kn(1, L) = waqgeom%edge_nodes(1, L)
             kn(2, L) = waqgeom%edge_nodes(2, L)
-            if (hyd%edge_type(L) == 1 .or. hyd%edge_type(L) == 2 .or. hyd%edge_type(L) == 21 .or. hyd%edge_type(L) == 22) then
+            if (hyd%edge_type(L) == UG_EDGETYPE_INTERNAL .or. hyd%edge_type(L) == UG_EDGETYPE_BND) then
                 Lnx = Lnx + 1
                 lne2ln(L) = Lnx
                 lnn = 2

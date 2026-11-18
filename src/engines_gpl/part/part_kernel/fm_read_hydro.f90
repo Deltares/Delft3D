@@ -38,6 +38,7 @@ contains
         use m_part_geom, only: ba, ndx, lnx, lne2ln
         use m_part_times, only: time1
         use partmem, only: zmodel, laytop
+        use io_ugrid, only: UG_EDGETYPE_BND
         use m_hydmod
         use timers
 
@@ -95,7 +96,7 @@ contains
                     iq = lne2ln(L) + (K - 1) * lnx  !
                     if (iql <= 0) cycle
 
-                    if (hyd%edge_type(iql) == 2 .or. hyd%edge_type(iql) == 22) then  ! upstream boundary?
+                    if (hyd%edge_type(iql) == UG_EDGETYPE_BND) then  ! not a boundary, then reverse discharge?
                         q1(iq) = hyd%flow(iq)
                     else
                         q1(iq) = -hyd%flow(iq)
