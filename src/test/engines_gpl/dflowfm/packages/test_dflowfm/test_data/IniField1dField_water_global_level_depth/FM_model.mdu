@@ -111,7 +111,7 @@ Infiltrationmodel = 2
 [physics]
 UnifFrictCoef     = 0.023
 uniformFrictiontype     = 1
-uniformFrictionCoefficient1D   = 0.023
+unifFrictCoef1D   = 0.023
 uniformFrictionCoefficientLinear  = 0
 Umodlin           = 0
 uniformHorizontalEddyViscosity            = 1
