@@ -58,6 +58,7 @@ type(Type_Command_Line_Interface) :: cli          !< Command Line Interface (CLI
 integer(I4P)                      :: ierr         !< Error trapping flag.
 character(len=MAXNAMELEN), allocatable :: infiles(:)  !< Input file name(s)
 character(len=MAXNAMELEN)              :: listfile    !< List file containing all input file name(s)
+character(len=MAXNAMELEN)              :: mdufile     !< Base MDU filename; need not exist when merging in the output directory.
 character(len=MAXNAMELEN), allocatable :: outfiles(:) !< Output file name(s)
 character(len=32        )              :: filter_length  !< filter lengths given for max25
 character(len=32        )              :: var_name       !< variable name given for max25
@@ -77,6 +78,7 @@ call cli%init(progname    = base_name,                                          
               version     = version,                                             &
               description = 'Tool for handling D-Flow FM output files',                    &
               examples    = ["dfmoutput mapmerge         --infile model_0000_map.nc model_0001_map.nc", &
+                             "dfmoutput mapmerge         --mdufile model.mdu                ", &
                              "dfmoutput max_running_mean --infile hisfile.nc                         ", &
                              "dfmoutput max25            --infile hisfile.nc                         ", &
                              "dfmoutput genfilter        --infile hisfile.nc  --intval 6             "])
@@ -89,8 +91,14 @@ call cli%add(switch='--verbose',  switch_ab='-d', help='Print verbose diagnostic
 call cli%add_group(group='mapmerge',description='Merge multiple map files from parallel run into one.')
 
 ! set Command Line Arguments of mapmerge command
-call cli%add(group='mapmerge',switch='--infile',  switch_ab='-i', help='Input map files, or one base MDU name.',required=.false.,act='store',def=char(0),valname='FILE',nargs='+')
-call cli%add(group='mapmerge',switch='--listfile',switch_ab='-F', help='Pass contents of LISTFILE as input files.',required=.false.,act='store',def='',valname='LISTFILE')
+call cli%add(group='mapmerge',switch='--infile',  switch_ab='-i', help='Input map files.',required=.false.,act='store',def=char(0),valname='FILE',nargs='+',exclude='--mdufile')
+call cli%add(group='mapmerge',switch='--listfile',switch_ab='-F', help='Pass contents of LISTFILE as input files.',required=.false.,act='store',def='',valname='LISTFILE',exclude='--mdufile')
+call cli%add(group='mapmerge',switch='--mdufile',switch_ab='-m', &
+             help='Discover <model>_????_map.nc files using a base MDU filename.'//char(10)// &
+                  'If the MDU exists, use its OutputDir (default: DFM_OUTPUT_<model>).'//char(10)// &
+                  'Relative OutputDir paths are resolved from the MDU directory.'//char(10)// &
+                  'If absent, search the current working directory, or the directory supplied in the MDU filename.', &
+             required=.false.,act='store',def='',valname='MDUFILE')
 call cli%add(group='mapmerge',switch='--outfile', switch_ab='-o', help='Write output to file DSTFILE. Default: <model>_merged_map.nc',required=.false.,act='store',def='',valname='DSTFILE')
 call cli%add(group='mapmerge',switch='--force',   switch_ab='-f', help='Force overwriting of existing output file.',required=.false.,act='store_true',def='.false.')
 call cli%add(group='mapmerge',switch='--time',    switch_ab='-t', help='Only select certain time(s) from input files.'//char(10)// &
@@ -209,7 +217,15 @@ if (cli%run_command('mapmerge')) then
    call cli%get(group='mapmerge', switch='-f', val = force, error=ierr)
    if (ierr /= 0) goto 888
 
-   ierr = dfm_merge_mapfiles(infiles, ninfiles, outfiles(1), force)
+   call cli%get(group='mapmerge', switch='-m', val = mdufile, error=ierr)
+   if (ierr /= 0) goto 888
+   if (len_trim(mdufile) > 0) then
+      call dfm_mapfiles_from_mdu(trim(mdufile), infiles, ierr)
+      if (ierr /= 0) goto 888
+      ierr = dfm_merge_partitioned_mapfiles(infiles, size(infiles), outfiles(1), force)
+   else
+      ierr = dfm_merge_mapfiles(infiles, ninfiles, outfiles(1), force)
+   end if
    if (ierr /= 0) goto 888
 
 ! MAX_RUNNING_MEAN command for water levels

@@ -52,34 +52,14 @@ contains
 !! Typically this routine should be used on output of a parallel run,
 !! i.e., on files <modelname>_000x_map.nc
    function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
-      use string_module, only: str_tolower
-
       character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input filenames.
       integer, intent(in) :: nfiles !< Number of supplied filenames.
       character(len=MAXNAMELEN), intent(inout) :: outfile !< Output filename, derived when empty.
       logical, intent(in) :: force !< Overwrite without prompting.
       integer :: ierr !< Zero on success.
       character(len=MAXNAMELEN), allocatable :: partitions(:)
-      integer :: ii, nlen
 
       partitions = infiles(1:nfiles)
-      do ii = 1, nfiles
-         nlen = len_trim(infiles(ii))
-         if (nlen < 4) then
-            cycle
-         end if
-         if (str_tolower(infiles(ii)(nlen - 3:nlen)) == '.mdu') then
-            if (nfiles /= 1) then
-               write (*, '(a)') 'Error: mapmerge: supply either one base MDU or an explicit map-file list, not both.'
-               ierr = 1
-               return
-            end if
-            call dfm_mapfiles_from_mdu(trim(infiles(ii)), partitions, ierr)
-            if (ierr /= 0) then
-               return
-            end if
-         end if
-      end do
       call dfm_order_by_partition(partitions, ierr)
       if (ierr /= 0) then
          return
@@ -87,25 +67,34 @@ contains
       ierr = dfm_merge_partitioned_mapfiles(partitions, size(partitions), outfile, force)
    end function dfm_merge_mapfiles
 
-!> Discover partition maps using an MDU's OutputDir, or beside its name when the MDU is absent.
+!> Discover <model>_????_map.nc files using a base MDU filename.
+!! If the MDU exists, use its OutputDir (default: DFM_OUTPUT_<model>), resolving relative paths from the MDU directory.
+!! If the MDU is absent, search the current working directory, or the directory supplied in the MDU filename.
    subroutine dfm_mapfiles_from_mdu(mdufile, files, ierr)
       use properties, only: tree_data, tree_create, tree_destroy, prop_file, prop_get_alloc_string
       use m_combinepaths, only: combinepaths
-      use system_utils, only: FILESEP
+      use system_utils, only: FILESEP, split_filename
+      use string_module, only: iends_with
 
-      character(len=*), intent(in) :: mdufile !< Base MDU filename or naming template.
-      character(len=MAXNAMELEN), allocatable, intent(out) :: files(:) !< Existing partition map filenames.
+      character(len=*), intent(in) :: mdufile !< Base MDU filename; if absent, only its model name and optional directory are used.
+      character(len=MAXNAMELEN), allocatable, intent(out) :: files(:) !< Partition-indexed filenames; absent partitions have empty slots.
       integer, intent(out) :: ierr !< Zero on success.
 
       type(tree_data), pointer :: model => null()
       character(len=:), allocatable :: basename, outputdir, mapfile, filename
       character(len=MAXNAMELEN), allocatable :: found(:)
       character(len=1024) :: message
+      character(len=len(mdufile)) :: mdupath, mduname, mduext
       character(len=4) :: rank
-      integer :: separator, partition, count, ios
+      integer :: partition, count, last_partition, ios
       logical :: exists
 
       ierr = 0
+      if (.not. iends_with(mdufile, '.mdu')) then
+         write (*, '(a)') 'Error: mapmerge: --mdufile requires a base MDU name ending in .mdu.'
+         ierr = 1
+         return
+      end if
       inquire(file=mdufile, exist=exists, iostat=ios)
       if (ios /= 0) then
          write (*, '(a)') 'Error: mapmerge: cannot inspect MDU `'//mdufile//'''.'
@@ -132,11 +121,12 @@ contains
             return
          end if
       else
-         write (*, '(a)') 'Info: mapmerge: MDU not found; discovering partition maps beside `'//mdufile//''' using its model name.'
+         write (*, '(a)') 'Info: mapmerge: MDU not found; using the model name from `'//mdufile// &
+            ''' to search the current working directory, or the directory supplied in the MDU filename.'
       end if
 
-      separator = scan(mdufile, '/'//achar(92), back=.true.)
-      basename = mdufile(separator + 1:len_trim(mdufile) - 4)
+      call split_filename(mdufile, mdupath, mduname, mduext)
+      basename = trim(mduname)
       if (len_trim(basename) == 0) then
          write (*, '(a)') 'Error: mapmerge: the base MDU must have a model name.'
          ierr = 1
@@ -146,7 +136,9 @@ contains
          outputdir = 'DFM_OUTPUT_'//basename
       end if
       allocate(found(10000))
+      found = ''
       count = 0
+      last_partition = 0
       do partition = 0, 9999
          write (rank, '(i4.4)') partition
          filename = combinepaths(mdufile, trim(outputdir)//FILESEP//basename//'_'//rank//'_map.nc')
@@ -163,7 +155,8 @@ contains
          end if
          if (exists) then
             count = count + 1
-            found(count) = filename
+            last_partition = partition + 1
+            found(last_partition) = filename
          end if
       end do
       if (count == 0) then
@@ -171,13 +164,13 @@ contains
          ierr = 1
          return
       end if
-      files = found(:count)
-      write (*, '(a,i0,a)') 'Info: mapmerge: discovered ', count, ' partition map files from `'//mdufile//'''.'
+      files = found(:last_partition)
+      write (*, '(a,i0,a)') 'Info: mapmerge: discovered ', count, ' partition map files using `'//mdufile//'''.'
    end subroutine dfm_mapfiles_from_mdu
 
 !> Merge a set of partition map files into a single map file.
-!! Input is a list of map files names, its length equal to the total number of partitions of the parallel model run.
-!! The map filename list may contain empty values, if some partitions were fully masked out by the MapOutputPolygonFile MDU setting.
+!! Filenames are indexed by partition number plus one, up to the highest supplied partition.
+!! Empty entries represent partitions fully masked out by the MapOutputPolygonFile MDU setting.
    function dfm_merge_partitioned_mapfiles(infiles, nfiles, outfile, force) result(ierr)
       use m_alloc
       use string_module
@@ -192,7 +185,7 @@ contains
       implicit none
 
       character(len=MAXNAMELEN), intent(in) :: infiles(:) !< Partition-indexed filenames; absent partitions have empty slots.
-      integer, intent(in) :: nfiles !< Number of input files.
+      integer, intent(in) :: nfiles !< Number of partitions, including missing files for masked partitions.
       character(len=MAXNAMELEN), intent(inout) :: outfile !< Output file name. When empty, the name is derived from the input file names.
       logical, intent(in) :: force !< Whether to disallow interactive user prompting (for file overwrite)
       integer :: ierr !< Result status (0 = success)
@@ -362,7 +355,7 @@ contains
       character(len=:), allocatable :: att_value
       integer :: ilink1d2dglob, idimtime, idimlink1d2d, idimstring, idim
       integer :: id_dimTwo
-      integer :: firstfile, global_count, global_max
+      integer :: firstfile, max_face_globalnr, max_node_globalnr, global_max
       integer, allocatable :: global_ids(:), node_global_to_output(:)
 
       noutfile = nfiles + 1
@@ -397,8 +390,9 @@ contains
          end if
          inquire(file=trim(infiles(ii)), exist=exist)
          if (.not. exist) then
-            write (*, '(a)') 'Warning: mapmerge: skipping missing file `'//trim(infiles(ii))//'''.'
-            cycle
+            write (*, '(a)') 'Error: mapmerge: input file not found: `'//trim(infiles(ii))//'''.'
+            ierr = 1
+            goto 888
          end if
          ierri = ionc_open(infiles(ii), NF90_NOWRITE, ioncids(ii), iconvtype, convversion)
          if (ierri /= nf90_noerr) then
@@ -619,8 +613,7 @@ contains
    !! 0e. Find the input file 'ifile', which has the most variables. This file will be the reference file where later we scan variables.
       ! For old format input file, ifile(maxTopodim) is the index of file that has the most variables.
       ! For Ugrid format, ifile(im) is index of file that have the most variables on mesh topology im.
-      allocate (file_ndims(nfiles))
-      file_ndims = 0
+      call realloc(file_ndims, nfiles, keepExisting=.false., fill=0)
       call realloc(ifile, maxTopodim, keepExisting=.false., fill=firstfile)
       call realloc(nvars, (/maxTopodim, nfiles/), keepExisting=.false., fill=0)
       call realloc(max_nvars, maxTopodim, keepExisting=.false., fill=0)
@@ -908,8 +901,9 @@ contains
       end do ! ii
 
    !! Prepare for the big loop on mesh topology, i.e. allocating relative arrays.
-      ! Determine max global number to allocate buffers in case of masked mapfiles, as then this is not equal to the number of flow nodes.
-      global_count = 0
+      ! Masked maps can retain global flow-node numbers larger than the number of supplied nodes.
+      max_face_globalnr = 0
+      max_node_globalnr = 0
       do ii = 1, nfiles
          if (ncids(ii) == -1) then
             cycle
@@ -920,8 +914,10 @@ contains
             end if
             if (jaugrid == 1) then
                imesh = topo2mesh(itopo, ii)
+               topodimTmp = topodim(imesh, ii)
                ierr = ionc_inq_varid(ioncids(ii), imesh, 'flowelem_globalnr', id_flownodeglobnr)
             else
+               topodimTmp = 2
                ierr = nf90_inq_varid(ncids(ii), 'FlowElemGlobalNr', id_flownodeglobnr)
             end if
             if (ierr /= nf90_noerr) then
@@ -929,19 +925,25 @@ contains
             end if
             global_max = 0
             ierri = nf90_get_att(ncids(ii), id_flownodeglobnr, 'valid_max', global_max)
-            global_count = max(global_count, global_max)
-            call realloc(global_ids, ndx(itopo, ii), keepExisting=.false.)
-            ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, global_ids)
-            if (ierr /= nf90_noerr) then
-               write (*, '(a)') 'Error: mapmerge: cannot read global cell numbers from `'//trim(infiles(ii))//'''.'
-               goto 888
+            if (ierri /= nf90_noerr) then
+               call realloc(global_ids, ndx(itopo, ii), keepExisting=.false.)
+               ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, global_ids)
+               if (ierr /= nf90_noerr) then
+                  write (*, '(a)') 'Error: mapmerge: cannot read global flow-node numbers from `'//trim(infiles(ii))//'''.'
+                  goto 888
+               end if
+               if (any(global_ids <= 0)) then
+                  write (*, '(a)') 'Error: mapmerge: nonpositive global flow-node number in `'//trim(infiles(ii))//'''.'
+                  ierr = 1
+                  goto 888
+               end if
+               global_max = maxval(global_ids)
             end if
-            if (any(global_ids <= 0)) then
-               write (*, '(a)') 'Error: mapmerge: nonpositive global cell number in `'//trim(infiles(ii))//'''.'
-               ierr = 1
-               goto 888
+            if (topodimTmp == 1) then
+               max_node_globalnr = max(max_node_globalnr, global_max)
+            else
+               max_face_globalnr = max(max_face_globalnr, global_max)
             end if
-            global_count = max(global_count, maxval(global_ids))
          end do
       end do
       ierr = nf90_noerr
@@ -985,7 +987,7 @@ contains
       ndxt = sum(ndxc) ! total number of faces on all meshes
       call realloc(face_domain, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
       call realloc(face_c2g, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(face_g2c, max(ndxt, global_count), keepExisting=.false., fill=-1)
+      call realloc(face_g2c, max(ndxt, max_face_globalnr), keepExisting=.false., fill=-1)
       call realloc(face_c2cc, ndxt, keepExisting=.false., fill=-1)
 
       lnxMax = maxval(lnxc)
@@ -998,7 +1000,7 @@ contains
       numkt = sum(numkc) ! total number of nodes on all meshes
       call realloc(node_domain, (/numkMax, maxTopodim/), keepExisting=.false., fill=huge(1))
       call realloc(node_c2g, (/numkMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(node_g2c, max(numkt, global_count), keepExisting=.false., fill=-1)
+      call realloc(node_g2c, max(numkt, max_node_globalnr), keepExisting=.false., fill=-1)
 
       numlMax = maxval(numlc)
       numlt = sum(numlc) ! total number of net edges on all meshes
@@ -1432,11 +1434,6 @@ contains
                   if (face_domain(nfacecount(itopo) + ip, itopo) == ii - 1) then
                      nfaceglob(itopo) = nfaceglob(itopo) + 1
                      ifaceglob = face_c2g(nfacecount(itopo) + ip, itopo)
-                     if (face_g2c(ifaceglob) /= -1) then
-                        write (*, '(a,i0)') 'Error: mapmerge: multiple owners for global cell ', ifaceglob
-                        ierr = 1
-                        goto 888
-                     end if
                      face_g2c(ifaceglob) = nfacecount(itopo) + ip
                      face_c2cc(nfacecount(itopo) + ip) = nfaceglob(itopo) ! "contiguous to concatinated", meaning: mapping from including ghost nodes to excluding ghost nodes.
                   end if
@@ -1450,11 +1447,6 @@ contains
                   if (node_domain(nnodecount(itopo) + ip, itopo) == ii - 1) then
                      nnodeglob(itopo) = nnodeglob(itopo) + 1
                      inodeglob = node_c2g(nnodecount(itopo) + ip, itopo)
-                     if (node_g2c(inodeglob) /= -1) then
-                        write (*, '(a,i0)') 'Error: mapmerge: multiple owners for global node ', inodeglob
-                        ierr = 1
-                        goto 888
-                     end if
                      node_g2c(inodeglob) = nnodecount(itopo) + ip
                   end if
                end do
@@ -2364,7 +2356,7 @@ contains
          end if
 
          ! 1D tmp array: take largest of all topological position counts:
-         maxitems = max(global_count, sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
+         maxitems = max(max_face_globalnr, max_node_globalnr, sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
          call realloc(tmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D_tmp, maxitems, keepExisting=.false.)
