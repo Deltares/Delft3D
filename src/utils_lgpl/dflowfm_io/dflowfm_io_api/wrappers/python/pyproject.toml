@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dflowfm_io"
+version = "0.1.0"
+description = "Python bindings for the shared D-Flow FM IO library (dflowfm_io_api)."
+requires-python = ">=3.10"
+license = { text = "LGPL-2.1-or-later" }
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Bundle the native library (and any sibling runtime libs) into the wheel.
+dflowfm_io = ["_lib/*.dll", "_lib/*.so", "_lib/*.dylib", "_lib/*.pyd"]
