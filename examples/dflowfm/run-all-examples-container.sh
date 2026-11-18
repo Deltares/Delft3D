@@ -55,37 +55,44 @@ echo "Container runtime: $container_runtime"
 echo "Looking for run_${container_runtime}.sh scripts in subdirectories..."
 
 # Loop through each subdirectory
-found_scripts=0
+script_name="run_${container_runtime}.sh"
+executed_scripts=0
+failed_examples=()
 for dir in */ ; do
-    script_name="run_${container_runtime}.sh"
-    
+    test_name="${dir%/}_${container_runtime}"
+    echo "##teamcity[testStarted name='$test_name']"
+
     # Check if the appropriate script exists in the subdirectory
     if [ -f "$dir/$script_name" ]; then
         echo "Found $script_name in $dir. Executing..."
-        found_scripts=$((found_scripts + 1))
-        
-        # Start test reporting for TeamCity
-        test_name="${dir%/}_${container_runtime}"
-        echo "##teamcity[testStarted name='$test_name']"
-        
+        executed_scripts=$((executed_scripts + 1))
+
         # Run the script with the appropriate image format
         "${dir}${script_name}" --image "$container_image"
-        
+
         # Check exit status and report test result
         exit_code=$?
         if [ $exit_code -ne 0 ]; then
             echo "##teamcity[testFailed name='$test_name' message='Script exited with code $exit_code']"
+            failed_examples+=("$dir")
         fi
-        echo "##teamcity[testFinished name='$test_name']"
     else
-        echo "No $script_name found in $dir."
+        echo "Error: No $script_name found in $dir. Every example must provide $script_name."
+        echo "##teamcity[testFailed name='$test_name' message='Example not run: $script_name is missing']"
+        failed_examples+=("$dir")
     fi
+    echo "##teamcity[testFinished name='$test_name']"
 done
 
-if [ $found_scripts -eq 0 ]; then
-    echo "No run_${container_runtime}.sh scripts found in any subdirectory of $(pwd)."
-    echo "Make sure you have the appropriate scripts for the selected runtime ($container_runtime)."
+if [ ${#failed_examples[@]} -ne 0 ]; then
+    echo "Executed $executed_scripts scripts; ${#failed_examples[@]} example(s) failed or were not run:"
+    printf '  %s\n' "${failed_examples[@]}"
     exit 1
-else
-    echo "Executed $found_scripts scripts successfully."
 fi
+
+if [ $executed_scripts -eq 0 ]; then
+    echo "No $script_name scripts found in any subdirectory of $(pwd)."
+    exit 1
+fi
+
+echo "Executed $executed_scripts scripts successfully."

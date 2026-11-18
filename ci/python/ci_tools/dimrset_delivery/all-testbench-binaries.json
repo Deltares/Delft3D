@@ -429,6 +429,10 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "bin\\metis.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\mkl_avx10.3.dll",
             "issuedTo": "Intel Corporation"
         },
