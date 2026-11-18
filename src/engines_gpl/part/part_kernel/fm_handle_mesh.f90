@@ -134,6 +134,18 @@ contains
                end if
             endif
         enddo
+        
+        ! check lne with pointer table of first layer
+        do l = 1, Lnx
+           if (.not.((lne(1,L)==hyd%ipoint(1,L).and.lne(2,L)==hyd%ipoint(2,L)) .or. &
+					(lne(1,L)==hyd%ipoint(2,L).and.lne(2,L)==hyd%ipoint(1,L)))) then
+              write(*,*) 'Links do not match for iexch: ', l
+           end if
+        end do
+        
+        call realloc(lne2ln3D, [kmx, Lnx], keepExisting = .false., fill = 0)
+        call make_lne2ln3d (hyd%nosegl, hyd%num_exchanges_u_dir, hyd%ipoint(1:2, 1:hyd%num_exchanges_u_dir), Lnx, hyd%nobndl, kmx, lne2ln3d)
+               
         call realloc(q0, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
         call realloc(q1, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
 
@@ -636,5 +648,79 @@ contains
 
         if (timon) call timstop (ithndl)
     end subroutine ini_part_grid
+    
+    subroutine make_lne2ln3d(nosegl, num_exchanges, ipoint, Lnx, nobndl, kmx, lne2ln3d)
+    integer, intent(in) :: nosegl
+    integer, intent(in) :: num_exchanges
+    integer, intent(in) :: ipoint(2, num_exchanges)
+    integer, intent(in) :: Lnx
+    integer, intent(in) :: nobndl
+    integer, intent(in) :: kmx
+    integer, intent(inout) :: lne2ln3d(kmx, Lnx)
+
+    integer :: i, ifrom, ito, ilay, l, max_cell_from_exchanges, cell_from_exchanges
+    
+    ! Fill lne2ln3d based on the pointer table of first layer (ipoint)
+    
+    integer, allocatable :: no_cell_exchange(:)
+    integer, allocatable :: cell_to_cell(:,:)
+    integer, allocatable :: cell_exchange(:,:)
+    
+    max_cell_from_exchanges = 0
+    do i = 1, nosegl
+       max_cell_from_exchanges = max(max_cell_from_exchanges, count(ipoint(1, :) == i))
+    end do
+
+    ! allocate tables
+    allocate (no_cell_exchange(-nobndl:nosegl))
+    allocate (cell_to_cell(-nobndl:nosegl, max_cell_from_exchanges))
+    allocate (cell_exchange(-nobndl:nosegl, max_cell_from_exchanges))
+    no_cell_exchange = 0
+    cell_to_cell = 0
+    cell_exchange = 0
+    
+    ! Fill cell_to_cell and cell_exchange arrays with first layer exchanges
+    do l = 1, Lnx
+       ifrom = ipoint(1, l)
+       no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
+       cell_to_cell(ifrom, no_cell_exchange(ifrom)) = ipoint(2, l)
+       cell_exchange(ifrom, no_cell_exchange(ifrom)) = l
+       lne2ln3d(1, l) = l
+    end do
+
+    ! For each layer, fill lne2ln3d with the corresponding exchange numbers
+    do l = Lnx + 1, num_exchanges
+       if (ipoint(1, l) > 0) then
+          ifrom = mod(ipoint(1, l) - 1, nosegl) + 1
+       else 
+          ifrom = mod(ipoint(1, l) + 1, nobndl) - 1
+       end if
+       if (ipoint(2, l) > 0) then
+          ito = mod(ipoint(2, l) - 1, nosegl) + 1
+       else 
+          ito = mod(ipoint(2, l) + 1, nobndl) - 1
+       end if
+       if (ipoint(1, l) > 0) then
+          ilay = int(ipoint(1, l) - 1) / nosegl + 1
+		 else	
+          ilay = int(ipoint(2, l) - 1) / nosegl + 1
+		 end if
+       
+       ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
+       do i = 1, no_cell_exchange(ifrom)
+			 if (cell_to_cell(ifrom, i) == ito) then
+             lne2ln3d(ilay, cell_exchange(ifrom, i)) = l
+             exit
+			 end if
+		 end do
+    end do
+    
+    ! deallocate tables
+    deallocate (no_cell_exchange)
+    deallocate (cell_to_cell)
+    deallocate (cell_exchange)
+
+    return
+    end subroutine make_lne2ln3d
 
 end module m_fm_handle_mesh
