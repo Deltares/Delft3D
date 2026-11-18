@@ -81,7 +81,7 @@ dicouv                               = 10.0000000                            # U
 vicoww                               = 0.0000000                             # Uniform vertical eddy viscosity  (m2/s)
 dicoww                               = 0.0000000                             # Uniform vertical eddy diffusivity  (m2/s)
 minimumVerticalEddyViscosityForProduction    = 0.                                    # Minimum visc in prod and buoyancy term (m2/s)
-SmagorinskyCoefficient               = 0.                                    # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
+Smagorinsky               = 0.                                    # Add Smagorinsky horizontal turbulence : vicu = vicu + ( (Smagorinsky*dx)**2)*S, e.g. 0.1
 Elder                     = 0.                                    # Add Elder contribution                : vicu = vicu + Elder*kappa*ustar*H/6),   e.g. 1.0
 irov                                 = 0                                     # 0=free slip, 1 = partial slip using wall_ks
 wall_ks                              = 0.                                    # Nikuradse roughness for side walls, wall_z0=wall_ks/30
