@@ -13,7 +13,7 @@
 #include "csumo_diffuser.hpp"
 #include "precice_to_csumo.hpp"
 #include "precice_data.hpp"
-#include "NF2FF_reader.hpp"
+#include "csumo_nf2ff_reader.hpp"
 
 namespace
 {
@@ -81,7 +81,7 @@ namespace
         EXPECT_TRUE(settings.has_value());
 
         const auto xml = build_nf2ff_xml(sink_count, source_count, include_qintake, qintake, intake_count);
-        auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
+        auto reader = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
         EXPECT_TRUE(reader.has_value());
 
         std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
@@ -104,7 +104,7 @@ namespace
         const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_with_intake_xml);
         EXPECT_TRUE(settings.has_value());
 
-        auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
+        auto reader = pre_c_sumo::CSumoNF2FFReader::fromString(nf2ff_xml);
         EXPECT_TRUE(reader.has_value());
 
         std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
@@ -192,7 +192,7 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndOneSink)
         </sources>
      </NFResult>
   </NF2FF>)";
-    const auto diffuser = pre_c_sumo::NF2FFReader::fromString(xml);
+    const auto diffuser = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
     ASSERT_TRUE(diffuser.has_value());
     EXPECT_EQ(diffuser->sources.size(), 1);
     EXPECT_EQ(diffuser->sinks.size(), 1);
@@ -229,7 +229,7 @@ TEST(CsumoPreciceCouplingStepsTest, CreateDiffuserModelFromOneSourceAndTwoSinks)
         </sources>
      </NFResult>
   </NF2FF>)";
-    const auto diffuser = pre_c_sumo::NF2FFReader::fromString(xml);
+    const auto diffuser = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
     ASSERT_TRUE(diffuser.has_value());
     EXPECT_EQ(diffuser->sources.size(), 1);
     EXPECT_EQ(diffuser->sinks.size(), 2);
@@ -270,7 +270,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     const auto csumo_settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
     ASSERT_TRUE(csumo_settings.has_value());
 
-    auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
+    auto diffuser = pre_c_sumo::CSumoNF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(diffuser.has_value());
 
     std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
@@ -308,7 +308,7 @@ TEST(CsumoPreciceCouplingStepsTest, ConvertNFToConnectedSinkSourcesUsesGenerated
     const auto csumo_settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
     ASSERT_TRUE(csumo_settings.has_value());
 
-    auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
+    auto diffuser = pre_c_sumo::CSumoNF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(diffuser.has_value());
 
     std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
@@ -403,7 +403,7 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticI0Si2So1UsesDESAAndZeroIntakeDischa
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_with_intake_xml);
     ASSERT_TRUE(settings.has_value());
 
-    auto reader = pre_c_sumo::NF2FFReader::fromString(xml);
+    auto reader = pre_c_sumo::CSumoNF2FFReader::fromString(xml);
     ASSERT_TRUE(reader.has_value());
     std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
     nf2ff_readers.emplace_back(std::move(*reader));
@@ -603,7 +603,7 @@ TEST(CsumoPreciceCouplingStepsTest, NegativeEntrainmentFactor)
     const auto settings = pre_c_sumo::CSumoSettingsReader::fromString(minimal_csumo_settings_xml);
     ASSERT_TRUE(settings.has_value());
 
-    auto reader = pre_c_sumo::NF2FFReader::fromString(nf2ff_xml);
+    auto reader = pre_c_sumo::CSumoNF2FFReader::fromString(nf2ff_xml);
     ASSERT_TRUE(reader.has_value());
 
     std::vector<pre_c_sumo::NF2FFData> nf2ff_readers;
@@ -668,8 +668,8 @@ TEST(CsumoPreciceCouplingStepsTest, SyntheticCaseWithDifferentDiffusersYieldsExp
     const auto xml_diffuser_1 = build_nf2ff_xml(2u, 1u, true, 6.0, 1u, 10.0);
     const auto xml_diffuser_2 = build_nf2ff_xml(3u, 3u, true, 14.0, 2u, 24.0);
 
-    auto reader_1 = pre_c_sumo::NF2FFReader::fromString(xml_diffuser_1);
-    auto reader_2 = pre_c_sumo::NF2FFReader::fromString(xml_diffuser_2);
+    auto reader_1 = pre_c_sumo::CSumoNF2FFReader::fromString(xml_diffuser_1);
+    auto reader_2 = pre_c_sumo::CSumoNF2FFReader::fromString(xml_diffuser_2);
     ASSERT_TRUE(reader_1.has_value());
     ASSERT_TRUE(reader_2.has_value());
 

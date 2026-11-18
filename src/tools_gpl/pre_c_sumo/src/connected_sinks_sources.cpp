@@ -1,6 +1,5 @@
 #include <connected_sinks_sources.hpp>
 
-
 namespace pre_c_sumo
 {
     void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
@@ -53,10 +52,7 @@ namespace pre_c_sumo
 
     std::size_t ConnectedSinkSources::get_number_of_entries() const { return data_.sink_x_vector.size(); }
 
-    const std::vector<double>& ConnectedSinkSources::get_discharge_value() const
-    {
-        return data_.discharge_vector;
-    }
+    const std::vector<double>& ConnectedSinkSources::get_discharge_value() const { return data_.discharge_vector; }
 
     const ConnectedSinkSourcesData& ConnectedSinkSources::data() const { return data_; }
 } // namespace pre_c_sumo

@@ -1,4 +1,4 @@
-#include "FF2NF_writer.hpp"
+#include "csumo_ff2nf_writer.hpp"
 
 #include <algorithm>
 #include <expected>
@@ -190,9 +190,9 @@ namespace
 
 namespace pre_c_sumo
 {
-    FF2NFWriter::FF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
+    CSumoFF2NFWriter::CSumoFF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
 
-    std::expected<std::string, WriteError> FF2NFWriter::generate() const
+    std::expected<std::string, WriteError> CSumoFF2NFWriter::generate() const
     {
         RETURN_IF_ERROR(validate());
         pugi::xml_document document;
@@ -209,7 +209,7 @@ namespace pre_c_sumo
         return oss.str();
     }
 
-    std::expected<void, WriteError> FF2NFWriter::validate() const
+    std::expected<void, WriteError> CSumoFF2NFWriter::validate() const
     {
         if (config_.ff2nf_filename.empty())
         {
@@ -248,17 +248,17 @@ namespace pre_c_sumo
         return {};
     }
 
-    pugi::xml_node FF2NFWriter::createRootElement(pugi::xml_document& document) const
+    pugi::xml_node CSumoFF2NFWriter::createRootElement(pugi::xml_document& document) const
     {
         return document.append_child(root_element_name);
     }
 
-    void FF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
+    void CSumoFF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
     {
         addChildWithText(root, "fileVersion", file_version.data());
     }
 
-    void FF2NFWriter::createCommSection(pugi::xml_node& root) const
+    void CSumoFF2NFWriter::createCommSection(pugi::xml_node& root) const
     {
         auto comm = root.append_child("comm");
         addChildWithText(comm, "Filename", config_.ff2nf_filename);
@@ -268,7 +268,7 @@ namespace pre_c_sumo
         addChildWithText(comm, "FFuniqueID", config_.unique_id);
     }
 
-    void FF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
+    void CSumoFF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
     {
         auto subgrid_model = root.append_child("SubgridModel");
         addChildWithText(subgrid_model, "SubgridModelNr", config_.subgrid_model_nr);
@@ -282,7 +282,7 @@ namespace pre_c_sumo
         addFarFieldPoints(subgrid_model, "FFAmbient", config_.ambient_points);
     }
 
-    void FF2NFWriter::createSettingsSection(pugi::xml_node& root) const
+    void CSumoFF2NFWriter::createSettingsSection(pugi::xml_node& root) const
     {
         // The settings_xml_node is an unowned handle into the caller's pugi::xml_document.
         // append_copy() performs a deep copy, so the source document can be released

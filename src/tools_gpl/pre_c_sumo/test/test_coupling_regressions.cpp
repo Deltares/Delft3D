@@ -11,7 +11,7 @@
 #include "csumo_to_precice.hpp"
 #include "csumo_diffuser.hpp"
 #include "precice_to_csumo.hpp"
-#include "NF2FF_reader.hpp"
+#include "csumo_nf2ff_reader.hpp"
 #include "parsing_utils.hpp"
 
 namespace
@@ -294,7 +294,7 @@ TEST(CsumoPreciceCouplingRegressionTest, CreateDiffuserModelSpreadsSourcesPerpen
     nf_result.child("sources").text().set("100 200 5 1 2 10");
     std::ostringstream nf2ff_text;
     document.save(nf2ff_text);
-    const auto diffuser = pre_c_sumo::NF2FFReader::fromString(nf2ff_text.str());
+    const auto diffuser = pre_c_sumo::CSumoNF2FFReader::fromString(nf2ff_text.str());
     ASSERT_TRUE(diffuser.has_value()) << diffuser.error().message;
     ASSERT_EQ(diffuser->sources.size(), 1u);
     ASSERT_EQ(diffuser->sinks.size(), 1u);

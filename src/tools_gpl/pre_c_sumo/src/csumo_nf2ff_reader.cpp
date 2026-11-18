@@ -1,4 +1,5 @@
-#include "NF2FF_reader.hpp"
+#include "csumo_nf2ff_reader.hpp"
+#include "csumo_xml_utils.hpp"
 #include "monadic_utils.hpp"
 #include "parsing_utils.hpp"
 #include "parsing_types.hpp"
@@ -12,25 +13,6 @@
 
 namespace
 {
-    /**
-     * @brief Returns the root xml node that has been read.
-     * @return std::expected containing pugi::xml_node on success or ParseError on failure.
-     */
-    std::expected<pugi::xml_node, parsing_utils::ParseError> validateRoot(pugi::xml_document& doc)
-    {
-        const pugi::xml_node root = doc.document_element();
-        if (!root)
-        {
-            return std::unexpected(parsing_utils::ParseError{"XML document is empty"});
-        }
-        if (!boost::iequals(root.name(), "NF2FF"))
-        {
-            return std::unexpected(
-                parsing_utils::ParseError{std::format("Root element must be <NF2FF>, got: <{}>", root.name())});
-        }
-        return root;
-    }
-
     /**
      * @brief parse/validate the file version.
      * @return std::expected containing std::string on success or ParseError on failure.
@@ -74,30 +56,6 @@ namespace
             return std::unexpected(parsing_utils::ParseError{"Required element <discharge> not found."});
         }
         return discharge_node;
-    }
-
-    std::expected<pre_c_sumo::ConstituentsOperator, parsing_utils::ParseError> parseConstituentsOperator(
-        const pugi::xml_node discharge_node)
-    {
-        ASSIGN_OR_RETURN(const auto operator_text,
-                         parsing_utils::requiredChildText(discharge_node, "constituentsOperator"));
-        if (boost::iequals(operator_text, "absolute"))
-        {
-            return pre_c_sumo::ConstituentsOperator::Absolute;
-        }
-        if (boost::iequals(operator_text, "excess"))
-        {
-            return pre_c_sumo::ConstituentsOperator::Excess;
-        }
-        return std::unexpected(parsing_utils::ParseError{std::format(
-            "<constituentsOperator> has unknown value: '{}'; expected 'absolute' or 'excess'", operator_text)});
-    }
-
-    std::expected<double, parsing_utils::ParseError> parseRequiredDouble(const pugi::xml_node parent,
-                                                                         const std::string_view element_name)
-    {
-        ASSIGN_OR_RETURN(const auto text, parsing_utils::requiredChildText(parent, element_name));
-        return parsing_utils::parseDouble(text, element_name);
     }
 
     /**
@@ -262,17 +220,10 @@ namespace
 
 namespace pre_c_sumo
 {
-    std::expected<NF2FFData, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
+    std::expected<NF2FFData, parsing_utils::ParseError> CSumoNF2FFReader::fromString(const std::string_view xml)
     {
-        pugi::xml_document doc;
-        const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());
-        if (!parse_result)
-        {
-            return std::unexpected(
-                parsing_utils::ParseError{std::format("Failed to parse XML: {}", parse_result.description())});
-        }
-
-        ASSIGN_OR_RETURN(const auto root, validateRoot(doc));
+        ASSIGN_OR_RETURN(auto doc, parsing_utils::parseXmlDocument(xml));
+        ASSIGN_OR_RETURN(const auto root, parsing_utils::validateRoot(doc, {"NF2FF"}));
         ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root, current_file_version));
 
         // Discharge
@@ -282,15 +233,16 @@ namespace pre_c_sumo
         if (intake_flow_node)
         {
             // Missing Qintake defaults to 0.0; present Qintake must be valid.
-            ASSIGN_OR_RETURN(intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+            ASSIGN_OR_RETURN(intake_flow_rate, parsing_utils::requiredChildDouble(discharge_node, "Qintake"));
             if (intake_flow_rate < 0.0)
             {
                 return std::unexpected(parsing_utils::ParseError{
                     std::format("Element <Qintake> should be a value >= 0.0, got: {}", intake_flow_rate)});
             }
         }
-        ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
-        ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
+        ASSIGN_OR_RETURN(const auto source_flow_rate, parsing_utils::requiredChildDouble(discharge_node, "Qsource"));
+        ASSIGN_OR_RETURN(const auto constituents_operator,
+                         pre_c_sumo::xml_utils::parseConstituentsOperator(discharge_node));
         ASSIGN_OR_RETURN(const auto constituents_text,
                          parsing_utils::requiredChildText(discharge_node, "constituents"));
         ASSIGN_OR_RETURN(auto constituents, parsing_utils::parseDoubleVector(constituents_text, "constituents"));
@@ -302,11 +254,7 @@ namespace pre_c_sumo
         const pugi::xml_node intakes_node = parsing_utils::findChild(nfresult_node, "intakes");
         if (intakes_node)
         {
-            const std::string_view intakes_text = intakes_node.child_value();
-            if (intakes_text.find_first_not_of(" \t\r\n") != std::string_view::npos)
-            {
-                ASSIGN_OR_RETURN(intakes, parseIntakeVector(intakes_text));
-            }
+            ASSIGN_OR_RETURN(intakes, parseIntakeVector(parsing_utils::nodeText(intakes_node)));
         }
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
         ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));

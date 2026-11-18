@@ -12,8 +12,8 @@
 #include "csumo_file_paths.hpp"
 #include "csumo_settings_reader.hpp"
 #include "exchange_file_io.hpp"
-#include "FF2NF_writer.hpp"
-#include "NF2FF_reader.hpp"
+#include "csumo_ff2nf_writer.hpp"
+#include "csumo_nf2ff_reader.hpp"
 #include "monadic_utils.hpp"
 #include "precice_to_csumo.hpp"
 
@@ -43,7 +43,7 @@ namespace pre_c_sumo
             auto input =
                 convertPreciceToCSumo(csumo_settings.diffusers[index], index, mesh_2d, mesh_3d, current_time_seconds);
             const auto filename = std::filesystem::path(input.ff2nf_filename);
-            ASSIGN_OR_RETURN(const auto xml, FF2NFWriter(std::move(input)).generate());
+            ASSIGN_OR_RETURN(const auto xml, CSumoFF2NFWriter(std::move(input)).generate());
             RETURN_IF_ERROR(writeExchangeFile(filename, xml, file_operations));
             std::println("Wrote FF2NF file: {}", filename.string());
         }
@@ -90,7 +90,7 @@ namespace pre_c_sumo
         {
             std::println("Reading NF2FF file: {}", path.string());
             ASSIGN_OR_RETURN(const auto xml, readExchangeFile(path));
-            auto data = NF2FFReader::fromString(xml);
+            auto data = CSumoNF2FFReader::fromString(xml);
             if (!data.has_value())
             {
                 return std::unexpected(parsing_utils::ParseError{

@@ -76,8 +76,8 @@ For the official Doxygen user guide, see: https://www.doxygen.nl/manual/starting
 - [csumo_diffuser.hpp](../include/csumo_diffuser.hpp) handles DESA geometry,
   independently of transport and XML parsing.
 - [csumo_settings_reader.hpp](../include/csumo_settings_reader.hpp) and
-  [NF2FF_reader.hpp](../include/NF2FF_reader.hpp) parse XML strings into data.
-  [FF2NF_writer.hpp](../include/FF2NF_writer.hpp) validates and generates XML only.
+  [csumo_nf2ff_reader.hpp](../include/csumo_nf2ff_reader.hpp) parse XML strings into data.
+  [csumo_ff2nf_writer.hpp](../include/csumo_ff2nf_writer.hpp) validates and generates XML only.
 - [exchange_file_io.hpp](../include/exchange_file_io.hpp) reads text and writes
   already-serialized content. Writing creates parent directories and refuses to
   overwrite existing files. [csumo_file_paths.hpp](../include/csumo_file_paths.hpp)

@@ -38,6 +38,7 @@ namespace pre_c_sumo
             .layers = layers,
         };
     }
+
     std::vector<double> getIntakeConstituents(const PreciceMesh& mesh_3d, std::size_t diffuser_index)
     {
         const auto index_3d = mesh_3d.forward_map[diffuser_index].intake_index;

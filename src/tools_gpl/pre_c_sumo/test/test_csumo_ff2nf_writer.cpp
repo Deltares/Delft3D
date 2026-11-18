@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include "FF2NF_writer.hpp"
+#include "csumo_ff2nf_writer.hpp"
 #include "monadic_utils.hpp"
 #include "parsing_utils.hpp"
 
@@ -72,7 +72,7 @@ namespace
     // generation fails. Returns an empty document on failure.
     [[nodiscard]] pugi::xml_document generateDocument(pre_c_sumo::FF2NFConfig config)
     {
-        const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+        const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
         if (!xml.has_value())
         {
             ADD_FAILURE() << xml.error().message;
@@ -114,7 +114,7 @@ namespace
     }
 } // namespace
 
-TEST(FF2NFWriterTest, ProducesUtf8XmlDeclaration)
+TEST(CSumoFF2NFWriterTest, ProducesUtf8XmlDeclaration)
 {
     const auto document = generateDocument(buildExampleConfig());
     const auto declaration = document.first_child();
@@ -123,25 +123,25 @@ TEST(FF2NFWriterTest, ProducesUtf8XmlDeclaration)
     EXPECT_STREQ(declaration.attribute("encoding").value(), "UTF-8");
 }
 
-TEST(FF2NFWriterTest, RootElementIsCOSUMO)
+TEST(CSumoFF2NFWriterTest, RootElementIsCOSUMO)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO");
 }
 
-TEST(FF2NFWriterTest, FileVersionIs0Dot3)
+TEST(CSumoFF2NFWriterTest, FileVersionIs0Dot3)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(nodeText(document, "COSUMO/fileVersion"), "0.3");
 }
 
-TEST(FF2NFWriterTest, CommFileNameMatchesInputFF2NFFileName)
+TEST(CSumoFF2NFWriterTest, CommFileNameMatchesInputFF2NFFileName)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(nodeText(document, "COSUMO/comm/Filename"), R"(FF2NF\FF2NF__FlowFM_SubMod001_0.000.xml)");
 }
 
-TEST(FF2NFWriterTest, CommWaitForFileMatchesNF2FFFileName)
+TEST(CSumoFF2NFWriterTest, CommWaitForFileMatchesNF2FFFileName)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(
@@ -149,20 +149,20 @@ TEST(FF2NFWriterTest, CommWaitForFileMatchesNF2FFFileName)
         R"(d:\testbank\cases\e38_dflowfm-cosumo\f01_general\test20_mod2_FM\cosumo\NF2FF\NF2FF__FlowFM_SubMod001_0.000.xml)");
 }
 
-TEST(FF2NFWriterTest, CommFFRunDirMatchesRunDirectory)
+TEST(CSumoFF2NFWriterTest, CommFFRunDirMatchesRunDirectory)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(nodeText(document, "COSUMO/comm/FFrundir"),
               R"(d:\testbank\cases\e38_dflowfm-cosumo\f01_general\test20_mod2_FM\cosumo\)");
 }
 
-TEST(FF2NFWriterTest, CommFFInputFileIsRunIdDotMdu)
+TEST(CSumoFF2NFWriterTest, CommFFInputFileIsRunIdDotMdu)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(nodeText(document, "COSUMO/comm/FFinputFile"), "FlowFM.mdu");
 }
 
-TEST(FF2NFWriterTest, CommFFUniqueIDIsWrittenEvenWhenEmpty)
+TEST(CSumoFF2NFWriterTest, CommFFUniqueIDIsWrittenEvenWhenEmpty)
 {
     const auto document = generateDocument(buildExampleConfig());
     // Element must be present; its text may be empty
@@ -171,7 +171,7 @@ TEST(FF2NFWriterTest, CommFFUniqueIDIsWrittenEvenWhenEmpty)
     EXPECT_STREQ(node.text().get(), "");
 }
 
-TEST(FF2NFWriterTest, CommFFUniqueIDIsWrittenWhenNonEmpty)
+TEST(CSumoFF2NFWriterTest, CommFFUniqueIDIsWrittenWhenNonEmpty)
 {
     auto config = buildExampleConfig();
     config.unique_id = "ABCDEF";
@@ -179,22 +179,22 @@ TEST(FF2NFWriterTest, CommFFUniqueIDIsWrittenWhenNonEmpty)
     EXPECT_EQ(nodeText(document, "COSUMO/comm/FFuniqueID"), "ABCDEF");
 }
 
-TEST(FF2NFWriterTest, UniqueIdLongerThan6CharactersIsRejected)
+TEST(CSumoFF2NFWriterTest, UniqueIdLongerThan6CharactersIsRejected)
 {
     auto config = buildExampleConfig();
     config.unique_id = "ABCDEFG"; // 7 characters
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "Unique ID must contain at most 6 characters");
 }
 
-TEST(FF2NFWriterTest, SubgridModelNrMatchesInput)
+TEST(CSumoFF2NFWriterTest, SubgridModelNrMatchesInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_EQ(nodeText(document, "COSUMO/SubgridModel/SubgridModelNr"), "1");
 }
 
-TEST(FF2NFWriterTest, TimeMatchesInput)
+TEST(CSumoFF2NFWriterTest, TimeMatchesInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string timeText = nodeText(document, "COSUMO/SubgridModel/TIME");
@@ -204,7 +204,7 @@ TEST(FF2NFWriterTest, TimeMatchesInput)
     EXPECT_NEAR(time_minutes, 0.0, 1e-12);
 }
 
-TEST(FF2NFWriterTest, TimeAt90SecondsIs1Point5Minutes)
+TEST(CSumoFF2NFWriterTest, TimeAt90SecondsIs1Point5Minutes)
 {
     auto config = buildExampleConfig();
     config.current_time_seconds = 90.0;
@@ -216,7 +216,7 @@ TEST(FF2NFWriterTest, TimeAt90SecondsIs1Point5Minutes)
     EXPECT_NEAR(time_minutes, 1.5, 1e-12);
 }
 
-TEST(FF2NFWriterTest, ConstituentNamesAreWrittenOnePerLine)
+TEST(CSumoFF2NFWriterTest, ConstituentNamesAreWrittenOnePerLine)
 {
     const auto document = generateDocument(buildExampleConfig());
     // Each constituent name should appear on its own line inside <constituentsNames>
@@ -227,19 +227,19 @@ TEST(FF2NFWriterTest, ConstituentNamesAreWrittenOnePerLine)
     EXPECT_EQ(lines[1], "Tracer1");
 }
 
-TEST(FF2NFWriterTest, FFDiffuserSectionIsPresent)
+TEST(CSumoFF2NFWriterTest, FFDiffuserSectionIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserXYZIsPresent)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserXYZIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/XYZ");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYZ");
@@ -253,13 +253,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
     EXPECT_NEAR((*expectedDoubles)[2], 5.5, 1e-12);   // z coordinate (depth from surface)
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthIsPresent)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserWaterDepthIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/waterDepth");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthMatchesInput)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserWaterDepthMatchesInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/waterDepth");
@@ -271,13 +271,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthMatchesInput)
     EXPECT_NEAR((*expectedDoubles)[0], 10.0, 1e-12); // water depth
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityIsPresent)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserXYVelocityIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserOneXYVelocityPerLayer)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserOneXYVelocityPerLayer)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
@@ -286,7 +286,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserOneXYVelocityPerLayer)
     ASSERT_EQ(lines.size(), 10u);
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
@@ -299,7 +299,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
     EXPECT_NEAR((*values)[1], 0.0, 1e-12); // y velocity
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
 {
     auto config = buildExampleConfig();
     config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0},
@@ -320,13 +320,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
     EXPECT_NEAR((*values)[1], -0.3, 1e-12);
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsPresent)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserDensityIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/rho");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserDensityValuesMatchInput)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserDensityValuesMatchInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/rho");
@@ -338,7 +338,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserDensityValuesMatchInput)
     EXPECT_NEAR((*values)[0], 1000.0, 1e-12);
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsRepeatedForEveryLayer)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserDensityIsRepeatedForEveryLayer)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/rho");
@@ -352,7 +352,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsRepeatedForEveryLayer)
     }
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserDensityVariesPerLayer)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserDensityVariesPerLayer)
 {
     auto config = buildExampleConfig();
     config.diffuser.layers[0].density = 1025.0;
@@ -369,13 +369,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserDensityVariesPerLayer)
     EXPECT_NEAR(*last, 1028.0, 1e-12);
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsIsPresent)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserConstituentsIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/constituents");
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserConstituentValuesMatchInput)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserConstituentValuesMatchInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/constituents");
@@ -388,7 +388,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserConstituentValuesMatchInput)
     EXPECT_NEAR((*values)[1], 1.0, 1e-12);  // tracer concentration
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/constituents");
@@ -404,7 +404,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
     }
 }
 
-TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsVaryPerLayer)
+TEST(CSumoFF2NFWriterTest, FarFieldDiffuserConstituentsVaryPerLayer)
 {
     auto config = buildExampleConfig();
     config.diffuser.layers[0].constituents = {20.0, 2.0};
@@ -425,13 +425,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsVaryPerLayer)
     EXPECT_NEAR((*last)[1], 0.5, 1e-12);
 }
 
-TEST(FF2NFWriterTest, FFIntakeSectionIsPresent)
+TEST(CSumoFF2NFWriterTest, FFIntakeSectionIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFIntake");
 }
 
-TEST(FF2NFWriterTest, FFIntakeXYZFirstLineMatchesInput)
+TEST(CSumoFF2NFWriterTest, FFIntakeXYZFirstLineMatchesInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFIntake/XYZ");
@@ -443,7 +443,7 @@ TEST(FF2NFWriterTest, FFIntakeXYZFirstLineMatchesInput)
     EXPECT_NEAR((*values)[1], 821.3453, 1e-6); // y
 }
 
-TEST(FF2NFWriterTest, FFIntakeWaterDepthMatchesInput)
+TEST(CSumoFF2NFWriterTest, FFIntakeWaterDepthMatchesInput)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFIntake/waterDepth");
@@ -454,13 +454,13 @@ TEST(FF2NFWriterTest, FFIntakeWaterDepthMatchesInput)
     EXPECT_NEAR((*values)[0], 10.0, 1e-12);
 }
 
-TEST(FF2NFWriterTest, FFAmbientSectionIsPresent)
+TEST(CSumoFF2NFWriterTest, FFAmbientSectionIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
     expectNodeExists(document, "COSUMO/SubgridModel/FFAmbient");
 }
 
-TEST(FF2NFWriterTest, FFAmbientXYZHasOneLinePerLayerPerPoint)
+TEST(CSumoFF2NFWriterTest, FFAmbientXYZHasOneLinePerLayerPerPoint)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFAmbient/XYZ");
@@ -469,7 +469,7 @@ TEST(FF2NFWriterTest, FFAmbientXYZHasOneLinePerLayerPerPoint)
     ASSERT_EQ(lines.size(), 30u);
 }
 
-TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
+TEST(CSumoFF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
 {
     const auto document = generateDocument(buildExampleConfig());
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFAmbient/waterDepth");
@@ -478,48 +478,48 @@ TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
     ASSERT_EQ(lines.size(), 3u);
 }
 
-TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
+TEST(CSumoFF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
     config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0}, .water_depth = 10.0, .layers = {}};
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: every point must have at least one layer");
 }
 
-TEST(FF2NFWriterTest, IntakePointWithNoLayersIsRejected)
+TEST(CSumoFF2NFWriterTest, IntakePointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
     config.intake = {.position = {.x_coordinate = 567.0, .y_coordinate = 821.0}, .water_depth = 10.0, .layers = {}};
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFIntake: every point must have at least one layer");
 }
 
-TEST(FF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
+TEST(CSumoFF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
     config.ambient_points = {
         {.position = {.x_coordinate = 823.0, .y_coordinate = 344.8}, .water_depth = 10.0, .layers = {}}};
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFAmbient: every point must have at least one layer");
 }
 
-TEST(FF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
+TEST(CSumoFF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
 {
     auto config = buildExampleConfig();
     config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0},
                        .water_depth = 10.0,
                        .layers = {pre_c_sumo::FarFieldLayer{
                            .z_coordinate = 0.5, .density = 1000.0, .constituents = {15.0}}}}; // only 1 instead of 2
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message,
               "FFDiff: constituent count (1) at (550.00, 350.00, 0.50) does not match constituent names count (2)");
 }
 
-TEST(FF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
+TEST(CSumoFF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
 {
     auto config = buildExampleConfig();
     config.ambient_points = {
@@ -527,24 +527,24 @@ TEST(FF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
          .water_depth = 10.0,
          .layers = {pre_c_sumo::FarFieldLayer{
              .z_coordinate = 0.5, .density = 1000.0, .constituents = {15.0, 1.0, 0.5}}}}}; // 3 instead of 2
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message,
               "FFAmbient: constituent count (3) at (823.00, 344.80, 0.50) does not match constituent names count (2)");
 }
 
-TEST(FF2NFWriterTest, EmptyAmbientPointsIsRejected)
+TEST(CSumoFF2NFWriterTest, EmptyAmbientPointsIsRejected)
 {
     auto config = buildExampleConfig();
     config.ambient_points = {};
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "Ambient points were not set");
 }
 
-TEST(FF2NFWriterTest, MultiLineTextIsIndented)
+TEST(CSumoFF2NFWriterTest, MultiLineTextIsIndented)
 {
-    const auto xml = pre_c_sumo::FF2NFWriter(buildExampleConfig()).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(buildExampleConfig()).generate();
     ASSERT_TRUE(xml.has_value()) << xml.error().message;
     const auto& text = *xml;
 
@@ -573,9 +573,9 @@ TEST(FF2NFWriterTest, MultiLineTextIsIndented)
         << "Expected closing tag indent of 12 spaces, got " << closing_indent.size();
 }
 
-TEST(FF2NFWriterTest, NoBlankLineBetweenLastDataLineAndClosingTag)
+TEST(CSumoFF2NFWriterTest, NoBlankLineBetweenLastDataLineAndClosingTag)
 {
-    const auto xml = pre_c_sumo::FF2NFWriter(buildExampleConfig()).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(buildExampleConfig()).generate();
     ASSERT_TRUE(xml.has_value()) << xml.error().message;
     const auto& text = *xml;
 
@@ -600,14 +600,14 @@ TEST(FF2NFWriterTest, NoBlankLineBetweenLastDataLineAndClosingTag)
 // Settings section (copied from the C-SUMO configuration file)
 // ---------------------------------------------------------------------------
 
-TEST(FF2NFWriterTest, NoSettingsSectionWhenNodeNotSet)
+TEST(CSumoFF2NFWriterTest, NoSettingsSectionWhenNodeNotSet)
 {
     // Default config has no settings_xml_node — the <settings> element must be absent.
     const auto document = generateDocument(buildExampleConfig());
     EXPECT_FALSE(document.select_node("COSUMO/settings")) << "<settings> should not appear when node is not set";
 }
 
-TEST(FF2NFWriterTest, SettingsSectionIsPresentWhenNodeIsSet)
+TEST(CSumoFF2NFWriterTest, SettingsSectionIsPresentWhenNodeIsSet)
 {
     // Build a minimal <settings> node and attach it to the config.
     pugi::xml_document settings_document;
@@ -620,7 +620,7 @@ TEST(FF2NFWriterTest, SettingsSectionIsPresentWhenNodeIsSet)
     expectNodeExists(document, "COSUMO/settings");
 }
 
-TEST(FF2NFWriterTest, SettingsSectionContentIsCorrectlyCopied)
+TEST(CSumoFF2NFWriterTest, SettingsSectionContentIsCorrectlyCopied)
 {
     // All child elements and their text values must survive the copy.
     pugi::xml_document settings_document;
@@ -635,7 +635,7 @@ TEST(FF2NFWriterTest, SettingsSectionContentIsCorrectlyCopied)
     EXPECT_EQ(nodeText(document, "COSUMO/settings/data/XYdiff"), "550.0 350.0");
 }
 
-TEST(FF2NFWriterTest, SettingsSectionComesAfterSubgridModelInOutput)
+TEST(CSumoFF2NFWriterTest, SettingsSectionComesAfterSubgridModelInOutput)
 {
     pugi::xml_document settings_document;
     settings_document.load_string("<settings><general><id>A</id></general></settings>");
@@ -643,7 +643,7 @@ TEST(FF2NFWriterTest, SettingsSectionComesAfterSubgridModelInOutput)
     auto config = buildExampleConfig();
     config.settings_xml_node = settings_document.document_element();
 
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_TRUE(xml.has_value()) << xml.error().message;
 
     const auto subgrid_pos = (*xml).find("<SubgridModel>");
@@ -653,7 +653,7 @@ TEST(FF2NFWriterTest, SettingsSectionComesAfterSubgridModelInOutput)
     EXPECT_LT(subgrid_pos, settings_pos) << "<SubgridModel> must appear before <settings>";
 }
 
-TEST(FF2NFWriterTest, SettingsSectionIsIndentedAtSameLevelAsSubgridModel)
+TEST(CSumoFF2NFWriterTest, SettingsSectionIsIndentedAtSameLevelAsSubgridModel)
 {
     // <settings> and <SubgridModel> are both direct children of <COSUMO> (depth 1),
     // so they must both be preceded by 4 spaces (1 level × 4 spaces).
@@ -664,7 +664,7 @@ TEST(FF2NFWriterTest, SettingsSectionIsIndentedAtSameLevelAsSubgridModel)
     auto config = buildExampleConfig();
     config.settings_xml_node = settings_document.document_element();
 
-    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    const auto xml = pre_c_sumo::CSumoFF2NFWriter(std::move(config)).generate();
     ASSERT_TRUE(xml.has_value()) << xml.error().message;
     const auto& text = *xml;
 

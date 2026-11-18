@@ -1,5 +1,6 @@
 #include "parsing_utils.hpp"
 
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <charconv>
 #include <expected>
@@ -10,12 +11,47 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "monadic_utils.hpp"
 
 namespace parsing_utils
 {
+    std::expected<pugi::xml_document, ParseError> parseXmlDocument(const std::string_view xml)
+    {
+        pugi::xml_document document;
+        const pugi::xml_parse_result parse_result = document.load_buffer(xml.data(), xml.size());
+        if (!parse_result)
+        {
+            return std::unexpected(ParseError{std::format("Failed to parse XML: {}", parse_result.description())});
+        }
+        return std::move(document);
+    }
+
+    std::expected<pugi::xml_node, ParseError> validateRoot(
+        const pugi::xml_document& document, const std::initializer_list<std::string_view> expected_names)
+    {
+        if (expected_names.size() == 0)
+        {
+            return std::unexpected(ParseError{"At least one expected root element name must be provided"});
+        }
+
+        const pugi::xml_node root = document.document_element();
+        if (!root)
+        {
+            return std::unexpected(ParseError{"XML document is empty"});
+        }
+        const bool valid_root = std::ranges::any_of(
+            expected_names, [&root](const std::string_view name) { return boost::iequals(root.name(), name); });
+        if (!valid_root)
+        {
+            return std::unexpected(
+                ParseError{std::format("Root element must be <{}>, got: <{}>", *expected_names.begin(), root.name())});
+        }
+        return root;
+    }
+
     std::expected<std::vector<double>, ParseError> parseDoubleVector(const std::string_view text,
                                                                      const std::string_view element_name)
     {
@@ -74,6 +110,11 @@ namespace parsing_utils
         return parent.find_child([name](const pugi::xml_node child) { return boost::iequals(child.name(), name); });
     }
 
+    std::string_view nodeText(const pugi::xml_node node)
+    {
+        return node.child_value();
+    }
+
     std::expected<std::string, ParseError> requiredChildText(const pugi::xml_node parent,
                                                              const std::string_view child_name)
     {
@@ -82,7 +123,7 @@ namespace parsing_utils
         {
             return std::unexpected(ParseError{std::format("Required element <{}> not found", child_name)});
         }
-        const std::string text = child.child_value();
+        const std::string text{nodeText(child)};
         if (text.empty())
         {
             return std::unexpected(ParseError{std::format("Element <{}> is empty", child_name)});
@@ -90,9 +131,30 @@ namespace parsing_utils
         return text;
     }
 
+    std::expected<double, ParseError> requiredChildDouble(const pugi::xml_node parent,
+                                                          const std::string_view child_name)
+    {
+        ASSIGN_OR_RETURN(const auto text, requiredChildText(parent, child_name));
+        return parseDouble(text, child_name);
+    }
+
+    std::expected<Point2D, ParseError> requiredChildPoint2D(const pugi::xml_node parent,
+                                                            const std::string_view child_name)
+    {
+        ASSIGN_OR_RETURN(const auto text, requiredChildText(parent, child_name));
+        return parsePoint2D(text, child_name);
+    }
+
     std::optional<std::string> optionalChildText(const pugi::xml_node parent, const std::string_view child_name)
     {
         const auto result = requiredChildText(parent, child_name);
+        return result.has_value() ? std::optional{*result} : std::nullopt;
+    }
+
+    std::optional<Point2D> optionalChildPoint2D(const pugi::xml_node parent, const std::string_view child_name)
+    {
+        ASSIGN_OR_RETURN(const auto text, optionalChildText(parent, child_name));
+        const auto result = parsePoint2D(text, child_name);
         return result.has_value() ? std::optional{*result} : std::nullopt;
     }
 

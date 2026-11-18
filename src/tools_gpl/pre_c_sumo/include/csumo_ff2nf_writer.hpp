@@ -1,5 +1,5 @@
-#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_FF2NF_WRITER_HPP
-#define SRC_TOOLS_GPL_PRE_C_SUMO_FF2NF_WRITER_HPP
+#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_FF2NF_WRITER_HPP
+#define SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_FF2NF_WRITER_HPP
 
 #include <expected>
 #include <string>
@@ -11,10 +11,10 @@
 namespace pre_c_sumo
 {
     /// Validates and serializes FF2NF data to XML without accessing the filesystem.
-    class FF2NFWriter
+    class CSumoFF2NFWriter
     {
     public:
-        explicit FF2NFWriter(FF2NFConfig config);
+        explicit CSumoFF2NFWriter(FF2NFConfig config);
         [[nodiscard]] std::expected<std::string, WriteError> generate() const;
 
     private:
@@ -31,4 +31,4 @@ namespace pre_c_sumo
     };
 } // namespace pre_c_sumo
 
-#endif // SRC_TOOLS_GPL_PRE_C_SUMO_FF2NF_WRITER_HPP
+#endif // SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_FF2NF_WRITER_HPP

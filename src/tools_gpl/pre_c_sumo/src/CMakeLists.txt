@@ -9,9 +9,10 @@ set(source_files
     precice_data.cpp
     precice_exchange.cpp
     exchange_file_io.cpp
+    csumo_xml_utils.cpp
     csumo_settings_reader.cpp
-    FF2NF_writer.cpp
-    NF2FF_reader.cpp
+    csumo_ff2nf_writer.cpp
+    csumo_nf2ff_reader.cpp
     parsing_utils.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -28,10 +29,11 @@ set(header_files
     ${include_dir}/precice_exchange.hpp
     ${include_dir}/exchange_file_io.hpp
     ${include_dir}/exchange_file_types.hpp
+    ${include_dir}/csumo_xml_utils.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/monadic_utils.hpp
-    ${include_dir}/FF2NF_writer.hpp
-    ${include_dir}/NF2FF_reader.hpp
+    ${include_dir}/csumo_ff2nf_writer.hpp
+    ${include_dir}/csumo_nf2ff_reader.hpp
     ${include_dir}/parsing_utils.hpp
     ${include_dir}/parsing_types.hpp
 )
