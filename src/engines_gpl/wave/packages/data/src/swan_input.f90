@@ -914,11 +914,6 @@ contains
       end select
       !
       parname = ''
-      call prop_get(mdw_ptr, 'General', 'FlowFile', parname)
-      if (parname /= ' ') then
-         write (*, *) 'SWAN_INPUT: Keyword "FlowFile" is obsolete'
-         call handle_errors_mdw(sr)
-      end if
       call prop_get(mdw_ptr, 'General', 'FlowMudFile', sr%mudfile_deprecated)
       if (sr%mudfile_deprecated /= ' ') then
          write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is deprecated'
@@ -1538,7 +1533,7 @@ contains
       !
       if (sr%comfile /= ' ') then
          i = index(sr%comfile, ".", back=.true.)
-         if (sr%comfile(i - 3:i) /= "com") then
+         if (sr%comfile(i - 3:i-1) /= "com") then
             write (*, '(3a)') "ERROR: The base of the name of the COMFile (", trim(sr%comfile), ") must end on 'com'"
             call handle_errors_mdw(sr)
          end if

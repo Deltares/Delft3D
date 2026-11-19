@@ -209,7 +209,7 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
    !
    ! Initialisation from flow (write file runid(s))
    !
-   if (online_in == ONLINE_DIMR) then
+   if (online_in == ONLINE_DELFTIO) then
       it01flow = 0
       call flow_init(wavedata%wave_flow_mode, it01flow, tscaleflow)
       call settscale(wavedata%time, tscaleflow)
@@ -230,7 +230,7 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
             call wavestop(1, '*** ERROR: Reference date from FLOW differs from WAVE')
          endif
       endif
-   else if (online_in == ONLINE_DELFTIO .or. online_in == ONLINE_NONE) then
+   else if (online_in == ONLINE_DIMR .or. online_in == ONLINE_NONE) then
       !
       ! stand_alone, flow data may be used or written
       !
@@ -240,7 +240,13 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
          ! Only tscale must be set in wavedata%time
          !
          call flow_init(wavedata%wave_flow_mode, it01flow, tscaleflow)
-         call settscale (wavedata%time, tscaleflow)
+         if (online_in == ONLINE_NONE) then
+            !
+            ! tscaleflow is only set when reading from com-file
+            ! not when reading from netcdf-file
+            !
+            call settscale (wavedata%time, tscaleflow)
+		 end if
       endif
    endif
    ! TODO: online_in == ONLINE_PRECICE: check if tscale and refdate are set correctly
@@ -520,7 +526,7 @@ function wave_master_step(stepsize) result(retval)
       !
       ! Standalone swan computation
       !
-      if (wavedata%wave_flow_mode%com_file == COM_NEFIS) then
+      if (wavedata%wave_flow_mode%com_file /= COM_NETCDF) then
          call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
       elseif (swan_run%timwav(1) < 0.0) then
          !

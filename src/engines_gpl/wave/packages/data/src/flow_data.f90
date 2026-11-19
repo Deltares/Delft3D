@@ -129,10 +129,12 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
          write(*,'(a)') '*** ERROR: Delftio initialization WAVE side failed'
          call wavestop(1, '           Is file ''dioconfig.ini'' present?')
       endif
+      swan_run%comfile = ' '
       allocate (runids(num_subdomains))
       write(*,'(a,i0,a)') '*** MESSAGE: Connected to the following ',num_subdomains,' FLOW domain(s):'
       do idom = 1,num_subdomains
          runids(idom) = subdom_names(idom)
+         swan_run%comfile = trim(swan_run%comfile) // ' ' // trim(runids(idom))
          write(*,'(13x,a)') trim(runids(idom))
       enddo
       call wave_to_flow_status(flow_wave_comm_result_ok, mud)
@@ -146,10 +148,12 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
             write(*,'(a)') '*** ERROR: Delftio initialization WAVE side failed'
             call wavestop(1, '           Is file ''dioconfig.ini'' present?')
          endif
+         swan_run%mudfile_deprecated = ''
          allocate (mudids(num_muddomains))
          write(*,'(a,i0,a)') '*** MESSAGE: Connected to the following ',num_muddomains,' MUD domain(s):'
          do idom = 1,num_muddomains
             mudids(idom) = subdom_names(idom)
+            swan_run%mudfile_deprecated = trim(swan_run%mudfile_deprecated) // ' ' // trim(mudids(idom))
             write(*,'(13x,a)') trim(mudids(idom))
          enddo
          if (num_muddomains /= 1) then

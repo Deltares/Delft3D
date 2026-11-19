@@ -517,7 +517,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             itidewrite = itide
             if (swan_run%append_com) itidewrite = -1
             call put_wave_fields(flow_grids(i_flow), flow_output_fields(i_flow), itidewrite, &
-                                & wavedata, swan_run%swflux, swan_run%comfile, &
+                                & wavedata, swan_run%swflux, &
                                 & swan_run%netcdf_sp)
          end do
          ! Initially comcount = 0
