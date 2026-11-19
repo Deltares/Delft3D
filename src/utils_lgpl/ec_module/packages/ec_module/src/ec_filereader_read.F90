@@ -690,9 +690,8 @@ contains
       type(tEcField), pointer :: fieldPtr !< Field to update
       integer :: ierror !< return status of NetCDF method call
       integer :: varid !< NetCDF id of NetCDF variable
-      integer :: i, j, k !< loop counters
-      real(dp), dimension(:), allocatable :: data_block
-      integer, dimension(2) :: xy_stride
+      integer :: i, k !< loop counters
+      integer :: layer_offset
       integer :: istat !< allocation status
       real(dp) :: dmiss_nc !< local netcdf missing
 
@@ -839,25 +838,13 @@ contains
                   return
                end if
             else
-               allocate (data_block(nrow * ncol), stat=istat)
-               if (istat /= 0) then
-                  write (message, '(a,i0,a,i0,a)') 'Allocating temporary array of ', ncol, ' x ', nrow, ' elements.'
-                  call set_ec_message(trim(message))
-                  call set_ec_message("Allocation of data_block (data from NetCDF) failed.")
-                  return
-               end if
                do k = 1, max(nlay, 1)
+                  layer_offset = (k - 1) * Ndatasize
                   ierror = read_netcdf_layer(fileReaderPtr%fileHandle, item%quantityPtr, [col0, row0], [ncol, nrow], &
-                                             k, timesndx, data_block, xy_stride)
+                                             k, timesndx, fieldPtr%arr1dPtr(layer_offset + 1:layer_offset + Ndatasize))
                   if (.not. ecSupportNetcdfCheckError(ierror, 'reading gridded variable '//trim(item%quantityPtr%name), fileReaderPtr%filename)) then
                      return
                   end if
-                  do i = 1, nrow
-                     do j = 1, ncol
-                        fieldPtr%arr1dPtr((k - 1) * Ndatasize + (i - 1) * ncol + j) = &
-                           data_block(1 + (j - 1) * xy_stride(1) + (i - 1) * xy_stride(2))
-                     end do
-                  end do
                end do
             end if
          end if
@@ -883,30 +870,55 @@ contains
             end if
          end do
       end if
-      !
-      ! - 5 - Deallocate temporary datablock
-      if (allocated(data_block)) deallocate (data_block, stat=istat)
-      !
+
       success = .true.
    end function ecNetcdfReadNextBlock
 
-   !> Read one horizontal plane in file order. With other axes fixed at length one,
-   !! the relative order of X and Y determines their strides in the flat buffer.
-   integer function read_netcdf_layer(filehandle, quantity, xy_start, xy_count, layer, timestep, &
-                                      data, xy_stride) result(status)
+   !> Read a horizontal subset in X-fastest order, at the selected layer and time if present.
+   integer function read_netcdf_layer(filehandle, quantity, xy_start, xy_count, layer, timestep, data) result(status)
       use netcdf
       integer, intent(in) :: filehandle, layer, timestep
       type(tEcQuantity), intent(in) :: quantity
       integer, dimension(2), intent(in) :: xy_start, xy_count
       real(dp), dimension(:), intent(out) :: data
-      integer, dimension(2), intent(out) :: xy_stride
       integer, dimension(quantity%nc_rank) :: start, counts
       type(tEcDimensionIndices) :: indices
+      real(dp), dimension(:, :), allocatable :: file_order
+      integer :: row, ncol, nrow, istat
+
+      indices = quantity%dimension_indices
+      call netcdf_layer_selection(indices, xy_start, xy_count, layer, timestep, start, counts)
+      ! If Y comes before X in NetCDF Fortran order, Y varies fastest. Reorder for the dense X-fastest output.
+      if (indices%y_index > 0 .and. indices%y_index < indices%x_index) then
+         ncol = xy_count(1)
+         nrow = xy_count(2)
+         allocate (file_order(nrow, ncol), stat=istat)
+         if (istat /= 0) then
+            status = NF90_ENOMEM
+            return
+         end if
+         status = nf90_get_var(filehandle, quantity%ncid, file_order, start=start, count=counts)
+         if (status /= NF90_NOERR) then
+            return
+         end if
+         do row = 1, nrow
+            data((row - 1) * ncol + 1:row * ncol) = file_order(row, :)
+         end do
+      else
+         status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)
+      end if
+   end function read_netcdf_layer
+
+   !> Translate a horizontal subset and selected layer/time into NetCDF dimension order.
+   subroutine netcdf_layer_selection(indices, xy_start, xy_count, layer, timestep, start, counts)
+      type(tEcDimensionIndices), intent(in) :: indices !< Dimension positions in the variable.
+      integer, dimension(2), intent(in) :: xy_start, xy_count !< Horizontal bounds in X/Y order.
+      integer, intent(in) :: layer, timestep !< Selected layer and time record.
+      integer, dimension(:), intent(out) :: start, counts !< Subset in file order.
 
       ! Preserve the first slice on dimensions other than X, Y, Z and time.
       start = 1
       counts = 1
-      indices = quantity%dimension_indices
       if (indices%x_index > 0) then
          start(indices%x_index) = xy_start(1)
          counts(indices%x_index) = xy_count(1)
@@ -921,12 +933,7 @@ contains
       if (indices%time_index > 0) then
          start(indices%time_index) = timestep
       end if
-      xy_stride = [1, xy_count(1)]
-      if (indices%y_index > 0 .and. indices%y_index < indices%x_index) then
-         xy_stride = [xy_count(2), 1]
-      end if
-      status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)
-   end function read_netcdf_layer
+   end subroutine netcdf_layer_selection
 
    ! =======================================================================
 
@@ -2202,11 +2209,16 @@ contains
       integer :: Nreadrow !< number of rows read at once
       character(len=:), allocatable :: standard_name
       character(len=64) :: stringBuffer
-      integer, dimension(2) :: xy_stride
+      integer :: block_ncol, block_nrow, col_stride, row_stride
+      integer, dimension(quantity%nc_rank) :: start, counts
+      type(tEcDimensionIndices) :: indices
+      logical :: y_first
 
       ierror = 1
       allocate (character(len=0) :: standard_name)
 
+      indices = quantity%dimension_indices
+      y_first = indices%y_index > 0 .and. indices%y_index < indices%x_index
       Nreadrow = n_rows
 
 !        compute number of data blocks
@@ -2249,9 +2261,11 @@ contains
 
             if (mcolmax(j) >= mcolmin(j)) then
 !                 read data
-               ierror = read_netcdf_layer(filehandle, quantity, [mcolmin(j), nrowmin], &
-                                          [mcolmax(j) - mcolmin(j) + 1, nrowmax(j) - nrowmin + 1], &
-                                          k, timesndx, data_block, xy_stride)
+               block_ncol = mcolmax(j) - mcolmin(j) + 1
+               block_nrow = nrowmax(j) - nrowmin + 1
+               call netcdf_layer_selection(indices, [mcolmin(j), nrowmin], [block_ncol, block_nrow], &
+                                           k, timesndx, start, counts)
+               ierror = nf90_get_var(filehandle, quantity%ncid, data_block, start=start, count=counts)
 
                if (ierror /= 0) then
                   standard_name = ''
@@ -2265,11 +2279,19 @@ contains
                   goto 1234
                end if
 
+               ! Keep the sparse read buffer in file order: the faster dimension has stride 1.
+               ! Use those strides to gather only the selected cells, without transposing the block.
+               col_stride = 1
+               row_stride = block_ncol
+               if (y_first) then
+                  col_stride = block_nrow
+                  row_stride = 1
+               end if
                do nrow = nrowmin, nrowmax(j)
                   do i = ia(nrow), ia(nrow + 1) - 1
                      mcol = ja(i)
                      arr1d(i + (k - 1) * Ndatasize) = &
-                        data_block(1 + (mcol - mcolmin(j)) * xy_stride(1) + (nrow - nrowmin) * xy_stride(2))
+                        data_block(1 + (mcol - mcolmin(j)) * col_stride + (nrow - nrowmin) * row_stride)
                   end do
                end do
             end if
