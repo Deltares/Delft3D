@@ -847,7 +847,7 @@ contains
                   return
                end if
                do k = 1, max(nlay, 1)
-                  ierror = read_netcdf_plane(fileReaderPtr%fileHandle, item%quantityPtr, [col0, row0], [ncol, nrow], &
+                  ierror = read_netcdf_layer(fileReaderPtr%fileHandle, item%quantityPtr, [col0, row0], [ncol, nrow], &
                                              k, timesndx, data_block, xy_stride)
                   if (.not. ecSupportNetcdfCheckError(ierror, 'reading gridded variable '//trim(item%quantityPtr%name), fileReaderPtr%filename)) then
                      return
@@ -892,7 +892,7 @@ contains
 
    !> Read one horizontal plane in file order. With other axes fixed at length one,
    !! the relative order of X and Y determines their strides in the flat buffer.
-   integer function read_netcdf_plane(filehandle, quantity, xy_start, xy_count, layer, timestep, &
+   integer function read_netcdf_layer(filehandle, quantity, xy_start, xy_count, layer, timestep, &
                                       data, xy_stride) result(status)
       use netcdf
       integer, intent(in) :: filehandle, layer, timestep
@@ -926,7 +926,7 @@ contains
          xy_stride = [xy_count(2), 1]
       end if
       status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)
-   end function read_netcdf_plane
+   end function read_netcdf_layer
 
    ! =======================================================================
 
@@ -2249,7 +2249,7 @@ contains
 
             if (mcolmax(j) >= mcolmin(j)) then
 !                 read data
-               ierror = read_netcdf_plane(filehandle, quantity, [mcolmin(j), nrowmin], &
+               ierror = read_netcdf_layer(filehandle, quantity, [mcolmin(j), nrowmin], &
                                           [mcolmax(j) - mcolmin(j) + 1, nrowmax(j) - nrowmin + 1], &
                                           k, timesndx, data_block, xy_stride)
 
