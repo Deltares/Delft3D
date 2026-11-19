@@ -717,9 +717,9 @@ contains
        
        ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
        do i = 1, no_cell_exchange(ifrom)
-          if (cell_to_cell(ifrom, i) == ito) then
+          if (cell_to_cell(ifrom, i) == ito .and. &
+              ln2ln3D(cell_exchange(ifrom, i), ilay) == 0) then
              ln2ln3D(cell_exchange(ifrom, i), ilay) = ilink
-             cell_to_cell(ifrom, i) = 0
              exit
           end if
        end do
