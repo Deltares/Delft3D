@@ -29,9 +29,9 @@ namespace
 
     struct DataSection
     {
-        parsing_utils::Point2D position;
-        std::vector<parsing_utils::Point2D> ambient_positions;
-        std::optional<parsing_utils::Point2D> intake;
+        pre_c_sumo::Point2D position;
+        std::vector<pre_c_sumo::Point2D> ambient_positions;
+        std::optional<pre_c_sumo::Point2D> intake;
         pre_c_sumo::Discharge discharge;
         double nozzle_diameter{};
         double nozzle_elevation{};
@@ -49,10 +49,10 @@ namespace
     // Section parsers
     // -------------------------------------------------------------------------
 
-    std::expected<std::vector<parsing_utils::Point2D>, parsing_utils::ParseError> parseAmbientPoints(
+    std::expected<std::vector<pre_c_sumo::Point2D>, parsing_utils::ParseError> parseAmbientPoints(
         const pugi::xml_node data_node)
     {
-        std::vector<parsing_utils::Point2D> ambient_positions;
+        std::vector<pre_c_sumo::Point2D> ambient_positions;
         for (const auto child : data_node.children())
         {
             if (!boost::iequals(child.name(), "xyambient"))
@@ -105,7 +105,7 @@ namespace
             return std::unexpected(parsing_utils::ParseError{"Required element <data> not found in <settings>"});
         }
         ASSIGN_OR_RETURN(const auto position, parsing_utils::requiredChildPoint2D(data_node, "XYdiff"));
-        std::optional<parsing_utils::Point2D> intake_point;
+        std::optional<pre_c_sumo::Point2D> intake_point;
         if (const auto intake_node = parsing_utils::findChild(data_node, "XYintake"))
         {
             ASSIGN_OR_RETURN(const auto point,

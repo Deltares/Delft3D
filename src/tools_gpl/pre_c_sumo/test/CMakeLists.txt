@@ -12,12 +12,13 @@ set(source_files
     test_pre_c_sumo_lib.cpp
     test_connected_sinks_sources.cpp
     test_precice_data.cpp
-    test_coupling_steps.cpp
+    test_csumo_exchange.cpp
     test_precice_to_csumo.cpp
     test_csumo_to_precice.cpp
+    test_csumo_diffuser.cpp
+    test_csumo_file_paths.cpp
     test_exchange_file_io.cpp
     test_csumo_xml_utils.cpp
-    test_coupling_regressions.cpp
     test_csumo_settings_reader.cpp
     test_csumo_ff2nf_writer.cpp
     test_csumo_nf2ff_reader.cpp

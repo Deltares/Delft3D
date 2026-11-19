@@ -9,7 +9,7 @@
 
 #include "csumo_settings_reader.hpp"
 #include "connected_sinks_sources.hpp"
-#include "coupling_steps.hpp"
+#include "csumo_exchange.hpp"
 #include "csumo_to_precice.hpp"
 #include "precice_exchange.hpp"
 

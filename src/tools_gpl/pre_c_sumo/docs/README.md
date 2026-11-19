@@ -86,7 +86,7 @@ For the official Doxygen user guide, see: https://www.doxygen.nl/manual/starting
   and writes. The source/sink administrator only maintains aligned buffers;
   transport clears those buffers after a successful write.
 
-The workflow in [coupling_steps.cpp](../src/coupling_steps.cpp) explicitly performs
+The workflow in [csumo_exchange.cpp](../src/csumo_exchange.cpp) explicitly performs
 conversion, XML generation, and file writing as separate steps. NF2FF read/parse
 errors are returned to the caller rather than skipping a diffuser and shifting
 the remaining mappings.

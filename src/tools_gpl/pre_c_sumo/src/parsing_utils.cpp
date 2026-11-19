@@ -100,7 +100,8 @@ namespace parsing_utils
         return values[0];
     }
 
-    std::expected<Point2D, ParseError> parsePoint2D(const std::string_view text, const std::string_view element_name)
+    std::expected<pre_c_sumo::Point2D, ParseError> parsePoint2D(const std::string_view text,
+                                                               const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto values, parseDoubleVector(text, element_name));
         if (values.size() != 2)
@@ -108,7 +109,7 @@ namespace parsing_utils
             return std::unexpected(
                 ParseError{std::format("<{}> must contain two numeric values, got: '{}'", element_name, text)});
         }
-        return Point2D{values[0], values[1]};
+        return pre_c_sumo::Point2D{values[0], values[1]};
     }
 
     pugi::xml_node findChild(pugi::xml_node parent, std::string_view name)
@@ -144,8 +145,8 @@ namespace parsing_utils
         return parseDouble(text, child_name);
     }
 
-    std::expected<Point2D, ParseError> requiredChildPoint2D(const pugi::xml_node parent,
-                                                            const std::string_view child_name)
+    std::expected<pre_c_sumo::Point2D, ParseError> requiredChildPoint2D(const pugi::xml_node parent,
+                                                                       const std::string_view child_name)
     {
         ASSIGN_OR_RETURN(const auto text, requiredChildText(parent, child_name));
         return parsePoint2D(text, child_name);
@@ -157,7 +158,8 @@ namespace parsing_utils
         return result.has_value() ? std::optional{*result} : std::nullopt;
     }
 
-    std::optional<Point2D> optionalChildPoint2D(const pugi::xml_node parent, const std::string_view child_name)
+    std::optional<pre_c_sumo::Point2D> optionalChildPoint2D(const pugi::xml_node parent,
+                                                            const std::string_view child_name)
     {
         ASSIGN_OR_RETURN(const auto text, optionalChildText(parent, child_name));
         const auto result = parsePoint2D(text, child_name);

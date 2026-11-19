@@ -104,7 +104,7 @@ namespace pre_c_sumo
                 }
             }
 
-            for (const parsing_utils::Point2D& position : diffuser.ambient_positions)
+            for (const Point2D& position : diffuser.ambient_positions)
             {
                 for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
                 {
@@ -135,6 +135,11 @@ namespace pre_c_sumo
         for (std::size_t diffuser_index = 0; diffuser_index < near_field_data.size(); diffuser_index++)
         {
             const auto& diffuser = near_field_data[diffuser_index];
+            if (diffuser.constituents.size() > constituent_ids.size())
+            {
+                return std::unexpected(ConnectedSinkSourcesError{
+                    "NF2FF contains more constituents than the preCICE source/sink data supports."});
+            }
             std::vector<SourceOrSinkData> sources;
             const bool single_nf2ff_source = diffuser.sources.size() == 1;
 

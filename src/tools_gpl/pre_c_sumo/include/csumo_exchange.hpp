@@ -1,5 +1,5 @@
-#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
-#define SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
+#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_EXCHANGE_HPP
+#define SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_EXCHANGE_HPP
 
 #include <expected>
 #include <string_view>
@@ -7,6 +7,7 @@
 
 #include "csumo_data.hpp"
 #include "exchange_file_types.hpp"
+#include "parsing_types.hpp"
 #include "precice_data.hpp"
 
 namespace pre_c_sumo
@@ -28,4 +29,4 @@ namespace pre_c_sumo
         const CSumoSettings& csumo_settings, double current_time_seconds);
 } // namespace pre_c_sumo
 
-#endif // SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
+#endif // SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_EXCHANGE_HPP

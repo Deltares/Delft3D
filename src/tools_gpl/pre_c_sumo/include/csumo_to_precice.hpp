@@ -21,6 +21,7 @@ namespace pre_c_sumo
      * squared source weights for effective velocity. Excess constituents are offset
      * by depth-averaged intake values. C-SUMO positive-down z values become positive-up.
      * Single-source diffusers with sinks are expanded into DESA tracks.
+     * Returns an error if an NF2FF result has more constituents than the preCICE data supports.
      */
     [[nodiscard]] std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertCSumoToPrecice(
         const std::vector<DiffuserSettings>& diffuser_settings, const std::vector<NF2FFData>& near_field_data,

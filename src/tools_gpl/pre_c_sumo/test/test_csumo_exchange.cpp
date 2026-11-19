@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "coupling_test_data.hpp"
-#include "coupling_steps.hpp"
+#include "csumo_exchange.hpp"
 #include "csumo_settings_reader.hpp"
 #include "csumo_to_precice.hpp"
 #include "csumo_diffuser.hpp"

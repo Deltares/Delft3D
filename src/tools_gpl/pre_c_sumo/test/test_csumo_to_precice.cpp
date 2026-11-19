@@ -4,6 +4,42 @@
 
 #include "csumo_to_precice.hpp"
 
+TEST(CSumoToPreciceTest, Builds2DAnd3DMeshesAndMappingsForDifferentDiffusers)
+{
+    const std::vector<pre_c_sumo::DiffuserSettings> diffusers{
+        {.position = {1, 2}, .ambient_positions = {{3, 4}, {5, 6}}, .intake = pre_c_sumo::Point2D{7, 8}},
+        {.position = {9, 10}, .ambient_positions = {{11, 12}}},
+    };
+
+    const auto mesh_2d =
+        pre_c_sumo::createPreciceMesh("2d", diffusers, pre_c_sumo::ZSpecification{true, 0, 0, 0});
+    const auto mesh_3d =
+        pre_c_sumo::createPreciceMesh("3d", diffusers, pre_c_sumo::ZSpecification{false, -2, 2, 0});
+
+    EXPECT_EQ(mesh_2d.coordinates, (std::vector<double>{1, 2, 7, 8, 3, 4, 5, 6, 9, 10, 11, 12}));
+    EXPECT_EQ(mesh_3d.coordinates,
+              (std::vector<double>{1, 2, -2, 1, 2, 0, 7, 8, -2, 7, 8, 0, 3, 4, -2, 3, 4, 0,
+                                   5, 6, -2, 5, 6, 0, 9, 10, -2, 9, 10, 0, 11, 12, -2, 11, 12, 0}));
+    EXPECT_EQ(mesh_2d.number_of_nodes, 6u);
+    EXPECT_EQ(mesh_3d.number_of_nodes, 12u);
+    ASSERT_EQ(mesh_2d.forward_map.size(), 2u);
+    ASSERT_EQ(mesh_3d.forward_map.size(), 2u);
+    EXPECT_EQ(mesh_2d.forward_map[0].diffuser_index, 0u);
+    EXPECT_TRUE(mesh_2d.forward_map[0].has_intake);
+    EXPECT_EQ(mesh_2d.forward_map[0].intake_index, 1u);
+    EXPECT_EQ(mesh_2d.forward_map[0].first_ambient_point_index, 2u);
+    EXPECT_EQ(mesh_2d.forward_map[1].diffuser_index, 4u);
+    EXPECT_FALSE(mesh_2d.forward_map[1].has_intake);
+    EXPECT_EQ(mesh_2d.forward_map[1].first_ambient_point_index, 5u);
+    EXPECT_EQ(mesh_3d.forward_map[0].diffuser_index, 0u);
+    EXPECT_TRUE(mesh_3d.forward_map[0].has_intake);
+    EXPECT_EQ(mesh_3d.forward_map[0].intake_index, 2u);
+    EXPECT_EQ(mesh_3d.forward_map[0].first_ambient_point_index, 4u);
+    EXPECT_EQ(mesh_3d.forward_map[1].diffuser_index, 8u);
+    EXPECT_FALSE(mesh_3d.forward_map[1].has_intake);
+    EXPECT_EQ(mesh_3d.forward_map[1].first_ambient_point_index, 10u);
+}
+
 TEST(CSumoToPreciceTest, ConvertsNearFieldRecordsWithoutAnXmlReaderOrParticipant)
 {
     const pre_c_sumo::NF2FFData result{
@@ -98,4 +134,32 @@ TEST(CSumoToPreciceTest, RejectsIntakeConstituentsWithoutAnIntakeSample)
     ASSERT_FALSE(converted.has_value());
     EXPECT_EQ(converted.error().message,
               "NF2FF intake constituents require an intake sample in the preCICE mesh.");
+}
+
+TEST(CSumoToPreciceTest, RejectsMoreConstituentsThanThePreciceMeshSupports)
+{
+    for (const auto operation : {pre_c_sumo::ConstituentsOperator::Absolute,
+                                 pre_c_sumo::ConstituentsOperator::Excess})
+    {
+        const pre_c_sumo::NF2FFData result{
+            .intake_flow_rate = 2.0,
+            .constituents_operator = operation,
+            .constituents = std::vector<double>(pre_c_sumo::constituent_ids.size() + 1, 3.0),
+            .intakes = {{.x_coordinate = 1.0, .y_coordinate = 2.0, .z_coordinate = 2.0}},
+            .sources = {{.x_coordinate = 10.0, .y_coordinate = 20.0, .z_coordinate = 5.0}},
+        };
+        pre_c_sumo::PreciceMesh mesh{};
+        mesh.number_of_zcoordinates = 1;
+        mesh.forward_map = {{.has_intake = true, .intake_index = 0}};
+        for (const auto id : pre_c_sumo::constituent_ids)
+        {
+            mesh.quantities[id] = {1.0};
+        }
+
+        const auto converted = pre_c_sumo::convertCSumoToPrecice({}, {result}, mesh);
+
+        ASSERT_FALSE(converted.has_value());
+        EXPECT_EQ(converted.error().message,
+                  "NF2FF contains more constituents than the preCICE source/sink data supports.");
+    }
 }

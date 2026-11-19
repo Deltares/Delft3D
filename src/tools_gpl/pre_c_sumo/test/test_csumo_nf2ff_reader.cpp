@@ -741,6 +741,33 @@ TEST(CSumoNF2FFReaderTest, ParsesIntakes)
     EXPECT_FALSE(intakes[1].has_weight);
 }
 
+TEST(CSumoNF2FFReaderTest, ParsesWeightedIntakeAndRejectsInvalidRowLengths)
+{
+    const auto with_intake_row = [](std::string_view row) {
+        std::string xml{valid_xml};
+        const auto start = xml.find("<intakes>");
+        const auto end = xml.find("</intakes>", start);
+        xml.replace(start + std::string_view{"<intakes>"}.size(),
+                    end - start - std::string_view{"<intakes>"}.size(), row);
+        return xml;
+    };
+
+    const auto weighted = pre_c_sumo::CSumoNF2FFReader::fromString(with_intake_row("\n1 2 3 0.25\n"));
+    ASSERT_TRUE(weighted.has_value());
+    ASSERT_EQ(weighted->intakes.size(), 1u);
+    EXPECT_DOUBLE_EQ(weighted->intakes[0].z_coordinate, 3.0);
+    EXPECT_TRUE(weighted->intakes[0].has_weight);
+    EXPECT_DOUBLE_EQ(weighted->intakes[0].weight, 0.25);
+
+    for (const auto row : {"\n1 2\n", "\n1 2 3 4 5\n"})
+    {
+        SCOPED_TRACE(row);
+        const auto invalid = pre_c_sumo::CSumoNF2FFReader::fromString(with_intake_row(row));
+        ASSERT_FALSE(invalid.has_value());
+        EXPECT_TRUE(invalid.error().message.contains("expected 3 to 4 values"));
+    }
+}
+
 TEST(CSumoNF2FFReaderTest, ParsesEmptyIntakesWhenIntakeDischargeIsZero)
 {
     const auto result = pre_c_sumo::CSumoNF2FFReader::fromString(valid_xml_empty_intakes);

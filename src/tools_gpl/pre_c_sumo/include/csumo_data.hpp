@@ -7,10 +7,18 @@
 #include <string>
 #include <vector>
 
-#include "parsing_types.hpp"
-
 namespace pre_c_sumo
 {
+    /**
+     * @anchor pre_c_sumo_point_2d
+     * @brief Two-dimensional coordinate pair containing an x/y position.
+     */
+    struct Point2D
+    {
+        double x_coordinate{};
+        double y_coordinate{};
+    };
+
     enum class ConstituentsOperator
     {
         Absolute,
@@ -29,9 +37,9 @@ namespace pre_c_sumo
         std::optional<std::string> id;
         std::optional<std::string> sub_grid_model;
         std::optional<std::string> far_field_model;
-        parsing_utils::Point2D position;
-        std::vector<parsing_utils::Point2D> ambient_positions;
-        std::optional<parsing_utils::Point2D> intake;
+        Point2D position;
+        std::vector<Point2D> ambient_positions;
+        std::optional<Point2D> intake;
         Discharge discharge;
         double nozzle_diameter{}; ///< Nozzle diameter [m].
         double nozzle_elevation{}; ///< Height above the bed [m].
@@ -61,7 +69,7 @@ namespace pre_c_sumo
 
     struct FarFieldPoint2D
     {
-        parsing_utils::Point2D position;
+        Point2D position;
         double water_depth{}; ///< Total water depth [m].
         std::vector<FarFieldLayer> layers;
     };

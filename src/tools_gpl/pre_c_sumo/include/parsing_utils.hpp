@@ -10,6 +10,7 @@
 #include <string_view>
 #include <vector>
 
+#include "csumo_data.hpp"
 #include "parsing_types.hpp"
 
 namespace parsing_utils
@@ -60,7 +61,8 @@ namespace parsing_utils
      * @param element_name XML element name used in validation messages.
      * @return Parsed Point2D on success, or a ParseError on failure.
      */
-    [[nodiscard]] std::expected<Point2D, ParseError> parsePoint2D(std::string_view text, std::string_view element_name);
+    [[nodiscard]] std::expected<pre_c_sumo::Point2D, ParseError> parsePoint2D(std::string_view text,
+                                                                              std::string_view element_name);
 
     /**
      * @anchor parsing_utils_find_child
@@ -106,8 +108,8 @@ namespace parsing_utils
      * @param child_name Child element name to parse.
      * @return Parsed point on success, or a ParseError on failure.
      */
-    [[nodiscard]] std::expected<Point2D, ParseError> requiredChildPoint2D(pugi::xml_node parent,
-                                                                          std::string_view child_name);
+    [[nodiscard]] std::expected<pre_c_sumo::Point2D, ParseError> requiredChildPoint2D(pugi::xml_node parent,
+                                                                                     std::string_view child_name);
 
     /**
      * @anchor parsing_utils_optional_child_text
@@ -125,8 +127,8 @@ namespace parsing_utils
      * @param child_name Child element name to parse.
      * @return Parsed point when valid, otherwise std::nullopt.
      */
-    [[nodiscard]] std::optional<Point2D> optionalChildPoint2D(pugi::xml_node parent,
-                                                              std::string_view child_name);
+    [[nodiscard]] std::optional<pre_c_sumo::Point2D> optionalChildPoint2D(pugi::xml_node parent,
+                                                                         std::string_view child_name);
 
     /**
      * @anchor parsing_utils_normalize_path

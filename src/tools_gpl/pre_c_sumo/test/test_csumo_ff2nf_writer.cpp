@@ -478,6 +478,25 @@ TEST(CSumoFF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
     ASSERT_EQ(lines.size(), 3u);
 }
 
+TEST(CSumoFF2NFWriterTest, FFAmbientDensityKeepsEachPointsLayersTogether)
+{
+    auto config = buildExampleConfig();
+    config.ambient_points.resize(2);
+    config.ambient_points[0].layers.resize(2);
+    config.ambient_points[1].layers.resize(2);
+    config.ambient_points[0].layers[0].density = 1010.0;
+    config.ambient_points[0].layers[1].density = 1011.0;
+    config.ambient_points[1].layers[0].density = 1020.0;
+    config.ambient_points[1].layers[1].density = 1021.0;
+
+    const auto document = generateDocument(std::move(config));
+    const auto values = parsing_utils::parseDoubleVector(nodeText(document, "COSUMO/SubgridModel/FFAmbient/rho"),
+                                                         "FFAmbient/rho");
+
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    EXPECT_EQ(*values, (std::vector<double>{1010.0, 1011.0, 1020.0, 1021.0}));
+}
+
 TEST(CSumoFF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();

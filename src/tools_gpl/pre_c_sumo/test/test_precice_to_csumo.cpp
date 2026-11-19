@@ -56,8 +56,8 @@ TEST(PreciceToCSumoTest, AssemblesDiffuserIntakeAndAmbientProfilesUsingTheirMapp
     mesh_2d.coordinates = {0.0, 0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0};
     mesh_2d.forward_map = {{0, false, 0, 1}, {1, true, 2, 3}};
     mesh_2d.quantities = {
-        {pre_c_sumo::water_levels_id, std::vector<double>(5, 1.0)},
-        {pre_c_sumo::bed_levels_id, std::vector<double>(5, 9.0)},
+        {pre_c_sumo::water_levels_id, {0.0, 1.0, 1.0, 1.0, 1.0}},
+        {pre_c_sumo::bed_levels_id, {10.0, 19.0, 9.0, 9.0, 9.0}},
     };
     pre_c_sumo::PreciceMesh mesh_3d{};
     mesh_3d.number_of_zcoordinates = 2;
@@ -71,7 +71,8 @@ TEST(PreciceToCSumoTest, AssemblesDiffuserIntakeAndAmbientProfilesUsingTheirMapp
     }
     mesh_3d.quantities = {
         {pre_c_sumo::flow_velocities_id, std::vector<double>(30, 1.0)},
-        {pre_c_sumo::densities_id, std::vector<double>(10, 1025.0)},
+        {pre_c_sumo::densities_id, {1000.0, 1001.0, 1002.0, 1003.0, 1004.0,
+                                    1005.0, 1006.0, 1007.0, 1008.0, 1009.0}},
     };
     for (const auto id : pre_c_sumo::constituent_ids)
     {
@@ -82,20 +83,37 @@ TEST(PreciceToCSumoTest, AssemblesDiffuserIntakeAndAmbientProfilesUsingTheirMapp
     diffuser.ff2nf_dir = "FF2NF";
     diffuser.ff_run_dir = "run";
 
+    const auto first_input =
+        pre_c_sumo::convertPreciceToCSumo(pre_c_sumo::DiffuserSettings{}, 0, mesh_2d, mesh_3d, 90.0);
     const auto input = pre_c_sumo::convertPreciceToCSumo(diffuser, 1, mesh_2d, mesh_3d, 90.0);
 
+    EXPECT_EQ(first_input.subgrid_model_nr, 1);
+    EXPECT_DOUBLE_EQ(first_input.diffuser.water_depth, 10.0);
+    ASSERT_EQ(first_input.diffuser.layers.size(), 2u);
+    EXPECT_DOUBLE_EQ(first_input.diffuser.layers[0].density, 1000.0);
+    EXPECT_DOUBLE_EQ(first_input.diffuser.layers[1].density, 1001.0);
     EXPECT_EQ(input.subgrid_model_nr, 2);
     EXPECT_DOUBLE_EQ(input.current_time_seconds, 90.0);
     EXPECT_DOUBLE_EQ(input.diffuser.position.x_coordinate, 10.0);
+    EXPECT_DOUBLE_EQ(input.diffuser.position.y_coordinate, 20.0);
+    EXPECT_DOUBLE_EQ(input.diffuser.water_depth, 20.0);
     ASSERT_EQ(input.diffuser.layers.size(), 2u);
     EXPECT_DOUBLE_EQ(input.diffuser.layers[0].z_coordinate, 3.0);
+    EXPECT_DOUBLE_EQ(input.diffuser.layers[0].density, 1002.0);
+    EXPECT_DOUBLE_EQ(input.diffuser.layers[1].density, 1003.0);
     ASSERT_TRUE(input.intake.has_value());
     EXPECT_DOUBLE_EQ(input.intake->position.x_coordinate, 30.0);
     EXPECT_DOUBLE_EQ(input.intake->layers[0].z_coordinate, 5.0);
     ASSERT_EQ(input.ambient_points.size(), 2u);
+    ASSERT_EQ(input.ambient_points[0].layers.size(), 2u);
+    ASSERT_EQ(input.ambient_points[1].layers.size(), 2u);
     EXPECT_DOUBLE_EQ(input.ambient_points[0].layers[0].z_coordinate, 7.0);
+    EXPECT_DOUBLE_EQ(input.ambient_points[0].layers[0].density, 1006.0);
+    EXPECT_DOUBLE_EQ(input.ambient_points[0].layers[1].density, 1007.0);
     EXPECT_DOUBLE_EQ(input.ambient_points[1].position.x_coordinate, 70.0);
     EXPECT_DOUBLE_EQ(input.ambient_points[1].layers[0].z_coordinate, 9.0);
     EXPECT_DOUBLE_EQ(input.ambient_points[1].layers[1].z_coordinate, 10.0);
+    EXPECT_DOUBLE_EQ(input.ambient_points[1].layers[0].density, 1008.0);
+    EXPECT_DOUBLE_EQ(input.ambient_points[1].layers[1].density, 1009.0);
     EXPECT_EQ(input.constituent_names.size(), pre_c_sumo::constituent_ids.size());
 }
