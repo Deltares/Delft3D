@@ -30,7 +30,7 @@ if %usePreCICE% EQU 1 (
     if %startPreCSUMO% EQU 1 (
         cd cosumo
         set PATH=..\%bindir%
-        start ..\%bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml
+        start "" cmd /c "..\%bindir%\preC-SUMO.exe -c csumo_settings.xml -p ..\precice_config.xml || pause"
         cd ..
     ) else (
         echo Please start preC-SUMO
