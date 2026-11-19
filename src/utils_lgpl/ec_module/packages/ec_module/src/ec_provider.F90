@@ -291,12 +291,6 @@ contains
                ! todo: error handling with message
                return
             end if
-            if (size(fileReaderPtr%dim_length) >= 5) then
-               if (fileReaderPtr%relndx > fileReaderPtr%dim_length(3)) then
-                  call set_ec_message("ERROR: ec_provider::ecProviderInitializeFileReader: Number of realizations is outside the ensemble size.")
-                  return
-               end if
-            end if
          end select
 
          if (present(dtnodal)) then
@@ -2680,7 +2674,6 @@ contains
       integer :: idims !< helper variables
       integer :: ifgd, isgd !< helper variables
       integer, dimension(:), allocatable :: dimids !< ids of a variable's dimensions
-      integer, dimension(:), allocatable :: coordids !< helper variable
       integer :: i, j !< loop counter
       integer :: grid_mapping_id !< id of the applied grid mapping
       integer :: fgd_id !< var_id for elementset X or latitude
@@ -2692,7 +2685,6 @@ contains
       integer :: vptyp !< interpretation of the vertical coordinate
       character(len=NF90_MAX_NAME) :: z_positive !< which direction of z is positive ?
       character(len=NF90_MAX_NAME) :: z_standardname !< which direction of z is positive ?
-      character(len=NF90_MAX_NAME) :: dim_name !< helper variable for logging dimension name
       real(dp) :: gnplon, gnplat !< coordinates of shifted north pole obtained from gridmapping
       real(dp) :: gsplon, gsplat !< coordinates of shifted south pole obtained from gridmapping
       real(dp), dimension(:, :), allocatable :: fgd_data !< coordinate data along first dimension's axis
@@ -2726,6 +2718,8 @@ contains
       character(len=50) :: attstr
       logical :: rotate_pole
       integer :: lon_varid, lon_dimid, lat_varid, lat_dimid, tim_varid, tim_dimid
+      integer :: data_rank, x_dim, y_dim
+      integer :: x_index, y_index, z_index, time_index
       integer :: grid_lon_varid, grid_lat_varid
       integer :: x_varid, x_dimid, y_varid, y_dimid, z_varid, z_dimid, nod_varid, nod_dimid
 
@@ -2827,6 +2821,8 @@ contains
          end if
       end if
 
+      tim_dimid = fileReaderPtr%time_dimid
+
       do i = 1, num_variables
          sourceItemQuantityName = trim(quantityName)
          if (allocated(ncstdnames)) then
@@ -2856,24 +2852,15 @@ contains
             fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
          end if
 
-         ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, ndims=ndims, name=sourceVariableName)
+         ierror = ecSupportNCInquireVariable(fileReaderPtr%fileHandle, idvar, sourceVariableName, dimids)
          if (.not. ecSupportNetcdfCheckError(ierror, "inquiring source variable", fileReaderPtr%filename)) then
             return
          end if
-         if (allocated(coordids)) then
-            deallocate (coordids) ! allocate space for the variable id's
-         end if
-         allocate (coordids(ndims)) ! .. representing the var's coordinates
-         coordids = -1
-         if (allocated(dimids)) then
-            deallocate (dimids)
-         end if
-         allocate (dimids(ndims))
-         ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, idvar, dimids=dimids) ! get dimension ID's
-
-         do idims = 1, ndims ! JRE to check
-            coordids(idims) = fileReaderPtr%dim_varids(dimids(idims))
-         end do
+         data_rank = size(dimids)
+         x_index = 0
+         y_index = 0
+         z_index = findloc(dimids, z_dimid, dim=1)
+         time_index = findloc(dimids, tim_dimid, dim=1)
 
          fgd_id = -1
          sgd_id = -1
@@ -2979,7 +2966,7 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         is_scalar_source = (tim_dimid > 0 .and. ndims == 1 .and. dimids(1) == tim_dimid)
+         is_scalar_source = data_rank == 1 .and. time_index > 0
          if (is_scalar_source .and. has_horizontal_coordinates) then
             call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                               //"' declares horizontal coordinates but has only a time dimension. " &
@@ -3016,40 +3003,60 @@ contains
             if (allocated(fgd_data_1d)) deallocate (fgd_data_1d)
             if (allocated(sgd_data_1d)) deallocate (sgd_data_1d)
 
-            call realloc(crd_dimids, ndims, 3)
-            call realloc(crd_dimlen, ndims, 3)
+            call realloc(crd_dimids, 2, 2)
+            call realloc(crd_dimlen, 2, 2)
             crd_dimids = 0
             crd_dimlen = 0
 
             ! Dimensions ID's and dimension lengths of the FIRST coordinate variable
             ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, fgd_id, ndims=ndims)
+            if (ierror /= NF90_NOERR .or. ndims < 1 .or. ndims > 2) then
+               call set_ec_message("Expected a rank-one or rank-two X coordinate in "//trim(fileReaderPtr%filename)//".")
+               return
+            end if
             ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, fgd_id, dimids=crd_dimids(1:ndims, 1)) ! count dimensions of the first coordinate variable
             do idims = 1, ndims
                crd_dimlen(idims, 1) = fileReaderPtr%dim_length(crd_dimids(idims, 1))
             end do
 
             ! Dimensions ID's and dimension lengths of the SECOND coordinate variable
-            ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, sgd_id, ndims=ndims)
+            ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, sgd_id, ndims=idims)
+            if (ierror /= NF90_NOERR .or. idims /= ndims) then
+               call set_ec_message("Horizontal coordinate ranks do not match in "//trim(fileReaderPtr%filename)//".")
+               return
+            end if
             ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, sgd_id, dimids=crd_dimids(1:ndims, 2)) ! count dimensions of the first coordinate variable
             do idims = 1, ndims
                crd_dimlen(idims, 2) = fileReaderPtr%dim_length(crd_dimids(idims, 2))
             end do
 
-            ! Dimensions ID's and dimension lengths of the THIRD coordinate variable
-            if (tgd_id > 0) then
-               ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, tgd_id, ndims=ndims)
-               if (ndims > 0) then
-                  ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, tgd_id, dimids=crd_dimids(1:ndims, 3))
-                  do idims = 1, ndims
-                     crd_dimlen(idims, 3) = fileReaderPtr%dim_length(crd_dimids(idims, 3))
-                  end do
+            x_dim = crd_dimids(1, 1)
+            y_dim = crd_dimids(1, 2)
+            if (grid_type == elmSetType_samples) then
+               y_dim = -1
+            else if (ndims == 2) then
+               ! Use named grid dimensions when available; otherwise keep the X coordinate's order.
+               x_dim = fileReaderPtr%lonx_id
+               y_dim = fileReaderPtr%laty_id
+               if (.not. any(crd_dimids(:, 1) == x_dim)) then
+                  x_dim = crd_dimids(1, 1)
+                  if (x_dim == y_dim) then
+                     x_dim = crd_dimids(2, 1)
+                  end if
+               end if
+               if (.not. any(crd_dimids(:, 1) == y_dim)) then
+                  y_dim = crd_dimids(merge(2, 1, x_dim == crd_dimids(1, 1)), 1)
+               end if
+               if (.not. all(ecSupportNCFindDimIds(crd_dimids(:, 2), [x_dim, y_dim]) > 0)) then
+                  call set_ec_message("Horizontal coordinate dimensions do not match in "//trim(fileReaderPtr%filename)//".")
+                  return
                end if
             end if
-
-            ! Check if the dimension(sizes) of the 1st and 2nd coordinate variable agree
-            if (any(crd_dimlen(1:ndims, 2) /= crd_dimlen(1:ndims, 2))) then
+            x_index = findloc(dimids, x_dim, dim=1)
+            y_index = findloc(dimids, y_dim, dim=1)
+            if (x_index == 0 .or. (y_dim > 0 .and. y_index == 0) .or. x_dim == y_dim) then
+               call set_ec_message("Horizontal dimensions not found for '"//trim(sourceVariableName)//"' in "//trim(fileReaderPtr%filename)//".")
                return
-               ! TODO: error message
             end if
 
             ! notation: crd_dimlen(k,l) holds the size of the k-th dimension in the variable holding the l-th coordinate
@@ -3075,14 +3082,20 @@ contains
                if (.not. ieee_is_nan(fill_value)) then
                   where (fgd_data == fill_value) fgd_data = nan_value
                end if
-               fgd_data_1d = reshape(fgd_data, (/crd_dimlen(1, 1) * crd_dimlen(2, 1)/)) ! transform fgd and sgd here if necessary
+               if (crd_dimids(1, 1) /= x_dim) then
+                  fgd_data = transpose(fgd_data)
+               end if
+               fgd_data_1d = reshape(fgd_data, [size(fgd_data)])
 
                ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, sgd_id, nofill, fill_value, nan_value)
                ierror = nf90_get_var(fileReaderPtr%fileHandle, sgd_id, sgd_data, start=(/1, 1/), count=crd_dimlen(1:2, 2))
                if (.not. ieee_is_nan(fill_value)) then
                   where (sgd_data == fill_value) sgd_data = nan_value
                end if
-               sgd_data_1d = reshape(sgd_data, (/crd_dimlen(1, 2) * crd_dimlen(2, 2)/))
+               if (crd_dimids(1, 2) /= x_dim) then
+                  sgd_data = transpose(sgd_data)
+               end if
+               sgd_data_1d = reshape(sgd_data, [size(sgd_data)])
             else if (ndims == 1) then
                nan_value = ieee_value(0.0_dp, ieee_quiet_nan)
                ierror = ncu_inq_var_fill(fileReaderPtr%fileHandle, fgd_id, nofill, fill_value, nan_value)
@@ -3127,41 +3140,14 @@ contains
                return
             end if
 
-            ! this goes wrong when time is defined before space in nc file
-            if (grid_type == elmSetType_samples) then
-               ncol = fileReaderPtr%dim_length(dimids(1))
-               nrow = 1
-               nlay = crd_dimlen(1, 3)
-            else
-               if (fileReaderPtr%lonx_id < 0) then
-                  fileReaderPtr%lonx_id = dimids(1)
-                  ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), name=dim_name)
-                  call mess(LEVEL_WARN, 'Dimension name '//trim(dim_name)//' in '//trim(fileReaderPtr%filename)//' is not supported. ', &
-                            'Computation proceeds assuming '//trim(dim_name)//' to be x-dimension.')
-                  call mess(LEVEL_INFO, 'Supported x-dimension names: x, longitude, lon, projected_x, xc, ', &
-                            'grid_longitude, projection_x_coordinate')
-               end if
-               ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
-               nrow = 1
-               nlay = 0
-               if (size(dimids) >= 2) then
-                  if (fileReaderPtr%laty_id < 0) then
-                     fileReaderPtr%laty_id = dimids(2)
-                     ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), name=dim_name)
-                     call mess(LEVEL_WARN, 'Dimension name '//trim(dim_name)//' in '//trim(fileReaderPtr%filename)//' is not supported. ', &
-                               'Computation proceeds assuming '//trim(dim_name)//' to be y-dimension.')
-                     call mess(LEVEL_INFO, 'Supported y-dimension names: y, latitude, lon, projected_y, yc, ', &
-                               'grid_latitude, projection_y_coordinate')
-                  end if
-                  nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
-                  ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
-                  fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
-                  if (z_dimid > 0) then
-                     if (any(dimids == z_dimid)) then
-                        nlay = fileReaderPtr%dim_length(z_dimid)
-                     end if
-                  end if
-               end if
+            ncol = fileReaderPtr%dim_length(x_dim)
+            nrow = 1
+            nlay = 0
+            if (y_dim > 0) then
+               nrow = fileReaderPtr%dim_length(y_dim)
+            end if
+            if (z_index > 0) then
+               nlay = fileReaderPtr%dim_length(z_dimid)
             end if
             if (.not. ecElementSetSetRowsColsLayers(instancePtr, elementSetId, nrow, ncol, nlay)) then
                return
@@ -3300,6 +3286,11 @@ contains
             itemPtr => ecSupportFindItem(instancePtr, itemId)
          end if
          ! ===== finish initialization of Fields =====
+         itemPtr%quantityPtr%nc_rank = data_rank
+         itemPtr%quantityPtr%x_index = x_index
+         itemPtr%quantityPtr%y_index = y_index
+         itemPtr%quantityPtr%z_index = z_index
+         itemPtr%quantityPtr%time_index = time_index
          itemPtr%sourceT0FieldPtr%timesteps = ec_undef_hp
          itemPtr%sourceT1FieldPtr%timesteps = ec_undef_hp
 
@@ -3324,8 +3315,6 @@ contains
       logical, intent(in), optional :: ignore_case !< optionally perform a case INsensitive lookup
 
       logical :: ic
-      integer :: idvar ! loop counter
-      integer :: nvar ! number/loopvariable of varids in this netcdf file
 
       id = -999
       ic = .false.
@@ -3333,52 +3322,43 @@ contains
          ic = ignore_case
       end if
 
-      nvar = size(fileReaderPtr%standard_names, dim=1)
-
       ! Match substituted variable names:
       if (present(uservarnames)) then
          if (allocated(uservarnames)) then
-            do idvar = 1, nvar
-               if (match_strings(uservarnames(ncIndex), fileReaderPtr%variable_names(idvar), ic)) then
-                  id = idvar
-                  return
-               end if
-            end do
+            id = find_name(fileReaderPtr%variable_names, uservarnames(ncIndex))
+            if (id > 0) then
+               return
+            end if
          end if
       end if
       ! Match standard names:
       if (present(ncstdnames)) then
-         do idvar = 1, nvar
-            if (match_strings(ncstdnames(ncIndex), fileReaderPtr%standard_names(idvar), ic)) then
-               id = idvar
-               return
-            end if
-         end do
+         id = find_name(fileReaderPtr%standard_names, ncstdnames(ncIndex))
+         if (id > 0) then
+            return
+         end if
       end if
       ! Match variable names:
       if (present(ncvarnames)) then
-         do idvar = 1, nvar
-            if (match_strings(ncvarnames(ncIndex), fileReaderPtr%variable_names(idvar), ic)) then
-               id = idvar
-               return
-            end if
-         end do
+         id = find_name(fileReaderPtr%variable_names, ncvarnames(ncIndex))
       end if
 
    contains
 
-      !> Determines whether two strings are equal, optionally case-INsensitive.
-      function match_strings(s1, s2, ic) result(match)
-         implicit none
-         logical :: match
-         character(len=*), intent(in) :: s1, s2 !< Input strings to be compared.
-         logical, intent(in) :: ic !< Whether or not case-INsensitive comparison should be cone.
+      function find_name(names, name) result(index)
+         character(len=*), dimension(:), intent(in) :: names
+         character(len=*), intent(in) :: name
+         integer :: index
+
          if (ic) then
-            match = strcmpi(trim(s1), trim(s2))
+            index = find_candidates_in_targets(names, [name])
          else
-            match = (s1 == s2)
+            index = findloc(names, name, dim=1)
          end if
-      end function
+         if (index <= 0) then
+            index = -999
+         end if
+      end function find_name
 
    end subroutine ecProviderSearchStdOrVarnames
 
@@ -3760,6 +3740,7 @@ contains
          return
       end if
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_variable(fileReaderPtr%fileHandle, time_id, dimids=dimid), "obtain time dimension ids", fileReaderPtr%fileName)) return
+      fileReaderPtr%time_dimid = dimid(1)
       if (.not. ecSupportNetcdfCheckError(nf90_inquire_dimension(fileReaderPtr%fileHandle, dimid(1), len=length), "obtain time dimension length", fileReaderPtr%fileName)) return
       if (length == 0) then
          call set_ec_message('Empty NetCDF time dimension in '//trim(fileReaderPtr%fileName)//'.')
@@ -4174,7 +4155,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
          allocate (fileReaderPtr%dim_varids(ndim))
          fileReaderPtr%dim_varids = -1
          fileReaderPtr%dim_length = -1
-         fileReaderPtr%time_id = -1
+         fileReaderPtr%time_dimid = -1
          fileReaderPtr%lonx_id = -1
          fileReaderPtr%laty_id = -1
 

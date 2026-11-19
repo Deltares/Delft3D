@@ -691,13 +691,12 @@ contains
       integer :: ierror !< return status of NetCDF method call
       integer :: varid !< NetCDF id of NetCDF variable
       integer :: i, j, k !< loop counters
-      real(dp), dimension(:, :), allocatable :: data_block !< 2D slice of NetCDF variable's data
-      real(dp), dimension(:, :), allocatable :: temp_block !< 2D slice of NetCDF variable's data
+      real(dp), dimension(:), allocatable :: data_block
+      integer, dimension(2) :: xy_stride
       integer :: istat !< allocation status
       real(dp) :: dmiss_nc !< local netcdf missing
 
       real(dp) :: mintime, maxtime !< range of kernel times that can be requested from this netcdf reader
-      logical :: valid_field
       character(len=20) :: cnumber1 !< number converted to string for error message
       character(len=20) :: cnumber2 !< idem
       integer :: ncol, col0, col1 !< bounding box and bounding box extent use to restrict reading a patch from a meteo-field from netCDF
@@ -712,13 +711,11 @@ contains
       integer :: n_cols, n_rows
       logical :: has_time ! flag if we (should) have a time axis
       logical :: has_harmonics ! flag if we have harmonics
-      logical :: is_column_major ! data in file is ordered X,Y instead of Y,X
       !
       success = .false.
       fieldPtr => null()
-      has_time = (fileReaderPtr%tframe%nr_timesteps > 0)
+      has_time = item%quantityPtr%time_index > 0
       has_harmonics = allocated(fileReaderPtr%hframe%phases) ! a valid hframe will have allocated phases
-      is_column_major = fileReaderPtr%is_column_major
 
       dmiss_nc = item%quantityPtr%fillvalue
       varid = item%quantityPtr%ncid
@@ -739,7 +736,7 @@ contains
       end if
       !
       ! - Check for the presence of times, indicating the presence of further data blocks.
-      if (.not. has_time .and. .not. has_harmonics .and. fileReaderPtr%tframe%nr_timesteps /= 0) then
+      if (has_time .and. .not. has_harmonics .and. fileReaderPtr%tframe%nr_timesteps <= 0) then
          call set_ec_message("Empty NetCDF time dimension and no harmonic components in "//trim(fileReaderPtr%filename)//".")
          return
       end if
@@ -834,120 +831,36 @@ contains
             end if
          end if
 
-         valid_field = (col1 == 0 .and. row1 == 0)
-         do while (.not. valid_field)
-            ! - Read a grid data block.
-            valid_field = .false.
-            !
-            if (issparse /= 1) then
-               if (is_column_major) then
-                  allocate (data_block(nrow, ncol), stat=istat)
-               else
-                  allocate (data_block(ncol, nrow), stat=istat)
+         if (col1 /= 0 .or. row1 /= 0) then
+            if (issparse == 1) then
+               call read_data_sparse(fileReaderPtr%fileHandle, item%quantityPtr, n_cols, n_rows, nlay, &
+                                     timesndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror)
+               if (.not. ecSupportNetcdfCheckError(ierror, 'reading sparse grid', fileReaderPtr%filename)) then
+                  return
                end if
+            else
+               allocate (data_block(nrow * ncol), stat=istat)
                if (istat /= 0) then
                   write (message, '(a,i0,a,i0,a)') 'Allocating temporary array of ', ncol, ' x ', nrow, ' elements.'
                   call set_ec_message(trim(message))
                   call set_ec_message("Allocation of data_block (data from NetCDF) failed.")
                   return
                end if
-            end if
-
-            if (item%elementSetPtr%nCoordinates > 0) then
-               if (issparse == 1) then
-                  call read_data_sparse(fileReaderPtr%fileHandle, varid, n_cols, n_rows, item%elementSetPtr%n_layers, &
-                                        timesndx, is_column_major, fileReaderPtr%relndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror, has_time=has_time)
-                  if (ecSupportNetcdfCheckError(ierror, 'Error reading quantity '//trim(item%quantityptr%name)//' from sparse data. ', fileReaderPtr%filename)) then
-                     valid_field = .true.
-                  else
+               do k = 1, max(nlay, 1)
+                  ierror = read_netcdf_plane(fileReaderPtr%fileHandle, item%quantityPtr, [col0, row0], [ncol, nrow], &
+                                             k, timesndx, data_block, xy_stride)
+                  if (.not. ecSupportNetcdfCheckError(ierror, 'reading gridded variable '//trim(item%quantityPtr%name), fileReaderPtr%filename)) then
                      return
                   end if
-               else
-                  if (item%elementSetPtr%n_layers == 0) then
-                     if (item%elementSetPtr%ofType == elmSetType_samples) then
-                        if (.not. has_time) then
-                           ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0], count=[ncol])
-                        else
-                           ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, timesndx], count=[ncol, 1])
-                        end if
-                     else
-                        if (.not. has_time) then
-                           if (is_column_major) then
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0], count=[nrow, ncol])
-                           else
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, row0], count=[ncol, nrow])
-                           end if
-                        else
-                           ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, row0, timesndx], count=[ncol, nrow, 1])
-                           ! handle case where dimensions are permutated
-                           if (ierror /= 0) then
-                              allocate (temp_block(nrow, ncol), stat=istat)
-                              if (istat == 0) ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, temp_block, start=[timesndx, row0, col0], count=[1, nrow, ncol])
-                              if (ierror == 0) then
-                                 data_block = transpose(temp_block)
-                                 deallocate (temp_block)
-                              end if
-                           end if
-                        end if
-                     end if
-                     if (ierror /= 0) then
-                        if (has_harmonics) then
-                           call set_ec_message("Error retrieving component data")
-                        else
-                           call set_ec_message("Error retrieving time index ", timesndx)
-                        end if
-                        return
-                     end if
-                     ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
-                     do i = 1, nrow
-                        do j = 1, ncol
-                           if (is_column_major) then
-                              fieldPtr%arr1dPtr((i - 1) * ncol + j) = data_block(i, j)
-                           else
-                              fieldPtr%arr1dPtr((i - 1) * ncol + j) = data_block(j, i)
-                           end if
-                        end do
+                  do i = 1, nrow
+                     do j = 1, ncol
+                        fieldPtr%arr1dPtr((k - 1) * Ndatasize + (i - 1) * ncol + j) = &
+                           data_block(1 + (j - 1) * xy_stride(1) + (i - 1) * xy_stride(2))
                      end do
-                     valid_field = .true.
-                  else
-                     ! copy data to source Field's 1D array, store (X1Y1, X1Y2, ..., X1Yn_rows, X2Y1, XYy2, ..., Xn_colsY1, ...)
-                     do k = 1, item%elementSetPtr%n_layers
-                        if (.not. has_time) then
-                           if (is_column_major) then
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0, k], count=[nrow, ncol, 1])
-                           else
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, row0, k], count=[ncol, nrow, 1])
-                           end if
-                        else
-                           if (is_column_major) then
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[row0, col0, k, timesndx], count=[nrow, ncol, 1, 1])
-                           else
-                              ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=[col0, row0, k, timesndx], count=[ncol, nrow, 1, 1])
-                           end if
-                        end if
-                        do i = 1, nrow
-                           do j = 1, ncol
-                              if (is_column_major) then
-                                 fieldPtr%arr1dPtr((k - 1) * ncol * nrow + (i - 1) * ncol + j) = data_block(i, j)
-                              else
-                                 fieldPtr%arr1dPtr((k - 1) * ncol * nrow + (i - 1) * ncol + j) = data_block(j, i)
-                              end if
-                              valid_field = .true.
-                           end do
-                        end do
-                     end do
-                  end if
-               end if
-               if (ierror /= 0) then
-                  return
-               end if
+                  end do
+               end do
             end if
-            if (has_time .and. .not. valid_field) then
-               timesndx = timesndx + 1
-            else
-               valid_field = .true. ! Make sure we exit immediately (in case of harmonics)
-            end if
-         end do ! loop while fields invalid
+         end if
 
          ! - Update the source Field's timesteps variable if applicable.
          if (has_time) then
@@ -976,6 +889,42 @@ contains
       !
       success = .true.
    end function ecNetcdfReadNextBlock
+
+   !> Read one horizontal plane in file order. With other axes fixed at length one,
+   !! the relative order of X and Y determines their strides in the flat buffer.
+   integer function read_netcdf_plane(filehandle, quantity, xy_start, xy_count, layer, timestep, &
+                                      data, xy_stride) result(status)
+      use netcdf
+      integer, intent(in) :: filehandle, layer, timestep
+      type(tEcQuantity), intent(in) :: quantity
+      integer, dimension(2), intent(in) :: xy_start, xy_count
+      real(dp), dimension(:), intent(out) :: data
+      integer, dimension(2), intent(out) :: xy_stride
+      integer, dimension(quantity%nc_rank) :: start, counts
+
+      ! Preserve the first slice on dimensions other than X, Y, Z and time.
+      start = 1
+      counts = 1
+      if (quantity%x_index > 0) then
+         start(quantity%x_index) = xy_start(1)
+         counts(quantity%x_index) = xy_count(1)
+      end if
+      if (quantity%y_index > 0) then
+         start(quantity%y_index) = xy_start(2)
+         counts(quantity%y_index) = xy_count(2)
+      end if
+      if (quantity%z_index > 0) then
+         start(quantity%z_index) = layer
+      end if
+      if (quantity%time_index > 0) then
+         start(quantity%time_index) = timestep
+      end if
+      xy_stride = [1, xy_count(1)]
+      if (quantity%y_index > 0 .and. quantity%y_index < quantity%x_index) then
+         xy_stride = [xy_count(2), 1]
+      end if
+      status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)
+   end function read_netcdf_plane
 
    ! =======================================================================
 
@@ -2218,7 +2167,7 @@ contains
    end subroutine strip_comment
 
 !     read data and store in CRS format
-   subroutine read_data_sparse(filehandle, varid, n_cols, n_rows, n_layers, timesndx, is_column_major, relndx, ia, ja, Ndatasize, arr1d, ierror, has_time)
+   subroutine read_data_sparse(filehandle, quantity, n_cols, n_rows, n_layers, timesndx, ia, ja, Ndatasize, arr1d, ierror)
       use netcdf
       use netcdf_utils, only: ncu_get_att
       use io_ugrid
@@ -2226,19 +2175,16 @@ contains
       implicit none
 
       integer, intent(in) :: filehandle !< filehandle
-      integer, intent(in) :: varid !< variable id
+      type(tEcQuantity), intent(in) :: quantity
       integer, intent(in) :: n_cols !< number of columns in input
       integer, intent(in) :: n_rows !< number of rows in input
       integer, intent(in) :: n_layers !< number of layers in input
       integer, intent(in) :: timesndx !< time index
-      logical, intent(in) :: is_column_major !< rows and columns are transposed in the file
-      integer, intent(in) :: relndx !< realization index in an ensemble
       integer, dimension(:), intent(in) :: ia !< CRS sparsity pattern, startpointers
       integer, dimension(:), intent(in) :: ja !< CRS sparsity pattern, column numbers
       integer, intent(in) :: Ndatasize !< dimension of sparse data
       real(dp), dimension(:), intent(inout) :: arr1d !< CRS data
       integer, intent(out) :: ierror !< error (!=0) or not (0)
-      logical, optional, intent(in) :: has_time !< whether the variable has a time dimension; defaults to true
 
       real(dp), dimension(:), allocatable :: data_block ! work array for reading
 
@@ -2250,19 +2196,13 @@ contains
       integer :: nrowmin
       integer :: i, j, k
       integer :: istart, iend
-      integer :: ndims
       integer :: ierr
       integer :: Nreadrow !< number of rows read at once
       character(len=:), allocatable :: standard_name
       character(len=64) :: stringBuffer
-      integer, allocatable :: start(:), cnt(:)
-      logical :: time_dependent
+      integer, dimension(2) :: xy_stride
 
       ierror = 1
-      time_dependent = .true.
-      if (present(has_time)) then
-         time_dependent = has_time
-      end if
       allocate (character(len=0) :: standard_name)
 
       Nreadrow = n_rows
@@ -2297,11 +2237,6 @@ contains
          end do
       end do
 
-      ierror = nf90_inquire_variable(filehandle, varid, ndims=ndims)
-      allocate (start(ndims), cnt(ndims))
-      start = 1
-      cnt = 1
-
 !        loop over layers
       do k = 1, max(n_layers, 1)
 
@@ -2312,32 +2247,15 @@ contains
 
             if (mcolmax(j) >= mcolmin(j)) then
 !                 read data
-               if (is_column_major) then
-                  start(1:2) = [nrowmin, mcolmin(j)]
-                  cnt(1:2) = [nrowmax(j) - nrowmin + 1, mcolmax(j) - mcolmin(j) + 1]
-               else
-                  start(1:2) = [mcolmin(j), nrowmin]
-                  cnt(1:2) = [mcolmax(j) - mcolmin(j) + 1, nrowmax(j) - nrowmin + 1]
-               end if
-               if (time_dependent .and. ndims > 2) then
-                  start(ndims) = timesndx
-               end if
-               if (relndx > 0 .and. ndims >= 4) then
-                  ! UNST-10154: Limited support if variable contains an extra 'realization' dimension. 
-                  ! Pick the correct index relndx. For now, we assume length(dim) == 1.
-                  start(3) = relndx
-               end if
-               if (n_layers /= 0) then
-                  start(ndims - merge(1, 0, time_dependent)) = k
-               end if
-
-               ierror = nf90_get_var(fileHandle, varid, data_block, start=start, count=cnt)
+               ierror = read_netcdf_plane(filehandle, quantity, [mcolmin(j), nrowmin], &
+                                          [mcolmax(j) - mcolmin(j) + 1, nrowmax(j) - nrowmin + 1], &
+                                          k, timesndx, data_block, xy_stride)
 
                if (ierror /= 0) then
                   standard_name = ''
-                  ierr = ncu_get_att(fileHandle, varid, 'standard_name', standard_name)
+                  ierr = ncu_get_att(fileHandle, quantity%ncid, 'standard_name', standard_name)
                   if (ierr /= 0) then
-                     write (stringBuffer, *) 'varid = ', varid
+                     write (stringBuffer, *) 'varid = ', quantity%ncid
                      call set_ec_message("Read error in read_data_sparse for "//trim(stringBuffer))
                   else
                      call set_ec_message("Read error in read_data_sparse for "//trim(standard_name))
@@ -2348,11 +2266,8 @@ contains
                do nrow = nrowmin, nrowmax(j)
                   do i = ia(nrow), ia(nrow + 1) - 1
                      mcol = ja(i)
-                     if (is_column_major) then
-                        arr1d(i + (k - 1) * Ndatasize) = data_block((nrow - nrowmin + 1) + (nrowmax(j) - nrowmin + 1) * (mcol - mcolmin(j)))
-                     else
-                        arr1d(i + (k - 1) * Ndatasize) = data_block((mcol - mcolmin(j) + 1) + (mcolmax(j) - mcolmin(j) + 1) * (nrow - nrowmin))
-                     end if
+                     arr1d(i + (k - 1) * Ndatasize) = &
+                        data_block(1 + (mcol - mcolmin(j)) * xy_stride(1) + (nrow - nrowmin) * xy_stride(2))
                   end do
                end do
             end if
@@ -2368,8 +2283,6 @@ contains
       if (allocated(data_block)) deallocate (data_block)
       if (allocated(mcolmin)) deallocate (mcolmin)
       if (allocated(mcolmax)) deallocate (mcolmax)
-      if (allocated(start)) deallocate (start)
-      if (allocated(cnt)) deallocate (cnt)
       return
    end subroutine read_data_sparse
 

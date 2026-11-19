@@ -109,7 +109,7 @@ contains
    end subroutine create_scalar_netcdf
 
    !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth)
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth, axis_order)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
@@ -119,9 +119,13 @@ contains
       logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
       integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
       logical, intent(in), optional :: with_depth !< Include two depth levels; defaults to false.
+      integer, dimension(:), intent(in), optional :: axis_order !< File order for a layered fixture.
       integer :: ncid, x_dimid, y_dimid, time_dimid, depth_dimid
       integer :: x_varid, y_varid, time_varid, field_varid, depth_varid
       integer :: num_snapshots
+      integer :: i, j, k, t
+      integer, dimension(5) :: axis_ids, indices
+      logical :: has_extra_axis
       real(dp), dimension(2, 2, 2) :: values
       real(dp), dimension(2, 2, 2, 2) :: layered_values
       real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
@@ -167,17 +171,26 @@ contains
          call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
          call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
          call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-         if (has_depth) then
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
-         else
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+      end if
+      has_extra_axis = .false.
+      if (present(axis_order)) then
+         axis_ids(:3) = [x_dimid, y_dimid, depth_dimid]
+         if (has_time) then
+            axis_ids(4) = time_dimid
          end if
+         has_extra_axis = any(axis_order == 5)
+         if (has_extra_axis) then
+            call check_netcdf(nf90_def_dim(ncid, 'member', 2, axis_ids(5)))
+         end if
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, axis_ids(axis_order), field_varid))
+      else if (has_time .and. has_depth) then
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
+      else if (has_time) then
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
+      else if (has_depth) then
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
       else
-         if (has_depth) then
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
-         else
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
-         end if
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
       end if
       if (present(standard_name)) then
          call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', standard_name))
@@ -198,6 +211,24 @@ contains
       end if
       if (has_time) then
          call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
+      end if
+      if (present(axis_order)) then
+         do t = 1, merge(num_snapshots, 1, has_time)
+            do k = 1, 2
+               do j = 1, 2
+                  do i = 1, 2
+                     indices = [i, j, k, t, 1]
+                     call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(i, j, k, t), start=indices(axis_order)))
+                     if (has_extra_axis) then
+                        indices(5) = 2
+                        call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(i, j, k, t) + 100.0_dp, &
+                                                       start=indices(axis_order)))
+                     end if
+                  end do
+               end do
+            end do
+         end do
+      else if (has_time) then
          if (has_depth) then
             call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1:num_snapshots)))
          else
@@ -2440,7 +2471,18 @@ contains
       call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
    end subroutine test_initial_3d_salinity_timeless
 
-   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface)
+   !$gtest
+   subroutine test_initial_3d_salinity_permuted_axes() bind(C)
+      call run_initial_3d_salinity_case('permuted_time', .true., 2, 9.5_dp, axis_order=[4, 2, 3, 1])
+      call run_initial_3d_salinity_case('permuted_timeless', .false., 1, 4.5_dp, axis_order=[3, 2, 1])
+   end subroutine test_initial_3d_salinity_permuted_axes
+
+   !$gtest
+   subroutine test_initial_3d_salinity_uses_first_extra_slice() bind(C)
+      call run_initial_3d_salinity_case('extra_axis', .true., 2, 9.5_dp, axis_order=[4, 2, 5, 3, 1])
+   end subroutine test_initial_3d_salinity_uses_first_extra_slice
+
+   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface, axis_order)
       use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
       use m_flowparameters, only: jasal
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2452,6 +2494,7 @@ contains
       logical, intent(in) :: with_time
       integer, intent(in) :: snapshot_count
       real(dp), intent(in) :: expected_surface
+      integer, dimension(:), intent(in), optional :: axis_order
 
       character(len=64) :: nc_file, ext_file
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2465,6 +2508,10 @@ contains
       saved_layertype = layertype
       saved_jasal = jasal
       call setup_minimal_grid()
+      if (present(axis_order)) then
+         ! An off-centre point distinguishes X and Y in the interpolated result.
+         xz(1) = 0.5_dp
+      end if
       kmx = 2
       ndkx = 3
       layertype = LAYTP_SIGMA
@@ -2485,8 +2532,8 @@ contains
       write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
       write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
       call initialize_ec_module()
-      call create_initial_gridded_netcdf(trim(nc_file), 'field', with_time=with_time, &
-                                         snapshot_count=snapshot_count, with_depth=.true.)
+      call create_initial_gridded_netcdf(trim(nc_file), 'Field', with_time=with_time, &
+                                         snapshot_count=snapshot_count, with_depth=.true., axis_order=axis_order)
       call create_file(trim(ext_file), [ &
                        '[Spatial]', &
                        '    quantity            = initialSalinity', &

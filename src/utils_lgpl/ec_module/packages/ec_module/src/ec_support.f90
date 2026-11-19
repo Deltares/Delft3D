@@ -61,6 +61,8 @@ module m_ec_support
    public :: ecSupportFindNetCDFByFilename
    public :: ecSupportFindBCFileByFilename
    public :: ecSupportNetcdfGetQuantityCandidateNames
+   public :: ecSupportNCInquireVariable
+   public :: ecSupportNCFindDimIds
    public :: ecSupportNetcdfCheckError
    public :: ecSupportNCFindCFCoordinates
    public :: ecSupportTimestringToRefdate
@@ -1368,6 +1370,34 @@ contains
    end function ecSupportThisTimeToMJD
 
    ! =======================================================================
+
+   !> Return a resolved NetCDF variable's name and dimension IDs in Fortran order.
+   function ecSupportNCInquireVariable(ncid, varid, name, dimids) result(status)
+      use netcdf
+      integer, intent(in) :: ncid !< Open NetCDF file ID.
+      integer, intent(in) :: varid !< Already-resolved variable ID.
+      character(len=*), intent(out) :: name !< Exact variable name on success.
+      integer, dimension(:), allocatable, intent(out) :: dimids !< Ordered dimension IDs on success.
+      integer :: status, rank
+      integer, dimension(NF90_MAX_VAR_DIMS) :: ids
+
+      status = nf90_inquire_variable(ncid, varid, name=name, ndims=rank, dimids=ids)
+      if (status == NF90_NOERR) then
+         dimids = ids(:rank)
+      end if
+   end function ecSupportNCInquireVariable
+
+   !> Find positions of requested dimension IDs in the original dimension ID array.
+   pure function ecSupportNCFindDimIds(dimids, requested_dimids) result(positions)
+      integer, dimension(:), intent(in) :: dimids !< Variable dimension IDs in Fortran order.
+      integer, dimension(:), intent(in) :: requested_dimids !< Requested dimension IDs in caller order.
+      integer, dimension(size(requested_dimids)) :: positions !< Array of positions of the requested dimids in the original dimid array, zero if not found.
+      integer :: i
+
+      do i = 1, size(requested_dimids)
+         positions(i) = findloc(dimids, requested_dimids(i), dim=1)
+      end do
+   end function ecSupportNCFindDimIds
 
    !> Find the CF-compliant longitude and latitude dimensions and associated variables
    function ecSupportNCFindCFCoordinates(ncid, lon_varid, lon_dimid, lat_varid, lat_dimid, &

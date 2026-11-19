@@ -127,8 +127,7 @@ module m_ec_typedefs
       integer, dimension(:), allocatable :: ncvarndx !< varid(s) in the associated netcdf for the requested quantity
       integer :: nclocndx = -1 !< index in the timeseries_id dimension for the requested location
       integer :: nctimndx = 1 !< record number to be read
-      integer, dimension(:), allocatable :: ncdimvector !< List of dimensions in NetCDF describing the chosen variable
-      integer, allocatable, dimension(:) :: dimvector !< dimension ID's indexing the variable of interest
+      integer, dimension(:, :), allocatable :: nc_axis_positions !< Station, time and layer positions for each variable
       logical :: feof = .false. !< End-Of-File signal
       real(hp), dimension(:), allocatable :: buffer !< buffer for temporary storage in readers
       !
@@ -381,15 +380,12 @@ module m_ec_typedefs
       character(len=100), dimension(:), allocatable :: variable_names !<Variable names by varid in a netcdf file
 !     integer, dimension(:), allocatable            :: dim_varids                    !<For each dimension in NetCDF: id of the associated variable
 !     integer, dimension(:), allocatable            :: dim_length                    !<For each dimension in NetCDF: length
-      integer :: relndx = 0 !<Index of realization in an ensemble, for the reader
-      ! ignored if below zero or file is not an ensemble
       integer, dimension(:), pointer :: dim_varids => null() !<For each dimension in NetCDF: id of the associated variable
       integer, dimension(:), pointer :: dim_length => null() !<For each dimension in NetCDF: length
-      integer :: time_id
+      integer :: time_dimid = -1 !< Dimension of the file's time coordinate.
       integer :: lonx_id
       integer :: laty_id
       logical :: one_time_field = .false. !< TRUE: input file contains single time field
-      logical :: is_column_major = .false. !< TRUE: input file contains X/Y ordered data instead of Y/X
    end type tEcFileReader
 
    type tEcFileReaderPtr
@@ -438,6 +434,11 @@ module m_ec_typedefs
       real(hp) :: factor = 1.d0 !<    multiplication (scale) factor
       real(hp) :: offset = 0.d0 !<    offset (new = raw*factor + offset)
       integer :: ncid = -1 !<    NetCDF variable ID, only used in case of NetCDF format
+      integer :: nc_rank = 0 !< Rank of a gridded NetCDF variable.
+      integer :: x_index = 0 !< NetCDF dimension position for X or station; zero if absent.
+      integer :: y_index = 0 !< NetCDF dimension position for Y; zero if absent.
+      integer :: z_index = 0 !< NetCDF dimension position for Z; zero if absent.
+      integer :: time_index = 0 !< NetCDF dimension position for time; zero if absent.
    end type tEcQuantity
 
    type tEcQuantityPtr

@@ -8,6 +8,88 @@ module test_ec_module
 contains
 
    !$gtest
+   subroutine test_netcdf_boundary_axis_order() bind(C)
+      use netcdf
+      use m_ec_netcdf_timeseries, only: ecNetCDFInit, ecNetCDFScan, ecNetCDFGetTimeseriesValue
+      use m_ec_parameters, only: BC_FUNC_TSERIES, BC_FUNC_TIM3D
+      use m_ec_typedefs, only: tEcNetCDF
+
+      character(len=*), parameter :: filename = 'test_netcdf_boundary_axis_order.nc'
+      character(len=2), dimension(8), parameter :: names = ['ux', 'uy', 'p3', 'p4', 'p5', 'p6', 'w1', 'w2']
+      integer, dimension(3, 8), parameter :: order = reshape([ &
+         1, 2, 3, 1, 3, 2, 2, 1, 3, 2, 3, 1, 3, 1, 2, 3, 2, 1, 1, 2, 3, 2, 1, 3], [3, 8])
+      type(tEcNetCDF), target :: dataset
+      type(tEcNetCDF), pointer :: nc
+      integer :: ncid, station_var, time_var, z_var, text_dim, i, j, k, v, rank, location, status, unit, func
+      integer, dimension(3) :: dims, indices
+      integer, dimension(8) :: varids
+      integer, dimension(:), allocatable :: quantities
+      integer, dimension(:, :), allocatable :: positions
+      real(dp), dimension(:), allocatable :: buffer
+      real(dp), dimension(1) :: time
+      real(dp), dimension(4) :: values
+      real(dp) :: base
+
+      if (.not. ok(nf90_create(filename, NF90_CLOBBER, ncid))) return
+      if (.not. ok(nf90_def_dim(ncid, 'node', 2, dims(1)))) return
+      if (.not. ok(nf90_def_dim(ncid, 'time', 2, dims(2)))) return
+      if (.not. ok(nf90_def_dim(ncid, 'layer', 2, dims(3)))) return
+      if (.not. ok(nf90_def_dim(ncid, 'name_length', 2, text_dim))) return
+      if (.not. ok(nf90_def_var(ncid, 'station_id', NF90_CHAR, [text_dim, dims(1)], station_var))) return
+      if (.not. ok(nf90_def_var(ncid, 'time', NF90_DOUBLE, [dims(2)], time_var))) return
+      if (.not. ok(nf90_put_att(ncid, time_var, 'units', 'seconds since 2000-01-01 00:00:00'))) return
+      if (.not. ok(nf90_def_var(ncid, 'z', NF90_DOUBLE, [dims(3)], z_var))) return
+      if (.not. ok(nf90_put_att(ncid, z_var, 'positive', 'up'))) return
+      if (.not. ok(nf90_put_att(ncid, z_var, 'units', 'm'))) return
+      do v = 1, size(names)
+         rank = merge(3, 2, v <= 6)
+         if (.not. ok(nf90_def_var(ncid, names(v), NF90_DOUBLE, dims(order(:rank, v)), varids(v)))) return
+      end do
+      if (.not. ok(nf90_enddef(ncid))) return
+      if (.not. ok(nf90_put_var(ncid, station_var, ['s1', 's2']))) return
+      if (.not. ok(nf90_put_var(ncid, time_var, [0.0_dp, 60.0_dp]))) return
+      if (.not. ok(nf90_put_var(ncid, z_var, [-2.0_dp, -1.0_dp]))) return
+      do v = 1, size(names)
+         rank = merge(3, 2, v <= 6)
+         do k = 1, merge(2, 1, rank == 3)
+            do j = 1, 2
+               do i = 1, 2
+                  indices = [i, j, k]
+                  base = real(1000 * v + 100 * i + 10 * j + k, dp)
+                  if (.not. ok(nf90_put_var(ncid, varids(v), base, start=indices(order(:rank, v))))) return
+               end do
+            end do
+         end do
+      end do
+      if (.not. ok(nf90_close(ncid))) return
+
+      nc => dataset
+      if (.not. f90_assert_true(ecNetCDFInit(filename, nc, status))) return
+      do v = 1, size(names)
+         if (.not. f90_assert_true(ecNetCDFScan(nc, names(v), 's2', quantities, location, positions), names(v))) exit
+         func = merge(BC_FUNC_TIM3D, BC_FUNC_TSERIES, v <= 6)
+         if (.not. f90_assert_true(ecNetCDFGetTimeseriesValue(nc, quantities, location, positions, 1, time, values, buffer, func), names(v))) exit
+         base = real(1000 * v + 210, dp)
+         call f90_expect_near(values(1), base + 1.0_dp, 0.0_dp, names(v))
+         if (v == 1) then
+            call f90_expect_near(values(2), base + 1001.0_dp, 0.0_dp, 'uy, first layer')
+            call f90_expect_near(values(3), base + 2.0_dp, 0.0_dp, 'ux, second layer')
+            call f90_expect_near(values(4), base + 1002.0_dp, 0.0_dp, 'uy, second layer')
+         else if (func == BC_FUNC_TIM3D) then
+            call f90_expect_near(values(2), base + 2.0_dp, 0.0_dp, names(v))
+         end if
+      end do
+      if (.not. ok(nf90_close(nc%ncid))) return
+      open (newunit=unit, file=filename, status='old')
+      close (unit, status='delete')
+   contains
+      logical function ok(code)
+         integer, intent(in) :: code
+         ok = f90_assert_eq(code, NF90_NOERR, nf90_strerror(code))
+      end function ok
+   end subroutine test_netcdf_boundary_axis_order
+
+   !$gtest
    subroutine test_initial_velocity_netcdf_candidates() bind(C)
       use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
       use iso_c_utils, only: cstr
