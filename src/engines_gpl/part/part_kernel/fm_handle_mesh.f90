@@ -138,7 +138,7 @@ contains
         ! check lne with pointer table of first layer
         do l = 1, Lnx
            if (.not.((lne(1,L)==hyd%ipoint(1,L).and.lne(2,L)==hyd%ipoint(2,L)) .or. &
-					(lne(1,L)==hyd%ipoint(2,L).and.lne(2,L)==hyd%ipoint(1,L)))) then
+                    (lne(1,L)==hyd%ipoint(2,L).and.lne(2,L)==hyd%ipoint(1,L)))) then
               write(*,*) 'Links do not match for iexch: ', l
            end if
         end do
@@ -695,29 +695,34 @@ contains
 
     ! For each layer, fill ln2ln3D with the corresponding exchange numbers
     do ilink = Lnx + 1, num_exchanges
+       ifrom = 0
+       ito = 0
+       ilay = 0
        if (ipoint(1, ilink) > 0) then
           ifrom = mod(ipoint(1, ilink) - 1, nosegl) + 1
-       else 
+       else if (ipoint(1, ilink) < 0) then
           ifrom = mod(ipoint(1, ilink) + 1, nobndl) - 1
        end if
        if (ipoint(2, ilink) > 0) then
           ito = mod(ipoint(2, ilink) - 1, nosegl) + 1
-       else 
+       else if (ipoint(2, ilink) < 0) then
           ito = mod(ipoint(2, ilink) + 1, nobndl) - 1
        end if
        if (ipoint(1, ilink) > 0) then
           ilay = int(ipoint(1, ilink) - 1) / nosegl + 1
-		 else	
+       else if (ipoint(2, ilink) > 0) then
           ilay = int(ipoint(2, ilink) - 1) / nosegl + 1
-		 end if
+       end if
+       if (ifrom == 0 .or. ito == 0 .or. ilay == 0) cycle
        
        ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
        do i = 1, no_cell_exchange(ifrom)
-			 if (cell_to_cell(ifrom, i) == ito) then
+          if (cell_to_cell(ifrom, i) == ito) then
              ln2ln3D(cell_exchange(ifrom, i), ilay) = ilink
+             cell_to_cell(ifrom, i) = 0
              exit
-			 end if
-		 end do
+          end if
+       end do
     end do
     
     ! deallocate tables

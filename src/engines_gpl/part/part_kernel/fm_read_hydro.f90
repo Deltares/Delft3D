@@ -94,8 +94,12 @@ contains
                 do L = 1, lnx  ! horizontal
                     iql = lne2ln(L)  !loop at boundary cells
                     if (iql <= 0) cycle
-                    iq = iql + (K - 1) * lnx 
                     ln = ln2ln3D(iql, K)
+                    if (ln <= 0) then
+                       q1(iq) = 0d0
+                       cycle
+                    end if
+                    iq = iql + (K - 1) * lnx 
                     if (hyd%edge_type(iql) == UG_EDGETYPE_BND) then  ! not a boundary, then reverse discharge?
                         q1(iq) = hyd%flow(ln)
                     else
