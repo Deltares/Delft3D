@@ -640,6 +640,8 @@ contains
         layt = hyd%num_layers
         nolayp = hyd%num_layers
         allocate (tcktot(hyd%num_layers))
+        ! Dummy allocation
+        allocate (lgrid3(0,0))
         do ilay = 1, hyd%num_layers
             tcktot(ilay) = hyd%waq_layers(ilay)
         enddo
