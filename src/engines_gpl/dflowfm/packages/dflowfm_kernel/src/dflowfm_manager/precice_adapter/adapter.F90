@@ -56,11 +56,9 @@ module precice_adapter
       type(quantity_t) :: sources_momentum_magnitude_weighted = quantity_t(standard_name="sources_momentum_magnitude_weighted", is_active=.false.)
       type(quantity_t) :: sources_momentum_direction = quantity_t(standard_name="sources_momentum_direction", is_active=.false.)
       ! Reading from 2d mesh
-      type(quantity_t) :: sea_surface_wave_significant_height = quantity_t(standard_name="sea_surface_wave_significant_height", is_active=.false.)
+      type(quantity_t) :: sea_surface_wave_significant_height_vector_from_direction = quantity_t(standard_name="sea_surface_wave_significant_height_vector_from_direction", is_active=.false.)
       type(quantity_t) :: sea_surface_wave_period = quantity_t(standard_name="sea_surface_wave_period", is_active=.false.)
-      type(quantity_t) :: sea_surface_wave_from_direction = quantity_t(standard_name="sea_surface_wave_from_direction", is_active=.false.)
-      type(quantity_t) :: eastward_wave_force = quantity_t(standard_name="eastward_wave_force", is_active=.false.)
-      type(quantity_t) :: northward_wave_force = quantity_t(standard_name="northward_wave_force", is_active=.false.)
+      type(quantity_t) :: wave_force = quantity_t(standard_name="wave_force", is_active=.false.)
       ! sbxwav/sbywav (vector, no STD name)
       type(quantity_t) :: wave_forcing_term_in_water_body = quantity_t(standard_name="wave_forcing_term_in_water_body", is_active=.false.)
       ! mxwav/myway (vector, no STD name)
@@ -230,6 +228,7 @@ contains
       ! we are required do  read call here.
       ! If there is no initial data from the other participant, everything will be 0 (mesh and quantities)
       call precice_adapter_read_data(self, 0.0_dp)
+      call precice_adapter_read_wave_data(self, 0.0_dp)
       call precice_adapter_add_to_fm_administration(self)
       self%summed_time_progress = 0.0_dp
    end subroutine precice_adapter_initialize
@@ -246,8 +245,7 @@ contains
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
                          precicef_is_coupling_ongoing, precicef_is_time_window_complete, &
-                         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, &
-                         precicef_set_vertices
+                         precicef_write_data, precicef_reset_mesh, precicef_set_vertices
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
@@ -583,42 +581,33 @@ contains
 
        real(kind=c_double), dimension(:), allocatable :: wave_buffer
        real(kind=c_double), dimension(:), allocatable :: wave_vector_buffer
+       integer :: i
+       real(kind=c_double) :: cx, cy, norm, angle
 
        allocate (wave_buffer(self%mesh_size))
        allocate (wave_vector_buffer(self%mesh_size*2))
 
-       if (self%quantities%sea_surface_wave_significant_height%is_active) then
-          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_significant_height%standard_name, &
-                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
-                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_significant_height%standard_name)))
-          hwavcom(1:self%mesh_size) = wave_buffer
+       ! get combined vector quantity sea_surface_wave_significant_height_vector_from_direction -> hwavcom, phiwav
+       if (self%quantities%sea_surface_wave_significant_height_vector_from_direction%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_significant_height_vector_from_direction%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_vector_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_significant_height_vector_from_direction%standard_name)))
+          do i=1,self%mesh_size
+             cx = wave_vector_buffer(2*i-1)
+             cy = wave_vector_buffer(2*i)
+             norm = sqrt(cx**2 + cy**2)
+             angle = atan2(cy, cx)
+             hwavcom(i) = norm
+             phiwav(i) = angle
+          end do
        end if
+
        ! same pattern for sea_surface_wave_period -> twavcom,
        if (self%quantities%sea_surface_wave_period%is_active) then
           call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_period%standard_name, &
                                   size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
                                   len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_period%standard_name)))
           twavcom(1:self%mesh_size) = wave_buffer
-       end if
-       ! sea_surface_wave_from_direction -> phiwav,
-       if (self%quantities%sea_surface_wave_from_direction%is_active) then
-          call precicef_read_data(self%cell_center_mesh_name, self%quantities%sea_surface_wave_from_direction%standard_name, &
-                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
-                                  len(self%cell_center_mesh_name), len(trim(self%quantities%sea_surface_wave_from_direction%standard_name)))
-          phiwav(1:self%mesh_size) = wave_buffer
-       end if
-       ! eastward_wave_force -> sxwav, northward_wave_force -> sywav
-       if (self%quantities%eastward_wave_force%is_active) then
-          call precicef_read_data(self%cell_center_mesh_name, self%quantities%eastward_wave_force%standard_name, &
-                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
-                                  len(self%cell_center_mesh_name), len(trim(self%quantities%eastward_wave_force%standard_name)))
-          sxwav(1:self%mesh_size) = wave_buffer
-       end if
-       if (self%quantities%northward_wave_force%is_active) then
-          call precicef_read_data(self%cell_center_mesh_name, self%quantities%northward_wave_force%standard_name, &
-                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
-                                  len(self%cell_center_mesh_name), len(trim(self%quantities%northward_wave_force%standard_name)))
-          sywav(1:self%mesh_size) = wave_buffer
        end if
        ! same pattern wave_orbital_velocity -> uorbwav
        if (self%quantities%wave_orbital_velocity%is_active) then
@@ -627,13 +616,14 @@ contains
                                   len(self%cell_center_mesh_name), len(trim(self%quantities%wave_orbital_velocity%standard_name)))
           uorbwav(1:self%mesh_size) = wave_buffer
        end if
-
+       ! same pattern wave_dissipation_surface_breaking -> dsurf
        if (self%quantities%wave_dissipation_surface_breaking%is_active) then
           call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_dissipation_surface_breaking%standard_name, &
                                   size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
                                   len(self%cell_center_mesh_name), len(trim(self%quantities%wave_dissipation_surface_breaking%standard_name)))
           dsurf(1:self%mesh_size) = wave_buffer
        end if
+       ! same pattern wave_dissipation_whitecapping -> dwcap
        if (self%quantities%wave_dissipation_whitecapping%is_active) then
           call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_dissipation_whitecapping%standard_name, &
                                   size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_buffer, &
@@ -642,6 +632,15 @@ contains
        end if
 
        ! vector quantities
+       ! wave_force = (eastward_wave_force -> sxwav, northward_wave_force -> sywav)
+       if (self%quantities%wave_force%is_active) then
+          call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_force%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_vector_buffer, &
+                                  len(self%cell_center_mesh_name), len(trim(self%quantities%wave_force%standard_name)))
+          sxwav(1:self%mesh_size) = wave_vector_buffer(1::2)
+          sywav(1:self%mesh_size) = wave_vector_buffer(2::2)
+       end if
+       ! wave_forcing_term_in_water_body -> (mxwav, mywav) (same pattern as wave_force)
        if (self%quantities%wave_forcing_term_in_water_body%is_active) then
           call precicef_read_data(self%cell_center_mesh_name, self%quantities%wave_forcing_term_in_water_body%standard_name, &
              size(self%vertex_ids), self%vertex_ids, current_time_in_window, wave_vector_buffer, &
