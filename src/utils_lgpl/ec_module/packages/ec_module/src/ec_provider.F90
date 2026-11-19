@@ -2719,7 +2719,7 @@ contains
       logical :: rotate_pole
       integer :: lon_varid, lon_dimid, lat_varid, lat_dimid, tim_varid, tim_dimid
       integer :: data_rank, x_dim, y_dim
-      integer :: x_index, y_index, z_index, time_index
+      type(tEcDimensionIndices) :: dimension_indices
       integer :: grid_lon_varid, grid_lat_varid
       integer :: x_varid, x_dimid, y_varid, y_dimid, z_varid, z_dimid, nod_varid, nod_dimid
 
@@ -2857,10 +2857,8 @@ contains
             return
          end if
          data_rank = size(dimids)
-         x_index = 0
-         y_index = 0
-         z_index = findloc(dimids, z_dimid, dim=1)
-         time_index = findloc(dimids, tim_dimid, dim=1)
+         dimension_indices = tEcDimensionIndices(z_index=findloc(dimids, z_dimid, dim=1), &
+                                                 time_index=findloc(dimids, tim_dimid, dim=1))
 
          fgd_id = -1
          sgd_id = -1
@@ -2966,7 +2964,7 @@ contains
             end do
          end if ! has non-empty coordinates attribute
 
-         is_scalar_source = data_rank == 1 .and. time_index > 0
+         is_scalar_source = data_rank == 1 .and. dimension_indices%time_index > 0
          if (is_scalar_source .and. has_horizontal_coordinates) then
             call set_ec_message("Variable '"//trim(sourceVariableName)//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                               //"' declares horizontal coordinates but has only a time dimension. " &
@@ -3052,9 +3050,9 @@ contains
                   return
                end if
             end if
-            x_index = findloc(dimids, x_dim, dim=1)
-            y_index = findloc(dimids, y_dim, dim=1)
-            if (x_index == 0 .or. (y_dim > 0 .and. y_index == 0) .or. x_dim == y_dim) then
+            dimension_indices%x_index = findloc(dimids, x_dim, dim=1)
+            dimension_indices%y_index = findloc(dimids, y_dim, dim=1)
+            if (dimension_indices%x_index == 0 .or. (y_dim > 0 .and. dimension_indices%y_index == 0) .or. x_dim == y_dim) then
                call set_ec_message("Horizontal dimensions not found for '"//trim(sourceVariableName)//"' in "//trim(fileReaderPtr%filename)//".")
                return
             end if
@@ -3146,7 +3144,7 @@ contains
             if (y_dim > 0) then
                nrow = fileReaderPtr%dim_length(y_dim)
             end if
-            if (z_index > 0) then
+            if (dimension_indices%z_index > 0) then
                nlay = fileReaderPtr%dim_length(z_dimid)
             end if
             if (.not. ecElementSetSetRowsColsLayers(instancePtr, elementSetId, nrow, ncol, nlay)) then
@@ -3287,10 +3285,7 @@ contains
          end if
          ! ===== finish initialization of Fields =====
          itemPtr%quantityPtr%nc_rank = data_rank
-         itemPtr%quantityPtr%x_index = x_index
-         itemPtr%quantityPtr%y_index = y_index
-         itemPtr%quantityPtr%z_index = z_index
-         itemPtr%quantityPtr%time_index = time_index
+         itemPtr%quantityPtr%dimension_indices = dimension_indices
          itemPtr%sourceT0FieldPtr%timesteps = ec_undef_hp
          itemPtr%sourceT1FieldPtr%timesteps = ec_undef_hp
 

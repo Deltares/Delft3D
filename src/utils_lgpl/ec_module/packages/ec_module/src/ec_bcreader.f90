@@ -102,11 +102,11 @@ contains
        endif
     case (BC_FTYPE_NETCDF)
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
-                              bc%nc_axis_positions, vectormax=bc%quantity%vectormax)) then
+                              bc%nc_dimension_indices, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
        endif
 
-       if (bc%nc_axis_positions(3, 1) == 0) then
+       if (bc%nc_dimension_indices(1)%layer_index == 0) then
           bc%func = BC_FUNC_TSERIES
        else
           bc%func = BC_FUNC_TIM3D
@@ -890,7 +890,7 @@ contains
           return
        endif
                  
-       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%nc_axis_positions, &
+       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%nc_dimension_indices, &
           BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%func)) then
           call set_ec_message("Read failure in file: "//trim(BCPtr%fname))
           return

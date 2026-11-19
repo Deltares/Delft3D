@@ -714,7 +714,7 @@ contains
       !
       success = .false.
       fieldPtr => null()
-      has_time = item%quantityPtr%time_index > 0
+      has_time = item%quantityPtr%dimension_indices%time_index > 0
       has_harmonics = allocated(fileReaderPtr%hframe%phases) ! a valid hframe will have allocated phases
 
       dmiss_nc = item%quantityPtr%fillvalue
@@ -901,26 +901,28 @@ contains
       real(dp), dimension(:), intent(out) :: data
       integer, dimension(2), intent(out) :: xy_stride
       integer, dimension(quantity%nc_rank) :: start, counts
+      type(tEcDimensionIndices) :: indices
 
       ! Preserve the first slice on dimensions other than X, Y, Z and time.
       start = 1
       counts = 1
-      if (quantity%x_index > 0) then
-         start(quantity%x_index) = xy_start(1)
-         counts(quantity%x_index) = xy_count(1)
+      indices = quantity%dimension_indices
+      if (indices%x_index > 0) then
+         start(indices%x_index) = xy_start(1)
+         counts(indices%x_index) = xy_count(1)
       end if
-      if (quantity%y_index > 0) then
-         start(quantity%y_index) = xy_start(2)
-         counts(quantity%y_index) = xy_count(2)
+      if (indices%y_index > 0) then
+         start(indices%y_index) = xy_start(2)
+         counts(indices%y_index) = xy_count(2)
       end if
-      if (quantity%z_index > 0) then
-         start(quantity%z_index) = layer
+      if (indices%z_index > 0) then
+         start(indices%z_index) = layer
       end if
-      if (quantity%time_index > 0) then
-         start(quantity%time_index) = timestep
+      if (indices%time_index > 0) then
+         start(indices%time_index) = timestep
       end if
       xy_stride = [1, xy_count(1)]
-      if (quantity%y_index > 0 .and. quantity%y_index < quantity%x_index) then
+      if (indices%y_index > 0 .and. indices%y_index < indices%x_index) then
          xy_stride = [xy_count(2), 1]
       end if
       status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)

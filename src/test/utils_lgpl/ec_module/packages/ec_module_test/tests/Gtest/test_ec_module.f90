@@ -12,7 +12,7 @@ contains
       use netcdf
       use m_ec_netcdf_timeseries, only: ecNetCDFInit, ecNetCDFScan, ecNetCDFGetTimeseriesValue
       use m_ec_parameters, only: BC_FUNC_TSERIES, BC_FUNC_TIM3D
-      use m_ec_typedefs, only: tEcNetCDF
+      use m_ec_typedefs, only: tEcBoundaryDimensionIndices, tEcNetCDF
 
       character(len=*), parameter :: filename = 'test_netcdf_boundary_axis_order.nc'
       character(len=2), dimension(8), parameter :: names = ['ux', 'uy', 'p3', 'p4', 'p5', 'p6', 'w1', 'w2']
@@ -24,7 +24,7 @@ contains
       integer, dimension(3) :: dims, indices
       integer, dimension(8) :: varids
       integer, dimension(:), allocatable :: quantities
-      integer, dimension(:, :), allocatable :: positions
+      type(tEcBoundaryDimensionIndices), dimension(:), allocatable :: dimension_indices
       real(dp), dimension(:), allocatable :: buffer
       real(dp), dimension(1) :: time
       real(dp), dimension(4) :: values
@@ -66,9 +66,10 @@ contains
       nc => dataset
       if (.not. f90_assert_true(ecNetCDFInit(filename, nc, status))) return
       do v = 1, size(names)
-         if (.not. f90_assert_true(ecNetCDFScan(nc, names(v), 's2', quantities, location, positions), names(v))) exit
+         if (.not. f90_assert_true(ecNetCDFScan(nc, names(v), 's2', quantities, location, dimension_indices), names(v))) exit
          func = merge(BC_FUNC_TIM3D, BC_FUNC_TSERIES, v <= 6)
-         if (.not. f90_assert_true(ecNetCDFGetTimeseriesValue(nc, quantities, location, positions, 1, time, values, buffer, func), names(v))) exit
+         if (.not. f90_assert_true(ecNetCDFGetTimeseriesValue(nc, quantities, location, dimension_indices, &
+                                                            1, time, values, buffer, func), names(v))) exit
          base = real(1000 * v + 210, dp)
          call f90_expect_near(values(1), base + 1.0_dp, 0.0_dp, names(v))
          if (v == 1) then

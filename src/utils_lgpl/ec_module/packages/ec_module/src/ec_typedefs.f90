@@ -97,6 +97,13 @@ module m_ec_typedefs
 
    !===========================================================================
 
+   !> Positions in a NetCDF boundary variable's dimension list; zero means absent.
+   type :: tEcBoundaryDimensionIndices
+      integer :: station_index = 0
+      integer :: time_index = 0
+      integer :: layer_index = 0
+   end type tEcBoundaryDimensionIndices
+
    type :: tEcBCBlock
       integer :: id !< unique BCBlock number, set by ecInstanceCreateBCBlock
       integer :: numcols !< number of data columns
@@ -127,7 +134,7 @@ module m_ec_typedefs
       integer, dimension(:), allocatable :: ncvarndx !< varid(s) in the associated netcdf for the requested quantity
       integer :: nclocndx = -1 !< index in the timeseries_id dimension for the requested location
       integer :: nctimndx = 1 !< record number to be read
-      integer, dimension(:, :), allocatable :: nc_axis_positions !< Station, time and layer positions for each variable
+      type(tEcBoundaryDimensionIndices), dimension(:), allocatable :: nc_dimension_indices !< Layout per NetCDF variable.
       logical :: feof = .false. !< End-Of-File signal
       real(hp), dimension(:), allocatable :: buffer !< buffer for temporary storage in readers
       !
@@ -419,6 +426,14 @@ module m_ec_typedefs
 
    !===========================================================================
 
+   !> Positions in a gridded NetCDF variable's dimension list; zero means absent.
+   type :: tEcDimensionIndices
+      integer :: x_index = 0 !< X or station dimension.
+      integer :: y_index = 0
+      integer :: z_index = 0
+      integer :: time_index = 0
+   end type tEcDimensionIndices
+
    !> Datatype containing metadata which describe an ecItem's data.
    type tEcQuantity
       integer :: id !< unique Quantity number, set by ecInstanceCreateQuantity
@@ -435,10 +450,7 @@ module m_ec_typedefs
       real(hp) :: offset = 0.d0 !<    offset (new = raw*factor + offset)
       integer :: ncid = -1 !<    NetCDF variable ID, only used in case of NetCDF format
       integer :: nc_rank = 0 !< Rank of a gridded NetCDF variable.
-      integer :: x_index = 0 !< NetCDF dimension position for X or station; zero if absent.
-      integer :: y_index = 0 !< NetCDF dimension position for Y; zero if absent.
-      integer :: z_index = 0 !< NetCDF dimension position for Z; zero if absent.
-      integer :: time_index = 0 !< NetCDF dimension position for time; zero if absent.
+      type(tEcDimensionIndices) :: dimension_indices
    end type tEcQuantity
 
    type tEcQuantityPtr

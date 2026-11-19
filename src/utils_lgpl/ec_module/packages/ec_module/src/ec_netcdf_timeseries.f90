@@ -391,14 +391,14 @@ contains
 
    ! =======================================================================
    !> Scan netcdf instance for a specific quantity name and location label
-   function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, axis_positions, vectormax) result(success)
+   function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, dimension_indices, vectormax) result(success)
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location
       integer, dimension(:), allocatable, intent(out) :: q_id
       integer, intent(out) :: l_id
-      integer, dimension(:, :), allocatable, intent(out) :: axis_positions !< Station, time and layer positions by component.
+      type(tEcBoundaryDimensionIndices), dimension(:), allocatable, intent(out) :: dimension_indices !< Layout per component.
       integer, intent(out), optional :: vectormax
 
       integer :: n_dims
@@ -451,7 +451,7 @@ contains
          call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
          vmax = size(elmnames)
       end if
-      allocate (q_id(vmax), axis_positions(3, vmax))
+      allocate (q_id(vmax), dimension_indices(vmax))
       n_dims = ncptr%variable_ndims(ivar)
       do iv = 1, vmax
          if (iv > 1) then
@@ -466,9 +466,12 @@ contains
             return
          end if
          q_id(iv) = ivar
-         axis_positions(:, iv) = ecSupportNCFindDimIds(dimids, [ncptr%tsiddimid, ncptr%timedimid, ncptr%layerdimid])
+         dimension_indices(iv) = tEcBoundaryDimensionIndices(station_index=findloc(dimids, ncptr%tsiddimid, dim=1), &
+                                                             time_index=findloc(dimids, ncptr%timedimid, dim=1), &
+                                                             layer_index=findloc(dimids, ncptr%layerdimid, dim=1))
          if (n_dims < 2 .or. n_dims > 3 .or. size(dimids) /= n_dims .or. &
-             any(axis_positions(:2, iv) == 0) .or. ((n_dims == 3) .neqv. (axis_positions(3, iv) > 0))) then
+             dimension_indices(iv)%station_index == 0 .or. dimension_indices(iv)%time_index == 0 .or. &
+             ((n_dims == 3) .neqv. (dimension_indices(iv)%layer_index > 0))) then
             call set_ec_message("Boundary variable '"//trim(variable_name)//"' in "//trim(ncptr%ncfilename)// &
                                 " must have station and time dimensions, plus a layer dimension for 3D data.")
             return
@@ -484,12 +487,12 @@ contains
 
    ! =======================================================================
    !> Read a boundary timeseries value or profile using per-variable axis positions.
-   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, axis_positions, timelevel, nctime, ncvalue, buffer, func) result(success)
+   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, dimension_indices, timelevel, nctime, ncvalue, buffer, func) result(success)
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       integer, dimension(:), intent(in) :: q_id
       integer, intent(in) :: l_id
-      integer, dimension(:, :), intent(in) :: axis_positions !< Station, time and layer positions by component.
+      type(tEcBoundaryDimensionIndices), dimension(:), intent(in) :: dimension_indices !< Layout per component.
       integer, intent(in) :: timelevel
       real(dp), dimension(:), intent(out) :: nctime
       real(dp), dimension(:), intent(out) :: ncvalue
@@ -507,11 +510,12 @@ contains
       do iv = 1, vectormax
          start = 1
          counts = 1
-         start(axis_positions(1:2, iv)) = [l_id, timelevel]
+         start(dimension_indices(iv)%station_index) = l_id
+         start(dimension_indices(iv)%time_index) = timelevel
          if (func == BC_FUNC_TSERIES) then
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), start(:2), counts(:2))
          else
-            counts(axis_positions(3, iv)) = ncptr%nLayer
+            counts(dimension_indices(iv)%layer_index) = ncptr%nLayer
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), buffer, start, counts)
          end if
          if (.not. ecSupportNetcdfCheckError(ierr, "reading boundary variable", ncptr%ncfilename)) then
