@@ -60,7 +60,7 @@ contains
                 vol0(iseg) = vol1(iseg)
                 h0(iseg) = h1(iseg)
             end do
-            do iq = 1, hyd%num_exchanges
+            do iq = 1, noqfull
                 q0(iq) = q1(iq)
             end do
         end if

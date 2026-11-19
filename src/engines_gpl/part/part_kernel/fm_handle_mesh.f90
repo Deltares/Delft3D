@@ -146,8 +146,9 @@ contains
         call realloc(ln2ln3D, [Lnx, kmx], keepExisting = .false., fill = 0)
         call make_ln2ln3D (hyd%nosegl, hyd%num_exchanges_u_dir, hyd%ipoint(1:2, 1:hyd%num_exchanges_u_dir), Lnx, hyd%nobndl, kmx, ln2ln3D)
                
-        call realloc(q0, hyd%num_layers * lnx + hyd%num_exchanges_z_dir, keepExisting = .false., fill = 0d0)
-        call realloc(q1, hyd%num_layers * lnx + hyd%num_exchanges_z_dir, keepExisting = .false., fill = 0d0)
+        noqfull = hyd%num_layers * lnx + hyd%num_exchanges_z_dir
+        call realloc(q0, noqfull, keepExisting = .false., fill = 0d0)
+        call realloc(q1, noqfull, keepExisting = .false., fill = 0d0)
 
         nump = waqgeom%numface
         Ndx = hyd%num_cells! waqgeom%numface
@@ -660,7 +661,7 @@ contains
     integer, intent(in) :: kmx
     integer, intent(inout) :: ln2ln3D(Lnx, kmx)
 
-    integer :: i, ifrom, ito, ilay, ilink, max_cell_from_exchanges, cell_from_exchanges
+    integer :: i, ifrom, ito, ilayfrom, ilayto, ilink, max_cell_from_exchanges, cell_from_exchanges
     
     ! Fill ln2ln3D based on the pointer table of first layer (ipoint)
     
@@ -684,42 +685,41 @@ contains
     cell_exchange = 0
     
     ! Fill cell_to_cell and cell_exchange arrays with first layer exchanges
-    ilay = 1
+    ilayfrom = 1
     do ilink = 1, Lnx
        ifrom = ipoint(1, ilink)
        no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
        cell_to_cell(ifrom, no_cell_exchange(ifrom)) = ipoint(2, ilink)
        cell_exchange(ifrom, no_cell_exchange(ifrom)) = ilink
-       ln2ln3D(ilink, ilay) = ilink
+       ln2ln3D(ilink, ilayfrom) = ilink
     end do
 
     ! For each layer, fill ln2ln3D with the corresponding exchange numbers
     do ilink = Lnx + 1, num_exchanges
        ifrom = 0
        ito = 0
-       ilay = 0
+       ilayfrom = 0
+       ilayto = 0
        if (ipoint(1, ilink) > 0) then
           ifrom = mod(ipoint(1, ilink) - 1, nosegl) + 1
+          ilayfrom = int((ipoint(1, ilink) - 1) / nosegl) + 1
        else if (ipoint(1, ilink) < 0) then
           ifrom = mod(ipoint(1, ilink) + 1, nobndl) - 1
+          ilayfrom = -int(ipoint(1, ilink) / nobndl)
        end if
        if (ipoint(2, ilink) > 0) then
           ito = mod(ipoint(2, ilink) - 1, nosegl) + 1
+          ilayto = int((ipoint(2, ilink) - 1) / nosegl) + 1
        else if (ipoint(2, ilink) < 0) then
           ito = mod(ipoint(2, ilink) + 1, nobndl) - 1
+          ilayto = -int(ipoint(2, ilink) / nobndl)
        end if
-       if (ipoint(1, ilink) > 0) then
-          ilay = int(ipoint(1, ilink) - 1) / nosegl + 1
-       else if (ipoint(2, ilink) > 0) then
-          ilay = int(ipoint(2, ilink) - 1) / nosegl + 1
-       end if
-       if (ifrom == 0 .or. ito == 0 .or. ilay == 0) cycle
+       if (ifrom == 0 .or. ito == 0 .or. ilayfrom == 0 .or. ilayto /= ilayfrom) cycle
        
        ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
        do i = 1, no_cell_exchange(ifrom)
-          if (cell_to_cell(ifrom, i) == ito .and. &
-              ln2ln3D(cell_exchange(ifrom, i), ilay) == 0) then
-             ln2ln3D(cell_exchange(ifrom, i), ilay) = ilink
+          if (cell_to_cell(ifrom, i) == ito .and. ln2ln3D(cell_exchange(ifrom, i), ilayfrom) == 0) then
+             ln2ln3D(cell_exchange(ifrom, i), ilayfrom) = ilink
              exit
           end if
        end do
