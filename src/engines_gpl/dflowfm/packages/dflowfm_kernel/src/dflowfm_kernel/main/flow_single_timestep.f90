@@ -97,7 +97,10 @@ contains
       call xbeach_write_stats(time1)
       call sedmor_write_stats(time1)
       if (jasedtrails > 0) then
-         call sedtrails_write_stats(time1)
+         call sedtrails_write_stats(time1, iresult)
+         if (iresult /= DFM_NOERR) then
+            return
+         end if
       end if
       iresult = DFM_NOERR
       return ! Return with success

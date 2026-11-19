@@ -1634,6 +1634,7 @@ contains
       bfm_included = len_trim(md_bedformfile) /= 0
 
       call prop_get(md_ptr, 'sedtrails', 'SedtrailsGrid', md_sedtrailsfile, success)
+      sedtrails_analysis = 'all'
       if (md_sedtrailsfile /= '') then
          inquire (file=md_sedtrailsfile, exist=ex)
          if (ex) then
