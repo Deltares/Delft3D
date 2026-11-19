@@ -44,6 +44,7 @@ project {
     template(TemplateValidationDocumentation)
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromDVC)
+    template(TemplateDetermineChangedFiles)
     template(TemplateDockerRegistry)
     template(TemplateBuildConcurrency)
 
@@ -148,6 +149,7 @@ project {
             Delivery: copy DIMRset examples to the P-drive.
         """.trimIndent()
 
+        buildType(DummyBuild)
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
         buildType(TestFortranStyler)

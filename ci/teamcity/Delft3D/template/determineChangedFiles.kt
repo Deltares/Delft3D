@@ -16,8 +16,9 @@ object TemplateDetermineChangedFiles : Template({
         id = "RUNNER_changedFiles"
         workingDir = "ci/teamcity/Delft3D/ciUtilities/scripts"
         scriptContent = """
-            #!/usr/env/bash
-            determineChangedFileNames.sh --target-branch %teamcity.pullRequest.target.branch% --source-branch "%teamcity.pullRequest.source.branch%" --file-pattern="f90" --teamcity
+            #!/usr/bin/env bash
+            ls
+            ./determineChangedFileNames.sh --target-branch main --source-branch "tc/task/UNST-10270-detect-changed-files" --file-pattern="f90" --teamcity
             
         """.trimIndent()
         }
@@ -31,7 +32,7 @@ object TemplateDetermineChangedFiles : Template({
                 }
                 filterSourceBranch = "+:*"
                 filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
-                ignoreDrafts = true
+                ignoreDrafts = false
             }
         }
     }
