@@ -74,6 +74,7 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
 !
 !! executable statements -------------------------------------------------------
 !
+   flow_data_initialized = .false.
    mud          = .false.
    subdom_names = ' '
    select case (wave_flow_mode%online)
@@ -169,10 +170,10 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
          endif
          call wave_to_flow_status(flow_wave_comm_result_ok, mud)
       end if   
+      flow_data_initialized = .true.
    case (ONLINE_PRECICE)
       ! TODO: Implement preCICE initialization
    end select
-   flow_data_initialized = .true.
 end subroutine flow_init
 !
 !
