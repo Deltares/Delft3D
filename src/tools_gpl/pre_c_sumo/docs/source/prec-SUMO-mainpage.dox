@@ -10,7 +10,7 @@ Current core responsibilities are:
 - register preCICE meshes and data channels,
 - receive far-field data from preCICE and write FF2NF input files,
 - wait for and read NF2FF output files,
-- convert NF2FF results to connected source/sink writes for D-FlowFM via preCICE.
+- convert NF2FF results to connected sink/source writes for D-FlowFM via preCICE.
 
 For the underlying preCICE concepts and API details, see the external documentation:
 - <a href="https://precice.org/docs.html">preCICE documentation</a>
@@ -29,7 +29,7 @@ The preC-SUMO executable is a wrapper that interacts with preCICE, writes FF2NF 
 
 Initialize the FM-to-preC-SUMO exchanges, not the exchanges sent by preC-SUMO.
 Before preCICE initialization, preC-SUMO waits for and reads the initial NF2FF files, converts their
-results to determine the initial source/sink mesh, and registers that mesh. It does not send this
+results to determine the initial sink/source mesh, and registers that mesh. It does not send this
 initial conversion as coupling data. Configurations requiring initial data from preC-SUMO are rejected:
 NF2FF responses can depend on incoming FM values, especially when converting excess constituents to
 absolute values, and those FM values are available only after preCICE initialization.
@@ -45,18 +45,18 @@ preCICE offers tools like config-visualizer which can be used to view the in use
 \section runtime_workflow Runtime Workflow
 The system overview above shows the participating components. The runtime workflow below gives a high-level view of the preC-SUMO processing sequence and interaction points.
 
-FM reads and installs source/sink data at relative time zero immediately after preCICE initialization,
+FM reads and installs sink/source data at relative time zero immediately after preCICE initialization,
 before computing its first interval. This supports partners providing initial forcing without
 partner-specific logic. With preC-SUMO return exchanges not initialized, default zero discharge
 means no initial coupled water or constituent transfer.
 
 At subsequent coupling boundaries, FM redefines its 3D mesh when permitted, writes its fields,
 and advances preCICE before reading and installing the response for the next FM interval.
-The response read refreshes the received source/sink mesh size and vertex IDs to account for remeshing.
+The response read refreshes the received sink/source mesh size and vertex IDs to account for remeshing.
 Reading and installing before the exchange would apply the previous response for an extra interval.
 
 For each preCICE window, preC-SUMO reads the FM fields, writes FF2NF files, waits for the corresponding
-NF2FF files, converts the results, writes source/sink data, and advances by the full available window.
+NF2FF files, converts the results, writes sink/source data, and advances by the full available window.
 With parallel-explicit coupling, preC-SUMO still computes its response using previously exchanged
 FM fields. The ordering above avoids an additional application delay; it does not provide
 same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is tracked in
@@ -64,7 +64,7 @@ same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is 
 
 \dotfile preC_SUMO_Core_Workflow.dot "preC-SUMO core workflow overview"
 
-For the preCICE calls alone, including mesh registration and conditional source/sink mesh resets,
+For the preCICE calls alone, including mesh registration and conditional sink/source mesh resets,
 see the adapter-only mermaid diagram. File exchange and near-field processing are intentionally omitted.
 
 `docs/include/preC_SUMO_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.
@@ -80,14 +80,14 @@ For the detailed per-step swimlane view, see \ref pre_c_sumo::run in the API ref
 \section code_map Code Entry Points
 Main implementation entry points:
 - \ref pre_c_sumo::run in pre_c_sumo_lib.hpp / pre_c_sumo_lib.cpp
-- \ref pre_c_sumo::readCsumoSettingsFile in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::receiveFFData in precice_exchange.hpp / precice_exchange.cpp
-- \ref pre_c_sumo::writeFF2NFFiles in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::waitForNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::readNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
+- \ref pre_c_sumo::c_sumo::readSettingsFile in csumo_exchange.hpp / csumo_exchange.cpp
+- \ref pre_c_sumo::precice::receiveFFData in precice_exchange.hpp / precice_exchange.cpp
+- \ref pre_c_sumo::c_sumo::writeFF2NFFiles in csumo_exchange.hpp / csumo_exchange.cpp
+- \ref pre_c_sumo::c_sumo::waitForNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
+- \ref pre_c_sumo::c_sumo::readNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
 - \ref pre_c_sumo::convertPreciceToCSumo in precice_to_csumo.hpp / precice_to_csumo.cpp
 - \ref pre_c_sumo::convertCSumoToPrecice in csumo_to_precice.hpp / csumo_to_precice.cpp
-- \ref pre_c_sumo::writeConnectedSinkSources in precice_exchange.hpp / precice_exchange.cpp
+- \ref pre_c_sumo::precice::writeSinkSourceConnections in precice_exchange.hpp / precice_exchange.cpp
 
 \section coding_guidelines Coding Guidelines
 See the project development guidelines in \ref pre_c_sumo_development_guidelines.

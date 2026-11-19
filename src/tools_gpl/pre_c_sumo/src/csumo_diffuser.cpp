@@ -4,7 +4,7 @@
 #include <cmath>
 #include <numbers>
 
-namespace pre_c_sumo
+namespace pre_c_sumo::c_sumo
 {
     bool isDiffuserModelled(const NF2FFData& diffuser)
     {
@@ -17,9 +17,9 @@ namespace pre_c_sumo
     // Define the line through the source point, perpendicular to the line connecting the
     // last sink point with the source point. Define the line piece on this line, using
     // the specified source-width. Walk with 1000 steps over this line piece
-    std::vector<SourceOrSinkData> createDiffuserModel(const NF2FFData& diffuser)
+    std::vector<SinkOrSourceData> createDiffuserModel(const NF2FFData& diffuser)
     {
-        std::vector<SourceOrSinkData> new_sources;
+        std::vector<SinkOrSourceData> new_sources;
         constexpr int num_steps = 1000;
         new_sources.reserve(num_steps);
 
@@ -41,7 +41,7 @@ namespace pre_c_sumo
 
         for (int i = 0; i < num_steps; i++)
         {
-            new_sources.emplace_back(SourceOrSinkData{.x_coordinate = x_start - i * dx,
+            new_sources.emplace_back(SinkOrSourceData{.x_coordinate = x_start - i * dx,
                                                       .y_coordinate = y_start - i * dy,
                                                       .z_coordinate = sources[0].z_coordinate,
                                                       .entrainment = sources[0].entrainment,
@@ -57,4 +57,4 @@ namespace pre_c_sumo
         return new_sources;
     }
 
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::c_sumo

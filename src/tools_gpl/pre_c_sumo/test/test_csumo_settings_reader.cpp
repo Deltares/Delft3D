@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
+#include <pugixml.hpp>
 
+#include <filesystem>
+#include <sstream>
 #include <string>
 #include <string_view>
 
 #include "cosumo_test_data.hpp"
 #include "csumo_settings_reader.hpp"
-#include "csumo_file_paths.hpp"
 
 namespace
 {
@@ -18,42 +20,14 @@ namespace
 
 TEST(CSumoSettingsReaderTest, ParsesFileVersion)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(valid_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(result->file_version, "0.3");
 }
 
-TEST(CSumoSettingsReaderTest, ReturnsNF2FFFilePaths)
-{
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
-    const std::filesystem::path expected_dir = "NF2FF";
-    const std::filesystem::path expected_filename = "NF2FF__preC-SUMO_SubMod001_10.000.xml";
-    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
-    ASSERT_TRUE(result.has_value());
-    EXPECT_FALSE(result->diffusers.empty());
-    EXPECT_EQ(pre_c_sumo::nf2ffFilepath(result->diffusers[0], 1, 600.0), expected_filepath);
-    EXPECT_FALSE(pre_c_sumo::nf2ffFilepaths(*result, 600.0).empty());
-    EXPECT_EQ(pre_c_sumo::nf2ffFilepaths(*result, 600.0).size(), 1);
-    EXPECT_EQ(pre_c_sumo::nf2ffFilepaths(*result, 600.0)[0], expected_filepath);
-}
-
-TEST(CSumoSettingsReaderTest, ReturnsFF2NFFilePaths)
-{
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
-    const std::filesystem::path expected_dir = "FF2NF";
-    const std::filesystem::path expected_filename = "FF2NF__preC-SUMO_SubMod001_10.000.xml";
-    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
-    ASSERT_TRUE(result.has_value());
-    EXPECT_FALSE(result->diffusers.empty());
-    EXPECT_EQ(pre_c_sumo::ff2nfFilepath(result->diffusers[0], 1, 600.0), expected_filepath);
-    EXPECT_FALSE(pre_c_sumo::ff2nfFilepaths(*result, 600.0).empty());
-    EXPECT_EQ(pre_c_sumo::ff2nfFilepaths(*result, 600.0).size(), 1);
-    EXPECT_EQ(pre_c_sumo::ff2nfFilepaths(*result, 600.0)[0], expected_filepath);
-}
-
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidXml)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString("not valid xml at all <<<");
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString("not valid xml at all <<<");
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.starts_with("Failed to parse XML: "));
 }
@@ -61,7 +35,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidXml)
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnWrongRootElement)
 {
     constexpr std::string_view xml = R"(<?xml version="1.0"?><notcosumo><fileVersion>0.3</fileVersion></notcosumo>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("Root element must be <COSUMO>, got: <notcosumo>"));
 }
@@ -69,7 +43,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnWrongRootElement)
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingFileVersion)
 {
     constexpr std::string_view xml = R"(<?xml version="1.0"?><COSUMO></COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("Required element <fileVersion> not found"));
 }
@@ -77,28 +51,28 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingFileVersion)
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnEmptyFileVersion)
 {
     constexpr std::string_view xml = R"(<?xml version="1.0"?><COSUMO><fileVersion></fileVersion></COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("Element <fileVersion> is empty"));
 }
 
 TEST(CSumoSettingsReaderTest, NoDiffusersWhenNoSettingsBlocks)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(valid_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
     EXPECT_TRUE(result->diffusers.empty());
 }
 
 TEST(CSumoSettingsReaderTest, ParsesOneDiffuser)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     ASSERT_EQ(result->diffusers.size(), 1u);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesGeneralSection)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& diffuser = result->diffusers.front();
     EXPECT_EQ(diffuser.id, "Diffusor_1");
@@ -108,7 +82,7 @@ TEST(CSumoSettingsReaderTest, ParsesGeneralSection)
 
 TEST(CSumoSettingsReaderTest, ParsesDiffuserPosition)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& position = result->diffusers.front().position;
     EXPECT_DOUBLE_EQ(position.x_coordinate, 550.0);
@@ -117,7 +91,7 @@ TEST(CSumoSettingsReaderTest, ParsesDiffuserPosition)
 
 TEST(CSumoSettingsReaderTest, ParsesAmbientPositions)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& ambient_positions = result->diffusers.front().ambient_positions;
     ASSERT_EQ(ambient_positions.size(), 3u);
@@ -141,14 +115,14 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidAmbientPosition)
     ASSERT_NE(content_end, std::string::npos);
     xml.replace(content_start, content_end - content_start, "invalid");
 
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("XYambient"));
 }
 
 TEST(CSumoSettingsReaderTest, ParsesIntakePosition)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& intake = result->diffusers.front().intake;
     ASSERT_TRUE(intake.has_value());
@@ -168,14 +142,14 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidIntakePosition)
     ASSERT_NE(content_end, std::string::npos);
     xml.replace(content_start, content_end - content_start, "invalid");
 
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("XYintake"));
 }
 
 TEST(CSumoSettingsReaderTest, ParsesDischarge)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& discharge = result->diffusers.front().discharge;
     EXPECT_DOUBLE_EQ(discharge.flow_rate, 10.0);
@@ -187,9 +161,10 @@ TEST(CSumoSettingsReaderTest, ParsesDischarge)
 
 TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorExcess)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator, pre_c_sumo::ConstituentsOperator::Excess);
+    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator,
+              pre_c_sumo::c_sumo::ConstituentsOperator::Excess);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorAbsolute)
@@ -207,9 +182,10 @@ TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorAbsolute)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator, pre_c_sumo::ConstituentsOperator::Absolute);
+    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator,
+              pre_c_sumo::c_sumo::ConstituentsOperator::Absolute);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorCaseInsensitive)
@@ -227,9 +203,10 @@ TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorCaseInsensitive)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator, pre_c_sumo::ConstituentsOperator::Excess);
+    EXPECT_EQ(result->diffusers.front().discharge.constituents_operator,
+              pre_c_sumo::c_sumo::ConstituentsOperator::Excess);
 }
 
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituentsOperator)
@@ -247,7 +224,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituentsOperator)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("constituentsOperator"));
 }
@@ -267,7 +244,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituents)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("constituents"));
 }
@@ -287,7 +264,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidConstituentsOperator)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("constituentsOperator"));
     EXPECT_TRUE(result.error().message.contains("invalid"));
@@ -295,7 +272,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidConstituentsOperator)
 
 TEST(CSumoSettingsReaderTest, ParsesGeometryParameters)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& diffuser = result->diffusers.front();
     EXPECT_DOUBLE_EQ(diffuser.nozzle_diameter, 50000.0);
@@ -306,21 +283,48 @@ TEST(CSumoSettingsReaderTest, ParsesGeometryParameters)
 
 TEST(CSumoSettingsReaderTest, PreservesNf2ffFileInSettingsXml)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
-    ASSERT_TRUE(result.has_value());
-    const auto& diffuser = result->diffusers.front();
-    const auto nf2ff_file = diffuser.settings_xml_node.child("data").child("NF2FFFile");
+    pre_c_sumo::c_sumo::DiffuserSettings diffuser;
+    {
+        const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+        ASSERT_TRUE(result.has_value());
+        ASSERT_FALSE(result->diffusers.empty());
+        diffuser = result->diffusers.front();
+    }
+    pugi::xml_document document;
+    ASSERT_TRUE(document.load_string(diffuser.settings_xml.c_str()));
+    const auto nf2ff_file = document.document_element().child("data").child("NF2FFFile");
     ASSERT_TRUE(nf2ff_file);
     EXPECT_STREQ(nf2ff_file.text().get(), "/path/to/NF2FF.xml");
 }
 
 TEST(CSumoSettingsReaderTest, ParsesCommSection)
 {
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& diffuser = result->diffusers.front();
     EXPECT_EQ(diffuser.ff2nf_dir, std::filesystem::path("FF2NF"));
     EXPECT_EQ(diffuser.ff_run_dir, std::filesystem::path("rundir"));
+}
+
+TEST(CSumoSettingsReaderTest, NormalizesCommPathsAndPreservesFilesystemRoots)
+{
+    const auto root_path = std::filesystem::current_path().root_path();
+    ASSERT_FALSE(root_path.empty());
+
+    pugi::xml_document document;
+    ASSERT_TRUE(document.load_buffer(pre_c_sumo::test::full_settings_xml.data(),
+                                     pre_c_sumo::test::full_settings_xml.size()));
+    const auto comm = document.child("COSUMO").child("settings").child("comm");
+    ASSERT_TRUE(comm.child("FF2NFdir").text().set(root_path.string().c_str()));
+    ASSERT_TRUE(comm.child("FFrundir").text().set("folder\\nested\\"));
+
+    std::ostringstream xml;
+    document.save(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml.str());
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(result->diffusers.size(), 1u);
+    EXPECT_EQ(result->diffusers.front().ff2nf_dir, root_path);
+    EXPECT_EQ(result->diffusers.front().ff_run_dir, std::filesystem::path("folder/nested"));
 }
 
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingDataSection)
@@ -332,7 +336,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingDataSection)
     <comm><FF2NFdir>x</FF2NFdir><FFrundir>y</FFrundir></comm>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("<data>"));
 }
@@ -351,7 +355,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingCommSection)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("<comm>"));
 }
@@ -370,7 +374,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingXYdiff)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("XYdiff"));
 }
@@ -390,7 +394,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidTokenInXYdiff)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("XYdiff"));
     EXPECT_TRUE(result.error().message.contains("abc"));
@@ -411,7 +415,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidTokenInConstituents)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error().message.contains("constituents"));
     EXPECT_TRUE(result.error().message.contains("bad"));
@@ -441,7 +445,7 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     </data>
   </settings>
 </COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
+    const auto result = pre_c_sumo::c_sumo::SettingsReader::fromString(xml);
     ASSERT_TRUE(result.has_value());
     ASSERT_EQ(result->diffusers.size(), 2u);
     EXPECT_EQ(result->diffusers[0].id, "D1");

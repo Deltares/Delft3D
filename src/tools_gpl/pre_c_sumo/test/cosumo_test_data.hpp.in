@@ -8,6 +8,7 @@
 namespace pre_c_sumo::test
 {
     constexpr std::string_view full_settings_xml = R"(@FULL_SETTINGS_XML@)";
+    constexpr std::string_view full_settings_path = R"(@CMAKE_CURRENT_SOURCE_DIR@/../docs/full_settings_example.xml)";
 } // namespace pre_c_sumo::test
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_TEST_CSUMO_TEST_DATA_HPP

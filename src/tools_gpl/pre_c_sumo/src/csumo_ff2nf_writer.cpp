@@ -42,12 +42,12 @@ namespace
         addMultiLineChild(subgrid_model, "constituentsNames", names);
     }
 
-    void addXYZ(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    void addXYZ(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
-        auto point_2d_to_xyz_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
+        auto point_2d_to_xyz_strings = [](const pre_c_sumo::c_sumo::FarFieldPoint2D& point) {
             return point.layers | std::views::transform([x_coordinate = point.position.x_coordinate,
                                                          y_coordinate = point.position.y_coordinate](
-                                                            const pre_c_sumo::FarFieldLayer& layer) {
+                                                            const pre_c_sumo::c_sumo::FarFieldLayer& layer) {
                        return std::format("{:E} {:E} {:E}", x_coordinate, y_coordinate, layer.z_coordinate);
                    });
         };
@@ -55,16 +55,16 @@ namespace
                           points | std::views::transform(point_2d_to_xyz_strings) | std::views::join);
     }
 
-    void addWaterDepth(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    void addWaterDepth(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
         addMultiLineChild(parent_node, "waterDepth",
                           points | std::views::transform([](const auto& p) { return std::to_string(p.water_depth); }));
     }
 
-    void addXYVelocity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    void addXYVelocity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
-        auto point_2d_to_velocity_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
-            return point.layers | std::views::transform([](const pre_c_sumo::FarFieldLayer& layer) {
+        auto point_2d_to_velocity_strings = [](const pre_c_sumo::c_sumo::FarFieldPoint2D& point) {
+            return point.layers | std::views::transform([](const pre_c_sumo::c_sumo::FarFieldLayer& layer) {
                        return std::format("{:E} {:E}", layer.x_velocity, layer.y_velocity);
                    });
         };
@@ -72,10 +72,10 @@ namespace
                           points | std::views::transform(point_2d_to_velocity_strings) | std::views::join);
     }
 
-    void addDensity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    void addDensity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
-        auto point_2d_to_density_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
-            return point.layers | std::views::transform([](const pre_c_sumo::FarFieldLayer& layer) {
+        auto point_2d_to_density_strings = [](const pre_c_sumo::c_sumo::FarFieldPoint2D& point) {
+            return point.layers | std::views::transform([](const pre_c_sumo::c_sumo::FarFieldLayer& layer) {
                        return std::format("{:E}", layer.density);
                    });
         };
@@ -83,25 +83,25 @@ namespace
                           points | std::views::transform(point_2d_to_density_strings) | std::views::join);
     }
 
-    void addConstituents(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    void addConstituents(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
         auto doubles_to_space_separated_string = [](const std::vector<double>& doubles) {
             return doubles | std::views::transform([](const double number) { return std::format("{:E}", number); }) |
                    std::views::join_with(' ') | std::ranges::to<std::string>();
         };
-        auto point_2d_to_constituents_string = [doubles_to_space_separated_string](
-                                                   const pre_c_sumo::FarFieldPoint2D& point) {
-            return point.layers |
-                   std::views::transform([&doubles_to_space_separated_string](const pre_c_sumo::FarFieldLayer& layer) {
-                       return doubles_to_space_separated_string(layer.constituents);
-                   });
-        };
+        auto point_2d_to_constituents_string =
+            [doubles_to_space_separated_string](const pre_c_sumo::c_sumo::FarFieldPoint2D& point) {
+                return point.layers | std::views::transform([&doubles_to_space_separated_string](
+                                                                const pre_c_sumo::c_sumo::FarFieldLayer& layer) {
+                           return doubles_to_space_separated_string(layer.constituents);
+                       });
+            };
         addMultiLineChild(parent_node, "constituents",
                           points | std::views::transform(point_2d_to_constituents_string) | std::views::join);
     }
 
     void addFarFieldPoints(pugi::xml_node& parent_node, const std::string_view section_name,
-                           const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+                           const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points)
     {
         auto section_node = parent_node.append_child(section_name);
         addXYZ(section_node, points);
@@ -111,21 +111,21 @@ namespace
         addConstituents(section_node, points);
     }
 
-    std::expected<void, pre_c_sumo::WriteError> validatePoint(const pre_c_sumo::FarFieldPoint2D& point,
-                                                              const std::string_view section_name,
-                                                              const size_t expected_constituent_count)
+    std::expected<void, io_errors::WriteError> validatePoint(const pre_c_sumo::c_sumo::FarFieldPoint2D& point,
+                                                             const std::string_view section_name,
+                                                             const size_t expected_constituent_count)
     {
         if (point.layers.empty())
         {
             return std::unexpected(
-                pre_c_sumo::WriteError{std::format("{}: every point must have at least one layer", section_name)});
+                io_errors::WriteError{std::format("{}: every point must have at least one layer", section_name)});
         }
         auto bad_layer = std::ranges::find_if(point.layers, [expected_constituent_count](const auto& layer) {
             return layer.constituents.size() != expected_constituent_count;
         });
         if (bad_layer != point.layers.end())
         {
-            return std::unexpected(pre_c_sumo::WriteError{std::format(
+            return std::unexpected(io_errors::WriteError{std::format(
                 "{}: constituent count ({}) at ({:.2f}, {:.2f}, {:.2f}) does not match constituent names count ({})",
                 section_name, bad_layer->constituents.size(), point.position.x_coordinate, point.position.y_coordinate,
                 bad_layer->z_coordinate, expected_constituent_count)});
@@ -133,15 +133,14 @@ namespace
         return {};
     }
 
-    std::expected<void, pre_c_sumo::WriteError> validatePoints(const std::vector<pre_c_sumo::FarFieldPoint2D>& points,
-                                                               const std::string_view section_name,
-                                                               const size_t expected_constituent_count)
+    std::expected<void, io_errors::WriteError> validatePoints(
+        const std::vector<pre_c_sumo::c_sumo::FarFieldPoint2D>& points, const std::string_view section_name,
+        const size_t expected_constituent_count)
     {
-        auto point_results =
-            points |
-            std::views::transform([section_name, expected_constituent_count](const pre_c_sumo::FarFieldPoint2D& point) {
-                return validatePoint(point, section_name, expected_constituent_count);
-            });
+        auto point_results = points | std::views::transform([section_name, expected_constituent_count](
+                                                                const pre_c_sumo::c_sumo::FarFieldPoint2D& point) {
+                                 return validatePoint(point, section_name, expected_constituent_count);
+                             });
 
         if (const auto errorIt = std::ranges::find_if(point_results, monadic_utils::is_invalid);
             errorIt != std::ranges::end(point_results))
@@ -188,11 +187,11 @@ namespace
     };
 } // namespace
 
-namespace pre_c_sumo
+namespace pre_c_sumo::c_sumo
 {
-    CSumoFF2NFWriter::CSumoFF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
+    FF2NFWriter::FF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
 
-    std::expected<std::string, WriteError> CSumoFF2NFWriter::generate() const
+    std::expected<std::string, io_errors::WriteError> FF2NFWriter::generate() const
     {
         RETURN_IF_ERROR(validate());
         pugi::xml_document document;
@@ -201,7 +200,7 @@ namespace pre_c_sumo
         createFileVersionSection(root);
         createCommSection(root);
         createSubgridModelSection(root);
-        createSettingsSection(root);
+        RETURN_IF_ERROR(createSettingsSection(root));
         IndentTextWalker indent_walker;
         document.traverse(indent_walker);
         std::ostringstream oss;
@@ -209,35 +208,35 @@ namespace pre_c_sumo
         return oss.str();
     }
 
-    std::expected<void, WriteError> CSumoFF2NFWriter::validate() const
+    std::expected<void, io_errors::WriteError> FF2NFWriter::validate() const
     {
         if (config_.ff2nf_filename.empty())
         {
-            return std::unexpected(WriteError{"FF2NF filename must not be empty"});
+            return std::unexpected(io_errors::WriteError{"FF2NF filename must not be empty"});
         }
         if (config_.wait_for_file.empty())
         {
-            return std::unexpected(WriteError{"Wait-for filename must not be empty"});
+            return std::unexpected(io_errors::WriteError{"Wait-for filename must not be empty"});
         }
         if (config_.ff_run_directory.empty())
         {
-            return std::unexpected(WriteError{"Far-field run directory must not be empty"});
+            return std::unexpected(io_errors::WriteError{"Far-field run directory must not be empty"});
         }
         if (config_.run_id.empty())
         {
-            return std::unexpected(WriteError{"Run ID must not be empty"});
+            return std::unexpected(io_errors::WriteError{"Run ID must not be empty"});
         }
         if (config_.unique_id.size() > 6)
         {
-            return std::unexpected(WriteError{"Unique ID must contain at most 6 characters"});
+            return std::unexpected(io_errors::WriteError{"Unique ID must contain at most 6 characters"});
         }
         if (config_.constituent_names.empty())
         {
-            return std::unexpected(WriteError{"Constituent names were not set"});
+            return std::unexpected(io_errors::WriteError{"Constituent names were not set"});
         }
         if (config_.ambient_points.empty())
         {
-            return std::unexpected(WriteError{"Ambient points were not set"});
+            return std::unexpected(io_errors::WriteError{"Ambient points were not set"});
         }
         RETURN_IF_ERROR(validatePoint(config_.diffuser, "FFDiff", config_.constituent_names.size()));
         if (config_.intake.has_value())
@@ -248,17 +247,17 @@ namespace pre_c_sumo
         return {};
     }
 
-    pugi::xml_node CSumoFF2NFWriter::createRootElement(pugi::xml_document& document) const
+    pugi::xml_node FF2NFWriter::createRootElement(pugi::xml_document& document) const
     {
         return document.append_child(root_element_name);
     }
 
-    void CSumoFF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
+    void FF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
     {
         addChildWithText(root, "fileVersion", file_version.data());
     }
 
-    void CSumoFF2NFWriter::createCommSection(pugi::xml_node& root) const
+    void FF2NFWriter::createCommSection(pugi::xml_node& root) const
     {
         auto comm = root.append_child("comm");
         addChildWithText(comm, "Filename", config_.ff2nf_filename);
@@ -268,7 +267,7 @@ namespace pre_c_sumo
         addChildWithText(comm, "FFuniqueID", config_.unique_id);
     }
 
-    void CSumoFF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
+    void FF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
     {
         auto subgrid_model = root.append_child("SubgridModel");
         addChildWithText(subgrid_model, "SubgridModelNr", config_.subgrid_model_nr);
@@ -282,14 +281,18 @@ namespace pre_c_sumo
         addFarFieldPoints(subgrid_model, "FFAmbient", config_.ambient_points);
     }
 
-    void CSumoFF2NFWriter::createSettingsSection(pugi::xml_node& root) const
+    std::expected<void, io_errors::WriteError> FF2NFWriter::createSettingsSection(pugi::xml_node& root) const
     {
-        // The settings_xml_node is an unowned handle into the caller's pugi::xml_document.
-        // append_copy() performs a deep copy, so the source document can be released
-        // immediately after generate() returns.
-        if (config_.settings_xml_node)
+        if (!config_.settings_xml.empty())
         {
-            root.append_copy(config_.settings_xml_node);
+            pugi::xml_document document;
+            const auto result = document.load_buffer(config_.settings_xml.data(), config_.settings_xml.size());
+            if (!result)
+            {
+                return std::unexpected(io_errors::WriteError{std::format("Invalid settings XML: {}", result.description())});
+            }
+            root.append_copy(document.document_element());
         }
+        return {};
     }
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::c_sumo

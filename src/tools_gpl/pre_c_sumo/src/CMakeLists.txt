@@ -1,6 +1,6 @@
 set(source_files
     pre_c_sumo_lib.cpp
-    connected_sinks_sources.cpp
+    precice_sink_source_connections.cpp
     csumo_exchange.cpp
     precice_to_csumo.cpp
     csumo_to_precice.cpp
@@ -8,17 +8,17 @@ set(source_files
     csumo_file_paths.cpp
     precice_data.cpp
     precice_exchange.cpp
-    exchange_file_io.cpp
+    file_io.cpp
     csumo_xml_utils.cpp
     csumo_settings_reader.cpp
     csumo_ff2nf_writer.cpp
     csumo_nf2ff_reader.cpp
-    parsing_utils.cpp
+    xml_parsing_utils.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
-    ${include_dir}/connected_sinks_sources.hpp
+    ${include_dir}/precice_sink_source_connections.hpp
     ${include_dir}/csumo_exchange.hpp
     ${include_dir}/precice_to_csumo.hpp
     ${include_dir}/csumo_to_precice.hpp
@@ -27,15 +27,14 @@ set(header_files
     ${include_dir}/csumo_data.hpp
     ${include_dir}/precice_data.hpp
     ${include_dir}/precice_exchange.hpp
-    ${include_dir}/exchange_file_io.hpp
-    ${include_dir}/exchange_file_types.hpp
+    ${include_dir}/file_io.hpp
+    ${include_dir}/io_errors.hpp
     ${include_dir}/csumo_xml_utils.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/monadic_utils.hpp
     ${include_dir}/csumo_ff2nf_writer.hpp
     ${include_dir}/csumo_nf2ff_reader.hpp
-    ${include_dir}/parsing_utils.hpp
-    ${include_dir}/parsing_types.hpp
+    ${include_dir}/xml_parsing_utils.hpp
 )
 
 add_library(pre_c_sumo_lib ${source_files} ${header_files})

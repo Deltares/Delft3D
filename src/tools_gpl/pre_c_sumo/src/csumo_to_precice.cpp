@@ -1,7 +1,9 @@
 #include "csumo_to_precice.hpp"
 #include "csumo_diffuser.hpp"
+#include "monadic_utils.hpp"
 
 #include <algorithm>
+#include <format>
 #include <functional>
 #include <ranges>
 #include <span>
@@ -10,19 +12,37 @@
 
 namespace
 {
-    using namespace pre_c_sumo;
-
-    std::vector<double> getDepthAveragedIntakeConstituents(const PreciceMesh& mesh_3d,
-                                                           const std::size_t diffuser_index)
+    std::expected<std::vector<double>, pre_c_sumo::precice::SinkSourceConnectionsError>
+    getDepthAveragedIntakeConstituents(const pre_c_sumo::precice::Mesh& mesh_3d, const std::size_t diffuser_index)
     {
         const auto intake_index = mesh_3d.forward_map[diffuser_index].intake_index;
         const auto number_of_layers = mesh_3d.number_of_zcoordinates;
-        const auto compute_depth_average = [&mesh_3d, intake_index, number_of_layers](const auto id) {
-            const std::span<const double> values(mesh_3d.quantities.at(id));
+        if (number_of_layers == 0)
+        {
+            return std::unexpected(
+                pre_c_sumo::precice::SinkSourceConnectionsError{"The preCICE intake sample has no vertical layers."});
+        }
+        std::vector<double> averages;
+        averages.reserve(pre_c_sumo::precice::constituent_ids.size());
+        for (const auto id : pre_c_sumo::precice::constituent_ids)
+        {
+            const auto quantity = mesh_3d.quantities.find(id);
+            if (quantity == mesh_3d.quantities.end())
+            {
+                return std::unexpected(
+                    pre_c_sumo::precice::SinkSourceConnectionsError{std::format("Missing preCICE quantity '{}'.", id)});
+            }
+            const std::span<const double> values(quantity->second);
+            if (intake_index > values.size() || number_of_layers > values.size() - intake_index)
+            {
+                return std::unexpected(pre_c_sumo::precice::SinkSourceConnectionsError{
+                    std::format("preCICE quantity '{}' does not contain the intake layer range.", id)});
+            }
             const auto intake_layers = values.subspan(intake_index, number_of_layers);
-            return std::ranges::fold_left(intake_layers, 0.0, std::plus{}) / static_cast<double>(number_of_layers);
-        };
-        return constituent_ids | std::views::transform(compute_depth_average) | std::ranges::to<std::vector>();
+            averages.push_back(std::ranges::fold_left(intake_layers, 0.0, std::plus{}) /
+                               static_cast<double>(number_of_layers));
+        }
+        return averages;
     }
 
     /**
@@ -41,18 +61,20 @@ namespace
      *
      *  2D: number_of_zcoordinates = 1
      */
-    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index,
-                                        const std::size_t number_of_zcoordinates)
+    pre_c_sumo::precice::DiffuserMapping makeDiffuserMapping(
+        const pre_c_sumo::c_sumo::DiffuserSettings& diffuser_setting, const std::size_t diffuser_index,
+        const std::size_t number_of_zcoordinates)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
         const std::size_t intake_index = has_intake ? diffuser_index + number_of_zcoordinates : 0;
         const std::size_t first_ambient_point_index =
             has_intake ? diffuser_index + 2 * number_of_zcoordinates : diffuser_index + number_of_zcoordinates;
 
-        const DiffuserMapping diffuser_mapping = {.diffuser_index = diffuser_index,
-                                                  .has_intake = has_intake,
-                                                  .intake_index = intake_index,
-                                                  .first_ambient_point_index = first_ambient_point_index};
+        const pre_c_sumo::precice::DiffuserMapping diffuser_mapping = {
+            .diffuser_index = diffuser_index,
+            .has_intake = has_intake,
+            .intake_index = intake_index,
+            .first_ambient_point_index = first_ambient_point_index};
         return diffuser_mapping;
     }
 
@@ -71,14 +93,15 @@ namespace pre_c_sumo
      *
      *
      */
-    PreciceMesh createPreciceMesh(const std::string_view csumo_mesh_name,
-                                  const std::vector<DiffuserSettings>& diffusers, const ZSpecification& z_spec)
+    precice::Mesh createPreciceMesh(const std::string_view csumo_mesh_name,
+                                    const std::vector<c_sumo::DiffuserSettings>& diffusers,
+                                    const precice::ZSpecification& z_spec)
     {
         const std::size_t dimensions = z_spec.numberOfDimensions();
-        PreciceMesh mesh = {};
+        precice::Mesh mesh = {};
         mesh.name = csumo_mesh_name;
         mesh.number_of_zcoordinates = z_spec.numberOfZCoordinates();
-        for (const DiffuserSettings& diffuser : diffusers)
+        for (const c_sumo::DiffuserSettings& diffuser : diffusers)
         {
             const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
             for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
@@ -104,7 +127,7 @@ namespace pre_c_sumo
                 }
             }
 
-            for (const Point2D& position : diffuser.ambient_positions)
+            for (const c_sumo::Point2D& position : diffuser.ambient_positions)
             {
                 for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
                 {
@@ -126,29 +149,39 @@ namespace pre_c_sumo
 
         return mesh;
     }
-    std::expected<ConnectedSinkSources, ConnectedSinkSourcesError> convertCSumoToPrecice(
-        const std::vector<DiffuserSettings>& diffuser_settings, const std::vector<NF2FFData>& near_field_data,
-        const PreciceMesh& csumo_3d_mesh)
-    {
-        ConnectedSinkSources connectedsinksources{};
 
+    std::expected<precice::SinkSourceConnections, precice::SinkSourceConnectionsError> convertCSumoToPrecice(
+        const std::vector<c_sumo::DiffuserSettings>& diffuser_settings,
+        const std::vector<c_sumo::NF2FFData>& near_field_data, const precice::Mesh& csumo_3d_mesh)
+    {
+        precice::SinkSourceConnections sink_source_connections{};
+
+        if (diffuser_settings.size() != near_field_data.size())
+        {
+            return std::unexpected(precice::SinkSourceConnectionsError{
+                "The number of C-SUMO diffuser settings and NF2FF results must match."});
+        }
         for (std::size_t diffuser_index = 0; diffuser_index < near_field_data.size(); diffuser_index++)
         {
             const auto& diffuser = near_field_data[diffuser_index];
-            if (diffuser.constituents.size() > constituent_ids.size())
+            if (diffuser.sources.empty())
             {
-                return std::unexpected(ConnectedSinkSourcesError{
-                    "NF2FF contains more constituents than the preCICE source/sink data supports."});
+                return std::unexpected(precice::SinkSourceConnectionsError{"NF2FF must contain at least one source."});
             }
-            std::vector<SourceOrSinkData> sources;
+            if (diffuser.constituents.size() > precice::constituent_ids.size())
+            {
+                return std::unexpected(precice::SinkSourceConnectionsError{
+                    "NF2FF contains more constituents than the preCICE sink/source data supports."});
+            }
+            std::vector<c_sumo::SinkOrSourceData> sources;
             const bool single_nf2ff_source = diffuser.sources.size() == 1;
 
             // Normalize the source list once: non-modelled diffusers expand a single NF2FF source
             // into a generated DESA track, so all downstream loops must use this converted list
             // instead of the raw diffuser.sources snapshot.
-            if (!isDiffuserModelled(diffuser))
+            if (!c_sumo::isDiffuserModelled(diffuser))
             {
-                sources = createDiffuserModel(diffuser);
+                sources = c_sumo::createDiffuserModel(diffuser);
             }
             else
             {
@@ -173,9 +206,9 @@ namespace pre_c_sumo
                 double delta_s = sinks[sink_index].entrainment - sinks[sink_index - 1].entrainment;
                 if (delta_s < 0.0)
                 {
-                    return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
-                        "Negative entrainment factor for sink " + std::to_string(sink_index) + ": " +
-                        std::to_string(delta_s)});
+                    return std::unexpected(precice::SinkSourceConnectionsError{"Negative entrainment factor for sink " +
+                                                                               std::to_string(sink_index) + ": " +
+                                                                               std::to_string(delta_s)});
                 }
                 const double source_flow_rate = diffuser.source_flow_rate;
                 const auto& sink = sinks[sink_index];
@@ -193,9 +226,9 @@ namespace pre_c_sumo
                     // Momentum is only defined for the source points, not for the entrainment part
                     // Entrainment related momentum should be switched on in D-Flow FM using "NFEntrainmentMomentum = 1"
                     // (not implemented for coupling via preCICE yet)
-                    connectedsinksources.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
-                                                   source.x_coordinate, source.y_coordinate, source_z_bottom,
-                                                   source_z_top, discharge, 0.0, 0.0, {});
+                    sink_source_connections.add_entry(sink.x_coordinate, sink.y_coordinate, sink_z_bottom, sink_z_top,
+                                                      source.x_coordinate, source.y_coordinate, source_z_bottom,
+                                                      source_z_top, discharge, 0.0, 0.0, {});
                 }
             }
 
@@ -206,8 +239,7 @@ namespace pre_c_sumo
             std::vector<double> constituents(diffuser.constituents);
             // Use a practical absolute cutoff: zero or epsilon (~2e-16) is too small
             // for flow magnitudes and would let tiny positive numerical noise trigger
-            // fallback intake creation. The test SyntheticI0Si2So1UsesDESAAndZeroIntakeDischarge
-            // was failing with epsilon.
+            // fallback intake creation.
             constexpr double minimum_intake_flow_rate = 1e-12;
             if (intake_flow_rate > minimum_intake_flow_rate)
             {
@@ -216,11 +248,11 @@ namespace pre_c_sumo
                 {
                     // Match COSUMO_BMI fallback: when NF2FF has no intake points, use settings XYintake with z=0.0.
                     const auto& intake_xy = diffuser_settings[diffuser_index].intake.value();
-                    intakes.emplace_back(IntakeData{.x_coordinate = intake_xy.x_coordinate,
-                                                    .y_coordinate = intake_xy.y_coordinate,
-                                                    .z_coordinate = 0.0,
-                                                    .weight = 0.0,
-                                                    .has_weight = false});
+                    intakes.emplace_back(c_sumo::IntakeData{.x_coordinate = intake_xy.x_coordinate,
+                                                            .y_coordinate = intake_xy.y_coordinate,
+                                                            .z_coordinate = 0.0,
+                                                            .weight = 0.0,
+                                                            .has_weight = false});
                 }
                 if (!intakes.empty())
                 {
@@ -234,16 +266,16 @@ namespace pre_c_sumo
 
                     // Intakes are sink-only terms (not connected to source points).
                     // Update constituents from diffuser with weighted intake constituents if operator is excess.
-                    if (diffuser.constituents_operator == ConstituentsOperator::Excess)
+                    if (diffuser.constituents_operator == c_sumo::ConstituentsOperator::Excess)
                     {
                         if (diffuser_index >= csumo_3d_mesh.forward_map.size() ||
                             !csumo_3d_mesh.forward_map[diffuser_index].has_intake)
                         {
-                            return std::unexpected(ConnectedSinkSourcesError{
+                            return std::unexpected(precice::SinkSourceConnectionsError{
                                 "NF2FF intake constituents require an intake sample in the preCICE mesh."});
                         }
-                        std::vector<double> intake_constituents =
-                            getDepthAveragedIntakeConstituents(csumo_3d_mesh, diffuser_index);
+                        ASSIGN_OR_RETURN(const auto intake_constituents,
+                                         getDepthAveragedIntakeConstituents(csumo_3d_mesh, diffuser_index));
                         for (const auto& intake : intakes)
                         {
                             for (std::size_t constituent_index = 0; constituent_index < constituents.size();
@@ -290,13 +322,13 @@ namespace pre_c_sumo
                     double source_moment_magnitude_weighted =
                         source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
-                    connectedsinksources.add_entry(
+                    sink_source_connections.add_entry(
                         0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
                         discharge, source_moment_magnitude_weighted, source_moment_direction, constituents);
                 }
             }
 
-            // Dispatch optional intakes after source/sinks
+            // Dispatch optional intakes after sinks/sources
             if (intake_flow_rate > minimum_intake_flow_rate)
             {
                 if (!intakes.empty())
@@ -307,15 +339,15 @@ namespace pre_c_sumo
                         // Dispatch intake discharge.
                         const double intake_discharge =
                             intake_flow_rate * (intake.has_weight ? intake.weight : 1.0) / intake_weight_norm;
-                        connectedsinksources.add_entry(intake.x_coordinate, intake.y_coordinate, -intake.z_coordinate,
-                                                       -intake.z_coordinate, 0.0, 0.0, 0.0, 0.0, intake_discharge, 0.0,
-                                                       0.0, {});
+                        sink_source_connections.add_entry(intake.x_coordinate, intake.y_coordinate,
+                                                          -intake.z_coordinate, -intake.z_coordinate, 0.0, 0.0, 0.0,
+                                                          0.0, intake_discharge, 0.0, 0.0, {});
                     }
                 }
             }
         }
 
-        return connectedsinksources;
+        return sink_source_connections;
     }
 
 } // namespace pre_c_sumo

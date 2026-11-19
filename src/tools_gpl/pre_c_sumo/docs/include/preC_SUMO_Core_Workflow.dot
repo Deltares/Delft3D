@@ -26,13 +26,13 @@ digraph preCSUMOWorkflow {
     style="rounded,filled";
     fillcolor="#FFE6E6";
 
-    task1 [label="readCsumoSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readCsumoSettingsFile docs"];
+    task1 [label="readSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readSettingsFile docs"];
 
     task2 [label="Register sampling meshes", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
 
     task3 [label="Wait for and read\ninitial NF2FF files", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Read initial NF2FF data before participant initialization"];
 
-    task4 [label="Convert initial results\nand register source/sink mesh", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Determine initial source/sink mesh from NF2FF data"];
+    task4 [label="Convert initial results\nand register sink/source mesh", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_sink_source_connections", tooltip="Determine initial sink/source mesh from NF2FF data"];
 
     task5 [label="Check initial data requirement\nand initialize participant", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
 
@@ -58,9 +58,9 @@ digraph preCSUMOWorkflow {
 
     task9 [label="wait + read NF2FF", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Open NF2FF read docs"];
 
-    task10 [label="convertCSumoToPrecice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Open conversion docs"];
+    task10 [label="convertCSumoToPrecice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_sink_source_connections", tooltip="Open conversion docs"];
 
-    task11 [label="writeConnectedSinkSources()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open writeConnectedSinkSources docs"];
+    task11 [label="writeSinkSourceConnections()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_sink_source_connections_write_to_precice", tooltip="Open writeSinkSourceConnections docs"];
 
     task12 [label="advance()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
 

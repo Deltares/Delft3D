@@ -3,7 +3,7 @@
 #include <format>
 #include <ranges>
 
-namespace pre_c_sumo
+namespace pre_c_sumo::c_sumo
 {
     std::filesystem::path ff2nfFilepath(const DiffuserSettings& diffuser, int subgrid_model_nr,
                                         double current_time_seconds)
@@ -23,7 +23,7 @@ namespace pre_c_sumo
                std::format("NF2FF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
     }
 
-    std::vector<std::filesystem::path> ff2nfFilepaths(const CSumoSettings& settings, double current_time_seconds)
+    std::vector<std::filesystem::path> ff2nfFilepaths(const Settings& settings, double current_time_seconds)
     {
         std::vector<std::filesystem::path> paths;
         for (const auto& [index, diffuser] : settings.diffusers | std::views::enumerate)
@@ -33,7 +33,7 @@ namespace pre_c_sumo
         return paths;
     }
 
-    std::vector<std::filesystem::path> nf2ffFilepaths(const CSumoSettings& settings, double current_time_seconds)
+    std::vector<std::filesystem::path> nf2ffFilepaths(const Settings& settings, double current_time_seconds)
     {
         std::vector<std::filesystem::path> paths;
         for (const auto& [index, diffuser] : settings.diffusers | std::views::enumerate)
@@ -42,4 +42,4 @@ namespace pre_c_sumo
         }
         return paths;
     }
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::c_sumo

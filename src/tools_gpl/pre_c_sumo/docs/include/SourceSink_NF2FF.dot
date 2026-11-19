@@ -1,4 +1,4 @@
-// Data structure for the NF2FF (NearField-to-FarField) source/sink point cloud
+// Data structure for the NF2FF (NearField-to-FarField) sink/source point cloud
 // exchanged from preC-SUMO adapter to D-Flow FM via preCICE.
 //
 // Design note (Constituents):
@@ -16,7 +16,7 @@
 //     - discharge intake  : Q_intake * weight_fraction  (negative, i.e. withdrawal)
 //   FM does NOT need to know the dilution S-factor or weight formula.
 
-digraph SourceSinkUML {
+digraph SinkSourceUML {
     graph [
         splines=polyline,
         nodesep=1,

@@ -8,7 +8,7 @@ sequenceDiagram
         S->>P: precice::Participant(...)
         S->>P: setMeshVertices(csumo_2d_nodes)
         S->>P: setMeshVertices(csumo_3d_nodes)
-        Note over S: Read and convert initial NF2FF results to determine source/sink mesh vertices
+        Note over S: Read and convert initial NF2FF results to determine sink/source mesh vertices
         S->>P: setMeshVertices(sources_sinks_nodes)
         S->>P: requiresInitialData()
         alt Initial outgoing data required
@@ -28,7 +28,7 @@ sequenceDiagram
                 S->>P: readData(csumo_2d_nodes, relative time = dt)
                 S->>P: readData(csumo_3d_nodes, relative time = dt)
                 Note over S: First read follows initialize and uses initialized FM fields
-                Note over S: Prepare connected source/sink data using the FM fields just read
+                Note over S: Prepare connected sink/source data using the FM fields just read
                 S->>P: isTimeWindowComplete()
                 alt Returns true
                     S->>P: resetMesh(sources_sinks_nodes)
@@ -36,7 +36,7 @@ sequenceDiagram
                 else Returns false
                     Note over S: Keep registered mesh and continue exchange
                 end
-                S->>P: writeData(source/sink data)
+                S->>P: writeData(sink/source data)
                 S->>P: advance(dt)
             end
             S->>P: isCouplingOngoing() returns false

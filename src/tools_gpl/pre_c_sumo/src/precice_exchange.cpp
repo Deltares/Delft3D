@@ -4,9 +4,9 @@
 #include <format>
 #include <ranges>
 
-namespace pre_c_sumo
+namespace pre_c_sumo::precice
 {
-    void receiveFFData(precice::Participant& participant, PreciceMesh& csumo_2d_mesh, PreciceMesh& csumo_3d_mesh,
+    void receiveFFData(::precice::Participant& participant, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
                        const double coupling_time_step)
     {
         for (auto& quantity : csumo_2d_mesh.quantities)
@@ -21,24 +21,24 @@ namespace pre_c_sumo
         }
     }
 
-    std::expected<void, pre_c_sumo::ConnectedSinkSourcesError> writeConnectedSinkSources(
-        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& precice_ids,
-        ConnectedSinkSources& sources)
+    std::expected<void, SinkSourceConnectionsError> writeSinkSourceConnections(::precice::Participant& participant,
+                                                                               std::string_view mesh_name,
+                                                                               const std::vector<int>& precice_ids,
+                                                                               SinkSourceConnections& connections)
     {
-        const auto& data = sources.data();
+        const auto& data = connections.data();
         const std::size_t registered_vertex_count = precice_ids.size();
-        const std::size_t entry_count = sources.get_number_of_entries();
+        const std::size_t entry_count = connections.get_number_of_entries();
 
         if (registered_vertex_count == 0)
         {
-            return std::unexpected(
-                pre_c_sumo::ConnectedSinkSourcesError{"Cannot write sources/sinks to an empty preCICE mesh."});
+            return std::unexpected(SinkSourceConnectionsError{"Cannot write sinks/sources to an empty preCICE mesh."});
         }
 
         if (entry_count != 0 && entry_count != registered_vertex_count)
         {
-            return std::unexpected(pre_c_sumo::ConnectedSinkSourcesError{
-                std::format("Connected source/sink count changed from the registered preCICE mesh size {} to {}. "
+            return std::unexpected(SinkSourceConnectionsError{
+                std::format("Connected sink/source count changed from the registered preCICE mesh size {} to {}. "
                             "Remeshing is not implemented.",
                             registered_vertex_count, entry_count)});
         }
@@ -74,8 +74,8 @@ namespace pre_c_sumo
         }
 
         // After the write, we can clear the list.
-        sources.clear();
+        connections.clear();
         return {};
     }
 
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::precice

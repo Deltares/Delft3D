@@ -38,18 +38,18 @@ digraph preCSUMOSwimlanes {
 
     node [group="precsumo"];
 
-    s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
+    s0 [label="settings\nreadSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::c_sumo::readSettingsFile", tooltip="Open readSettingsFile docs"];
     s1 [label="register sampling\nmeshes", fillcolor="#FFE3D1", tooltip="Register preC-SUMO sampling meshes"];
-    s2 [label="wait + read\ninitial NF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Read initial NF2FF data before participant initialization"];
-    s3 [label="convert initial result +\nregister source/sink mesh", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Set up source/sink mesh from initial NF2FF data"];
+    s2 [label="wait + read\ninitial NF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::c_sumo::waitForNF2FFFiles", tooltip="Read initial NF2FF data before participant initialization"];
+    s3 [label="convert initial result +\nregister sink/source mesh", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Set up sink/source mesh from initial NF2FF data"];
     s4 [label="check initial data +\ninit participant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Reject required outgoing initial data, then initialize"];
 
-    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open receiveFFData docs"];
-    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
-    l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
-    l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
+    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::precice::receiveFFData", tooltip="Open receiveFFData docs"];
+    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
+    l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
+    l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
     l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Open convertCSumoToPrecice docs"];
-    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open writeConnectedSinkSources docs"];
+    l5 [label="sink-source\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_sink_source_connections_write_to_precice", tooltip="Open writeSinkSourceConnections docs"];
     l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
     lane_left [label="", shape=point, width=0.01, height=0.01, style=invis];
 

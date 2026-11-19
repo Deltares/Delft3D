@@ -3,11 +3,10 @@
 
 #include <filesystem>
 #include <optional>
-#include <pugixml.hpp>
 #include <string>
 #include <vector>
 
-namespace pre_c_sumo
+namespace pre_c_sumo::c_sumo
 {
     /**
      * @anchor pre_c_sumo_point_2d
@@ -47,15 +46,13 @@ namespace pre_c_sumo
         double horizontal_angle{}; ///< Discharge angle, 0=east, 90=north [degrees].
         std::filesystem::path ff2nf_dir;
         std::filesystem::path ff_run_dir;
-        pugi::xml_node settings_xml_node; ///< Borrowed from CSumoSettings::document.
+        std::string settings_xml; ///< Serialized settings passed through to FF2NF.
     };
 
-    /// Owns the XML document referenced by the diffuser settings nodes.
-    struct CSumoSettings
+    struct Settings
     {
         std::string file_version;
         std::vector<DiffuserSettings> diffusers;
-        pugi::xml_document document;
     };
 
     struct FarFieldLayer
@@ -74,7 +71,7 @@ namespace pre_c_sumo
         std::vector<FarFieldLayer> layers;
     };
 
-    /// Complete FF2NF content. The settings node must remain alive until XML generation completes.
+    /// Complete FF2NF content, including the owned settings XML to pass through.
     struct FF2NFConfig
     {
         std::string ff2nf_filename;
@@ -88,10 +85,10 @@ namespace pre_c_sumo
         FarFieldPoint2D diffuser;
         std::optional<FarFieldPoint2D> intake;
         std::vector<FarFieldPoint2D> ambient_points;
-        pugi::xml_node settings_xml_node;
+        std::string settings_xml;
     };
 
-    struct SourceOrSinkData
+    struct SinkOrSourceData
     {
         double x_coordinate{};
         double y_coordinate{};
@@ -124,9 +121,9 @@ namespace pre_c_sumo
         ConstituentsOperator constituents_operator{};
         std::vector<double> constituents{};
         std::vector<IntakeData> intakes{};
-        std::vector<SourceOrSinkData> sources{};
-        std::vector<SourceOrSinkData> sinks{};
+        std::vector<SinkOrSourceData> sources{};
+        std::vector<SinkOrSourceData> sinks{};
     };
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::c_sumo
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_DATA_HPP

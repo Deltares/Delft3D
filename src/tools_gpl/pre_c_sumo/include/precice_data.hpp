@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace pre_c_sumo
+namespace pre_c_sumo::precice
 {
     inline constexpr std::string_view water_levels_id = "sea_surface_height";
     inline constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
@@ -28,7 +28,7 @@ namespace pre_c_sumo
     };
 
     /// Interleaved coordinates and per-quantity buffers exchanged with preCICE.
-    struct PreciceMesh
+    struct Mesh
     {
         std::string name;
         std::vector<double> coordinates;
@@ -51,50 +51,13 @@ namespace pre_c_sumo
         double zCoordinateAt(std::size_t z_index) const;
     };
 
-    /// Registration buffers for the preCICE source/sink mesh.
-    struct SourcesSinks
+    /// Registration buffers for the preCICE sink/source mesh.
+    struct SinkSourceConnectionsMesh
     {
         std::vector<double> coordinates;
         std::vector<int> precice_ids;
-        std::vector<double> sinks_x;
-        std::vector<double> sinks_y;
-        std::vector<double> sinks_z_min;
-        std::vector<double> sinks_z_max;
-        std::vector<double> sources_x;
-        std::vector<double> sources_y;
-        std::vector<double> sources_z_min;
-        std::vector<double> sources_z_max;
-        std::vector<double> discharges;
-
-        void clear();
-        void clearData();
         void setVertexCount(std::size_t vertex_count);
-        void addData(double new_sink_x, double new_sink_y, double new_sink_z_min, double new_sink_z_max,
-                     double new_source_x, double new_source_y, double new_source_z_min, double new_source_z_max,
-                     double new_discharge);
     };
-
-    struct ConnectedSinkSourcesError
-    {
-        std::string message;
-    };
-
-    /// Attribute-wise source/sink buffers in the preCICE wire format.
-    struct ConnectedSinkSourcesData
-    {
-        std::vector<double> sink_x_vector;
-        std::vector<double> sink_y_vector;
-        std::vector<double> sink_z_bottom_vector;
-        std::vector<double> sink_z_top_vector;
-        std::vector<double> source_x_vector;
-        std::vector<double> source_y_vector;
-        std::vector<double> source_z_bottom_vector;
-        std::vector<double> source_z_top_vector;
-        std::vector<double> discharge_vector;
-        std::vector<double> momentum_magnitude_weighted_vector;
-        std::vector<double> momentum_direction_vector;
-        std::array<std::vector<double>, max_number_of_constituents> constituents_vectors;
-    };
-} // namespace pre_c_sumo
+} // namespace pre_c_sumo::precice
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_DATA_HPP

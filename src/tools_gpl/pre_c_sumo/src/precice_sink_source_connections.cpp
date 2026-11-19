@@ -1,11 +1,11 @@
-#include <connected_sinks_sources.hpp>
+#include "precice_sink_source_connections.hpp"
 
-namespace pre_c_sumo
+namespace pre_c_sumo::precice
 {
-    void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
-                                         double source_x, double source_y, double source_z_bottom, double source_z_top,
-                                         double discharge, double momentum_magnitude_weighted,
-                                         double momentum_direction, std::vector<double> constituents)
+    void SinkSourceConnections::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
+                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
+                                          double discharge, double momentum_magnitude_weighted,
+                                          double momentum_direction, std::vector<double> constituents)
     {
         data_.sink_x_vector.push_back(sink_x);
         data_.sink_y_vector.push_back(sink_y);
@@ -31,7 +31,7 @@ namespace pre_c_sumo
         }
     }
 
-    void ConnectedSinkSources::clear()
+    void SinkSourceConnections::clear()
     {
         data_.sink_x_vector.clear();
         data_.sink_y_vector.clear();
@@ -50,9 +50,9 @@ namespace pre_c_sumo
         }
     }
 
-    std::size_t ConnectedSinkSources::get_number_of_entries() const { return data_.sink_x_vector.size(); }
+    std::size_t SinkSourceConnections::get_number_of_entries() const { return data_.sink_x_vector.size(); }
 
-    const std::vector<double>& ConnectedSinkSources::get_discharge_value() const { return data_.discharge_vector; }
+    const std::vector<double>& SinkSourceConnections::get_discharge_value() const { return data_.discharge_vector; }
 
-    const ConnectedSinkSourcesData& ConnectedSinkSources::data() const { return data_; }
-} // namespace pre_c_sumo
+    const SinkSourceConnectionBuffers& SinkSourceConnections::data() const { return data_; }
+} // namespace pre_c_sumo::precice

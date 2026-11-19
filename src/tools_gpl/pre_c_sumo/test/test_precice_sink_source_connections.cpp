@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "connected_sinks_sources.hpp"
+#include "precice_sink_source_connections.hpp"
 
-TEST(ConnectedSinkSourcesTest, CanInitializeAddItemAndClear)
+TEST(PreciceSinkSourceConnectionsTest, CanInitializeAddItemAndClear)
 {
-    pre_c_sumo::ConnectedSinkSources connected = {};
+    pre_c_sumo::precice::SinkSourceConnections connected = {};
     std::size_t size = connected.get_number_of_entries();
     ASSERT_EQ(size, 0);
     connected.add_entry(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {});
@@ -18,9 +18,9 @@ TEST(ConnectedSinkSourcesTest, CanInitializeAddItemAndClear)
     ASSERT_EQ(size, 0);
 }
 
-TEST(ConnectedSinkSourcesTest, KeepsAttributesAlignedAndClearsAllBuffersBeforeReuse)
+TEST(PreciceSinkSourceConnectionsTest, KeepsAttributesAlignedAndClearsAllBuffersBeforeReuse)
 {
-    pre_c_sumo::ConnectedSinkSources connected;
+    pre_c_sumo::precice::SinkSourceConnections connected;
     connected.add_entry(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, {12, 13});
     connected.add_entry(21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, {32});
 

@@ -3,7 +3,7 @@
 
 #include <expected>
 
-#include "connected_sinks_sources.hpp"
+#include "precice_sink_source_connections.hpp"
 #include "precice_data.hpp"
 
 namespace precice
@@ -11,22 +11,21 @@ namespace precice
     class Participant;
 }
 
-namespace pre_c_sumo
+namespace pre_c_sumo::precice
 {
     /// @anchor pre_c_sumo_receive_ff_data
-    void receiveFFData(precice::Participant& participant, PreciceMesh& mesh_2d, PreciceMesh& mesh_3d,
-                       double coupling_time_step);
+    void receiveFFData(::precice::Participant& participant, Mesh& mesh_2d, Mesh& mesh_3d, double coupling_time_step);
 
     /**
-     * @anchor pre_c_sumo_connected_sink_sources_write_to_precice
-     * @brief Send preCICE source/sink buffers, clearing them only after a successful write.
+     * @anchor pre_c_sumo_sink_source_connections_write_to_precice
+     * @brief Send preCICE sink/source buffers, clearing them only after a successful write.
      *
      * Empty buffers send zeros for every registered vertex. Non-empty buffers must
      * match the registered vertex count.
      */
-    [[nodiscard]] std::expected<void, ConnectedSinkSourcesError> writeConnectedSinkSources(
-        precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& vertex_ids,
-        ConnectedSinkSources& sources);
-} // namespace pre_c_sumo
+    [[nodiscard]] std::expected<void, SinkSourceConnectionsError> writeSinkSourceConnections(
+        ::precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& vertex_ids,
+        SinkSourceConnections& connections);
+} // namespace pre_c_sumo::precice
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_EXCHANGE_HPP
