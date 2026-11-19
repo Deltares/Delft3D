@@ -109,7 +109,7 @@ contains
    end subroutine create_scalar_netcdf
 
    !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth, axis_order)
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
@@ -118,23 +118,12 @@ contains
       character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
       logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
       integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
-      logical, intent(in), optional :: with_depth !< Include two depth levels; defaults to false.
-      integer, dimension(:), intent(in), optional :: axis_order !< File order for a layered fixture.
-      integer :: ncid, x_dimid, y_dimid, time_dimid, depth_dimid
-      integer :: x_varid, y_varid, time_varid, field_varid, depth_varid
+      integer :: ncid, x_dimid, y_dimid, time_dimid
+      integer :: x_varid, y_varid, time_varid, field_varid
       integer :: num_snapshots
-      integer :: i, j, k, t
-      integer, dimension(5) :: axis_ids, indices
-      logical :: has_extra_axis
       real(dp), dimension(2, 2, 2) :: values
-      real(dp), dimension(2, 2, 2, 2) :: layered_values
-      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
-      logical :: has_time, has_depth
+      logical :: has_time
 
-      has_depth = .false.
-      if (present(with_depth)) then
-         has_depth = with_depth
-      end if
       has_time = .true.
       if (present(with_time)) then
          has_time = with_time
@@ -145,50 +134,10 @@ contains
       end if
       values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
       values(:, :, 2) = values(:, :, 1) + 10.0_dp
-      layered_values(:, :, 1, :) = values + 20.0_dp
-      layered_values(:, :, 2, :) = values
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
-      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      call define_initial_grid(file_name, has_time, num_snapshots, ncid, &
+                               x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid)
       if (has_time) then
-         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
-      end if
-      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
-      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
-      call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
-      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
-      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-      call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
-      if (has_depth) then
-         call check_netcdf(nf90_def_dim(ncid, 'depth', 2, depth_dimid))
-         call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [depth_dimid], depth_varid))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
-      end if
-      if (has_time) then
-         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      end if
-      has_extra_axis = .false.
-      if (present(axis_order)) then
-         axis_ids(:3) = [x_dimid, y_dimid, depth_dimid]
-         if (has_time) then
-            axis_ids(4) = time_dimid
-         end if
-         has_extra_axis = any(axis_order == 5)
-         if (has_extra_axis) then
-            call check_netcdf(nf90_def_dim(ncid, 'member', 2, axis_ids(5)))
-         end if
-         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, axis_ids(axis_order), field_varid))
-      else if (has_time .and. has_depth) then
-         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
-      else if (has_time) then
          call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
-      else if (has_depth) then
-         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
       else
          call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
       end if
@@ -204,45 +153,112 @@ contains
       end if
       call check_netcdf(nf90_put_att(ncid, field_varid, 'coordinates', 'x y'))
       call check_netcdf(nf90_enddef(ncid))
+      call write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, num_snapshots)
+      if (has_time) then
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
+      else
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
+      end if
+      call check_netcdf(nf90_close(ncid))
+   end subroutine create_initial_gridded_netcdf
+
+   subroutine define_initial_grid(file_name, has_time, num_snapshots, ncid, &
+                                  x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      logical, intent(in) :: has_time
+      integer, intent(in) :: num_snapshots
+      integer, intent(out) :: ncid, x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
+      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      time_dimid = -1
+      time_varid = -1
+      if (has_time) then
+         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
+      end if
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
+      if (has_time) then
+         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      end if
+   end subroutine define_initial_grid
+
+   subroutine write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, num_snapshots)
+      use netcdf
+
+      integer, intent(in) :: ncid, x_varid, y_varid, time_varid, num_snapshots
+      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
+
       call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
       call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
-      if (has_depth) then
-         call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
-      end if
-      if (has_time) then
+      if (time_varid > 0) then
          call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
       end if
+   end subroutine write_initial_grid_coordinates
+
+   subroutine create_layered_salinity_netcdf(file_name, with_time, snapshot_count, axis_order)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      logical, intent(in) :: with_time
+      integer, intent(in) :: snapshot_count
+      integer, dimension(:), intent(in), optional :: axis_order !< File order of X, Y, depth, time, member (slots 1 to 5).
+      integer :: ncid, x_varid, y_varid, time_varid, depth_varid, field_varid
+      integer :: i, j, k, t, member, member_count
+      integer, dimension(5) :: dimids, indices
+      integer, dimension(:), allocatable :: order
+      real(dp) :: value
+
+      call define_initial_grid(file_name, with_time, snapshot_count, ncid, &
+                               dimids(1), dimids(2), dimids(4), x_varid, y_varid, time_varid)
+      call check_netcdf(nf90_def_dim(ncid, 'depth', 2, dimids(3)))
+      call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [dimids(3)], depth_varid))
+      call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
+      call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
+      call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
+      call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
       if (present(axis_order)) then
-         do t = 1, merge(num_snapshots, 1, has_time)
+         order = axis_order
+      else if (with_time) then
+         order = [1, 2, 3, 4]
+      else
+         order = [1, 2, 3]
+      end if
+      member_count = 1
+      if (any(order == 5)) then
+         member_count = 2
+         call check_netcdf(nf90_def_dim(ncid, 'member', member_count, dimids(5)))
+      end if
+      call check_netcdf(nf90_def_var(ncid, 'Field', NF90_DOUBLE, dimids(order), field_varid))
+      call check_netcdf(nf90_put_att(ncid, field_varid, 'units', 'm'))
+      call check_netcdf(nf90_put_att(ncid, field_varid, 'coordinates', 'x y'))
+      call check_netcdf(nf90_enddef(ncid))
+      call write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, snapshot_count)
+      call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
+      do member = 1, member_count
+         do t = 1, merge(snapshot_count, 1, with_time)
             do k = 1, 2
                do j = 1, 2
                   do i = 1, 2
-                     indices = [i, j, k, t, 1]
-                     call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(i, j, k, t), start=indices(axis_order)))
-                     if (has_extra_axis) then
-                        indices(5) = 2
-                        call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(i, j, k, t) + 100.0_dp, &
-                                                       start=indices(axis_order)))
-                     end if
+                     indices = [i, j, k, t, member]
+                     value = 1.0_dp + 2 * (i - 1) + 4 * (j - 1) + 20 * (2 - k) + 10 * (t - 1) + 100 * (member - 1)
+                     call check_netcdf(nf90_put_var(ncid, field_varid, value, start=indices(order)))
                   end do
                end do
             end do
          end do
-      else if (has_time) then
-         if (has_depth) then
-            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1:num_snapshots)))
-         else
-            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
-         end if
-      else
-         if (has_depth) then
-            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1)))
-         else
-            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
-         end if
-      end if
+      end do
       call check_netcdf(nf90_close(ncid))
-   end subroutine create_initial_gridded_netcdf
+   end subroutine create_layered_salinity_netcdf
 
    subroutine create_netcdf_timeseries_with_coordinates(file_name)
       use netcdf
@@ -2532,8 +2548,7 @@ contains
       write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
       write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
       call initialize_ec_module()
-      call create_initial_gridded_netcdf(trim(nc_file), 'Field', with_time=with_time, &
-                                         snapshot_count=snapshot_count, with_depth=.true., axis_order=axis_order)
+      call create_layered_salinity_netcdf(trim(nc_file), with_time, snapshot_count, axis_order)
       call create_file(trim(ext_file), [ &
                        '[Spatial]', &
                        '    quantity            = initialSalinity', &
