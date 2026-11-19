@@ -21,783 +21,264 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_ini_Field_1dField
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_relative_near
-   use m_commandline_option, only: iarg_usecaching
-   use m_partitioninfo, only: jampi
-   use precision
-   use messagehandling, only: resetMaxerrorLevel
-
+   use assertions_gtest, only: f90_expect_true, f90_expect_relative_near
+   use precision, only: dp
+   use m_flow, only: s1, hs
+   use m_flowgeom, only: bl, ndx, ndxi, ndx2d
+   use m_branch, only: t_branch
+   use unstruc_channel_flow, only: network
    implicit none(type, external)
    private
 
-   real(fp), parameter :: eps = 1.0e-6_fp
+   real(kind=dp), parameter :: eps = 1.0e-6_dp
 
 contains
-!
-!
-!==============================================================================
-!
-!
-!==============================================================================
+
+   subroutine setup_field(number_of_branches, bed_levels, number_of_2d_cells)
+      use m_alloc, only: realloc
+      use unstruc_inifields, only: specified_water_1dfield, water_global_quantity_1dfield
+
+      integer, intent(in) :: number_of_branches, number_of_2d_cells
+      real(kind=dp), dimension(:), intent(in) :: bed_levels
+
+      ndx = size(bed_levels)
+      ndxi = ndx
+      ndx2d = number_of_2d_cells
+      call realloc(bl, ndx, keepExisting=.false.)
+      call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(s1, ndx, keepExisting=.false.)
+      bl = bed_levels
+      s1 = bed_levels
+      network%brs%count = number_of_branches
+      if (number_of_branches > 0) then
+         allocate (network%brs%branch(number_of_branches))
+         network%brs%size = number_of_branches
+      end if
+      if (allocated(specified_water_1dfield)) then
+         deallocate (specified_water_1dfield)
+      end if
+      water_global_quantity_1dfield = ''
+   end subroutine setup_field
+
+   subroutine set_branch(branch, id, first_cell, chainages)
+      type(t_branch), intent(inout) :: branch
+      character(len=*), intent(in) :: id
+      integer, intent(in) :: first_cell
+      real(kind=dp), dimension(:), intent(in) :: chainages
+      integer :: point_index
+
+      branch%id = id
+      branch%gridPointsCount = size(chainages)
+      branch%gridPointsChainages = chainages
+      branch%gridPointsSeqCount = 1
+      branch%k1gridPointsSeq = [1]
+      branch%k2gridPointsSeq = [size(chainages)]
+      branch%grd = [(first_cell + point_index - 1, point_index=1, size(chainages))]
+   end subroutine set_branch
+
+   ! Only the 1dField data file is read. Construct its enclosing [Initial] block in memory.
+   subroutine apply_field(test_dir, quantity, data_file)
+      use fm_external_forcings_init, only: init_spatial_fields
+      use properties, only: prop_set
+      use tree_structures, only: tree_data, tree_create, tree_destroy
+
+      character(len=*), intent(in) :: test_dir, quantity, data_file
+      type(tree_data), pointer :: block
+      logical :: success
+
+      call tree_create('Initial', block)
+      call prop_set(block, '', 'quantity', quantity)
+      call prop_set(block, '', 'forcingFile', 'initial_fields/'//test_dir//'/'//data_file)
+      call prop_set(block, '', 'forcingFileType', '1dField')
+      success = init_spatial_fields(block, '', 'test initial field', 'Initial')
+      call tree_destroy(block)
+      call f90_expect_true(success, 'Could not apply '//quantity//' from '//test_dir//'/'//data_file)
+   end subroutine apply_field
+
    !$gtest
    subroutine test_iniField1dField() bind(C)
-      use gridoperations
-      use m_flow, only: s1
-      use m_netw
-      use unstruc_model
-      use unstruc_channel_flow
-      use m_inquire_flowgeom
-      use dfm_error
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-      !
-      ! Locals
-      integer :: i, j, k, ibr
-      integer :: istat, ierr
-      logical :: success
-      real(kind=dp), dimension(6), parameter :: refs1_br4 = &
-                                                [8.0_dp, 8.0_dp, 8.935625_dp, 10.115884705882353_dp, 10.925428235294117_dp, 11.0_dp]
-      real(kind=dp), parameter :: refs1_br10 = 5.0_dp
-      real(kind=dp), parameter :: refs1_other = 10.0_dp
+      use m_branch, only: fill_hashtable
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
-      real(kind=dp) :: chai
-      type(t_branch), pointer :: pbr
-      character(len=256) :: brId
-      character(len=40) :: mdufile
-      integer, dimension(5), parameter :: checkibr = [19, 29, 40, 50, 57]
+      call setup_field(3, [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp], 0)
+      call set_branch(network%brs%branch(1), '88_5', 1, [0.0_dp, 300.0_dp, 400.0_dp, 925.0_dp, 1350.0_dp, 1500.0_dp])
+      call set_branch(network%brs%branch(2), 'N:TW-0307_1_204', 7, [0.0_dp, 100.0_dp])
+      call set_branch(network%brs%branch(3), 'unspecified', 9, [0.0_dp])
+      call fill_hashtable(network%brs)
 
-      ! Body
-      kmax = 2
-      lmax = 2
-      !call inidat()
+      call apply_field('1d_field', 'initialWaterLevel', 'IniCondition.ini')
+      call finalize_1dfield_global_values()
 
-      jampi = 0
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
-
-      success = CHANGEDIRQQ("initial_fields/1d_field")
-      if (.not. f90_assert_true(success, 'Could not change to directory ''initial_fields/1d_field''.')) then
-         return
-      end if
-      mdufile = 'Flow1D.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from ''initial_fields/1d_field''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-
-      ! check initial waterlevel s1 on branch 4
-      ibr = 4
-      pbr => network%brs%branch(ibr)
-      brId = pbr%id
-      j = 1
-      do i = 1, pbr%gridPointsCount
-         chai = pbr%gridPointsChainages(j)
-         ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
-         if (ierr == DFM_NOERR) then
-            if (chai < 300.0) then
-               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
-               j = j + 1
-            else if (chai >= 300.0 .and. chai < 500.0) then
-               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
-               j = j + 1
-            else if (chai >= 500.0 .and. chai < 1350.0) then
-               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
-               j = j + 1
-            else if (chai >= 1350.0) then
-               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
-            end if
-         else
-            write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
-            call err_flush()
-         end if
-      end do
-
-      ! on branch 10
-      ibr = 10
-      pbr => network%brs%branch(ibr)
-      brId = pbr%id
-      do i = 1, pbr%gridPointsCount
-         chai = pbr%gridPointsChainages(i)
-         ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
-         if (ierr == DFM_NOERR) then
-            ! TODO: UNST-5013: check for nodenr <= 0 in partitioned models.
-            call f90_expect_relative_near(s1(k), refs1_br10, eps, 'initial waterlevel on branch 4 incorrect')
-         else
-            write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
-            call err_flush()
-         end if
-      end do
-
-      ! on selected branches, check the 2nd flownodes on each of them
-      do j = 1, size(checkibr)
-         ibr = checkibr(j)
-         pbr => network%brs%branch(ibr)
-         brId = pbr%id
-         chai = pbr%gridPointsChainages(2)
-         ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
-         if (ierr == DFM_NOERR) then
-            ! TODO: UNST-5013: check for nodenr <= 0 in partitioned models.
-            call f90_expect_relative_near(s1(k), refs1_other, eps, 'initial waterlevel on other branches incorrect')
-         else
-            write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
-            call err_flush()
-         end if
-
-      end do
+      call f90_expect_relative_near(s1(1:6), [8.0_dp, 8.0_dp, 8.5_dp, 10.0_dp, 11.0_dp, 11.0_dp], eps, &
+                                    'Interpolate and hold the endpoint values outside the sample range')
+      call f90_expect_relative_near(s1(7:8), [5.0_dp, 5.0_dp], eps, 'Uniform branch value')
+      call f90_expect_relative_near(s1(9), 10.0_dp, eps, 'Global fallback on an unspecified branch')
    end subroutine test_iniField1dField
-!
-!
-!==============================================================================
+
+   subroutine check_branch_interpolation(test_dir, quantity, data_file, expected_depths, expected_levels)
+      use m_branch, only: fill_hashtable
+      use unstruc_inifields, only: finalize_1dfield_global_values
+
+      character(len=*), intent(in) :: test_dir, quantity, data_file
+      real(kind=dp), dimension(:), intent(in) :: expected_depths, expected_levels
+
+      call setup_field(5, [-2.0_dp, -2.0_dp, -2.0_dp, -2.0_dp, -2.0_dp, -2.0_dp, -2.0_dp], 0)
+      call set_branch(network%brs%branch(1), 'Channel001', 1, [0.0_dp])
+      call set_branch(network%brs%branch(2), 'Channel002', 2, [0.0_dp])
+      call set_branch(network%brs%branch(3), 'Channel003', 3, [0.0_dp, 785.394_dp, 1570.788_dp])
+      call set_branch(network%brs%branch(4), 'Channel004', 6, [392.697_dp])
+      call set_branch(network%brs%branch(5), 'Channel005', 7, [1178.091_dp])
+      call fill_hashtable(network%brs)
+
+      call apply_field(test_dir, quantity, data_file)
+      call finalize_1dfield_global_values()
+
+      call f90_expect_relative_near(s1, expected_levels, eps, 'Initial water levels')
+      call f90_expect_relative_near(hs, expected_depths, eps, 'Initial water depths')
+   end subroutine check_branch_interpolation
+
    !$gtest
    subroutine test_iniField1dField_waterdepth() bind(C)
-      use gridoperations
-      use m_cell_geometry, only: ndx
-      use m_flow, only: s1
-      use m_netw
-      use unstruc_model
-      use dfm_error
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-
-      ! Locals
-      integer :: i
-      integer :: istat
-      logical :: success
-      real(kind=dp), dimension(:), allocatable :: refs1
-      character(len=40) :: mdufile
-
-      ! Body
-      kmax = 2
-      lmax = 2
-      allocate (refs1(168), stat=istat)
-      refs1 = 5.0_dp
-
-      ! Branch 2
-      do i = 9, 21
-         refs1(i) = 7.0_dp
-      end do
-
-      ! Branch 3, 4, 5
-      refs1(22) = 8.00000000000000
-      refs1(23) = 7.96249971351958
-      refs1(24) = 7.85000076394778
-      refs1(25) = 7.69999961802611
-      refs1(26) = 7.55000038197389
-      refs1(27) = 7.39999923605222
-      refs1(28) = 7.25000000000000
-      refs1(29) = 7.09999885407834
-      refs1(30) = 6.94999961802611
-      refs1(31) = 6.80000038197389
-      refs1(32) = 6.64999923605222
-      refs1(33) = 6.50000000000000
-      refs1(34) = 6.34999885407834
-      refs1(35) = 6.19999961802611
-      refs1(36) = 6.05000038197389
-      refs1(37) = 5.89999923605222
-      refs1(38) = 5.75000000000000
-      refs1(39) = 5.59999885407833
-      refs1(40) = 5.44999961802611
-      refs1(41) = 5.29999847210445
-      refs1(42) = 5.14999923605222
-      refs1(43) = 5.03749837661097
-      refs1(44) = 5.00000000000000
-      refs1(45) = 8.00000000000000
-      refs1(46) = 7.96249971351958
-      refs1(47) = 7.92499942703917
-      refs1(48) = 7.85000076394778
-      refs1(49) = 7.77500019098694
-      refs1(50) = 7.69999961802611
-      refs1(51) = 7.62499904506528
-      refs1(52) = 7.55000038197389
-      refs1(53) = 7.47499980901306
-      refs1(54) = 7.39999923605222
-      refs1(55) = 7.32500057296083
-      refs1(56) = 7.25000000000000
-      refs1(57) = 7.17499942703917
-      refs1(58) = 7.09999885407834
-      refs1(59) = 7.02500019098694
-      refs1(60) = 6.94999961802611
-      refs1(61) = 6.87499904506528
-      refs1(62) = 6.80000038197389
-      refs1(63) = 6.72499980901306
-      refs1(64) = 6.64999923605222
-      refs1(65) = 6.57499866309139
-      refs1(66) = 6.50000000000000
-      refs1(67) = 6.42499942703917
-      refs1(68) = 6.34999885407834
-      refs1(69) = 6.27500019098694
-      refs1(70) = 6.19999961802611
-      refs1(71) = 6.12499904506528
-      refs1(72) = 6.05000038197389
-      refs1(73) = 5.97499980901306
-      refs1(74) = 5.89999923605222
-      refs1(75) = 5.82499866309139
-      refs1(76) = 5.75000000000000
-      refs1(77) = 5.67499942703917
-      refs1(78) = 5.59999885407833
-      refs1(79) = 5.52500019098694
-      refs1(80) = 5.44999961802611
-      refs1(81) = 5.37499904506528
-      refs1(82) = 5.29999847210445
-      refs1(83) = 5.22499980901306
-      refs1(84) = 5.14999923605222
-      refs1(85) = 5.07499866309139
-      refs1(86) = 5.03749837661097
-      refs1(87) = 5.00000000000000
-      refs1(88) = 8.00000000000000
-      refs1(89) = 7.96249971351958
-      refs1(90) = 7.92499942703917
-      refs1(91) = 7.88749914055875
-      refs1(92) = 7.85000076394778
-      refs1(93) = 7.81250047746736
-      refs1(94) = 7.77500019098694
-      refs1(95) = 7.73749990450653
-      refs1(96) = 7.69999961802611
-      refs1(97) = 7.66249933154570
-      refs1(98) = 7.62499904506528
-      refs1(99) = 7.58750066845430
-      refs1(100) = 7.55000038197389
-      refs1(101) = 7.51250009549347
-      refs1(102) = 7.47499980901306
-      refs1(103) = 7.43749952253264
-      refs1(104) = 7.39999923605222
-      refs1(105) = 7.36249894957181
-      refs1(106) = 7.32500057296083
-      refs1(107) = 7.28750028648042
-      refs1(108) = 7.25000000000000
-      refs1(109) = 7.21249971351958
-      refs1(110) = 7.17499942703917
-      refs1(111) = 7.13749914055875
-      refs1(112) = 7.09999885407834
-      refs1(113) = 7.06250047746736
-      refs1(114) = 7.02500019098694
-      refs1(115) = 6.98749990450653
-      refs1(116) = 6.94999961802611
-      refs1(117) = 6.91249933154570
-      refs1(118) = 6.87499904506528
-      refs1(119) = 6.83749875858486
-      refs1(120) = 6.80000038197389
-      refs1(121) = 6.76250009549347
-      refs1(122) = 6.72499980901306
-      refs1(123) = 6.68749952253264
-      refs1(124) = 6.64999923605222
-      refs1(125) = 6.61249894957181
-      refs1(126) = 6.57499866309139
-      refs1(127) = 6.53750028648042
-      refs1(128) = 6.50000000000000
-      refs1(129) = 6.46249971351958
-      refs1(130) = 6.42499942703917
-      refs1(131) = 6.38749914055875
-      refs1(132) = 6.34999885407834
-      refs1(133) = 6.31250047746736
-      refs1(134) = 6.27500019098694
-      refs1(135) = 6.23749990450653
-      refs1(136) = 6.19999961802611
-      refs1(137) = 6.16249933154570
-      refs1(138) = 6.12499904506528
-      refs1(139) = 6.08749875858486
-      refs1(140) = 6.05000038197389
-      refs1(141) = 6.01250009549347
-      refs1(142) = 5.97499980901306
-      refs1(143) = 5.93749952253264
-      refs1(144) = 5.89999923605222
-      refs1(145) = 5.86249894957181
-      refs1(146) = 5.82499866309139
-      refs1(147) = 5.78750028648042
-      refs1(148) = 5.75000000000000
-      refs1(149) = 5.71249971351958
-      refs1(150) = 5.67499942703917
-      refs1(151) = 5.63749914055875
-      refs1(152) = 5.59999885407833
-      refs1(153) = 5.56249856759792
-      refs1(154) = 5.52500019098694
-      refs1(155) = 5.48749990450653
-      refs1(156) = 5.44999961802611
-      refs1(157) = 5.41249933154570
-      refs1(158) = 5.37499904506528
-      refs1(159) = 5.33749875858486
-      refs1(160) = 5.29999847210445
-      refs1(161) = 5.26250009549347
-      refs1(162) = 5.22499980901306
-      refs1(163) = 5.18749952253264
-      refs1(164) = 5.14999923605222
-      refs1(165) = 5.11249894957181
-      refs1(166) = 5.07499866309139
-      refs1(167) = 5.03749837661097
-      refs1(168) = 5.00000000000000
-
-      jampi = 0
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
-
-      success = CHANGEDIRQQ("initial_fields/water_depth")
-      if (.not. f90_assert_true(success, 'Could not change to directory ''initial_fields/water_depth''.')) then
-         return
-      end if
-      mdufile = 'dflow1d.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from ''initial_fields/water_depth''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-
-      do i = 1, ndx
-         call f90_expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel incorrect')
-      end do
-
-      deallocate (refs1, stat=istat)
+      call check_branch_interpolation('water_depth', 'initialWaterDepth', 'InitialWaterDepth.ini', &
+                                      [5.0_dp, 7.0_dp, 8.0_dp, 6.5_dp, 5.0_dp, 7.25_dp, 5.75_dp], &
+                                      [3.0_dp, 5.0_dp, 6.0_dp, 4.5_dp, 3.0_dp, 5.25_dp, 3.75_dp])
    end subroutine test_iniField1dField_waterdepth
-!
-!
-!==============================================================================
+
    !$gtest
    subroutine test_iniField1dField_waterlevel() bind(C)
-      use gridoperations
-      use m_cell_geometry, only: ndx
-      use m_flow, only: s1
-      use m_netw
-      use unstruc_model
-      use dfm_error
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-      !
-      ! Locals
-      integer :: i
-      integer :: istat
-      logical :: success
-      real(kind=dp), dimension(:), allocatable :: refs1
-      character(len=40) :: mdufile
-      !
-      ! Body
-      kmax = 2
-      lmax = 2
-      allocate (refs1(168), stat=istat)
-      refs1 = 5.0_dp
-      !
-      ! Branch 2
-      do i = 9, 21
-         refs1(i) = 7.0_dp
-      end do
-      !
-      ! Branch 3, 4, 5
-      refs1(22) = 8.00000000000000
-      refs1(23) = 7.96249971351958
-      refs1(24) = 7.85000076394778
-      refs1(25) = 7.69999961802611
-      refs1(26) = 7.55000038197389
-      refs1(27) = 7.39999923605222
-      refs1(28) = 7.25000000000000
-      refs1(29) = 7.09999885407834
-      refs1(30) = 6.94999961802611
-      refs1(31) = 6.80000038197389
-      refs1(32) = 6.64999923605222
-      refs1(33) = 6.50000000000000
-      refs1(34) = 6.34999885407834
-      refs1(35) = 6.19999961802611
-      refs1(36) = 6.05000038197389
-      refs1(37) = 5.89999923605222
-      refs1(38) = 5.75000000000000
-      refs1(39) = 5.59999885407833
-      refs1(40) = 5.44999961802611
-      refs1(41) = 5.29999847210445
-      refs1(42) = 5.14999923605222
-      refs1(43) = 5.03749837661097
-      refs1(44) = 5.00000000000000
-      refs1(45) = 8.00000000000000
-      refs1(46) = 7.96249971351958
-      refs1(47) = 7.92499942703917
-      refs1(48) = 7.85000076394778
-      refs1(49) = 7.77500019098694
-      refs1(50) = 7.69999961802611
-      refs1(51) = 7.62499904506528
-      refs1(52) = 7.55000038197389
-      refs1(53) = 7.47499980901306
-      refs1(54) = 7.39999923605222
-      refs1(55) = 7.32500057296083
-      refs1(56) = 7.25000000000000
-      refs1(57) = 7.17499942703917
-      refs1(58) = 7.09999885407834
-      refs1(59) = 7.02500019098694
-      refs1(60) = 6.94999961802611
-      refs1(61) = 6.87499904506528
-      refs1(62) = 6.80000038197389
-      refs1(63) = 6.72499980901306
-      refs1(64) = 6.64999923605222
-      refs1(65) = 6.57499866309139
-      refs1(66) = 6.50000000000000
-      refs1(67) = 6.42499942703917
-      refs1(68) = 6.34999885407834
-      refs1(69) = 6.27500019098694
-      refs1(70) = 6.19999961802611
-      refs1(71) = 6.12499904506528
-      refs1(72) = 6.05000038197389
-      refs1(73) = 5.97499980901306
-      refs1(74) = 5.89999923605222
-      refs1(75) = 5.82499866309139
-      refs1(76) = 5.75000000000000
-      refs1(77) = 5.67499942703917
-      refs1(78) = 5.59999885407833
-      refs1(79) = 5.52500019098694
-      refs1(80) = 5.44999961802611
-      refs1(81) = 5.37499904506528
-      refs1(82) = 5.29999847210445
-      refs1(83) = 5.22499980901306
-      refs1(84) = 5.14999923605222
-      refs1(85) = 5.07499866309139
-      refs1(86) = 5.03749837661097
-      refs1(87) = 5.00000000000000
-      refs1(88) = 8.00000000000000
-      refs1(89) = 7.96249971351958
-      refs1(90) = 7.92499942703917
-      refs1(91) = 7.88749914055875
-      refs1(92) = 7.85000076394778
-      refs1(93) = 7.81250047746736
-      refs1(94) = 7.77500019098694
-      refs1(95) = 7.73749990450653
-      refs1(96) = 7.69999961802611
-      refs1(97) = 7.66249933154570
-      refs1(98) = 7.62499904506528
-      refs1(99) = 7.58750066845430
-      refs1(100) = 7.55000038197389
-      refs1(101) = 7.51250009549347
-      refs1(102) = 7.47499980901306
-      refs1(103) = 7.43749952253264
-      refs1(104) = 7.39999923605222
-      refs1(105) = 7.36249894957181
-      refs1(106) = 7.32500057296083
-      refs1(107) = 7.28750028648042
-      refs1(108) = 7.25000000000000
-      refs1(109) = 7.21249971351958
-      refs1(110) = 7.17499942703917
-      refs1(111) = 7.13749914055875
-      refs1(112) = 7.09999885407834
-      refs1(113) = 7.06250047746736
-      refs1(114) = 7.02500019098694
-      refs1(115) = 6.98749990450653
-      refs1(116) = 6.94999961802611
-      refs1(117) = 6.91249933154570
-      refs1(118) = 6.87499904506528
-      refs1(119) = 6.83749875858486
-      refs1(120) = 6.80000038197389
-      refs1(121) = 6.76250009549347
-      refs1(122) = 6.72499980901306
-      refs1(123) = 6.68749952253264
-      refs1(124) = 6.64999923605222
-      refs1(125) = 6.61249894957181
-      refs1(126) = 6.57499866309139
-      refs1(127) = 6.53750028648042
-      refs1(128) = 6.50000000000000
-      refs1(129) = 6.46249971351958
-      refs1(130) = 6.42499942703917
-      refs1(131) = 6.38749914055875
-      refs1(132) = 6.34999885407834
-      refs1(133) = 6.31250047746736
-      refs1(134) = 6.27500019098694
-      refs1(135) = 6.23749990450653
-      refs1(136) = 6.19999961802611
-      refs1(137) = 6.16249933154570
-      refs1(138) = 6.12499904506528
-      refs1(139) = 6.08749875858486
-      refs1(140) = 6.05000038197389
-      refs1(141) = 6.01250009549347
-      refs1(142) = 5.97499980901306
-      refs1(143) = 5.93749952253264
-      refs1(144) = 5.89999923605222
-      refs1(145) = 5.86249894957181
-      refs1(146) = 5.82499866309139
-      refs1(147) = 5.78750028648042
-      refs1(148) = 5.75000000000000
-      refs1(149) = 5.71249971351958
-      refs1(150) = 5.67499942703917
-      refs1(151) = 5.63749914055875
-      refs1(152) = 5.59999885407833
-      refs1(153) = 5.56249856759792
-      refs1(154) = 5.52500019098694
-      refs1(155) = 5.48749990450653
-      refs1(156) = 5.44999961802611
-      refs1(157) = 5.41249933154570
-      refs1(158) = 5.37499904506528
-      refs1(159) = 5.33749875858486
-      refs1(160) = 5.29999847210445
-      refs1(161) = 5.26250009549347
-      refs1(162) = 5.22499980901306
-      refs1(163) = 5.18749952253264
-      refs1(164) = 5.14999923605222
-      refs1(165) = 5.11249894957181
-      refs1(166) = 5.07499866309139
-      refs1(167) = 5.03749837661097
-      refs1(168) = 5.00000000000000
-
-      jampi = 0
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
-
-      success = CHANGEDIRQQ("initial_fields/water_level")
-      if (.not. f90_assert_true(success, 'Could not change to directory ''initial_fields/water_level''.')) then
-         return
-      end if
-      mdufile = 'dflow1d.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from ''initial_fields/water_level''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-
-      do i = 1, ndx
-         call f90_expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel is incorrect')
-      end do
-
-      deallocate (refs1, stat=istat)
+      call check_branch_interpolation('water_level', 'initialWaterLevel', 'InitialWaterLevel.ini', &
+                                      [7.0_dp, 9.0_dp, 10.0_dp, 8.5_dp, 7.0_dp, 9.25_dp, 7.75_dp], &
+                                      [5.0_dp, 7.0_dp, 8.0_dp, 6.5_dp, 5.0_dp, 7.25_dp, 5.75_dp])
    end subroutine test_iniField1dField_waterlevel
-!
-!
-!==============================================================================
+
    !$gtest
    subroutine test_iniField1dField_waterdepth_cross_sections() bind(C)
-      use gridoperations
-      use m_cell_geometry, only: ndx
-      use m_flow, only: s1
-      use m_netw
-      use unstruc_model
-      use dfm_error
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-      !
-      ! Locals
-      integer :: i
-      integer :: istat
-      logical :: success
-      real(kind=dp) :: global_water_depth
-      real(kind=dp) :: first_branch_shift
-      real(kind=dp) :: cross_section_lowest_level
-      character(len=40) :: mdufile
+      use m_alloc, only: realloc
+      use m_crosssections, only: CS_TABULATED, t_CSType, setParsCross
+      use m_flowgeom, only: bob, bob0, kcu, ln, lnx1d, lnx1db, lnxi
+      use m_oned_functions, only: setbobs_1d
+      use network_data, only: LINK_1D
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
-      global_water_depth = 5.0
-      cross_section_lowest_level = -13.12345
-      first_branch_shift = 1000
-      kmax = 2
-      lmax = 2
+      real(kind=dp), parameter :: global_water_depth = 5.0_dp
+      real(kind=dp), parameter :: cross_section_lowest_level = -13.12345_dp
+      real(kind=dp), parameter :: first_branch_shift = 1000.0_dp
+      type(t_CSType), target :: definition
+      integer :: link_index
 
-      jampi = 0
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
+      ! Two independent 1D links use the same profile, one with a vertical shift.
+      call setup_field(0, [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp], 0)
+      lnx1d = 2
+      lnxi = lnx1d
+      lnx1db = lnx1d
+      call realloc(ln, [2, lnx1d], keepExisting=.false.)
+      ln = reshape([1, 2, 3, 4], shape(ln))
+      call realloc(kcu, lnx1d, fill=LINK_1D, keepExisting=.false.)
+      call realloc(bob, [2, lnx1d], keepExisting=.false.)
+      call realloc(bob0, [2, lnx1d], keepExisting=.false.)
 
-      success = CHANGEDIRQQ("initial_fields/water_depth_cross_sections")
-      if (.not. f90_assert_true(success, 'Could not change to directory ''initial_fields/water_depth_cross_sections''.')) then
-         return
-      end if
-      mdufile = 'dflow1d.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from ''initial_fields/water_depth_cross_sections''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-
-      ! First branch
-      do i = 1, 8
-         call f90_expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth + first_branch_shift, &
-                                       eps, 'initial waterlevel is incorrect')
+      definition%crossType = CS_TABULATED
+      definition%closed = .false.
+      definition%height = [cross_section_lowest_level, 2.0_dp]
+      definition%flowWidth = [1.0_dp, 2.0_dp]
+      definition%levelsCount = size(definition%height)
+      allocate (definition%groundlayer)
+      allocate (network%crs%cross(lnx1d), network%adm%line2cross(lnx1d, 3))
+      network%crs%count = lnx1d
+      network%crs%size = lnx1d
+      network%crs%cross%shift = [first_branch_shift, 0.0_dp]
+      do link_index = 1, lnx1d
+         network%crs%cross(link_index)%tabDef => definition
+         call setParsCross(definition, network%crs%cross(link_index))
+         network%adm%line2cross(link_index, :)%c1 = link_index
+         network%adm%line2cross(link_index, :)%c2 = link_index
+         network%adm%line2cross(link_index, :)%f = 1.0_dp
       end do
-      do i = 9, ndx
-         call f90_expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth, &
-                                       eps, 'initial waterlevel is incorrect')
+      call setbobs_1d()
+      do link_index = 1, lnx1d
+         nullify (network%crs%cross(link_index)%tabDef)
       end do
+      deallocate (definition%groundlayer)
+
+      call apply_field('water_depth_cross_sections', 'initialWaterDepth', 'InitialWaterDepth.ini')
+      call finalize_1dfield_global_values()
+
+      call f90_expect_relative_near(s1(1:2), &
+                                    [cross_section_lowest_level + first_branch_shift + global_water_depth, &
+                                     cross_section_lowest_level + first_branch_shift + global_water_depth], &
+                                    eps, 'Water level on the shifted cross-section link')
+      call f90_expect_relative_near(s1(3:4), &
+                                    [cross_section_lowest_level + global_water_depth, cross_section_lowest_level + global_water_depth], &
+                                    eps, 'Water level on the unshifted cross-section link')
    end subroutine test_iniField1dField_waterdepth_cross_sections
 
-   subroutine two_branch_water_depth_and_level_combination(level_first_branch, level_second_branch, test_dir_name)
-      use gridoperations
-      use stdlib_kinds, only: dp
-      use m_flow, only: s1, hs
-      use m_flowgeom, only: bl
-      use m_netw
-      use unstruc_model
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
+   subroutine check_water_depth_and_level(depth_dir, level_dir, level_first, expected_levels)
+      use m_branch, only: fill_hashtable
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
-      real(kind=dp), intent(in) :: level_first_branch
-      real(kind=dp), intent(in) :: level_second_branch
-      character(len=*), intent(in) :: test_dir_name
+      character(len=*), intent(in) :: depth_dir, level_dir
+      logical, intent(in) :: level_first
+      real(kind=dp), dimension(2), intent(in) :: expected_levels
+      real(kind=dp), dimension(2), parameter :: bed_levels = [-2.0_dp, -2.0_dp]
 
-      integer, parameter :: number_nodes_first_branch = 15
-      integer, parameter :: number_nodes_second_branch = 14
-      character(len=12) :: mdufile
-      integer :: i
-      logical :: success
-      integer :: istat
+      call setup_field(2, bed_levels, 0)
+      call set_branch(network%brs%branch(1), 'Channel_1D_1', 1, [0.0_dp])
+      call set_branch(network%brs%branch(2), 'Channel_1D_2', 2, [0.0_dp])
+      call fill_hashtable(network%brs)
 
-      kmax = 2
-      lmax = 2
-      mdufile = 'FM_model.mdu'
-
-      jampi = 0
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
-
-      success = CHANGEDIRQQ(test_dir_name)
-      if (.not. f90_assert_true(success, 'Could not change to directory '''//trim(test_dir_name)//'''.')) then
-         return
+      if (level_first) then
+         call apply_field(level_dir, 'initialWaterLevel', 'InitialWaterLevel.ini')
+         call apply_field(depth_dir, 'initialWaterDepth', 'InitialWaterDepth.ini')
+      else
+         call apply_field(depth_dir, 'initialWaterDepth', 'InitialWaterDepth.ini')
+         call apply_field(level_dir, 'initialWaterLevel', 'InitialWaterLevel.ini')
       end if
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from '''//trim(test_dir_name)//'''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
+      call finalize_1dfield_global_values()
 
-      do i = 1, number_nodes_first_branch
-         call f90_expect_relative_near(bl(i), 0.0_dp, eps, 'first branch initial bedlevel is incorrect')
-         call f90_expect_relative_near(hs(i), level_first_branch, eps, 'first branch initial waterdepth is incorrect')
-         call f90_expect_relative_near(s1(i), level_first_branch, eps, 'first branch initial waterlevel is incorrect')
-      end do
-      do i = number_nodes_first_branch + 1, number_nodes_first_branch + number_nodes_second_branch
-         call f90_expect_relative_near(bl(i), 0.0_dp, eps, 'second branch initial bedlevel is incorrect')
-         call f90_expect_relative_near(hs(i), level_second_branch, eps, 'second branch initial waterdepth is incorrect')
-         call f90_expect_relative_near(s1(i), level_second_branch, eps, 'second branch initial waterlevel is incorrect')
-      end do
-   end subroutine two_branch_water_depth_and_level_combination
+      call f90_expect_relative_near(bl, bed_levels, eps, 'Initial fields must not change the bed')
+      call f90_expect_relative_near(s1, expected_levels, eps, 'Initial water levels on each branch')
+      call f90_expect_relative_near(hs, expected_levels - bed_levels, eps, 'Initial water depths on each branch')
+   end subroutine check_water_depth_and_level
 
    !$gtest
    subroutine test_water_depth_and_level_no_globals() bind(C)
-      use stdlib_kinds, only: dp
-      real(kind=dp), parameter :: water_level_first_branch = 900.0_dp
-      real(kind=dp), parameter :: water_level_second_branch = 20.0_dp
-      character(len=*), parameter :: test_dir_name = 'initial_fields/water_depth_level_no_globals'
-
-      call two_branch_water_depth_and_level_combination(water_level_first_branch, water_level_second_branch, test_dir_name)
+      call check_water_depth_and_level('water_depth_global_level', 'water_depth_level_no_globals', .false., [900.0_dp, 18.0_dp])
    end subroutine test_water_depth_and_level_no_globals
 
    !$gtest
    subroutine test_water_depth_and_level_ignore_globals() bind(C)
-      use stdlib_kinds, only: dp
-      real(kind=dp), parameter :: water_level_first_branch = 900.0_dp
-      real(kind=dp), parameter :: water_level_second_branch = 20.0_dp
-      character(len=*), parameter :: test_dir_name = 'initial_fields/water_depth_level_ignore_globals'
-
-      call two_branch_water_depth_and_level_combination(water_level_first_branch, water_level_second_branch, test_dir_name)
+      call check_water_depth_and_level('water_depth_level_ignore_globals', 'water_depth_level_ignore_globals', &
+                                       .false., [900.0_dp, 18.0_dp])
    end subroutine test_water_depth_and_level_ignore_globals
 
    !$gtest
    subroutine test_water_depth_and_global_level() bind(C)
-      use stdlib_kinds, only: dp
-      real(kind=dp), parameter :: water_level_global = 100.0_dp
-      real(kind=dp), parameter :: water_level_second_branch = 20.0_dp
-      character(len=*), parameter :: test_dir_name = 'initial_fields/water_depth_global_level'
-
-      call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
+      call check_water_depth_and_level('water_depth_global_level', 'water_depth_global_level', .false., [100.0_dp, 18.0_dp])
    end subroutine test_water_depth_and_global_level
 
    !$gtest
    subroutine test_water_global_level_and_depth() bind(C)
-      use stdlib_kinds, only: dp
-      real(kind=dp), parameter :: water_level_global = 100.0_dp
-      real(kind=dp), parameter :: water_level_second_branch = 20.0_dp
-      character(len=*), parameter :: test_dir_name = 'initial_fields/water_global_level_depth'
-
-      call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
+      call check_water_depth_and_level('water_depth_global_level', 'water_depth_global_level', .true., [100.0_dp, 18.0_dp])
    end subroutine test_water_global_level_and_depth
 
    !$gtest
    subroutine test_water_only_depths() bind(C)
-      use stdlib_kinds, only: dp
-      real(kind=dp), parameter :: water_level_global = 300.0_dp
-      real(kind=dp), parameter :: water_level_second_branch = 400.0_dp
-      character(len=*), parameter :: test_dir_name = 'initial_fields/water_only_depths'
-
-      call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
+      call check_water_depth_and_level('water_only_depths', 'water_only_depths', .true., [298.0_dp, 398.0_dp])
    end subroutine test_water_only_depths
 
    !$gtest
    subroutine test_iniField1d_waterlevel_2d_points_not_set() bind(C)
-      use gridoperations
-      use stdlib_kinds, only: dp
-      use m_flow, only: s1, hs
-      use m_flowgeom, only: bl
-      use m_partitioninfo, only: jampi
-      use m_netw
-      use unstruc_model
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
-      character(len=12) :: mdufile
-      character(len=*), parameter :: test_dir_name = 'initial_fields/with_2d'
-      integer, parameter :: number_1d_nodes = 12
-      integer, parameter :: number_2d_nodes = 1
-      real(kind=dp), parameter :: level_1d = 1.0_dp
-      real(kind=dp), parameter :: level_2d = 0.0_dp
-      integer :: i
-      logical :: success
-      integer :: istat
+      call setup_field(0, [-2.0_dp, -2.0_dp], 1)
+      s1(1) = 4.0_dp
+      hs(1) = 6.0_dp
 
-      mdufile = 'FM_model.mdu'
-      jampi = 0
-      kmax = 2
-      lmax = 2
+      call apply_field('with_2d', 'initialWaterLevel', 'InitialWaterLevel.ini')
+      call finalize_1dfield_global_values()
 
-      iarg_usecaching = 0
-      call resetMaxerrorLevel()
-      call increaseNetw(kmax, lmax)
-      call resetFullFlowModel()
-
-      success = CHANGEDIRQQ(test_dir_name)
-      if (.not. f90_assert_true(success, 'Could not change to directory '''//trim(test_dir_name)//'''.')) then
-         return
-      end if
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from '''//trim(test_dir_name)//'''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-
-      do i = 1, number_2d_nodes
-         call f90_expect_relative_near(bl(i), 0.0_dp, eps, '2d initial bedlevel is incorrect')
-         call f90_expect_relative_near(hs(i), level_2d, eps, '2d initial waterdepth is incorrect')
-         call f90_expect_relative_near(s1(i), level_2d, eps, '2d initial waterlevel is incorrect')
-      end do
-      do i = number_2d_nodes + 1, number_2d_nodes + number_1d_nodes
-         call f90_expect_relative_near(bl(i), 0.0_dp, eps, '1d initial bedlevel is incorrect')
-         call f90_expect_relative_near(hs(i), level_1d, eps, '1d initial waterdepth is incorrect')
-         call f90_expect_relative_near(s1(i), level_1d, eps, '1d initial waterlevel is incorrect')
-      end do
+      call f90_expect_relative_near(s1, [4.0_dp, 1.0_dp], eps, 'The global 1D level must leave the 2D cell unchanged')
+      call f90_expect_relative_near(hs, [6.0_dp, 3.0_dp], eps, 'The global 1D level must leave the 2D depth unchanged')
    end subroutine test_iniField1d_waterlevel_2d_points_not_set
 
 end module test_ini_Field_1dField

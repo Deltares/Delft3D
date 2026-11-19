@@ -20,38 +20,14 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module chdir_mod
-   implicit none
-
-   interface
-      integer function c_chdir(path) bind(C, name="chdir")
-         use iso_c_binding
-         character(kind=c_char) :: path(*)
-      end function
-   end interface
-
-contains
-
-   subroutine chdir(path, err)
-      use iso_c_binding
-      character(*) :: path
-      integer, optional, intent(out) :: err
-      integer :: loc_err
-
-      loc_err = c_chdir(path//c_null_char)
-
-      if (present(err)) err = loc_err
-   end subroutine
-end module chdir_mod
-
 module test_observations
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq, f90_expect_true, &
+   use assertions_gtest, only: f90_assert_eq, f90_expect_eq, f90_expect_streq, f90_expect_true, &
                                f90_expect_relative_near
-   use precision
+   use precision, only: dp
 
    implicit none(type, external)
    private
-   real(fp), parameter :: eps = 1.0e-6_fp
+   real(kind=dp), parameter :: eps = 1.0e-6_dp
 
 contains
 !
@@ -115,66 +91,83 @@ contains
 !
 !==============================================================================
    !$gtest
-   subroutine test_read_snapped_obs_points() bind(C)
-      use gridoperations
-      use m_cell_geometry, only: xz, yz
-      use m_commandline_option, only: iarg_usecaching
-      use m_netw
-      use m_observations
-      use unstruc_model
+   subroutine test_snap_obs_points() bind(C)
+      use m_alloc, only: realloc
+      use m_flowgeom, only: tnode, nd, ndx, ndxi, ndx2d, xz, yz, ln, lnx
+      use m_globalparameters, only: INDTP_1D
+      use m_network_helpers, only: t_grid_helper
+      use m_obs_on_flowgeom, only: obs_on_flowgeom
+      use m_observations, only: addObservation, kobs, lobs
       use m_partitioninfo, only: jampi
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-      !
-      ! Locals
-      integer, parameter :: N_OBS_POINTS = 4
-      integer :: i
-      integer :: istat
-      logical :: success_
-      integer, dimension(N_OBS_POINTS), parameter :: ref_k = [522, 1043, 1565, 1304]
-      real(kind=dp), dimension(2, N_OBS_POINTS), parameter :: refdata = reshape([ &
-                                                                                100000.0_dp, 25000.0_dp, 0.0_dp, 50000.0_dp, &
-                                                                                0.0_dp, 100000.0_dp, 100000.0_dp, 75000.0_dp], [2, N_OBS_POINTS])
-      character(len=40), dimension(N_OBS_POINTS) :: refnames
-      character(len=40) :: mdufile
-      !
-      refnames(1) = 'TestLocation1'
-      refnames(2) = 'TestLocation_xy1'
-      refnames(3) = 'TestLocation2'
-      refnames(4) = 'TestLocation_xy2'
-      !
-      ! Body
+      use network_data, only: nump, netcell, xk, yk, xzw, yzw
+      use unstruc_channel_flow, only: network
+
+      type(t_grid_helper) :: grid
+      type(tnode), dimension(:), allocatable :: saved_nodes
+      integer :: cell_index, branch_index
+      integer, dimension(2, 2) :: cells
+      real(kind=dp), dimension(2), parameter :: centers = [5.0_dp, 15.0_dp]
+
+      ! Two parallel 1D branches. Reuse square cells as their point-in-cell search polygons.
       jampi = 0
-      iarg_usecaching = 0
-      kmax = 2
-      lmax = 2
-      call resetFullFlowModel()
-      call increaseNetw(kmax, lmax)
-      !
-      success_ = CHANGEDIRQQ("observations/snapped")
-      if (.not. f90_assert_true(success_, 'Could not change to directory ''observations/snapped''.')) then
+      call grid%make_square_grid(0.0_dp, 0.0_dp, 10.0_dp, rows=2, columns=2)
+      if (.not. f90_assert_eq(nump, 4, 'Number of snapping cells')) then
          return
       end if
-
-      mdufile = 'Flow1d.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-
-      success_ = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success_, 'Could not restore the working directory from ''observations/snapped''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-      !
-      do i = 1, N_OBS_POINTS
-         call f90_expect_eq(kobs(i), ref_k(i), 'index of snapped observation points incorrect')
-         call f90_expect_relative_near(xz(kobs(i)), refdata(1, i), eps, 'x-coordinate of snapped observation points incorrect')
-         call f90_expect_relative_near(yz(kobs(i)), refdata(2, i), eps, 'y-coordinate of snapped observation points incorrect')
-         call f90_expect_streq(trim(namobs(i)), trim(refnames(i)), "Snapped observation point name incorrect")
+      ndx = nump
+      ndxi = ndx
+      ndx2d = 0
+      xz = xzw(1:ndx)
+      yz = yzw(1:ndx)
+      call move_alloc(nd, saved_nodes)
+      allocate (nd(ndx))
+      do cell_index = 1, ndx
+         nd(cell_index)%x = xk(netcell(cell_index)%nod)
+         nd(cell_index)%y = yk(netcell(cell_index)%nod)
+         nd(cell_index)%lnx = 1
       end do
-   end subroutine test_read_snapped_obs_points
+
+      allocate (network%brs%branch(2), network%obs%OPnt(2))
+      network%brs%count = 2
+      network%brs%size = 2
+      network%obs%count = 2
+      network%obs%size = 2
+      lnx = 2
+      call realloc(ln, [2, lnx], keepExisting=.false.)
+      do branch_index = 1, 2
+         cells(1, branch_index) = minloc(abs(xz - centers(1)) + abs(yz - centers(branch_index)), dim=1)
+         cells(2, branch_index) = minloc(abs(xz - centers(2)) + abs(yz - centers(branch_index)), dim=1)
+         ln(:, branch_index) = cells(:, branch_index)
+         associate (branch => network%brs%branch(branch_index))
+            branch%gridPointsCount = 2
+            branch%gridPointsChainages = [0.0_dp, 10.0_dp]
+            branch%gridPointsSeqCount = 1
+            branch%k1gridPointsSeq = [1]
+            branch%k2gridPointsSeq = [2]
+            branch%grd = cells(:, branch_index)
+            branch%uPointsCount = 1
+            branch%uPointsChainages = [5.0_dp]
+            branch%isGPLastAtBranchEnd = .true.
+         end associate
+         network%obs%OPnt(branch_index)%branchIdx = branch_index
+      end do
+
+      network%obs%OPnt%chainage = [8.0_dp, 2.0_dp]
+      ! Give branch stations conflicting XY positions so the test distinguishes the two lookup paths.
+      call addObservation(7.0_dp, 5.0_dp, 'lower branch', loctype=INDTP_1D, iOP=1)
+      call addObservation(13.0_dp, 15.0_dp, 'upper branch', loctype=INDTP_1D, iOP=2)
+      call addObservation(6.0_dp, 6.0_dp, 'lower XY', loctype=INDTP_1D)
+      call addObservation(14.0_dp, 14.0_dp, 'upper XY', loctype=INDTP_1D)
+
+      call obs_on_flowgeom(0)
+      call move_alloc(saved_nodes, nd)
+
+      call f90_expect_eq(kobs(1), cells(2, 1), 'Lower branch: after the link midpoint')
+      call f90_expect_eq(kobs(2), cells(1, 2), 'Upper branch: before the link midpoint')
+      call f90_expect_eq(kobs(3), cells(1, 1), 'Lower XY: enclosing cell')
+      call f90_expect_eq(kobs(4), cells(2, 2), 'Upper XY: enclosing cell')
+      call f90_expect_eq(lobs(3), 1, 'Lower XY: nearest link')
+      call f90_expect_eq(lobs(4), 2, 'Upper XY: nearest link')
+   end subroutine test_snap_obs_points
 
 end module test_observations

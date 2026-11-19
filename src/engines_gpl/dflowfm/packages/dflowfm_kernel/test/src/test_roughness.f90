@@ -37,7 +37,6 @@ contains
       use m_roughness
       use m_read_roughness
       use m_hash_search
-      use ifport
 
       type(t_network) :: network
       type(t_CSType), pointer :: cross
@@ -45,7 +44,6 @@ contains
       integer :: ibranch
       integer :: section
       integer :: igrid
-      logical :: success
       real(kind=dp) :: h
       real(kind=dp) :: q
       real(kind=dp) :: u
@@ -67,12 +65,8 @@ contains
       call fill_hashtable(network%brs)
       cross => null()
 
-      success = CHANGEDIRQQ("roughness")
-
-      roughnessfiles = 'roughness_main.ini;roughness-globals.ini'
+      roughnessfiles = 'roughness/roughness_main.ini;roughness/roughness-globals.ini'
       call roughness_reader(network, roughnessfiles)
-
-      success = CHANGEDIRQQ("..")
 
       ibranch = 4
       section = hashsearch(network%rgs%hashlist, 'chezy45')

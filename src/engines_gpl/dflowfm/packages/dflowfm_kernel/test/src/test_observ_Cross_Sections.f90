@@ -21,120 +21,113 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_obserCrossSections
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq, f90_expect_relative_near
-   use precision
+   use assertions_gtest, only: f90_assert_eq, f90_expect_eq, f90_expect_streq, f90_expect_near
+   use precision, only: dp
 
    implicit none(type, external)
    private
-   real(fp), parameter :: eps = 1.0e-6_fp
+   real(kind=dp), parameter :: eps = 1.0e-9_dp
 
 contains
-!
-!
-!==============================================================================
-!
-!
-!==============================================================================
    !$gtest
    subroutine test_read_snapped_observ_crs() bind(C)
-      use gridoperations
-      use m_commandline_option, only: iarg_usecaching
-      use m_flowgeom, only: xu, yu
-      use m_netw
-      use m_monitoring_crosssections
-      use unstruc_model
+      use m_alloc, only: realloc
+      use m_branch, only: fill_hashtable
+      use m_crosssections_on_flowgeom, only: crosssections_on_flowgeom
+      use m_flowgeom, only: ln, lnx, lnxi, lnx1d, ln2lne, kcu, ndx, xz, yz, wu
+      use m_monitoring_crosssections, only: loadObservCrossSections, crs, ncrs
       use m_partitioninfo, only: jampi
-      use network_data, only: numk
-      use ifport
-      use m_flow_modelinit, only: flow_modelinit
-      use m_resetfullflowmodel, only: resetfullflowmodel
-      !
-      ! Locals
-      integer, parameter :: N_Observ_Crs = 3
-      integer :: i
-      integer :: istat
-      logical :: success
-      real(kind=dp), dimension(2), parameter :: refcoord1 = [1.458360454017425e5_dp, 4.271440320425944e5_dp]
-      real(kind=dp), dimension(2, 3), parameter :: refcoord2 = reshape([ &
-                                                                       145883.0_dp, 427375.0_dp, 145897.0_dp, 427379.0_dp, 145939.0_dp, 427382.0_dp], [2, 3])
-      real(kind=dp), dimension(2), parameter :: refcoord3 = [1.458105097560976e5_dp, 4.271732395492436e5_dp]
-      integer, dimension(N_Observ_Crs), parameter :: ref_lnx = [1, 2, 1]
-      integer, parameter :: ref_L1 = 3, ref_L3 = 11
-      integer, dimension(2), parameter :: ref_L2 = [29, 38]
-      real(kind=dp), dimension(2), parameter :: refdata1 = [145839.15_dp, 427141.25_dp]
-      real(kind=dp), dimension(2, 2), parameter :: refdata2 = reshape([ &
-                                                                      145888.15_dp, 427376.85_dp, 145928.7_dp, 427385.8_dp], [2, 2])
-      real(kind=dp), dimension(2), parameter :: refdata3 = [145802.8_dp, 427187.0_dp]
-      character(len=40), dimension(N_Observ_Crs) :: refnames
-      character(len=40) :: mdufile
+      use m_save_ugrid_state, only: meshgeom1d
+      use network_data, only: numl, LINK_1D
+      use unstruc_channel_flow, only: network
 
-      refnames(1) = 'ObservCross1'
-      refnames(2) = 'ObservCross_xy2'
-      refnames(3) = 'ObservCross2'
-      !
-      ! Body
+      integer :: branch_index, saved_numl
+
+      ! Two parallel branches, one link each. The polyline crosses both links.
       jampi = 0
-      iarg_usecaching = 0
-      kmax = 2
-      lmax = 2
-      numk = 0
-      !call inidat()
-      call increaseNetw(kmax, lmax)
+      ndx = 4
+      lnx = 2
+      lnxi = lnx
+      lnx1d = lnx
+      xz = [0.0_dp, 10.0_dp, 0.0_dp, 10.0_dp]
+      yz = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp]
+      call realloc(ln, [2, lnx], keepExisting=.false.)
+      ln = reshape([1, 2, 3, 4], shape(ln))
+      ln2lne = [1, 2]
+      call realloc(kcu, lnx, fill=LINK_1D, keepExisting=.false.)
+      call realloc(wu, lnx, fill=2.0_dp, keepExisting=.false.)
 
-      call resetFullFlowModel()
-
-      !
-      success = CHANGEDIRQQ("observations/cross_sections_snapped")
-      if (.not. f90_assert_true(success, 'Could not change to directory ''observations/cross_sections_snapped''.')) then
-         return
-      end if
-      mdufile = 'FlowFM.mdu'
-      call loadModel(mdufile)
-      istat = flow_modelinit()
-      success = CHANGEDIRQQ("../..")
-      if (.not. f90_assert_true(success, 'Could not restore the working directory from ''observations/cross_sections_snapped''.')) then
-         return
-      end if
-      if (.not. f90_assert_eq(istat, 0, 'Could not initialize flow model.')) then
-         return
-      end if
-      !
-      ! first observCrs
-      call f90_expect_streq(trim(crs(1)%name), trim(refnames(1)), 'Name of the first observation cross section incorrect')
-      call f90_expect_relative_near(crs(1)%path%xp(1), refcoord1(1), eps, &
-                                    'x-coordinate of the first observation cross section incorrect')
-      call f90_expect_relative_near(crs(1)%path%yp(1), refcoord1(2), eps, &
-                                    'y-coordinate of the first observation cross section incorrect')
-      call f90_expect_eq(crs(1)%path%lnx, ref_lnx(1), 'Number of snapped flowlinks of the first observation cross section incorrect')
-      call f90_expect_eq(crs(1)%path%ln(1), ref_L1, 'Index of snapped flowlink of the first observation cross section incorrect')
-      call f90_expect_relative_near(xu(crs(1)%path%ln(1)), refdata1(1), eps, 'x-coordinate of snapped flowlink of the first observation cross section incorrect')
-      call f90_expect_relative_near(yu(crs(1)%path%ln(1)), refdata1(2), eps, 'y-coordinate of snapped flowlink of the first observation cross section incorrect')
-
-      ! second observCrs
-      call f90_expect_streq(trim(crs(2)%name), trim(refnames(2)), 'Name of the second observation cross section incorrect')
-      do i = 1, 3
-         call f90_expect_relative_near(crs(2)%path%xp(i), refcoord2(1, i), eps, &
-                                       'x-coordinate of the second observation cross section incorrect')
-         call f90_expect_relative_near(crs(2)%path%yp(i), refcoord2(2, i), eps, &
-                                       'y-coordinate of the second observation cross section incorrect')
+      allocate (network%brs%branch(2))
+      network%brs%count = 2
+      network%brs%size = 2
+      network%brs%branch(1)%id = 'lower'
+      network%brs%branch(2)%id = 'upper'
+      do branch_index = 1, 2
+         associate (branch => network%brs%branch(branch_index))
+            branch%length = 10.0_dp
+            branch%gridPointsChainages = [0.0_dp, 10.0_dp]
+            branch%gridPointsSeqCount = 1
+            branch%k1gridPointsSeq = [1]
+            branch%k2gridPointsSeq = [2]
+            branch%lin = [branch_index]
+         end associate
       end do
-      call f90_expect_eq(crs(2)%path%lnx, ref_lnx(2), 'Number of snapped flowlinks of the second observation cross section incorrect')
-      do i = 1, 2
-         call f90_expect_eq(crs(2)%path%ln(i), ref_L2(i), 'Index of snapped flowlink of the second observation cross section incorrect')
-         call f90_expect_relative_near(xu(crs(2)%path%ln(i)), refdata2(1, i), eps, 'x-coordinate of snapped flowlink of the second observation cross section incorrect')
-         call f90_expect_relative_near(yu(crs(2)%path%ln(i)), refdata2(2, i), eps, 'y-coordinate of snapped flowlink of the second observation cross section incorrect')
-      end do
-      ! third observCrs
-      call f90_expect_streq(trim(crs(3)%name), trim(refnames(3)), 'Name of the third observation cross section incorrect')
-      call f90_expect_relative_near(crs(3)%path%xp(1), refcoord3(1), eps, &
-                                    'x-coordinate of the third observation cross section incorrect')
-      call f90_expect_relative_near(crs(3)%path%yp(1), refcoord3(2), eps, &
-                                    'y-coordinate of the third observation cross section incorrect')
-      call f90_expect_eq(crs(3)%path%lnx, ref_lnx(3), 'Number of snapped flowlinks of the third observation cross section incorrect')
-      call f90_expect_eq(crs(3)%path%ln(1), ref_L3, 'Index of snapped flowlink of the third observation cross section incorrect')
-      call f90_expect_relative_near(xu(crs(3)%path%ln(1)), refdata3(1), eps, 'x-coordinate of snapped flowlink of the third observation cross section incorrect')
-      call f90_expect_relative_near(yu(crs(3)%path%ln(1)), refdata3(2), eps, 'y-coordinate of snapped flowlink of the third observation cross section incorrect')
+      call fill_hashtable(network%brs)
 
+      allocate (meshgeom1d%ngeopointx(4), meshgeom1d%ngeopointy(4))
+      allocate (meshgeom1d%nbranchgeometrynodes(2), meshgeom1d%nbranchlengths(2))
+      meshgeom1d%ngeopointx = xz
+      meshgeom1d%ngeopointy = yz
+      meshgeom1d%nbranchgeometrynodes = [2, 2]
+      meshgeom1d%nbranchlengths = [10.0_dp, 10.0_dp]
+      call loadObservCrossSections('observations/cross_sections_snapped/observcrs.ini', 0)
+      deallocate (meshgeom1d%ngeopointx, meshgeom1d%ngeopointy)
+      deallocate (meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranchlengths)
+      if (.not. f90_assert_eq(ncrs, 3, 'Number of monitoring cross sections read')) then
+         return
+      end if
+
+      saved_numl = numl
+      numl = lnx
+      call crosssections_on_flowgeom()
+      numl = saved_numl
+
+      call check_branch_cross_section(1, 'ObservCross1', 1, 2.0_dp, 0.0_dp)
+      call check_branch_cross_section(3, 'ObservCross2', 2, 8.0_dp, 10.0_dp)
+      call f90_expect_streq(trim(crs(2)%name), 'ObservCross_xy2', 'Polyline cross-section name')
+      associate (path => crs(2)%path)
+         if (.not. f90_assert_eq(path%np, 3, 'Number of polyline vertices')) then
+            return
+         end if
+         call f90_expect_near(path%xp(1:3), [5.0_dp, 5.0_dp, 5.0_dp], eps, 'Polyline x coordinates')
+         call f90_expect_near(path%yp(1:3), [-2.0_dp, 5.0_dp, 12.0_dp], eps, 'Polyline y coordinates')
+         if (.not. f90_assert_eq(path%lnx, 2, 'Number of links crossed by the polyline')) then
+            return
+         end if
+         call f90_expect_eq(path%ln(path%iperm(1)), 1, 'First flow link crossed by the polyline')
+         call f90_expect_eq(path%ln(path%iperm(2)), 2, 'Second flow link crossed by the polyline')
+      end associate
    end subroutine test_read_snapped_observ_crs
+
+   subroutine check_branch_cross_section(section_index, name, link_index, x, y)
+      use m_monitoring_crosssections, only: crs
+
+      integer, intent(in) :: section_index, link_index
+      character(len=*), intent(in) :: name
+      real(kind=dp), intent(in) :: x, y
+
+      call f90_expect_streq(trim(crs(section_index)%name), name, 'Branch cross-section name')
+      associate (path => crs(section_index)%path)
+         if (.not. f90_assert_eq(path%np, 1, 'Number of coordinates for a branch cross section')) then
+            return
+         end if
+         call f90_expect_near(path%xp(1), x, eps, 'Branch cross-section x coordinate')
+         call f90_expect_near(path%yp(1), y, eps, 'Branch cross-section y coordinate')
+         if (.not. f90_assert_eq(path%lnx, 1, 'Number of links for a branch cross section')) then
+            return
+         end if
+         call f90_expect_eq(path%ln(1), link_index, 'Snapped link for a branch cross section')
+      end associate
+   end subroutine check_branch_cross_section
 
 end module test_obserCrossSections
