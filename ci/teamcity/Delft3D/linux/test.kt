@@ -171,6 +171,29 @@ object LinuxTest : BuildType({
         }
     }
 
+    cleanup {
+        baseRule {
+            history(days = 90)
+            preventDependencyCleanup = false
+        }
+        // Preserve history and statistics after the logs and artifacts expire.
+        keepRule {
+            id = "KeepHistoryAndStatistics"
+            keepAtLeast = allBuilds()
+            dataToKeep = historyAndStatistics()
+        }
+        keepRule {
+            id = "KeepMainAndReleaseBranches"
+            keepAtLeast = allBuilds()
+            dataToKeep = everything()
+            applyToBuilds {
+                inBranches {
+                    branchFilter = patterns("+:main", "+:all/release/*")
+                }
+            }
+        }
+    }
+
     failureConditions {
         executionTimeoutMin = 90
         errorMessage = true
