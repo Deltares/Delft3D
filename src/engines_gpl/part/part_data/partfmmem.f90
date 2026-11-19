@@ -68,7 +68,7 @@ module m_part_flow
 
     double precision, allocatable :: qw    (:)   !< vertical flux through interface (m3/s)
 
-    integer, allocatable :: lne2ln3D(:,:)      !< flowlink and layer to iexchange dim = Lnx, kmx
+    integer, allocatable :: ln2ln3D(:,:)      !< flowlink and layer to iexchange dim = Lnx, kmx
 
     double precision, allocatable :: q0(:)   !< [m3/s] discharge     (m3/s) for current time step (makes vol0 -> vol1)
     double precision, allocatable :: q1(:)   !< [m3/s] discharge     (m3/s) for next time time step

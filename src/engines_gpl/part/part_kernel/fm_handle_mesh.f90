@@ -143,11 +143,11 @@ contains
            end if
         end do
         
-        call realloc(lne2ln3D, [kmx, Lnx], keepExisting = .false., fill = 0)
-        call make_lne2ln3d (hyd%nosegl, hyd%num_exchanges_u_dir, hyd%ipoint(1:2, 1:hyd%num_exchanges_u_dir), Lnx, hyd%nobndl, kmx, lne2ln3d)
+        call realloc(ln2ln3D, [Lnx, kmx], keepExisting = .false., fill = 0)
+        call make_ln2ln3D (hyd%nosegl, hyd%num_exchanges_u_dir, hyd%ipoint(1:2, 1:hyd%num_exchanges_u_dir), Lnx, hyd%nobndl, kmx, ln2ln3D)
                
-        call realloc(q0, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
-        call realloc(q1, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
+        call realloc(q0, hyd%num_layers * lnx + hyd%num_exchanges_z_dir, keepExisting = .false., fill = 0d0)
+        call realloc(q1, hyd%num_layers * lnx + hyd%num_exchanges_z_dir, keepExisting = .false., fill = 0d0)
 
         nump = waqgeom%numface
         Ndx = hyd%num_cells! waqgeom%numface
@@ -592,7 +592,7 @@ contains
 
     !  initialise grid and hydro data
     subroutine ini_part_grid(hyd)
-        use partmem, only: ihdel, layt, nolayp, tcktot, nmaxp, mmaxp, mnmax2, mnmaxk, laybot
+        use partmem, only: ihdel, layt, nolayp, tcktot, nmaxp, mmaxp, mnmax2, mnmaxk, laybot, lgrid3
         use m_part_flow
         use m_part_transport, only: constituents, numconst
         use m_missing
@@ -651,18 +651,18 @@ contains
         if (timon) call timstop (ithndl)
     end subroutine ini_part_grid
     
-    subroutine make_lne2ln3d(nosegl, num_exchanges, ipoint, Lnx, nobndl, kmx, lne2ln3d)
+    subroutine make_ln2ln3D(nosegl, num_exchanges, ipoint, Lnx, nobndl, kmx, ln2ln3D)
     integer, intent(in) :: nosegl
     integer, intent(in) :: num_exchanges
     integer, intent(in) :: ipoint(2, num_exchanges)
     integer, intent(in) :: Lnx
     integer, intent(in) :: nobndl
     integer, intent(in) :: kmx
-    integer, intent(inout) :: lne2ln3d(kmx, Lnx)
+    integer, intent(inout) :: ln2ln3D(Lnx, kmx)
 
-    integer :: i, ifrom, ito, ilay, l, max_cell_from_exchanges, cell_from_exchanges
+    integer :: i, ifrom, ito, ilay, ilink, max_cell_from_exchanges, cell_from_exchanges
     
-    ! Fill lne2ln3d based on the pointer table of first layer (ipoint)
+    ! Fill ln2ln3D based on the pointer table of first layer (ipoint)
     
     integer, allocatable :: no_cell_exchange(:)
     integer, allocatable :: cell_to_cell(:,:)
@@ -682,36 +682,37 @@ contains
     cell_exchange = 0
     
     ! Fill cell_to_cell and cell_exchange arrays with first layer exchanges
-    do l = 1, Lnx
-       ifrom = ipoint(1, l)
+    ilay = 1
+    do ilink = 1, Lnx
+       ifrom = ipoint(1, ilink)
        no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
-       cell_to_cell(ifrom, no_cell_exchange(ifrom)) = ipoint(2, l)
-       cell_exchange(ifrom, no_cell_exchange(ifrom)) = l
-       lne2ln3d(1, l) = l
+       cell_to_cell(ifrom, no_cell_exchange(ifrom)) = ipoint(2, ilink)
+       cell_exchange(ifrom, no_cell_exchange(ifrom)) = ilink
+       ln2ln3D(ilink, ilay) = ilink
     end do
 
-    ! For each layer, fill lne2ln3d with the corresponding exchange numbers
-    do l = Lnx + 1, num_exchanges
-       if (ipoint(1, l) > 0) then
-          ifrom = mod(ipoint(1, l) - 1, nosegl) + 1
+    ! For each layer, fill ln2ln3D with the corresponding exchange numbers
+    do ilink = Lnx + 1, num_exchanges
+       if (ipoint(1, ilink) > 0) then
+          ifrom = mod(ipoint(1, ilink) - 1, nosegl) + 1
        else 
-          ifrom = mod(ipoint(1, l) + 1, nobndl) - 1
+          ifrom = mod(ipoint(1, ilink) + 1, nobndl) - 1
        end if
-       if (ipoint(2, l) > 0) then
-          ito = mod(ipoint(2, l) - 1, nosegl) + 1
+       if (ipoint(2, ilink) > 0) then
+          ito = mod(ipoint(2, ilink) - 1, nosegl) + 1
        else 
-          ito = mod(ipoint(2, l) + 1, nobndl) - 1
+          ito = mod(ipoint(2, ilink) + 1, nobndl) - 1
        end if
-       if (ipoint(1, l) > 0) then
-          ilay = int(ipoint(1, l) - 1) / nosegl + 1
+       if (ipoint(1, ilink) > 0) then
+          ilay = int(ipoint(1, ilink) - 1) / nosegl + 1
 		 else	
-          ilay = int(ipoint(2, l) - 1) / nosegl + 1
+          ilay = int(ipoint(2, ilink) - 1) / nosegl + 1
 		 end if
        
        ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
        do i = 1, no_cell_exchange(ifrom)
 			 if (cell_to_cell(ifrom, i) == ito) then
-             lne2ln3d(ilay, cell_exchange(ifrom, i)) = l
+             ln2ln3D(cell_exchange(ifrom, i), ilay) = ilink
              exit
 			 end if
 		 end do
@@ -723,6 +724,6 @@ contains
     deallocate (cell_exchange)
 
     return
-    end subroutine make_lne2ln3d
+    end subroutine make_ln2ln3D
 
 end module m_fm_handle_mesh
