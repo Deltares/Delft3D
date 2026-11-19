@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module test_temporal_statistics
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_relative_near
    use m_temporal_statistics
    use stdlib_kinds, only: dp
    implicit none(type, external)
@@ -32,16 +32,16 @@ module test_temporal_statistics
 
 contains
 
-!$gtest
+   !$gtest
    subroutine test_create_moving_average() bind(C)
       type(t_moving_average_data) :: moving_average_data
       integer, parameter :: variable_size = 1, window_size = 3
 
       moving_average_data = create_moving_average_data(variable_size, window_size)
-      call expect_relative_near(calculate_moving_average(moving_average_data), [0.0_dp], test_tolerance, '')
+      call f90_expect_relative_near(calculate_moving_average(moving_average_data), [0.0_dp], test_tolerance, '')
    end subroutine test_create_moving_average
 
-!$gtest
+   !$gtest
    subroutine test_moving_average_one_sample_larger_window() bind(C)
       type(t_moving_average_data) :: moving_average_data
       integer, parameter :: variable_size = 1, window_size = 3
@@ -51,10 +51,10 @@ contains
       sample = 3.14
       moving_average_data = create_moving_average_data(variable_size, window_size)
       call update_moving_average_data(moving_average_data, [sample], time_step)
-      call expect_relative_near(calculate_moving_average(moving_average_data), [sample], test_tolerance, '')
+      call f90_expect_relative_near(calculate_moving_average(moving_average_data), [sample], test_tolerance, '')
    end subroutine test_moving_average_one_sample_larger_window
 
-!$gtest
+   !$gtest
    subroutine test_moving_average_one_sample_small_window() bind(C)
       type(t_moving_average_data) :: moving_average_data
       integer, parameter :: variable_size = 1, window_size = 1
@@ -64,10 +64,10 @@ contains
       sample = 3.14
       moving_average_data = create_moving_average_data(variable_size, window_size)
       call update_moving_average_data(moving_average_data, [sample], time_step)
-      call expect_relative_near(calculate_moving_average(moving_average_data), [sample], test_tolerance, '')
+      call f90_expect_relative_near(calculate_moving_average(moving_average_data), [sample], test_tolerance, '')
    end subroutine test_moving_average_one_sample_small_window
 
-!$gtest
+   !$gtest
    subroutine test_moving_average_multiple_samples() bind(C)
       type(t_moving_average_data) :: moving_average_data
       integer, parameter :: variable_size = 1, window_size = 4, number_of_steps = 5
@@ -83,10 +83,10 @@ contains
          call update_moving_average_data(moving_average_data, samples(:, step), time_step)
       end do
       expected_data = [sum(samples(:, number_of_steps - window_size + 1:number_of_steps)) / 4.0_dp]
-      call expect_relative_near(calculate_moving_average(moving_average_data), expected_data, test_tolerance, '')
+      call f90_expect_relative_near(calculate_moving_average(moving_average_data), expected_data, test_tolerance, '')
    end subroutine test_moving_average_multiple_samples
 
-!$gtest
+   !$gtest
    subroutine test_moving_average_varying_time_steps() bind(C)
       type(t_moving_average_data) :: moving_average_data
       integer, parameter :: variable_size = 2, window_size = 4, number_of_steps = 5
@@ -105,7 +105,7 @@ contains
          expected_data(variable) = sum(samples(variable, number_of_steps - window_size + 1:number_of_steps) * time_steps(number_of_steps - window_size + 1:number_of_steps)) &
                                    / sum(time_steps(number_of_steps - window_size + 1:number_of_steps))
       end do
-      call expect_relative_near(calculate_moving_average(moving_average_data), expected_data, test_tolerance, '')
+      call f90_expect_relative_near(calculate_moving_average(moving_average_data), expected_data, test_tolerance, '')
    end subroutine test_moving_average_varying_time_steps
 
 end module test_temporal_statistics

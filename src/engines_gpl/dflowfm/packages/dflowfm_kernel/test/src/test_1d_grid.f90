@@ -27,8 +27,8 @@ module test_1d_grid
    private
 contains
 
-!> test for network in Figure B.1, renumbered branches
-!$gtest
+   !> test for network in Figure B.1, renumbered branches
+   !$gtest
    subroutine test_start_end_nodes_of_branches_A() bind(C)
       use gridgeom, only: ggeo_get_start_end_nodes_of_branches
       integer, parameter :: nBranches = 3
@@ -44,11 +44,10 @@ contains
       call f90_expect_eq(ierr, 0, 'Ordered branch indices should be accepted')
       call f90_expect_true(gpFirst == [1, 6, 10], 'check gpFirst')
       call f90_expect_true(gpLast == [5, 9, 13], 'check gpLast')
-
    end subroutine test_start_end_nodes_of_branches_A
 
-!> Verify that branch indices not stored in increasing order are rejected.
-!$gtest
+   !> Verify that branch indices not stored in increasing order are rejected.
+   !$gtest
    subroutine test_start_end_nodes_reject_unordered_branches() bind(C)
       use gridgeom, only: ggeo_get_start_end_nodes_of_branches
       integer, parameter :: nBranches = 3
@@ -62,7 +61,5 @@ contains
       test_nodebranchidx(10:13) = 2
       ierr = ggeo_get_start_end_nodes_of_branches(test_nodebranchidx, gpFirst, gpLast)
       call f90_expect_eq(ierr, -1, 'Unordered branch indices should be rejected')
-
    end subroutine test_start_end_nodes_reject_unordered_branches
-
 end module test_1d_grid

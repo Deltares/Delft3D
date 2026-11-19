@@ -13,8 +13,8 @@ module test_unstruc_inifields
 
    character(len=*), parameter :: INI_FILENAME = 'test_data.ext'
 
-   contains
-   
+contains
+
 !$gtest
    subroutine test_read_operand() bind(C)
       type(tree_data), pointer :: inifield_ptr => null()

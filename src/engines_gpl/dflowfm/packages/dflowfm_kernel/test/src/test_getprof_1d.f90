@@ -549,7 +549,7 @@ contains
       ! Initialize `prof1d` without `profiles1D`
       call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
       if (associated(network%adm%line2cross)) then
-         deallocate(network%adm%line2cross)
+         deallocate (network%adm%line2cross)
       end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
@@ -686,7 +686,7 @@ contains
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
       if (associated(network%adm%line2cross)) then
-         deallocate(network%adm%line2cross)
+         deallocate (network%adm%line2cross)
       end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 

@@ -22,8 +22,7 @@
 !!  rights reserved.
 
 module test_cross_sections
-   use assertions_gtest, only: f90_expect_eq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_eq, f90_expect_relative_near
    use m_CrossSections
 
    use precision, only: dp
@@ -34,8 +33,8 @@ module test_cross_sections
 
 contains
 
-!> Please see "cross sections.xlsx" for the caluclation of the results
-!$gtest
+   !> Please see "cross sections.xlsx" for the caluclation of the results
+   !$gtest
    subroutine test_circular_cross_section() bind(C)
       use m_network
       use m_CrossSections
@@ -90,22 +89,22 @@ contains
          call GetCSParsTotal(cross, dpt, totalArea, totalWidth, CS_TYPE_PREISMAN, hysteresis)
          call GetCSParsTotal(cross, dpt, plusArea, plusWidth, CS_TYPE_PLUS, hysteresis)
          call GetCSParsTotal(cross, dpt, minArea, minWidth, CS_TYPE_MIN, hysteresis)
-         call expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
-         call expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
-         call expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
-         call expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
-         call expect_relative_near(plusArea, refdata(5, i), eps, "plusArea   is not correct")
-         call expect_relative_near(plusWidth, refdata(6, i), eps, "plusWidth  is not correct")
-         call expect_relative_near(minArea, refdata(7, i), eps, "minArea    is not correct")
-         call expect_relative_near(minWidth, refdata(8, i), eps, "minWidth   is not correct")
+         call f90_expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
+         call f90_expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
+         call f90_expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
+         call f90_expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
+         call f90_expect_relative_near(plusArea, refdata(5, i), eps, "plusArea   is not correct")
+         call f90_expect_relative_near(plusWidth, refdata(6, i), eps, "plusWidth  is not correct")
+         call f90_expect_relative_near(minArea, refdata(7, i), eps, "minArea    is not correct")
+         call f90_expect_relative_near(minWidth, refdata(8, i), eps, "minWidth   is not correct")
 
          continue
       end do
 
    end subroutine test_circular_cross_section
 
-!> Please see "cross sections.xlsx" for the caluclation of the results
-!$gtest
+   !> Please see "cross sections.xlsx" for the caluclation of the results
+   !$gtest
    subroutine test_rectangular_cross_section() bind(C)
       use m_network
 
@@ -161,21 +160,21 @@ contains
          call GetCSParsTotal(cross, dpt, totalArea, totalWidth, CS_TYPE_PREISMAN, hysteresis)
          call GetCSParsTotal(cross, dpt, plusArea, plusWidth, CS_TYPE_PLUS, hysteresis)
          call GetCSParsTotal(cross, dpt, minArea, minWidth, CS_TYPE_MIN, hysteresis)
-         call expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
-         call expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
-         call expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
-         call expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
-         call expect_relative_near(plusArea, refdata(5, i), eps, "plusArea   is not correct")
-         call expect_relative_near(plusWidth, refdata(6, i), eps, "plusWidth  is not correct")
-         call expect_relative_near(minArea, refdata(7, i), eps, "minArea    is not correct")
-         call expect_relative_near(minWidth, refdata(8, i), eps, "minWidth   is not correct")
+         call f90_expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
+         call f90_expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
+         call f90_expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
+         call f90_expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
+         call f90_expect_relative_near(plusArea, refdata(5, i), eps, "plusArea   is not correct")
+         call f90_expect_relative_near(plusWidth, refdata(6, i), eps, "plusWidth  is not correct")
+         call f90_expect_relative_near(minArea, refdata(7, i), eps, "minArea    is not correct")
+         call f90_expect_relative_near(minWidth, refdata(8, i), eps, "minWidth   is not correct")
 
          continue
       end do
 
    end subroutine test_rectangular_cross_section
 
-!$gtest
+   !$gtest
    subroutine test_tabulated_cross_section() bind(C)
       use m_network
 
@@ -224,17 +223,17 @@ contains
          dpt = (i - 1) * 0.4
          call GetCSParsFlow(cross, dpt, flowArea, wetPerimeter, flowWidth)
          call GetCSParsTotal(cross, dpt, totalArea, totalWidth, CS_TYPE_PREISMAN, hysteresis)
-         call expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
-         call expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
-         call expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
-         call expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
+         call f90_expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
+         call f90_expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
+         call f90_expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
+         call f90_expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
 
          continue
       end do
 
    end subroutine test_tabulated_cross_section
 
-!$gtest
+   !$gtest
    subroutine test_yz_cross_section() bind(C)
       use m_network
 
@@ -299,10 +298,10 @@ contains
          dpt = (i - 1) * 0.4
          call GetCSParsFlow(cross, dpt, flowArea, wetPerimeter, flowWidth)
          call GetCSParsTotal(cross, dpt, totalArea, totalWidth, CS_TYPE_PREISMAN, hysteresis)
-         call expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
-         call expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
-         call expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
-         call expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
+         call f90_expect_relative_near(flowArea, refdata(1, i), eps, "flowArea   is not correct")
+         call f90_expect_relative_near(flowWidth, refdata(2, i), eps, "flowWidth  is not correct")
+         call f90_expect_relative_near(totalArea, refdata(3, i), eps, "totalArea  is not correct")
+         call f90_expect_relative_near(totalWidth, refdata(4, i), eps, "totalWidth is not correct")
 
          continue
       end do

@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_read_property
-   use assertions_gtest, only: f90_expect_eq, f90_expect_streq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_eq, f90_expect_streq, f90_expect_relative_near
    use precision
    use m_read_property, only: read_property
 
@@ -95,7 +94,7 @@ contains
             select case (trim(idvalue))
             case ('full_block')
                call f90_expect_eq(is_double, .true., "Block 'full_block' in structures.ini: expected a value.")
-               call expect_relative_near(dblvalue, 1.0_dp, eps_hp, "Read GateLowerEdgeLevel as a value.")
+               call f90_expect_relative_near(dblvalue, 1.0_dp, eps_hp, "Read GateLowerEdgeLevel as a value.")
             case ('local')
                call f90_expect_eq(is_double, .false., "Block 'local': expected a string.")
                call f90_expect_streq(trim(strvalue), trim('filename.tim'), 'Unexpected string.')

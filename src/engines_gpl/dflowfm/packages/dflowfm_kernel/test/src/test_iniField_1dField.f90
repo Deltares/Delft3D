@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_ini_Field_1dField
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_relative_near
    use m_commandline_option, only: iarg_usecaching
    use m_partitioninfo, only: jampi
    use precision
@@ -40,7 +39,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_iniField1dField() bind(C)
       use gridoperations
       use m_flow, only: s1
@@ -58,7 +57,7 @@ contains
       integer :: istat, ierr
       logical :: success
       real(kind=dp), dimension(6), parameter :: refs1_br4 = &
-         [8.0_dp, 8.0_dp, 8.935625_dp, 10.115884705882353_dp, 10.925428235294117_dp, 11.0_dp]
+                                                [8.0_dp, 8.0_dp, 8.935625_dp, 10.115884705882353_dp, 10.925428235294117_dp, 11.0_dp]
       real(kind=dp), parameter :: refs1_br10 = 5.0_dp
       real(kind=dp), parameter :: refs1_other = 10.0_dp
 
@@ -104,16 +103,16 @@ contains
          ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
          if (ierr == DFM_NOERR) then
             if (chai < 300.0) then
-               call expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
+               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
                j = j + 1
             else if (chai >= 300.0 .and. chai < 500.0) then
-               call expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
+               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
                j = j + 1
             else if (chai >= 500.0 .and. chai < 1350.0) then
-               call expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
+               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
                j = j + 1
             else if (chai >= 1350.0) then
-               call expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
+               call f90_expect_relative_near(s1(k), refs1_br4(j), eps, 'initial waterlevel on branch 4 incorrect')
             end if
          else
             write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
@@ -130,7 +129,7 @@ contains
          ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
          if (ierr == DFM_NOERR) then
             ! TODO: UNST-5013: check for nodenr <= 0 in partitioned models.
-            call expect_relative_near(s1(k), refs1_br10, eps, 'initial waterlevel on branch 4 incorrect')
+            call f90_expect_relative_near(s1(k), refs1_br10, eps, 'initial waterlevel on branch 4 incorrect')
          else
             write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
             call err_flush()
@@ -146,7 +145,7 @@ contains
          ierr = findnode(brid, chai, k) ! find flownode/netnode index given branchId and chainage
          if (ierr == DFM_NOERR) then
             ! TODO: UNST-5013: check for nodenr <= 0 in partitioned models.
-            call expect_relative_near(s1(k), refs1_other, eps, 'initial waterlevel on other branches incorrect')
+            call f90_expect_relative_near(s1(k), refs1_other, eps, 'initial waterlevel on other branches incorrect')
          else
             write (msgbuf, '(a, g11.4,a)') 'Error when finding the flow link/node which locates on branch '''//trim(brId)//''' and chainage =', chai, '.'
             call err_flush()
@@ -157,7 +156,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_iniField1dField_waterdepth() bind(C)
       use gridoperations
       use m_cell_geometry, only: ndx
@@ -358,7 +357,7 @@ contains
       end if
 
       do i = 1, ndx
-         call expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel incorrect')
+         call f90_expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel incorrect')
       end do
 
       deallocate (refs1, stat=istat)
@@ -366,7 +365,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_iniField1dField_waterlevel() bind(C)
       use gridoperations
       use m_cell_geometry, only: ndx
@@ -567,7 +566,7 @@ contains
       end if
 
       do i = 1, ndx
-         call expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel is incorrect')
+         call f90_expect_relative_near(s1(i), refs1(i), eps, 'initial waterlevel is incorrect')
       end do
 
       deallocate (refs1, stat=istat)
@@ -575,7 +574,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_iniField1dField_waterdepth_cross_sections() bind(C)
       use gridoperations
       use m_cell_geometry, only: ndx
@@ -625,12 +624,12 @@ contains
 
       ! First branch
       do i = 1, 8
-         call expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth + first_branch_shift, &
-                                   eps, 'initial waterlevel is incorrect')
+         call f90_expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth + first_branch_shift, &
+                                       eps, 'initial waterlevel is incorrect')
       end do
       do i = 9, ndx
-         call expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth, &
-                                   eps, 'initial waterlevel is incorrect')
+         call f90_expect_relative_near(s1(i), cross_section_lowest_level + global_water_depth, &
+                                       eps, 'initial waterlevel is incorrect')
       end do
    end subroutine test_iniField1dField_waterdepth_cross_sections
 
@@ -681,18 +680,18 @@ contains
       end if
 
       do i = 1, number_nodes_first_branch
-         call expect_relative_near(bl(i), 0.0_dp, eps, 'first branch initial bedlevel is incorrect')
-         call expect_relative_near(hs(i), level_first_branch, eps, 'first branch initial waterdepth is incorrect')
-         call expect_relative_near(s1(i), level_first_branch, eps, 'first branch initial waterlevel is incorrect')
+         call f90_expect_relative_near(bl(i), 0.0_dp, eps, 'first branch initial bedlevel is incorrect')
+         call f90_expect_relative_near(hs(i), level_first_branch, eps, 'first branch initial waterdepth is incorrect')
+         call f90_expect_relative_near(s1(i), level_first_branch, eps, 'first branch initial waterlevel is incorrect')
       end do
       do i = number_nodes_first_branch + 1, number_nodes_first_branch + number_nodes_second_branch
-         call expect_relative_near(bl(i), 0.0_dp, eps, 'second branch initial bedlevel is incorrect')
-         call expect_relative_near(hs(i), level_second_branch, eps, 'second branch initial waterdepth is incorrect')
-         call expect_relative_near(s1(i), level_second_branch, eps, 'second branch initial waterlevel is incorrect')
+         call f90_expect_relative_near(bl(i), 0.0_dp, eps, 'second branch initial bedlevel is incorrect')
+         call f90_expect_relative_near(hs(i), level_second_branch, eps, 'second branch initial waterdepth is incorrect')
+         call f90_expect_relative_near(s1(i), level_second_branch, eps, 'second branch initial waterlevel is incorrect')
       end do
    end subroutine two_branch_water_depth_and_level_combination
 
-!$gtest
+   !$gtest
    subroutine test_water_depth_and_level_no_globals() bind(C)
       use stdlib_kinds, only: dp
       real(kind=dp), parameter :: water_level_first_branch = 900.0_dp
@@ -702,7 +701,7 @@ contains
       call two_branch_water_depth_and_level_combination(water_level_first_branch, water_level_second_branch, test_dir_name)
    end subroutine test_water_depth_and_level_no_globals
 
-!$gtest
+   !$gtest
    subroutine test_water_depth_and_level_ignore_globals() bind(C)
       use stdlib_kinds, only: dp
       real(kind=dp), parameter :: water_level_first_branch = 900.0_dp
@@ -712,7 +711,7 @@ contains
       call two_branch_water_depth_and_level_combination(water_level_first_branch, water_level_second_branch, test_dir_name)
    end subroutine test_water_depth_and_level_ignore_globals
 
-!$gtest
+   !$gtest
    subroutine test_water_depth_and_global_level() bind(C)
       use stdlib_kinds, only: dp
       real(kind=dp), parameter :: water_level_global = 100.0_dp
@@ -722,7 +721,7 @@ contains
       call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
    end subroutine test_water_depth_and_global_level
 
-!$gtest
+   !$gtest
    subroutine test_water_global_level_and_depth() bind(C)
       use stdlib_kinds, only: dp
       real(kind=dp), parameter :: water_level_global = 100.0_dp
@@ -732,7 +731,7 @@ contains
       call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
    end subroutine test_water_global_level_and_depth
 
-!$gtest
+   !$gtest
    subroutine test_water_only_depths() bind(C)
       use stdlib_kinds, only: dp
       real(kind=dp), parameter :: water_level_global = 300.0_dp
@@ -742,7 +741,7 @@ contains
       call two_branch_water_depth_and_level_combination(water_level_global, water_level_second_branch, test_dir_name)
    end subroutine test_water_only_depths
 
-!$gtest
+   !$gtest
    subroutine test_iniField1d_waterlevel_2d_points_not_set() bind(C)
       use gridoperations
       use stdlib_kinds, only: dp
@@ -790,14 +789,14 @@ contains
       end if
 
       do i = 1, number_2d_nodes
-         call expect_relative_near(bl(i), 0.0_dp, eps, '2d initial bedlevel is incorrect')
-         call expect_relative_near(hs(i), level_2d, eps, '2d initial waterdepth is incorrect')
-         call expect_relative_near(s1(i), level_2d, eps, '2d initial waterlevel is incorrect')
+         call f90_expect_relative_near(bl(i), 0.0_dp, eps, '2d initial bedlevel is incorrect')
+         call f90_expect_relative_near(hs(i), level_2d, eps, '2d initial waterdepth is incorrect')
+         call f90_expect_relative_near(s1(i), level_2d, eps, '2d initial waterlevel is incorrect')
       end do
       do i = number_2d_nodes + 1, number_2d_nodes + number_1d_nodes
-         call expect_relative_near(bl(i), 0.0_dp, eps, '1d initial bedlevel is incorrect')
-         call expect_relative_near(hs(i), level_1d, eps, '1d initial waterdepth is incorrect')
-         call expect_relative_near(s1(i), level_1d, eps, '1d initial waterlevel is incorrect')
+         call f90_expect_relative_near(bl(i), 0.0_dp, eps, '1d initial bedlevel is incorrect')
+         call f90_expect_relative_near(hs(i), level_1d, eps, '1d initial waterdepth is incorrect')
+         call f90_expect_relative_near(s1(i), level_1d, eps, '1d initial waterlevel is incorrect')
       end do
    end subroutine test_iniField1d_waterlevel_2d_points_not_set
 

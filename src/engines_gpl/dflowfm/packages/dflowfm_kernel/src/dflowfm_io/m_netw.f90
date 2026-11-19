@@ -73,12 +73,7 @@ contains
       if (append_mode == 0) then
          K0 = 0
          L0 = 0
-         if (allocated(dxe)) then
-            deallocate (dxe)
-         end if
-         if (allocated(dxe0)) then
-            deallocate (dxe0)
-         end if
+         call discard_network_edge_lengths()
       else
          K0 = NUMK
          L0 = NUML
@@ -97,7 +92,8 @@ contains
          NUML = L0 + NUMLN
          call SETNODADM(0)
       else
-call qnerror('Error while loading network from '''//trim(filename)//''', please inspect the preceding diagnostic output.', ' ', ' ')
+         call qnerror('Error while loading network from '''//trim(filename)// &
+                      ''', please inspect the preceding diagnostic output.', ' ', ' ')
       end if
       call CLOSEWORLD() ! STITCH 0-360 FOR 0-360 GLOBE MODELS
       netstat = NETSTAT_CELLS_DIRTY

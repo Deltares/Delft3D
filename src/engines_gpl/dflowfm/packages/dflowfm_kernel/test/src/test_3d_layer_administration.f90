@@ -62,7 +62,7 @@ contains
                            [(bottom_area*normalized_layer_thickness*new_water_level, integer :: i=1, number_of_boundary_points * (number_of_layers + 1))], &
                            tolerance, "cell volume is not consistent with water level")
       call f90_expect_near(zws(2), s0(1), tolerance, "top layer interface is not consistent with water level")
-      nullify(ice_apply_pressure)
+      nullify (ice_apply_pressure)
 
    end subroutine test_layer_height_water_level_consistency
 end module test_3d_layer_administration

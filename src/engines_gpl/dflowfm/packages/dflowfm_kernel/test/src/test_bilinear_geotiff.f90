@@ -134,7 +134,7 @@ contains
                call f90_expect_near(data%origin(1), 20.0_dp + x_direction, 0.0_dp)
                call f90_expect_near(data%origin(2), 30.0_dp + 2.0_dp * y_direction, 0.0_dp)
                call f90_expect_near(data%interpolate(20.0_dp + 2.0_dp * x_direction, &
-                                                   30.0_dp + 4.0_dp * y_direction), 10.0_dp, 1.0e-12_dp)
+                                                     30.0_dp + 4.0_dp * y_direction), 10.0_dp, 1.0e-12_dp)
             end do
          end do
       end do
@@ -231,7 +231,7 @@ contains
 
       type(t_abort_threshold_guard) :: abort_threshold
       character(len=24), dimension(2), parameter :: raster_files = &
-                                                  [character(len=24) :: 'test_init_bilinear.asc', 'test_init_bilinear.tif']
+                                                    [character(len=24) :: 'test_init_bilinear.asc', 'test_init_bilinear.tif']
       character(len=8), dimension(2), parameter :: file_types = [character(len=8) :: 'arcinfo', 'geotiff']
       character(len=*), parameter :: ext_file = 'test_init_bilinear.ext'
       real(kind=c_double), dimension(3, 2, 1) :: values
@@ -248,8 +248,8 @@ contains
          return
       end if
       call create_file(trim(raster_files(1)), [character(len=32) :: &
-                                              'ncols 3', 'nrows 2', 'xllcorner 0', 'yllcorner 0', &
-                                              'cellsize 2', 'NODATA_value -9999', '10 22 -9999', '2 6 18'])
+                                               'ncols 3', 'nrows 2', 'xllcorner 0', 'yllcorner 0', &
+                                               'cellsize 2', 'NODATA_value -9999', '10 22 -9999', '2 6 18'])
 
       ndx2D = 0
       call setup_minimal_grid_with_points(4)

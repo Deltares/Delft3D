@@ -191,7 +191,7 @@ contains
       call f90_expect_eq(offline_wave_input_providers, offline_wave_input_requirements, &
                          'configured wave providers should match the active requirements exactly')
       call f90_expect_false(wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_PERIOD), &
-                   'waveperiod provider should remain optional')
+                            'waveperiod provider should remain optional')
       call f90_expect_true(wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_FORCE_X), &
                            'xwaveforce provider should be registered')
       call f90_expect_true(wave_input_is_required(offline_wave_input_providers, WAVE_INPUT_FORCE_Y), &

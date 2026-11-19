@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_obserCrossSections
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq, f90_expect_relative_near
    use precision
 
    implicit none(type, external)
@@ -36,7 +35,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_read_snapped_observ_crs() bind(C)
       use gridoperations
       use m_commandline_option, only: iarg_usecaching
@@ -57,14 +56,14 @@ contains
       logical :: success
       real(kind=dp), dimension(2), parameter :: refcoord1 = [1.458360454017425e5_dp, 4.271440320425944e5_dp]
       real(kind=dp), dimension(2, 3), parameter :: refcoord2 = reshape([ &
-         145883.0_dp, 427375.0_dp, 145897.0_dp, 427379.0_dp, 145939.0_dp, 427382.0_dp], [2, 3])
+                                                                       145883.0_dp, 427375.0_dp, 145897.0_dp, 427379.0_dp, 145939.0_dp, 427382.0_dp], [2, 3])
       real(kind=dp), dimension(2), parameter :: refcoord3 = [1.458105097560976e5_dp, 4.271732395492436e5_dp]
       integer, dimension(N_Observ_Crs), parameter :: ref_lnx = [1, 2, 1]
       integer, parameter :: ref_L1 = 3, ref_L3 = 11
       integer, dimension(2), parameter :: ref_L2 = [29, 38]
       real(kind=dp), dimension(2), parameter :: refdata1 = [145839.15_dp, 427141.25_dp]
       real(kind=dp), dimension(2, 2), parameter :: refdata2 = reshape([ &
-         145888.15_dp, 427376.85_dp, 145928.7_dp, 427385.8_dp], [2, 2])
+                                                                      145888.15_dp, 427376.85_dp, 145928.7_dp, 427385.8_dp], [2, 2])
       real(kind=dp), dimension(2), parameter :: refdata3 = [145802.8_dp, 427187.0_dp]
       character(len=40), dimension(N_Observ_Crs) :: refnames
       character(len=40) :: mdufile
@@ -102,33 +101,39 @@ contains
       !
       ! first observCrs
       call f90_expect_streq(trim(crs(1)%name), trim(refnames(1)), 'Name of the first observation cross section incorrect')
-      call expect_relative_near(crs(1)%path%xp(1), refcoord1(1), eps, 'x-coordinate of the first observation cross section incorrect')
-      call expect_relative_near(crs(1)%path%yp(1), refcoord1(2), eps, 'y-coordinate of the first observation cross section incorrect')
+      call f90_expect_relative_near(crs(1)%path%xp(1), refcoord1(1), eps, &
+                                    'x-coordinate of the first observation cross section incorrect')
+      call f90_expect_relative_near(crs(1)%path%yp(1), refcoord1(2), eps, &
+                                    'y-coordinate of the first observation cross section incorrect')
       call f90_expect_eq(crs(1)%path%lnx, ref_lnx(1), 'Number of snapped flowlinks of the first observation cross section incorrect')
       call f90_expect_eq(crs(1)%path%ln(1), ref_L1, 'Index of snapped flowlink of the first observation cross section incorrect')
-      call expect_relative_near(xu(crs(1)%path%ln(1)), refdata1(1), eps, 'x-coordinate of snapped flowlink of the first observation cross section incorrect')
-      call expect_relative_near(yu(crs(1)%path%ln(1)), refdata1(2), eps, 'y-coordinate of snapped flowlink of the first observation cross section incorrect')
+      call f90_expect_relative_near(xu(crs(1)%path%ln(1)), refdata1(1), eps, 'x-coordinate of snapped flowlink of the first observation cross section incorrect')
+      call f90_expect_relative_near(yu(crs(1)%path%ln(1)), refdata1(2), eps, 'y-coordinate of snapped flowlink of the first observation cross section incorrect')
 
       ! second observCrs
       call f90_expect_streq(trim(crs(2)%name), trim(refnames(2)), 'Name of the second observation cross section incorrect')
       do i = 1, 3
-         call expect_relative_near(crs(2)%path%xp(i), refcoord2(1, i), eps, 'x-coordinate of the second observation cross section incorrect')
-         call expect_relative_near(crs(2)%path%yp(i), refcoord2(2, i), eps, 'y-coordinate of the second observation cross section incorrect')
+         call f90_expect_relative_near(crs(2)%path%xp(i), refcoord2(1, i), eps, &
+                                       'x-coordinate of the second observation cross section incorrect')
+         call f90_expect_relative_near(crs(2)%path%yp(i), refcoord2(2, i), eps, &
+                                       'y-coordinate of the second observation cross section incorrect')
       end do
       call f90_expect_eq(crs(2)%path%lnx, ref_lnx(2), 'Number of snapped flowlinks of the second observation cross section incorrect')
       do i = 1, 2
          call f90_expect_eq(crs(2)%path%ln(i), ref_L2(i), 'Index of snapped flowlink of the second observation cross section incorrect')
-         call expect_relative_near(xu(crs(2)%path%ln(i)), refdata2(1, i), eps, 'x-coordinate of snapped flowlink of the second observation cross section incorrect')
-         call expect_relative_near(yu(crs(2)%path%ln(i)), refdata2(2, i), eps, 'y-coordinate of snapped flowlink of the second observation cross section incorrect')
+         call f90_expect_relative_near(xu(crs(2)%path%ln(i)), refdata2(1, i), eps, 'x-coordinate of snapped flowlink of the second observation cross section incorrect')
+         call f90_expect_relative_near(yu(crs(2)%path%ln(i)), refdata2(2, i), eps, 'y-coordinate of snapped flowlink of the second observation cross section incorrect')
       end do
       ! third observCrs
       call f90_expect_streq(trim(crs(3)%name), trim(refnames(3)), 'Name of the third observation cross section incorrect')
-      call expect_relative_near(crs(3)%path%xp(1), refcoord3(1), eps, 'x-coordinate of the third observation cross section incorrect')
-      call expect_relative_near(crs(3)%path%yp(1), refcoord3(2), eps, 'y-coordinate of the third observation cross section incorrect')
+      call f90_expect_relative_near(crs(3)%path%xp(1), refcoord3(1), eps, &
+                                    'x-coordinate of the third observation cross section incorrect')
+      call f90_expect_relative_near(crs(3)%path%yp(1), refcoord3(2), eps, &
+                                    'y-coordinate of the third observation cross section incorrect')
       call f90_expect_eq(crs(3)%path%lnx, ref_lnx(3), 'Number of snapped flowlinks of the third observation cross section incorrect')
       call f90_expect_eq(crs(3)%path%ln(1), ref_L3, 'Index of snapped flowlink of the third observation cross section incorrect')
-      call expect_relative_near(xu(crs(3)%path%ln(1)), refdata3(1), eps, 'x-coordinate of snapped flowlink of the third observation cross section incorrect')
-      call expect_relative_near(yu(crs(3)%path%ln(1)), refdata3(2), eps, 'y-coordinate of snapped flowlink of the third observation cross section incorrect')
+      call f90_expect_relative_near(xu(crs(3)%path%ln(1)), refdata3(1), eps, 'x-coordinate of snapped flowlink of the third observation cross section incorrect')
+      call f90_expect_relative_near(yu(crs(3)%path%ln(1)), refdata3(2), eps, 'y-coordinate of snapped flowlink of the third observation cross section incorrect')
 
    end subroutine test_read_snapped_observ_crs
 

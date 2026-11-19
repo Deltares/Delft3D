@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module test_roughness
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_relative_near
    use m_roughness
 
    use precision, only: dp
@@ -31,7 +31,7 @@ module test_roughness
 
 contains
 
-!$gtest
+   !$gtest
    subroutine test_roughness_branches() bind(C)
       use m_network
       use m_roughness
@@ -86,27 +86,27 @@ contains
 
       ! check the friction values that are globally defined:
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 45.0_dp, eps, "chezy for chezy45 is nog correct")
+      call f90_expect_relative_near(chezy, 45.0_dp, eps, "chezy for chezy45 is nog correct")
 
       section = hashsearch(network%rgs%hashlist, 'Strickler')
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 44.89848_dp, eps, "chezy for Strickler is nog correct")
+      call f90_expect_relative_near(chezy, 44.89848_dp, eps, "chezy for Strickler is nog correct")
 
       section = hashsearch(network%rgs%hashlist, 'WhiteColebrookD3d')
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 53.52338_dp, eps, "chezy for WhiteColebrookD3d is nog correct")
+      call f90_expect_relative_near(chezy, 53.52338_dp, eps, "chezy for WhiteColebrookD3d is nog correct")
 
       section = hashsearch(network%rgs%hashlist, 'WhiteColebrookWaqua')
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 55.42526_dp, eps, "chezy for WhiteColebrookWaqua is nog correct")
+      call f90_expect_relative_near(chezy, 55.42526_dp, eps, "chezy for WhiteColebrookWaqua is nog correct")
 
       section = hashsearch(network%rgs%hashlist, 'Manning')
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 11.22462_dp, eps, "chezy for Manning is nog correct")
+      call f90_expect_relative_near(chezy, 11.22462_dp, eps, "chezy for Manning is nog correct")
 
       section = hashsearch(network%rgs%hashlist, 'BosBijkerk')
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 40.47176_dp, eps, "chezy for BosBijkerk is nog correct")
+      call f90_expect_relative_near(chezy, 40.47176_dp, eps, "chezy for BosBijkerk is nog correct")
 
       ! Now check the interpolation
       section = hashsearch(network%rgs%hashlist, 'Main')
@@ -123,40 +123,40 @@ contains
       ! Channel 2 is not aviable, value shoud be 45 (global value)
       ibranch = 2
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 45.0_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 45.0_dp, eps, "chezy for Main channel2 is nog correct")
 
       ! Channel 1 expect Chezy value of 41
       ibranch = 1
       chainage = 10.0_dp
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 41.0_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 41.0_dp, eps, "chezy for Main channel2 is nog correct")
 
       ! Channel 4 expect Chezy value of 40
       ibranch = 4
       chainage = 10.0_dp
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 60.0_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 60.0_dp, eps, "chezy for Main channel2 is nog correct")
 
       ! Channel 7 Q smaller than limits, expect Chezy value of 47
       ibranch = 7
       chainage = 60.0_dp
       q = 50.0_dp
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 47.0_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 47.0_dp, eps, "chezy for Main channel2 is nog correct")
 
       ! Channel 7 Q inside the limits, expect Chezy value of 46.05
       ibranch = 7
       chainage = 60.0_dp
       q = 125.0_dp
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 46.05_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 46.05_dp, eps, "chezy for Main channel2 is nog correct")
 
       ! Channel 7 Q larger than limits, expect Chezy value of 42
       ibranch = 7
       chainage = 60.0_dp
       q = 400.0_dp
       chezy = getfrictionValue(network%rgs, network%spData, cross, ibranch, section, igrid, h, q, u, r, d, chainage)
-      call expect_relative_near(chezy, 42.0_dp, eps, "chezy for Main channel2 is nog correct")
+      call f90_expect_relative_near(chezy, 42.0_dp, eps, "chezy for Main channel2 is nog correct")
       continue
 
    end subroutine test_roughness_branches

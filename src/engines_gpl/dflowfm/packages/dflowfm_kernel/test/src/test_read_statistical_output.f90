@@ -33,7 +33,7 @@ module test_read_statistical_output
 
 contains
 
-!$gtest
+   !$gtest
    subroutine test_parse_current() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -46,7 +46,7 @@ contains
       call f90_expect_eq(moving_average_window, 1, '')
    end subroutine test_parse_current
 
-!$gtest
+   !$gtest
    subroutine test_parse_one() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -60,7 +60,7 @@ contains
    end subroutine test_parse_one
 
 !> Remove leading commas and space and test parsing of 'none'
-!$gtest
+   !$gtest
    subroutine test_parse_none() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -74,7 +74,7 @@ contains
    end subroutine test_parse_none
 
 !> Remove leading spaces and parse 0
-!$gtest
+   !$gtest
    subroutine test_parse_zero() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -87,7 +87,7 @@ contains
       call f90_expect_eq(moving_average_window, 1, '')
    end subroutine test_parse_zero
 
-!$gtest
+   !$gtest
    subroutine test_parse_max() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -101,7 +101,7 @@ contains
    end subroutine test_parse_max
 
 !> Remove leading spaces and comma and parse 'min'
-!$gtest
+   !$gtest
    subroutine test_parse_min() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -115,7 +115,7 @@ contains
    end subroutine test_parse_min
 
 !> Check parsing and filling of moving average window, and subsequently parsing current
-!$gtest
+   !$gtest
    subroutine test_parse_max_window() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -133,7 +133,7 @@ contains
       call f90_expect_eq(moving_average_window, 1, '')
    end subroutine test_parse_max_window
 
-!$gtest
+   !$gtest
    subroutine test_parse_empty_string() bind(C)
       character(:), allocatable :: input
       integer :: operation_type, moving_average_window, ierr
@@ -144,12 +144,12 @@ contains
       call f90_expect_eq(operation_type, SO_UNKNOWN, '')
    end subroutine
 
-!$gtest
+   !$gtest
    subroutine test_output_requested() bind(C)
       call f90_expect_eq(is_output_requested_in_value_string('none, max'), .true., '')
    end subroutine test_output_requested
 
-!$gtest
+   !$gtest
    subroutine test_no_output_requested() bind(C)
       call f90_expect_eq(is_output_requested_in_value_string('none, none'), .false., '')
    end subroutine test_no_output_requested
@@ -188,17 +188,17 @@ contains
       call f90_expect_eq(value, default_value, '')
    end subroutine generic_test_read_output_parameter_toggle_default
 
-!$gtest
+   !$gtest
    subroutine test_read_output_parameter_toggle_default_zero() bind(C)
       call generic_test_read_output_parameter_toggle_default(0)
    end subroutine test_read_output_parameter_toggle_default_zero
 
-!$gtest
+   !$gtest
    subroutine test_read_output_parameter_toggle_default_one() bind(C)
       call generic_test_read_output_parameter_toggle_default(1)
    end subroutine test_read_output_parameter_toggle_default_one
 
-!$gtest
+   !$gtest
    subroutine test_read_output_parameter_toggle_from_tree() bind(C)
       use tree_structures, only: tree_data
       use properties, only: prop_set
@@ -222,7 +222,7 @@ contains
       call f90_expect_eq(value, actual_value, '')
    end subroutine test_read_output_parameter_toggle_from_tree
 
-!$gtest
+   !$gtest
    subroutine test_read_output_parameter_toggle_from_alternative_key() bind(C)
       use tree_structures, only: tree_data
       use properties, only: prop_get, prop_set

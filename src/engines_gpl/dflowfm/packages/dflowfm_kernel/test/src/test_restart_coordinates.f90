@@ -41,13 +41,13 @@ contains
    !$gtest
    subroutine cross_build_centroids() bind(C)
       real(kind=dp), dimension(4), parameter :: x_restart = [ &
-         -61.744791666666885_dp, -61.680555423696354_dp, -62.911458333333563_dp, -62.656249793041539_dp]
+                                                -61.744791666666885_dp, -61.680555423696354_dp, -62.911458333333563_dp, -62.656249793041539_dp]
       real(kind=dp), dimension(4), parameter :: y_restart = [ &
-         17.307291684726874_dp, 17.399305795726757_dp, 17.869791684921154_dp, 18.156250186920559_dp]
+                                                17.307291684726874_dp, 17.399305795726757_dp, 17.869791684921154_dp, 18.156250186920559_dp]
       real(kind=dp), dimension(4), parameter :: x_current = [ &
-         -61.744791666667290_dp, -61.680555423696830_dp, -62.911458333332725_dp, -62.656249793042036_dp]
+                                                -61.744791666667290_dp, -61.680555423696830_dp, -62.911458333332725_dp, -62.656249793042036_dp]
       real(kind=dp), dimension(4), parameter :: y_current = [ &
-         17.307291684726227_dp, 17.399305795727138_dp, 17.869791684920223_dp, 18.156250186921160_dp]
+                                                17.307291684726227_dp, 17.399305795727138_dp, 17.869791684920223_dp, 18.156250186921160_dp]
 
       call check_coordinates(1, 1, x_current, y_current, x_restart, y_restart, 0)
       call check_coordinates(1, 1, x_current, y_current, x_restart(4:1:-1), y_restart(4:1:-1), 1)

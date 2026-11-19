@@ -228,6 +228,9 @@ contains
 
       KN = 0
       KN0 = 0
+      if (allocated(dxe0)) then
+         dxe0 = dmiss
+      end if
 
       NMK = 0
       NMK0 = 0

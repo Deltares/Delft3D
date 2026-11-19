@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_storage_nodes
-   use assertions_gtest, only: f90_assert_true, f90_expect_streq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_assert_true, f90_expect_streq, f90_expect_relative_near
    use precision
 
    implicit none(type, external)
@@ -36,7 +35,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_storage_nodes_nodeID_table() bind(C)
       use gridoperations
       use m_commandline_option, only: iarg_usecaching
@@ -54,7 +53,7 @@ contains
       integer, parameter :: N_StorageNodes = 1
       logical :: success
       real(kind=dp), dimension(3, 2), parameter :: reftable = reshape([ &
-         1.0_dp, 2.0_dp, 3.0_dp, 0.1_dp, 0.5_dp, 0.8_dp], [3, 2])
+                                                                      1.0_dp, 2.0_dp, 3.0_dp, 0.1_dp, 0.5_dp, 0.8_dp], [3, 2])
       character(len=40), dimension(N_StorageNodes) :: refids
       character(len=40), dimension(N_StorageNodes) :: refnodeIds
       character(len=40) :: mdufile
@@ -86,13 +85,13 @@ contains
       ! compare
       call f90_expect_streq(trim(network%storS%stor(1)%id), trim(refids(1)), 'Id of the storage node incorrect')
       call f90_expect_streq(trim(network%storS%stor(1)%node_Id), trim(refnodeIds(1)), 'Node Id of the storage node incorrect')
-      call expect_relative_near(network%storS%stor(1)%storage_area%x(1), reftable(1, 1), eps, 'the first value of "levels" incorrect')
-      call expect_relative_near(network%storS%stor(1)%storage_area%x(2), reftable(2, 1), eps, 'the second value of "levels" incorrect')
-      call expect_relative_near(network%storS%stor(1)%storage_area%x(3), reftable(3, 1), eps, 'the third value of "levels" incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%x(1), reftable(1, 1), eps, 'the first value of "levels" incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%x(2), reftable(2, 1), eps, 'the second value of "levels" incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%x(3), reftable(3, 1), eps, 'the third value of "levels" incorrect')
 
-      call expect_relative_near(network%storS%stor(1)%storage_area%y(1), reftable(1, 2), eps, 'the first value of "storageArea" incorrect')
-      call expect_relative_near(network%storS%stor(1)%storage_area%y(2), reftable(2, 2), eps, 'the second value of storageArea incorrect')
-      call expect_relative_near(network%storS%stor(1)%storage_area%y(3), reftable(3, 2), eps, 'the third value of storageArea incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%y(1), reftable(1, 2), eps, 'the first value of "storageArea" incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%y(2), reftable(2, 2), eps, 'the second value of storageArea incorrect')
+      call f90_expect_relative_near(network%storS%stor(1)%storage_area%y(3), reftable(3, 2), eps, 'the third value of storageArea incorrect')
 
    end subroutine test_storage_nodes_nodeID_table
 

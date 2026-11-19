@@ -23,8 +23,7 @@
 
 module test_statistical_output
    use m_statistical_output
-   use assertions_gtest, only: f90_expect_eq, f90_expect_streq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_eq, f90_expect_streq, f90_expect_relative_near
    use precision, only: dp
    implicit none(type, external)
    private
@@ -104,10 +103,21 @@ contains
    !$gtest
    subroutine test_dealloc() bind(C)
       type(t_output_variable_set) :: output_set
+      real(kind=dp), dimension(1), target :: source_input
+
+      source_input = [2.0_dp]
+      output_set%count = 3
       call realloc(output_set)
-      call f90_expect_eq(allocated(output_set%statout), .true., '')
+      output_set%statout(1) = create_output_item(source_input, SO_CURRENT)
+      output_set%statout(2) = create_output_item(source_input, SO_AVERAGE)
+      output_set%statout(3)%operation_type = SO_MAX ! Set up but not yet initialized.
+
       call dealloc(output_set)
-      call f90_expect_eq(allocated(output_set%statout), .false., '')
+      call f90_expect_eq(allocated(output_set%statout), .false., "Output set storage must be released")
+      call f90_expect_eq(output_set%count, 0)
+      call f90_expect_eq(output_set%capacity, 0)
+      call f90_expect_relative_near(source_input(1), 2.0_dp, test_tolerance, "Current output must not free its borrowed input")
+      call dealloc(output_set)
    end subroutine test_dealloc
 
    !$gtest
@@ -118,7 +128,7 @@ contains
       output_set = create_simple_output_variable_set(source_input)
       output_set%statout(1)%source_input_function_pointer => double_source_input_function
       call update_source_input(output_set)
-      call expect_relative_near(output_set%statout(1)%source_input, [2.0_dp, 4.0_dp, 6.0_dp], test_tolerance, '')
+      call f90_expect_relative_near(output_set%statout(1)%source_input, [2.0_dp, 4.0_dp, 6.0_dp], test_tolerance, '')
    end subroutine test_update_source_input
 
    !$gtest
@@ -133,8 +143,8 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call expect_relative_near(output_item%stat_output, [2.0_dp, 6.0_dp, -6.0_dp], test_tolerance, '')
-      call expect_relative_near(output_item%time_step_sum, 4.0_dp, test_tolerance, '')
+      call f90_expect_relative_near(output_item%stat_output, [2.0_dp, 6.0_dp, -6.0_dp], test_tolerance, '')
+      call f90_expect_relative_near(output_item%time_step_sum, 4.0_dp, test_tolerance, '')
    end subroutine test_update_statistical_output_average
 
    !$gtest
@@ -149,7 +159,7 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call expect_relative_near(output_item%stat_output, [2.0_dp, 1.0_dp, 0.0_dp], test_tolerance, '')
+      call f90_expect_relative_near(output_item%stat_output, [2.0_dp, 1.0_dp, 0.0_dp], test_tolerance, '')
    end subroutine test_update_statistical_output_max
 
    !$gtest
@@ -164,7 +174,7 @@ contains
       source_input = [2.0_dp, 1.0_dp, 0.0_dp]
       call update_statistical_output(output_item, time_step)
 
-      call expect_relative_near(output_item%stat_output, [-1.0_dp, 1.0_dp, -3.0_dp], test_tolerance, '')
+      call f90_expect_relative_near(output_item%stat_output, [-1.0_dp, 1.0_dp, -3.0_dp], test_tolerance, '')
    end subroutine test_update_statistical_output_min
 
    !$gtest
@@ -180,7 +190,7 @@ contains
       call update_statistical_output(output_item, time_step)
       call finalize_average(output_item)
 
-      call expect_relative_near(output_item%stat_output, [0.5_dp, 1.0_dp, -1.5_dp], test_tolerance, '')
+      call f90_expect_relative_near(output_item%stat_output, [0.5_dp, 1.0_dp, -1.5_dp], test_tolerance, '')
    end subroutine test_finalize_average
 
    !$gtest
@@ -201,8 +211,8 @@ contains
       call f90_expect_eq(output_set%count, 2, '')
       call f90_expect_eq(output_set%statout(1)%operation_type, SO_CURRENT, '')
       call f90_expect_eq(output_set%statout(2)%operation_type, SO_MAX, '')
-      call expect_relative_near(output_set%statout(1)%source_input, source_input, test_tolerance, '')
-      call expect_relative_near(output_set%statout(2)%source_input, source_input, test_tolerance, '')
+      call f90_expect_relative_near(output_set%statout(1)%source_input, source_input, test_tolerance, '')
+      call f90_expect_relative_near(output_set%statout(2)%source_input, source_input, test_tolerance, '')
       call f90_expect_streq(trim(output_set%statout(1)%output_config%key), trim('wrihis_test'), '')
    end subroutine test_add_stat_output_items
 end module test_statistical_output

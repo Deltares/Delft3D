@@ -34,7 +34,6 @@ add_fortran_gtest(test_dflowfm_kernel_gtest
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
         src/test_cross_section_geometry.f90
-        src/test_relative_assertions.f90
         src/test_1d_grid.f90
         src/test_airdensity.f90
         src/test_cross_section.f90

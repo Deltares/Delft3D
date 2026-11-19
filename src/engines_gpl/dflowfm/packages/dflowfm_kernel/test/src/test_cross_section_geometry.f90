@@ -3,7 +3,7 @@ module test_cross_section_geometry
    use precision, only: dp
    use m_partitioninfo, only: fill_geometry_arrays_crs, jampi
    use m_monitoring_crosssections, only: crs, ncrs, allocCrossSections, n_nodes_crs => nNodesCrs, &
-                                        node_count_crs => nodeCountCrs, geom_x_crs => geomXCrs, geom_y_crs => geomYCrs
+                                         node_count_crs => nodeCountCrs, geom_x_crs => geomXCrs, geom_y_crs => geomYCrs
 
    implicit none(type, external)
    private

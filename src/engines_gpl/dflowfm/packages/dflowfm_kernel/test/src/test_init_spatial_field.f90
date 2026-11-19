@@ -5,7 +5,7 @@ module test_init_spatial_field
    use fm_location_types, only: TARGET_LAYER_ALL_3D, TARGET_LAYER_UNIFORM
    use m_wind, only: jaQext
    use timespace_parameters, only: DATAVALUE, OPERAND_ADD, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_CONSTANT, &
-                                  WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE, METHOD_BILINEAR
+                                   WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, SPACEANDTIME, NCFLOW, JUSTUPDATE, METHOD_BILINEAR
    use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
    use m_alloc, only: realloc, reallocP
    use precision_basics, only: dp
@@ -118,7 +118,7 @@ contains
       call f90_expect_true(associated(target_row, sa1), 'resolver must retain full salinity storage')
 
       success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
-                         target_layer=TARGET_LAYER_UNIFORM)
+                                           target_layer=TARGET_LAYER_UNIFORM)
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S)
       call f90_expect_eq(first_index, 1)
@@ -126,7 +126,7 @@ contains
       call f90_expect_true(associated(target_row, tem1), 'resolver must retain full temperature storage')
       call f90_expect_eq(initem2D, 0, 'new spatial-field resolver must leave the legacy expansion flag clear')
       success = resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
-                         target_layer=TARGET_LAYER_ALL_3D)
+                                           target_layer=TARGET_LAYER_ALL_3D)
       call f90_expect_true(success)
       call f90_expect_eq(location, UNC_LOC_S3D)
       call f90_expect_eq(first_index, 1)
@@ -136,7 +136,7 @@ contains
 
       kmx = 0
       call f90_expect_false(resolve_constituent_target('initialTemperature', location, constituent_target, first_index, &
-                               target_layer=TARGET_LAYER_ALL_3D))
+                                                       target_layer=TARGET_LAYER_ALL_3D))
       call f90_expect_false(resolve_constituent_target('initialSalinity', location, constituent_target, first_index, target_layer=TARGET_LAYER_ALL_3D))
 
       kmx = saved_kmx
@@ -148,8 +148,8 @@ contains
    end subroutine test_resolvers_select_3d_targets
 
    subroutine make_test_input( &
-         input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
-         operand_string, data_value, is_extrapolation_allowed)
+      input, quantity, forcing_file, forcing_file_type, target_mask_file, interpolation_method, &
+      operand_string, data_value, is_extrapolation_allowed)
       use m_missing, only: dmiss
 
       type(t_spatial_field_input), intent(out) :: input
@@ -244,7 +244,6 @@ contains
                             'bcascii files should reject triangulation interpolation')
    end subroutine test_validate_rejects_triangulation_method_for_bcascii
 
-
    !$gtest
    subroutine test_validate_spiderweb_defaults_to_weightfactors() bind(C)
       type(t_spatial_field_input) :: input
@@ -287,7 +286,7 @@ contains
       call make_test_input(input, quantity='initialwaterlevel', forcing_file='flow_map.nc', forcing_file_type='map')
 
       call f90_expect_true(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                  "map should accept an FM map NetCDF file")
+                           "map should accept an FM map NetCDF file")
       call f90_expect_eq(input%filetype, NCFLOW)
       call f90_expect_eq(input%method, METHOD_TRIANGULATION)
       call f90_expect_true(input%is_static_field, "map should be initialized as a static spatial field")
@@ -353,15 +352,15 @@ contains
    !$gtest
    subroutine test_validate_supported_extensions_select_effective_methods() bind(C)
       character(len=16), parameter :: file_types(11) = [character(len=16) :: &
-         '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
+                                                        '1dfield', 'arcinfo', 'bcascii', 'curvigrid', 'geotiff', 'netcdf', 'polygon', 'sample', 'spiderweb', 'uniform', 'unimagdir']
       character(len=16), parameter :: extensions(11) = [character(len=16) :: &
-         '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
+                                                        '.ini', '.aice', '.bc', '.apwxwy', '.tiff', '.nc', '.pliz', '.xyb', '.spw', '.tem', '.wnd']
       character(len=16), parameter :: methods(11) = [character(len=16) :: &
-         '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
-         'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
+                                                     '', 'linearSpaceTime', 'linearSpaceTime', '', '', 'linearSpaceTime', &
+                                                     'constant', 'triangulation', 'linearSpaceTime', 'linearSpaceTime', '']
       integer, parameter :: expected_methods(11) = [JUSTUPDATE, SPACEANDTIME, SPACEANDTIME, WEIGHTFACTORS, &
-                                                     METHOD_BILINEAR, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
-                                                     WEIGHTFACTORS, SPACEANDTIME, SPACEANDTIME]
+                                                    METHOD_BILINEAR, WEIGHTFACTORS, METHOD_CONSTANT, METHOD_TRIANGULATION, &
+                                                    WEIGHTFACTORS, SPACEANDTIME, SPACEANDTIME]
       type(t_spatial_field_input) :: input
       integer :: i
 
@@ -589,10 +588,10 @@ contains
 
       ! ARRANGE: mark ice as already activated to skip fm_ice_activate_by_ext_forces side effect
       if (.not. associated(ja_ice_area_fraction_read)) then
-         allocate(ja_ice_area_fraction_read)
+         allocate (ja_ice_area_fraction_read)
       end if
       if (.not. associated(ja_ice_thickness_read)) then
-         allocate(ja_ice_thickness_read)
+         allocate (ja_ice_thickness_read)
       end if
       ja_ice_area_fraction_read = 1
       ja_ice_thickness_read = 1
@@ -734,11 +733,11 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                         .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
-                   "direct radiation-stress forcing does not require wave period")
+                            "direct radiation-stress forcing does not require wave period")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_X), &
                            "radiation-stress forcing requires xwaveforce")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_FORCE_Y), &
@@ -756,8 +755,8 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_RADIATION_STRESS, WAVE_FORCES_ON, &
-                                                          STOKES_DRIFT_DEPTHUNIFORM, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_OFF)
+                                                         STOKES_DRIFT_DEPTHUNIFORM, WAVE_STREAMING_OFF, &
+                                                         WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "Stokes drift requires wave height")
@@ -774,8 +773,8 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_OFF)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                         WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "FlowWithoutWaves requires wave height for D-WAQ orbital velocity")
@@ -792,8 +791,8 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_ON)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                         WAVE_BOUNDARYLAYER_OFF, .false., .false., WAVE_BREAKER_TURB_ON)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "breaker turbulence requires wave height")
@@ -805,17 +804,17 @@ contains
                             "breaker turbulence alone does not require wave direction")
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_NO_WAVEFORCES, WAVE_FORCES_OFF, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
-                                                          WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_ON)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, &
+                                                         WAVE_BOUNDARYLAYER_OFF, .false., .true., WAVE_BREAKER_TURB_ON)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), &
                            "FlowWithoutWaves still requires wave height")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), &
                            "FlowWithoutWaves still requires wave period")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_SURFACE), &
-                   "FlowWithoutWaves does not use surface-breaking dissipation")
+                            "FlowWithoutWaves does not use surface-breaking dissipation")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING), &
-                   "FlowWithoutWaves does not use white-capping dissipation")
+                            "FlowWithoutWaves does not use white-capping dissipation")
       call f90_expect_false(wave_input_is_required(requirements, WAVE_INPUT_DIRECTION), &
                             "FlowWithoutWaves with breaker turbulence does not require wave direction")
    end subroutine test_offline_wave_requirements_breaker_turbulence
@@ -827,8 +826,8 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_TOTAL, WAVE_FORCES_OFF, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                         .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_eq(requirements, 0, "no active wave consumer should require no offline wave input")
    end subroutine test_offline_wave_requirements_disabled_forces
@@ -840,8 +839,8 @@ contains
       integer :: requirements
 
       requirements = get_offline_wave_input_requirements(WAVEFORCING_DISSIPATION_3D, WAVE_FORCES_ON, &
-                                                          NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
-                                                          .false., .false., WAVE_BREAKER_TURB_OFF)
+                                                         NO_STOKES_DRIFT, WAVE_STREAMING_OFF, WAVE_BOUNDARYLAYER_OFF, &
+                                                         .false., .false., WAVE_BREAKER_TURB_OFF)
 
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT), "3D dissipation requires wave height")
       call f90_expect_true(wave_input_is_required(requirements, WAVE_INPUT_PERIOD), "3D dissipation requires wave period")

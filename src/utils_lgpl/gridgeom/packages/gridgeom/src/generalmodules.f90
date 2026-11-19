@@ -55,7 +55,7 @@ contains
       integer :: ierr
 
       if (N < MAXLAN) return
-      MAXLAN = max(50000, int(1.2d0*N))
+      MAXLAN = max(50000, int(1.2d0 * N))
 
       call realloc(xlan, MAXLAN, stat=ierr, fill=dxymis)
       !CALL AERR('xlan(maxlan)', IERR, maxlan)
@@ -375,7 +375,7 @@ contains
 
       integer :: ierr
       if (N < NSMAX) return
-      NSMAX = max(10000, int(1.2d0*N))
+      NSMAX = max(10000, int(1.2d0 * N))
 
       call realloc(xs, NSMAX, keepExisting=.true., fill=dmiss, stat=ierr)
       !CALL AERR ('XS(NSMAX)',IERR,NSMAX)
@@ -464,7 +464,7 @@ contains
       nsmaxloc = size(XS3)
 
       if (N < nsmaxloc) return
-      nsmaxloc = max(10000, int(1.2d0*N))
+      nsmaxloc = max(10000, int(1.2d0 * N))
 
       call realloc(xs3, nsmaxloc, keepExisting=.true., fill=dmiss, stat=ierr)
       call realloc(ys3, nsmaxloc, keepExisting=.true., fill=dmiss, stat=ierr)

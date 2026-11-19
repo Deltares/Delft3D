@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_lateral
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_relative_near
    use precision_basics, only: dp
    use dfm_error, only: DFM_NOERR
    use m_alloc, only: aerr
@@ -98,8 +98,8 @@ contains
       qqlat(:, :) = 0._dp
       call add_lateral_load_and_sink(transport_load, transport_sink, vol1, tolerance)
 
-      call expect_relative_near(sum(transport_load), 0._dp, tolerance, "lateral_load value expected to be zero for qqlat=0")
-      call expect_relative_near(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero for qqlat=0")
+      call f90_expect_relative_near(sum(transport_load), 0._dp, tolerance, "lateral_load value expected to be zero for qqlat=0")
+      call f90_expect_relative_near(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero for qqlat=0")
 
       ! check transport into the domain
       i_lateral = 1 ! only the first lateral is a source
@@ -113,10 +113,10 @@ contains
             i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
             refval = dvoli * incoming_lat_concentration(1, i_const, i_lateral) * qqlat(1, i_cell)
-            call expect_relative_near(transport_load(i_const, i_node), refval, tolerance, "lateral_load value is not correct")
+            call f90_expect_relative_near(transport_load(i_const, i_node), refval, tolerance, "lateral_load value is not correct")
          end do
       end do
-      call expect_relative_near(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero ")
+      call f90_expect_relative_near(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero ")
 
       ! check transport out of the domain
       i_lateral = 2 ! only the second lateral is a sink
@@ -128,14 +128,14 @@ contains
       ref_load(:, :) = transport_load(:, :)
       call add_lateral_load_and_sink(transport_load, transport_sink, vol1, tolerance)
       ! check that transport_load was not changed
-      call expect_relative_near(sum(transport_load), sum(ref_load), tolerance, "transport_load should not change")
+      call f90_expect_relative_near(sum(transport_load), sum(ref_load), tolerance, "transport_load should not change")
       do i_const = 1, numconst
          do i_cell = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
             ! sink sign-convention: positive means flux going out of model, hence the minus.
             refval = -dvoli * qqlat(1, i_cell)
-            call expect_relative_near(transport_sink(i_const, i_node), refval, tolerance, "lateral_sink value is not correct")
+            call f90_expect_relative_near(transport_sink(i_const, i_node), refval, tolerance, "lateral_sink value is not correct")
          end do
       end do
 
@@ -264,12 +264,12 @@ contains
       n2latsg = [2, 4]
 
       call get_lateral_volume_per_layer(lateral_volume_per_layer)
-      call expect_relative_near(lateral_volume_per_layer(1, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(1,1) output lateral_volume_per_layer is not correct")
-      call expect_relative_near(lateral_volume_per_layer(2, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(2,1) output lateral_volume_per_layer is not correct")
-      call expect_relative_near(lateral_volume_per_layer(3, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(3,1) output lateral_volume_per_layer is not correct")
-      call expect_relative_near(lateral_volume_per_layer(1, 2), 1.0_dp, tolerance, "get_lateral_volume_per_layer(1,2) output lateral_volume_per_layer is not correct")
-      call expect_relative_near(lateral_volume_per_layer(2, 2), 2.0_dp, tolerance, "get_lateral_volume_per_layer(2,2) output lateral_volume_per_layer is not correct")
-      call expect_relative_near(lateral_volume_per_layer(3, 2), 2.0_dp, tolerance, "get_lateral_volume_per_layer(3,2) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(1, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(1,1) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(2, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(2,1) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(3, 1), 2.0_dp, tolerance, "get_lateral_volume_per_layer(3,1) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(1, 2), 1.0_dp, tolerance, "get_lateral_volume_per_layer(1,2) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(2, 2), 2.0_dp, tolerance, "get_lateral_volume_per_layer(2,2) output lateral_volume_per_layer is not correct")
+      call f90_expect_relative_near(lateral_volume_per_layer(3, 2), 2.0_dp, tolerance, "get_lateral_volume_per_layer(3,2) output lateral_volume_per_layer is not correct")
 
       ! deallocation of global state variables
       call finish_testcase()
@@ -365,39 +365,39 @@ contains
       !  c. provided_lateral_discharge_per_layer(1,1) = 1000, which is the discharge of lateral 1 at layer 1.
       ! With a, b. and c, we can compute the target:
       !   lateral_discharge_per_layer_per_cell(1,9) = 19/100*1000 = 190.
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 1), 190.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 1), 100.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,10)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 1), 235.2_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,11)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 2), 220.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,12)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 2), 115.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 2), 268.8_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,14)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 3), 370.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 3), 456.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 3), 295.454545454545_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,29)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 4), 480.0_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,30)"// &
-                                " is not correct.")
-      call expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 4), 310.606060606061_dp, tolerance, &
-                                "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,31)"// &
-                                " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 1), 190.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 1), 100.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,10)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 1), 235.2_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,11)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 2), 220.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,12)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 2), 115.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 2), 268.8_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,14)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(1, 3), 370.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 3), 456.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 3), 295.454545454545_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,29)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(2, 4), 480.0_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,30)"// &
+                                    " is not correct.")
+      call f90_expect_relative_near(lateral_discharge_per_layer_lateral_cell(3, 4), 310.606060606061_dp, tolerance, &
+                                    "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,31)"// &
+                                    " is not correct.")
 
       ! deallocation of global state variables
       call finish_testcase()

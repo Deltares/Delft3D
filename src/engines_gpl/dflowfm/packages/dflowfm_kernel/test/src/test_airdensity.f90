@@ -21,8 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_airdensity
-   use assertions_gtest, only: f90_expect_eq
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_expect_eq, f90_expect_relative_near
    use precision, only: hp
    use dfm_error, only: DFM_NOERR
    use m_airdensity
@@ -63,7 +62,7 @@ contains
       call f90_expect_eq(ierr, DFM_NOERR, 'Something wrong in call get_airdensity().')
       do i = 1, size(rhoair)
          ! computation - measurement < 0.01 is in accordance with previous investigation in Matlab
-         call expect_relative_near(rhoair(i), rhoair_expected(i), 1.e-2_hp, 'compute air density, point value')
+         call f90_expect_relative_near(rhoair(i), rhoair_expected(i), 1.e-2_hp, 'compute air density, point value')
       end do
 
    end subroutine test_get_airdensity
@@ -90,7 +89,7 @@ contains
       call get_airdensity(p, T, Td, rhoair, ierr)
       call f90_expect_eq(ierr, DFM_NOERR, 'Something wrong in call get_airdensity().')
       do i = 1, size(rhoair)
-         call expect_relative_near(rhoair(i), rhoair_expected(i), tolerance, 'compute air density, point value')
+         call f90_expect_relative_near(rhoair(i), rhoair_expected(i), tolerance, 'compute air density, point value')
       end do
 
    end subroutine test_get_airdensity_exact

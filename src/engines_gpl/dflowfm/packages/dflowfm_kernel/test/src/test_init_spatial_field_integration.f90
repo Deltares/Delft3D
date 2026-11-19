@@ -1623,7 +1623,7 @@ contains
                                   '    interpolationMethod = triangulation', &
                                   '    operand             = override'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1655,7 +1655,7 @@ contains
       call set_external_forcings(0.0_dp, .false., iresult)
       call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
-                  'the first update should not reapply the static datavalue')
+                           'the first update should not reapply the static datavalue')
 
       ndx2D = 0
       lnx = 0
@@ -1663,7 +1663,7 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       if (allocated(frcu)) deallocate (frcu)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_datavalue_with_static_input_is_applied_once
 
@@ -1705,7 +1705,7 @@ contains
                                   '    interpolationMethod = triangulation', &
                                   '    operand             = override'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1738,7 +1738,7 @@ contains
       ja_airdensity = 0
       ndx2D = 0
       if (allocated(air_density)) deallocate (air_density)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
 
@@ -1822,18 +1822,18 @@ contains
                        '    0     2.0', &
                        '    60    3.0'])
       call create_file(EXT_FILE, [character(len=80) :: &
-                       '[Spatial]', &
-                       '    quantity        = frictioncoefficient', &
-                       '    dataValue       = 1.0', &
-                       '    operand         = override', &
-                       '', &
-                       '[Spatial]', &
-                       '    quantity        = frictioncoefficient', &
-                       '    forcingFile     = '//BC_FILE, &
-                       '    forcingFileType = bcascii', &
-                       '    operand         = multiply'])
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    dataValue       = 1.0', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    forcingFile     = '//BC_FILE, &
+                                  '    forcingFileType = bcascii', &
+                                  '    operand         = multiply'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1877,7 +1877,7 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       if (allocated(frcu)) deallocate (frcu)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_static_datavalue_dynamic_multiply_resets_base
 
@@ -2139,7 +2139,7 @@ contains
       call f90_expect_true(success, 'timeless source should support a dynamic target')
       if (success) then
          success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
-                                                -100.0_dp, spatial_secchi_depth)
+                                                  -100.0_dp, spatial_secchi_depth)
          call f90_expect_true(success, 'timeless source should evaluate before the reference date')
          if (success) then
             call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'first evaluation should interpolate spatially')
@@ -2147,7 +2147,7 @@ contains
          end if
          spatial_secchi_depth = 42.0_dp
          success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
-                                                1000.0_dp, spatial_secchi_depth)
+                                                  1000.0_dp, spatial_secchi_depth)
          call f90_expect_true(success, 'timeless source should evaluate at a later time without advancing records')
          if (success) then
             call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'later evaluation should restore the same source value')
@@ -2587,7 +2587,7 @@ contains
       call f90_expect_true(secchi_depth_is_spatially_varying, &
                            "secchi_depth_is_spatially_varying must be .true. after init")
       if (.not. f90_assert_true(allocated(spatial_secchi_depth), &
-                               "spatial_secchi_depth must be allocated")) then
+                                "spatial_secchi_depth must be allocated")) then
          call cleanup()
          return
       end if
@@ -2858,7 +2858,7 @@ contains
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
    subroutine test_waqmassbalancearea_polygon_populated() bind(C)
-      use m_flow, only: ndkx, kmxn
+      use m_flow, only: ndkx, kmx, kmxn
       use m_flowgeom, only: ndx2D, ndxi
       use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
       use m_mass_balance_area, only: read_and_initialize_mass_balance_area
@@ -2895,8 +2895,8 @@ contains
       ndxi = ndx
       ndkx = ndx
       ndx2D = 0
-      allocate (kmxn(1))
-      kmxn = 1
+      kmx = 0
+      call realloc(kmxn, ndx, fill=1, keepExisting=.false.)
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
@@ -3131,10 +3131,10 @@ contains
                        "-10.0  2.0", &
                        "  0.0  4.0"])
       call create_file(EXT_FILE, [character(len=128) :: &
-                       "[Spatial]", &
-                       "    quantity        = initialverticalsedfracprofileSediment_sand", &
-                       "    forcingFile     = "//PROFILE_FILE, &
-                       "    forcingFileType = Polygon"])
+                                  "[Spatial]", &
+                                  "    quantity        = initialverticalsedfracprofileSediment_sand", &
+                                  "    forcingFile     = "//PROFILE_FILE, &
+                                  "    forcingFileType = Polygon"])
 
       call setup_minimal_grid()
       ndxi = ndx
@@ -3208,10 +3208,10 @@ contains
                        "0.0  10.0", &
                        "1.0  20.0"])
       call create_file(EXT_FILE, [character(len=128) :: &
-                       "[Spatial]", &
-                       "    quantity        = initialverticalsigmasedfracprofileSediment_sand", &
-                       "    forcingFile     = "//PROFILE_FILE, &
-                       "    forcingFileType = Polygon"])
+                                  "[Spatial]", &
+                                  "    quantity        = initialverticalsigmasedfracprofileSediment_sand", &
+                                  "    forcingFile     = "//PROFILE_FILE, &
+                                  "    forcingFileType = Polygon"])
 
       call setup_minimal_grid()
       ndxi = ndx

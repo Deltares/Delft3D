@@ -21,7 +21,6 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module chdir_mod
-
    implicit none
 
    interface
@@ -46,8 +45,8 @@ contains
 end module chdir_mod
 
 module test_observations
-   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq, f90_expect_true
-   use test_relative_assertions, only: expect_relative_near
+   use assertions_gtest, only: f90_assert_eq, f90_assert_true, f90_expect_eq, f90_expect_streq, f90_expect_true, &
+                               f90_expect_relative_near
    use precision
 
    implicit none(type, external)
@@ -61,7 +60,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_read_obs_points() bind(C)
       use m_observations
       use m_partitioninfo, only: jampi
@@ -74,8 +73,8 @@ contains
       integer, parameter :: N_OBS_POINTS = 4
       integer :: i
       real(kind=dp), dimension(2, N_OBS_POINTS), parameter :: refdata = reshape([ &
-         1.0_dp, 0.0_dp, 145964.0_dp, 427274.0_dp, &
-         0.0_dp, 32.0_dp, 145852.0_dp, 427142.0_dp], [2, N_OBS_POINTS])
+                                                                                1.0_dp, 0.0_dp, 145964.0_dp, 427274.0_dp, &
+                                                                                0.0_dp, 32.0_dp, 145852.0_dp, 427142.0_dp], [2, N_OBS_POINTS])
       character(len=40), dimension(N_OBS_POINTS) :: refnames
       !
       refnames(1) = 'TestLocation1'
@@ -91,23 +90,23 @@ contains
       network%brs%branch(1)%id = 'Lei3'
       network%brs%branch(2)%id = 'Lei11'
       call fill_hashtable(network%brs)
-      allocate(meshgeom1d%ngeopointx(4), meshgeom1d%ngeopointy(4))
-      allocate(meshgeom1d%nbranchgeometrynodes(2), meshgeom1d%nbranchlengths(2))
+      allocate (meshgeom1d%ngeopointx(4), meshgeom1d%ngeopointy(4))
+      allocate (meshgeom1d%nbranchgeometrynodes(2), meshgeom1d%nbranchlengths(2))
       meshgeom1d%ngeopointx = [0.0_dp, 100.0_dp, 0.0_dp, 0.0_dp]
       meshgeom1d%ngeopointy = [0.0_dp, 0.0_dp, 0.0_dp, 100.0_dp]
       meshgeom1d%nbranchgeometrynodes = [2, 2]
       meshgeom1d%nbranchlengths = [100.0_dp, 100.0_dp]
       call loadObservations("observations/points/ObservationPoints_2.ini", 0)
-      deallocate(meshgeom1d%ngeopointx, meshgeom1d%ngeopointy)
-      deallocate(meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranchlengths)
+      deallocate (meshgeom1d%ngeopointx, meshgeom1d%ngeopointy)
+      deallocate (meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranchlengths)
       if (.not. f90_assert_eq(numobs, N_OBS_POINTS, 'Number of observation points incorrect')) then
          return
       end if
       call f90_expect_true(allocated(xobs), 'xobs is allocated')
       if (allocated(xobs)) then
          do i = 1, N_OBS_POINTS
-            call expect_relative_near(xobs(i), refdata(1, i), eps, 'x-coordinate of observation points incorrect')
-            call expect_relative_near(yobs(i), refdata(2, i), eps, 'y-coordinate of observation points incorrect')
+            call f90_expect_relative_near(xobs(i), refdata(1, i), eps, 'x-coordinate of observation points incorrect')
+            call f90_expect_relative_near(yobs(i), refdata(2, i), eps, 'y-coordinate of observation points incorrect')
             call f90_expect_streq(trim(namobs(i)), trim(refnames(i)), "Observation point name incorrect")
          end do
       end if
@@ -115,7 +114,7 @@ contains
 !
 !
 !==============================================================================
-!$gtest
+   !$gtest
    subroutine test_read_snapped_obs_points() bind(C)
       use gridoperations
       use m_cell_geometry, only: xz, yz
@@ -135,8 +134,8 @@ contains
       logical :: success_
       integer, dimension(N_OBS_POINTS), parameter :: ref_k = [522, 1043, 1565, 1304]
       real(kind=dp), dimension(2, N_OBS_POINTS), parameter :: refdata = reshape([ &
-         100000.0_dp, 25000.0_dp, 0.0_dp, 50000.0_dp, &
-         0.0_dp, 100000.0_dp, 100000.0_dp, 75000.0_dp], [2, N_OBS_POINTS])
+                                                                                100000.0_dp, 25000.0_dp, 0.0_dp, 50000.0_dp, &
+                                                                                0.0_dp, 100000.0_dp, 100000.0_dp, 75000.0_dp], [2, N_OBS_POINTS])
       character(len=40), dimension(N_OBS_POINTS) :: refnames
       character(len=40) :: mdufile
       !
@@ -172,8 +171,8 @@ contains
       !
       do i = 1, N_OBS_POINTS
          call f90_expect_eq(kobs(i), ref_k(i), 'index of snapped observation points incorrect')
-         call expect_relative_near(xz(kobs(i)), refdata(1, i), eps, 'x-coordinate of snapped observation points incorrect')
-         call expect_relative_near(yz(kobs(i)), refdata(2, i), eps, 'y-coordinate of snapped observation points incorrect')
+         call f90_expect_relative_near(xz(kobs(i)), refdata(1, i), eps, 'x-coordinate of snapped observation points incorrect')
+         call f90_expect_relative_near(yz(kobs(i)), refdata(2, i), eps, 'y-coordinate of snapped observation points incorrect')
          call f90_expect_streq(trim(namobs(i)), trim(refnames(i)), "Snapped observation point name incorrect")
       end do
    end subroutine test_read_snapped_obs_points

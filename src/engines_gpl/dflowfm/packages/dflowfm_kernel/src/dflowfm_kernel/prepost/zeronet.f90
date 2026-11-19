@@ -46,11 +46,9 @@ contains
       NMK = 0 ! S1=0
       KC = 0
       LC = 0
+      ! Leave dxe0 intact so callers can restore the saved network.
       if (allocated(dxe)) then
          dxe = dmiss
-      end if
-      if (allocated(dxe0)) then
-         dxe0 = dmiss
       end if
       NUMK = 0
       NUML = 0
