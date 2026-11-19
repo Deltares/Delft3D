@@ -26,3 +26,6 @@ Simple rectangular basin. Five constructed, artificial NF2FF files:
 The resulting sources and sinks on the D-Flow FM side are added as comments at the end of each NF2FF file.
 
 By enabling line "ExtForceFileNew = sources.ext" in the mdu file, the nearfield sources and sinks are mimicked using traditional sources and sinks.
+
+## Running in a container
+`run_docker.sh` and `run_apptainer.sh` run the coupled preC-SUMO/D-Flow FM model in the Delft3D FM container using the installed `run_fm_csumo.sh` script. Both accept `--image <image>` to select another container image.
