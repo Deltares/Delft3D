@@ -31,6 +31,8 @@ object DummyBuild: BuildType({
         name = "Determine files changed"
         id = "RUNNER_DUMMY"
         scriptContent = """
+            echo $PWD
+            ls -a 
             ci/teamcity/Delft3D/ciUtilities/scripts/determineChangedFileNames.sh --target-branch main --source-branch "tc/task/UNST-10270-detect-changed-files" --file-pattern="f90" --teamcity            
         """.trimIndent()
         }
