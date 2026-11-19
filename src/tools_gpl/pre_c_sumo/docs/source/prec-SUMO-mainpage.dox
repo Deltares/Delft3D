@@ -28,9 +28,11 @@ The coupling between D-Flow FM and C-SUMO is handled using preCICE. The D-FlowFM
 The preC-SUMO executable is a wrapper that interacts with preCICE, writes FF2NF files that are consumed by the C-SUMO application, and reads the resulting NF2FF files, which are then sent to FM using preCICE.
 
 Initialize the FM-to-preC-SUMO exchanges, not the exchanges sent by preC-SUMO.
-preC-SUMO rejects configurations requiring it to write initial coupling data because NF2FF responses
-may depend on incoming FM values, especially for conversion of excess constituents to absolute values.
-These FM values are available only after preCICE initialization.
+Before preCICE initialization, preC-SUMO waits for and reads the initial NF2FF files, converts their
+results to determine the initial source/sink mesh, and registers that mesh. It does not send this
+initial conversion as coupling data. Configurations requiring initial data from preC-SUMO are rejected:
+NF2FF responses can depend on incoming FM values, especially when converting excess constituents to
+absolute values, and those FM values are available only after preCICE initialization.
 
 \dotfile coupled_solvers_fm_csumo.dot "FM and preC-SUMO coupling overview"
 
@@ -53,6 +55,8 @@ and advances preCICE before reading and installing the response for the next FM 
 The response read refreshes the received source/sink mesh size and vertex IDs to account for remeshing.
 Reading and installing before the exchange would apply the previous response for an extra interval.
 
+For each preCICE window, preC-SUMO reads the FM fields, writes FF2NF files, waits for the corresponding
+NF2FF files, converts the results, writes source/sink data, and advances by the full available window.
 With parallel-explicit coupling, preC-SUMO still computes its response using previously exchanged
 FM fields. The ordering above avoids an additional application delay; it does not provide
 same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is tracked in

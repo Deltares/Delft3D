@@ -8,7 +8,7 @@ namespace pre_c_sumo
 {
     bool isDiffuserModelled(const NF2FFData& diffuser)
     {
-        // (Placeholder) logic to determine if the diffuser is modelled
+        // A diffuser is modelled when it has multiple source points or no sinks.
         return diffuser.sources.size() > 1 || diffuser.sinks.size() == 0;
     }
 

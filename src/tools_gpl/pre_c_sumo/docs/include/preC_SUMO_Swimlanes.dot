@@ -39,9 +39,10 @@ digraph preCSUMOSwimlanes {
     node [group="precsumo"];
 
     s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
-    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref anonymous_namespace{pre_c_sumo_lib.cpp}::getMesh2D3D()", tooltip="Set up meshes for preCICE exchange"];
-    s2 [label="wait + read\nNF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open initial NF2FF bootstrap docs"];
-    s3 [label="init\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open participant initialization docs"];
+    s1 [label="register sampling\nmeshes", fillcolor="#FFE3D1", tooltip="Register preC-SUMO sampling meshes"];
+    s2 [label="wait + read\ninitial NF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Read initial NF2FF data before participant initialization"];
+    s3 [label="convert initial result +\nregister source/sink mesh", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Set up source/sink mesh from initial NF2FF data"];
+    s4 [label="check initial data +\ninit participant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Reject required outgoing initial data, then initialize"];
 
     l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open receiveFFData docs"];
     l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
@@ -52,7 +53,7 @@ digraph preCSUMOSwimlanes {
     l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
     lane_left [label="", shape=point, width=0.01, height=0.01, style=invis];
 
-    s0 -> s1 -> s2 -> s3 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
+    s0 -> s1 -> s2 -> s3 -> s4 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
     lane_left -> l0 [style=invis, weight=120];
     l6 -> l0 [color="#666666"];
   }
@@ -66,12 +67,14 @@ digraph preCSUMOSwimlanes {
     color="#1285F0";
     style="rounded";
 
+    c_initial [label="Initial NF2FF files\nfor startup", fillcolor="#DDEBFF", tooltip="Read before preCICE initialization"];
     c0 [label="FF2NF Files", fillcolor="#DDEBFF", tooltip="Produced by writeFF2NFFiles"];
     c1 [label="Near-field Calculation", fillcolor="#DDEBFF",  tooltip="External step consuming FF2NF and generating NF2FF files"];
     c2 [label="NF2FF Files", fillcolor="#DDEBFF", tooltip="Consumed by readNF2FFFiles"];
     c0 -> c1 -> c2;
   }
 
+  c_initial -> s2 [constraint=false];
   precice:e -> l0:w [constraint=false, xlabel="readData()"];
   l5:w -> precice:se [constraint=false, xlabel="mesh reset"];
   l5:w -> precice:se [constraint=false, xlabel="writeData()"];

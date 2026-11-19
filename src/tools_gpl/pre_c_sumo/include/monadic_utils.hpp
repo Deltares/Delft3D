@@ -26,14 +26,14 @@ namespace monadic_utils::internal
 
     /**
      * @anchor monadic_utils_is_optional
-     * @brief Concept satisfied by std::optional-like types.
+     * @brief Concept satisfied by std::optional specializations.
      */
     template <typename T>
     concept IsOptional = is_optional_v<std::remove_cvref_t<T>>;
 
     /**
      * @anchor monadic_utils_is_expected
-     * @brief Concept satisfied by std::expected-like types.
+     * @brief Concept satisfied by std::expected specializations.
      */
     template <typename T>
     concept IsExpected = is_expected_v<std::remove_cvref_t<T>>;

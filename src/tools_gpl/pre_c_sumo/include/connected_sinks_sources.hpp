@@ -51,7 +51,7 @@ namespace pre_c_sumo
         /**
          * @anchor pre_c_sumo_connected_sink_sources_get_discharge_value
          * @brief Returns the discharge values in read-only form.
-         * @return Vector of discharge values used by unit tests and diagnostics.
+         * @return Discharge values in the aligned vector.
          */
         const std::vector<double>& get_discharge_value() const;
         const ConnectedSinkSourcesData& data() const;

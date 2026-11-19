@@ -45,8 +45,8 @@ namespace
     }
 
     /**
-     * @brief parse/validate the discharge element.
-     * @return std::expected containing std::string on success or ParseError on failure.
+     * @brief Parse and validate the discharge element.
+     * @return std::expected containing a pugi::xml_node on success or ParseError on failure.
      */
     std::expected<pugi::xml_node, parsing_utils::ParseError> parseDischarge(const pugi::xml_node root)
     {
@@ -60,8 +60,8 @@ namespace
 
     /**
      * @brief extract Source or Sink data from a std::vector<double>. The first six values have a fixed meaning,
-     * but depending on the size of the input vector, additional values are to be assigned to U components and/or
-     * the weight atribute in the struct. Additional values are only considered if the element_name is "source".
+     * but depending on the size of the input vector, additional values are assigned to U components and/or
+     * the weight attribute in the struct. Additional values are only accepted when element_name is "sources".
      * @return std::expected containing a pre_c_sumo::SourceOrSinkData struct or ParseError on failure.
      */
     std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> extractSourceOrSinkData(
@@ -159,12 +159,12 @@ namespace
     }
 
     /**
-     * @brief extract Source or Sink values from sources or sinks blocks.
+     * @brief Extract Source or Sink values from sources or sinks blocks.
      * Since the data in these blocks are formatted by line we split the text into lines first and then
      * convert each line to source or sink data objects if the line is not 'empty' (ergo, a line does not
      * contain just blanks).
      * The conversion and checking are implemented using lambda functions and are run trough a std::ranges chain.
-     * @return std::expected containing a pre_c_sumo::SourceOrSinkData struct or ParseError on failure.
+     * @return std::expected containing a vector of pre_c_sumo::SourceOrSinkData or ParseError on failure.
      */
     std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)

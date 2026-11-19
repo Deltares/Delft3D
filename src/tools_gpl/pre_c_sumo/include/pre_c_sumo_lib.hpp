@@ -11,9 +11,13 @@ namespace pre_c_sumo
      * Main workflow overview:
      * @dotfile preC_SUMO_Swimlanes.dot "preC-SUMO coupling workflow" width=900px
      *
-     * The core sequence is: @ref pre_c_sumo_read_csumo_settings_file -> @ref pre_c_sumo_receive_ff_data ->
+     * Before preCICE initialization, the initial NF2FF files are read and converted to determine and register
+     * the source/sink mesh.
+     *
+     * The settings are read once. For each coupling window, the core sequence is: @ref pre_c_sumo_receive_ff_data ->
      * @ref pre_c_sumo_write_ff2nf -> @ref pre_c_sumo_wait_nf2ff -> @ref pre_c_sumo_read_nf2ff ->
-     * @ref pre_c_sumo_convert_nf_to_connected_sink_sources -> @ref pre_c_sumo_connected_sink_sources_write_to_precice.
+     * @ref pre_c_sumo_convert_nf_to_connected_sink_sources -> @ref pre_c_sumo_connected_sink_sources_write_to_precice,
+     * followed by advancing the preCICE participant.
      *
      * @param csumo_settings_file_name Path and filename of the C-SUMO configuration XML file.
      * @param precice_config_file_name Path and filename of the preCICE adapter configuration file.
@@ -23,9 +27,7 @@ namespace pre_c_sumo
 
     /**
      * @anchor pre_c_sumo_run_default
-     * @brief Legacy entry point used for test scenarios without preCICE integration.
-     *
-     * This convenience overload is intended for non-production testing workflows.
+     * @brief Test helper that prints a greeting without initializing a preCICE participant.
      *
      * @return Returns 0 on success.
      */

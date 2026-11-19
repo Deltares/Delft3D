@@ -8,6 +8,7 @@ sequenceDiagram
         S->>P: precice::Participant(...)
         S->>P: setMeshVertices(csumo_2d_nodes)
         S->>P: setMeshVertices(csumo_3d_nodes)
+        Note over S: Read and convert initial NF2FF results to determine source/sink mesh vertices
         S->>P: setMeshVertices(sources_sinks_nodes)
         S->>P: requiresInitialData()
         alt Initial outgoing data required

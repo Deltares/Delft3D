@@ -17,7 +17,6 @@ namespace pre_c_sumo
 {
     /**
      * @details Entry point into the preC-SUMO preCICE library.
-     * Note: Consider refactoring/clean up
      */
     int run(const std::string_view csumo_settings_file_name, const std::string_view precice_config_file_name)
     {
