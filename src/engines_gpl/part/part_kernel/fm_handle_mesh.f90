@@ -668,13 +668,15 @@ contains
     integer, allocatable :: cell_to_cell(:,:)
     integer, allocatable :: cell_exchange(:,:)
     
-    max_cell_from_exchanges = 0
-    do i = 1, nosegl
-       max_cell_from_exchanges = max(max_cell_from_exchanges, count(ipoint(1, :) == i))
+    allocate (no_cell_exchange(-nobndl:nosegl))
+    no_cell_exchange = 0
+    do ilink = 1, Lnx
+       ifrom = ipoint(1, ilink)
+       no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
     end do
+    max_cell_from_exchanges = maxval(no_cell_exchange)
 
     ! allocate tables
-    allocate (no_cell_exchange(-nobndl:nosegl))
     allocate (cell_to_cell(-nobndl:nosegl, max_cell_from_exchanges))
     allocate (cell_exchange(-nobndl:nosegl, max_cell_from_exchanges))
     no_cell_exchange = 0
