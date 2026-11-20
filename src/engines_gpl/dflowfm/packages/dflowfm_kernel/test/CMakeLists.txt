@@ -15,8 +15,44 @@ set(test_target test_dflowfm_kernel_gtest)
 if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
+
+function(conan_test_directory output variable_prefix)
+    set(directory "${${variable_prefix}_RELEASE}")
+    foreach(configuration IN ITEMS Debug RelWithDebInfo MinSizeRel)
+        string(TOUPPER "${configuration}" configuration_upper)
+        if(${variable_prefix}_${configuration_upper})
+            if(NOT directory)
+                set(directory "${${variable_prefix}_${configuration_upper}}")
+            endif()
+            set(directory "$<IF:$<CONFIG:${configuration}>,${${variable_prefix}_${configuration_upper}},${directory}>")
+        endif()
+    endforeach()
+    if(NOT directory)
+        message(FATAL_ERROR "Missing Conan directory for ${variable_prefix}; rerun the Conan install.")
+    endif()
+    set(${output} "${directory}" PARENT_SCOPE)
+endfunction()
+
+conan_test_directory(netcdf_bin netcdf_BIN_DIRS)
+set(ncgen_test_launcher "${CMAKE_COMMAND}" -E env --modify "PATH=path_list_prepend:${netcdf_bin}")
+if(WIN32)
+    set(runtime_variable PATH)
+    set(runtime_directory BIN)
+else()
+    set(runtime_variable LD_LIBRARY_PATH)
+    set(runtime_directory LIB)
+    conan_test_directory(netcdf_lib netcdf_LIB_DIRS)
+    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${netcdf_lib}")
+endif()
+foreach(package IN ITEMS hdf5 zlib)
+    conan_test_directory(dependency_dir "${package}_${runtime_directory}_DIRS")
+    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${dependency_dir}")
+endforeach()
+list(APPEND ncgen_test_launcher --)
+
 add_fortran_gtest(${test_target}
     TEST_TEARDOWN reset_dflowfm_after_test
+    TEST_LAUNCHER ${ncgen_test_launcher}
     SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
@@ -29,6 +65,7 @@ add_fortran_gtest(${test_target}
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
         src/test_bubblescreen.f90
+        src/test_ncdump_to_netcdf.f90
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90
