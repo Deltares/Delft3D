@@ -52,6 +52,8 @@ configure_visual_studio_user_file(${executable_name})
 
 add_fortran_gtest(test_ec_module
     SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/helpers/ec_module_helper.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_converter.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_harmonic_projection.f90
     LIBRARIES ec_module
