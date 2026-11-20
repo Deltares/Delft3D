@@ -77,6 +77,20 @@ get_fortran_source_files(${dflowfm_rgf_path} dflowfm_rgf)
 set(dflowfm_utils_path ${src_path}/dflowfm_utils/)
 get_fortran_source_files(${dflowfm_utils_path} dflowfm_utils)
 
+# Prevent ifx from rewriting the paired RHS divisions as reciprocal multiplication.
+if (CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+    if (WIN32)
+        set(tridag_precise_division_flag /Qprec-div)
+    elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(tridag_precise_division_flag -prec-div)
+    endif()
+endif()
+
+if (DEFINED tridag_precise_division_flag)
+    set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}tridag.f90"
+                 APPEND PROPERTY COMPILE_OPTIONS "${tridag_precise_division_flag}")
+endif()
+
 get_fortran_source_files(${dflowfm_utils_path}/rest_f90 dflowfm_utils_rest_f90)
 get_fortran_source_files(${dflowfm_utils_path}/to_deltares_common dflowfm_utils_to_deltares_common)
 
