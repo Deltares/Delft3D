@@ -2263,8 +2263,7 @@ contains
 !                 read data
                block_ncol = mcolmax(j) - mcolmin(j) + 1
                block_nrow = nrowmax(j) - nrowmin + 1
-               call netcdf_layer_selection(indices, [mcolmin(j), nrowmin], [block_ncol, block_nrow], &
-                                           k, timesndx, start, counts)
+               call netcdf_layer_selection(indices, [mcolmin(j), nrowmin], [block_ncol, block_nrow], k, timesndx, start, counts)
                ierror = nf90_get_var(filehandle, quantity%ncid, data_block, start=start, count=counts)
 
                if (ierror /= 0) then
@@ -2279,8 +2278,7 @@ contains
                   goto 1234
                end if
 
-               ! Keep the sparse read buffer in file order: the faster dimension has stride 1.
-               ! Use those strides to gather only the selected cells, without transposing the block.
+               ! No transposing for sparse reads, if y is first we simply set row stride to 1.
                col_stride = 1
                row_stride = block_ncol
                if (y_first) then
@@ -2290,8 +2288,7 @@ contains
                do nrow = nrowmin, nrowmax(j)
                   do i = ia(nrow), ia(nrow + 1) - 1
                      mcol = ja(i)
-                     arr1d(i + (k - 1) * Ndatasize) = &
-                        data_block(1 + (mcol - mcolmin(j)) * col_stride + (nrow - nrowmin) * row_stride)
+                     arr1d(i + (k - 1) * Ndatasize) = data_block(1 + (mcol - mcolmin(j)) * col_stride + (nrow - nrowmin) * row_stride)
                   end do
                end do
             end if
