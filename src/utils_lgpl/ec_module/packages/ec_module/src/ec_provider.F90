@@ -3034,8 +3034,8 @@ contains
                y_dim = -1
             else if (ndims == 2) then
                ! Use named grid dimensions when available; otherwise keep the X coordinate's order.
-               x_dim = fileReaderPtr%lonx_id
-               y_dim = fileReaderPtr%laty_id
+               x_dim = fileReaderPtr%lonx_dimid
+               y_dim = fileReaderPtr%laty_dimid
                if (.not. any(crd_dimids(:, 1) == x_dim)) then
                   x_dim = crd_dimids(1, 1)
                   if (x_dim == y_dim) then
@@ -3559,7 +3559,7 @@ contains
             if (ecNetcdfFindVariableId(fileReaderPtr%fileHandle, fileReaderPtr%fileName, &
                                       fileReaderPtr%standard_names, fileReaderPtr%variable_names, 'PHASE') /= ec_undef_int) then
                call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
-                     fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
+                     fileReaderPtr%lonx_dimid, fileReaderPtr%laty_dimid, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
             else
                success = fileReaderPtr%tframe%nr_timesteps == 0
             end if
@@ -4151,8 +4151,8 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
          fileReaderPtr%dim_varids = -1
          fileReaderPtr%dim_length = -1
          fileReaderPtr%time_dimid = -1
-         fileReaderPtr%lonx_id = -1
-         fileReaderPtr%laty_id = -1
+         fileReaderPtr%lonx_dimid = -1
+         fileReaderPtr%laty_dimid = -1
 
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
@@ -4160,9 +4160,9 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
             ! Find dimension matching columns and rows
             select case (str_tolower(trim(dim_name)))
             case ('x', 'longitude', 'lon', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')
-               fileReaderPtr%lonx_id = idim
+               fileReaderPtr%lonx_dimid = idim
             case ('y', 'latitude', 'lat', 'projected_y', 'yc', 'grid_latitude', 'projection_y_coordinate')
-               fileReaderPtr%laty_id = idim
+               fileReaderPtr%laty_dimid = idim
             end select
          end do ! idim
       else
