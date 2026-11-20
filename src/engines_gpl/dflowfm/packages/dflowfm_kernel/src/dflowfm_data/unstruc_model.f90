@@ -1666,19 +1666,19 @@ contains
          call convert_air_sea_interaction_model_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for airSeaInteractionModel. Should be ''none'' or ''most''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] airSeaInteractionModel''. Should be ''none'' or ''most''.')
          else
             air_sea_interaction_model = ibuf
          end if
       end if
 
       tmpstr = ''
-      call prop_get(md_ptr, 'meteo', 'stabilityFunction', tmpstr, success)
+      call prop_get(md_ptr, 'meteo', 'stabilityFunctions', tmpstr, success)
       if (success) then
          call convert_atmospheric_stability_function_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunction. Should be ''none'' or ''ecmwf''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] stabilityFunctions''. Should be ''none'' or ''ecmwf''.')
          else
             atmospheric_stability_function = ibuf
          end if
@@ -1690,7 +1690,7 @@ contains
          call convert_free_convection_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for freeConvection. Should be ''off'' or ''on''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] freeConvection''. Should be ''off'' or ''on''.')
          else
             free_convection = ibuf
          end if
@@ -1702,12 +1702,12 @@ contains
          call convert_salinity_dependent_evaporation_method_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for salinityDependentEvaporationMethod. Should be ''none'', ''constant'' or ''linear''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] salinityDependentEvaporationMethod''. Should be ''none'', ''constant'' or ''linear''.')
          else
             salinity_dependent_evaporation_method = ibuf
 
             if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
-               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod is set to ''linear'' but Salinity is turned off in mdu.')
+               call mess(LEVEL_ERROR, 'Keyword ''[meteo] salinityDependentEvaporationMethod'' is set to ''linear'' but Salinity is turned off in mdu.')
             end if
          end if
       end if
@@ -1715,7 +1715,7 @@ contains
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, success)
       if (success .and. salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          if (salinity_reduction_factor_saturation_humidity%scalar < 0 .or. salinity_reduction_factor_saturation_humidity%scalar > 1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for QsatFactor. Should be inclusive between 0 and 1.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] QsatFactor''. Should be inclusive between 0 and 1.')
          end if
       end if
 
@@ -1724,7 +1724,7 @@ contains
       if (success) then
          call convert_rain_temperature_string_to_integer(tmpstr, ibuf)
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''airTemperature'' or ''wetBulbTemperature''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] rainTemperature''. Should be ''airTemperature'' or ''wetBulbTemperature''.')
          else
             rain_temperature_method = ibuf
          end if
@@ -1741,7 +1741,7 @@ contains
       call prop_get(md_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, success)
       if (success) then
          if (longwave_emissivity < 0 .or. longwave_emissivity > 1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmissivity. Should be inclusive between 0 and 1.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] longwaveEmissivity''. Should be inclusive between 0 and 1.')
          end if
       end if
 
@@ -3667,7 +3667,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', trim(tmpstr), 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
 
       call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunctions', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
 
       call convert_free_convection_integer_to_string(free_convection, tmpstr)
       call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
