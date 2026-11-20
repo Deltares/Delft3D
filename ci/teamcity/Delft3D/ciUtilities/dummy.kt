@@ -30,10 +30,7 @@ object DummyBuild: BuildType({
         name = "Determine files changed"
         id = "RUNNER_DUMMY"
         scriptContent = """
-            git status
-            git log -5 --oneline
-            git branch -a 
-            ci/teamcity/Delft3D/ciUtilities/scripts/determineChangedFileNames.sh --target-branch orign/main --source-branch "tc/task/UNST-10270-detect-changed-files" --file-pattern="f90" --teamcity            
+            ci/teamcity/Delft3D/ciUtilities/scripts/determineChangedFileNames.sh --target-branch main --source-branch "tc/task/UNST-10270-detect-changed-files" --file-pattern="f90" --teamcity            
         """.trimIndent()
         }
     }
