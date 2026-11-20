@@ -34,7 +34,7 @@ contains
    end function target_value
 
    !$gtest
-   subroutine test_spiderweb_at_eye() bind(C)
+   subroutine test_spiderweb__evaluate_pressure_at_eye() bind(C)
       integer, parameter :: N_ROWS = 2, N_COLS = 5
       real(dp), dimension(2), parameter :: EYE = [4.0_dp, 52.0_dp]
       real(dp), parameter :: RADIUS = 100000.0_dp
@@ -52,11 +52,9 @@ contains
 
       ! Arrange
       success = ymd2modified_jul(20261126, t0)
-
-      ! T0: Spiderweb with uniform `windspeed` and `winddirection`. `p_drop` is uniform accept at the eye.
+      ! T0: Spiderweb with uniform `windspeed` and `winddirection`. `p_drop` is uniform except at the eye.
       spw_t0 = make_uniform_spiderweb(N_ROWS, N_COLS, RADIUS, EYE, [WIND_SPEED, WIND_DIRECTION, OFF_EYE_PRESSURE_DROP])
       spw_t0%data(:N_COLS, 3) = EYE_PRESSURE_DROP_T0
-
       ! T1: Same spiderweb as T0, except `p_drop` is higher at the eye.
       spw_t1 = spw_t0
       spw_t1%data(:N_COLS, 3) = EYE_PRESSURE_DROP_T1
@@ -70,10 +68,8 @@ contains
          return
       end if
 
-      ! Evaluate target items a quarter day after T0.
-      call time%set(t0 + 0.25_dp)
-
       ! Act
+      call time%set(t0 + 0.25_dp) ! Evaluate target items six hours after T0.
       success = ecConverterPerformConversions(connection, time)
 
       ! Assert
@@ -85,10 +81,10 @@ contains
       ! A quarter of the way from 1000 Pa to 3000 Pa gives a 1500 Pa drop.
       call f90_expect_near(target_value(connection, 3), BACKGROUND_PRESSURE - EXPECTED_PRESSURE_DROP, 1.0e-8_dp, &
                            'pressure at the eye must include the time-interpolated drop')
-   end subroutine test_spiderweb_at_eye
+   end subroutine test_spiderweb__evaluate_pressure_at_eye
 
    !$gtest
-   subroutine test_spiderweb_wind_only_off_eye() bind(C)
+   subroutine test_spiderweb__evaluate_wind_north_of_eye() bind(C)
       integer, parameter :: N_ROWS = 3, N_COLS = 9
       real(dp), parameter :: METRES_PER_DEGREE = 6378137.0_dp * PI / 180.0_dp !< The arc length of a one degree angle on earth's surface.
       real(dp), parameter :: TOLERANCE = 1.0e-8_dp
@@ -105,11 +101,9 @@ contains
 
       ! Arrange
       success = ymd2modified_jul(20261120, t0)
-
       ! T0: Uniform `winddirection`. `windspeed` is uniform except at the eye, where it is zero.
       spw_t0 = make_uniform_spiderweb(N_ROWS, N_COLS, METRES_PER_DEGREE, EYE, [WIND_DIRECTION, RING_WIND_SPEED_T0])
       spw_t0%data(:N_COLS, 2) = 0.0_dp
-
       ! T1: Same as T0, except the `windspeed` is higher by some constant factor.
       spw_t1 = make_uniform_spiderweb(N_ROWS, N_COLS, METRES_PER_DEGREE, EYE, [WIND_DIRECTION, RING_WIND_SPEED_T1])
       spw_t1%data(:N_COLS, 2) = 0.0_dp
@@ -123,10 +117,8 @@ contains
          return
       end if
 
-      ! Evaluate target items at time halfway between t0 and t1
-      call time%set(t0 + 0.5_dp)  ! At this time, the wind speed is (RING_WIND_SPEED_T0 + RING_WIND_SPEED_T1) / 2 (m/s)
-
       ! Act
+      call time%set(t0 + 0.5_dp)  ! Halfway between T0 and T1
       success = ecConverterPerformConversions(connection, time)
 
       ! Assert
@@ -136,6 +128,6 @@ contains
       ! Halfway between the eye and first ring gives windspeed 20 m/s. The wind direction is 30 degrees everywhere.
       call f90_expect_near(target_value(connection, 1), -10.0_dp, TOLERANCE, 'interpolated x wind') ! -20 * sin(30 deg)
       call f90_expect_near(target_value(connection, 2), -10.0_dp * sqrt(3.0_dp), TOLERANCE, 'interpolated y wind') ! -20 * cos(30 deg)
-   end subroutine test_spiderweb_wind_only_off_eye
+   end subroutine test_spiderweb__evaluate_wind_north_of_eye
 
 end module test_ec_converter
