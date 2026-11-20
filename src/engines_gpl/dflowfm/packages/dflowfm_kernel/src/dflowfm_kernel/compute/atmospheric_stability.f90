@@ -226,6 +226,7 @@ contains
          psi_diff_humidity = 0.0_dp
          obukhov_length = 0.0_dp
          richardson_number = 0.0_dp
+         inverse_obukhov_length = 0.0_dp
 
          do iteration = 1, MAXIMUM_ITERATION
             call compute_roughness_lengths(u_star, charnock, options%alpha_m, options%alpha_h, options%alpha_q, z0_momentum, z0_heat, z0_humidity)
@@ -254,23 +255,19 @@ contains
             end if
 
             if (abs(sensor_height_wind_velocity - sensor_height_air_temperature) > 0.01_dp) then
-               heat_profile_correction = log(sensor_height_wind_velocity + z0_momentum) - log(sensor_height_air_temperature + z0_momentum)
-               if (options%include_stability) then
-                  heat_profile_correction = heat_profile_correction &
-                                           - stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
-                                           + stability_profile_heat_humidity((sensor_height_air_temperature + z0_momentum) * inverse_obukhov_length)
-               end if
+               heat_profile_correction = compute_scalar_profile_correction(sensor_height_wind_velocity, &
+                                                                            sensor_height_air_temperature, &
+                                                                            z0_momentum, inverse_obukhov_length, &
+                                                                            options%include_stability)
                temperature_at_wind_height = air_temperature + (t_star / VON_KARMAN_WIND) * heat_profile_correction
                delta_temperature = temperature_at_wind_height - surface_temperature
             end if
 
             if (abs(sensor_height_wind_velocity - sensor_height_humidity) > 0.01_dp) then
-               humidity_profile_correction = log(sensor_height_wind_velocity + z0_momentum) - log(sensor_height_humidity + z0_momentum)
-               if (options%include_stability) then
-                  humidity_profile_correction = humidity_profile_correction &
-                                               - stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
-                                               + stability_profile_heat_humidity((sensor_height_humidity + z0_momentum) * inverse_obukhov_length)
-               end if
+               humidity_profile_correction = compute_scalar_profile_correction(sensor_height_wind_velocity, &
+                                                                                sensor_height_humidity, &
+                                                                                z0_momentum, inverse_obukhov_length, &
+                                                                                options%include_stability)
                humidity_at_wind_height = air_humidity + (q_star / VON_KARMAN_WIND) * humidity_profile_correction
                delta_specific_humidity = humidity_at_wind_height - surface_humidity
             end if
@@ -802,6 +799,24 @@ contains
       
       safe_value = sign(max(abs(value), EPS8), value)
    end function safe_log_denominator
+
+   !> Compute the logarithmic and stability profile correction for temperature or humidity.
+   pure function compute_scalar_profile_correction(sensor_height_wind_velocity, sensor_height_scalar, z0_momentum, &
+                                                   inverse_obukhov_length, include_stability) result(profile_correction)
+      real(kind=dp), intent(in) :: sensor_height_wind_velocity !< Height of wind velocity sensor [m].
+      real(kind=dp), intent(in) :: sensor_height_scalar !< Height of temperature or humidity sensor [m].
+      real(kind=dp), intent(in) :: z0_momentum !< Momentum roughness length [m].
+      real(kind=dp), intent(in) :: inverse_obukhov_length !< Inverse Obukhov length [1/m].
+      logical, intent(in) :: include_stability !< Whether to include stability corrections.
+      real(kind=dp) :: profile_correction !< Logarithmic and stability profile correction [-].
+
+      profile_correction = log(sensor_height_wind_velocity + z0_momentum) - log(sensor_height_scalar + z0_momentum)
+      if (include_stability) then
+         profile_correction = profile_correction &
+                              - stability_profile_heat_humidity((sensor_height_wind_velocity + z0_momentum) * inverse_obukhov_length) &
+                              + stability_profile_heat_humidity((sensor_height_scalar + z0_momentum) * inverse_obukhov_length)
+      end if
+   end function compute_scalar_profile_correction
 
    !> Compute stability corrections (psi) for momentum, heat and humidity at sensor heights.
    !! Calculates the difference between profile corrections at sensor height and roughness length.
