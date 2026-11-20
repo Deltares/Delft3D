@@ -6463,7 +6463,7 @@
                     }
                 },
                 {
-                    "key": "stabilityFunction",
+                    "key": "stabilityFunctions",
                     "default_value": "none",
                     "value_type": "enum",
                     "description": "Atmospheric stability function to be used in the atmospheric stability module.",

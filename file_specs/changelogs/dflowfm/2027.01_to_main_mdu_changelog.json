@@ -112,7 +112,7 @@
       "type": "added",
       "target": {
         "section": "meteo",
-        "property": "stabilityFunction",
+        "property": "stabilityFunctions",
         "enum_value": null
       }
     },
