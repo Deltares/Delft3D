@@ -1673,12 +1673,12 @@ contains
       end if
 
       tmpstr = ''
-      call prop_get(md_ptr, 'meteo', 'stabilityFunction', tmpstr, success)
+      call prop_get(md_ptr, 'meteo', 'stabilityFunctions', tmpstr, success)
       if (success) then
          call convert_atmospheric_stability_function_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunction. Should be ''none'' or ''ecmwf''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunctions. Should be ''none'' or ''ecmwf''.')
          else
             atmospheric_stability_function = ibuf
          end if
@@ -3667,7 +3667,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', trim(tmpstr), 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
 
       call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunctions', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
 
       call convert_free_convection_integer_to_string(free_convection, tmpstr)
       call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
