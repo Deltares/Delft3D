@@ -61,21 +61,23 @@ add_custom_target(test_dflowfm_kernel_gtest_resources
 set_target_properties(test_dflowfm_kernel_gtest_resources PROPERTIES FOLDER engines_gpl/dflowfm/test)
 add_dependencies(test_dflowfm_kernel_gtest test_dflowfm_kernel_gtest_resources)
 
-# Copy MSVC runtime DLLs to test output directory
-foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+if(WIN32)
+    # Copy MSVC runtime DLLs to test output directory
+    foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        add_custom_command(TARGET test_dflowfm_kernel_gtest PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${runtime_lib}"
+                "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
+        )
+    endforeach()
+
+    # Copy pthreads runtime dependency
     add_custom_command(TARGET test_dflowfm_kernel_gtest PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${runtime_lib}"
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
             "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
     )
-endforeach()
-
-# Copy pthreads runtime dependency
-add_custom_command(TARGET test_dflowfm_kernel_gtest PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
-        "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
-)
+endif()
 
 set_target_properties(test_dflowfm_kernel_gtest PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"

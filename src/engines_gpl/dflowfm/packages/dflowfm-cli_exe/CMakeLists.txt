@@ -75,9 +75,14 @@ install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 
 if(WIN32)
+    # pthreadVC2.dll depends on the VS2010 CRT, which TARGET_RUNTIME_DLLS does not include.
     add_custom_command(TARGET dflowfm-cli POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm-cli> $<TARGET_RUNTIME_DLLS:dflowfm-cli>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:dflowfm-cli>
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
+            "$<TARGET_FILE_DIR:dflowfm-cli>"
         COMMAND_EXPAND_LISTS
+        VERBATIM
     )
 endif()
 add_subdirectory(test)
