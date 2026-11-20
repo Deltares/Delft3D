@@ -1399,12 +1399,11 @@ contains
       end do
    end function ecSupportNCFindDimIds
 
-   !> Find the CF-compliant longitude and latitude dimensions and associated variables
+   !> Find spatial coordinate variables and their dimensions in a NetCDF file.
    function ecSupportNCFindCFCoordinates(ncid, lon_varid, lon_dimid, lat_varid, lat_dimid, &
                                          grid_lon_varid, grid_lat_varid, &
                                          x_varid, x_dimid, y_varid, y_dimid, &
                                          z_varid, z_dimid, &
-                                         tim_varid, tim_dimid, &
                                          series_varid, series_dimid) result(success)
       use netcdf
       logical :: success
@@ -1416,14 +1415,12 @@ contains
       integer, intent(out) :: x_varid !< One dimensional coordinate variable recognized as X
       integer, intent(out) :: y_varid !< One dimensional coordinate variable recognized as Y
       integer, intent(out) :: z_varid !< One dimensional coordinate variable recognized as Z
-      integer, intent(out) :: tim_varid !< One dimensional coordinate variable recognized as time
       integer, intent(out) :: series_varid !< Series variable dimensions
       integer, intent(out) :: lon_dimid !< Longitude dimension
       integer, intent(out) :: lat_dimid !< Latitude dimension
       integer, intent(out) :: x_dimid !< X dimension
       integer, intent(out) :: y_dimid !< Y dimension
       integer, intent(out) :: z_dimid !< Z dimension
-      integer, intent(out) :: tim_dimid !< Time dimension
       integer, intent(out) :: series_dimid !< Series dimension
       integer :: ndim, nvar, ivar, nglobatts, unlimdimid, ierr
       integer, allocatable :: dimids(:)
@@ -1435,7 +1432,6 @@ contains
       x_varid = -1
       y_varid = -1
       z_varid = -1
-      tim_varid = -1
       series_varid = -1
 
       lon_dimid = -1
@@ -1443,7 +1439,6 @@ contains
       x_dimid = -1
       y_dimid = -1
       z_dimid = -1
-      tim_dimid = -1
       series_dimid = -1
 
       allocate (dimids(NF90_MAX_VAR_DIMS))
@@ -1525,15 +1520,6 @@ contains
                if (ierr /= 0) then
                   ierr = nf90_inquire_variable(ncid, ivar, name=varname)
                   call set_ec_message("attribute 'axis' not found for variable "//trim(varname)//", nor 'projection_x/y_coordinate' was found.")
-               end if
-            case default
-               ! see if is the time dimension
-               if ((index(units, 'seconds since') > 0) &
-                   .or. (index(units, 'minutes since') > 0) &
-                   .or. (index(units, 'hours since') > 0) &
-                   .or. (index(units, 'days since') > 0)) then
-                  tim_varid = ivar
-                  tim_dimid = dimids(1)
                end if
             end select
          end if

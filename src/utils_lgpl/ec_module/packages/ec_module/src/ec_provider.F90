@@ -2717,7 +2717,7 @@ contains
       logical :: dummy !< temp
       character(len=50) :: attstr
       logical :: rotate_pole
-      integer :: lon_varid, lon_dimid, lat_varid, lat_dimid, tim_varid, tim_dimid
+      integer :: lon_varid, lon_dimid, lat_varid, lat_dimid
       integer :: data_rank, x_dim, y_dim
       type(tEcDimensionIndices) :: dimension_indices
       integer :: grid_lon_varid, grid_lat_varid
@@ -2791,7 +2791,6 @@ contains
                                              grid_lon_varid, grid_lat_varid, &
                                              x_varid, x_dimid, y_varid, y_dimid, &
                                              z_varid, z_dimid, &
-                                             tim_varid, tim_dimid, &
                                              nod_varid, nod_dimid)) then
          ! Exception: inquiry of id's of required coordinate variables failed
          return
@@ -2820,8 +2819,6 @@ contains
             return
          end if
       end if
-
-      tim_dimid = fileReaderPtr%time_dimid
 
       do i = 1, num_variables
          sourceItemQuantityName = trim(quantityName)
@@ -2858,7 +2855,7 @@ contains
          end if
          data_rank = size(dimids)
          dimension_indices = tEcDimensionIndices(z_index=findloc(dimids, z_dimid, dim=1), &
-                                                 time_index=findloc(dimids, tim_dimid, dim=1))
+                                                 time_index=findloc(dimids, fileReaderPtr%time_dimid, dim=1))
 
          fgd_id = -1
          sgd_id = -1
